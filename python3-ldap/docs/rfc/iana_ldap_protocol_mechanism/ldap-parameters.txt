@@ -1,0 +1,1128 @@
+                                               Lightweight Directory Access Protocol (LDAP) Parameters
+
+   Created
+           2003-08-27
+
+   Last Updated
+           2013-01-02
+
+   This registry is also available in plain text.
+
+   Registries included below
+
+     * Internet Directory Numbers (iso.org.dod.internet.directory [1.3.6.1.1.])
+     * Protocol Mechanisms
+     * Object Identifier Descriptors
+     * Attribute Description Options
+     * LDAPMessage types
+     * resultCode values
+     * Bind Authentication Method
+     * LDAP Syntaxes
+     * LDAP Search Scopes
+     * LDAP Filter Choices
+     * LDAP ModifyRequest Operations
+     * LDAP authzid prefixes
+
+Internet Directory Numbers (iso.org.dod.internet.directory [1.3.6.1.1.])
+
+   Registration Procedures
+
+ Expert Review with Specification Required
+
+   Reference
+           [RFC4520][RFC2578]
+
+   Note
+
+ Directory OIDs are assigned to RFCs for their use in identifying
+ directory (and possibly other) objects in accordance with BCP 64 [RFC 4520].
+ The referenced RFC should be consulted for information about
+ these assignments.
+
+   Decimal     Name                       Description                   Reference
+   0       Reserved      Reserved for future use                        [IANA]
+   1       nisSchema     Network Info Service Schema                    [RFC2307]
+   2       NameForm      Naming Plan                                    [RFC2377]
+   3       AuxObject     Auxiliary Object Class                         [RFC2377]
+   4       vendorName    Vendor Name                                    [RFC3045]
+   5       vendorVersion Vendor Version                                 [RFC3045]
+   6       pcimSchema    Policy Core Information Model LDAP Schema      [RFC3703]
+   7       LCUP          LDAP Client Update Protocol                    [RFC3928]
+   8       cancelOp      LDAP Cancel Operation                          [RFC3909]
+   9       pcelsSchema   PCELS Schema                                   [RFC4104]
+   10      uddi          Universal Description, Discovery & Integration [RFC4403]
+   11      vPIM          Voice Messaging Directory Service              [RFC4237]
+   12      assertion     Assertion Control                              [RFC4528]
+   13      ReadEntry     Read Entry Controls                            [RFC4527]
+   14      increment     LDAP Modify-Increment                          [RFC4525]
+   15      x509          x.509 Certificates                             [RFC4523]
+   16      uuid          entryUUID                                      [RFC4530]
+   17      LBURP         LDAP Bulk Update/Replication Protocol          [RFC4373]
+   18      ASN1 module   LDAP ASN.1 Module                              [RFC4511]
+   19      turn          LDAP Turn Operation                            [RFC4531]
+   20      entryDN       LDAP entryDN Operational Attribute             [RFC5020]
+   21      txn           LDAP Transactions                              [RFC5805]
+   22      dontUseCopy   LDAP Don't Use Copy Control                    [RFC6171]
+
+Protocol Mechanisms
+
+   Registration Procedures
+
+ First Come First Served
+
+   Reference
+           [RFC4520]
+
+   Note
+
+ Legend:
+ C => Control
+ E => Extension
+ F => Feature
+ N => Unsolicited Notice
+
+       Object Identifier      Type                    Description                        Reference
+   1.2.826.0.1.3344810.2.3    C    Matched Values Control                            [RFC3876]
+   1.2.840.113556.1.4.319     C    LDAP Simple Paged Results Control                 [RFC2696]
+   1.2.840.113556.1.4.473     C    Sort Request                                      [RFC2891]
+   1.2.840.113556.1.4.474     C    Sort Response                                     [RFC2891]
+   1.3.6.1.1.7.1              C    LCUP Sync Request Control                         [RFC3928]
+   1.3.6.1.1.7.2              C    LCUP Sync Update Control                          [RFC3928]
+   1.3.6.1.1.7.3              C    LCUP Sync Done Control                            [RFC3928]
+   1.3.6.1.1.8                E    Cancel Operation                                  [RFC3909]
+   1.3.6.1.1.12               C    Assertion Control                                 [RFC4528]
+   1.3.6.1.1.13.1             C    LDAP Pre-read Control                             [RFC4527]
+   1.3.6.1.1.13.2             C    LDAP Post-read Control                            [RFC4527]
+   1.3.6.1.1.14               F    Modify-Increment                                  [RFC4525]
+   1.3.6.1.1.21.1             E    Start Transaction Extended Request                [RFC5805]
+   1.3.6.1.1.21.2             C    Transaction Specification Control                 [RFC5805]
+   1.3.6.1.1.21.3             E    End Transaction Extended Request                  [RFC5805]
+   1.3.6.1.1.21.4             N    Aborted Transaction Notice                        [RFC5805]
+   1.3.6.1.4.1.1466.101.119.1 E    Dynamic Refresh                                   [RFC2589]
+   1.3.6.1.4.1.1466.20037     E    StartTLS                                          [RFC4511][RFC4513]
+   1.3.6.1.4.1.4203.1.5.1     F    All Op Attrs                                      [RFC3673]
+   1.3.6.1.4.1.4203.1.5.2     F    OC AD Lists                                       [RFC4529]
+   1.3.6.1.4.1.4203.1.5.3     F    True/False filters                                [RFC4526]
+   1.3.6.1.4.1.4203.1.5.4     F    Language Tag Options                              [RFC3866]
+   1.3.6.1.4.1.4203.1.5.5     F    Language Range Options                            [RFC3866]
+   1.3.6.1.4.1.4203.1.9.1.1   C    LDAP Content Synchronization Control              [RFC4533]
+   1.3.6.1.4.1.4203.1.10.1    C    Subentries                                        [RFC3672]
+   1.3.6.1.4.1.4203.1.11.1    E    Modify Password                                   [RFC3062]
+   1.3.6.1.4.1.4203.1.11.3    E    Who am I?                                         [RFC4532]
+   1.3.6.1.1.17.1             E    StartLBURPRequest LDAP ExtendedRequest message    [RFC4373]
+   1.3.6.1.1.17.2             E    StartLBURPResponse LDAP ExtendedResponse message  [RFC4373]
+   1.3.6.1.1.17.3             E    EndLBURPRequest LDAP ExtendedRequest message      [RFC4373]
+   1.3.6.1.1.17.4             E    EndLBURPResponse LDAP ExtendedResponse message    [RFC4373]
+   1.3.6.1.1.17.5             E    LBURPUpdateRequest LDAP ExtendedRequest message   [RFC4373]
+   1.3.6.1.1.17.6             E    LBURPUpdateResponse LDAP ExtendedResponse message [RFC4373]
+   1.3.6.1.1.17.7             F    LBURP Incremental Update style OID                [RFC4373]
+   1.3.6.1.1.19               E    LDAP Turn Operation                               [RFC4531]
+   2.16.840.1.113730.3.4.2    C    ManageDsaIT                                       [RFC3296]
+   2.16.840.1.113730.3.4.15   C    Authorization Identity Response Control           [RFC3829]
+   2.16.840.1.113730.3.4.16   C    Authorization Identity Request Control            [RFC3829]
+   2.16.840.1.113730.3.4.18   C    Proxy Authorization Control                       [RFC4370]
+   1.3.6.1.1.22               C    LDAP Don't Use Copy Control                       [RFC6171]
+
+Object Identifier Descriptors
+
+   Registration Procedures
+
+ x-  Private Use (can not be registered)
+ e-  Reserved for Experiments, First Come First Served
+ All others:  Expert Review
+
+   Experts
+
+ Kurt Zeilenga
+
+   Reference
+           [RFC4520]
+
+   Note
+
+ Legend:
+ A => Attribute Type
+ C => DIT Content Rule
+ E => LDAP URL Extension
+ F => Family
+ M => Matching Rule
+ N => Name Form
+ O => Object Class
+ R => Administrative Role
+ * => The registration is historic in nature
+
+                       Name                     Type             OID                              Reference
+   accessControlInnerArea                       R    2.5.23.3                     [RFC3672]
+   accessControlSpecificArea                    R    2.5.23.2                     [RFC3672]
+   account                                      O    0.9.2342.19200300.100.4.5    [RFC4524]
+   add                                          A    Reserved for LDIF            [RFC2849]
+   administrativeRole                           A    2.5.18.5                     [RFC3672]
+   administratorsAddress                        A    1.3.6.1.4.1.1466.101.120.1   [Mark_Wahl]
+   algorithmIdentifierMatch                     M    2.5.13.40                    [RFC4523]
+   alias                                        O    2.5.6.1                      [RFC4512]
+   aliasedEntryName                             A    2.5.4.1                      [X.501]
+   aliasedObjectName                            A    2.5.4.1                      [RFC4512]
+   allComponentsMatch                           M    1.2.36.79672281.1.13.6       [RFC3687]
+   altServer                                    A    1.3.6.1.4.1.1466.101.120.6   [RFC4512]
+   applicationEntity                            O    2.5.6.12                     [RFC2256]
+   applicationProcess                           O    2.5.6.11                     [RFC4519]
+   aRecord                                      A    0.9.2342.19200300.100.1.26   [RFC1274]
+   associatedDomain                             A    0.9.2342.19200300.100.1.37   [RFC4524]
+   associatedInternetGateway                    A    1.3.6.1.4.1.453.7.2.8        [RFC2164]
+   associatedName                               A    0.9.2342.19200300.100.1.38   [RFC4524]
+   associatedORAddress                          A    1.3.6.1.4.1.453.7.2.6        [RFC2164]
+   associatedX400Gateway                        A    1.3.6.1.4.1.453.7.2.3        [RFC2164]
+   attributeMap                                 A    1.3.6.1.4.1.11.1.3.1.1.9     [RFC4876]
+   attributeTypes                               A    2.5.21.5                     [RFC4512]
+   audio                                        A    0.9.2342.19200300.100.1.55   [RFC1274]
+   authenticationMethod                         A    1.3.6.1.4.1.11.1.3.1.1.6     [RFC4876]
+   authorityRevocationList                      A    2.5.4.38                     [RFC4523]
+   autonomousArea                               R    2.5.23.1                     [RFC3672]
+   bindTimeLimit                                A    1.3.6.1.4.1.11.1.3.1.1.4     [RFC4876]
+   bitStringMatch                               M    2.5.13.16                    [RFC4517]
+   booleanMatch                                 M    2.5.13.13                    [RFC4517]
+   buildingName                                 A    0.9.2342.19200300.100.1.48   [RFC4524]
+   businessCategory                             A    2.5.4.15                     [RFC4519]
+   c                                            A    2.5.4.6                      [RFC4519]
+   c-FacsimileTelephoneNumber                   A    2.5.4.23.1                   [RFC3671]
+   c-InternationalISDNNumber                    A    2.5.4.25.1                   [RFC3671]
+   c-l                                          A    2.5.4.7.1                    [RFC3671]
+   c-PhysicalDeliveryOffice                     A    2.5.4.19.1                   [RFC3671]
+   c-PostalAddress                              A    2.5.4.16.1                   [RFC3671]
+   c-PostalCode                                 A    2.5.4.17.1                   [RFC3671]
+   c-PostOfficeBox                              A    2.5.4.18.1                   [RFC3671]
+   c-o                                          A    2.5.4.10.1                   [RFC3671]
+   c-ou                                         A    2.5.4.11.1                   [RFC3671]
+   c-st                                         A    2.5.4.8.1                    [RFC3671]
+   c-street                                     A    2.5.4.9.1                    [RFC3671]
+   c-TelephoneNumber                            A    2.5.4.20.1                   [RFC3671]
+   c-TelexNumber                                A    2.5.4.21.1                   [RFC3671]
+   cACertificate                                A    2.5.4.37                     [RFC4523]
+   calCalAdrURI                                 A    1.2.840.113556.1.4.481       [RFC2739]
+   calCalURI                                    A    1.2.840.113556.1.4.478       [RFC2739]
+   calCAPURI                                    A    1.2.840.113556.1.4.480       [RFC2739]
+   calEntry                                     O    1.2.840.113556.1.5.87        [RFC2739]
+   calFBURL                                     A    1.2.840.113556.1.4.479       [RFC2739]
+   calOtherCalAdrURIs                           A    1.2.840.113556.1.4.485       [RFC2739]
+   calOtherCalURIs                              A    1.2.840.113556.1.4.482       [RFC2739]
+   calOtherCAPURIs                              A    1.2.840.113556.1.4.484       [RFC2739]
+   calOtherFBURLs                               A    1.2.840.113556.1.4.483       [RFC2739]
+   caseExactIA5Match                            M    1.3.6.1.4.1.1466.109.114.1   [RFC4517]
+   caseExactMatch                               M    2.5.13.5                     [RFC4517]
+   caseExactOrderingMatch                       M    2.5.13.6                     [RFC4517]
+   caseExactSubstringsMatch                     M    2.5.13.7                     [RFC4517]
+   caseIgnoreIA5Match                           M    1.3.6.1.4.1.1466.109.114.2   [RFC4517]
+   caseIgnoreIA5SubstringsMatch                 M    1.3.6.1.4.1.1466.109.114.3   [RFC4517]
+   caseIgnoreListMatch                          M    2.5.13.11                    [RFC4517]
+   caseIgnoreListSubstringsMatch                M    2.5.13.12                    [RFC4517]
+   caseIgnoreMatch                              M    2.5.13.2                     [RFC4517]
+   caseIgnoreOrderingMatch                      M    2.5.13.3                     [RFC4517]
+   caseIgnoreSubstringsMatch                    M    2.5.13.4                     [RFC4517]
+   certificateExactMatch                        M    2.5.13.34                    [RFC4523]
+   certificateListExactMatch                    M    2.5.13.38                    [RFC4523]
+   certificateListMatch                         M    2.5.13.39                    [RFC4523]
+   certificateMatch                             M    2.5.13.35                    [RFC4523]
+   certificatePairExactMatch                    M    2.5.13.36                    [RFC4523]
+   certificatePairMatch                         M    2.5.13.37                    [RFC4523]
+   certificateRevocationList                    A    2.5.4.39                     [RFC4523]
+   certificationAuthority                       O    2.5.6.16                     [RFC4523]
+   certificationAuthority-V2                    O    2.5.6.16.2                   [RFC4523]
+   changetype                                   A    Reserved for LDIF            [RFC2849]
+   cn                                           A    2.5.4.3                      [RFC4519]
+   cNAMERecord                                  A    0.9.2342.19200300.100.1.31   [RFC1274]
+   co                                           A    0.9.2342.19200300.100.1.43   [RFC4524]
+   collectiveAttributeInnerArea                 R    2.5.23.6                     [RFC3672]
+   collectiveAttributeSpecificArea              R    2.5.23.5                     [RFC3672]
+   collectiveAttributeSubentries                A    2.5.18.12                    [RFC3671]
+   collectiveAttributeSubentry                  O    2.5.20.2                     [RFC3671]
+   collectiveExclusions                         A    2.5.18.7                     [RFC3671]
+   commonName                                   A    2.5.4.3                      [RFC4519]
+   componentFilterMatch                         M    1.2.36.79672281.1.13.2       [RFC3687]
+   control                                      A    Reserved for LDIF            [RFC2849]
+   country                                      O    2.5.6.2                      [RFC4519]
+   countryName                                  A    2.5.4.6                      [RFC4519]
+   createTimestamp                              A    2.5.18.1                     [RFC4512]
+   creatorsName                                 A    2.5.18.3                     [RFC4512]
+   credentialLevel                              A    1.3.6.1.4.1.11.1.3.1.1.10    [RFC4876]
+   cRLDistributionPoint                         O    2.5.6.19                     [RFC4523]
+   crossCertificatePair                         A    2.5.4.40                     [RFC4523]
+   DC                                           A    0.9.2342.19200300.100.1.25   [RFC4519]
+   dcObject                                     O    1.3.6.1.4.1.1466.344         [RFC4519]
+   defaultServerList                            A    1.3.6.1.4.1.11.1.3.1.1.0     [RFC4876]
+   defaultSearchBase                            A    1.3.6.1.4.1.11.1.3.1.1.1     [RFC4876]
+   defaultSearchScope                           A    1.3.6.1.4.1.11.1.3.1.1.12    [RFC4876]
+   delete                                       A    Reserved for LDIF            [RFC2849]
+   deleteoldrdn                                 A    Reserved for LDIF            [RFC2849]
+   deltaCRL                                     O    2.5.6.23                     [RFC4523]
+   deltaRevocationList                          A    2.5.4.53                     [RFC4523]
+   dereferenceAliases                           A    1.3.6.1.4.1.11.1.3.1.1.16    [RFC4876]
+   description                                  A    2.5.4.13                     [RFC4519]
+   destinationIndicator                         A    2.5.4.27                     [RFC4519]
+   device                                       O    2.5.6.14                     [RFC4519]
+   directoryComponentsMatch                     M    1.2.36.79672281.1.13.7       [RFC3687]
+   directoryStringFirstComponentMatch           M    2.5.13.31                    [RFC4517]
+   distinguishedName                            A    2.5.4.49                     [RFC4519]
+   distinguishedNameMatch                       M    2.5.13.1                     [RFC4517]
+   distinguishedNameTableEntry                  O    1.3.6.1.4.1.453.7.1.5        [RFC2293]
+   distinguishedNameTableKey                    A    1.3.6.1.4.1.453.7.2.3        [RFC2293]
+   dITContentRules                              A    2.5.21.2                     [RFC4512]
+   dITRedirect                                  A    0.9.2342.19200300.100.1.54   [RFC1274]
+   dITStructureRules                            A    2.5.21.1                     [RFC4512]
+   dmd                                          O    2.5.6.20                     [RFC2256]
+   dmdName                                      A    2.5.4.54                     [RFC2256]
+   dn                                           A    Reserved for LDIF            [RFC2849]
+   dnQualifier                                  A    2.5.4.46                     [RFC4519]
+   dNSDomain                                    O    0.9.2342.19200300.100.4.15   [RFC1274]
+   document                                     O    0.9.2342.19200300.100.4.6    [RFC4524]
+   documentAuthor                               A    0.9.2342.19200300.100.1.14   [RFC4524]
+   documentIdentifier                           A    0.9.2342.19200300.100.1.11   [RFC4524]
+   documentLocation                             A    0.9.2342.19200300.100.1.15   [RFC4524]
+   documentPublisher                            A    0.9.2342.19200300.100.1.56   [RFC4524]
+   documentSeries                               O    0.9.2342.19200300.100.4.8    [RFC4524]
+   documentTitle                                A    0.9.2342.19200300.100.1.12   [RFC4524]
+   documentVersion                              A    0.9.2342.19200300.100.1.13   [RFC4524]
+   domain                                       O    0.9.2342.19200300.100.4.13   [RFC4524]
+   domainComponent                              A    0.9.2342.19200300.100.1.25   [RFC4519]
+   domainNameForm                               N    1.3.6.1.4.1.1466.345         [RFC2247]
+   domainRelatedObject                          O    0.9.2342.19200300.100.4.17   [RFC4524]
+   drink                                        A    0.9.2342.19200300.100.1.5    [RFC4524]
+   dSA                                          O    2.5.6.13                     [RFC2256]
+   dSAQuality                                   A    0.9.2342.19200300.100.1.49   [RFC1274]
+   DUAConfigProfile                             O    1.3.6.1.4.1.11.1.3.1.2.5     [RFC4876]
+   dynamicObject                                O    1.3.6.1.4.1.1466.101.119.2   [RFC2589]
+   dynamicSubtrees                              A    1.3.6.1.4.1.1466.101.119.4   [RFC2589]
+   e-com-seafreeze-*                            F    N/A                          [Allen_Williams]
+   e-com-westjet-*                              F    N/A                          [Matthew_Key]
+   email                                        A    1.2.840.113549.1.9.1         [RFC3280]
+   emailAddress                                 A    1.2.840.113549.1.9.1         [RFC3280]
+   enhancedSearchGuide                          A    2.5.4.47                     [RFC4519]
+   entryDN                                      A    1.3.6.1.1.20                 [RFC5020]
+   entryTtl                                     A    1.3.6.1.4.1.1466.101.119.3   [RFC2589]
+   entryUUID                                    A    1.3.6.1.1.16.4               [RFC4530]
+   extensibleObject                             O    1.3.6.1.4.1.1466.101.120.111 [RFC4512]
+   facsimileTelephoneNumber                     A    2.5.4.23                     [RFC4519]
+   favouriteDrink                               A*   0.9.2342.19200300.100.1.5    [RFC4524]
+   fedfsAnnotation                              A    1.3.6.1.4.1.31103.1.12       [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsDescr                                   A    1.3.6.1.4.1.31103.1.13       [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFsl                                     O    1.3.6.1.4.1.31103.1.1003     [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFslHost                                 A*   1.3.6.1.4.1.31103.1.9        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFslPort                                 A*   1.3.6.1.4.1.31103.1.10       [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFslTTL                                  A*   1.3.6.1.4.1.31103.1.11       [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFslUuid                                 A    1.3.6.1.4.1.31103.1.8        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFsn                                     O    1.3.6.1.4.1.31103.1.1002     [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFsnTTL                                  A    1.3.6.1.4.1.31103.1.15       [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsFsnUuid                                 A    1.3.6.1.4.1.31103.1.4        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNceDN                                   A    1.3.6.1.4.1.31103.1.14       [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNcePrefix                               A*   1.3.6.1.4.1.31103.1.7        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNetAddr                                 A*   1.3.6.1.4.1.31103.1.2        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNetPort                                 A*   1.3.6.1.4.1.31103.1.3        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsClassChange                          A    1.3.6.1.4.1.31103.1.112      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsClassFileid                          A    1.3.6.1.4.1.31103.1.110      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsClassHandle                          A    1.3.6.1.4.1.31103.1.109      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsClassReaddir                         A    1.3.6.1.4.1.31103.1.113      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsClassSimul                           A    1.3.6.1.4.1.31103.1.108      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsClassWritever                        A    1.3.6.1.4.1.31103.1.111      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsCurrency                             A    1.3.6.1.4.1.31103.1.103      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsFsl                                  O    1.3.6.1.4.1.31103.1.1004     [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsGenFlagGoing                         A    1.3.6.1.4.1.31103.1.105      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsGenFlagSplit                         A    1.3.6.1.4.1.31103.1.106      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsGenFlagWritable                      A    1.3.6.1.4.1.31103.1.104      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsMajorVer                             A*   1.3.6.1.4.1.31103.1.101      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsMinorVer                             A*   1.3.6.1.4.1.31103.1.102      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsPath                                 A*   1.3.6.1.4.1.31103.1.100      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsReadOrder                            A    1.3.6.1.4.1.31103.1.115      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsReadRank                             A    1.3.6.1.4.1.31103.1.114      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsTransFlagRdma                        A    1.3.6.1.4.1.31103.1.107      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsURI                                  A    1.3.6.1.4.1.31103.1.120      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsValidFor                             A    1.3.6.1.4.1.31103.1.119      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsVarSub                               A    1.3.6.1.4.1.31103.1.118      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsWriteOrder                           A    1.3.6.1.4.1.31103.1.117      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNfsWriteRank                            A    1.3.6.1.4.1.31103.1.116      [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNsdbContainerInfo                       O    1.3.6.1.4.1.31103.1.1001     [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNsdbName                                A*   1.3.6.1.4.1.31103.1.5        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsNsdbPort                                A*   1.3.6.1.4.1.31103.1.6        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   fedfsUuid                                    A    1.3.6.1.4.1.31103.1.1        [RFC-ietf-nfsv4-federated-fs-protocol-15]
+   followReferrals                              A    1.3.6.1.4.1.11.1.3.1.1.5     [RFC4876]
+   friendlyCountry                              O    0.9.2342.19200300.100.4.18   [RFC4524]
+   friendlyCountryName                          A*   0.9.2342.19200300.100.1.43   [RFC4524]
+   generalizedTimeMatch                         M    2.5.13.27                    [RFC4517]
+   generalizedTimeOrderingMatch                 M    2.5.13.28                    [RFC4517]
+   generationQualifier                          A    2.5.4.44                     [RFC4519]
+   givenName                                    A    2.5.4.42                     [RFC4519]
+   GN                                           A    RESERVED                     [RFC4519]
+   governingStructureRule                       A    2.5.21.10                    [RFC4512]
+   groupOfNames                                 O    2.5.6.9                      [RFC4519]
+   groupOfUniqueNames                           O    2.5.6.17                     [RFC4519]
+   homePhone                                    A    0.9.2342.19200300.100.1.20   [RFC4524]
+   homePostalAddress                            A    0.9.2342.19200300.100.1.39   [RFC4524]
+   homeTelephone                                A*   0.9.2342.19200300.100.1.20   [RFC4524]
+   host                                         A    0.9.2342.19200300.100.1.9    [RFC4524]
+   houseIdentifier                              A    2.5.4.51                     [RFC4519]
+   increment                                    A    Reserved for LDIF            [RFC4525]
+   info                                         A    0.9.2342.19200300.100.1.4    [RFC4524]
+   initials                                     A    2.5.4.43                     [RFC4519]
+   integerFirstComponentMatch                   M    2.5.13.29                    [RFC4517]
+   integerMatch                                 M    2.5.13.14                    [RFC4517]
+   integerOrderingMatch                         M    2.5.13.15                    [RFC4517]
+   internationaliSDNNumber                      A    2.5.4.25                     [RFC4519]
+   janetMailbox                                 A    0.9.2342.19200300.100.1.46   [RFC1274]
+   jpegPhoto                                    A    0.9.2342.19200300.100.1.60   [RFC2798]
+   keywordMatch                                 M    2.5.13.33                    [RFC4517]
+   knowledgeInformation                         A    2.5.4.2                      [RFC2256]
+   L                                            A    2.5.4.7                      [RFC4519]
+   labeledURI                                   A    1.3.6.1.4.1.250.1.57         [RFC2079]
+   labeledURIObject                             O    1.3.6.1.4.1.250.3.15         [RFC2079]
+   lastModifiedBy                               A    0.9.2342.19200300.100.1.24   [RFC1274]
+   lastModifiedTime                             A    0.9.2342.19200300.100.1.23   [RFC1274]
+   ldapSyntaxes                                 A    1.3.6.1.4.1.1466.101.120.16  [RFC4512]
+   LDIFLocationURL                              A    1.3.6.1.4.1.16572.2.2.6      [RFC6109]
+   LDIFLocationURLObject                        O    1.3.6.1.4.1.16572.2.1.1      [RFC6109]
+   locality                                     O    2.5.6.3                      [RFC4519]
+   localityName                                 A    2.5.4.7                      [RFC4519]
+   mail                                         A    0.9.2342.19200300.100.1.3    [RFC4524]
+   mailPreferenceOption                         A    0.9.2342.19200300.100.1.47   [RFC1274]
+   mailReceipt                                  A    1.3.6.1.4.1.16572.2.2.4      [RFC6109]
+   manager                                      A    0.9.2342.19200300.100.1.10   [RFC4524]
+   managedDomains                               A    1.3.6.1.4.1.16572.2.2.5      [RFC6109]
+   matchingRules                                A    2.5.21.4                     [RFC4512]
+   matchingRuleUse                              A    2.5.21.8                     [RFC4512]
+   mcgamTables                                  A    1.3.6.1.4.1.453.7.2.9        [RFC2164]
+   mDRecord                                     A    0.9.2342.19200300.100.1.27   [RFC1274]
+   member                                       A    2.5.4.31                     [RFC4519]
+   mixerGateway                                 O    1.3.6.1.4.1.453.7.1.4        [RFC2164]
+   mobile                                       A    0.9.2342.19200300.100.1.41   [RFC4524]
+   mobileTelephoneNumber                        A*   0.9.2342.19200300.100.1.41   [RFC4524]
+   moddn                                        A    Reserved for LDIF            [RFC2849]
+   modifiersName                                A    2.5.18.4                     [RFC4512]
+   modify                                       A    Reserved for LDIF            [RFC2849]
+   modrdn                                       A    Reserved for LDIF            [RFC2849]
+   modifyTimestamp                              A    2.5.18.2                     [RFC4512]
+   mXRecord                                     A    0.9.2342.19200300.100.1.28   [RFC1274]
+   name                                         A    2.5.4.41                     [RFC4519]
+   nameForms                                    A    2.5.21.7                     [RFC4512]
+   namingContexts                               A    1.3.6.1.4.1.1466.101.120.5   [RFC4512]
+   newrdn                                       A    Reserved for LDIF            [RFC2849]
+   newsuperior                                  A    Reserved for LDIF            [RFC2849]
+   nSRecord                                     A    0.9.2342.19200300.100.1.29   [RFC1274]
+   numericStringMatch                           M    2.5.13.8                     [RFC4517]
+   numericStringOrderingMatch                   M    2.5.13.9                     [RFC4517]
+   numericStringSubstringsMatch                 M    2.5.13.10                    [RFC4517]
+   o                                            A    2.5.4.10                     [RFC4519]
+   objectClass                                  A    2.5.4.0                      [RFC4512]
+   objectClasses                                A    2.5.21.6                     [RFC4512]
+   objectclassMap                               A    1.3.6.1.4.1.11.1.3.1.1.11    [RFC4876]
+   objectIdentifierFirstComponentMatch          M    2.5.13.30                    [RFC4517]
+   objectIdentifierMatch                        M    2.5.13.0                     [RFC4517]
+   octetStringMatch                             M    2.5.13.17                    [RFC4517]
+   octetStringOrderingMatch                     M    2.5.13.18                    [RFC4517]
+   omittedORAddressComponent                    O    1.3.6.1.4.1.453.7.1.3        [RFC2164]
+   oRAddressComponentType                       A    1.3.6.1.4.1.453.7.2.7        [RFC2164]
+   organization                                 O    2.5.6.4                      [RFC4519]
+   organizationalPerson                         O    2.5.6.7                      [RFC4519]
+   organizationalRole                           O    2.5.6.8                      [RFC4519]
+   organizationalStatus                         A    0.9.2342.19200300.100.1.45   [RFC4524]
+   organizationalUnit                           O    2.5.6.5                      [RFC4519]
+   organizationalUnitName                       A    2.5.4.11                     [RFC4519]
+   organizationName                             A    2.5.4.10                     [RFC4519]
+   otherMailbox                                 A    0.9.2342.19200300.100.1.22   [RFC1274]
+   ou                                           A    2.5.4.11                     [RFC4519]
+   owner                                        A    2.5.4.32                     [RFC4519]
+   pager                                        A    0.9.2342.19200300.100.1.42   [RFC4524]
+   pagerTelephoneNumber                         A*   0.9.2342.19200300.100.1.42   [RFC4524]
+   pcels8021Filter                              O    1.3.6.1.1.9.1.54             [RFC4104]
+   pcels8021HdrDestMACAddress                   A    1.3.6.1.1.9.2.50             [RFC4104]
+   pcels8021HdrDestMACMask                      A    1.3.6.1.1.9.2.51             [RFC4104]
+   pcels8021HdrPriority                         A    1.3.6.1.1.9.2.53             [RFC4104]
+   pcels8021HdrProtocolID                       A    1.3.6.1.1.9.2.52             [RFC4104]
+   pcels8021HdrSourceMACAddress                 A    1.3.6.1.1.9.2.48             [RFC4104]
+   pcels8021HdrSourceMACMask                    A    1.3.6.1.1.9.2.49             [RFC4104]
+   pcels8021HdrVLANID                           A    1.3.6.1.1.9.2.54             [RFC4104]
+   pcelsActionAssociation                       O    1.3.6.1.1.9.1.10             [RFC4104]
+   pcelsActionList                              A    1.3.6.1.1.9.2.8              [RFC4104]
+   pcelsBitStringList                           A    1.3.6.1.1.9.2.24             [RFC4104]
+   pcelsBitStringValueAuxClass                  O    1.3.6.1.1.9.1.45             [RFC4104]
+   pcelsBoolean                                 A    1.3.6.1.1.9.2.26             [RFC4104]
+   pcelsBooleanValueAuxClass                    O    1.3.6.1.1.9.1.47             [RFC4104]
+   pcelsCompoundActionAuxClass                  O    1.3.6.1.1.9.1.15             [RFC4104]
+   pcelsCompoundConditionAuxClass               O    1.3.6.1.1.9.1.12             [RFC4104]
+   pcelsCompoundFilterConditionAuxClass         O    1.3.6.1.1.9.1.13             [RFC4104]
+   pcelsConditionAssociation                    O    1.3.6.1.1.9.1.9              [RFC4104]
+   pcelsConditionList                           A    1.3.6.1.1.9.2.7              [RFC4104]
+   pcelsConditionListType                       A    1.3.6.1.1.9.2.6              [RFC4104]
+   pcelsCoSVariableAuxClass                     O    1.3.6.1.1.9.1.33             [RFC4104]
+   pcelsDecisionStrategy                        A    1.3.6.1.1.9.2.2              [RFC4104]
+   pcelsDestinationIPv4VariableAuxClass         O    1.3.6.1.1.9.1.21             [RFC4104]
+   pcelsDestinationIPv6VariableAuxClass         O    1.3.6.1.1.9.1.22             [RFC4104]
+   pcelsDestinationMACVariableAuxClass          O    1.3.6.1.1.9.1.31             [RFC4104]
+   pcelsDestinationPortVariableAuxClass         O    1.3.6.1.1.9.1.24             [RFC4104]
+   pcelsDestinationSAPVariableAuxClass          O    1.3.6.1.1.9.1.36             [RFC4104]
+   pcelsDSCPVariableAuxClass                    O    1.3.6.1.1.9.1.28             [RFC4104]
+   pcelsElementList                             A    1.3.6.1.1.9.2.31             [RFC4104]
+   pcelsEthertypeVariableAuxClass               O    1.3.6.1.1.9.1.34             [RFC4104]
+   pcelsExecutionStrategy                       A    1.3.6.1.1.9.2.10             [RFC4104]
+   pcelsExpectedValueList                       A    1.3.6.1.1.9.2.15             [RFC4104]
+   pcelsExpectedValueTypes                      A    1.3.6.1.1.9.2.18             [RFC4104]
+   pcelsExplicitVariableAuxClass                O    1.3.6.1.1.9.1.17             [RFC4104]
+   pcelsFilterDirection                         A    1.3.6.1.1.9.2.56             [RFC4104]
+   pcelsFilterEntryBase                         O    1.3.6.1.1.9.1.52             [RFC4104]
+   pcelsFilterEntryList                         A    1.3.6.1.1.9.2.57             [RFC4104]
+   pcelsFilterIsNegated                         A    1.3.6.1.1.9.2.33             [RFC4104]
+   pcelsFilterListAuxClass                      O    1.3.6.1.1.9.1.55             [RFC4104]
+   pcelsFilterListName                          A    1.3.6.1.1.9.2.55             [RFC4104]
+   pcelsFilterName                              A    1.3.6.1.1.9.2.32             [RFC4104]
+   pcelsFlowDirectionVariableAuxClass           O    1.3.6.1.1.9.1.39             [RFC4104]
+   pcelsFlowIdVariableAuxClass                  O    1.3.6.1.1.9.1.29             [RFC4104]
+   pcelsGroup                                   O    1.3.6.1.1.9.1.3              [RFC4104]
+   pcelsGroupAuxClass                           O    1.3.6.1.1.9.1.4              [RFC4104]
+   pcelsGroupInstance                           O    1.3.6.1.1.9.1.5              [RFC4104]
+   pcelsImplicitVariableAuxClass                O    1.3.6.1.1.9.1.18             [RFC4104]
+   pcelsIntegerList                             A    1.3.6.1.1.9.2.25             [RFC4104]
+   pcelsIntegerValueAuxClass                    O    1.3.6.1.1.9.1.46             [RFC4104]
+   pcelsIPHdrDestAddress                        A    1.3.6.1.1.9.2.38             [RFC4104]
+   pcelsIPHdrDestAddressEndOfRange              A    1.3.6.1.1.9.2.39             [RFC4104]
+   pcelsIPHdrDestMask                           A    1.3.6.1.1.9.2.40             [RFC4104]
+   pcelsIPHdrDestPortEnd                        A    1.3.6.1.1.9.2.45             [RFC4104]
+   pcelsIPHdrDestPortStart                      A    1.3.6.1.1.9.2.44             [RFC4104]
+   pcelsIPHdrDSCPList                           A    1.3.6.1.1.9.2.46             [RFC4104]
+   pcelsIPHdrFlowLabel                          A    1.3.6.1.1.9.2.47             [RFC4104]
+   pcelsIPHdrProtocolID                         A    1.3.6.1.1.9.2.41             [RFC4104]
+   pcelsIPHdrSourceAddress                      A    1.3.6.1.1.9.2.35             [RFC4104]
+   pcelsIPHdrSourceAddressEndOfRange            A    1.3.6.1.1.9.2.36             [RFC4104]
+   pcelsIPHdrSourceMask                         A    1.3.6.1.1.9.2.37             [RFC4104]
+   pcelsIPHdrSourcePortEnd                      A    1.3.6.1.1.9.2.43             [RFC4104]
+   pcelsIPHdrSourcePortStart                    A    1.3.6.1.1.9.2.42             [RFC4104]
+   pcelsIPHdrVersion                            A    1.3.6.1.1.9.2.34             [RFC4104]
+   pcelsIPHeadersFilter                         O    1.3.6.1.1.9.1.53             [RFC4104]
+   pcelsIPProtocolVariableAuxClass              O    1.3.6.1.1.9.1.25             [RFC4104]
+   pcelsIPToSVariableAuxClass                   O    1.3.6.1.1.9.1.27             [RFC4104]
+   pcelsIPv4AddrList                            A    1.3.6.1.1.9.2.20             [RFC4104]
+   pcelsIPv4AddrValueAuxClass                   O    1.3.6.1.1.9.1.41             [RFC4104]
+   pcelsIPv6AddrList                            A    1.3.6.1.1.9.2.21             [RFC4104]
+   pcelsIPv6AddrValueAuxClass                   O    1.3.6.1.1.9.1.42             [RFC4104]
+   pcelsIPVersionVariableAuxClass               O    1.3.6.1.1.9.1.26             [RFC4104]
+   pcelsIsMirrored                              A    1.3.6.1.1.9.2.13             [RFC4104]
+   pcelsMACAddrList                             A    1.3.6.1.1.9.2.22             [RFC4104]
+   pcelsMACAddrValueAuxClass                    O    1.3.6.1.1.9.1.43             [RFC4104]
+   pcelsPolicySet                               O    1.3.6.1.1.9.1.1              [RFC4104]
+   pcelsPolicySetAssociation                    O    1.3.6.1.1.9.1.2              [RFC4104]
+   pcelsPolicySetDN                             A    1.3.6.1.1.9.2.5              [RFC4104]
+   pcelsPolicySetList                           A    1.3.6.1.1.9.2.3              [RFC4104]
+   pcelsPolicySetName                           A    1.3.6.1.1.9.2.1              [RFC4104]
+   pcelsPriority                                A    1.3.6.1.1.9.2.4              [RFC4104]
+   pcelsReusableContainer                       O    1.3.6.1.1.9.1.48             [RFC4104]
+   pcelsReusableContainerAuxClass               O    1.3.6.1.1.9.1.49             [RFC4104]
+   pcelsReusableContainerInstance               O    1.3.6.1.1.9.1.50             [RFC4104]
+   pcelsReusableContainerList                   A    1.3.6.1.1.9.2.28             [RFC4104]
+   pcelsReusableContainerName                   A    1.3.6.1.1.9.2.27             [RFC4104]
+   pcelsRole                                    A    1.3.6.1.1.9.2.29             [RFC4104]
+   pcelsRoleCollection                          O    1.3.6.1.1.9.1.51             [RFC4104]
+   pcelsRoleCollectionName                      A    1.3.6.1.1.9.2.30             [RFC4104]
+   pcelsRule                                    O    1.3.6.1.1.9.1.6              [RFC4104]
+   pcelsRuleAuxClass                            O    1.3.6.1.1.9.1.7              [RFC4104]
+   pcelsRuleInstance                            O    1.3.6.1.1.9.1.8              [RFC4104]
+   pcelsRuleValidityPeriodList                  A    1.3.6.1.1.9.2.62             [RFC4104]
+   pcelsSequencedActions                        A    1.3.6.1.1.9.2.9              [RFC4104]
+   pcelsSimpleActionAuxClass                    O    1.3.6.1.1.9.1.14             [RFC4104]
+   pcelsSimpleConditionAuxClass                 O    1.3.6.1.1.9.1.11             [RFC4104]
+   pcelsSNAPOUIVariableAuxClass                 O    1.3.6.1.1.9.1.37             [RFC4104]
+   pcelsSNAPTypeVariableAuxClass                O    1.3.6.1.1.9.1.38             [RFC4104]
+   pcelsSourceIPv4VariableAuxClass              O    1.3.6.1.1.9.1.19             [RFC4104]
+   pcelsSourceIPv6VariableAuxClass              O    1.3.6.1.1.9.1.20             [RFC4104]
+   pcelsSourceMACVariableAuxClass               O    1.3.6.1.1.9.1.30             [RFC4104]
+   pcelsSourcePortVariableAuxClass              O    1.3.6.1.1.9.1.23             [RFC4104]
+   pcelsSourceSAPVariableAuxClass               O    1.3.6.1.1.9.1.35             [RFC4104]
+   pcelsStringList                              A    1.3.6.1.1.9.2.23             [RFC4104]
+   pcelsStringValueAuxClass                     O    1.3.6.1.1.9.1.44             [RFC4104]
+   pcelsValueAuxClass                           O    1.3.6.1.1.9.1.40             [RFC4104]
+   pcelsValueDN                                 A    1.3.6.1.1.9.2.12             [RFC4104]
+   pcelsValueName                               A    1.3.6.1.1.9.2.19             [RFC4104]
+   pcelsVariable                                O    1.3.6.1.1.9.1.16             [RFC4104]
+   pcelsVariableDN                              A    1.3.6.1.1.9.2.11             [RFC4104]
+   pcelsVariableModelClass                      A    1.3.6.1.1.9.2.16             [RFC4104]
+   pcelsVariableModelProperty                   A    1.3.6.1.1.9.2.17             [RFC4104]
+   pcelsVariableName                            A    1.3.6.1.1.9.2.14             [RFC4104]
+   pcelsVendorValueAuxClass                     O    1.3.6.1.1.9.1.57             [RFC4104]
+   pcelsVendorValueData                         A    1.3.6.1.1.9.2.60             [RFC4104]
+   pcelsVendorValueEncoding                     A    1.3.6.1.1.9.2.61             [RFC4104]
+   pcelsVendorVariableAuxClass                  O    1.3.6.1.1.9.1.56             [RFC4104]
+   pcelsVendorVariableData                      A    1.3.6.1.1.9.2.58             [RFC4104]
+   pcelsVendorVariableEncoding                  A    1.3.6.1.1.9.2.59             [RFC4104]
+   pcelsVLANVariableAuxClass                    O    1.3.6.1.1.9.1.32             [RFC4104]
+   pcimPolicy                                   O    1.3.6.1.1.6.1.1              [RFC3703]
+   pcimGroup                                    O    1.3.6.1.1.6.1.2              [RFC3703]
+   pcimGroupAuxClass                            O    1.3.6.1.1.6.1.3              [RFC3703]
+   pcimGroupInstance                            O    1.3.6.1.1.6.1.4              [RFC3703]
+   pcimRule                                     O    1.3.6.1.1.6.1.5              [RFC3703]
+   pcimRuleAuxClass                             O    1.3.6.1.1.6.1.6              [RFC3703]
+   pcimRuleInstance                             O    1.3.6.1.1.6.1.7              [RFC3703]
+   pcimRuleConditionAssociation                 O    1.3.6.1.1.6.1.8              [RFC3703]
+   pcimRuleValidityAssociation                  O    1.3.6.1.1.6.1.9              [RFC3703]
+   pcimRuleActionAssociation                    O    1.3.6.1.1.6.1.10             [RFC3703]
+   pcimConditionAuxClass                        O    1.3.6.1.1.6.1.11             [RFC3703]
+   pcimTPCAuxClass                              O    1.3.6.1.1.6.1.12             [RFC3703]
+   pcimConditionVendorAuxClass                  O    1.3.6.1.1.6.1.13             [RFC3703]
+   pcimActionAuxClass                           O    1.3.6.1.1.6.1.14             [RFC3703]
+   pcimActionVendorAuxClass                     O    1.3.6.1.1.6.1.15             [RFC3703]
+   pcimPolicyInstance                           O    1.3.6.1.1.6.1.16             [RFC3703]
+   pcimElementAuxClass                          O    1.3.6.1.1.6.1.17             [RFC3703]
+   pcimRepository                               O    1.3.6.1.1.6.1.18             [RFC3703]
+   pcimRepositoryAuxClass                       O    1.3.6.1.1.6.1.19             [RFC3703]
+   pcimRepositoryInstance                       O    1.3.6.1.1.6.1.20             [RFC3703]
+   pcimSubtreesPtrAuxClass                      O    1.3.6.1.1.6.1.21             [RFC3703]
+   pcimGroupContainmentAuxClass                 O    1.3.6.1.1.6.1.22             [RFC3703]
+   pcimRuleContainmentAuxClass                  O    1.3.6.1.1.6.1.23             [RFC3703]
+   pcimKeywords                                 A    1.3.6.1.1.6.2.3              [RFC3703]
+   pcimGroupName                                A    1.3.6.1.1.6.2.4              [RFC3703]
+   pcimRuleName                                 A    1.3.6.1.1.6.2.5              [RFC3703]
+   pcimRuleEnabled                              A    1.3.6.1.1.6.2.6              [RFC3703]
+   pcimRuleConditionListType                    A    1.3.6.1.1.6.2.7              [RFC3703]
+   pcimRuleConditionList                        A    1.3.6.1.1.6.2.8              [RFC3703]
+   pcimRuleActionList                           A    1.3.6.1.1.6.2.9              [RFC3703]
+   pcimRuleValidityPeriodList                   A    1.3.6.1.1.6.2.10             [RFC3703]
+   pcimRuleUsage                                A    1.3.6.1.1.6.2.11             [RFC3703]
+   pcimRulePriority                             A    1.3.6.1.1.6.2.12             [RFC3703]
+   pcimRuleMandatory                            A    1.3.6.1.1.6.2.13             [RFC3703]
+   pcimRuleSequencedActions                     A    1.3.6.1.1.6.2.14             [RFC3703]
+   pcimRoles                                    A    1.3.6.1.1.6.2.15             [RFC3703]
+   pcimConditionGroupNumber                     A    1.3.6.1.1.6.2.16             [RFC3703]
+   pcimConditionNegated                         A    1.3.6.1.1.6.2.17             [RFC3703]
+   pcimConditionName                            A    1.3.6.1.1.6.2.18             [RFC3703]
+   pcimConditionDN                              A    1.3.6.1.1.6.2.19             [RFC3703]
+   pcimValidityConditionName                    A    1.3.6.1.1.6.2.20             [RFC3703]
+   pcimTimePeriodConditionDN                    A    1.3.6.1.1.6.2.21             [RFC3703]
+   pcimActionName                               A    1.3.6.1.1.6.2.22             [RFC3703]
+   pcimActionOrder                              A    1.3.6.1.1.6.2.23             [RFC3703]
+   pcimActionDN                                 A    1.3.6.1.1.6.2.24             [RFC3703]
+   pcimTPCTime                                  A    1.3.6.1.1.6.2.25             [RFC3703]
+   pcimTPCMonthOfYearMask                       A    1.3.6.1.1.6.2.26             [RFC3703]
+   pcimTPCDayOfMonthMask                        A    1.3.6.1.1.6.2.27             [RFC3703]
+   pcimTPCDayOfWeekMask                         A    1.3.6.1.1.6.2.28             [RFC3703]
+   pcimTPCTimeOfDayMask                         A    1.3.6.1.1.6.2.29             [RFC3703]
+   pcimTPCLocalOrUtcTime                        A    1.3.6.1.1.6.2.30             [RFC3703]
+   pcimVendorConstraintData                     A    1.3.6.1.1.6.2.31             [RFC3703]
+   pcimVendorConstraintEncoding                 A    1.3.6.1.1.6.2.32             [RFC3703]
+   pcimVendorActionData                         A    1.3.6.1.1.6.2.33             [RFC3703]
+   pcimVendorActionEncoding                     A    1.3.6.1.1.6.2.34             [RFC3703]
+   pcimPolicyInstanceName                       A    1.3.6.1.1.6.2.35             [RFC3703]
+   pcimRepositoryName                           A    1.3.6.1.1.6.2.36             [RFC3703]
+   pcimSubtreesAuxContainedSet                  A    1.3.6.1.1.6.2.37             [RFC3703]
+   pcimGroupsAuxContainedSet                    A    1.3.6.1.1.6.2.38             [RFC3703]
+   pcimRulesAuxContainedSet                     A    1.3.6.1.1.6.2.39             [RFC3703]
+   person                                       O    2.5.6.6                      [RFC4519]
+   personalSignature                            A    0.9.2342.19200300.100.1.53   [RFC1274]
+   personalTitle                                A    0.9.2342.19200300.100.1.40   [RFC4524]
+   photo                                        A    0.9.2342.19200300.100.1.7    [RFC1274]
+   physicalDeliveryOfficeName                   A    2.5.4.19                     [RFC4519]
+   pilotDSA                                     O    0.9.2342.19200300.100.4.21   [RFC1274]
+   pilotObject                                  O    0.9.2342.19200300.100.4.3    [RFC1274]
+   pilotOrganization                            O    0.9.2342.19200300.100.4.20   [RFC1274]
+   pilotPerson                                  O    0.9.2342.19200300.100.4.4    [RFC1274]
+   pkiCA                                        O    2.5.6.22                     [RFC4523]
+   pkiUser                                      O    2.5.6.21                     [RFC4523]
+   postalAddress                                A    2.5.4.16                     [RFC4519]
+   postalCode                                   A    2.5.4.17                     [RFC4519]
+   postOfficeBox                                A    2.5.4.18                     [RFC4519]
+   preferredDeliveryMethod                      A    2.5.4.28                     [RFC4519]
+   preferredServerList                          A    1.3.6.1.4.1.11.1.3.1.1.2     [RFC4876]
+   presentationAddress                          A    2.5.4.29                     [RFC2256]
+   presentationAddressMatch                     M    2.5.13.22                    [RFC2252]
+   presentMatch                                 M    1.2.36.79672281.1.13.5       [RFC3687]
+   printer-aliases                              A    1.3.18.0.2.4.1108            [RFC3712]
+   printer-charset-configured                   A    1.3.18.0.2.4.1109            [RFC3712]
+   printer-charset-supported                    A    1.3.18.0.2.4.1131            [RFC3712]
+   printer-color-supported                      A    1.3.18.0.2.4.1129            [RFC3712]
+   printer-compression-supported                A    1.3.18.0.2.4.1128            [RFC3712]
+   printer-copies-supported                     A    1.3.18.0.2.4.1118            [RFC3712]
+   printer-current-operator                     A    1.3.18.0.2.4.1112            [RFC3712]
+   printer-delivery-orientation-supported       A    1.3.18.0.2.4.1114            [RFC3712]
+   printer-document-format-supported            A    1.3.18.0.2.4.1130            [RFC3712]
+   printer-finishings-supported                 A    1.3.18.0.2.4.1125            [RFC3712]
+   printer-generated-natural-language-supported A    1.3.18.0.2.4.1137            [RFC3712]
+   printer-info                                 A    1.3.18.0.2.4.1139            [RFC3712]
+   printer-ipp-versions-supported               A    1.3.18.0.2.4.1133            [RFC3712]
+   printer-job-priority-supported               A    1.3.18.0.2.4.1110            [RFC3712]
+   printer-job-k-octets-supported               A    1.3.18.0.2.4.1111            [RFC3712]
+   printer-location                             A    1.3.18.0.2.4.1136            [RFC3712]
+   printer-make-and-model                       A    1.3.18.0.2.4.1138            [RFC3712]
+   printer-media-local-supported                A    1.3.18.0.2.4.1117            [RFC3712]
+   printer-media-supported                      A    1.3.18.0.2.4.1122            [RFC3712]
+   printer-more-info                            A    1.3.18.0.2.4.1134            [RFC3712]
+   printer-multiple-document-jobs-supported     A    1.3.18.0.2.4.1132            [RFC3712]
+   printer-name                                 A    1.3.18.0.2.4.1135            [RFC3712]
+   printer-natural-language-configured          A    1.3.18.0.2.4.1119            [RFC3712]
+   printer-number-up-supported                  A    1.3.18.0.2.4.1124            [RFC3712]
+   printer-output-features-supported            A    1.3.18.0.2.4.1116            [RFC3712]
+   printer-pages-per-minute                     A    1.3.18.0.2.4.1127            [RFC3712]
+   printer-pages-per-minute-color               A    1.3.18.0.2.4.1126            [RFC3712]
+   printer-print-quality-supported              A    1.3.18.0.2.4.1120            [RFC3712]
+   printer-resolution-supported                 A    1.3.18.0.2.4.1121            [RFC3712]
+   printer-service-person                       A    1.3.18.0.2.4.1113            [RFC3712]
+   printer-sides-supported                      A    1.3.18.0.2.4.1123            [RFC3712]
+   printer-stacking-order-supported             A    1.3.18.0.2.4.1115            [RFC3712]
+   printer-uri                                  A    1.3.18.0.2.4.1140            [RFC3712]
+   printer-xri-supported                        A    1.3.18.0.2.4.1107            [RFC3712]
+   printerAbstract                              O    1.3.18.0.2.6.258             [RFC3712]
+   printerIPP                                   O    1.3.18.0.2.6.256             [RFC3712]
+   printerLPR                                   O    1.3.18.0.2.6.253             [RFC3712]
+   printerService                               O    1.3.18.0.2.6.255             [RFC3712]
+   printerServiceAuxClass                       O    1.3.18.0.2.6.257             [RFC3712]
+   profileTTL                                   A    1.3.6.1.4.1.11.1.3.1.1.7     [RFC4876]
+   protocolInformation                          A    2.5.4.48                     [RFC2256]
+   protocolInformationMatch                     M    2.5.13.24                    [RFC2252]
+   provider                                     O    1.3.6.1.4.1.16572.2.1.2      [RFC6109]
+   providerCertificate                          A    1.3.6.1.4.1.16572.2.2.2      [RFC6109]
+   providerCertificateHash                      A    1.3.6.1.4.1.16572.2.2.1      [RFC6109]
+   providerName                                 A    1.3.6.1.4.1.16572.2.2.3      [RFC6109]
+   providerUnit                                 A    1.3.6.1.4.1.16572.2.2.7      [RFC6109]
+   pseudonym                                    A    2.5.4.65                     [RFC3280]
+   qualityLabelledData                          O    0.9.2342.19200300.100.4.22   [RFC1274]
+   rdnMatch                                     M    1.2.36.79672281.1.13.3       [RFC3687]
+   ref                                          A    2.16.840.1.113730.3.1.34     [RFC3296]
+   referral                                     0    2.16.840.1.113730.3.2.6      [RFC3296]
+   registeredAddress                            A    2.5.4.26                     [RFC4519]
+   replace                                      A    Reserved for LDIF            [RFC2849]
+   residentialPerson                            O    2.5.6.10                     [RFC4519]
+   RFC822LocalPart                              O    0.9.2342.19200300.100.4.14   [RFC4524]
+   RFC822Mailbox                                A*   0.9.2342.19200300.100.1.3    [RFC4524]
+   rFC822ToX400Mapping                          O    1.3.6.1.4.1.453.7.1.1        [RFC2164]
+   roleOccupant                                 A    2.5.4.33                     [RFC4519]
+   room                                         O    0.9.2342.19200300.100.4.7    [RFC4524]
+   roomNumber                                   A    0.9.2342.19200300.100.1.6    [RFC4524]
+   searchGuide                                  A    2.5.4.14                     [RFC4519]
+   searchTimeLimit                              A    1.3.6.1.4.1.11.1.3.1.1.3     [RFC4876]
+   secretary                                    A    0.9.2342.19200300.100.1.21   [RFC4524]
+   seeAlso                                      A    2.5.4.34                     [RFC4519]
+   serialNumber                                 A    2.5.4.5                      [RFC4519]
+   serviceAuthenticationMethod                  A    1.3.6.1.4.1.11.1.3.1.1.15    [RFC4876]
+   serviceCredentialLevel                       A    1.3.6.1.4.1.11.1.3.1.1.13    [RFC4876]
+   serviceSearchDescriptor                      A    1.3.6.1.4.1.11.1.3.1.1.14    [RFC4876]
+   simpleSecurityObject                         O    0.9.2342.19200300.100.4.19   [RFC4524]
+   singleLevelQuality                           A    0.9.2342.19200300.100.1.50   [RFC4524]
+   slpServicePrinter                            O    1.3.18.0.2.6.254             [RFC3712]
+   sn                                           A    2.5.4.4                      [RFC4519]
+   sOARecord                                    A    0.9.2342.19200300.100.1.30   [RFC1274]
+   st                                           A    2.5.4.8                      [RFC4519]
+   stateOrProvinceName                          A    2.5.4.8                      [RFC2256]
+   storedPrefixMatch                            M    2.5.13.41                    [RFC3698]
+   street                                       A    2.5.4.9                      [RFC4519]
+   streetAddress                                A    2.5.4.9                      [RFC2256]
+   strongAuthenticationUser                     O    2.5.6.15                     [RFC4523]
+   structuralObjectClass                        A    2.5.21.9                     [RFC4512]
+   subentry                                     O    2.5.17.0                     [RFC3672]
+   subschema                                    O    2.5.20.1                     [RFC4512]
+   subschemaAdminSpecificArea                   R    2.5.23.4                     [RFC3672]
+   subschemaSubentry                            A    2.5.18.10                    [RFC4512]
+   subtree                                      O    1.3.6.1.4.1.453.7.1.1        [RFC2293]
+   subtreeMaximumQuality                        A    0.9.2342.19200300.100.1.52   [RFC1274]
+   subtreeMinimumQuality                        A    0.9.2342.19200300.100.1.51   [RFC1274]
+   subtreeSpecification                         A    2.5.18.6                     [RFC3672]
+   supportedAlgorithms                          A    2.5.4.52                     [RFC4523]
+   supportedApplicationContext                  A    2.5.4.30                     [RFC2256]
+   supportedControl                             A    1.3.6.1.4.1.1466.101.120.13  [RFC4512]
+   supportedExtension                           A    1.3.6.1.4.1.1466.101.120.7   [RFC4512]
+   supportedFeatures                            A    1.3.6.1.4.1.4203.1.3.5       [RFC4512]
+   supportedLDAPVersion                         A    1.3.6.1.4.1.1466.101.120.15  [RFC4512]
+   supportedSASLMechanisms                      A    1.3.6.1.4.1.1466.101.120.14  [RFC4512]
+   surname                                      A    2.5.4.4                      [RFC4519]
+   table                                        O    1.3.6.1.4.1.453.7.1.2        [RFC2293]
+   tableEntry                                   O    1.3.6.1.4.1.453.7.1.3        [RFC2293]
+   telephoneNumber                              A    2.5.4.20                     [RFC4519]
+   telephoneNumberMatch                         M    2.5.13.20                    [RFC4517]
+   telephoneNumberSubstringsMatch               M    2.5.13.21                    [RFC4517]
+   teletexTerminalIdentifier                    A    2.5.4.22                     [RFC4519]
+   telexNumber                                  A    2.5.4.21                     [RFC4519]
+   textEncodedORAddress                         A    0.9.2342.19200300.100.1.2    [RFC1274]
+   textTableEntry                               O    1.3.6.1.4.1.453.7.1.4        [RFC2293]
+   textTableKey                                 A    1.3.6.1.4.1.453.7.2.1        [RFC2293]
+   textTableValue                               A    1.3.6.1.4.1.453.7.2.2        [RFC2293]
+   title                                        A    2.5.4.12                     [RFC4519]
+   top                                          O    2.5.6.0                      [RFC4512]
+   uddiAccessPoint                              A    1.3.6.1.1.10.4.19            [RFC4403]
+   uddiAddress                                  O    1.3.6.1.1.10.6.3             [RFC4403]
+   uddiAddressLine                              A    1.3.6.1.1.10.4.13            [RFC4403]
+   uddiAddressNameForm                          N    1.3.6.1.1.10.15.3            [RFC4403]
+   uddiAuthorizedName                           A    1.3.6.1.1.10.4.2             [RFC4403]
+   uddiBindingKey                               A    1.3.6.1.1.10.4.18            [RFC4403]
+   uddiBindingTemplate                          O    1.3.6.1.1.10.6.5             [RFC4403]
+   uddiBindingTemplateNameForm                  N    1.3.6.1.1.10.15.5            [RFC4403]
+   uddiBusinessEntity                           O    1.3.6.1.1.10.6.1             [RFC4403]
+   uddiBusinessEntityNameForm                   N    1.3.6.1.1.10.15.1            [RFC4403]
+   uddiBusinessKey                              A    1.3.6.1.1.10.4.1             [RFC4403]
+   uddiBusinessService                          O    1.3.6.1.1.10.6.4             [RFC4403]
+   uddiBusinessServiceNameForm                  N    1.3.6.1.1.10.15.4            [RFC4403]
+   uddiCategoryBag                              A    1.3.6.1.1.10.4.15            [RFC4403]
+   uddiContact                                  O    1.3.6.1.1.10.6.2             [RFC4403]
+   uddiContactNameForm                          N    1.3.6.1.1.10.15.2            [RFC4403]
+   uddiDescription                              A    1.3.6.1.1.10.4.5             [RFC4403]
+   uddiDiscoveryURLs                            A    1.3.6.1.1.10.4.6             [RFC4403]
+   uddiEMail                                    A    1.3.6.1.1.10.4.10            [RFC4403]
+   uddiFromKey                                  A    1.3.6.1.1.10.4.25            [RFC4403]
+   uddiHostingRedirector                        A    1.3.6.1.1.10.4.20            [RFC4403]
+   uddiIdentifierBag                            A    1.3.6.1.1.10.4.14            [RFC4403]
+   uddiInstanceDescription                      A    1.3.6.1.1.10.4.21            [RFC4403]
+   uddiInstanceParms                            A    1.3.6.1.1.10.4.22            [RFC4403]
+   uddiIsHidden                                 A    1.3.6.1.1.10.4.28            [RFC4403]
+   uddiIsProjection                             A    1.3.6.1.1.10.4.29            [RFC4403]
+   uddiKeyedReference                           A    1.3.6.1.1.10.4.16            [RFC4403]
+   uddiLang                                     A    1.3.6.1.1.10.4.30            [RFC4403]
+   uddiName                                     A    1.3.6.1.1.10.4.4             [RFC4403]
+   uddiOperator                                 A    1.3.6.1.1.10.4.3             [RFC4403]
+   uddiOverviewDescription                      A    1.3.6.1.1.10.4.23            [RFC4403]
+   uddiOverviewURL                              A    1.3.6.1.1.10.4.24            [RFC4403]
+   uddiPersonName                               A    1.3.6.1.1.10.4.8             [RFC4403]
+   uddiPhone                                    A    1.3.6.1.1.10.4.9             [RFC4403]
+   uddiPublisherAssertion                       O    1.3.6.1.1.10.6.8             [RFC4403]
+   uddiPublisherAssertionNameForm               N    1.3.6.1.1.10.15.8            [RFC4403]
+   uddiServiceKey                               A    1.3.6.1.1.10.4.17            [RFC4403]
+   uddiSortCode                                 A    1.3.6.1.1.10.4.11            [RFC4403]
+   uddiTModel                                   O    1.3.6.1.1.10.6.7             [RFC4403]
+   uddiTModelInstanceInfo                       O    1.3.6.1.1.10.6.6             [RFC4403]
+   uddiTModelInstanceInfoNameForm               N    1.3.6.1.1.10.15.6            [RFC4403]
+   uddiTModelKey                                A    1.3.6.1.1.10.4.12            [RFC4403]
+   uddiTModelNameForm                           N    1.3.6.1.1.10.15.7            [RFC4403]
+   uddiToKey                                    A    1.3.6.1.1.10.4.26            [RFC4403]
+   uddiUseType                                  A    1.3.6.1.1.10.4.7             [RFC4403]
+   uddiUUID                                     A    1.3.6.1.1.10.4.27            [RFC4403]
+   uddiv3BindingKey                             A    1.3.6.1.1.10.4.33            [RFC4403]
+   uddiv3BriefResponse                          A    1.3.6.1.1.10.4.43            [RFC4403]
+   uddiv3BusinessKey                            A    1.3.6.1.1.10.4.31            [RFC4403]
+   uddiv3DigitalSignature                       A    1.3.6.1.1.10.4.35            [RFC4403]
+   uddiv3EntityCreationTime                     A    1.3.6.1.1.10.4.45            [RFC4403]
+   uddiv3EntityDeletionTime                     A    1.3.6.1.1.10.4.46            [RFC4403]
+   uddiv3EntityKey                              A    1.3.6.1.1.10.4.44            [RFC4403]
+   uddiv3EntityModificationTime                 A    1.3.6.1.1.10.4.37            [RFC4403]
+   uddiv3EntityObituary                         O    1.3.6.1.1.10.6.10            [RFC4403]
+   uddiv3EntityObituaryNameForm                 N    1.3.6.1.1.10.15.10           [RFC4403]
+   uddiv3ExpiresAfter                           A    1.3.6.1.1.10.4.42            [RFC4403]
+   uddiv3MaxEntities                            A    1.3.6.1.1.10.4.41            [RFC4403]
+   uddiv3NodeId                                 A    1.3.6.1.1.10.4.36            [RFC4403]
+   uddiv3NotificationInterval                   A    1.3.6.1.1.10.4.40            [RFC4403]
+   uddiv3ServiceKey                             A    1.3.6.1.1. 10.4.32           [RFC4403]
+   uddiv3Subscription                           O    1.3.6.1.1.10.6.9             [RFC4403]
+   uddiv3SubscriptionFilter                     A    1.3.6.1.1.10.4.39            [RFC4403]
+   uddiv3SubscriptionKey                        A    1.3.6.1.1.10.4.38            [RFC4403]
+   uddiv3SubscriptionNameForm                   N    1.3.6.1.1.10.15.9            [RFC4403]
+   uddiv3TmodelKey                              A    1.3.6.1.1.10.4.34            [RFC4403]
+   uid                                          A    0.9.2342.19200300.100.1.1    [RFC4519]
+   uidObject                                    O    1.3.6.1.1.3.1                [RFC4519]
+   uniqueIdentifier                             A    0.9.2342.19200300.100.1.44   [RFC4524]
+   uniqueMember                                 A    2.5.4.50                     [RFC4519]
+   uniqueMemberMatch                            M    2.5.13.23                    [RFC4517]
+   userCertificate                              A    2.5.4.36                     [RFC4523]
+   userClass                                    A    0.9.2342.19200300.100.1.8    [RFC4524]
+   userId                                       A    0.9.2342.19200300.100.1.1    [RFC4519]
+   userPassword                                 A    2.5.4.35                     [RFC4519]
+   userSecurityInformation                      O    2.5.6.18                     [RFC4523]
+   uuidMatch                                    M    1.3.6.1.1.16.2               [RFC4530]
+   uuidOrderingMatch                            M    1.3.6.1.1.16.3               [RFC4530]
+   version                                      A    Reserved for LDIF            [RFC2849]
+   vPIMUser                                     O    1.3.6.1.1.11.1.1             [RFC4237]
+   vPIMRfc822Mailbox                            A    1.3.6.1.1.11.2.2             [RFC4237]
+   vPIMTelephoneNumber                          A    1.3.6.1.1.11.2.1             [RFC4237]
+   vPIMSpokenName                               A    1.3.6.1.1.11.2.3             [RFC4237]
+   vPIMSupportedUABehaviors                     A    1.3.6.1.1.11.2.4             [RFC4237]
+   vPIMSupportedAudioMediaTypes                 A    1.3.6.1.1.11.2.5             [RFC4237]
+   vPIMSupportedMessageContext                  A    1.3.6.1.1.11.2.6             [RFC4237]
+   vPIMTextName                                 A    1.3.6.1.1.11.2.7             [RFC4237]
+   vPIMExtendedAbsenceStatus                    A    1.3.6.1.1.11.2.8             [RFC4237]
+   vPIMMaxMessageSize                           A    1.3.6.1.1.11.2.9             [RFC4237]
+   vPIMSubMailboxes                             A    1.3.6.1.1.11.2.10            [RFC4237]
+   wordMatch                                    M    2.5.13.32                    [RFC4517]
+   x121Address                                  A    2.5.4.24                     [RFC4519]
+   x400ToRFC822Mapping                          O    1.3.6.1.4.1.453.7.1.2        [RFC2164]
+   x500UniqueIdentifier                         A    2.5.4.45                     [RFC4519]
+
+Attribute Description Options
+
+   Registration Procedures
+
+ x-  Private Use (can not be registered)
+ e-  Reserved for Experiments, First Come First Served
+ All others: Standards Action or Expert Review with Specification
+
+   Experts
+
+ Kurt Zeilenga
+
+   Reference
+           [RFC4520]
+
+       Option      Owner Reference
+   binary          IESG  [RFC4522]
+   lang- (See [1]) IESG  [RFC3866]
+
+LDAPMessage types
+
+   Registration Procedures
+
+ Standards Action
+
+   Reference
+           [RFC4520]
+
+           Name         Code  Owner     Reference
+   bindRequest          0     IESG  [RFC4513][RFC4511]
+   bindResponse         1     IESG  [RFC4513][RFC4511]
+   unbindRequest        2     IESG  [RFC4511]
+   searchRequest        3     IESG  [RFC4511]
+   searchResEntry       4     IESG  [RFC4511]
+   searchResDone        5     IESG  [RFC4511]
+   modifyRequest        6     IESG  [RFC4511]
+   modifyResponse       7     IESG  [RFC4511]
+   addRequest           8     IESG  [RFC4511]
+   addResponse          9     IESG  [RFC4511]
+   delRequest           10    IESG  [RFC4511]
+   delResponse          11    IESG  [RFC4511]
+   modDNRequest         12    IESG  [RFC4511]
+   modDNResponse        13    IESG  [RFC4511]
+   compareRequest       14    IESG  [RFC4511]
+   compareResponse      15    IESG  [RFC4511]
+   abandonRequest       16    IESG  [RFC4511]
+   reserved             17-18 IESG
+   searchResRef         19    IESG  [RFC4511]
+   reserved             20-22 IESG
+   extendedReq          23    IESG  [RFC4511]
+   extendedResp         24    IESG  [RFC4511]
+   intermediateResponse 25    IESG  [RFC4511]
+
+resultCode values
+
+   Registration Procedures
+
+ 0-1023      Standards Action (can not start with e- or x-)
+ 1024-4095   Expert Review with Specification Required (can not start with e- or x-)
+ 4096-16383  First Come First Served (Shall start with e-)
+ 16384 and higher Private Use (Shall start with x-)
+
+   Experts
+
+ Kurt Zeilenga
+
+   Reference
+           [RFC4520]
+
+               Name                 Code                 Owner               Reference
+   success                       0          IESG                             [RFC4511]
+   operationsError               1          IESG                             [RFC4511]
+   protocolError                 2          IESG                             [RFC4511]
+   timeLimitExceeded             3          IESG                             [RFC4511]
+   sizeLimitExceeded             4          IESG                             [RFC4511]
+   compareFalse                  5          IESG                             [RFC4511]
+   compareTrue                   6          IESG                             [RFC4511]
+   authMethodNotSupported        7          IESG                             [RFC4511]
+   strongerAuthRequired          8          IESG                             [RFC4511]
+   reserved (partialResults)     9          IESG                             [RFC4511]
+   referral                      10         IESG                             [RFC4511]
+   adminLimitExceeded            11         IESG                             [RFC4511]
+   unavailableCriticalExtension  12         IESG                             [RFC4511]
+   confidentialityRequired       13         IESG                             [RFC4511]
+   saslBindInProgress            14         IESG                             [RFC4511]
+   noSuchAttribute               16         IESG                             [RFC4511]
+   undefinedAttributeType        17         IESG                             [RFC4511]
+   inappropriateMatching         18         IESG                             [RFC4511]
+   constraintViolation           19         IESG                             [RFC4511]
+   attributeOrValueExists        20         IESG                             [RFC4511]
+   invalidAttributeSyntax        21         IESG                             [RFC4511]
+   noSuchObject                  32         IESG                             [RFC4511]
+   aliasProblem                  33         IESG                             [RFC4511]
+   invalidDNSyntax               34         IESG                             [RFC4511]
+   reserved (isLeaf)             35         IESG                             [RFC4511]
+   aliasDereferencingProblem     36         IESG                             [RFC4511]
+   reserved                      37-47      IESG
+   inappropriateAuthentication   48         IESG                             [RFC4511]
+   invalidCredentials            49         IESG                             [RFC4511]
+   insufficientAccessRights      50         IESG                             [RFC4511]
+   busy                          51         IESG                             [RFC4511]
+   unavailable                   52         IESG                             [RFC4511]
+   unwillingToPerform            53         IESG                             [RFC4511]
+   loopDetect                    54         IESG                             [RFC4511]
+   reserved                      55-63      IESG
+   namingViolation               64         IESG                             [RFC4511]
+   objectClassViolation          65         IESG                             [RFC4511]
+   notAllowedOnNonLeaf           66         IESG                             [RFC4511]
+   notAllowedOnRDN               67         IESG                             [RFC4511]
+   entryAlreadyExists            68         IESG                             [RFC4511]
+   objectClassModsProhibited     69         IESG                             [RFC4511]
+   reserved (resultsTooLarge)    70         IESG                             [RFC4511]
+   reserved                      71-79      IESG
+   other                         80         IESG                             [RFC4511]
+   reserved (APIs)               81-90      IESG                             [RFC4511]
+   reserved (LDAP APIs)          91-112
+   lcupResourcesExhausted        113        IESG                             [RFC3928]
+   lcupSecurityViolation         114        IESG                             [RFC3928]
+   lcupInvalidData               115        IESG                             [RFC3928]
+   lcupUnsupportedScheme         116        IESG                             [RFC3928]
+   lcupReloadRequired            117        IESG                             [RFC3928]
+   canceled                      118        IESG                             [RFC3909]
+   noSuchOperation               119        IESG                             [RFC3909]
+   tooLate                       120        IESG                             [RFC3909]
+   cannotCancel                  121        IESG                             [RFC3909]
+   assertionFailed               122        IESG                             [RFC4528]
+   authorizationDenied           123        WELTMAN                          [RFC4370]
+   First Come, First Serve Range 4096-16383
+   e-syncRefreshRequired         4096       [Kurt_Zeilenga] [Jong_Hyuk_Choi] [RFC4533]
+
+Bind Authentication Method
+
+   Registration Procedures
+
+ 0-1023      Standards Action (can not start with e- or x-)
+ 1024-4095   Expert Review with Specification Required (can not start with e- or x-)
+ 4096-16383  First Come First Served (Shall start with e-)
+ 16384 and higher Private Use (Shall start with x-)
+
+   Experts
+
+ Kurt Zeilenga
+
+   Reference
+           [RFC4520]
+
+     Method   Value Owner       Usage            Reference
+   simple     0     IESG  LIMITED USE        [RFC4513][RFC4511]
+   krbv42LDAP 1     IESG  OBSOLETE (See [2]) [RFC1777]
+   krbv42DSA  2     IESG  OBSOLETE (See [2]) [RFC1777]
+   sasl       3     IESG  COMMON             [RFC4513][RFC4511]
+
+LDAP Syntaxes
+
+   Registration Procedures
+
+ First Come First Served with Specification Required
+
+   Reference
+           [RFC4520]
+
+         Object Identifier                   Syntax             Owner Reference
+   1.3.6.1.1.16.1                UUID                           IESG  [RFC4530]
+   1.3.6.1.4.1.1466.115.121.1.3  Attribute Type Description     IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.6  Bit String                     IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.7  Boolean                        IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.11 Country String                 IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.12 DN                             IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.14 Delivery Method                IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.15 Directory String               IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.16 DIT Content Rule Description   IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.17 DIT Structure Rule Description IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.21 Enhanced Guide                 IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.22 Facsimile Telephone Number     IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.23 Fax                            IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.24 Generalized Time               IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.25 Guide                          IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.26 IA5 String                     IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.27 Integer                        IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.28 JPEG                           IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.30 Matching Rule Description      IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.31 Matching Rule Use Description  IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.34 Name And Optional UID          IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.35 Name Form Description          IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.36 Numeric String                 IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.37 Object Class Description       IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.38 OID                            IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.39 Other Mailbox                  IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.40 Octet String                   IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.41 Postal Address                 IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.44 Printable String               IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.50 Telephone Number               IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.51 Teletex Terminal Identifier    IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.52 Telex Number                   IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.53 UTC Time                       IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.54 LDAP Syntax Description        IESG  [RFC4517]
+   1.3.6.1.4.1.1466.115.121.1.58 Substring Assertion            IESG  [RFC4517]
+
+LDAP Search Scopes
+
+   Registration Procedures
+
+ 0-1023      Standards Action (can not start with e- or x-)
+ 1024-4095   Expert Review with Specification Required (can not start with e- or x-)
+ 4096-16383  First Come First Served (Shall start with e-)
+ 16384 and higher Private Use (Shall start with x-)
+
+   Experts
+
+ Kurt Zeilenga
+
+   Reference
+           [RFC4520]
+
+       Name     URLString Value Owner     Reference
+   baseObject   base      0     IESG  [RFC4511][RFC4516]
+   singleLevel  one       1     IESG  [RFC4511][RFC4516]
+   wholeSubtree sub       2     IESG  [RFC4511][RFC4516]
+
+LDAP Filter Choices
+
+   Registration Procedures
+
+ Standards Action
+
+   Reference
+           [RFC4520]
+
+        Name       Value Owner Reference
+   and             0     IESG  [RFC4511]
+   or              1     IESG  [RFC4511]
+   not             2     IESG  [RFC4511]
+   equalityMatch   3     IESG  [RFC4511]
+   substrings      4     IESG  [RFC4511]
+   greaterOrEqual  5     IESG  [RFC4511]
+   lessOrEqual     6     IESG  [RFC4511]
+   present         7     IESG  [RFC4511]
+   approxMatch     8     IESG  [RFC4511]
+   extensibleMatch 9     IESG  [RFC4511]
+
+LDAP ModifyRequest Operations
+
+   Registration Procedures
+
+ 0-1023      Standards Action (can not start with e- or x-)
+ 1024-4095   Expert Review with Specification Required (can not start with e- or x-)
+ 4096-16383  First Come First Served (Shall start with e-)
+ 16384 and higher Private Use (Shall start with x-)
+
+   Experts
+
+ Kurt Zeilenga
+
+   Reference
+           [RFC4520]
+
+     Name    Value Owner Reference
+   add       0     IESG  [RFC4511]
+   delete    1     IESG  [RFC4511]
+   replace   2     IESG  [RFC4511]
+   increment 3     IESG  [RFC4525]
+
+LDAP authzid prefixes
+
+   Registration Procedures
+
+ x- Private Use
+ e- Reserved for Experiments, First Come First Served
+ All others, Standards Action or Expert Review with Specification Required
+
+   Experts
+
+ Kurt Zeilenga
+
+   Reference
+           [RFC4520]
+
+     Name    Prefix Owner Reference
+   dnAuthzId dn:    IESG  [RFC4513]
+   uAuthzId  u:     IESG  [RFC4513]
+
+                                                                        People
+
+          ID             Name                   Contact URI              Last Updated
+   [Allen_Williams] Allen Williams mailto:allenwilliams&seafreeze.com    2009-04-10
+   [Jong_Hyuk_Choi] Jong Hyuk Choi mailto:jongchoi&us.ibm.com            2005-04
+   [Kurt_Zeilenga]  Kurt Zeilenga  mailto:Kurt&openldap.org              2005-04
+   [Mark_Wahl]      Mark Wahl      mailto:Mark.Wahl&informed-control.com 2006-11-10
+   [Matthew_Key]    Matthew Key    mailto:mkey&westjet.com               2011-12-05
+
+                                                                      Footnotes
+
+   [1] family of options
+   [2] These LDAPv2-only mechanisms were deprecated in favor of the LDAPv3 SASL authentication method, specifically the GSSAPI mechanism.

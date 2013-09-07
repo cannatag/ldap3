@@ -1,0 +1,175 @@
+Errata ID: 69
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-06-22
+Held for Document Update by: Peter Saint-Andre
+ 
+
+(1)  Section 2.5 (page 5) -- Ref. tags
+
+The text,
+                                      vvvvvvvv
+   Numerous elements of LDAP are described using ASN.1 [X.680] and are
+|  encoded using a particular subset [Protocol, Section 5.2] of the
+   Basic Encoding Rules (BER) [X.690].  To allow reuse of
+   parsers/generators used in implementing the LDAP "core" technical
+   specification [RFC4510], it is RECOMMENDED that extension elements
+   (e.g., extension specific contents of controlValue, requestValue,
+   responseValue fields) described by ASN.1 and encoded using BER be
+|  subjected to the restrictions of [Protocol, Section 5.2].
+                                     ^^^^^^^^
+should say:
+
+   Numerous elements of LDAP are described using ASN.1 [X.680] and are
+|  encoded using a particular subset [RFC4511, Section 5.1] of the
+   Basic Encoding Rules (BER) [X.690].  To allow reuse of
+   parsers/generators used in implementing the LDAP "core" technical
+   specification [RFC4510], it is RECOMMENDED that extension elements
+   (e.g., extension specific contents of controlValue, requestValue,
+   responseValue fields) described by ASN.1 and encoded using BER be
+|  subjected to the restrictions of [RFC4511, Section 5.1].
+
+[ Note: the tags *and* the section numbers need correction! ]
+
+
+(2)  Section 3.1 (page 6), 3rd and 4th paragraph -- Ref. tags
+
+The text:
+
+   An existing operation MAY be extended to return IntermediateResponse
+|  messages [Protocol, Section 4.13].
+             ^^^^^^^^                                   vvvvvvvv
+   Specifications of controls SHALL NOT attach additional semantics to
+|  the criticality of controls beyond those defined in [Protocol,
+   Section 4.1.11].  A specification MAY mandate the criticality take on
+   a particular value (e.g., TRUE or FALSE), where appropriate.
+
+should say:
+
+   An existing operation MAY be extended to return IntermediateResponse
+|  messages [RFC4511, Section 4.13].
+
+   Specifications of controls SHALL NOT attach additional semantics to
+|  the criticality of controls beyond those defined in [RFC4511, Section
+   4.1.11].  A specification MAY mandate the criticality take on a
+   particular value (e.g., TRUE or FALSE), where appropriate.
+
+
+(3)  Section 3.1.2 (page 7), 3rd paragraph -- typo
+
+The text:
+
+   It is RECOMMENDED that designers consider alternative mechanisms for
+   providing the function.  For example, an extended operation issued
+   subsequent to the Start TLS operation (hence, protected by the
+   security layers negotiated by the Start TLS operation) might be used
+|  to provided the desired function.
+             ^
+should say:
+
+   It is RECOMMENDED that designers consider alternative mechanisms for
+   providing the function.  For example, an extended operation issued
+   subsequent to the Start TLS operation (hence, protected by the
+   security layers negotiated by the Start TLS operation) might be used
+|  to provide the desired function.
+
+
+(4)  Section 3.1.4 (page 8), 2nd bullet -- typo
+
+The text:
+                                                  vvvv
+|     -  consistency: The resulting DIT state must be conform to schema
+         and other constraints.
+
+should say:
+
+|     -  consistency: The resulting DIT state must conform to schema and
+         other constraints.
+
+
+(5)  Section 3.2 (page 8) -- Ref. tag
+
+The text:
+                        vvvvvvvv
+|  Extended Operations [Protocol, Section 4.12] are the RECOMMENDED
+   mechanism for defining new operations.  [...]
+
+should say:
+
+|  Extended Operations [RFC4511, Section 4.12] are the RECOMMENDED
+   mechanism for defining new operations.  [...]
+
+
+(6)  Section 3.4 (page 9), 1st paragraph -- Ref. tag
+
+The text:
+                              vvvvvvvv
+|  Unsolicited notifications [Protocol, Section 4.4] offer a capability
+   for the server to notify the client of events not associated with the
+   operation currently being processed.
+
+should say:
+
+|  Unsolicited notifications [RFC4511, Section 4.4] offer a capability
+   for the server to notify the client of events not associated with the
+   operation currently being processed.
+
+
+(7)  Section 4 (page 9) -- Ref. tags
+
+The text:
+                                  vvvvvvvv
+|  LDAP allows limited extension [Protocol, Section 4] of the LDAP ASN.1
+|  definition [Protocol, Appendix B] to be made.
+               ^^^^^^^^
+should say:
+
+|  LDAP allows limited extension [RFC4511, Section 4] of the LDAP ASN.1
+|  definition [RFC4511, Appendix B] to be made.
+
+
+(8)  Section 5 (page 10), 1st paragraph -- Ref. tag
+
+The text:
+
+   Extensions defining LDAP schema elements SHALL provide schema
+|  definitions conforming with syntaxes defined in [Models, Section
+   4.1].  [...]
+                                                    ^^^^^^
+should say:
+
+   Extensions defining LDAP schema elements SHALL provide schema
+|  definitions conforming with syntaxes defined in [RFC4512, Section
+   4.1].  [...]
+
+
+(9)  Section 9.1 (page 13) -- duplicate entry
+
+The entry at the bottom of page 13,
+
+   [RFC4512]  Zeilenga, K., "Lightweight Directory Access Protocol
+              (LDAP): Directory Information Models", RFC 4512, June
+              2006.
+
+should be deleted.
+This entry is a duplicate, and it recurs on page 14, at the proper
+place according to the collation order (by ascending RFC#).
+Notes:
+
+Most important issue:
+Apparently, the update of the Reference tags within the text has
+been performed incompletely after the assignment of RFC numbers
+to those many LDAP I-Ds, leaving 'unsatisfied' tags in the text
+(not listed in the References Sections), wherever these tags give
+detailed citations, specifying a section or an Appendix there.
+
+The errata detail items below are listed in textual order.
+I use change bars and tag lines to emphasize the corrections
+proposed and/or the issues in the original text.
+Changed text is re-adjusted to conform to RFC formatting rules.
+
+from pending
+

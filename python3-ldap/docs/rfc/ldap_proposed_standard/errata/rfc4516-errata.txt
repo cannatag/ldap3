@@ -1,0 +1,16 @@
+Errata ID: 71
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-06-23
+Held for Document Update by: Alexey Melnikov
+Date Held: 2010-05-21
+Section Appendix A.2 says:
+
+   Changed the text indicate that RFC 2255 is replaced ...
+It should say:
+
+   Changed the text to indicate that RFC 2255 is replaced ...
+Notes:

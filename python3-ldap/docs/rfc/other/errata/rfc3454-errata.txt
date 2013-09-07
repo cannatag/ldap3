@@ -1,0 +1,61 @@
+Status: Verified (1)
+RFC3454, "Preparation of Internationalized Strings ("stringprep")", December 2002
+Source of RFC: IETF - NON WORKING GROUP
+
+Errata ID: 806
+
+Status: Verified
+Type: Technical
+
+Reported By: Sergiusz Wolicki
+Date Reported: 2006-04-27
+
+Section Appendix C says:
+
+C. Prohibition tables
+
+   The tables in this appendix consist of lines with one prohibited code
+   point per line.  The format of the lines are the value of the code
+   point, a semicolon, and a comment which is the name of the code
+   point.
+
+It should say:
+
+[see Notes]
+
+Notes:
+
+This is not true as the tables in this appendix consist of lines with
+one prohibited code point _range_ per line. The format of the lines
+are the value of the starting code point of the range, a hyphen,
+the value of the ending code point of the range, a semicolon,
+and a comment which is the informal name of the range in square brackets.
+If the range contains only one code point, then the hyphen and the ending
+code point value are omitted, and the comment contains the name of
+the code point without brackets.
+
+from pending
+Status: Held for Document Update (1)
+RFC3454, "Preparation of Internationalized Strings ("stringprep")", December 2002
+Source of RFC: IETF - NON WORKING GROUP
+
+Errata ID: 2686
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Jehan Pagès
+Date Reported: 2011-01-20
+Held for Document Update by: Alexey Melnikov
+
+Section 3.2 says:
+
+The list of characters to add to the mapping table can determined by the following algorithm:
+
+It should say:
+
+The list of characters to add to the mapping table can be determined by the following algorithm:
+
+Notes:
+
+A small omission of a single word: "be" is missing. 

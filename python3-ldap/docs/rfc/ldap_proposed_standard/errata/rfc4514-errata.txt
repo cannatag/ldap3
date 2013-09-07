@@ -1,0 +1,20 @@
+Errata ID: 73
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-07-07
+Held for Document Update by: Alexey Melnikov
+Date Held: 2010-05-21
+Section 4 says:
+
+   This example shows the method of escaping of a special characters
+   appearing in a common name:
+It should say:
+
+   This example shows the method of escaping of special characters
+   appearing in a common name:
+Notes:
+
+Source: apps

@@ -136,6 +136,9 @@ class BaseStrategy():
         """
         self.connection.request = None
         if self.connection.listening:
+            if self.connection.saslInProgress and messageType not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
+                self.connection.lastError = 'cannot send operation requests while SASL bind is in progress'
+                raise Exception(self.connection.lastError)
             messageId = self.connection.server.nextMessageId()
             ldapMessage = LDAPMessage()
             ldapMessage['messageID'] = MessageID(messageId)

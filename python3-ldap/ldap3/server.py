@@ -85,6 +85,7 @@ class SchemaInfo():
        This class contains info about the ldap server schema read from DSE
        as defined in rfc 4512. Unkwnown attributes are stored in the "other" dict
     """
+
     def __init__(self, attributes):
         self.other = attributes
 
@@ -102,6 +103,8 @@ class SchemaInfo():
             else:
                 r += linesep.join(['    ' + str(s) for s in v]) + linesep
         return r
+
+
 class Server():
     """
     LDAP Server definition class
@@ -189,8 +192,7 @@ class Server():
         """
         retrieve DSE operational attribute as per rfc 4512 (5.1)
         """
-        if connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES,
-                             getOperationalAttributes = True):
+        if connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True):
             self._dsaInfo = DsaInfo(connection.response[0]['attributes'])
         else:
             self._dsaInfo = None

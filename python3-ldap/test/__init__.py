@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
 test_server = 'edir'
-test_user = 'cn=admin,o=ldap'
+test_user = 'cn=admin,o=services'
 test_password = 'password'
 
 test_port = 389

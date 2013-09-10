@@ -39,7 +39,6 @@ from ldap3.operation.extended import extendedRequestToDict, extendedResponseToDi
 from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, \
     SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS
 from ldap3.server import Server
-from ldap3.connection import Connection
 from ldap3.operation.modifyDn import modifyDnRequestToDict, modifyDnResponseToDict
 from ldap3.operation.delete import deleteResponseToDict, deleteRequestToDict
 from ldap3.protocol.convert import prepareChangesForRequest, buildControlsList
@@ -400,7 +399,7 @@ class BaseStrategy():
                     caCertsFile = self.connection.server.tls.caCertsFile
                 )
             )
-
+            from ldap3.connection import Connection
             referralConnection = Connection(
                 server = referralServer,
                 user = self.connection.user if not selectedReferral['anonymousBindOnly'] else None,

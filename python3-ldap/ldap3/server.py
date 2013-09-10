@@ -81,14 +81,21 @@ class SchemaInfo():
        as defined in rfc 4512. Unkwnown attributes are stored in the "other" dict
     """
 
-    def __init__(self, attributes):
+    def __init__(self, schemaEntry, attributes):
+        self.schemaEntry = schemaEntry
+        self.attributeTypes = attributes.pop('attributeTypes', None)
+        self.ldapSyntaxes = attributes.pop('ldapSyntaxes', None)
+        self.objectClasses = attributes.pop('objectClasses', None)
         self.other = attributes
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        r = 'DSA info (from DSE):' + linesep
+        r = 'DSA Schema from: ' + self.schemaEntry + linesep
+        r += ('  Attribute Types:' + linesep + '    ' + ', '.join([s for s in self.attributeTypes]) + linesep) if self.attributeTypes else ''
+        r += ('  Object Classes:' + linesep + '    ' + ', '.join([s for s in self.objectClasses]) + linesep) if self.objectClasses else ''
+        r += ('  LDAP Syntaxes:' + linesep + '    ' + ', '.join([s for s in self.ldapSyntaxes]) + linesep) if self.ldapSyntaxes else ''
         r += 'Other:' + linesep
 
         for k, v in self.other.items():
@@ -195,29 +202,22 @@ class Server():
         else:
             self._dsaInfo = None
 
-    def _getSchemaInfo(self, connection, entry = None):
+    def _getSchemaInfo(self, connection, entry = ''):
         """
         retrive schema from subschemaSubentry DSE attribute as per rfc 4512 (4.4 and 5.1)
+        entry = '' means DSE
         """
-        if entry:
-            schemaEntry = entry
-        elif self._dsaInfo:
+        self._schemaInfo = None
+        schemaEntry = None
+
+        if self._dsaInfo and entry == '':  # subschemaSubentry already present in dsaInfo
             schemaEntry = self._dsaInfo.schemaEntry[0] if self._dsaInfo.schemaEntry else None
         else:
-            result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'], getOperationalAttributes = True)
-            if result > 1:  #async request
-                schemaEntry = connection.getResponse(result).response[0]['attributes']['subschemaSubentry'][0]
-            elif result:
-                schemaEntry = connection.response[0]['attributes']['subschemaSubentry'][0]
-            else:
-                schemaEntry = None
-        if schemaEntry:
-            if connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True):
-                self._schemaInfo = SchemaInfo(connection.response[0]['attributes'])
-            else:
-                self._schemaInfo = None
-        else:
-            self._schemaInfo = None
+            result = connection.search(schemaEntry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'], getOperationalAttributes = True)
+            schemaEntry = connection.getResponse(result).response[0]['attributes']['subschemaSubentry'][0] if result > 1 else connection.response[0]['attributes']['subschemaSubentry'][0]
+
+        if schemaEntry and connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True):
+                self._schemaInfo = SchemaInfo(schemaEntry, connection.response[0]['attributes'])
 
     def getInfoFromServer(self, connection):
         """

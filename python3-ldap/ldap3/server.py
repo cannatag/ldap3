@@ -48,6 +48,7 @@ class DsaInfo():
         self.supportedSaslMechanisms = attributes.pop('supportedSASLMechanisms', None)
         self.vendorName = attributes.pop('vendorName', None)
         self.vendorVersion = attributes.pop('vendorVersion', None)
+        self.schemaEntry = attributes.pop('subschemaSubentry', None)
         self.other = attributes
 
     def __str__(self):
@@ -55,20 +56,14 @@ class DsaInfo():
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
-        r += ('  Supported LDAP Versions:' + linesep + '    ' + ', '.join(
-            [s for s in self.supportedLdapVersions]) + linesep) if self.supportedLdapVersions else ''
-        r += ('  Naming Contexts:' + linesep + linesep.join(
-            ['    ' + s for s in self.namingContexts]) + linesep) if self.namingContexts else ''
-        r += ('  Alternative Servers:' + linesep + linesep.join(
-            ['    ' + s for s in self.altServers]) + linesep) if self.altServers else ''
-        r += ('  Supported Controls:' + linesep + linesep.join(
-            ['    ' + str(s) for s in self.supportedControls]) + linesep) if self.supportedControls else ''
-        r += ('  Supported Extensions:' + linesep + linesep.join(
-            ['    ' + str(s) for s in self.supportedExtensions]) + linesep) if self.supportedExtensions else ''
-        r += ('  Supported Features:' + linesep + linesep.join(
-            ['    ' + str(s) for s in self.supportedFeatures]) + linesep) if self.supportedFeatures else ''
-        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join(
-            [s for s in self.supportedSaslMechanisms]) + linesep) if self.supportedSaslMechanisms else ''
+        r += ('  Supported LDAP Versions:' + linesep + '    ' + ', '.join([s for s in self.supportedLdapVersions]) + linesep) if self.supportedLdapVersions else ''
+        r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + s for s in self.namingContexts]) + linesep) if self.namingContexts else ''
+        r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + s for s in self.altServers]) + linesep) if self.altServers else ''
+        r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedControls]) + linesep) if self.supportedControls else ''
+        r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedExtensions]) + linesep) if self.supportedExtensions else ''
+        r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedFeatures]) + linesep) if self.supportedFeatures else ''
+        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([s for s in self.supportedSaslMechanisms]) + linesep) if self.supportedSaslMechanisms else ''
+        r += ('  Schema Entry:' + linesep + linesep.join(['    ' + s for s in self.schemaEntry]) + linesep) if self.schemaEntry else ''
 
         r += 'Other:' + linesep
         for k, v in self.other.items():
@@ -192,18 +187,35 @@ class Server():
         """
         retrieve DSE operational attribute as per rfc 4512 (5.1)
         """
-        if connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True):
+        result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
+        if result > 1:  #async request
+            self._dsaInfo = DsaInfo(connection.getResponse(result).response[0]['attributes'])
+        elif result:
             self._dsaInfo = DsaInfo(connection.response[0]['attributes'])
         else:
             self._dsaInfo = None
 
-    def _getSchemaInfo(self, connection):
+    def _getSchemaInfo(self, connection, entry = None):
         """
         retrive schema from subschemaSubentry DSE attribute as per rfc 4512 (4.4 and 5.1)
         """
-        schemaEntry = self._dsaInfo['subschemaSubentry'] if self._dsaInfo['subschemaSubentry'] else None
-        if connection.search(schemaEntry, '(objectClass=subschema', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True):
-            self._schemaInfo = SchemaInfo(connection.response[0]['attributes'])
+        if entry:
+            schemaEntry = entry
+        elif self._dsaInfo:
+            schemaEntry = self._dsaInfo.schemaEntry[0] if self._dsaInfo.schemaEntry else None
+        else:
+            result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'], getOperationalAttributes = True)
+            if result > 1:  #async request
+                schemaEntry = connection.getResponse(result).response[0]['attributes']['subschemaSubentry'][0]
+            elif result:
+                schemaEntry = connection.response[0]['attributes']['subschemaSubentry'][0]
+            else:
+                schemaEntry = None
+        if schemaEntry:
+            if connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True):
+                self._schemaInfo = SchemaInfo(connection.response[0]['attributes'])
+            else:
+                self._schemaInfo = None
         else:
             self._schemaInfo = None
 

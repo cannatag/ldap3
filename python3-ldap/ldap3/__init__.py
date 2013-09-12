@@ -128,6 +128,10 @@ OID_OBJECT_CLASS = 10
 OID_ADMINISTRATIVE_ROLE = 11
 OID_LDAP_SYNTAX = 12
 
+CLASS_STRUCTURAL = 0
+CLASS_ABSTRACT = 1
+CLASS_AUXILIARY = 2
+
 from .server import Server
 from .connection import Connection
 from .tls import Tls

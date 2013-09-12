@@ -24,7 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from collections import namedtuple
 from os import linesep
 import re
-from OCDef import fromDefinition
 from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY
 
 def quotedStringToList(string):

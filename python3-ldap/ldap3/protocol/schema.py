@@ -25,28 +25,39 @@ from collections import namedtuple
 from os import linesep
 import re
 from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY
+from ldap3.protocol.oid import Oids
 
-def quotedStringToList(string):
-        string = string.strip()
-        if string[0] == '(' and string[:-1] == ')':
+
+def quotedStringToList(quotedString):
+        string = quotedString.strip()
+        if string[0] == '(' and string[-1] == ')':
             string = string[1:-1]
-        elements = string.split()
-        return [element.strip("'").strip() for element in elements]
+        elements = string.split("'")
+        return [element.strip("'").strip() for element in elements if element]
 
-def oidsStringToList(string):
-        string = string.strip()
-        if string[0] == '(' and string[:-1] == ')':
+def oidsStringToList(oidString):
+        string = oidString.strip()
+        if string[0] == '(' and string[-1] == ')':
             string = string[1:-1]
         elements = string.split('$')
-        return [element.strip() for element in elements]
+        return [element.strip() for element in elements if element]
 
-def extensionToTuple(string):
-        string = string.strip()
+def extensionToTuple(extensionString):
+        string = extensionString.strip()
         name, _, values = string.partition(' ')
         return (name, quotedStringToList(values))
 
+def listToString(listObject):
+    r = ''
+    for element in listObject:
+        r += (listToString(element) if isinstance(element, list) else element) + ', '
+
+    return r[:-2] if r else ''
+
+
 class ObjectClassInfo():
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, kind = None, mustContain = None, mayContain = None, extensions = None, experimental = None):
+    def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, kind = None, mustContain = None, mayContain = None, extensions = None, experimental = None,
+                 definition = None):
         self.oid = oid
         self.name = name
         self.description = description
@@ -57,18 +68,31 @@ class ObjectClassInfo():
         self.mayContain = mayContain
         self.extensions = extensions
         self.experimental = experimental
+        self.rawDefinition = definition
+        self._oidInfo = None
+
+    @property
+    def oidInfo(self):
+        if self._oidInfo is None and self.oid:
+            self._oidInfo = Oids.get(self.oid, '')
+
+        return self._oidInfo if self._oidInfo else None
+
 
     def __str__(self):
-        r = self.oid
-        r += (': ' + self.name) if self.name else ''
-        r += (' [OBSOLETE]' + linesep) if self.obsolete else linesep
-        r += ('  Description: ' + self.description + linesep) if self.description else ''
-        r += ('  Type: ' + self.kind + linesep) if self.kind else ''
-        r += ('  Must contain attributes: ' + self.mustContain + linesep) if self.mustContain else ''
-        r += ('  May contain attributes: ' + self.mayContain + linesep) if self.mayContain else ''
-        r += ('  Extensions: ' + self.extensions + linesep) if self.extensions else ''
-        r += ('  Experimental: ' + self.experimental + linesep) if self.experimental else ''
+        return self.__repr__()
 
+    def __repr__(self):
+        r = 'ObjectClass ' + self.oid
+        r += (' [' + ObjectClassInfo._returnKind(self.kind) + '] ') if isinstance(self.kind, int) else ''
+        r += (' [OBSOLETE]' + linesep) if self.obsolete else linesep
+        r += ('  Short Name: ' + listToString(self.name) + linesep) if self.name else ''
+        r += ('  Description: ' + listToString(self.description) + linesep) if self.description else ''
+        r += ('  Must contain attributes: ' + listToString(self.mustContain) + linesep) if self.mustContain else ''
+        r += ('  May contain attributes: ' + listToString(self.mayContain) + linesep) if self.mayContain else ''
+        r += ('  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions]) + linesep) if self.extensions else ''
+        r += ('  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental]) + linesep) if self.experimental else ''
+        r += ('  OidInfo:' + str(self.oidInfo)) if self.oidInfo else ''
         return r
     @staticmethod
     def fromDefinition(objectClassDefinition):
@@ -115,11 +139,21 @@ class ObjectClassInfo():
                     objectClassDef.experimental.append(extensionToTuple('E-' + value))
                 else:
                     raise Exception('malformed Object Class Definition key:' + key)
+            objectClassDef.rawDefinition = objectClassDefinition
             return objectClassDef
         else:
             raise Exception('malformed Object Class Definition')
 
-
+    @staticmethod
+    def _returnKind(classKind):
+        if classKind == 0:
+            return 'STRUCTURAL'
+        elif classKind == 1:
+            return 'ABSTRACT'
+        elif classKind == 2:
+            return 'AUXILIARY'
+        else:
+            return 'unknown'
 class SchemaInfo():
     """
        This class contains info about the ldap server schema read from an entry (default to DSE)
@@ -132,7 +166,7 @@ class SchemaInfo():
         self.modifyTimeStamp = attributes.pop('modifyTimestamp', None)
         self.attributeTypes = attributes.pop('attributeTypes', None)
         self.ldapSyntaxes = attributes.pop('ldapSyntaxes', None)
-        self.objectClasses = [objectClassDef for objectClassDef in ObjectClassInfo.fromDefinition(attributes.pop('objectClasses', []))]
+        self.objectClasses = [ObjectClassInfo.fromDefinition(objectClassDef) for objectClassDef in attributes.pop('objectClasses', [])]
         self.other = attributes
 
     def __str__(self):

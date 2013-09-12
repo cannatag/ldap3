@@ -38,42 +38,45 @@ from ldap3 import OID_CONTROL, OID_EXTENSION, OID_FEATURE, \
 # Source of information is IANA ldap-parameters.txt, oid-registry and products documentation as of 2013.08.21
 
 
-class OidInfo(namedtuple('OidInfo', 'oid, type, name, docs')):
+class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
     def __str__(self):
         r = self.oid + ' - '
         r += self.name + ' - ' if self.name else ''
-        r += OidInfo._returnTypeName(self.type) + ' - ' if self.type is not None else ''
+        r += OidInfo._returnKindName(self.kind) + ' - ' if self.kind is not None else ''
         r += self.docs + ' - ' if self.docs else ''
 
         return r[:-3]
 
+    def __repr__(self):
+        return self.__str__()
+
     @staticmethod
-    def _returnTypeName(oidType):
-        if oidType == 0:
+    def _returnKindName(oidKind):
+        if oidKind == 0:
             return 'Control'
-        elif oidType == 1:
+        elif oidKind == 1:
             return 'Extension'
-        elif oidType == 2:
+        elif oidKind == 2:
             return 'Feature'
-        elif oidType == 3:
+        elif oidKind == 3:
             return 'Unsolicited Notice'
-        elif oidType == 4:
+        elif oidKind == 4:
             return 'Attribute Type'
-        elif oidType == 5:
+        elif oidKind == 5:
             return 'DIT Content Rule'
-        elif oidType == 6:
+        elif oidKind == 6:
             return 'LDAP URL Extension'
-        elif oidType == 7:
+        elif oidKind == 7:
             return 'Family'
-        elif oidType == 8:
+        elif oidKind == 8:
             return 'Matching Rule'
-        elif oidType == 9:
+        elif oidKind == 9:
             return 'Name Form'
-        elif oidType == 10:
+        elif oidKind == 10:
             return 'Object Class'
-        elif oidType == 11:
+        elif oidKind == 11:
             return 'Administrative Role'
-        elif oidType == 12:
+        elif oidKind == 12:
             return 'LDAP Syntax'
         else:
             return 'Unknown'

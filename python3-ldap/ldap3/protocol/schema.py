@@ -152,11 +152,11 @@ class ObjectClassInfo():
                 elif key == 'NAME':
                     objectClassDef.name = quotedStringToList(value)
                 elif key == 'DESC':
-                    objectClassDef.description = value
+                    objectClassDef.description = value.strip("'")
                 elif key == 'OBSOLETE':
                     objectClassDef.obsolete = True
                 elif key == 'SUP':
-                    objectClassDef.description = oidsStringToList(value)
+                    objectClassDef.superior = oidsStringToList(value)
                 elif key == 'ABSTRACT':
                     objectClassDef.kind = CLASS_ABSTRACT
                 elif key == 'STRUCTURAL':
@@ -217,7 +217,7 @@ class AttributeTypeInfo():
         return self.__repr__()
 
     def __repr__(self):
-        r = 'AtrributeType ' + self.oid
+        r = 'AttributeType ' + self.oid
         r += (' [OBSOLETE]' + linesep) if self.obsolete else ''
         r += ' [SINGLE VALUE]' if self.singleValue else ''
         r += ' [COLLECTIVE]' if self.collective else ''
@@ -232,7 +232,7 @@ class AttributeTypeInfo():
         r += ('  Syntax ' + listToString(self.syntax) + linesep) if self.syntax else ''
         r += ('  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions]) + linesep) if self.extensions else ''
         r += ('  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental]) + linesep) if self.experimental else ''
-        r += ('  OidInfo:' + str(self.oidInfo)) if self.oidInfo else ''
+        r += ('  OidInfo: ' + str(self.oidInfo)) if self.oidInfo else ''
         return r
 
     @staticmethod
@@ -255,11 +255,11 @@ class AttributeTypeInfo():
                 elif key == 'NAME':
                     attributeTypeDef.name = quotedStringToList(value)
                 elif key == 'DESC':
-                    attributeTypeDef.description = value
+                    attributeTypeDef.description = value.strip("'")
                 elif key == 'OBSOLETE':
                     attributeTypeDef.obsolete = True
                 elif key == 'SUP':
-                    attributeTypeDef.description = oidsStringToList(value)
+                    attributeTypeDef.superior = oidsStringToList(value)
                 elif key == 'EQUALITY':
                     attributeTypeDef.equality = oidsStringToList(value)
                 elif key == 'ORDERING':
@@ -330,8 +330,5 @@ class SchemaInfo():
 
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep
-            if isinstance(v, str):
-                r += v + linesep
-            else:
-                r += linesep.join(['    ' + str(s) for s in v]) + linesep
+            r += v if isinstance(v, str) else (linesep.join(['    ' + str(s) for s in v])) + linesep
         return r

@@ -27,7 +27,7 @@ from ldap3 import OID_CONTROL, OID_EXTENSION, OID_FEATURE, \
     OID_MATCHING_RULE, OID_NAME_FORM, OID_OBJECT_CLASS, OID_ADMINISTRATIVE_ROLE
 
 
-# Package to hold info about OIDs.
+# Holds info about OIDs.
 # Each OID info is a named tuple with the following attributes:
 # oid - the OID number
 # type - type of OID
@@ -37,50 +37,49 @@ from ldap3 import OID_CONTROL, OID_EXTENSION, OID_FEATURE, \
 #
 # Source of information is IANA ldap-parameters.txt, oid-registry and products documentation as of 2013.08.21
 
+def constantToOidKind(oidKind):
+    if oidKind == 0:
+        return 'Control'
+    elif oidKind == 1:
+        return 'Extension'
+    elif oidKind == 2:
+        return 'Feature'
+    elif oidKind == 3:
+        return 'Unsolicited Notice'
+    elif oidKind == 4:
+        return 'Attribute Type'
+    elif oidKind == 5:
+        return 'DIT Content Rule'
+    elif oidKind == 6:
+        return 'LDAP URL Extension'
+    elif oidKind == 7:
+        return 'Family'
+    elif oidKind == 8:
+        return 'Matching Rule'
+    elif oidKind == 9:
+        return 'Name Form'
+    elif oidKind == 10:
+        return 'Object Class'
+    elif oidKind == 11:
+        return 'Administrative Role'
+    elif oidKind == 12:
+        return 'LDAP Syntax'
+    else:
+        return 'Unknown'
+
 
 class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
     def __str__(self):
         r = self.oid + ' - '
-        r += self.name + ' - ' if self.name else ''
-        r += OidInfo._returnKindName(self.kind) + ' - ' if self.kind is not None else ''
+        if self.name:
+            r += self.name if isinstance(self.name, str) else ', '.join(self.name)
+        r += constantToOidKind(self.kind) + ' - ' if self.kind is not None else ''
         r += self.docs + ' - ' if self.docs else ''
 
         return r[:-3]
 
     def __repr__(self):
         return self.__str__()
-
-    @staticmethod
-    def _returnKindName(oidKind):
-        if oidKind == 0:
-            return 'Control'
-        elif oidKind == 1:
-            return 'Extension'
-        elif oidKind == 2:
-            return 'Feature'
-        elif oidKind == 3:
-            return 'Unsolicited Notice'
-        elif oidKind == 4:
-            return 'Attribute Type'
-        elif oidKind == 5:
-            return 'DIT Content Rule'
-        elif oidKind == 6:
-            return 'LDAP URL Extension'
-        elif oidKind == 7:
-            return 'Family'
-        elif oidKind == 8:
-            return 'Matching Rule'
-        elif oidKind == 9:
-            return 'Name Form'
-        elif oidKind == 10:
-            return 'Object Class'
-        elif oidKind == 11:
-            return 'Administrative Role'
-        elif oidKind == 12:
-            return 'LDAP Syntax'
-        else:
-            return 'Unknown'
-
 
 Oids = {
     # administrative role

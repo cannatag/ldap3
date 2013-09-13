@@ -20,6 +20,7 @@ along with Python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
+# noinspection PyUnresolvedReferences
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
 test_server = 'edir'

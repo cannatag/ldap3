@@ -50,7 +50,7 @@ class DsaInfo():
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
-        r += ('  Supported LDAP Versions:' + linesep + '    ' + ', '.join([s for s in self.supportedLdapVersions]) + linesep) if self.supportedLdapVersions else ''
+        r += ('  Supported LDAP Versions: ' + ', '.join([s for s in self.supportedLdapVersions]) + linesep) if self.supportedLdapVersions else ''
         r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + s for s in self.namingContexts]) + linesep) if self.namingContexts else ''
         r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + s for s in self.altServers]) + linesep) if self.altServers else ''
         r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedControls]) + linesep) if self.supportedControls else ''

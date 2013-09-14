@@ -469,3 +469,11 @@ class BaseStrategy():
             result = None
 
         return response, result
+
+    def _startListen(self):
+        #overridden on strategy class
+        pass
+
+    def _getResponse(self, messageId):
+        # overridden in strategy class
+        pass

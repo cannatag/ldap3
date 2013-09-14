@@ -72,7 +72,7 @@ class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
     def __str__(self):
         r = self.oid + ' - '
         if self.name:
-            r += self.name if isinstance(self.name, str) else ', '.join(self.name)
+            r += (self.name if isinstance(self.name, str) else ', '.join(self.name)) + ' - '
         r += constantToOidKind(self.kind) + ' - ' if self.kind is not None else ''
         r += self.docs + ' - ' if self.docs else ''
 

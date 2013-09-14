@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from socket import getaddrinfo, gaierror
 from ldap3.protocol.dse import DsaInfo
-from ldap3.protocol.schema.schema import SchemaInfo
+from ldap3.protocol.schema import SchemaInfo
 from ldap3.tls import Tls
 from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, \
     ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT
@@ -40,8 +40,8 @@ class Server():
     as per RFC 4516. Use ('*', False) to allow any host with anonymous bind,
     use ('*', True) to allow any host with same authentication of Server.
     """
-    _realServers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
-    # and the value is the messageId counter for all connection to that host)
+    _realServers = dict()   # dictionary of real servers currently active, the key is the host part of the server address
+                            # and the value is the messageId counter for all connection to that host)
     def __init__(self, host, port = 389, useSsl = False, allowedReferralHosts = None, getInfo = None, tls = None):
         """
         Constructor

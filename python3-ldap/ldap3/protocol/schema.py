@@ -25,9 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 import re
 from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
-from ldap3.protocol.schema.attributeType import AttributeTypeInfo
-from ldap3.protocol.schema.objectClass import ObjectClassInfo
-from ldap3.protocol.schema.oid import Oids
+from ldap3.protocol.oid import Oids
 
 
 def constantToClassKind(value):
@@ -149,29 +147,36 @@ class BaseObjectInfo():
         return self.__repr__()
 
     def __repr__(self):
-        r = 'Matching rule ' + self.oid
-        r += (' [OBSOLETE]' + linesep) if self.obsolete else linesep
+        r = (' [OBSOLETE]' + linesep) if self.obsolete else linesep
         r += ('  Short name: ' + listToString(self.name) + linesep) if self.name else ''
         r += ('  Description: ' + self.description + linesep) if self.description else ''
-        r += ('  Syntax ' + listToString(self.syntax) + linesep) if self.syntax else ''
-        r += '<OTHER-SCHEMA-DESC-HERE>'
+        r += '<__desc__>'
         r += ('  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions]) + linesep) if self.extensions else ''
         r += ('  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental]) + linesep) if self.experimental else ''
         r += ('  OidInfo:' + str(self.oidInfo)) if self.oidInfo else ''
         return r
 
-    @staticmethod
-    def fromDefinition(objectDefinition, pattern, objectClass):
+    @classmethod
+    def fromDefinition(cls, objectDefinition):
         if not objectDefinition:
             return None
 
         if [objectDefinition[0] == ')' and objectDefinition[:-1] == ')']:
-            splitted = re.split('( NAME | DESC | OBSOLETE| | X-| E-|' + pattern + ')', objectDefinition[1:-1])
+            if cls is MatchingRuleInfo:
+                pattern = ' SYNTAX '
+            elif cls is ObjectClassInfo:
+                pattern = ' SUP | ABSTRACT| STRUCTURAL| AUXILIARY| MUST | MAY '
+            elif cls is AttributeTypeInfo:
+                pattern = ' SUP | EQUALITY | ORDERING | SUBSTR | SYNTAX | SINGLE-VALUE| COLLECTIVE| NO-USER-MODIFICATION| USAGE '
+            else:
+                raise Exception('unknown schema definition class')
+
+            splitted = re.split('( NAME | DESC | OBSOLETE| X-| E-|' + pattern + ')', objectDefinition[1:-1])
             values = splitted[::2]
             separators = splitted[1::2]
             separators.insert(0, 'OID')
             defs = list(zip(separators, values))
-            objectDef = objectClass()
+            objectDef = cls()
             for d in defs:
                 key = d[0].strip()
                 value = d[1].strip()
@@ -197,6 +202,22 @@ class BaseObjectInfo():
                     objectDef.mustContain = oidsStringToList(value)
                 elif key == 'MAY':
                     objectDef.mayContain = oidsStringToList(value)
+                elif key == 'EQUALITY':
+                    objectDef.equality = oidsStringToList(value)
+                elif key == 'ORDERING':
+                    objectDef.ordering = oidsStringToList(value)
+                elif key == 'SUBSTR':
+                    objectDef.substr = oidsStringToList(value)
+                elif key == 'SYNTAX':
+                    objectDef.syntax = oidsStringToList(value)
+                elif key == 'SINGLE-VALUE':
+                    objectDef.singleValue = True
+                elif key == 'COLLECTIVE':
+                    objectDef.collective = True
+                elif key == 'NO-USER-MODIFICATION':
+                    objectDef.noUserModification = True
+                elif key == 'USAGE':
+                    objectDef.usage = attributeUsageToConstant(value)
                 elif key == 'X-':
                     if not objectDef.extensions:
                         objectDef.extensions = list()
@@ -211,3 +232,59 @@ class BaseObjectInfo():
             return objectDef
         else:
             raise Exception('malformed schema definition')
+
+
+class MatchingRuleInfo(BaseObjectInfo):
+    def __init__(self, oid = None, name = None, description = None, obsolete = False, syntax = None, extensions = None, experimental = None, definition = None):
+        super.__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, definition = definition)
+        self.syntax = syntax
+
+    def __repr__(self):
+        r = ('  Syntax ' + listToString(self.syntax) + linesep) if self.syntax else ''
+        r = 'Matching rule ' + self.oid + linesep + super.__repr__()
+        return 'Matching rule ' + self.oid + linesep + super.__repr__().replace('<__desc__>', r)
+
+
+class ObjectClassInfo():
+    def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, kind = None, mustContain = None, mayContain = None, extensions = None, experimental = None,
+                 definition = None):
+        super.__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+        self.superior = superior
+        self.kind = kind
+        self.mustContain = mustContain
+        self.mayContain = mayContain
+
+    def __repr__(self):
+        r = ''
+        r += (' [' + constantToClassKind(self.kind) + '] ') if isinstance(self.kind, int) else ''
+        r += ('  Must contain attributes: ' + listToString(self.mustContain) + linesep) if self.mustContain else ''
+        r += ('  May contain attributes: ' + listToString(self.mayContain) + linesep) if self.mayContain else ''
+        return 'Object Class ' + self.oid + linesep + super.__repr__().replace('<__desc__>', r)
+
+
+class AttributeTypeInfo():
+    def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, equality = None, ordering = None, substring = None, syntax = None, singleValue = False, collective = False, noUserModification = False, usage = None, extensions = None, experimental = None,
+                 definition = None):
+        super.__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+        self.superior = superior
+        self.equality = equality
+        self.ordering = ordering
+        self.substring = substring
+        self.syntax = syntax
+        self.singleValue = singleValue
+        self.collective = collective
+        self.noUserModification = noUserModification
+        self.usage = usage
+
+    def __repr__(self):
+        r = ''
+        r += ' [SINGLE VALUE]' if self.singleValue else ''
+        r += ' [COLLECTIVE]' if self.collective else ''
+        r += ' [NO USER MODIFICATION]' if self.noUserModification else ''
+        r += linesep
+        r += ('  Usage: ' + constantToAttributeUsage(self.usage) + linesep) if self.usage else ''
+        r += ('  Equality rule: ' + listToString(self.equality) + linesep) if self.equality else ''
+        r += ('  Ordering rule: ' + listToString(self.ordering) + linesep) if self.ordering else ''
+        r += ('  Substring rule: ' + listToString(self.substring) + linesep) if self.substring else ''
+        r += ('  Syntax ' + listToString(self.syntax) + linesep) if self.syntax else ''
+        return 'Attribute type ' + self.oid + linesep + super.__repr__().replace('<__desc__>', r)

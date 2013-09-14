@@ -23,9 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from os import linesep
+import re
 from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
 from ldap3.protocol.schema.attributeType import AttributeTypeInfo
 from ldap3.protocol.schema.objectClass import ObjectClassInfo
+from ldap3.protocol.schema.oid import Oids
 
 
 def constantToClassKind(value):
@@ -122,3 +124,90 @@ class SchemaInfo():
             r += '  ' + k + ': ' + linesep
             r += v if isinstance(v, str) else (linesep.join(['    ' + str(s) for s in v])) + linesep
         return r
+
+
+class BaseObjectInfo():
+    def __init__(self, oid = None, name = None, description = None, obsolete = False, extensions = None, experimental = None, definition = None):
+        self.oid = oid
+        self.name = name
+        self.description = description
+        self.obsolete = obsolete
+        self.extensions = extensions
+        self.experimental = experimental
+        self.rawDefinition = definition
+        self._oidInfo = None
+
+    @property
+    def oidInfo(self):
+        if self._oidInfo is None and self.oid:
+            self._oidInfo = Oids.get(self.oid, '')
+
+        return self._oidInfo if self._oidInfo else None
+
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        r = 'Matching rule ' + self.oid
+        r += (' [OBSOLETE]' + linesep) if self.obsolete else linesep
+        r += ('  Short name: ' + listToString(self.name) + linesep) if self.name else ''
+        r += ('  Description: ' + self.description + linesep) if self.description else ''
+        r += ('  Syntax ' + listToString(self.syntax) + linesep) if self.syntax else ''
+        r += '<OTHER-SCHEMA-DESC-HERE>'
+        r += ('  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions]) + linesep) if self.extensions else ''
+        r += ('  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental]) + linesep) if self.experimental else ''
+        r += ('  OidInfo:' + str(self.oidInfo)) if self.oidInfo else ''
+        return r
+
+    @staticmethod
+    def fromDefinition(objectDefinition, pattern, objectClass):
+        if not objectDefinition:
+            return None
+
+        if [objectDefinition[0] == ')' and objectDefinition[:-1] == ')']:
+            splitted = re.split('( NAME | DESC | OBSOLETE| | X-| E-|' + pattern + ')', objectDefinition[1:-1])
+            values = splitted[::2]
+            separators = splitted[1::2]
+            separators.insert(0, 'OID')
+            defs = list(zip(separators, values))
+            objectDef = objectClass()
+            for d in defs:
+                key = d[0].strip()
+                value = d[1].strip()
+                if key == 'OID':
+                    objectDef.oid = value
+                elif key == 'NAME':
+                    objectDef.name = quotedStringToList(value)
+                elif key == 'DESC':
+                    objectDef.description = value.strip("'")
+                elif key == 'OBSOLETE':
+                    objectDef.obsolete = True
+                elif key == 'SYNTAX':
+                    objectDef.syntax = oidsStringToList(value)
+                elif key == 'SUP':
+                    objectDef.superior = oidsStringToList(value)
+                elif key == 'ABSTRACT':
+                    objectDef.kind = CLASS_ABSTRACT
+                elif key == 'STRUCTURAL':
+                    objectDef.kind = CLASS_STRUCTURAL
+                elif key == 'AUXILIARY':
+                    objectDef.kind = CLASS_AUXILIARY
+                elif key == 'MUST':
+                    objectDef.mustContain = oidsStringToList(value)
+                elif key == 'MAY':
+                    objectDef.mayContain = oidsStringToList(value)
+                elif key == 'X-':
+                    if not objectDef.extensions:
+                        objectDef.extensions = list()
+                    objectDef.extensions.append(extensionToTuple('X-' + value))
+                elif key == 'E-':
+                    if not objectDef.experimental:
+                        objectDef.experimental = list()
+                    objectDef.experimental.append(extensionToTuple('E-' + value))
+                else:
+                    raise Exception('malformed schema definition key:' + key)
+            objectDef.rawDefinition = objectDefinition
+            return objectDef
+        else:
+            raise Exception('malformed schema definition')

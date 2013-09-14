@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from ldap3.protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
 from ldap3 import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL
 from ldap3.protocol.convert import authenticationChoiceToDict, referralsToList
-from ldap3.protocol.sasl import validateSimplePassword
+from ldap3.protocol.sasl.sasl import validateSimplePassword
 
 # BindRequest ::= [APPLICATION 0] SEQUENCE {
 #     version                 INTEGER (1 ..  127),

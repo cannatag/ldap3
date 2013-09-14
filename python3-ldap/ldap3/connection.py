@@ -42,7 +42,7 @@ from ldap3.operation.modifyDn import modifyDnOperation
 from ldap3.operation.search import searchOperation
 from ldap3.strategy.asyncThreaded import AsyncThreadedStrategy
 from ldap3.strategy.syncWait import SyncWaitStrategy
-from ldap3.protocol.sasl import saslExternal, saslDigestMd5
+from ldap3.protocol.sasl.sasl import saslExternal, saslDigestMd5
 from ldap3.operation.unbind import unbindOperation
 
 

@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
 import re
-from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY
 from ldap3.protocol.schema.oid import Oids
 from ldap3.protocol.schema.schema import constantToClassKind, listToString, quotedStringToList, oidsStringToList, extensionToTuple
 

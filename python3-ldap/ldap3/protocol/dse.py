@@ -22,7 +22,7 @@ along with Python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
-from ldap3.protocol.schema.oid import decodeOids
+from ldap3.protocol.oid import decodeOids
 
 
 class DsaInfo():

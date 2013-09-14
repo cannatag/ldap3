@@ -30,11 +30,11 @@ from ldap3.protocol.oid import Oids
 
 def constantToClassKind(value):
     if value == CLASS_STRUCTURAL:
-        return 'STRUCTURAL CLASS'
+        return 'Structural'
     elif value == CLASS_ABSTRACT:
-        return 'ABSTRACT CLASS'
+        return 'Abstract'
     elif value == CLASS_AUXILIARY:
-        return 'AUXILIARY CLASS'
+        return 'Auxiliary'
     else:
         return 'unknown'
 
@@ -103,9 +103,10 @@ class SchemaInfo():
         self.schemaEntry = schemaEntry
         self.createTimeStamp = attributes.pop('createTimestamp', None)
         self.modifyTimeStamp = attributes.pop('modifyTimestamp', None)
-        self.attributeTypes = [AttributeTypeInfo.fromDefinition(attributeTypeDef) for attributeTypeDef in attributes.pop('attributeTypes', [])]
+        self.attributeTypes = [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])]
+        self.matchingRules = [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])]
         self.ldapSyntaxes = attributes.pop('ldapSyntaxes', None)
-        self.objectClasses = [ObjectClassInfo.fromDefinition(objectClassDef) for objectClassDef in attributes.pop('objectClasses', [])]
+        self.objectClasses = [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])]
         self.other = attributes
 
     def __str__(self):
@@ -147,13 +148,13 @@ class BaseObjectInfo():
         return self.__repr__()
 
     def __repr__(self):
-        r = (' [OBSOLETE]' + linesep) if self.obsolete else linesep
-        r += ('  Short name: ' + listToString(self.name) + linesep) if self.name else ''
-        r += ('  Description: ' + self.description + linesep) if self.description else ''
+        r = ' [OBSOLETE]' if self.obsolete else ''
+        r += (linesep + '  Short name: ' + listToString(self.name)) if self.name else ''
+        r += (linesep + '  Description: ' + self.description) if self.description else ''
         r += '<__desc__>'
-        r += ('  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions]) + linesep) if self.extensions else ''
-        r += ('  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental]) + linesep) if self.experimental else ''
-        r += ('  OidInfo:' + str(self.oidInfo)) if self.oidInfo else ''
+        r += (linesep + '  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions])) if self.extensions else ''
+        r += (linesep + '  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental])) if self.experimental else ''
+        r += (linesep + '  OidInfo: ' + str(self.oidInfo)) if self.oidInfo else ''
         return r
 
     @classmethod
@@ -236,19 +237,19 @@ class BaseObjectInfo():
 
 class MatchingRuleInfo(BaseObjectInfo):
     def __init__(self, oid = None, name = None, description = None, obsolete = False, syntax = None, extensions = None, experimental = None, definition = None):
-        super.__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, definition = definition)
+        super().__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental,
+                       definition = definition)
         self.syntax = syntax
 
     def __repr__(self):
-        r = ('  Syntax ' + listToString(self.syntax) + linesep) if self.syntax else ''
-        r = 'Matching rule ' + self.oid + linesep + super.__repr__()
-        return 'Matching rule ' + self.oid + linesep + super.__repr__().replace('<__desc__>', r)
+        r = (linesep + '  Syntax ' + listToString(self.syntax)) if self.syntax else ''
+        return 'Matching rule ' + self.oid + linesep + super().__repr__().replace('<__desc__>', r)
 
 
-class ObjectClassInfo():
+class ObjectClassInfo(BaseObjectInfo):
     def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, kind = None, mustContain = None, mayContain = None, extensions = None, experimental = None,
                  definition = None):
-        super.__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+        super().__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.superior = superior
         self.kind = kind
         self.mustContain = mustContain
@@ -256,16 +257,16 @@ class ObjectClassInfo():
 
     def __repr__(self):
         r = ''
-        r += (' [' + constantToClassKind(self.kind) + '] ') if isinstance(self.kind, int) else ''
-        r += ('  Must contain attributes: ' + listToString(self.mustContain) + linesep) if self.mustContain else ''
-        r += ('  May contain attributes: ' + listToString(self.mayContain) + linesep) if self.mayContain else ''
-        return 'Object Class ' + self.oid + linesep + super.__repr__().replace('<__desc__>', r)
+        r += (linesep + '  Type: ' + constantToClassKind(self.kind)) if isinstance(self.kind, int) else ''
+        r += (linesep + '  Must contain attributes: ' + listToString(self.mustContain)) if self.mustContain else ''
+        r += (linesep + '  May contain attributes: ' + listToString(self.mayContain)) if self.mayContain else ''
+        return 'Object Class ' + self.oid + super().__repr__().replace('<__desc__>', r)
 
 
-class AttributeTypeInfo():
+class AttributeTypeInfo(BaseObjectInfo):
     def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, equality = None, ordering = None, substring = None, syntax = None, singleValue = False, collective = False, noUserModification = False, usage = None, extensions = None, experimental = None,
                  definition = None):
-        super.__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+        super().__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.superior = superior
         self.equality = equality
         self.ordering = ordering
@@ -278,13 +279,12 @@ class AttributeTypeInfo():
 
     def __repr__(self):
         r = ''
-        r += ' [SINGLE VALUE]' if self.singleValue else ''
-        r += ' [COLLECTIVE]' if self.collective else ''
-        r += ' [NO USER MODIFICATION]' if self.noUserModification else ''
-        r += linesep
-        r += ('  Usage: ' + constantToAttributeUsage(self.usage) + linesep) if self.usage else ''
-        r += ('  Equality rule: ' + listToString(self.equality) + linesep) if self.equality else ''
-        r += ('  Ordering rule: ' + listToString(self.ordering) + linesep) if self.ordering else ''
-        r += ('  Substring rule: ' + listToString(self.substring) + linesep) if self.substring else ''
-        r += ('  Syntax ' + listToString(self.syntax) + linesep) if self.syntax else ''
-        return 'Attribute type ' + self.oid + linesep + super.__repr__().replace('<__desc__>', r)
+        r += linesep + '  Single Value: True' if self.singleValue else ''
+        r += linesep + '  Collective: True' if self.collective else ''
+        r += linesep + '  No user modification: True' if self.noUserModification else ''
+        r += (linesep + '  Usage: ' + constantToAttributeUsage(self.usage)) if self.usage else ''
+        r += (linesep + '  Equality rule: ' + listToString(self.equality)) if self.equality else ''
+        r += (linesep + '  Ordering rule: ' + listToString(self.ordering)) if self.ordering else ''
+        r += (linesep + '  Substring rule: ' + listToString(self.substring)) if self.substring else ''
+        r += (linesep + '  Syntax ' + listToString(self.syntax)) if self.syntax else ''
+        return 'Attribute type ' + self.oid + super().__repr__().replace('<__desc__>', r)

@@ -181,6 +181,12 @@ class BaseObjectInfo():
                 pattern = '| AUX '
             elif cls is LdapSyntaxInfo:
                 pattern = ''
+            elif cls is DitContentRuleInfo:
+                pattern = '| AUX | MUST | MAY | NOT '
+            elif cls is DitStructureRuleInfo:
+                pattern = '| FORM | SUP '
+            elif cls is NameFormInfo:
+                pattern = '| OC | MUST | MAY  '
             else:
                 raise Exception('unknown schema definition class')
 
@@ -235,6 +241,10 @@ class BaseObjectInfo():
                     objectDef.applyTo = oidsStringToList(value)
                 elif key == 'AUX':
                     objectDef.auxiliaryClasses = oidsStringToList(value)
+                elif key == 'FORM':
+                    objectDef.nameForm = oidsStringToList(value)
+                elif key == 'OC':
+                    objectDef.objectClass = oidsStringToList(value)
                 elif key == 'X-':
                     if not objectDef.extensions:
                         objectDef.extensions = list()
@@ -261,7 +271,7 @@ class MatchingRuleInfo(BaseObjectInfo):
         self.syntax = syntax
 
     def __repr__(self):
-        r = (linesep + '  Syntax ' + listToString(self.syntax)) if self.syntax else ''
+        r = (linesep + '  Syntax: ' + listToString(self.syntax)) if self.syntax else ''
         return 'Matching rule' + super().__repr__().replace('<__desc__>', r)
 
 class MatchingRuleUseInfo(BaseObjectInfo):
@@ -274,7 +284,7 @@ class MatchingRuleUseInfo(BaseObjectInfo):
         self.applyTo = applyTo
 
     def __repr__(self):
-        r = (linesep + '  Apply to ' + listToString(self.applyTo)) if self.applyTo else ''
+        r = (linesep + '  Apply to: ' + listToString(self.applyTo)) if self.applyTo else ''
         return 'Matching rule use' + super().__repr__().replace('<__desc__>', r)
 
 class ObjectClassInfo(BaseObjectInfo):
@@ -323,7 +333,7 @@ class AttributeTypeInfo(BaseObjectInfo):
         r += (linesep + '  Equality rule: ' + listToString(self.equality)) if self.equality else ''
         r += (linesep + '  Ordering rule: ' + listToString(self.ordering)) if self.ordering else ''
         r += (linesep + '  Substring rule: ' + listToString(self.substring)) if self.substring else ''
-        r += (linesep + '  Syntax ' + listToString(self.syntax)) if self.syntax else ''
+        r += (linesep + '  Syntax: ' + listToString(self.syntax)) if self.syntax else ''
         return 'Attribute type' + super().__repr__().replace('<__desc__>', r)
 
 class LdapSyntaxInfo(BaseObjectInfo):
@@ -345,7 +355,46 @@ class DitContentRuleInfo(BaseObjectInfo):
                  definition = None):
         super().__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.auxiliaryClasses = auxiliaryClasses
+        self.mustContain = mustContain
+        self.mayContain = mayContain
+        self.notContains = notContains
 
     def __repr__(self):
-        r = (linesep + '  Auxiliary classes ' + listToString(self.auxiliaryClasses)) if self.auxiliaryClasses else ''
+        r = (linesep + '  Auxiliary classes: ' + listToString(self.auxiliaryClasses)) if self.auxiliaryClasses else ''
+        r += (linesep + '  Must contain: ' + listToString(self.mustContain)) if self.mustContain else ''
+        r += (linesep + '  May contain: ' + listToString(self.mayContain)) if self.mayContain else ''
+        r += (linesep + '  Not contains: ' + listToString(self.notContains)) if self.notContains else ''
+        return 'DIT content rule' + super().__repr__().replace('<__desc__>', r)
+
+
+class DitStructureRuleInfo(BaseObjectInfo):
+    """
+    As per RFC 4512 (4.1.7.1)
+    """
+    def __init__(self, oid = None, name = None, description = None, obsolete = False, nameForm = None, superior = None, extensions = None, experimental = None,
+                 definition = None):
+        super().__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+        self.superior = superior
+        self.nameForm = nameForm
+
+    def __repr__(self):
+        r = (linesep + '  Superior rules: ' + listToString(self.superior)) if self.superior else ''
+        r += (linesep + '  Name form: ' + listToString(self.nameForm)) if self.nameForm else ''
+        return 'DIT content rule' + super().__repr__().replace('<__desc__>', r)
+
+class NameFormInfo(BaseObjectInfo):
+    """
+    As per RFC 4512 (4.1.7.2)
+    """
+    def __init__(self, oid = None, name = None, description = None, obsolete = False, objectClass = None, mustContain = None, mayContain = None, extensions = None, experimental = None,
+                 definition = None):
+        super().__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+        self.objectClass = objectClass
+        self.mustContain = mustContain
+        self.mayContain = mayContain
+
+    def __repr__(self):
+        r = (linesep + '  Object class: ' + self.objectClass) if self.objectClass else ''
+        r += (linesep + '  Must contain: ' + listToString(self.mustContain)) if self.mustContain else ''
+        r += (linesep + '  May contain: ' + listToString(self.mayContain)) if self.mayContain else ''
         return 'DIT content rule' + super().__repr__().replace('<__desc__>', r)

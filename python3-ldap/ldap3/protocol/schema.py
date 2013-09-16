@@ -104,14 +104,13 @@ class SchemaInfo():
         self.createTimeStamp = attributes.pop('createTimestamp', None)
         self.modifyTimeStamp = attributes.pop('modifyTimestamp', None)
         self.attributeTypes = [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])]
+        self.objectClasses = [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])]
         self.matchingRules = [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])]
         self.matchingRuleUses = [MatchingRuleUseInfo.fromDefinition(definition) for definition in attributes.pop('matchingRuleUse', [])]
         self.ditContentRules = [DitContentRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITContentRules', [])]
         self.ditStructureRules = [DitStructureRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITStructureRules', [])]
         self.nameForms = [NameFormInfo.fromDefinition(definition) for definition in attributes.pop('nameForms', [])]
-
         self.ldapSyntaxes = [LdapSyntaxInfo.fromDefinition(definition) for definition in attributes.pop('ldapSyntaxes', [])]
-        self.objectClasses = [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])]
         self.other = attributes
 
     def __str__(self):
@@ -119,9 +118,14 @@ class SchemaInfo():
 
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schemaEntry + linesep
-        r += ('  Attribute Types:' + linesep + '    ' + ', '.join([str(s) for s in self.attributeTypes]) + linesep) if self.attributeTypes else ''
-        r += ('  Object Classes:' + linesep + '    ' + ', '.join([str(s) for s in self.objectClasses]) + linesep) if self.objectClasses else ''
-        r += ('  LDAP Syntaxes:' + linesep + '    ' + ', '.join([str(s) for s in self.ldapSyntaxes]) + linesep) if self.ldapSyntaxes else ''
+        r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(s) for s in self.attributeTypes]) + linesep) if self.attributeTypes else ''
+        r += ('  Object classes:' + linesep + '    ' + ', '.join([str(s) for s in self.objectClasses]) + linesep) if self.objectClasses else ''
+        r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(s) for s in self.matchingRules]) + linesep) if self.matchingRules else ''
+        r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(s) for s in self.matchingRuleUses]) + linesep) if self.matchingRuleUses else ''
+        r += ('  DIT content rule:' + linesep + '    ' + ', '.join([str(s) for s in self.ditContentRules]) + linesep) if self.ditContentRules else ''
+        r += ('  DIT structure rule:' + linesep + '    ' + ', '.join([str(s) for s in self.ditStructureRules]) + linesep) if self.ditStructureRules else ''
+        r += ('  Name forms:' + linesep + '    ' + ', '.join([str(s) for s in self.nameForms]) + linesep) if self.nameForms else ''
+        r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(s) for s in self.ldapSyntaxes]) + linesep) if self.ldapSyntaxes else ''
         r += 'Other:' + linesep
 
         for k, v in self.other.items():

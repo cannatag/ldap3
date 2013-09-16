@@ -106,6 +106,10 @@ class SchemaInfo():
         self.attributeTypes = [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])]
         self.matchingRules = [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])]
         self.matchingRuleUses = [MatchingRuleUseInfo.fromDefinition(definition) for definition in attributes.pop('matchingRuleUse', [])]
+        self.ditContentRules = [DitContentRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITContentRules', [])]
+        self.ditStructureRules = [DitStructureRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITStructureRules', [])]
+        self.nameForms = [NameFormInfo.fromDefinition(definition) for definition in attributes.pop('nameForms', [])]
+
         self.ldapSyntaxes = [LdapSyntaxInfo.fromDefinition(definition) for definition in attributes.pop('ldapSyntaxes', [])]
         self.objectClasses = [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])]
         self.other = attributes

@@ -103,14 +103,14 @@ class SchemaInfo():
         self.schemaEntry = schemaEntry
         self.createTimeStamp = attributes.pop('createTimestamp', None)
         self.modifyTimeStamp = attributes.pop('modifyTimestamp', None)
-        self.attributeTypes = [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])]
-        self.objectClasses = [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])]
-        self.matchingRules = [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])]
-        self.matchingRuleUses = [MatchingRuleUseInfo.fromDefinition(definition) for definition in attributes.pop('matchingRuleUse', [])]
-        self.ditContentRules = [DitContentRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITContentRules', [])]
-        self.ditStructureRules = [DitStructureRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITStructureRules', [])]
-        self.nameForms = [NameFormInfo.fromDefinition(definition) for definition in attributes.pop('nameForms', [])]
-        self.ldapSyntaxes = [LdapSyntaxInfo.fromDefinition(definition) for definition in attributes.pop('ldapSyntaxes', [])]
+        self.attributeTypes = {obj.oid: obj for obj in [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])]}
+        self.objectClasses = {obj.oid: obj for obj in [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])]}
+        self.matchingRules = {obj.oid: obj for obj in [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])]}
+        self.matchingRuleUses = {obj.oid: obj for obj in [MatchingRuleUseInfo.fromDefinition(definition) for definition in attributes.pop('matchingRuleUse', [])]}
+        self.ditContentRules = {obj.oid: obj for obj in [DitContentRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITContentRules', [])]}
+        self.ditStructureRules = {obj.oid: obj for obj in [DitStructureRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITStructureRules', [])]}
+        self.nameForms = {obj.oid: obj for obj in [NameFormInfo.fromDefinition(definition) for definition in attributes.pop('nameForms', [])]}
+        self.ldapSyntaxes = {obj.oid: obj for obj in [LdapSyntaxInfo.fromDefinition(definition) for definition in attributes.pop('ldapSyntaxes', [])]}
         self.other = attributes
 
     def __str__(self):
@@ -118,14 +118,14 @@ class SchemaInfo():
 
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schemaEntry + linesep
-        r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(s) for s in self.attributeTypes]) + linesep) if self.attributeTypes else ''
-        r += ('  Object classes:' + linesep + '    ' + ', '.join([str(s) for s in self.objectClasses]) + linesep) if self.objectClasses else ''
-        r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(s) for s in self.matchingRules]) + linesep) if self.matchingRules else ''
-        r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(s) for s in self.matchingRuleUses]) + linesep) if self.matchingRuleUses else ''
-        r += ('  DIT content rule:' + linesep + '    ' + ', '.join([str(s) for s in self.ditContentRules]) + linesep) if self.ditContentRules else ''
-        r += ('  DIT structure rule:' + linesep + '    ' + ', '.join([str(s) for s in self.ditStructureRules]) + linesep) if self.ditStructureRules else ''
-        r += ('  Name forms:' + linesep + '    ' + ', '.join([str(s) for s in self.nameForms]) + linesep) if self.nameForms else ''
-        r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(s) for s in self.ldapSyntaxes]) + linesep) if self.ldapSyntaxes else ''
+        r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attributeTypes[s]) for s in self.attributeTypes]) + linesep) if self.attributeTypes else ''
+        r += ('  Object classes:' + linesep + '    ' + ', '.join([str(self.objectClasses[s]) for s in self.objectClasses]) + linesep) if self.objectClasses else ''
+        r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(self.matchingRules[s]) for s in self.matchingRules]) + linesep) if self.matchingRules else ''
+        r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matchingRuleUses[s]) for s in self.matchingRuleUses]) + linesep) if self.matchingRuleUses else ''
+        r += ('  DIT content rule:' + linesep + '    ' + ', '.join([str(self.ditContentRules[s]) for s in self.ditContentRules]) + linesep) if self.ditContentRules else ''
+        r += ('  DIT structure rule:' + linesep + '    ' + ', '.join([str(self.ditStructureRules[s]) for s in self.ditStructureRules]) + linesep) if self.ditStructureRules else ''
+        r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.nameForms[s]) for s in self.nameForms]) + linesep) if self.nameForms else ''
+        r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldapSyntaxes[s]) for s in self.ldapSyntaxes]) + linesep) if self.ldapSyntaxes else ''
         r += 'Other:' + linesep
 
         for k, v in self.other.items():

@@ -43,8 +43,8 @@ class Test(unittest.TestCase):
         self.assertIsInstance(self.server.schema, SchemaInfo)
 
     def testObjectClasses(self):
-        self.assertIsInstance(self.server.schema.objectClasses[0], ObjectClassInfo)
+        self.assertIsInstance(self.server.schema.objectClasses['2.5.6.6'], ObjectClassInfo)
         print(self.server.schema.objectClasses)
 
     def testAttributesTypes(self):
-        self.assertIsInstance(self.server.schema.attributeTypes[0], AttributeTypeInfo)
+        self.assertIsInstance(self.server.schema.attributeTypes['2.5.4.3'], AttributeTypeInfo)

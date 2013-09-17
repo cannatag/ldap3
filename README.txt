@@ -3,7 +3,7 @@ python3-ldap
 ============
 
 python3-ldap is a pure Python 3 LDAP v3 strictly conforming to RFC4511.
-Its development is at alpha stage.
+Its development is at beta stage.
 
 License
 -------
@@ -14,6 +14,21 @@ Mailing List
 ------------
 
 You can join the python3-ldap mailing list at http://mail.python.org/mailman/listinfo/python3-ldap
+
+
+Home Page
+---------
+Project home page is https://www.assembla.com/spaces/python3-ldap
+
+
+Support:
+--------
+You can submit support tickets on https://www.assembla.com/spaces/python3-ldap/support/tickets
+
+
+SVN repository
+--------------
+You can download the latest source at https://subversion.assembla.com/svn/python3-ldap
 
 
 Project goals
@@ -39,7 +54,7 @@ Project goals
 5. Multiple *connection strategies* to choose from, either synchronous or asynchronous
     - I'm planning to use different ways to connect to the LDAP server (no thread, single threaded, multithreaded, event...)
     - I'm not sure about which connection strategy is the best to use on ldap messages communication, so I'm writing a connection object with a **pluggable** socket connection strategy.
-    - For now I have "sync-nothread" and "async-blocking-threaded" strategies
+    - For now I have "syncWait" and "asyncThreaded" strategies
     - Planned strategies are "sync-threaded" strategy and an "event-nonblocking".
 
 6. Semplified query construction language
@@ -142,14 +157,19 @@ You can configure testserver, testuser and testpassword in the __init__.py file 
 Contact me
 ----------
 
-For any information, suggestion and bug reporting you can contact me at python3ldap@gmail.com or
+For any information and suggestion  you can contact me at python3ldap@gmail.com or
 join the python3-ldap mailing list at http://mail.python.org/mailman/listinfo/python3-ldap
+
+You can also open a ticket on https://www.assembla.com/spaces/python3-ldap/support/tickets
+
 
 =========
 CHANGELOG
 =========
 * 0.6.0 - 2013.09.16
     - Moved to beta!
+    - Added support site hosted on www.assembla.com
+    - Added public svn repository on www.assembla.com
     - Added getInfo to server object, parameter can be: GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO
     - Added method to read the schema from the server. Schema is decoded and returned in different dictionaries of the  server.schema object
     - Updated connection usage info (elapsed time is now computed when connection is closed)

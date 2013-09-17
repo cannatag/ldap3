@@ -1,8 +1,8 @@
 ============
-Python3-ldap
+python3-ldap
 ============
 
-Python3-ldap is a pure Python 3 LDAP v3 strictly conforming to RFC4511.
+python3-ldap is a pure Python 3 LDAP v3 strictly conforming to RFC4511.
 Its development is at alpha stage.
 
 License
@@ -28,9 +28,9 @@ Project goals
 
 3. Based only on pure Python code
     - I usually work on Linux and Windows boxes and each time have to install the current python-ldap library for Python2 from different sources.
-    - Python3-ldap should be directly installed from source of from pypi using pip or a similar package manager on different platforms. Installation should be the same on both platforms. -
+    - python3-ldap should be directly installed from source of from pypi using pip or a similar package manager on different platforms. Installation should be the same on both platforms. -
     - Socket and thread programming should be appropriate for the platform used, with no changes needed in the configuration.
-    - Python3-ldap library should depend on the standard library and the pyasn1 package only.
+    - python3-ldap library should depend on the standard library and the pyasn1 package only.
 
 4. Compatible with python3 and (possibly) python2
     - Development and testing is done in Python 3, but as the library move from alpha to beta it should (hopefully) be compatible with Python 2.

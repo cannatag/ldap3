@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 # noinspection PyUnresolvedReferences
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
-test_server = 'sl10.intra.camera.it'
-test_user = 'cn=admin,o=services'
-test_password = 'camera'
+test_server = 'ldapserver'
+test_user = 'ldapuser'
+test_password = 'password'
 
 test_port = 389
 test_port_ssl = 636

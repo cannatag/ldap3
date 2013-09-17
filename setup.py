@@ -35,7 +35,7 @@ setup(
       license = 'LGPL v3',
       author = 'Giovanni Cannata',
       author_email = 'python3ldap@gmail.com',
-      description = 'A strictly RFC 4511 conforming LDAP V3 pure Python 3 client- Alpha stage - DO NOT USE FOR PRODUCTION!',
+      description = 'A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Beta stage',
       keywords = 'python3 ldap',
       url = 'https://www.assembla.com/spaces/python3-ldap',
       classifiers = [

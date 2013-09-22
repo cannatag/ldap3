@@ -30,7 +30,7 @@ from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, \
     ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT
 
 
-class Server():
+class Server(object):
     """
     LDAP Server definition class
     allowedReferralHosts can be None (which is the default)

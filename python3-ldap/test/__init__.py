@@ -23,8 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 # noinspection PyUnresolvedReferences
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
-test_server = 'ldapserver'
-test_user = 'ldapuser'
+test_server = 'edir'
+test_user = 'cn=admin,o=risorse'
 test_password = 'password'
 
 test_port = 389

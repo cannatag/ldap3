@@ -46,7 +46,7 @@ from ldap3.operation.abandon import abandonRequestToDict
 from ldap3.tls import Tls
 
 
-class BaseStrategy():
+class BaseStrategy(object):
     """
     Base class for connection strategy
     """
@@ -195,16 +195,19 @@ class BaseStrategy():
                                                                               :-1]  # remove the response complete flag
         return response
 
+
+
     @classmethod
     def computeLDAPMessageSize(cls, data):
         """
         Compute LDAP Message size according to BER definite length rules
         Returns -1 if too few data to compute message length
         """
+        if isinstance(data, str):  # fix for python2
+            data = bytearray(data)
         retValue = -1
         if len(data) > 2:
-            if data[
-                1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
+            if data[1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
                 retValue = data[1] + 2
             else:  # BER definite length - long form. Highest bit of byte 1 is 1, last 7 bits counts the number of following octets containing the value length
                 bytesLength = data[1] - 128

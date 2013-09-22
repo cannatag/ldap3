@@ -46,7 +46,7 @@ from ldap3.protocol.sasl.sasl import saslExternal, saslDigestMd5
 from ldap3.operation.unbind import unbindOperation
 
 
-class ConnectionUsage():
+class ConnectionUsage(object):
     """
     Collect statistics on connection usage
     """
@@ -144,7 +144,7 @@ class ConnectionUsage():
             return datetime.now() - self.connectionStartTime if self.connectionStartTime else 'not started'
 
 
-class Connection():
+class Connection(object):
     """
     Main ldap connection class
     controls, if used, must be a list of tuples. Each tuple must have 3 elements,

@@ -4,6 +4,7 @@ python3-ldap
 
 python3-ldap is a pure Python 3 LDAP v3 strictly conforming to RFC4511.
 Its development is at beta stage.
+Experimental support for Python 2 starting from version 0.6.1
 
 License
 -------
@@ -166,6 +167,11 @@ You can also open a ticket on https://www.assembla.com/spaces/python3-ldap/suppo
 =========
 CHANGELOG
 =========
+* 0.6.1 - 2013.09.22
+    - Experimental support for Python 2 - no unicode
+    - Added backport of ssl.match_name for python 2
+    - Minor fix for using the client in Python 2
+
 * 0.6.0 - 2013.09.16
     - Moved to beta!
     - Added support site hosted on www.assembla.com

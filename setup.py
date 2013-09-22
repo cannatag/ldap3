@@ -26,7 +26,7 @@ from setuptools import setup
 
 setup(
       name = 'python3-ldap',
-      version = '0.6.0-beta',
+      version = '0.6.1-beta',
       packages = ['ldap3', 'ldap3.operation', 'ldap3.protocol', 'ldap3.protocol.sasl', 'ldap3.strategy'],
       package_dir = {'': 'python3-ldap'},
       install_requires = [
@@ -46,6 +46,7 @@ setup(
                     "Operating System :: POSIX :: Linux",
                     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
                     "Programming Language :: Python",
+                    "Programming Language :: Python :: 2",
                     "Programming Language :: Python :: 3",
                     "Topic :: Software Development :: Libraries :: Python Modules",
                     "Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP"

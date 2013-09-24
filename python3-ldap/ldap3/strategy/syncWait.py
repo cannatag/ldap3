@@ -116,11 +116,6 @@ class SyncWaitStrategy(BaseStrategy):
             return self.connection.response
 
         raise Exception('error receiving response')
-        # elif isinstance(responses, dict):
-        #    raise Exception("why I'm here?")
-        #    self.connection.response = []
-        #    return responses
-
     def _getResponse(self, messageId):
         """
         Performs the capture of LDAP response for SyncWaitStrategy

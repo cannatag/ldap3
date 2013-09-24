@@ -83,7 +83,7 @@ def extensionToTuple(extensionString):
         return name, quotedStringToList(values)
 
 def listToString(listObject):
-    if isinstance(listObject, str):
+    if not isinstance(listObject, list):
         return listObject
 
     r = ''
@@ -130,7 +130,7 @@ class SchemaInfo(object):
 
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep
-            r += v if isinstance(v, str) else (linesep.join(['    ' + str(s) for s in v])) + linesep
+            r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, list) else v + linesep
         return r
 
 

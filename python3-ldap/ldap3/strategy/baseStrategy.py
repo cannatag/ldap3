@@ -203,8 +203,9 @@ class BaseStrategy(object):
         Compute LDAP Message size according to BER definite length rules
         Returns -1 if too few data to compute message length
         """
-        if isinstance(data, str):  # fix for python2
+        if isinstance(data, str):  # fix for python2, data is string not bytes
             data = bytearray(data)
+
         retValue = -1
         if len(data) > 2:
             if data[1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long

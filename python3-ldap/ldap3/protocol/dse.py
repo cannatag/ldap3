@@ -62,8 +62,8 @@ class DsaInfo():
         r += 'Other:' + linesep
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep
-            if isinstance(v, str):
-                r += v + linesep
-            else:
+            if isinstance(v, list):
                 r += linesep.join(['    ' + str(s) for s in v]) + linesep
+            else:
+                r += v + linesep
         return r

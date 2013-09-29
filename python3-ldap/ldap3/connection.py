@@ -452,5 +452,4 @@ class Connection(object):
 
     def refreshDsaInfo(self):
         if not self.closed:
-            print(self.closed)
             self.server.getInfoFromServer(self)

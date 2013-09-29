@@ -139,11 +139,9 @@ class SyncWaitStrategy(BaseStrategy):
                             ldapResponses.append(dictResponse)
                             if dictResponse['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 responseComplete = True
-                        elif int(ldapResp[
-                            'messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per rfc 4511 (paragraph 4.4)
+                        elif int(ldapResp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per rfc 4511 (paragraph 4.4)
                             dictResponse = BaseStrategy.decodeResponse(ldapResp)
-                            if dictResponse[
-                                'responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per rfc 4511 (paragraph 4.4.1)
+                            if dictResponse['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per rfc 4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
                         else:
                             self.connection.lastError = 'invalid messageID received'
@@ -167,4 +165,5 @@ class SyncWaitStrategy(BaseStrategy):
                 ldapResponses = [refResult, RESPONSE_COMPLETE]
 
             self._referrals = []
+
         return ldapResponses

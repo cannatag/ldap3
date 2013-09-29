@@ -349,8 +349,7 @@ class LdapSyntaxInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.5)
     """
     def __init__(self, oid = None, description = None, extensions = None, experimental = None, definition = None):
-        super(LdapSyntaxInfo, self).__init__(oid = oid, name = None, description = description, obsolete = None, extensions = extensions, experimental = experimental,
-                       definition = definition)
+        super(LdapSyntaxInfo, self).__init__(oid = oid, name = None, description = description, obsolete = None, extensions = extensions, experimental = experimental, definition = definition)
 
     def __repr__(self):
         return 'LDAP syntax' + super(LdapSyntaxInfo, self).__repr__().replace('<__desc__>', '')

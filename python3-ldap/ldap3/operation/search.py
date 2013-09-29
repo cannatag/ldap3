@@ -288,7 +288,6 @@ def buildAttributeSelection(attributeList):
     return attributeSelection
 
 
-# def searchOperation(searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = set(), sizeLimit = 0, timeLimit = 0, typesOnly = False):
 def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit,
                     typesOnly):
     request = SearchRequest()

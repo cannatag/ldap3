@@ -4,7 +4,8 @@ python3-ldap
 
 python3-ldap is a pure Python 3 LDAP v3 strictly conforming to RFC4511.
 Its development is at beta stage.
-Experimental support for Python 2 starting from version 0.6.1 (no direct unicode support)
+
+EXPERIMENTAL SUPPORT FOR PYTHON 2 starting from version 0.6.1 (no direct unicode support)
 
 License
 -------

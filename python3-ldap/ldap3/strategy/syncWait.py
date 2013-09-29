@@ -41,6 +41,10 @@ class SyncWaitStrategy(BaseStrategy):
     def __init__(self, ldapConnection):
         super(SyncWaitStrategy, self).__init__(ldapConnection)
 
+    def open(self, startListening = True):
+        super(SyncWaitStrategy, self).open(startListening)
+        self.connection.refreshDsaInfo()
+
     def _startListen(self):
         if not self.connection.listening and not self.connection.closed:
             self.connection.listening = True

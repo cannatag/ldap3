@@ -451,4 +451,6 @@ class Connection(object):
         return response
 
     def refreshDsaInfo(self):
-        self.server.getInfoFromServer(self)
+        if not self.closed:
+            print(self.closed)
+            self.server.getInfoFromServer(self)

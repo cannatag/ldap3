@@ -118,10 +118,10 @@ class Server(object):
         retrieve DSE operational attribute as per rfc 4512 (5.1)
         """
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
-        if result > 1:  #async request
-            self._dsaInfo = DsaInfo(connection.getResponse(result).response[0]['attributes'])
-        elif result:
+        if isinstance(result, bool):  #sync request
             self._dsaInfo = DsaInfo(connection.response[0]['attributes'])
+        elif result:
+            self._dsaInfo = DsaInfo(connection.getResponse(result)[0]['attributes'])
         else:
             self._dsaInfo = None
 
@@ -137,10 +137,17 @@ class Server(object):
             schemaEntry = self._dsaInfo.schemaEntry[0] if self._dsaInfo.schemaEntry else None
         else:
             result = connection.search(schemaEntry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'], getOperationalAttributes = True)
-            schemaEntry = connection.getResponse(result).response[0]['attributes']['subschemaSubentry'][0] if result > 1 else connection.response[0]['attributes']['subschemaSubentry'][0]
+            if isinstance(result, bool):
+                schemaEntry = connection.response[0]['attributes']['subschemaSubentry'][0]
+            else:
+                schemaEntry = connection.getResponse(result)[0]['attributes']['subschemaSubentry'][0]
 
-        if schemaEntry and connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True):
+        if schemaEntry:
+            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
+            if isinstance(result, bool):
                 self._schemaInfo = SchemaInfo(schemaEntry, connection.response[0]['attributes'])
+            else:
+                self._schemaInfo = SchemaInfo(schemaEntry, connection.getResponse(result)[0]['attributes'])
 
     def getInfoFromServer(self, connection):
         """

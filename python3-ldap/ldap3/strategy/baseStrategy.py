@@ -67,7 +67,6 @@ class BaseStrategy(object):
 
         if startListening:
             self._startListen()
-        self.connection.refreshDsaInfo()
 
     def close(self):
         """

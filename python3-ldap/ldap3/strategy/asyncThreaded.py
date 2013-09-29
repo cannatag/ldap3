@@ -55,6 +55,8 @@ class AsyncThreadedStrategy(BaseStrategy):
             super(AsyncThreadedStrategy, self).open(startListening)
             self._responses = dict()
 
+        self.connection.refreshDsaInfo()
+
     def close(self):
         """
         Close connection and stop socket thread
@@ -94,8 +96,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         Checks lock to avoid race condition with receiver thread
         """
         with self.connection.lock:
-            responses = self._responses.pop(messageId) if messageId in self._responses and self._responses[messageId][
-                -1] == RESPONSE_COMPLETE else None
+            responses = self._responses.pop(messageId) if messageId in self._responses and self._responses[messageId][-1] == RESPONSE_COMPLETE else None
 
         if responses is not None and responses[-2]['result'] == RESULT_REFERRAL and self.connection.autoReferrals:
             refResponse, refResult = self.doOperationOnReferral(self._outstanding[messageId],
@@ -107,6 +108,7 @@ class AsyncThreadedStrategy(BaseStrategy):
                 responses = [refResult, RESPONSE_COMPLETE]
 
             self._referrals = []
+
 
         return responses
 
@@ -160,6 +162,7 @@ class ReceiverSocketThread(Thread):
                         self.connection.lastError = 'Asynchronous StartTls failed'
                         raise Exception(self.connection.lastError)
                 if messageId != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per rfc 4511 (paragraph 4.4)
+
                     with self.connection.lock:
                         if messageId in self.connection.strategy._responses:
                             self.connection.strategy._responses[messageId].append(dictResponse)
@@ -167,6 +170,7 @@ class ReceiverSocketThread(Thread):
                             self.connection.strategy._responses[messageId] = [dictResponse]
                         if dictResponse['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                             self.connection.strategy._responses[messageId].append(RESPONSE_COMPLETE)
+
                     unprocessed = unprocessed[length:]
                     getMoreData = False if unprocessed else True
                     listen = True if self.connection.listening or unprocessed else False

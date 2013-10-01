@@ -165,9 +165,20 @@ join the python3-ldap mailing list at http://mail.python.org/mailman/listinfo/py
 You can also open a ticket on https://www.assembla.com/spaces/python3-ldap/support/tickets
 
 
+Acknowledgements
+---------------
+I wish to thank JetBrains for donating to this project the Open Source license of PyCharm 3 Professional.
+
+I wish to thank Assembla for providing the source repository space and the agile tools to develop this project.
+
+
 =========
 CHANGELOG
 =========
+* 0.6.2 - 2013.10.01
+    - Fix for referrals in searchRefResult
+    - Disabled schema reading on Active Directory
+
 * 0.6.1 - 2013.09.22
     - Experimental support for Python 2 - no unicode
     - Added backport of ssl.match_name for python 2

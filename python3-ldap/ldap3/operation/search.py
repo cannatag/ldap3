@@ -440,5 +440,5 @@ def searchResultDoneResponseToDict(response):
 
 def searchResultReferenceResponseToDict(response):
     return {
-        'uri': searchRefsToList(response['uri'])
+        'uri': searchRefsToList(response)
     }

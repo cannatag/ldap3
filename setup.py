@@ -26,7 +26,7 @@ from setuptools import setup
 
 setup(
       name = 'python3-ldap',
-      version = '0.6.1-beta',
+      version = '0.6.2-beta',
       packages = ['ldap3', 'ldap3.operation', 'ldap3.protocol', 'ldap3.protocol.sasl', 'ldap3.strategy'],
       package_dir = {'': 'python3-ldap'},
       install_requires = [
@@ -35,7 +35,7 @@ setup(
       license = 'LGPL v3',
       author = 'Giovanni Cannata',
       author_email = 'python3ldap@gmail.com',
-      description = 'A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Beta stage',
+      description = 'A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Python 2 compatible - Beta stage',
       keywords = 'python3 ldap',
       url = 'https://www.assembla.com/spaces/python3-ldap',
       classifiers = [

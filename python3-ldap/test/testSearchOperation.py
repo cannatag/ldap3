@@ -39,7 +39,14 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testSearchExactMatch(self):
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(cn=test-add)', attributes = ['cn', 'givenName', 'jpegPhotot'])
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(cn=test-add)', attributes = ['cn', 'givenName', 'jpegPhoto'])
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        self.assertEqual(self.connection.result['description'], 'success')
+        self.assertEqual(len(self.connection.response), 1)
+
+    def testSearchExtensibleMatch(self):
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(&(ou:dn:=sales)(objectclass=inetOrgPerson))', attributes = ['cn', 'givenName', 'sn'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
@@ -81,5 +88,4 @@ class Test(unittest.TestCase):
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
-        print('response:', self.connection.response)
         self.assertEquals(self.connection.response[0]['attributes']['entryDN'][0], 'cn=test-add,o=test')

@@ -34,7 +34,7 @@ from ldap3.protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, \
     AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, \
     GreaterOrEqual, LessOrEqual, ExtensibleMatch, \
     Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, \
-    Substring
+    Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ldap3.operation.bind import referralsToList
 from ldap3.protocol.convert import avaToDict, attributesToList, searchRefsToList
 
@@ -121,34 +121,67 @@ def evaluateMatch(match):
     match = match.strip()
     if '~=' in match:
         tag = MATCH_APPROX
-        attr, _, assertion = match.split('~=')
-        assertion = {'attr': attr.strip(), 'value': validateAssertionValue(assertion)}
+        leftPart, _, rightPart = match.split('~=')
+        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
     elif '>=' in match:
         tag = MATCH_GREATER_OR_EQUAL
-        attr, _, assertion = match.partition('>=')
-        assertion = {'attr': attr.strip(), 'value': validateAssertionValue(assertion)}
+        leftPart, _, rightPart = match.partition('>=')
+        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
     elif '<=' in match:
         tag = MATCH_LESS_OR_EQUAL
-        attr, _, assertion = match.partition('>=')
-        assertion = {'attr': attr.strip(), 'value': validateAssertionValue(assertion)}
-    elif ':' in match:
+        leftPart, _, rightPart = match.partition('>=')
+
+        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
+    elif ':=' in match:
         tag = MATCH_EXTENSIBLE
-        assertion = {}
+        leftPart, _, rightPart = match.partition(':=')
+        extendedFilterList = leftPart.split(':')
+        matchingRule = None
+        dnAttributes = None
+        attributeName = None
+        if extendedFilterList[0] == '':  # extensible filter format [:dn]:matchingRule:=assertionValue
+            if len(extendedFilterList) == 2 and extendedFilterList[1].lower().strip() != 'dn':
+                matchingRule = extendedFilterList[1].strip()
+            elif len(extendedFilterList) == 3 and extendedFilterList[1].lower().strip() == 'dn':
+                dnAttributes = True
+                matchingRule = extendedFilterList[2].strip()
+            else:
+                raise Exception('invalid extensible filter')
+        elif len(extendedFilterList) <= 3: # extensible filter format attr[:dn][:matchingRule]:=assertionValue
+            if len(extendedFilterList) == 1:
+                attributeName = extendedFilterList[0]
+            elif len(extendedFilterList) == 2:
+                attributeName = extendedFilterList[0]
+                if extendedFilterList[1].lower().strip() == 'dn':
+                    dnAttributes = True
+                else:
+                    matchingRule = extendedFilterList[1].strip()
+            elif len(extendedFilterList) == 3 and extendedFilterList[1].lower().strip() == 'dn':
+                attributeName = extendedFilterList[0]
+                dnAttributes = True
+                matchingRule = extendedFilterList[2].strip()
+            else:
+                raise Exception('invalid extensible filter')
+
+        if not attributeName and not matchingRule:
+            raise Exception('invalid extensible filter')
+
+        assertion = {'attr': attributeName.strip() if attributeName else None, 'value': validateAssertionValue(rightPart), 'matchingRule': matchingRule.strip() if matchingRule else None, 'dnAttributes': dnAttributes}
     elif match.endswith('=*'):
         tag = MATCH_PRESENT
         assertion = {'attr': match[:-2]}
     elif '=' in match and '*' in match:
         tag = MATCH_SUBSTRING
-        attr, _, assertion = match.partition('=')
-        substrings = assertion.split('*')
+        leftPart, _, rightPart = match.partition('=')
+        substrings = rightPart.split('*')
         initial = substrings[0] if substrings[0] else None
         final = substrings[-1] if substrings[-1] else None
         anyString = [substring for substring in substrings[1:-1] if substring]
-        assertion = {'attr': attr, 'initial': initial, 'any': anyString, 'final': final}
+        assertion = {'attr': leftPart, 'initial': initial, 'any': anyString, 'final': final}
     elif '=' in match:
         tag = MATCH_EQUAL
-        attr, _, assertion = match.partition('=')
-        assertion = {'attr': attr.strip(), 'value': validateAssertionValue(assertion)}
+        leftPart, _, rightPart = match.partition('=')
+        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
     else:
         raise Exception('invalid matching assertion')
 
@@ -243,7 +276,12 @@ def compileFilter(filterNode):
         compiledFilter['lessOrEqual'] = matchingFilter
     elif filterNode.tag == MATCH_EXTENSIBLE:
         matchingFilter = ExtensibleMatch()
-        # tbd
+        if filterNode.assertion['matchingRule']:
+            matchingFilter['matchingRule'] = MatchingRule(filterNode.assertion['matchingRule'])
+        if filterNode.assertion['attr']:
+            matchingFilter['type'] = Type(filterNode.assertion['attr'])
+        matchingFilter['matchValue'] = MatchValue(filterNode.assertion['value'])
+        matchingFilter['dnAttributes'] = DnAttributes(filterNode.assertion['dnAttributes'])
         compiledFilter['extensibleMatch'] = matchingFilter
     elif filterNode.tag == MATCH_PRESENT:
         matchingFilter = Present(AttributeDescription(filterNode.assertion['attr']))

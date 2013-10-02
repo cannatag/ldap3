@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(self.connection.response), 1)
 
     def testSearchExtensibleMatch(self):
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(&(ou:dn:=sales)(objectclass=inetOrgPerson))', attributes = ['cn', 'givenName', 'sn'])
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(&(ou:dn:=moved)(objectclass=inetOrgPerson))', attributes = ['cn', 'givenName', 'sn'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')

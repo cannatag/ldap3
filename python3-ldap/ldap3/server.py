@@ -143,7 +143,6 @@ class Server(object):
                 schemaEntry = connection.getResponse(result)[0]['attributes']['subschemaSubentry'][0]
 
         if schemaEntry:
-            print('GETTING SCHEMA FROM:', schemaEntry)
             result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
             if isinstance(result, bool):
                 self._schemaInfo = SchemaInfo(schemaEntry, connection.response[0]['attributes']) if result else None

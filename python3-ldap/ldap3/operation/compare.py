@@ -22,8 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, \
-    ResultCode
+from ldap3.protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, ResultCode
 
 from ldap3.operation.search import avaToDict
 from ldap3.operation.bind import referralsToList
@@ -49,18 +48,9 @@ def compareOperation(dn, attribute, value):
 
 def compareRequestToDict(request):
     ava = avaToDict(request['ava'])
-    return {
-        'entry': str(request['entry']),
-        'attribute': ava['attribute'],
-        'value': ava['value']
-    }
+    return {'entry': str(request['entry']), 'attribute': ava['attribute'], 'value': ava['value']}
 
 
 def compareResponseToDict(response):
-    return {
-        'result': int(response[0]),
-        'description': ResultCode().getNamedValues().getName(response[0]),
-        'dn': str(response['matchedDN']),
-        'message': str(response['diagnosticMessage']),
-        'referrals': referralsToList(response['referral']),
-    }
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
+            'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']), }

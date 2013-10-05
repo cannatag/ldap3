@@ -1,5 +1,5 @@
 """
-Created on 2013.06.04
++reated on 2013.06.04
 
 @author: Giovanni Cannata
 
@@ -7,7 +7,7 @@ Copyright 2013 Giovanni Cannata
 
 This file is part of python3-ldap.
 
-python3-ldap is free software: you can redistribute it and/or modify
+/ython3-ldap is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
 by the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -79,5 +79,18 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], None)
         self.assertEqual(f.elements[0].assertion['value'], 'Dino')
-        self.assertEqual(f.elements[0].assertion['matchingRule'], '2.4.6.8.10')
+        self.assertEqual(f.elements[0].assertion['matchingRule'], '2.4.6.8.''10')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
+
+    def testParseSearchFilterAbsoluteTrue(self):
+            f = parseFilter('(*)')
+            self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
+            self.assertEqual(f.elements[0].assertion['attr'], 'cn')
+            self.assertEqual(f.elements[0].assertion['value'], 'admin')
+
+
+def testParseSearchFilterAbsoluteFalse(self):
+    f = parseFilter('(|)')
+    self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
+    self.assertEqual(f.elements[0].assertion['attr'], 'cn')
+    self.assertEqual(f.elements[0].assertion['value'], 'admin')

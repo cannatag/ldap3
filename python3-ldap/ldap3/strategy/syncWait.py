@@ -25,8 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from pyasn1.codec.ber import decoder
 
 from ldap3.strategy.baseStrategy import BaseStrategy
-from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, \
-    RESULT_REFERRAL
+from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
 from ldap3.protocol.rfc4511 import LDAPMessage
 
 
@@ -65,7 +64,7 @@ class SyncWaitStrategy(BaseStrategy):
                     data = self.connection.socket.recv(SOCKET_SIZE)
                 except OSError as e:
                     # if e.winerror == 10004:  # window error for socket not open
-                    self.connection.close()
+                    self.close()
                     self.connection.lastError = 'Error receiving data: ' + str(e)
                     raise Exception(self.connection.lastError)
                 unprocessed += data
@@ -120,6 +119,7 @@ class SyncWaitStrategy(BaseStrategy):
             return self.connection.response
 
         raise Exception('error receiving response')
+
     def _getResponse(self, messageId):
         """
         Performs the capture of LDAP response for SyncWaitStrategy
@@ -156,8 +156,7 @@ class SyncWaitStrategy(BaseStrategy):
         ldapResponses.append(RESPONSE_COMPLETE)
 
         if ldapResponses[-2]['result'] == RESULT_REFERRAL and self.connection.autoReferrals:
-            refResponse, refResult = self.doOperationOnReferral(self._outstanding[messageId],
-                                                                ldapResponses[-2]['referrals'])
+            refResponse, refResult = self.doOperationOnReferral(self._outstanding[messageId], ldapResponses[-2]['referrals'])
             if refResponse is not None:
                 ldapResponses = refResponse + [refResult]
                 ldapResponses.append(RESPONSE_COMPLETE)

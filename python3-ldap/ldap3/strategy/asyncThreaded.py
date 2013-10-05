@@ -99,8 +99,7 @@ class AsyncThreadedStrategy(BaseStrategy):
             responses = self._responses.pop(messageId) if messageId in self._responses and self._responses[messageId][-1] == RESPONSE_COMPLETE else None
 
         if responses is not None and responses[-2]['result'] == RESULT_REFERRAL and self.connection.autoReferrals:
-            refResponse, refResult = self.doOperationOnReferral(self._outstanding[messageId],
-                                                                responses[-2]['referrals'])
+            refResponse, refResult = self.doOperationOnReferral(self._outstanding[messageId], responses[-2]['referrals'])
             if refResponse is not None:
                 responses = refResponse + [refResult]
                 responses.append(RESPONSE_COMPLETE)
@@ -108,7 +107,6 @@ class AsyncThreadedStrategy(BaseStrategy):
                 responses = [refResult, RESPONSE_COMPLETE]
 
             self._referrals = []
-
 
         return responses
 
@@ -175,7 +173,6 @@ class ReceiverSocketThread(Thread):
                     getMoreData = False if unprocessed else True
                     listen = True if self.connection.listening or unprocessed else False
                 else:  # Unsolicited Notification
-                    if dictResponse[
-                        'responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per rfc 4511 (paragraph 4.4.1)
+                    if dictResponse['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per rfc 4511 (paragraph 4.4.1)
                         listen = False
-        self.connection.close()
+        self.connection.strategy.close()

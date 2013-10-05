@@ -26,9 +26,7 @@ from ldap3.protocol.rfc4511 import Controls, Control
 
 
 def attributeToDict(attribute):
-    return {'type': str(attribute['type']),
-            'values': [str(val) for val in attribute['vals']]
-    }
+    return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
 
 
 def attributesToDict(attributes):
@@ -55,15 +53,12 @@ def searchRefsToList(searchRefs):
 
 
 def saslToDict(sasl):
-    return {'mechanism': str(sasl['mechanism']),
-            'credentials': str(sasl['credentials'])
-    }
+    return {'mechanism': str(sasl['mechanism']), 'credentials': str(sasl['credentials'])}
 
 
 def authenticationChoiceToDict(authenticationChoice):
     return {'simple': str(authenticationChoice['simple']) if authenticationChoice.getName() == 'simple' else None,
-            'sasl': saslToDict(authenticationChoice['sasl']) if authenticationChoice.getName() == 'sasl' else None
-    }
+            'sasl': saslToDict(authenticationChoice['sasl']) if authenticationChoice.getName() == 'sasl' else None}
 
 
 def decodeReferrals(referrals):
@@ -74,17 +69,11 @@ def decodeReferrals(referrals):
 
 
 def partialAttributeToDict(modification):
-    return {
-        'type': str(modification['type']),
-        'value': [str(value) for value in modification['vals']]
-    }
+    return {'type': str(modification['type']), 'value': [str(value) for value in modification['vals']]}
 
 
 def changeToDict(change):
-    return {
-        'operation': int(change['operation']),
-        'attribute': partialAttributeToDict(change['modification'])
-    }
+    return {'operation': int(change['operation']), 'attribute': partialAttributeToDict(change['modification'])}
 
 
 def changesToList(changes):
@@ -96,18 +85,12 @@ def attributesToList(attributes):
 
 
 def avaToDict(ava):
-    return {
-        'attribute': str(ava['attributeDesc']),
-        'value': str(ava['assertionValue'])
-    }
+    return {'attribute': str(ava['attributeDesc']), 'value': str(ava['assertionValue'])}
 
 
 def substringToDict(substring):
-    return {
-        'initial': substring['initial'] if substring['initial'] else '',
-        'any': [middle for middle in substring['any']] if substring['any'] else '',
-        'final': substring['final'] if substring['final'] else ''
-    }
+    return {'initial': substring['initial'] if substring['initial'] else '', 'any': [middle for middle in substring['any']] if substring['any'] else '',
+            'final': substring['final'] if substring['final'] else ''}
 
 
 def prepareChangesForRequest(changes):

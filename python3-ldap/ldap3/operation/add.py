@@ -22,8 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ValsAtLeast1, \
-    ResultCode
+from ldap3.protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ValsAtLeast1, ResultCode
 from ldap3.protocol.convert import referralsToList, attributesToDict
 
 
@@ -55,17 +54,9 @@ def addOperation(dn, attributes):
 
 
 def addRequestToDict(request):
-    return {
-        'entry': str(request['entry']),
-        'attributes': attributesToDict(request['attributes'])
-    }
+    return {'entry': str(request['entry']), 'attributes': attributesToDict(request['attributes'])}
 
 
 def addResponseToDict(response):
-    return {
-        'result': int(response[0]),
-        'description': ResultCode().getNamedValues().getName(response[0]),
-        'dn': str(response['matchedDN']),
-        'message': str(response['diagnosticMessage']),
-        'referrals': referralsToList(response['referral']),
-    }
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
+            'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']), }

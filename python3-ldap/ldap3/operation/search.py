@@ -25,16 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from string import whitespace
 from os import linesep
 
-from ldap3 import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, \
-    SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, \
-    SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, \
-    NO_ATTRIBUTES
-from ldap3.protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, \
-    Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, \
-    AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, \
-    GreaterOrEqual, LessOrEqual, ExtensibleMatch, \
-    Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, \
-    Substring, MatchingRule, Type, MatchValue, DnAttributes
+from ldap3 import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES
+from ldap3.protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ldap3.operation.bind import referralsToList
 from ldap3.protocol.convert import avaToDict, attributesToList, searchRefsToList
 
@@ -57,7 +49,6 @@ from ldap3.protocol.convert import avaToDict, attributesToList, searchRefsToList
 #     typesOnly       BOOLEAN,
 #     filter          Filter,
 #     attributes      AttributeSelection }
-
 
 ROOT = 0
 AND = 1
@@ -90,11 +81,11 @@ class FilterNode():
         return filterNode
 
     def __str__(self, pos = 0):
-        self.__repr__(self, pos)
+        self.__repr__(pos)
 
     def __repr__(self, pos = 0):
-        nodetags = ['ROOT', 'AND', 'OR', 'NOT', 'MATCH_APPROX', 'MATCH_GREATER_OR_EQUAL', 'MATCH_LESS_OR_EQUAL',
-                    'MATCH_EXTENSIBLE', 'MATCH_PRESENT', 'MATCH_SUBSTRING', 'MATCH_EQUAL']
+        nodetags = ['ROOT', 'AND', 'OR', 'NOT', 'MATCH_APPROX', 'MATCH_GREATER_OR_EQUAL', 'MATCH_LESS_OR_EQUAL', 'MATCH_EXTENSIBLE', 'MATCH_PRESENT',
+                    'MATCH_SUBSTRING', 'MATCH_EQUAL']
         representation = ' ' * pos + 'tag: ' + nodetags[self.tag] + ' - assertion: ' + str(self.assertion)
         if self.elements:
             representation += ' - elements: ' + str(len(self.elements))
@@ -166,7 +157,8 @@ def evaluateMatch(match):
         if not attributeName and not matchingRule:
             raise Exception('invalid extensible filter')
 
-        assertion = {'attr': attributeName.strip() if attributeName else None, 'value': validateAssertionValue(rightPart), 'matchingRule': matchingRule.strip() if matchingRule else None, 'dnAttributes': dnAttributes}
+        assertion = {'attr': attributeName.strip() if attributeName else None, 'value': validateAssertionValue(rightPart),
+                     'matchingRule': matchingRule.strip() if matchingRule else None, 'dnAttributes': dnAttributes}
     elif match.endswith('=*'):
         tag = MATCH_PRESENT
         assertion = {'attr': match[:-2]}
@@ -190,8 +182,7 @@ def evaluateMatch(match):
 
 def parseFilter(searchFilter):
     searchFilter = searchFilter.strip()
-    if searchFilter and searchFilter.count('(') == searchFilter.count(')') and searchFilter.startswith(
-            '(') and searchFilter.endswith(')'):
+    if searchFilter and searchFilter.count('(') == searchFilter.count(')') and searchFilter.startswith('(') and searchFilter.endswith(')'):
         state = SEARCH_OPEN_OR_CLOSE
         root = FilterNode(ROOT)
         currentNode = root
@@ -326,8 +317,7 @@ def buildAttributeSelection(attributeList):
     return attributeSelection
 
 
-def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit,
-                    typesOnly):
+def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly):
     request = SearchRequest()
     request['baseObject'] = LDAPDN(searchBase)
 
@@ -446,37 +436,19 @@ def filterToString(filterObject):
 
 
 def searchRequestToDict(request):
-    return {
-        'base': str(request['baseObject']),
-        'scope': int(request['scope']),
-        'dereferenceAlias': int(request['derefAliases']),
-        'sizeLimit': int(request['sizeLimit']),
-        'timeLimit': int(request['timeLimit']),
-        'typeOnly': bool(request['typesOnly']),
-        'filter': filterToString(request['filter']),
-        'attributes': attributesToList(request['attributes'])
-    }
+    return {'base': str(request['baseObject']), 'scope': int(request['scope']), 'dereferenceAlias': int(request['derefAliases']),
+            'sizeLimit': int(request['sizeLimit']), 'timeLimit': int(request['timeLimit']), 'typeOnly': bool(request['typesOnly']),
+            'filter': filterToString(request['filter']), 'attributes': attributesToList(request['attributes'])}
 
 
 def searchResultEntryResponseToDict(response):
-    return {
-        'dn': str(response['object']),
-        'attributes': attributesToDict(response['attributes']),
-        'rawAttributes': rawAttributesToDict(response['attributes'])
-    }
+    return {'dn': str(response['object']), 'attributes': attributesToDict(response['attributes']), 'rawAttributes': rawAttributesToDict(response['attributes'])}
 
 
 def searchResultDoneResponseToDict(response):
-    return {
-        'result': int(response[0]),
-        'description': ResultCode().getNamedValues().getName(response[0]),
-        'message': str(response['diagnosticMessage']),
-        'dn': str(response['matchedDN']),
-        'referrals': referralsToList(response['referral'])
-    }
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'message': str(response['diagnosticMessage']),
+            'dn': str(response['matchedDN']), 'referrals': referralsToList(response['referral'])}
 
 
 def searchResultReferenceResponseToDict(response):
-    return {
-        'uri': searchRefsToList(response)
-    }
+    return {'uri': searchRefsToList(response)}

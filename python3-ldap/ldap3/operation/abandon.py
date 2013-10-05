@@ -36,6 +36,4 @@ def abandonOperation(msgId):
 
 
 def abandonRequestToDict(request):
-    return {
-        'messageId': str(request[0]),
-    }
+    return {'messageId': str(request[0]), }

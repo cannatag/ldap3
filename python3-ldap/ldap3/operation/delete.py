@@ -35,16 +35,9 @@ def deleteOperation(dn):
 
 
 def deleteRequestToDict(request):
-    return {
-        'entry': str(request)
-    }
+    return {'entry': str(request)}
 
 
 def deleteResponseToDict(response):
-    return {
-        'result': int(response[0]),
-        'description': ResultCode().getNamedValues().getName(response[0]),
-        'dn': str(response['matchedDN']),
-        'message': str(response['diagnosticMessage']),
-        'referrals': referralsToList(response['referral']),
-    }
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
+            'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']), }

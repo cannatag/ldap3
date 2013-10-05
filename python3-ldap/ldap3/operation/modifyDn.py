@@ -22,8 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.rfc4511 import ModifyDNRequest, LDAPDN, RelativeLDAPDN, DeleteOldRDN, NewSuperior, \
-    ResultCode
+from ldap3.protocol.rfc4511 import ModifyDNRequest, LDAPDN, RelativeLDAPDN, DeleteOldRDN, NewSuperior, ResultCode
 from ldap3.operation.bind import referralsToList
 
 # ModifyDNRequest ::= [APPLICATION 12] SEQUENCE {
@@ -46,19 +45,10 @@ def modifyDnOperation(dn, newRelativeDn, deleteOldRdn = True, newSuperior = None
 
 
 def modifyDnRequestToDict(request):
-    return {
-        'entry': str(request['entry']),
-        'newRdn': str(request['newrdn']),
-        'deleteOldRdn': bool(request['deleteoldrdn']),
-        'newSuperior': str(request['newSuperior']) if request['newSuperior'] else None
-    }
+    return {'entry': str(request['entry']), 'newRdn': str(request['newrdn']), 'deleteOldRdn': bool(request['deleteoldrdn']),
+            'newSuperior': str(request['newSuperior']) if request['newSuperior'] else None}
 
 
 def modifyDnResponseToDict(response):
-    return {
-        'result': int(response[0]),
-        'description': ResultCode().getNamedValues().getName(response[0]),
-        'dn': str(response['matchedDN']),
-        'referrals': referralsToList(response['referral']),
-        'message': str(response['diagnosticMessage']),
-    }
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
+            'referrals': referralsToList(response['referral']), 'message': str(response['diagnosticMessage']), }

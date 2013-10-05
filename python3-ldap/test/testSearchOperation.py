@@ -46,11 +46,11 @@ class Test(unittest.TestCase):
         self.assertEqual(len(self.connection.response), 1)
 
     def testSearchExtensibleMatch(self):
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(&(ou:dn:=moved)(objectclass=inetOrgPerson))', attributes = ['cn', 'givenName', 'sn'])
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes = ['cn', 'givenName', 'sn'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
-        self.assertEqual(len(self.connection.response), 1)
+        self.assertGreater(len(self.connection.response), 15)
 
     def testSearchPresent(self):
         result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName', 'jpegPhoto'])

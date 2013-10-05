@@ -26,11 +26,7 @@ from threading import Lock
 from datetime import datetime
 from os import linesep
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, \
-    MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, \
-    SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, \
-    CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, \
-    ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT
+from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT
 from ldap3.operation.abandon import abandonOperation
 from ldap3.operation.add import addOperation
 from ldap3.operation.bind import bindOperation
@@ -46,6 +42,7 @@ from ldap3.protocol.sasl.sasl import saslExternal, saslDigestMd5
 from ldap3.operation.unbind import unbindOperation
 
 
+#noinspection PyAttributeOutsideInit
 class ConnectionUsage(object):
     """
     Collect statistics on connection usage
@@ -153,9 +150,8 @@ class Connection(object):
     Mixing controls must be defined in controls specification (as per rfc 4511)
     """
 
-    def __init__(self, server, user = None, password = None, autoBind = False, version = 3, authentication = None,
-                 clientStrategy = STRATEGY_SYNC, autoReferrals = True, saslMechanism = None, saslCredentials = None,
-                 collectUsage = False):
+    def __init__(self, server, user = None, password = None, autoBind = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
+                 autoReferrals = True, saslMechanism = None, saslCredentials = None, collectUsage = False):
         """
         Constructor
         """
@@ -218,8 +214,8 @@ class Connection(object):
             raise Exception(self.lastError)
 
     def __str__(self):
-        return (str(self.server) if self.server.isValid else 'None') + ' - ' + 'user: ' + str(
-            self.user) + ' - version ' + str(self.version) + ' - ' + ('bound' if self.bound else 'unbound') + ' - ' + (
+        return (str(self.server) if self.server.isValid else 'None') + ' - ' + 'user: ' + str(self.user) + ' - version ' + str(self.version) + ' - ' + (
+        'bound' if self.bound else 'unbound') + ' - ' + (
                    'closed' if self.closed else 'open') + ' - ' + (
                    'listening' if self.listening else 'not listening') + ' - ' + self.strategy.__class__.__name__
 
@@ -250,8 +246,7 @@ class Connection(object):
                 response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
             elif self.authentication == AUTH_SASL:
                 if self.saslMechanism in ['EXTERNAL', 'DIGEST-MD5']:
-                    request = bindOperation(self.version, self.authentication, self.user, None, self.saslMechanism,
-                                            self.saslCredentials)
+                    request = bindOperation(self.version, self.authentication, self.user, None, self.saslMechanism, self.saslCredentials)
                     response = self.doSaslBind(self.saslMechanism, request, controls)
                 else:
                     self.lastError = 'requested sasl mechanism not supported'
@@ -272,7 +267,7 @@ class Connection(object):
 
     def unbind(self, controls = None):
         """
-        Unbind the connected user
+        Unbinds the connected user
         Unbind implies closing session as per rfc 4511 (4.3)
         """
         if not self.closed:
@@ -288,9 +283,9 @@ class Connection(object):
         """
         self.unbind()
 
-    def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
-               dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = list(), sizeLimit = 0, timeLimit = 0,
-               typesOnly = False, getOperationalAttributes = False, controls = None):
+
+    def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = list(),
+               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None):
         """
         Perform an ldap search
         if attributes is empty no attribute is returned
@@ -304,8 +299,7 @@ class Connection(object):
         if getOperationalAttributes:
             attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
 
-        request = searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit,
-                                  timeLimit, typesOnly)
+        request = searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly)
 
         response = self.postSendSearch(self.send('searchRequest', request, controls))
         if isinstance(response, int):
@@ -324,8 +318,7 @@ class Connection(object):
         response = self.postSendSingleResponse(self.send('compareRequest', request, controls))
         if isinstance(response, int):
             return response
-        return True if self.result['type'] == 'compareResponse' and self.result[
-            'result'] == RESULT_COMPARE_TRUE else False
+        return True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
 
     def add(self, dn, objectClass, attributes = None, controls = None):
         """
@@ -341,13 +334,11 @@ class Connection(object):
 
         if attributes:
             if 'objectClass' in attributes:
-                attrObjectClass = attributes['objectClass'] if isinstance(attributes['objectClass'], list) else [
-                    attributes['objectClass']]
+                attrObjectClass = attributes['objectClass'] if isinstance(attributes['objectClass'], list) else [attributes['objectClass']]
         else:
             attributes = dict()
 
-        attributes['objectClass'] = list(set(
-            [objectClass.lower() for objectClass in parmObjectClass + attrObjectClass]))  # remove duplicate objectClass
+        attributes['objectClass'] = list(set([objectClass.lower() for objectClass in parmObjectClass + attrObjectClass]))  # remove duplicate objectClass
         if not attributes['objectClass']:
             self.lastError = 'objectClass is mandatory'
             raise Exception(self.lastError)
@@ -427,8 +418,7 @@ class Connection(object):
             return response
         return True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
-    def startTls(
-            self):  # as per rfc 4511. Removal of TLS is defined as MAY in rfc 4511 so the client can't implement a generic StopTls method
+    def startTls(self):  # as per rfc 4511. Removal of TLS is defined as MAY in rfc 4511 so the client can't implement a generic StopTls method
         if self.server.tls:
             if self.server.tls.startTls(self):
                 self.refreshDsaInfo()  # refresh server info as per rfc 4515 (3.1.5)

@@ -41,8 +41,7 @@ def bindOperation(version, authentication, name = '', password = None, saslMecha
     request['name'] = name
     if authentication == AUTH_SIMPLE:
         if password:
-            request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(
-                validateSimplePassword(password)))
+            request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(validateSimplePassword(password)))
         else:
             raise Exception('password cannot be empty')
     elif authentication == AUTH_SASL:
@@ -61,19 +60,10 @@ def bindOperation(version, authentication, name = '', password = None, saslMecha
 
 
 def bindRequestToDict(request):
-    return {
-        'version': int(request['version']),
-        'name': str(request['name']),
-        'authentication': authenticationChoiceToDict(request['authentication'])
-    }
+    return {'version': int(request['version']), 'name': str(request['name']), 'authentication': authenticationChoiceToDict(request['authentication'])}
 
 
 def bindResponseToDict(response):
-    return {
-        'result': int(response['resultCode']),
-        'description': ResultCode().getNamedValues().getName(response['resultCode']),
-        'dn': str(response['matchedDN']),
-        'message': str(response['diagnosticMessage']),
-        'referrals': referralsToList(response['referral']),
-        'saslCreds': str(response['serverSaslCreds'])
-    }
+    return {'result': int(response['resultCode']), 'description': ResultCode().getNamedValues().getName(response['resultCode']),
+            'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']),
+            'saslCreds': str(response['serverSaslCreds'])}

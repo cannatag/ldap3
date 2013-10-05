@@ -26,8 +26,7 @@ from socket import getaddrinfo, gaierror
 from ldap3.protocol.dse import DsaInfo
 from ldap3.protocol.schema import SchemaInfo
 from ldap3.tls import Tls
-from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, \
-    ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT
+from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT
 
 
 class Server(object):
@@ -41,7 +40,7 @@ class Server(object):
     use ('*', True) to allow any host with same authentication of Server.
     """
     _realServers = dict()   # dictionary of real servers currently active, the key is the host part of the server address
-                            # and the value is the messageId counter for all connection to that host)
+    # and the value is the messageId counter for all connection to that host)
     def __init__(self, host, port = 389, useSsl = False, allowedReferralHosts = None, getInfo = None, tls = None):
         """
         Constructor
@@ -105,8 +104,7 @@ class Server(object):
         """
         if self.address and self.address in Server._realServers:
             Server._realServers[self.address] += 1
-            if Server._realServers[
-                self.address] > 2147483646:  # wrap as per MAXINT (2147483647) in rfc4511 specification
+            if Server._realServers[self.address] > 2147483646:  # wrap as per MAXINT (2147483647) in rfc4511 specification
                 Server._realServers[self.address] = 1  # 0 is reserved for Unsolicited messages
         else:
             Server._realServers[self.address] = 1
@@ -136,14 +134,16 @@ class Server(object):
         if self._dsaInfo and entry == '':  # subschemaSubentry already present in dsaInfo
             schemaEntry = self._dsaInfo.schemaEntry[0] if self._dsaInfo.schemaEntry else None
         else:
-            result = connection.search(schemaEntry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'], getOperationalAttributes = True)
+            result = connection.search(schemaEntry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'],
+                                       getOperationalAttributes = True)
             if isinstance(result, bool):
                 schemaEntry = connection.response[0]['attributes']['subschemaSubentry'][0]
             else:
                 schemaEntry = connection.getResponse(result)[0]['attributes']['subschemaSubentry'][0]
 
         if schemaEntry:
-            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
+            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT,
+                                       attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
             if isinstance(result, bool):
                 self._schemaInfo = SchemaInfo(schemaEntry, connection.response[0]['attributes']) if result else None
             else:

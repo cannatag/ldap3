@@ -22,8 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.rfc4511 import ExtendedRequest, RequestName, RequestValue, \
-    ResultCode
+from ldap3.protocol.rfc4511 import ExtendedRequest, RequestName, RequestValue, ResultCode
 from ldap3.protocol.convert import decodeReferrals
 
 
@@ -42,26 +41,14 @@ def extendedOperation(requestName, requestValue = None):
 
 
 def extendedRequestToDict(request):
-    return {
-        'name': str(request['requestName']),
-        'value': str(request['requestValue']) if request['requestValue'] else None
-    }
+    return {'name': str(request['requestName']), 'value': str(request['requestValue']) if request['requestValue'] else None}
 
 
 def extendedResponseToDict(response):
-    return {
-        'result': int(response[0]),
-        'dn': str(response['matchedDN']),
-        'message': str(response['diagnosticMessage']),
-        'description': ResultCode().getNamedValues().getName(response[0]),
-        'referrals': decodeReferrals(response['referral']),
-        'responseName': str(response['responseName']),
-        'responseValue': str(response['responseValue'])
-    }
+    return {'result': int(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']),
+            'description': ResultCode().getNamedValues().getName(response[0]), 'referrals': decodeReferrals(response['referral']),
+            'responseName': str(response['responseName']), 'responseValue': str(response['responseValue'])}
 
 
 def intermediateResponseToDict(response):
-    return {
-        'responseName': str(response['responseName']),
-        'responseValue': str(response(['responseValue']))
-    }
+    return {'responseName': str(response['responseName']), 'responseValue': str(response(['responseValue']))}

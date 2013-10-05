@@ -35,8 +35,7 @@ class Tls(object):
     tls/ssl configuration for Server object
     """
 
-    def __init__(self, localPrivateKeyFile = None, localCertificateFile = None, validate = ssl.CERT_NONE,
-                 version = ssl.PROTOCOL_TLSv1, caCertsFile = None):
+    def __init__(self, localPrivateKeyFile = None, localCertificateFile = None, validate = ssl.CERT_NONE, version = ssl.PROTOCOL_TLSv1, caCertsFile = None):
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
         elif validate:
@@ -58,10 +57,8 @@ class Tls(object):
         self.certificateFile = localCertificateFile
 
     def __str__(self):
-        return 'version: ' + self.version + ' - local private key: ' + str(
-            self.privateKeyFile) + ' - local public key:' + str(
-            self.certificateFile) + ' - validate remote public key:' + self.validate + 'CA public key: ' + str(
-            self.caCertsFile)
+        return 'version: ' + self.version + ' - local private key: ' + str(self.privateKeyFile) + ' - local public key:' + str(
+            self.certificateFile) + ' - validate remote public key:' + self.validate + 'CA public key: ' + str(self.caCertsFile)
 
     def __repr__(self):
         r = '' if self.privateKeyFile is None else ', localPrivateKeyFile={0.privateKeyFile!r}'.format(self)
@@ -76,18 +73,11 @@ class Tls(object):
         """
         Add TLS to a plain socket and return the SSL socket
         """
-        return ssl.wrap_socket(
-            sock,
-            keyfile = self.privateKeyFile,
-            certfile = self.certificateFile,
-            server_side = False,
-            cert_reqs = self.validate,
-            ssl_version = self.version,
-            ca_certs = self.caCertsFile,
-            do_handshake_on_connect = doHandshake
-        )
+        return ssl.wrap_socket(sock, keyfile = self.privateKeyFile, certfile = self.certificateFile, server_side = False, cert_reqs = self.validate,
+                               ssl_version = self.version, ca_certs = self.caCertsFile, do_handshake_on_connect = doHandshake)
 
-    def unwrapSocket(self, sock):
+    @staticmethod
+    def unwrapSocket(sock):
         """
         Remove TLS from an SSL socket and return the plain socket
         """
@@ -127,11 +117,14 @@ class Tls(object):
         connection.tlsStarted = True
         return True
 
+
 class CertificateError_backport(ValueError): # fix for Python2, code from python 3.3 standard library
     pass
 
+
 def _dnsname_to_pat_backport(dn): # fix for Python2, code from python 3.3 standard library
     import re
+
     pats = []
     for frag in dn.split(r'.'):
         if frag == '*':
@@ -143,6 +136,7 @@ def _dnsname_to_pat_backport(dn): # fix for Python2, code from python 3.3 standa
             frag = re.escape(frag)
             pats.append(frag.replace(r'\*', '[^.]*'))
     return re.compile(r'\A' + r'\.'.join(pats) + r'\Z', re.IGNORECASE)
+
 
 def match_hostname_backport(cert, hostname): # fix for Python2, code from python 3.3 standard library
     """Verify that *cert* (in decoded format as returned by
@@ -174,12 +168,10 @@ def match_hostname_backport(cert, hostname): # fix for Python2, code from python
                     dnsnames.append(value)
     if len(dnsnames) > 1:
         raise CertificateError_backport("hostname %r "
-                               "doesn't match either of %s"
-                               % (hostname, ', '.join(map(repr, dnsnames))))
+                                        "doesn't match either of %s" % (hostname, ', '.join(map(repr, dnsnames))))
     elif len(dnsnames) == 1:
         raise CertificateError_backport("hostname %r "
-                               "doesn't match %r"
-                               % (hostname, dnsnames[0]))
+                                        "doesn't match %r" % (hostname, dnsnames[0]))
     else:
         raise CertificateError_backport("no appropriate commonName or "
-                               "subjectAltName fields were found")
+                                        "subjectAltName fields were found")

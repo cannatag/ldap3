@@ -36,8 +36,7 @@ class DsaInfo():
         self.namingContexts = attributes.pop('namingContexts', None)
         self.supportedControls = decodeOids(attributes.pop('supportedControl', None))
         self.supportedExtensions = decodeOids(attributes.pop('supportedExtension', None))
-        self.supportedFeatures = decodeOids(attributes.pop('supportedFeatures', None)) + decodeOids(
-            attributes.pop('supportedCapabilities', None))
+        self.supportedFeatures = decodeOids(attributes.pop('supportedFeatures', None)) + decodeOids(attributes.pop('supportedCapabilities', None))
         self.supportedLdapVersions = attributes.pop('supportedLDAPVersion', None)
         self.supportedSaslMechanisms = attributes.pop('supportedSASLMechanisms', None)
         self.vendorName = attributes.pop('vendorName', None)
@@ -54,9 +53,11 @@ class DsaInfo():
         r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + s for s in self.namingContexts]) + linesep) if self.namingContexts else ''
         r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + s for s in self.altServers]) + linesep) if self.altServers else ''
         r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedControls]) + linesep) if self.supportedControls else ''
-        r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedExtensions]) + linesep) if self.supportedExtensions else ''
+        r += (
+        '  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedExtensions]) + linesep) if self.supportedExtensions else ''
         r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedFeatures]) + linesep) if self.supportedFeatures else ''
-        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([s for s in self.supportedSaslMechanisms]) + linesep) if self.supportedSaslMechanisms else ''
+        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join(
+            [s for s in self.supportedSaslMechanisms]) + linesep) if self.supportedSaslMechanisms else ''
         r += ('  Schema Entry:' + linesep + linesep.join(['    ' + s for s in self.schemaEntry]) + linesep) if self.schemaEntry else ''
 
         r += 'Other:' + linesep

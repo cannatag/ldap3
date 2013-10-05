@@ -31,13 +31,11 @@ from pyasn1.codec.ber import encoder
 from ldap3.protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ldap3.operation.add import addResponseToDict, addRequestToDict
 from ldap3.operation.modify import modifyRequestToDict, modifyResponseToDict
-from ldap3.operation.search import searchResultReferenceResponseToDict, searchResultDoneResponseToDict, searchResultEntryResponseToDict, \
-    searchRequestToDict
+from ldap3.operation.search import searchResultReferenceResponseToDict, searchResultDoneResponseToDict, searchResultEntryResponseToDict, searchRequestToDict
 from ldap3.operation.bind import bindResponseToDict, bindRequestToDict
 from ldap3.operation.compare import compareResponseToDict, compareRequestToDict
 from ldap3.operation.extended import extendedRequestToDict, extendedResponseToDict, intermediateResponseToDict
-from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, \
-    SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS
+from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS
 from ldap3.server import Server
 from ldap3.operation.modifyDn import modifyDnRequestToDict, modifyDnResponseToDict
 from ldap3.operation.delete import deleteResponseToDict, deleteRequestToDict
@@ -102,8 +100,7 @@ class BaseStrategy(object):
 
         if useSsl:
             try:
-                self.connection.socket = self.connection.server.tls.wrapSocket(self.connection.socket,
-                                                                               doHandshake = True)
+                self.connection.socket = self.connection.server.tls.wrapSocket(self.connection.socket, doHandshake = True)
             except Exception as e:
                 self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
                 raise Exception(self.connection.lastError)
@@ -178,7 +175,7 @@ class BaseStrategy(object):
             while timeout >= 0:  # waiting for completed message to appear in _responses
                 responses = self._getResponse(messageId)
                 if responses == SESSION_TERMINATED_BY_SERVER:
-                    self.connection.close()
+                    self.close()
                     self.connection.lastError = 'session terminated by server'
                     raise Exception(self.connection.lastError)
                 if not responses:
@@ -190,10 +187,8 @@ class BaseStrategy(object):
                         self._outstanding.pop(messageId)
                         self.connection.response = responses[:-2] if len(responses) > 2 else []
                         self.connection.result = responses[-2]
-                        response = [responses[0]] if len(responses) == 2 else responses[
-                                                                              :-1]  # remove the response complete flag
+                        response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
         return response
-
 
 
     @classmethod
@@ -207,7 +202,8 @@ class BaseStrategy(object):
 
         retValue = -1
         if len(data) > 2:
-            if data[1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
+            if data[
+                1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
                 retValue = data[1] + 2
             else:  # BER definite length - long form. Highest bit of byte 1 is 1, last 7 bits counts the number of following octets containing the value length
                 bytesLength = data[1] - 128
@@ -385,34 +381,21 @@ class BaseStrategy(object):
     def doOperationOnReferral(self, request, referrals):
         validReferralList = self.validReferralList(referrals)
         if validReferralList:
-            preferredReferralList = [referral for referral in validReferralList if
-                                     referral['ssl'] == self.connection.server.ssl]
+            preferredReferralList = [referral for referral in validReferralList if referral['ssl'] == self.connection.server.ssl]
             selectedReferral = choice(preferredReferralList) if preferredReferralList else choice(validReferralList)
 
-            referralServer = Server(
-                host = selectedReferral['host'],
-                port = selectedReferral['port'] or self.connection.server.port,
-                useSsl = selectedReferral['ssl'],
-                allowedReferralHosts = self.connection.server.allowedReferralHosts,
-                tls = Tls(
-                    localPrivateKeyFile = self.connection.server.tls.privateKeyFile,
-                    localCertificateFile = self.connection.server.tls.certificateFile,
-                    validate = self.connection.server.tls.validate,
-                    version = self.connection.server.tls.version,
-                    caCertsFile = self.connection.server.tls.caCertsFile
-                )
-            )
+            referralServer = Server(host = selectedReferral['host'], port = selectedReferral['port'] or self.connection.server.port,
+                                    useSsl = selectedReferral['ssl'], allowedReferralHosts = self.connection.server.allowedReferralHosts,
+                                    tls = Tls(localPrivateKeyFile = self.connection.server.tls.privateKeyFile,
+                                              localCertificateFile = self.connection.server.tls.certificateFile, validate = self.connection.server.tls.validate,
+                                              version = self.connection.server.tls.version, caCertsFile = self.connection.server.tls.caCertsFile))
             from ldap3.connection import Connection
-            referralConnection = Connection(
-                server = referralServer,
-                user = self.connection.user if not selectedReferral['anonymousBindOnly'] else None,
-                password = self.connection.password if not selectedReferral['anonymousBindOnly'] else None,
-                version = self.connection.version,
-                authentication = self.connection.authentication if not selectedReferral[
-                    'anonymousBindOnly'] else AUTH_ANONYMOUS,
-                clientStrategy = STRATEGY_SYNC,
-                autoReferrals = True
-            )
+
+            referralConnection = Connection(server = referralServer, user = self.connection.user if not selectedReferral['anonymousBindOnly'] else None,
+                                            password = self.connection.password if not selectedReferral['anonymousBindOnly'] else None,
+                                            version = self.connection.version,
+                                            authentication = self.connection.authentication if not selectedReferral['anonymousBindOnly'] else AUTH_ANONYMOUS,
+                                            clientStrategy = STRATEGY_SYNC, autoReferrals = True)
 
             referralConnection.open()
             referralConnection.strategy._referrals = self._referrals
@@ -420,47 +403,23 @@ class BaseStrategy(object):
                 referralConnection.bind()
 
             if request['type'] == 'searchRequest':
-                referralConnection.search(
-                    selectedReferral['base'] or request['base'],
-                    selectedReferral['filter'] or request['filter'],
-                    selectedReferral['scope'] or request['scope'],
-                    request['dereferenceAlias'],
-                    selectedReferral['attributes'] or request['attributes'],
-                    request['sizeLimit'],
-                    request['timeLimit'],
-                    request['typeOnly']
-                )
+                referralConnection.search(selectedReferral['base'] or request['base'], selectedReferral['filter'] or request['filter'],
+                                          selectedReferral['scope'] or request['scope'], request['dereferenceAlias'],
+                                          selectedReferral['attributes'] or request['attributes'], request['sizeLimit'], request['timeLimit'],
+                                          request['typeOnly'])
             elif request['type'] == 'addRequest':
-                referralConnection.add(
-                    selectedReferral['base'] or request['entry'],
-                    None,
-                    request['attributes']
-                )
+                referralConnection.add(selectedReferral['base'] or request['entry'], None, request['attributes'])
             elif request['type'] == 'compareRequest':
-                referralConnection.compare(
-                    selectedReferral['base'] or request['entry'],
-                    request['attribute'],
-                    request['value']
-                )
+                referralConnection.compare(selectedReferral['base'] or request['entry'], request['attribute'], request['value'])
             elif request['type'] == 'delRequest':
-                referralConnection.delete(
-                    selectedReferral['base'] or request['entry'],
-                )
+                referralConnection.delete(selectedReferral['base'] or request['entry'])
             elif request['type'] == 'extendedRequest':
                 # tbd
                 raise NotImplemented()
             elif request['type'] == 'modifyRequest':
-                referralConnection.modify(
-                    selectedReferral['base'] or request['entry'],
-                    prepareChangesForRequest(request['changes'])
-                )
+                referralConnection.modify(selectedReferral['base'] or request['entry'], prepareChangesForRequest(request['changes']))
             elif request['type'] == 'modDNRequest':
-                referralConnection.modifyDn(
-                    selectedReferral['base'] or request['entry'],
-                    request['newRdn'],
-                    request['deleteOldRdn'],
-                    request['newSuperior']
-                )
+                referralConnection.modifyDn(selectedReferral['base'] or request['entry'], request['newRdn'], request['deleteOldRdn'], request['newSuperior'])
             else:
                 raise Exception('referral operation not permitted')
 

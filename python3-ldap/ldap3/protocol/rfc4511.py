@@ -52,9 +52,8 @@ MAXINT = Integer(2147483647)
 rangeInt0ToMaxConstraint = ValueRangeConstraint(0, MAXINT)
 rangeInt1To127Constraint = ValueRangeConstraint(1, 127)
 size1ToMaxConstraint = ValueSizeConstraint(1, MAXINT)
-responseValueConstraint = SingleValueConstraint(0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21,
-                                                32, 33, 34, 36, 48, 49, 50, 51, 52, 53, 54, 64, 65, 66, 67, 68, 69, 71,
-                                                80, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 4096)
+responseValueConstraint = SingleValueConstraint(0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 32, 33, 34, 36, 48, 49, 50, 51, 52, 53,
+                                                54, 64, 65, 66, 67, 68, 69, 71, 80, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 4096)
 
 # custom constraints
 numericOIDConstraint = None  # tbd
@@ -139,10 +138,7 @@ class AttributeValueAssertion(Sequence):
         attributeDesc   AttributeDescription,
         assertionValue  AssertionValue }
     """
-    componentType = NamedTypes(
-        NamedType('attributeDesc', AttributeDescription()),
-        NamedType('assertionValue', AssertionValue())
-    )
+    componentType = NamedTypes(NamedType('attributeDesc', AttributeDescription()), NamedType('assertionValue', AssertionValue()))
 
 
 class MatchingRuleId(LDAPString):
@@ -173,10 +169,7 @@ class PartialAttribute(Sequence):
         type       AttributeDescription,
         vals       SET OF value AttributeValue }
     """
-    componentType = NamedTypes(
-        NamedType('type', AttributeDescription()),
-        NamedType('vals', Vals())
-    )
+    componentType = NamedTypes(NamedType('type', AttributeDescription()), NamedType('vals', Vals()))
 
 
 class Attribute(Sequence):
@@ -185,10 +178,7 @@ class Attribute(Sequence):
         ...,
         vals (SIZE(1..MAX))})
     """
-    componentType = NamedTypes(
-        NamedType('type', AttributeDescription()),
-        NamedType('vals', ValsAtLeast1())
-    )
+    componentType = NamedTypes(NamedType('type', AttributeDescription()), NamedType('vals', ValsAtLeast1()))
 
 
 class AttributeList(SequenceOf):
@@ -220,10 +210,7 @@ class SaslCredentials(Sequence):
      credentials             OCTET STRING OPTIONAL }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatConstructed, 3))
-    componentType = NamedTypes(
-        NamedType('mechanism', LDAPString()),
-        OptionalNamedType('credentials', Credentials())
-    )
+    componentType = NamedTypes(NamedType('mechanism', LDAPString()), OptionalNamedType('credentials', Credentials()))
 
 
 class AuthenticationChoice(Choice):
@@ -234,10 +221,7 @@ class AuthenticationChoice(Choice):
         sasl                    [3] SaslCredentials,
     ... }
     """
-    componentType = NamedTypes(
-        NamedType('simple', Simple()),
-        NamedType('sasl', SaslCredentials())
-    )
+    componentType = NamedTypes(NamedType('simple', Simple()), NamedType('sasl', SaslCredentials()))
 
 
 class Version(Integer):
@@ -312,59 +296,18 @@ class ResultCode(Enumerated):
         authorizationDenied           123        WELTMAN                          [RFC4370]
         e-syncRefreshRequired         4096       [Kurt_Zeilenga] [Jong_Hyuk_Choi] [RFC4533]
     """
-    namedValues = NamedValues(
-        ('success', 0),
-        ('operationsError', 1),
-        ('protocolError', 2),
-        ('timeLimitExceeded', 3),
-        ('sizeLimitExceeded', 4),
-        ('compareFalse', 5),
-        ('compareTrue', 6),
-        ('authMethodNotSupported', 7),
-        ('strongerAuthRequired', 8),
-        ('referral', 10),
-        ('adminLimitExceeded', 11),
-        ('unavailableCriticalExtension', 12),
-        ('confidentialityRequired', 13),
-        ('saslBindInProgress', 14),
-        ('noSuchAttribute', 16),
-        ('undefinedAttributeType', 17),
-        ('inappropriateMatching', 18),
-        ('constraintViolation', 19),
-        ('attributeOrValueExists', 20),
-        ('invalidAttributeSyntax', 21),
-        ('noSuchObject', 32),
-        ('aliasProblem', 33),
-        ('invalidDNSyntax', 34),
-        ('aliasDereferencingProblem', 36),
-        ('inappropriateAuthentication', 48),
-        ('invalidCredentials', 49),
-        ('insufficientAccessRights', 50),
-        ('busy', 51),
-        ('unavailable', 52),
-        ('unwillingToPerform', 53),
-        ('loopDetected', 54),
-        ('namingViolation', 64),
-        ('objectClassViolation', 65),
-        ('notAllowedOnNonLeaf', 66),
-        ('notAllowedOnRDN', 67),
-        ('entryAlreadyExists', 68),
-        ('objectClassModsProhibited', 69),
-        ('affectMultipleDSAs', 71),
-        ('other', 80),
-        ('lcupResourcesExhausted', 113),
-        ('lcupSecurityViolation', 114),
-        ('lcupInvalidData', 115),
-        ('lcupUnsupportedScheme', 116),
-        ('lcupReloadRequired', 117),
-        ('canceled', 118),
-        ('noSuchOperation', 119),
-        ('tooLate', 120),
-        ('cannotCancel', 121),
-        ('assertionFailed', 122),
-        ('authorizationDenied', 123),
-        ('e-syncRefreshRequired', 4096)
-    )
+    namedValues = NamedValues(('success', 0), ('operationsError', 1), ('protocolError', 2), ('timeLimitExceeded', 3), ('sizeLimitExceeded', 4),
+                              ('compareFalse', 5), ('compareTrue', 6), ('authMethodNotSupported', 7), ('strongerAuthRequired', 8), ('referral', 10),
+                              ('adminLimitExceeded', 11), ('unavailableCriticalExtension', 12), ('confidentialityRequired', 13), ('saslBindInProgress', 14),
+                              ('noSuchAttribute', 16), ('undefinedAttributeType', 17), ('inappropriateMatching', 18), ('constraintViolation', 19),
+                              ('attributeOrValueExists', 20), ('invalidAttributeSyntax', 21), ('noSuchObject', 32), ('aliasProblem', 33),
+                              ('invalidDNSyntax', 34), ('aliasDereferencingProblem', 36), ('inappropriateAuthentication', 48), ('invalidCredentials', 49),
+                              ('insufficientAccessRights', 50), ('busy', 51), ('unavailable', 52), ('unwillingToPerform', 53), ('loopDetected', 54),
+                              ('namingViolation', 64), ('objectClassViolation', 65), ('notAllowedOnNonLeaf', 66), ('notAllowedOnRDN', 67),
+                              ('entryAlreadyExists', 68), ('objectClassModsProhibited', 69), ('affectMultipleDSAs', 71), ('other', 80),
+                              ('lcupResourcesExhausted', 113), ('lcupSecurityViolation', 114), ('lcupInvalidData', 115), ('lcupUnsupportedScheme', 116),
+                              ('lcupReloadRequired', 117), ('canceled', 118), ('noSuchOperation', 119), ('tooLate', 120), ('cannotCancel', 121),
+                              ('assertionFailed', 122), ('authorizationDenied', 123), ('e-syncRefreshRequired', 4096))
 
     subTypeSpec = Enumerated.subtypeSpec + responseValueConstraint
 
@@ -449,12 +392,8 @@ class LDAPResult(Sequence):
         diagnosticMessage  LDAPString,
         referral           [3] Referral OPTIONAL }
     """
-    componentType = NamedTypes(
-        NamedType('resultCode', ResultCode()),
-        NamedType('matchedDN', LDAPDN()),
-        NamedType('diagnosticMessage', LDAPString()),
-        OptionalNamedType('referral', Referral())
-    )
+    componentType = NamedTypes(NamedType('resultCode', ResultCode()), NamedType('matchedDN', LDAPDN()), NamedType('diagnosticMessage', LDAPString()),
+                               OptionalNamedType('referral', Referral()))
 
 
 class Criticality(Boolean):
@@ -478,11 +417,8 @@ class Control(Sequence):
         criticality             BOOLEAN DEFAULT FALSE,
         controlValue            OCTET STRING OPTIONAL }
     """
-    componentType = NamedTypes(
-        NamedType('controlType', LDAPOID()),
-        DefaultedNamedType('criticality', Criticality()),
-        OptionalNamedType('controlValue', ControlValue())
-    )
+    componentType = NamedTypes(NamedType('controlType', LDAPOID()), DefaultedNamedType('criticality', Criticality()),
+                               OptionalNamedType('controlValue', ControlValue()))
 
 
 class Controls(SequenceOf):
@@ -500,11 +436,7 @@ class Scope(Enumerated):
         singleLevel             (1),
         wholeSubtree            (2),
     """
-    namedValues = NamedValues(
-        ('baseObject', 0),
-        ('singleLevel', 1),
-        ('wholeSubtree', 2)
-    )
+    namedValues = NamedValues(('baseObject', 0), ('singleLevel', 1), ('wholeSubtree', 2))
 
 
 class DerefAliases(Enumerated):
@@ -515,12 +447,7 @@ class DerefAliases(Enumerated):
         derefFindingBaseObj     (2),
         derefAlways             (3) },
     """
-    namedValues = NamedValues(
-        ('neverDerefAliases', 0),
-        ('derefInSearching', 1),
-        ('derefFindingBaseObj', 2),
-        ('derefAlways', 3)
-    )
+    namedValues = NamedValues(('neverDerefAliases', 0), ('derefInSearching', 1), ('derefFindingBaseObj', 2), ('derefAlways', 3))
 
 
 class TypesOnly(Boolean):
@@ -585,12 +512,8 @@ class MatchingRuleAssertion(Sequence):
         matchValue      [3] AssertionValue,
         dnAttributes    [4] BOOLEAN DEFAULT FALSE }
     """
-    componentType = NamedTypes(
-        OptionalNamedType('matchingRule', MatchingRule()),
-        OptionalNamedType('type', Type()),
-        NamedType('matchValue', MatchValue()),
-        DefaultedNamedType('dnAttributes', DnAttributes()),
-    )
+    componentType = NamedTypes(OptionalNamedType('matchingRule', MatchingRule()), OptionalNamedType('type', Type()), NamedType('matchValue', MatchValue()),
+                               DefaultedNamedType('dnAttributes', DnAttributes()), )
 
 
 class Initial(AssertionValue):
@@ -622,11 +545,7 @@ class Substring(Choice):
         final   [2] AssertionValue } -- can occur at most once
         }
     """
-    componentType = NamedTypes(
-        NamedType('initial', Initial()),
-        NamedType('any', Any()),
-        NamedType('final', Final())
-    )
+    componentType = NamedTypes(NamedType('initial', Initial()), NamedType('any', Any()), NamedType('final', Final()))
 
 
 class Substrings(SequenceOf):
@@ -650,10 +569,7 @@ class SubstringFilter(Sequence):
                 }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatConstructed, 4))
-    componentType = NamedTypes(
-        NamedType('type', AttributeDescription()),
-        NamedType('substrings', Substrings())
-    )
+    componentType = NamedTypes(NamedType('type', AttributeDescription()), NamedType('substrings', Substrings()))
 
 
 class And(SetOf):
@@ -737,25 +653,15 @@ class Filter(Choice):
              ...  }
 
     """
-    componentType = NamedTypes(
-        NamedType('and', And()),
-        NamedType('or', Or()),
-        NamedType('notFilter', Not()),
-        NamedType('equalityMatch', EqualityMatch()),
-        NamedType('substringFilter', SubstringFilter()),
-        NamedType('greaterOrEqual', GreaterOrEqual()),
-        NamedType('lessOrEqual', LessOrEqual()),
-        NamedType('present', Present()),
-        NamedType('approxMatch', ApproxMatch()),
-        NamedType('extensibleMatch', ExtensibleMatch())
-    )
+    componentType = NamedTypes(NamedType('and', And()), NamedType('or', Or()), NamedType('notFilter', Not()), NamedType('equalityMatch', EqualityMatch()),
+                               NamedType('substringFilter', SubstringFilter()), NamedType('greaterOrEqual', GreaterOrEqual()),
+                               NamedType('lessOrEqual', LessOrEqual()), NamedType('present', Present()), NamedType('approxMatch', ApproxMatch()),
+                               NamedType('extensibleMatch', ExtensibleMatch()))
 
 
 And.componentType = Filter()
 Or.componentType = Filter()
-Not.componentType = NamedTypes(
-    NamedType('innerNotFilter', Filter())
-)
+Not.componentType = NamedTypes(NamedType('innerNotFilter', Filter()))
 
 Not.tagSet = Filter.tagSet.tagExplicitly(Tag(tagClassContext, tagFormatConstructed, 2))  # as per RFC4511 page 23
 
@@ -776,12 +682,7 @@ class Operation(Enumerated):
         replace (2),
         ...  }
     """
-    namedValues = NamedValues(
-        ('add', 0),
-        ('delete', 1),
-        ('replace', 2),
-        ('increment', 3)
-    )
+    namedValues = NamedValues(('add', 0), ('delete', 1), ('replace', 2), ('increment', 3))
 
 
 class Change(Sequence):
@@ -794,10 +695,7 @@ class Change(Sequence):
             ...  },
         modification    PartialAttribute } }
     """
-    componentType = NamedTypes(
-        NamedType('operation', Operation()),
-        NamedType('modification', PartialAttribute())
-    )
+    componentType = NamedTypes(NamedType('operation', Operation()), NamedType('modification', PartialAttribute()))
 
 
 class Changes(SequenceOf):
@@ -875,11 +773,7 @@ class BindRequest(Sequence):
         authentication          AuthenticationChoice }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 0))
-    componentType = NamedTypes(
-        NamedType('version', Version()),
-        NamedType('name', LDAPDN()),
-        NamedType('authentication', AuthenticationChoice())
-    )
+    componentType = NamedTypes(NamedType('version', Version()), NamedType('name', LDAPDN()), NamedType('authentication', AuthenticationChoice()))
 
 
 class BindResponse(Sequence):
@@ -889,13 +783,8 @@ class BindResponse(Sequence):
         serverSaslCreds    [7] OCTET STRING OPTIONAL }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 1))
-    componentType = NamedTypes(
-        NamedType('resultCode', ResultCode()),
-        NamedType('matchedDN', LDAPDN()),
-        NamedType('diagnosticMessage', LDAPString()),
-        OptionalNamedType('referral', Referral()),
-        OptionalNamedType('serverSaslCreds', ServerSaslCreds())
-    )
+    componentType = NamedTypes(NamedType('resultCode', ResultCode()), NamedType('matchedDN', LDAPDN()), NamedType('diagnosticMessage', LDAPString()),
+                               OptionalNamedType('referral', Referral()), OptionalNamedType('serverSaslCreds', ServerSaslCreds()))
 
 
 class UnbindRequest(Null):
@@ -926,16 +815,9 @@ class SearchRequest(Sequence):
         attributes      AttributeSelection }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 3))
-    componentType = NamedTypes(
-        NamedType('baseObject', LDAPDN()),
-        NamedType('scope', Scope()),
-        NamedType('derefAliases', DerefAliases()),
-        NamedType('sizeLimit', Integer0ToMax()),
-        NamedType('timeLimit', Integer0ToMax()),
-        NamedType('typesOnly', TypesOnly()),
-        NamedType('filter', Filter()),
-        NamedType('attributes', AttributeSelection())
-    )
+    componentType = NamedTypes(NamedType('baseObject', LDAPDN()), NamedType('scope', Scope()), NamedType('derefAliases', DerefAliases()),
+                               NamedType('sizeLimit', Integer0ToMax()), NamedType('timeLimit', Integer0ToMax()), NamedType('typesOnly', TypesOnly()),
+                               NamedType('filter', Filter()), NamedType('attributes', AttributeSelection()))
 
 
 class SearchResultReference(SequenceOf):
@@ -955,10 +837,7 @@ class SearchResultEntry(Sequence):
         attributes      PartialAttributeList }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 4))
-    componentType = NamedTypes(
-        NamedType('object', LDAPDN()),
-        NamedType('attributes', PartialAttributeList())
-    )
+    componentType = NamedTypes(NamedType('object', LDAPDN()), NamedType('attributes', PartialAttributeList()))
 
 
 class SearchResultDone(LDAPResult):
@@ -981,10 +860,7 @@ class ModifyRequest(Sequence):
             modification    PartialAttribute } }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 6))
-    componentType = NamedTypes(
-        NamedType('object', LDAPDN()),
-        NamedType('changes', Changes())
-    )
+    componentType = NamedTypes(NamedType('object', LDAPDN()), NamedType('changes', Changes()))
 
 
 class ModifyResponse(LDAPResult):
@@ -1001,10 +877,7 @@ class AddRequest(Sequence):
         attributes      AttributeList }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 8))
-    componentType = NamedTypes(
-        NamedType('entry', LDAPDN()),
-        NamedType('attributes', AttributeList())
-    )
+    componentType = NamedTypes(NamedType('entry', LDAPDN()), NamedType('attributes', AttributeList()))
 
 
 class AddResponse(LDAPResult):
@@ -1037,12 +910,8 @@ class ModifyDNRequest(Sequence):
         newSuperior     [0] LDAPDN OPTIONAL }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 12))
-    componentType = NamedTypes(
-        NamedType('entry', LDAPDN()),
-        NamedType('newrdn', RelativeLDAPDN()),
-        NamedType('deleteoldrdn', DeleteOldRDN()),
-        OptionalNamedType('newSuperior', NewSuperior())
-    )
+    componentType = NamedTypes(NamedType('entry', LDAPDN()), NamedType('newrdn', RelativeLDAPDN()), NamedType('deleteoldrdn', DeleteOldRDN()),
+                               OptionalNamedType('newSuperior', NewSuperior()))
 
 
 class ModifyDNResponse(LDAPResult):
@@ -1059,10 +928,7 @@ class CompareRequest(Sequence):
         ava             AttributeValueAssertion }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 14))
-    componentType = NamedTypes(
-        NamedType('entry', LDAPDN()),
-        NamedType('ava', AttributeValueAssertion())
-    )
+    componentType = NamedTypes(NamedType('entry', LDAPDN()), NamedType('ava', AttributeValueAssertion()))
 
 
 class CompareResponse(LDAPResult):
@@ -1086,10 +952,7 @@ class ExtendedRequest(Sequence):
         requestValue     [1] OCTET STRING OPTIONAL }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 23))
-    componentType = NamedTypes(
-        NamedType('requestName', RequestName()),
-        OptionalNamedType('requestValue', RequestValue())
-    )
+    componentType = NamedTypes(NamedType('requestName', RequestName()), OptionalNamedType('requestValue', RequestValue()))
 
 
 class ExtendedResponse(Sequence):
@@ -1100,14 +963,9 @@ class ExtendedResponse(Sequence):
         responseValue    [11] OCTET STRING OPTIONAL }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 24))
-    componentType = NamedTypes(
-        NamedType('resultCode', ResultCode()),
-        NamedType('matchedDN', LDAPDN()),
-        NamedType('diagnosticMessage', LDAPString()),
-        OptionalNamedType('referral', Referral()),
-        OptionalNamedType('responseName', ResponseName()),
-        OptionalNamedType('responseValue', ResponseValue())
-    )
+    componentType = NamedTypes(NamedType('resultCode', ResultCode()), NamedType('matchedDN', LDAPDN()), NamedType('diagnosticMessage', LDAPString()),
+                               OptionalNamedType('referral', Referral()), OptionalNamedType('responseName', ResponseName()),
+                               OptionalNamedType('responseValue', ResponseValue()))
 
 
 class IntermediateResponse(Sequence):
@@ -1117,10 +975,7 @@ class IntermediateResponse(Sequence):
         responseValue    [1] OCTET STRING OPTIONAL }
     """
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassApplication, tagFormatConstructed, 25))
-    componentType = NamedTypes(
-        OptionalNamedType('responseName', IntermediateResponseName()),
-        OptionalNamedType('responseValue', IntermediateResponseValue())
-    )
+    componentType = NamedTypes(OptionalNamedType('responseName', IntermediateResponseName()), OptionalNamedType('responseValue', IntermediateResponseValue()))
 
 
 class ProtocolOp(Choice):
@@ -1149,29 +1004,16 @@ class ProtocolOp(Choice):
         ...,
         intermediateResponse  IntermediateResponse }
     """
-    componentType = NamedTypes(
-        NamedType('bindRequest', BindRequest()),
-        NamedType('bindResponse', BindResponse()),
-        NamedType('unbindRequest', UnbindRequest()),
-        NamedType('searchRequest', SearchRequest()),
-        NamedType('searchResEntry', SearchResultEntry()),
-        NamedType('searchResDone', SearchResultDone()),
-        NamedType('searchResRef', SearchResultReference()),
-        NamedType('modifyRequest', ModifyRequest()),
-        NamedType('modifyResponse', ModifyResponse()),
-        NamedType('addRequest', AddRequest()),
-        NamedType('addResponse', AddResponse()),
-        NamedType('delRequest', DelRequest()),
-        NamedType('delResponse', DelResponse()),
-        NamedType('modDNRequest', ModifyDNRequest()),
-        NamedType('modDNResponse', ModifyDNResponse()),
-        NamedType('compareRequest', CompareRequest()),
-        NamedType('compareResponse', CompareResponse()),
-        NamedType('abandonRequest', AbandonRequest()),
-        NamedType('extendedReq', ExtendedRequest()),
-        NamedType('extendedResp', ExtendedResponse()),
-        NamedType('intermediateResponse', IntermediateResponse())
-    )
+    componentType = NamedTypes(NamedType('bindRequest', BindRequest()), NamedType('bindResponse', BindResponse()), NamedType('unbindRequest', UnbindRequest()),
+                               NamedType('searchRequest', SearchRequest()), NamedType('searchResEntry', SearchResultEntry()),
+                               NamedType('searchResDone', SearchResultDone()), NamedType('searchResRef', SearchResultReference()),
+                               NamedType('modifyRequest', ModifyRequest()), NamedType('modifyResponse', ModifyResponse()),
+                               NamedType('addRequest', AddRequest()), NamedType('addResponse', AddResponse()), NamedType('delRequest', DelRequest()),
+                               NamedType('delResponse', DelResponse()), NamedType('modDNRequest', ModifyDNRequest()),
+                               NamedType('modDNResponse', ModifyDNResponse()), NamedType('compareRequest', CompareRequest()),
+                               NamedType('compareResponse', CompareResponse()), NamedType('abandonRequest', AbandonRequest()),
+                               NamedType('extendedReq', ExtendedRequest()), NamedType('extendedResp', ExtendedResponse()),
+                               NamedType('intermediateResponse', IntermediateResponse()))
 
 
 class LDAPMessage(Sequence):
@@ -1203,8 +1045,4 @@ class LDAPMessage(Sequence):
             intermediateResponse  IntermediateResponse },
         controls       [0] Controls OPTIONAL }
     """
-    componentType = NamedTypes(
-        NamedType('messageID', MessageID()),
-        NamedType('protocolOp', ProtocolOp()),
-        OptionalNamedType('controls', Controls())
-    )
+    componentType = NamedTypes(NamedType('messageID', MessageID()), NamedType('protocolOp', ProtocolOp()), OptionalNamedType('controls', Controls()))

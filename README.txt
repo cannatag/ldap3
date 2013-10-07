@@ -7,10 +7,12 @@ Its development is at beta stage.
 
 EXPERIMENTAL SUPPORT FOR PYTHON 2 starting from version 0.6.1 (no direct unicode support)
 
+
 License
 -------
 
 The project is open source and released under the LGPL v3 license.
+
 
 Mailing List
 ------------
@@ -132,6 +134,7 @@ That's all you have to do to have an asynchronous threaded ldap client.
 
 To get operational attributes (info as createStamp, modifiedStamp, ...) for response objects add in getOperationalAttribute = True in the search request.
 
+
 SSL & TLS
 ---------
 
@@ -145,6 +148,7 @@ To start a TLS connection on an already created clear connection::
     c.startTls()
 
 You can customize the tls object with reference to key, certificate and CAs. See Tls() constructor docstring for details
+
 
 Testing
 -------
@@ -198,7 +202,6 @@ CHANGELOG
     - Updated connection usage info (elapsed time is now computed when connection is closed)
     - Updated OID dictionary with extensions and controls from Active Directory specifications.
 
-
 * 0.5.3 - 2013.09.03
     - Added getOperationalAttributes boolean to Search operation to fetch the operational attributes during search
     - Added increment operation to modify operation as per rfc 4525
@@ -225,7 +228,6 @@ CHANGELOG
 	- Added SASL EXTERNAL mechanism
 	- Fixed Unbind
 	- connection.close in now an alias for connection.unbind
-
 
 * 0.4.4 - 2013.08.01
 	- Added 'Controls' to all LDAP Requests

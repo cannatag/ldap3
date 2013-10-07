@@ -177,6 +177,7 @@ CHANGELOG
 =========
 * 0.6.3 - 2013.10.03
     - Added Extesible Filter syntax to search filter
+    - Fixed exception while closing connection in AsyncThreaded strategy
 
 * 0.6.2 - 2013.10.01
     - Fix for referrals in searchRefResult

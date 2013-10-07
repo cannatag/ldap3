@@ -81,16 +81,3 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['value'], 'Dino')
         self.assertEqual(f.elements[0].assertion['matchingRule'], '2.4.6.8.''10')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
-
-    def testParseSearchFilterAbsoluteTrue(self):
-            f = parseFilter('(*)')
-            self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
-            self.assertEqual(f.elements[0].assertion['attr'], 'cn')
-            self.assertEqual(f.elements[0].assertion['value'], 'admin')
-
-
-def testParseSearchFilterAbsoluteFalse(self):
-    f = parseFilter('(|)')
-    self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
-    self.assertEqual(f.elements[0].assertion['attr'], 'cn')
-    self.assertEqual(f.elements[0].assertion['value'], 'admin')

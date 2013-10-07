@@ -62,10 +62,10 @@ MATCH_PRESENT = 8
 MATCH_SUBSTRING = 9
 MATCH_EQUAL = 10
 
-SEARCH_OPEN = 11
-SEARCH_OPEN_OR_CLOSE = 12
-SEARCH_MATCH_OR_CLOSE = 13
-SEARCH_MATCH_OR_CONTROL = 14
+SEARCH_OPEN = 20
+SEARCH_OPEN_OR_CLOSE = 21
+SEARCH_MATCH_OR_CLOSE = 22
+SEARCH_MATCH_OR_CONTROL = 23
 
 
 class FilterNode():
@@ -121,7 +121,6 @@ def evaluateMatch(match):
     elif '<=' in match:
         tag = MATCH_LESS_OR_EQUAL
         leftPart, _, rightPart = match.partition('>=')
-
         assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
     elif ':=' in match:
         tag = MATCH_EXTENSIBLE
@@ -191,7 +190,7 @@ def parseFilter(searchFilter):
         justClosed = False
         for pos, c in enumerate(searchFilter):
             if skipWhiteSpace and c in whitespace:
-                pass
+                continue
             elif (state == SEARCH_OPEN or state == SEARCH_OPEN_OR_CLOSE) and c == '(':
                 state = SEARCH_MATCH_OR_CONTROL
                 justClosed = False

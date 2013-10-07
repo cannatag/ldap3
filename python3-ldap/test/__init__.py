@@ -30,5 +30,5 @@ test_password = 'password'
 test_port = 389
 test_port_ssl = 636
 test_authentication = AUTH_SIMPLE
-#test_strategy = STRATEGY_SYNC
-test_strategy = STRATEGY_ASYNC_THREADED
+test_strategy = STRATEGY_SYNC
+#test_strategy = STRATEGY_ASYNC_THREADED

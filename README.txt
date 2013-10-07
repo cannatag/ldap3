@@ -175,7 +175,7 @@ I wish to thank Assembla for providing the source repository space and the agile
 =========
 CHANGELOG
 =========
-* 0.6.3 - 2013.10.03
+* 0.6.3 - 2013.10.07
     - Added Extesible Filter syntax to search filter
     - Fixed exception while closing connection in AsyncThreaded strategy
 

@@ -170,7 +170,7 @@ You can also open a ticket on https://www.assembla.com/spaces/python3-ldap/suppo
 
 
 Acknowledgements
----------------
+----------------
 I wish to thank JetBrains for donating to this project the Open Source license of PyCharm 3 Professional.
 
 I wish to thank Assembla for providing the source repository space and the agile tools to develop this project.

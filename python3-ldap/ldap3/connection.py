@@ -289,7 +289,8 @@ class Connection(object):
 
 
     def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = list(),
-               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False, pagedCookie = None):
+               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None,
+               pagedSize = None, pagedCriticality = False, pagedCookie = None):
         """
         Perform an ldap search
         if attributes is empty no attribute is returned

@@ -93,7 +93,7 @@ class Test(unittest.TestCase):
     def testSearchSimplePaged(self):
         pagedSize = 1
         totalEntries = 0
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope= SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = 1)
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope= SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = pagedSize)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')

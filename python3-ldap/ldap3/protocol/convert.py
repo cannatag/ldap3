@@ -122,6 +122,6 @@ def buildControlsList(controls):
             builtControl['controlValue'] = control[2]
             builtControls.setComponentByPosition(idx, builtControl)
         else:
-            raise Exception('control must be a list of 3 elements: controlType, criticality (boolean) and controlValue')
+            raise Exception('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
 
     return builtControls

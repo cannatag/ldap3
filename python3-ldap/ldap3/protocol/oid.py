@@ -66,7 +66,15 @@ def constantToOidKind(oidKind):
         return 'Unknown'
 
 
+def decodeOids(sequence):
+    if sequence:
+        return [Oids.get(oid, OidInfo(oid, None, None, None)) for oid in sequence if oid]
+    return list()
+
+
 class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
+
+
     def __str__(self):
         r = self.oid + ' - '
         if self.name:
@@ -75,9 +83,11 @@ class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
         r += self.docs + ' - ' if self.docs else ''
 
         return r[:-3]
-
     def __repr__(self):
         return self.__str__()
+
+
+
 
 
 Oids = {# administrative role
@@ -1082,9 +1092,3 @@ Oids = {# administrative role
         # unsolicited notices
         '1.3.6.1.1.21.4': OidInfo('1.3.6.1.1.21.4', OID_UNSOLICITED_NOTICE, 'Aborted Transaction Notice', 'RFC5805'),
         '1.3.6.1.4.1.1466.20036': OidInfo('1.3.6.1.4.1.1466.20036', OID_UNSOLICITED_NOTICE, 'Notice of Disconnection', 'RFC4511')}
-
-
-def decodeOids(sequence):
-    if sequence:
-        return [Oids.get(oid, OidInfo(oid, None, None, None)) for oid in sequence if oid]
-    return list()

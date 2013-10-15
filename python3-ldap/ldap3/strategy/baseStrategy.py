@@ -26,7 +26,7 @@ import socket
 from time import sleep
 from random import choice
 
-from pyasn1.codec.ber import encoder
+from pyasn1.codec.ber import encoder, decoder
 
 from ldap3.protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ldap3.operation.add import addResponseToDict, addRequestToDict
@@ -42,6 +42,8 @@ from ldap3.operation.delete import deleteResponseToDict, deleteRequestToDict
 from ldap3.protocol.convert import prepareChangesForRequest, buildControlsList
 from ldap3.operation.abandon import abandonRequestToDict
 from ldap3.tls import Tls
+from ldap3.protocol.oid import Oids
+from ldap3.protocol.rfc2696 import RealSearchControlValue
 
 
 class BaseStrategy(object):
@@ -224,6 +226,7 @@ class BaseStrategy(object):
         """
         messageType = ldapMessage.getComponentByName('protocolOp').getName()
         component = ldapMessage['protocolOp'].getComponent()
+        controls = ldapMessage['controls']
         if messageType == 'bindResponse':
             result = bindResponseToDict(component)
         elif messageType == 'searchResEntry':
@@ -249,7 +252,29 @@ class BaseStrategy(object):
         else:
             raise Exception('unknown response')
         result['type'] = messageType
+        if controls:
+            result['controls'] = dict()
+            for control in controls:
+                decodedControl = cls.decodeControl(control)
+                result['controls'][decodedControl[0]] = decodedControl[1]
         return result
+
+    @classmethod
+    def decodeControl(cls, control):
+        """
+        decode control, return a 2-element tuple where the first element is the control oid
+        and the second element is a dictionary with description (from Oids), criticality and decoded control value
+        """
+        controlType = str(control['controlType'])
+        criticality = bool(control['criticality'])
+        controlValue = bytes(control['controlValue'])
+        if controlType == '1.2.840.113556.1.4.319':  # simple paged search as per rfc 2696
+            controlResp, unprocessed = decoder.decode(controlValue, asn1Spec = RealSearchControlValue())
+            controlValue = dict()
+            controlValue['size'] = int(controlResp['size'])
+            controlValue['cookie'] = bytes(controlResp['cookie'])
+
+        return (controlType, {'description': Oids.get(controlType, ''), 'criticality': criticality, 'value': controlValue})
 
     @classmethod
     def decodeRequest(cls, ldapMessage):

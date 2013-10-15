@@ -25,6 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from threading import Lock
 from datetime import datetime
 from os import linesep
+from pyasn1.codec.ber import encoder
+from pyasn1.type.univ import Sequence
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT
 from ldap3.operation.abandon import abandonOperation
@@ -43,6 +45,9 @@ from ldap3.operation.unbind import unbindOperation
 
 
 #noinspection PyAttributeOutsideInit
+from ldap3.protocol.rfc2696 import RealSearchControlValue, Cookie, Size
+
+
 class ConnectionUsage(object):
     """
     Collect statistics on connection usage
@@ -185,7 +190,6 @@ class Connection(object):
         self.getResponse = self.strategy.getResponse
         self.postSendSingleResponse = self.strategy.postSendSingleResponse
         self.postSendSearch = self.strategy.postSendSearch
-        self.found = None
         self.request = None
         self.response = None
         self.result = None
@@ -285,11 +289,14 @@ class Connection(object):
 
 
     def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = list(),
-               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None):
+               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False, pagedCookie = None):
         """
         Perform an ldap search
         if attributes is empty no attribute is returned
         if attributes is ALL_ATTRIBUTES all attributes are returned
+        if pagedSize is an int greater than 0 a simple paged search is tried as described in rfc 2696 with the specified size
+        if paged is 0 and cookie is present the search is abandoned on server
+        cookie is an opaque string received in the last paged search and must be used on the next paged search response
         """
         if not attributes:
             attributes = [NO_ATTRIBUTES]
@@ -298,6 +305,14 @@ class Connection(object):
 
         if getOperationalAttributes:
             attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
+
+        if isinstance(pagedSize, int):
+            realSearchControlValue = RealSearchControlValue()
+            realSearchControlValue['size'] = Size(pagedSize)
+            realSearchControlValue['cookie'] = Cookie(pagedCookie) if pagedCookie else Cookie('')
+            if controls is None:
+                controls = []
+            controls.append(('1.2.840.113556.1.4.319', pagedCriticality if isinstance(pagedCriticality, bool) else False, encoder.encode(realSearchControlValue)))
 
         request = searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly)
 

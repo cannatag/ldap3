@@ -135,6 +135,42 @@ That's all you have to do to have an asynchronous threaded ldap client.
 To get operational attributes (info as createStamp, modifiedStamp, ...) for response objects add in getOperationalAttribute = True in the search request.
 
 
+Search
+------
+
+Search operation is enhanced with a few parameters:
+- getOperationalAttributes: if True retrieve the operational (system generated) attributes for each of the result entries
+- pagedSize: if greater than 0 return a simple paged search response with the number of entries required (server must conform to rfc 2696)
+- pagedCookie: used for subsequent retrieve of additional entries in a simple paged search
+- pagedCriticality: if True the search should fail if simple paged search is not available on the server else a full search is performed
+
+
+Simple Paged search
+-------------------
+
+The search operation is capable of performing a simple paged search as per rfc 2696. You must specify the required number of entries in each response set.
+After the first search you must send back the cookie you get with each response. If you send 0 as pagedSize and a valid cookie the search operation is abandoned
+Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']; the server may return an estimated total number of entries in
+connection.result['controls']['1.2.840.113556.1.4.319']['value']['size']
+You can change the pagedSize in any subsequent search request
+
+Example:
+
+    from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE
+    totalEntries = 0
+    server = Server('test-server')
+    connection = Connection(server, user = 'test-user', password = 'test-password')
+    connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = 5)
+    totalEntries += len(connection.response)
+    cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    while cookie:
+        connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = 5, pagedCookie = cookie)
+        totalEntries += len(connection.response)
+        cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    print('Total entries retrieved:', totalEntries)
+    connection.close()
+
+
 SSL & TLS
 ---------
 
@@ -179,6 +215,10 @@ I wish to thank Assembla for providing the source repository space and the agile
 =========
 CHANGELOG
 =========
+* 0.6.4 - 2013.10.16
+    - Added simple paged search as per rfc 2696
+    - Controls return values are decoded and stored in result attribute of connection
+
 * 0.6.3 - 2013.10.07
     - Added Extesible Filter syntax to search filter
     - Fixed exception while closing connection in AsyncThreaded strategy
@@ -253,7 +293,7 @@ CHANGELOG
 	- Implemented RFC 4515 for search filter coding and decoding
 	- Added a parser to build filter string from LdapMessage
 
-* 0.4.0 - 2013-07.15
+* 0.4.0 - 2013.07.15
     - Refactoring of the connection and strategy classes
     - Added the ldap3.strategy namespace to contains client connection strategies
     - Added ssl authentication

@@ -135,8 +135,8 @@ That's all you have to do to have an asynchronous threaded ldap client.
 To get operational attributes (info as createStamp, modifiedStamp, ...) for response objects add in getOperationalAttribute = True in the search request.
 
 
-Search
-------
+Searching
+---------
 
 Search operation is enhanced with a few parameters:
 - getOperationalAttributes: if True retrieve the operational (system generated) attributes for each of the result entries
@@ -154,7 +154,7 @@ Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['
 connection.result['controls']['1.2.840.113556.1.4.319']['value']['size']
 You can change the pagedSize in any subsequent search request
 
-Example:
+Example::
 
     from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE
     totalEntries = 0
@@ -169,6 +169,7 @@ Example:
         cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     print('Total entries retrieved:', totalEntries)
     connection.close()
+
 
 
 SSL & TLS

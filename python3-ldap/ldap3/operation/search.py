@@ -30,8 +30,6 @@ from ldap3.protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, I
 from ldap3.operation.bind import referralsToList
 from ldap3.protocol.convert import avaToDict, attributesToList, searchRefsToList
 
-
-
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
 #     baseObject      LDAPDN,
 #     scope           ENUMERATED {
@@ -67,6 +65,8 @@ SEARCH_OPEN_OR_CLOSE = 21
 SEARCH_MATCH_OR_CLOSE = 22
 SEARCH_MATCH_OR_CONTROL = 23
 
+# simple cache for searchFilters
+__memoizedFilters = dict()
 
 class FilterNode():
     def __init__(self, tag = None, assertion = None):
@@ -304,8 +304,7 @@ def compileFilter(filterNode):
 
 
 def buildFilter(searchFilter):
-    parsedFilter = parseFilter(searchFilter)
-    return compileFilter(parsedFilter.elements[0])
+    return compileFilter(parseFilter(searchFilter).elements[0])
 
 
 def buildAttributeSelection(attributeList):
@@ -343,7 +342,7 @@ def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, a
     request['sizeLimit'] = Integer0ToMax(sizeLimit)
     request['timeLimit'] = Integer0ToMax(timeLimit)
     request['typesOnly'] = TypesOnly(True) if typesOnly else TypesOnly(False)
-    request['filter'] = buildFilter(searchFilter)
+    request['filter'] = compileFilter(parseFilter(searchFilter).elements[0]) # parse the searchFilter string and compile it starting from the root node
 
     if not isinstance(attributes, list):
         attributes = [NO_ATTRIBUTES]

@@ -217,6 +217,9 @@ I wish to thank Assembla for providing the source repository space and the agile
 CHANGELOG
 =========
 
+* 0.6.5 - 2013.11.05
+    - Modified rawAttributes decoding, now null (empty) values are returned even if invalid in protocol
+
 * 0.6.4 - 2013.10.16
     - Added simple paged search as per rfc 2696
     - Controls return values are decoded and stored in result attribute of connection

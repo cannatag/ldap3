@@ -369,7 +369,8 @@ def attributesToDict(attributeList):
 
 def decodeRawVals(vals):
     if vals:
-        return [bytes(val) for val in vals if val]
+        # return [bytes(val) for val in vals if val]
+        return [bytes(val) for val in vals]
     else:
         return None
 

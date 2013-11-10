@@ -26,7 +26,6 @@ from threading import Lock
 from datetime import datetime
 from os import linesep
 from pyasn1.codec.ber import encoder
-from pyasn1.type.univ import Sequence
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT
 from ldap3.operation.abandon import abandonOperation
@@ -219,7 +218,7 @@ class Connection(object):
 
     def __str__(self):
         return (str(self.server) if self.server.isValid else 'None') + ' - ' + 'user: ' + str(self.user) + ' - version ' + str(self.version) + ' - ' + (
-        'bound' if self.bound else 'unbound') + ' - ' + (
+            'bound' if self.bound else 'unbound') + ' - ' + (
                    'closed' if self.closed else 'open') + ' - ' + (
                    'listening' if self.listening else 'not listening') + ' - ' + self.strategy.__class__.__name__
 
@@ -289,8 +288,8 @@ class Connection(object):
 
 
     def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = list(),
-               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None,
-               pagedSize = None, pagedCriticality = False, pagedCookie = None):
+               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False,
+               pagedCookie = None):
         """
         Perform an ldap search
         if attributes is empty no attribute is returned
@@ -313,7 +312,8 @@ class Connection(object):
             realSearchControlValue['cookie'] = Cookie(pagedCookie) if pagedCookie else Cookie('')
             if controls is None:
                 controls = []
-            controls.append(('1.2.840.113556.1.4.319', pagedCriticality if isinstance(pagedCriticality, bool) else False, encoder.encode(realSearchControlValue)))
+            controls.append(
+                ('1.2.840.113556.1.4.319', pagedCriticality if isinstance(pagedCriticality, bool) else False, encoder.encode(realSearchControlValue)))
 
         request = searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly)
 

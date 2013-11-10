@@ -32,7 +32,8 @@ from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                     authentication = test_authentication)
 
     def tearDown(self):
         self.connection.unbind()
@@ -46,14 +47,16 @@ class Test(unittest.TestCase):
         self.assertEqual(len(self.connection.response), 1)
 
     def testSearchExtensibleMatch(self):
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes = ['cn', 'givenName', 'sn'])
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(&(o:dn:=test)(objectclass=inetOrgPerson))',
+                                        attributes = ['cn', 'givenName', 'sn'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
         self.assertGreater(len(self.connection.response), 14)
 
     def testSearchPresent(self):
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName', 'jpegPhoto'])
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                        attributes = ['cn', 'givenName', 'jpegPhoto'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
@@ -76,7 +79,8 @@ class Test(unittest.TestCase):
         self.assertEqual(len(self.connection.response), 1)
 
     def testSearchRaw(self):
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(cn=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName', 'photo'])
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(cn=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                        attributes = ['cn', 'givenName', 'photo'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
@@ -84,7 +88,8 @@ class Test(unittest.TestCase):
         self.assertGreater(len(self.connection.response), 14)
 
     def testSearchWithOperationalAttributes(self):
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(cn=test-add)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName', 'photo'], getOperationalAttributes = True)
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(cn=test-add)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                        attributes = ['cn', 'givenName', 'photo'], getOperationalAttributes = True)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
@@ -93,7 +98,8 @@ class Test(unittest.TestCase):
     def testSearchSimplePaged(self):
         pagedSize = 1
         totalEntries = 0
-        result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope= SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = pagedSize)
+        result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                        attributes = ['cn', 'givenName'], pagedSize = pagedSize)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
@@ -102,7 +108,8 @@ class Test(unittest.TestCase):
         cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
         while cookie:
             pagedSize += 1
-            result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope= SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = pagedSize, pagedCookie = cookie)
+            result = self.connection.search(searchBase = 'o=test', searchFilter = '(objectClass=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                            attributes = ['cn', 'givenName'], pagedSize = pagedSize, pagedCookie = cookie)
             if not isinstance(result, bool):
                 self.connection.getResponse(result)
             self.assertEqual(self.connection.result['description'], 'success')

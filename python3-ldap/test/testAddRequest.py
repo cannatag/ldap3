@@ -22,7 +22,6 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 import unittest
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, ValsAtLeast1
 from ldap3.connection import Connection
@@ -31,10 +30,10 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 
 
 class Test(unittest.TestCase):
-
     def setUp(self):
         server = Server(test_server, test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        self.connection = Connection(server, autoBind = True, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                     authentication = test_authentication)
 
     def tearDown(self):
         self.connection.unbind()

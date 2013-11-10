@@ -23,16 +23,17 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+import ssl
+
 from ldap3 import Server, Connection, Tls, AUTH_SASL
 from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, test_strategy
-import ssl
 
 
 class Test(unittest.TestCase):
-
     def testStartTls(self):
         server = Server(host = test_server, port = test_port, tls = Tls())
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                authentication = test_authentication)
         connection.open()
         connection.startTls()
         self.assertFalse(connection.closed)
@@ -40,7 +41,8 @@ class Test(unittest.TestCase):
 
     def testSearchWithTlsBeforeBind(self):
         server = Server(host = test_server, port = test_port, tls = Tls())
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                authentication = test_authentication)
         connection.open()
         connection.startTls()
         connection.bind()
@@ -53,7 +55,8 @@ class Test(unittest.TestCase):
 
     def testSearchWithTlsAfterBind(self):
         server = Server(host = test_server, port = test_port, tls = Tls())
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                authentication = test_authentication)
         connection.open()
         connection.bind()
         connection.startTls()
@@ -64,9 +67,11 @@ class Test(unittest.TestCase):
         self.assertGreater(len(connection.response), 15)
 
     def testBindSslWithCertificate(self):
-        tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, caCertsFile = 'c:/idmprofiler2524CA.b64')
+        tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED,
+                  version = ssl.PROTOCOL_TLSv1, caCertsFile = 'c:/idmprofiler2524CA.b64')
         server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = tls)
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                authentication = test_authentication)
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
@@ -74,7 +79,8 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def testSaslWithExternalCertificate(self):
-        tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, caCertsFile = 'c:/idmprofiler2524CA.b64')
+        tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED,
+                  version = ssl.PROTOCOL_TLSv1, caCertsFile = 'c:/idmprofiler2524CA.b64')
         server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = tls)
         connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'EXTERNAL')
         connection.open()
@@ -82,17 +88,18 @@ class Test(unittest.TestCase):
         self.assertTrue(connection.bound)
         connection.unbind()
         self.assertFalse(connection.bound)
-#===============================================================================
-# removal os TLS layer is defined as MAY in rfc4511. It can't be implemented againsta a generic LDAP server
-#     def testStopTls(self):
-#         server = Server(host = test_server, port = test_port, tls = Tls())
-#         connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
-#         connection.open()
-#         connection.startTls()
-#         self.assertFalse(connection.closed)
-#         connection.stopTls()
-#         connection.unbind()
-#===============================================================================
+
+    #===============================================================================
+    # removal os TLS layer is defined as MAY in rfc4511. It can't be implemented againsta a generic LDAP server
+    #     def testStopTls(self):
+    #         server = Server(host = test_server, port = test_port, tls = Tls())
+    #         connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+    #         connection.open()
+    #         connection.startTls()
+    #         self.assertFalse(connection.closed)
+    #         connection.stopTls()
+    #         connection.unbind()
+    #===============================================================================
 
     #===========================================================================
     # def testSaslWithDigestMD5(self):

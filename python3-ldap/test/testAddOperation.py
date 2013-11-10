@@ -31,7 +31,8 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                     authentication = test_authentication)
         self.connection.delete('cn=test-add-operation,o=test')
 
     def tearDown(self):
@@ -39,7 +40,8 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testAdd(self):
-        result = self.connection.add('cn=test-add-operation,o=test', 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
+        result = self.connection.add('cn=test-add-operation,o=test', 'iNetOrgPerson',
+                                     {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'entryAlreadyExists'])

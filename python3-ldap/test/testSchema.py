@@ -29,6 +29,7 @@ from ldap3.server import Server
 from ldap3.connection import Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
 
+
 class Test(unittest.TestCase):
     def setUp(self):
         self.server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True), getInfo = GET_ALL_INFO)

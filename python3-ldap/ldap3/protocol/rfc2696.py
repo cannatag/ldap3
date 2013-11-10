@@ -22,8 +22,8 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from pyasn1.type.univ import OctetString, Integer, Sequence, Boolean
-from pyasn1.type.namedtype import NamedTypes, NamedType, OptionalNamedType, DefaultedNamedType
+from pyasn1.type.univ import OctetString, Integer, Sequence
+from pyasn1.type.namedtype import NamedTypes, NamedType
 from pyasn1.type.constraint import ValueRangeConstraint
 
 
@@ -35,8 +35,10 @@ MAXINT = Integer(2147483647)
 # constraints
 rangeInt0ToMaxConstraint = ValueRangeConstraint(0, MAXINT)
 
+
 class Integer0ToMax(Integer):
     subtypeSpec = Integer.subtypeSpec + rangeInt0ToMaxConstraint
+
 
 class Size(Integer0ToMax):
     """
@@ -44,11 +46,13 @@ class Size(Integer0ToMax):
     """
     pass
 
+
 class Cookie(OctetString):
     """
     cookie          OCTET STRING
     """
     pass
+
 
 class RealSearchControlValue(Sequence):
     """
@@ -59,6 +63,4 @@ class RealSearchControlValue(Sequence):
         cookie          OCTET STRING
     """
 
-    componentType = NamedTypes(NamedType('size', Size()),
-                               NamedType('cookie', Cookie())
-    )
+    componentType = NamedTypes(NamedType('size', Size()), NamedType('cookie', Cookie()))

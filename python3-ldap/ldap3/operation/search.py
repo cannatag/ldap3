@@ -68,6 +68,7 @@ SEARCH_MATCH_OR_CONTROL = 23
 # simple cache for searchFilters
 __memoizedFilters = dict()
 
+
 class FilterNode():
     def __init__(self, tag = None, assertion = None):
         self.tag = tag

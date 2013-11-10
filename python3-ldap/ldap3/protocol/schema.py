@@ -128,9 +128,11 @@ class SchemaInfo(object):
         r += ('  Attribute types:' + linesep + '    ' + ', '.join(
             [str(self.attributeTypes[s]) for s in self.attributeTypes]) + linesep) if self.attributeTypes else ''
         r += (
-        '  Object classes:' + linesep + '    ' + ', '.join([str(self.objectClasses[s]) for s in self.objectClasses]) + linesep) if self.objectClasses else ''
+            '  Object classes:' + linesep + '    ' + ', '.join(
+                [str(self.objectClasses[s]) for s in self.objectClasses]) + linesep) if self.objectClasses else ''
         r += (
-        '  Matching rules:' + linesep + '    ' + ', '.join([str(self.matchingRules[s]) for s in self.matchingRules]) + linesep) if self.matchingRules else ''
+            '  Matching rules:' + linesep + '    ' + ', '.join(
+                [str(self.matchingRules[s]) for s in self.matchingRules]) + linesep) if self.matchingRules else ''
         r += ('  Matching rule uses:' + linesep + '    ' + ', '.join(
             [str(self.matchingRuleUses[s]) for s in self.matchingRuleUses]) + linesep) if self.matchingRuleUses else ''
         r += ('  DIT content rule:' + linesep + '    ' + ', '.join(
@@ -180,7 +182,7 @@ class BaseObjectInfo(object):
         r += (linesep + '  Description: ' + self.description) if self.description else ''
         r += '<__desc__>'
         r += (
-        linesep + '  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions])) if self.extensions else ''
+            linesep + '  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions])) if self.extensions else ''
         r += (linesep + '  Experimental:' + linesep + linesep.join(
             ['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental])) if self.experimental else ''
         r += (linesep + '  OidInfo: ' + str(self.oidInfo)) if self.oidInfo else ''

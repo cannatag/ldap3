@@ -32,7 +32,8 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                     authentication = test_authentication)
         self.connection.add('cn=test-add-for-modify,o=test', [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add-for-modify'})
 
     def tearDown(self):

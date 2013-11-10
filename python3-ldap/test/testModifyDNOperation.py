@@ -31,7 +31,8 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                     authentication = test_authentication)
 
     def tearDown(self):
         self.connection.unbind()
@@ -71,7 +72,7 @@ class Test(unittest.TestCase):
 
         result = self.connection.delete('cn=test-add-for-move-dn,ou=moved,o=test')
         if not isinstance(result, bool):
-             self.connection.getResponse(result)
+            self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'noSuchObject', 'busy'])
 
         result = self.connection.modifyDn('cn=test-add-for-move-dn,o=test', 'cn=test-add-for-move-dn', newSuperior = 'ou=moved,o=test')

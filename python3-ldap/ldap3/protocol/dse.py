@@ -54,7 +54,8 @@ class DsaInfo():
         r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + s for s in self.altServers]) + linesep) if self.altServers else ''
         r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedControls]) + linesep) if self.supportedControls else ''
         r += (
-        '  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedExtensions]) + linesep) if self.supportedExtensions else ''
+            '  Supported Extensions:' + linesep + linesep.join(
+                ['    ' + str(s) for s in self.supportedExtensions]) + linesep) if self.supportedExtensions else ''
         r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedFeatures]) + linesep) if self.supportedFeatures else ''
         r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join(
             [s for s in self.supportedSaslMechanisms]) + linesep) if self.supportedSaslMechanisms else ''

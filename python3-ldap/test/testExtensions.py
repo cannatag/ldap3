@@ -32,7 +32,8 @@ from ldap3.tls import Tls
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                     authentication = test_authentication)
 
     def tearDown(self):
         self.connection.unbind()

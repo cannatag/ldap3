@@ -26,14 +26,14 @@ import unittest
 from ldap3.connection import Connection
 from ldap3.server import Server
 from ldap3 import AUTH_ANONYMOUS
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
-    test_port_ssl
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl
 
 
 class Test(unittest.TestCase):
     def testBindClearText(self):
         server = Server(host = test_server, port = test_port)
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                authentication = test_authentication)
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
@@ -42,7 +42,8 @@ class Test(unittest.TestCase):
 
     def testBindSsl(self):
         server = Server(host = test_server, port = test_port_ssl, useSsl = True)
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
+                                authentication = test_authentication)
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)

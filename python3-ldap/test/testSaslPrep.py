@@ -22,12 +22,12 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3.protocol.sasl.sasl import validateSimplePassword
 from unicodedata import lookup
+
+from ldap3.protocol.sasl.sasl import validateSimplePassword
 
 
 class Test(unittest.TestCase):
-
     def testValidSimpleAlphanumericPassword(self):
         password = 'abcdefg1234567890ABCDEFG'
         validated = validateSimplePassword(password)

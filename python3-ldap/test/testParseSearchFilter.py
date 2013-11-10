@@ -27,10 +27,9 @@ from ldap3.operation.search import parseFilter, MATCH_EQUAL, MATCH_EXTENSIBLE
 
 
 class Test(unittest.TestCase):
-
     def testParseSearchFilterEquality(self):
         f = parseFilter('(cn=admin)')
-        self.assertEqual(f.elements[0].tag,MATCH_EQUAL)
+        self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
         self.assertEqual(f.elements[0].assertion['value'], 'admin')
 

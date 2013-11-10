@@ -73,8 +73,6 @@ def decodeOids(sequence):
 
 
 class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
-
-
     def __str__(self):
         r = self.oid + ' - '
         if self.name:
@@ -83,11 +81,9 @@ class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
         r += self.docs + ' - ' if self.docs else ''
 
         return r[:-3]
+
     def __repr__(self):
         return self.__str__()
-
-
-
 
 
 Oids = {# administrative role
@@ -420,7 +416,8 @@ Oids = {# administrative role
         '1.3.6.1.4.1.4203.1.3.5': OidInfo('1.3.6.1.4.1.4203.1.3.5', OID_ATTRIBUTE_TYPE, 'supportedFeatures', 'RFC4512'),
         '1.3.6.1.4.1.453.7.2.1': OidInfo('1.3.6.1.4.1.453.7.2.1', OID_ATTRIBUTE_TYPE, 'textTableKey', 'RFC2293'),
         '1.3.6.1.4.1.453.7.2.2': OidInfo('1.3.6.1.4.1.453.7.2.2', OID_ATTRIBUTE_TYPE, 'textTableValue', 'RFC2293'),
-        '1.3.6.1.4.1.453.7.2.3': OidInfo('1.3.6.1.4.1.453.7.2.3', OID_ATTRIBUTE_TYPE, ['associatedX400Gateway', 'distinguishedNameTableKey'], 'RFC2164-RFC2293'),
+        '1.3.6.1.4.1.453.7.2.3': OidInfo('1.3.6.1.4.1.453.7.2.3', OID_ATTRIBUTE_TYPE, ['associatedX400Gateway', 'distinguishedNameTableKey'],
+                                         'RFC2164-RFC2293'),
         '1.3.6.1.4.1.453.7.2.6': OidInfo('1.3.6.1.4.1.453.7.2.6', OID_ATTRIBUTE_TYPE, 'associatedORAddress', 'RFC2164'),
         '1.3.6.1.4.1.453.7.2.7': OidInfo('1.3.6.1.4.1.453.7.2.7', OID_ATTRIBUTE_TYPE, 'oRAddressComponentType', 'RFC2164'),
         '1.3.6.1.4.1.453.7.2.8': OidInfo('1.3.6.1.4.1.453.7.2.8', OID_ATTRIBUTE_TYPE, 'associatedInternetGateway', 'RFC2164'),

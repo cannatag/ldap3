@@ -26,7 +26,7 @@ import unittest
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, ValsAtLeast1
 from ldap3.connection import Connection
 from ldap3.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, testDnBuilder, test_base
 
 
 class Test(unittest.TestCase):
@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-add,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-add'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)

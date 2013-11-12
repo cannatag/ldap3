@@ -21,14 +21,15 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 # noinspection PyUnresolvedReferences
+from Tools.Scripts.find_recursionlimit import test_getattr
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
-test_server = 'server'
-test_user = 'user'
-test_password = 'password'
+test_server = 'sl10.intra.camera.it'
+test_user = 'cn=admin,o=services'
+test_password = 'camera'
 
-test_base = 'o=test'
-test_moved = 'ou=moved,o=test'
+test_base = 'ou=test2,o=test'
+test_moved = 'ou=test3,o=test'
 test_name_attr = 'cn'
 
 test_port = 389
@@ -36,3 +37,7 @@ test_port_ssl = 636
 test_authentication = AUTH_SIMPLE
 test_strategy = STRATEGY_SYNC
 #test_strategy = STRATEGY_ASYNC_THREADED
+
+
+def testDnBuilder(base, name):
+    return test_name_attr + '=' + name + ',' + base

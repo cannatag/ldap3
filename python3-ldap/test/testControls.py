@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3.server import Server
 from ldap3.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base
 
 
 class Test(unittest.TestCase):
@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
     def testSearchWithControls(self):
         ctrls = list()
         ctrls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
-        result = self.connection.search('o=test', '(objectClass=*)', attributes = ['sn, givenName'], sizeLimit = 0, controls = ctrls)
+        result = self.connection.search(test_base, '(objectClass=*)', attributes = ['sn, givenName'], sizeLimit = 0, controls = ctrls)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'operationsError'])

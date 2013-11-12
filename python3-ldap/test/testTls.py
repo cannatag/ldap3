@@ -26,7 +26,7 @@ import unittest
 import ssl
 
 from ldap3 import Server, Connection, Tls, AUTH_SASL
-from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, test_strategy, test_base
 
 
 class Test(unittest.TestCase):
@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
         connection.open()
         connection.startTls()
         connection.bind()
-        result = connection.search('o=test', '(objectClass=*)', attributes = 'sn')
+        result = connection.search(test_base, '(objectClass=*)', attributes = 'sn')
         if not isinstance(result, bool):
             connection.getResponse(result)
         self.assertEqual(connection.result['description'], 'success')
@@ -60,7 +60,7 @@ class Test(unittest.TestCase):
         connection.open()
         connection.bind()
         connection.startTls()
-        result = connection.search('o=test', '(objectClass=*)', attributes = 'sn')
+        result = connection.search(test_base, '(objectClass=*)', attributes = 'sn')
         if not isinstance(result, bool):
             connection.getResponse(result)
         self.assertEqual(connection.result['description'], 'success')

@@ -26,7 +26,7 @@ import unittest
 from ldap3.server import Server
 from ldap3.connection import Connection
 from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
 
 
 class Test(unittest.TestCase):
@@ -34,36 +34,36 @@ class Test(unittest.TestCase):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
         self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
                                      authentication = test_authentication)
-        self.connection.add('cn=test-add-for-modify,o=test', [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add-for-modify'})
+        self.connection.add(testDnBuilder(test_base, 'test-add-for-modify'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add-for-modify'})
 
     def tearDown(self):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
     def testModifyReplace(self):
-        result = self.connection.modify('cn=test-add-for-modify,o=test', {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
 
     def testModifyAdd(self):
-        result = self.connection.modify('cn=test-add-for-modify,o=test', {'givenName': (MODIFY_ADD, ['test-modified-added'])})
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'attributeOrValueExists'])
 
     def testModifyDeleted(self):
-        result = self.connection.modify('cn=test-add-for-modify,o=test', {'givenName': (MODIFY_ADD, ['test-modified-added2'])})
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added2'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'attributeOrValueExists'])
 
-        result = self.connection.modify('cn=test-add-for-modify,o=test', {'givenName': (MODIFY_ADD, ['test-modified-added3'])})
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added3'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['attributeOrValueExists', 'success'])
 
-        result = self.connection.modify('cn=test-add-for-modify,o=test', {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'noSuchAttribute'])

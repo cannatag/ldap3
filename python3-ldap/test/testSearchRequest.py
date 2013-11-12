@@ -27,7 +27,7 @@ from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute,
 from ldap3.protocol.rfc4511 import SearchRequest, ValsAtLeast1, Scope, Integer0ToMax, TypesOnly, Filter, AttributeSelection, Selector, EqualityMatch
 from ldap3.connection import Connection
 from ldap3.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
 
 
 class Test(unittest.TestCase):
@@ -64,7 +64,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-search-1,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-search-1'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)
@@ -82,7 +82,7 @@ class Test(unittest.TestCase):
         attributes[2] = Selector('sn')
 
         searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN('o=test')
+        searchReq['baseObject'] = LDAPDN(test_base)
         searchReq['scope'] = Scope('singleLevel')
         searchReq['derefAliases'] = 'neverDerefAliases'
         searchReq['sizeLimit'] = Integer0ToMax(0)
@@ -97,13 +97,13 @@ class Test(unittest.TestCase):
     def testSearchSubstring(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
-        vals1[0] = AttributeValue('tost2')
+        vals1[0] = AttributeValue('test2-1')
         attribute1['type'] = AttributeDescription('sn')
         attribute1['vals'] = vals1
 
         attribute2 = Attribute()
         vals2 = ValsAtLeast1()
-        vals2[0] = AttributeValue('tust2')
+        vals2[0] = AttributeValue('test2-2')
         attribute2['type'] = AttributeDescription('givenName')
         attribute2['vals'] = vals2
 
@@ -119,7 +119,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-search-2,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-search-2'))
         addReq['attributes'] = attributes
         self.connection.send('addRequest', addReq)
 
@@ -146,7 +146,7 @@ class Test(unittest.TestCase):
         attributes[2] = Selector('sn')
 
         searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN('o=test')
+        searchReq['baseObject'] = LDAPDN(test_base)
         searchReq['scope'] = Scope('singleLevel')
         searchReq['derefAliases'] = 'neverDerefAliases'
         searchReq['sizeLimit'] = Integer0ToMax(0)
@@ -161,13 +161,13 @@ class Test(unittest.TestCase):
     def testSearchAnd(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
-        vals1[0] = AttributeValue('tost3')
+        vals1[0] = AttributeValue('test3-1')
         attribute1['type'] = AttributeDescription('sn')
         attribute1['vals'] = vals1
 
         attribute2 = Attribute()
         vals2 = ValsAtLeast1()
-        vals2[0] = AttributeValue('tust3')
+        vals2[0] = AttributeValue('test3-2')
         attribute2['type'] = AttributeDescription('givenName')
         attribute2['vals'] = vals2
 
@@ -183,7 +183,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-search-3,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-search-3'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)
@@ -215,7 +215,7 @@ class Test(unittest.TestCase):
         attributes[2] = Selector('sn')
 
         searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN('o=test')
+        searchReq['baseObject'] = LDAPDN(test_base)
         searchReq['scope'] = Scope('singleLevel')
         searchReq['derefAliases'] = 'neverDerefAliases'
         searchReq['sizeLimit'] = Integer0ToMax(0)
@@ -230,13 +230,13 @@ class Test(unittest.TestCase):
     def testSearchOr(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
-        vals1[0] = AttributeValue('tost4')
+        vals1[0] = AttributeValue('test4-1')
         attribute1['type'] = AttributeDescription('sn')
         attribute1['vals'] = vals1
 
         attribute2 = Attribute()
         vals2 = ValsAtLeast1()
-        vals2[0] = AttributeValue('tust4')
+        vals2[0] = AttributeValue('test4-2')
         attribute2['type'] = AttributeDescription('givenName')
         attribute2['vals'] = vals2
 
@@ -252,20 +252,20 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq1 = AddRequest()
-        addReq1['entry'] = LDAPDN('cn=test-search-4,o=test')
+        addReq1['entry'] = LDAPDN(testDnBuilder(test_base, 'test-search-4'))
         addReq1['attributes'] = attributes
 
         self.connection.send('addRequest', addReq1)
 
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
-        vals1[0] = AttributeValue('tost5')
+        vals1[0] = AttributeValue('test5-1')
         attribute1['type'] = AttributeDescription('sn')
         attribute1['vals'] = vals1
 
         attribute2 = Attribute()
         vals2 = ValsAtLeast1()
-        vals2[0] = AttributeValue('tust5')
+        vals2[0] = AttributeValue('test5-2')
         attribute2['type'] = AttributeDescription('givenName')
         attribute2['vals'] = vals2
 
@@ -281,7 +281,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq2 = AddRequest()
-        addReq2['entry'] = LDAPDN('cn=test-search-5,o=test')
+        addReq2['entry'] = LDAPDN(testDnBuilder(test_base, 'test-search-5'))
         addReq2['attributes'] = attributes
 
         self.connection.send('addRequest', addReq2)
@@ -313,7 +313,7 @@ class Test(unittest.TestCase):
         attributes[2] = Selector('sn')
 
         searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN('o=test')
+        searchReq['baseObject'] = LDAPDN(test_base)
         searchReq['scope'] = Scope('singleLevel')
         searchReq['derefAliases'] = 'neverDerefAliases'
         searchReq['sizeLimit'] = Integer0ToMax(0)
@@ -328,13 +328,13 @@ class Test(unittest.TestCase):
     def testSearchNot(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
-        vals1[0] = AttributeValue('tost6')
+        vals1[0] = AttributeValue('test6-1')
         attribute1['type'] = AttributeDescription('sn')
         attribute1['vals'] = vals1
 
         attribute2 = Attribute()
         vals2 = ValsAtLeast1()
-        vals2[0] = AttributeValue('tust6')
+        vals2[0] = AttributeValue('test6-2')
         attribute2['type'] = AttributeDescription('givenName')
         attribute2['vals'] = vals2
 
@@ -350,7 +350,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-search-6,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-search-6'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)
@@ -371,7 +371,7 @@ class Test(unittest.TestCase):
         attributes[2] = Selector('sn')
 
         searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN('o=test')
+        searchReq['baseObject'] = LDAPDN(test_base)
         searchReq['scope'] = Scope('singleLevel')
         searchReq['derefAliases'] = 'neverDerefAliases'
         searchReq['sizeLimit'] = Integer0ToMax(0)

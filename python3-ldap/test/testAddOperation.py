@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3.server import Server
 from ldap3.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr
 
 
 class Test(unittest.TestCase):
@@ -33,15 +33,14 @@ class Test(unittest.TestCase):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
         self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
                                      authentication = test_authentication)
-        self.connection.delete('cn=test-add-operation,o=test')
+        self.connection.delete(testDnBuilder(test_base, 'test-add-operation'))
 
     def tearDown(self):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
     def testAdd(self):
-        result = self.connection.add('cn=test-add-operation,o=test', 'iNetOrgPerson',
-                                     {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
+        result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'entryAlreadyExists'])

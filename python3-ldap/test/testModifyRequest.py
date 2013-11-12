@@ -27,7 +27,7 @@ from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute,
 
 from ldap3.connection import Connection
 from ldap3.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
 
 
 class Test(unittest.TestCase):
@@ -64,13 +64,13 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-modify,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-modify'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)
 
         valsMod1 = Vals()
-        valsMod1[0] = 'tost-modified'
+        valsMod1[0] = 'test-modified'
         partAttr1 = PartialAttribute()
         partAttr1['type'] = AttributeDescription('sn')
         partAttr1['vals'] = valsMod1
@@ -80,7 +80,7 @@ class Test(unittest.TestCase):
         changes = Changes()
         changes[0] = change1
         modifyReq = ModifyRequest()
-        modifyReq['object'] = LDAPDN('cn=test-modify,o=test')
+        modifyReq['object'] = LDAPDN(testDnBuilder(test_base, 'test-modify'))
         modifyReq['changes'] = changes
 
         self.connection.send('modifyRequest', modifyReq)

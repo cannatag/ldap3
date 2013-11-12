@@ -26,7 +26,7 @@ import unittest
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, CompareRequest, AttributeValueAssertion, AssertionValue, ValsAtLeast1
 from ldap3.connection import Connection
 from ldap3.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, testDnBuilder, test_base
 
 
 class Test(unittest.TestCase):
@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-compare,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-compare'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)
@@ -72,7 +72,7 @@ class Test(unittest.TestCase):
         ava['attributeDesc'] = AttributeDescription('givenName')
         ava['assertionValue'] = AssertionValue('tust')
         compareReq = CompareRequest()
-        compareReq['entry'] = LDAPDN('cn=test-compare,o=test')
+        compareReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-compare'))
         compareReq['ava'] = ava
 
         self.connection.send('compareRequest', compareReq)

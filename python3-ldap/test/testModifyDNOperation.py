@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3.server import Server
 from ldap3.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_moved, test_name_attr
 
 
 class Test(unittest.TestCase):
@@ -39,43 +39,43 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testModifyDNOperation(self):
-        result = self.connection.delete('cn=test-add-modified-dn,o=test')
+        result = self.connection.delete(testDnBuilder(test_base, 'test-add-modified-dn'))
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'noSuchObject'])
 
-        result = self.connection.delete('cn=test-add-for-modifyDN,o=test')
+        result = self.connection.delete(testDnBuilder(test_base, 'test-add-for-modify-dn'))
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'noSuchObject'])
 
-        result = self.connection.add('cn=test-add-for-modifyDN,o=test', [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'modify-dn'})
+        result = self.connection.add(testDnBuilder(test_base, 'test-add-for-modify-dn'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'modify-dn'})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'entryAlreadyExists'])
 
-        result = self.connection.modifyDn('cn=test-add-for-modifyDN,o=test', 'cn=test-add-modified-dn')
+        result = self.connection.modifyDn(testDnBuilder(test_base, 'test-add-for-modify-dn'), test_name_attr + '=test-add-modified-dn')
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'noSuchObject'])
 
     def testMoveDN(self):
-        result = self.connection.delete('cn=test-add-for-move-dn,o=test')
+        result = self.connection.delete(testDnBuilder(test_base, 'test-add-for-move-dn'))
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'noSuchObject'])
 
-        result = self.connection.add('cn=test-add-for-move-dn,o=test', [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'move-dn'})
+        result = self.connection.add(testDnBuilder(test_base, 'test-add-for-move-dn'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'move-dn'})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'entryAlreadyExists'])
 
-        result = self.connection.delete('cn=test-add-for-move-dn,ou=moved,o=test')
+        result = self.connection.delete(testDnBuilder(test_moved, 'test-add-for-move-dn'))
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'noSuchObject', 'busy'])
 
-        result = self.connection.modifyDn('cn=test-add-for-move-dn,o=test', 'cn=test-add-for-move-dn', newSuperior = 'ou=moved,o=test')
+        result = self.connection.modifyDn(testDnBuilder(test_base, 'test-add-for-move-dn'), test_name_attr + '=test-add-for-move-dn', newSuperior = test_moved)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['other', 'success', 'entryAlreadyExists', 'noSuchObject'])

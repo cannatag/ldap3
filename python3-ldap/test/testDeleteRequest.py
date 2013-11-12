@@ -26,7 +26,7 @@ import unittest
 from ldap3.protocol.rfc4511 import LDAPDN, DelRequest, Attribute, ValsAtLeast1, AttributeDescription, AttributeValue, AttributeList, AddRequest
 from ldap3.connection import Connection
 from ldap3.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
 
 
 class Test(unittest.TestCase):
@@ -63,12 +63,12 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN('cn=test-delete,o=test')
+        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-delete'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)
 
-        delReq = DelRequest(LDAPDN('cn=test-delete,o=test'))
+        delReq = DelRequest(LDAPDN(testDnBuilder(test_base, 'test-delete')))
 
         self.connection.send('delRequest', delReq)
         self.assertTrue(True)

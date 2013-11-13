@@ -191,10 +191,24 @@ Testing
 -------
 
 You can look inside the "test" package for examples on each LDAP operation.
-To execute the test suite you need and ldap server with a o=test container, a ou=moved,o=test subcontainer
-and a user with privileges to add, modify and remove objects in that organization context.
+You can customize the test modifying the variables in the __init__.py in the test package. You can set the following parameters:
 
-You can configure testserver, testuser and testpassword in the __init__.py file in the test package.
+test_server = 'server'  # the ldap server where tests executed
+test_user = 'user'  # the user that performs the tests
+test_password = 'password'  # user's password
+
+test_base = 'o=test'  # base context where test objects are created
+test_moved = 'ou=moved,o=test'  # base context where  objects are moved in ModifyDN operations
+test_name_attr = 'cn'  # naming attribute for test objects
+
+test_port = 389  # ldap port
+test_port_ssl = 636  # ldap secure port
+test_authentication = AUTH_SIMPLE  # authentication type
+test_strategy = STRATEGY_SYNC  # strategy for executing tests
+#test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to the the async strategy
+
+To execute the test suite you need and ldap server with the test_base and test_moved containers
+and a test_user with privileges to add, modify and remove objects in that organization context.
 
 
 Contact me
@@ -216,6 +230,9 @@ I wish to thank Assembla for providing the source repository space and the agile
 =========
 CHANGELOG
 =========
+
+* 0.6.6 - 2013.11.13
+    - Added parameters to tests suite
 
 * 0.6.5 - 2013.11.05
     - Modified rawAttributes decoding, now null (empty) values are returned even if invalid in protocol

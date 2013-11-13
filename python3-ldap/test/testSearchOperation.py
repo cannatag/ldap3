@@ -116,4 +116,4 @@ class Test(unittest.TestCase):
             totalEntries += len(self.connection.response)
             self.assertLessEqual(len(self.connection.response), pagedSize)
             cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-        self.assertGreater(totalEntries, 10)
+        self.assertGreater(totalEntries, 9)

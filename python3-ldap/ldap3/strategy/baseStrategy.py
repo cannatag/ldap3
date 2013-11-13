@@ -274,7 +274,7 @@ class BaseStrategy(object):
             controlValue['size'] = int(controlResp['size'])
             controlValue['cookie'] = bytes(controlResp['cookie'])
 
-        return (controlType, {'description': Oids.get(controlType, ''), 'criticality': criticality, 'value': controlValue})
+        return controlType, {'description': Oids.get(controlType, ''), 'criticality': criticality, 'value': controlValue}
 
     @classmethod
     def decodeRequest(cls, ldapMessage):

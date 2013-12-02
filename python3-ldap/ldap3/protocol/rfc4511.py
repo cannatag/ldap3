@@ -392,7 +392,9 @@ class LDAPResult(Sequence):
         diagnosticMessage  LDAPString,
         referral           [3] Referral OPTIONAL }
     """
-    componentType = NamedTypes(NamedType('resultCode', ResultCode()), NamedType('matchedDN', LDAPDN()), NamedType('diagnosticMessage', LDAPString()),
+    componentType = NamedTypes(NamedType('resultCode', ResultCode()),
+                               NamedType('matchedDN', LDAPDN()),
+                               NamedType('diagnosticMessage', LDAPString()),
                                OptionalNamedType('referral', Referral()))
 
 

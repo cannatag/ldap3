@@ -115,13 +115,15 @@ class Server(object):
         """
         retrieve DSE operational attribute as per rfc 4512 (5.1)
         """
+        self._dsaInfo = None
+
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
         if isinstance(result, bool):  #sync request
-            self._dsaInfo = DsaInfo(connection.response[0]['attributes'])
-        elif result:
-            self._dsaInfo = DsaInfo(connection.getResponse(result)[0]['attributes'])
-        else:
-            self._dsaInfo = None
+            self._dsaInfo = DsaInfo(connection.response[0]['attributes']) if result else None
+        elif result:  # async request, must check if attributes in response
+            results = connection.getResponse(result)
+            if len(results) == 2 and 'attributes' in results[0]:
+                self._dsaInfo = DsaInfo(results[0]['attributes'])
 
     def _getSchemaInfo(self, connection, entry = ''):
         """
@@ -130,24 +132,25 @@ class Server(object):
         """
         self._schemaInfo = None
         schemaEntry = None
-
         if self._dsaInfo and entry == '':  # subschemaSubentry already present in dsaInfo
             schemaEntry = self._dsaInfo.schemaEntry[0] if self._dsaInfo.schemaEntry else None
         else:
-            result = connection.search(schemaEntry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'],
-                                       getOperationalAttributes = True)
-            if isinstance(result, bool):
-                schemaEntry = connection.response[0]['attributes']['subschemaSubentry'][0]
-            else:
-                schemaEntry = connection.getResponse(result)[0]['attributes']['subschemaSubentry'][0]
+            result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'], getOperationalAttributes = True)
+            if isinstance(result, bool):  # sync request
+                schemaEntry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
+            else:  # async request, must check if subschemaSubentry in attributes
+                results = connection.getResponse(result)
+                if len(results) == 2 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
+                    schemaEntry = results[0]['attributes']['subschemaSubentry'][0]
 
         if schemaEntry:
-            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT,
-                                       attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
-            if isinstance(result, bool):
+            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT,attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
+            if isinstance(result, bool):  # sync request
                 self._schemaInfo = SchemaInfo(schemaEntry, connection.response[0]['attributes']) if result else None
-            else:
-                self._schemaInfo = SchemaInfo(schemaEntry, connection.getResponse(result)[0]['attributes'])
+            else:  # async request, must check if attributes in response
+                results = connection.getResponse(result)
+                if len(results) == 2 and 'attributes' in results[0]:
+                    self._schemaInfo = SchemaInfo(schemaEntry, results[0]['attributes'])
 
     def getInfoFromServer(self, connection):
         """

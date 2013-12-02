@@ -231,6 +231,9 @@ I wish to thank Assembla for providing the source repository space and the agile
 CHANGELOG
 =========
 
+* 0.6.7 - 2013.12.03
+    - Fixed exception when DSA is not willing to return rootDSE and schema info
+
 * 0.6.6 - 2013.11.13
     - Added parameters to tests suite
 

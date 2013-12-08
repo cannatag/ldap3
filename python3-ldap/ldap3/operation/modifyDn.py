@@ -52,3 +52,8 @@ def modifyDnRequestToDict(request):
 def modifyDnResponseToDict(response):
     return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
             'referrals': referralsToList(response['referral']), 'message': str(response['diagnosticMessage']), }
+
+
+def toLDIF(allBase64 = False):
+    # TODO
+    raise NotImplementedError()

@@ -452,3 +452,8 @@ def searchResultDoneResponseToDict(response):
 
 def searchResultReferenceResponseToDict(response):
     return {'uri': searchRefsToList(response)}
+
+
+def toLDIF(allBase64 = False):
+    # TODO
+    raise NotImplementedError()

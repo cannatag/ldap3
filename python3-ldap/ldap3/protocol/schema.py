@@ -273,11 +273,11 @@ class BaseObjectInfo(object):
                     objectDef.objectClass = oidsStringToList(value)
                 elif key == 'X-':
                     if not objectDef.extensions:
-                        objectDef.extensions = list()
+                        objectDef.extensions = []
                     objectDef.extensions.append(extensionToTuple('X-' + value))
                 elif key == 'E-':
                     if not objectDef.experimental:
-                        objectDef.experimental = list()
+                        objectDef.experimental = []
                     objectDef.experimental.append(extensionToTuple('E-' + value))
                 else:
                     raise Exception('malformed schema definition key:' + key)

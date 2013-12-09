@@ -343,7 +343,7 @@ def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, a
     request['sizeLimit'] = Integer0ToMax(sizeLimit)
     request['timeLimit'] = Integer0ToMax(timeLimit)
     request['typesOnly'] = TypesOnly(True) if typesOnly else TypesOnly(False)
-    request['filter'] = compileFilter(parseFilter(searchFilter).elements[0]) # parse the searchFilter string and compile it starting from the root node
+    request['filter'] = compileFilter(parseFilter(searchFilter).elements[0])  # parse the searchFilter string and compile it starting from the root node
 
     if not isinstance(attributes, list):
         attributes = [NO_ATTRIBUTES]
@@ -454,6 +454,6 @@ def searchResultReferenceResponseToDict(response):
     return {'uri': searchRefsToList(response)}
 
 
-def toLDIF(allBase64 = False):
+def searchResultToLDIF(allBase64 = False):
     # TODO
     raise NotImplementedError()

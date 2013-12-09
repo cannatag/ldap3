@@ -62,6 +62,6 @@ def addResponseToDict(response):
             'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']), }
 
 
-def toLDIF(allBase64 = False):
+def addToLDIF(allBase64 = False):
     # TODO
     raise NotImplementedError()

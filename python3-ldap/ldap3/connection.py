@@ -289,7 +289,7 @@ class Connection(object):
 
     def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = None,
                sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False,
-               pagedCookie = None):
+               pagedCookie = None, toLDIF = False, allBase64LDIF = False):
         """
         Perform an ldap search
         if attributes is empty no attribute is returned
@@ -312,8 +312,7 @@ class Connection(object):
             realSearchControlValue['cookie'] = Cookie(pagedCookie) if pagedCookie else Cookie('')
             if controls is None:
                 controls = []
-            controls.append(
-                ('1.2.840.113556.1.4.319', pagedCriticality if isinstance(pagedCriticality, bool) else False, encoder.encode(realSearchControlValue)))
+            controls.append(('1.2.840.113556.1.4.319', pagedCriticality if isinstance(pagedCriticality, bool) else False, encoder.encode(realSearchControlValue)))
 
         request = searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly)
 
@@ -459,3 +458,8 @@ class Connection(object):
     def refreshDsaInfo(self):
         if not self.closed:
             self.server.getInfoFromServer(self)
+
+    def responseToLDIF(self, searchResult = None):
+        if searchResult is None:
+            if isinstance(self.result. list):
+                searchResultToLDIF =

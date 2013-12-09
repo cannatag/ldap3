@@ -33,14 +33,16 @@ class Test(unittest.TestCase):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
         self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
                                      authentication = test_authentication)
-        self.connection.delete(testDnBuilder(test_base, 'test-add-operation'))
+        result = self.connection.add(testDnBuilder(test_base, 'test-ldif'), 'iNetOrgPerson',
+                                     {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif', test_name_attr: 'test-add-operation'})
 
     def tearDown(self):
+        self.connection.delete()
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
     def testSingleSearchResultToLDIF(self):
-        result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=test-add-operation)', attributes = [test_name_attr, 'givenName', 'jpegPhoto'])
+        result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=test-ldif)', attributes = [test_name_attr, 'givenName', 'jpegPhoto'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')

@@ -37,6 +37,7 @@ from ldap3.operation.extended import extendedOperation
 from ldap3.operation.modify import modifyOperation
 from ldap3.operation.modifyDn import modifyDnOperation
 from ldap3.operation.search import searchOperation
+from ldap3.protocol.ldif import toLDIF
 from ldap3.strategy.asyncThreaded import AsyncThreadedStrategy
 from ldap3.strategy.syncWait import SyncWaitStrategy
 from ldap3.protocol.sasl.sasl import saslExternal, saslDigestMd5
@@ -459,7 +460,14 @@ class Connection(object):
         if not self.closed:
             self.server.getInfoFromServer(self)
 
-    def responseToLDIF(self, searchResult = None):
+    def responseToLDIF(self, searchResult = None, allBase64 = False):
         if searchResult is None:
-            if isinstance(self.result. list):
-                searchResultToLDIF =
+            searchResult = self.response
+
+        if isinstance(self.response, list):
+            searchResultToLDIF = toLDIF('searchResponse', self.response, allBase64)
+        else:
+            searchResultToLDIF = None
+
+        return searchResultToLDIF
+

@@ -33,27 +33,29 @@ class Test(unittest.TestCase):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
         self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
                                      authentication = test_authentication)
-        result = self.connection.add(testDnBuilder(test_base, 'test-ldif'), 'iNetOrgPerson',
-                                     {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif', test_name_attr: 'test-add-operation'})
+        result = self.connection.add(testDnBuilder(test_base, 'test-ldif-1'), 'iNetOrgPerson',
+                                     {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif-1', test_name_attr: 'test-ldif-1'})
+        result = self.connection.add(testDnBuilder(test_base, 'test-ldif-2'), 'iNetOrgPerson',
+                                     {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif-2', test_name_attr: 'test-ldif-2'})
 
     def tearDown(self):
-        self.connection.delete()
+        self.connection.delete
+        self.connection.delete(testDnBuilder(test_base, 'test-ldif-1'))
+        self.connection.delete(testDnBuilder(test_base, 'test-ldif-2'))
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
     def testSingleSearchResultToLDIF(self):
-        result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=test-ldif)', attributes = [test_name_attr, 'givenName', 'jpegPhoto'])
+        result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=test-ldif-1)', attributes = [test_name_attr, 'givenName', 'jpegPhoto'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertEqual(self.connection.result['description'], 'success')
+        self.assertEqual(self.connection.responseToLDIF(), 'xxxd')
 
     def testMultipleSearchResultToLDIF(self):
-        result = self.connection.search(searchBase = test_base, searchFilter = '(sn=t*)', attributes = [test_name_attr, 'givenName', 'sn'])
+        result = self.connection.search(searchBase = test_base, searchFilter = '(sn=test-ldif*)', attributes = [test_name_attr, 'givenName', 'sn'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertEqual(self.connection.result['description'], 'success')
-
-        self.assertGreater(len(self.connection.response), 8)
+        self.assertEqual(self.connection.responseToLDIF(), 'ddd')
 
     def testAddRequestToLDIF(self):
         result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'})

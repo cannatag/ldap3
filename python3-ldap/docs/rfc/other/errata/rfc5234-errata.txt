@@ -1,0 +1,381 @@
+Errata ID: 2968
+
+Status: Verified
+Type: Technical
+
+Reported By: Daniel van Vugt
+Date Reported: 2011-09-12
+Verifier Name: Pete Resnick
+Date Verified: 2013-01-28
+Section 4 says:
+
+elements       =  alternation *c-wsp
+It should say:
+
+elements       =  alternation *WSP
+Notes:
+
+The grammar in section 4 of RFC 5234 is ambiguous. This was discovered by my own parsing code when trying to parse the ABNF grammar with itself. The ambiguity can be seen in a simplified form using the following 10 characters of input:
+
+Input: X = Y \r \n ; Z \r \n
+Offset: 0 1 2 3 4 5 6 7 8 9 
+
+My parser finds these two (ambiguous) solutions...
+
+SOLUTION 1:
+
+rulelist @ 0 len 10
+rule @ 0 len 10
+rulename @ 0 len 1 "X"
+ALPHA @ 0 len 1
+star_c_wsp @ 1 len 0
+defined_as @ 1 len 1
+star_c_wsp @ 2 len 0
+elements @ 2 len 4
+alternation @ 2 len 1
+concatenation @ 2 len 1
+repetition @ 2 len 1
+element @ 2 len 1
+rulename @ 2 len 1 "Y"
+ALPHA @ 2 len 1
+star_c_wsp @ 3 len 3
+c_wsp @ 3 len 3
+c_nl @ 3 len 2
+CRLF @ 3 len 2
+CR @ 3 len 1
+LF @ 4 len 1
+WSP @ 5 len 1
+SP @ 5 len 1
+c_nl @ 6 len 4
+comment @ 6 len 4 ";Z
+"
+WSP_or_VCHAR @ 7 len 1
+VCHAR @ 7 len 1
+CRLF @ 8 len 2
+CR @ 8 len 1
+LF @ 9 len 1
+
+SOLUTION 2:
+
+rulelist @ 0 len 10
+rule @ 0 len 5
+rulename @ 0 len 1 "X"
+ALPHA @ 0 len 1
+star_c_wsp @ 1 len 0
+defined_as @ 1 len 1
+star_c_wsp @ 2 len 0
+elements @ 2 len 1
+alternation @ 2 len 1
+concatenation @ 2 len 1
+repetition @ 2 len 1
+element @ 2 len 1
+rulename @ 2 len 1 "Y"
+ALPHA @ 2 len 1
+star_c_wsp @ 3 len 0
+c_nl @ 3 len 2
+CRLF @ 3 len 2
+CR @ 3 len 1
+LF @ 4 len 1
+star_c_wsp @ 5 len 1
+c_wsp @ 5 len 1
+WSP @ 5 len 1
+SP @ 5 len 1
+c_nl @ 6 len 4
+comment @ 6 len 4 ";Z
+"
+WSP_or_VCHAR @ 7 len 1
+VCHAR @ 7 len 1
+CRLF @ 8 len 2
+CR @ 8 len 1
+LF @ 9 len 1
+
+
+The solution to this ambiguity is to change:
+elements = alternation *c-wsp
+to:
+elements = alternation *WSP
+
+
+--VERIFIER NOTES-- 
+
+The current document is clearly incorrect. However, though the solution appears correct, it has not been tested.
+
+Errata ID: 3076
+
+Status: Verified
+Type: Technical
+
+Reported By: Daniel van Vugt
+Date Reported: 2012-01-04
+Verifier Name: Pete Resnick
+Date Verified: 2013-01-28
+Section 4 says:
+
+ rulelist       =  1*( rule / (*c-wsp c-nl) )
+It should say:
+
+ rulelist       =  1*( rule / (*WSP c-nl) )
+Notes:
+
+This errata is very similar to errata 2968, but different.
+
+The grammar in section 4 is ambiguous. This ambiguity is revealed using 7 characters of input:
+';' <CR> <LF> <SP> ';' <CR> <LF>
+
+which produces 2 different matches (please forgive my program output):
+
+rulelist @ 0 len 7
+rulelist1 @ 0 len 3
+star_c_wsp @ 0 len 0
+c_nl @ 0 len 3
+comment @ 0 len 3 ";\r\n"
+CRLF @ 1 len 2
+CR @ 1 len 1
+LF @ 2 len 1
+rulelist1 @ 3 len 4
+star_c_wsp @ 3 len 1
+c_wsp @ 3 len 1
+WSP @ 3 len 1
+SP @ 3 len 1
+c_nl @ 4 len 3
+comment @ 4 len 3 ";\r\n"
+CRLF @ 5 len 2
+CR @ 5 len 1
+LF @ 6 len 1
+
+-----------
+
+rulelist @ 0 len 7
+rulelist1 @ 0 len 7
+star_c_wsp @ 0 len 4
+c_wsp @ 0 len 4
+c_nl @ 0 len 3
+comment @ 0 len 3 ";\r\n"
+CRLF @ 1 len 2
+CR @ 1 len 1
+LF @ 2 len 1
+WSP @ 3 len 1
+SP @ 3 len 1
+c_nl @ 4 len 3
+comment @ 4 len 3 ";\r\n"
+CRLF @ 5 len 2
+CR @ 5 len 1
+LF @ 6 len 1
+
+-----------
+
+A solution to this ambiguity, which I have verified works, is:
+rulelist = 1*( rule / (*WSP c-nl) )
+
+This prevents the c-nl inside c-wsp from getting confused with the c-nl in rulelist.
+
+--VERIFIER NOTES-- 
+
+The current document is clearly incorrect. However, though the solution appears correct, it has not been tested.
+
+Status: Held for Document Update (2)
+
+RFC5234, "Augmented BNF for Syntax Specifications: ABNF", January 2008
+
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+Errata ID: 2820
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Spiros Bousbouras
+Date Reported: 2011-06-03
+Held for Document Update by: Pete Resnick
+Date Held: 2011-06-11
+Section 4 says:
+
+         prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
+                                ; bracketed string of SP and VCHAR
+                                ;  without angles
+It should say:
+
+         prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
+                                ; bracketed string of SP and VCHAR
+                                ;  without ">"
+Notes:
+
+"without angles" suggests that ">" and "<"
+must not appear but the range of codes given
+suggests that only ">" must not appear.
+
+Errata ID: 2914
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Rudolf Dovicin
+Date Reported: 2011-08-03
+Held for Document Update by: Pete Resnick
+Date Held: 2011-08-04
+Throughout the document, when it says:
+
+         alternation    =  concatenation
+                           *(*c-wsp "/" *c-wsp concatenation)
+
+         concatenation  =  repetition *(1*c-wsp repetition)
+
+         repetition     =  [repeat] element
+
+         repeat         =  1*DIGIT / (*DIGIT "*" *DIGIT)
+
+         element        =  rulename / group / option /
+                           char-val / num-val / prose-val
+
+         group          =  "(" *c-wsp alternation *c-wsp ")"
+
+         option         =  "[" *c-wsp alternation *c-wsp "]"
+Notes:
+
+Section 4. (ABNF Definition of ABNF) contains at least 2 recursions.
+Recursions are not explicitly mentioned in the document, which may be confusing.
+
+Status: Rejected (2)
+
+RFC5234, "Augmented BNF for Syntax Specifications: ABNF", January 2008
+
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+Errata ID: 1423
+
+Status: Rejected
+Type: Technical
+
+Reported By: David J. Rutkin
+Date Reported: 2008-05-13
+Rejected by: Alexey Melnikov
+Date Rejected: 2010-09-03
+Section 4. says:
+
+repeat         =  1*DIGIT / (*DIGIT "*" *DIGIT)
+It should say:
+
+repeat         =  *DIGIT ["*" *DIGIT]
+Notes:
+
+In section 4. ABNF Definition of ABNF, on Page 10, the definition of <repeat> appears to be ambiguous.
+
+After many weeks of study of RFC 5234 I am unable to discern which alternation to choose for <repeat> for the following string.
+
+21*ARULENAME
+
+Both alternatives are a valid solution but I was not able to determine from the RFC which one should be chosen. By my way of thinking, the first one encountered should be chosen but when done, the "*" is left and will cause a parsing error. Conversely I could have performed a look ahead check in my parsor, but that would produce a less efficient parser, forcing all alternatives to always be processed. In either case, the rule is ambiguous and, in my opinion, requires further definition.
+
+My recommendation would be to change it to 
+
+repeat = *DIGIT ["*" *DIGIT]
+
+This solution does not introduce any ambiguity and does not break any components of the definition of ABNF.
+
+I realize that the forced presence of a digit on the <repeat> without the * is no longer present, but it was not necessary since the only use of <repeat> is by <repetition> and its presence is optional.
+
+--VERIFIER NOTES-- 
+
+The following is the text of an analysis of Erratum entry <http://www.rfc-editor.org/errata_search.php?rfc=5234&eid=1423>, made by Paul Overell:
+
+
+> Section: 4.
+>
+> Original Text
+> -------------
+> repeat = 1*DIGIT / (*DIGIT "*" *DIGIT)
+>
+
+I can see nothing wrong with this, there is no ambiguity. To be ambiguous it would have to be able to generate a particular string in more than one way.
+
+A <repeat> without a "*" can only be generated by the first alterative. A <repeat> with a "*" can only be generated by the second alternative.
+
+
+> Corrected Text
+> --------------
+> repeat = *DIGIT ["*" *DIGIT]
+
+This changes the syntax of <repeat> as it allow the empty string.
+
+
+> Notes
+> -----
+> In section 4. ABNF Definition of ABNF, on Page 10, the definition of <repeat> appears to be ambiguous.
+>
+> After many weeks of study of RFC 5234 I am unable to discern which alternation to choose for <repeat> for the following string.
+>
+> 21*ARULENAME
+
+This clearly matches the second alternative (*DIGIT "*" *DIGIT) and therefor is an instance of a <repeat>. This string can only be generated using the second alternative.
+
+
+> Both alternatives are a valid solution but I was not able to determine from the RFC which one should be chosen. By my way of thinking, the first one encountered should be chosen but when done, the "*" is left and will cause a parsing error.
+
+The first cannot be chosen precisely because the "*" is left and causes a parsing error.
+
+> Conversely I could have performed a look ahead check in my parsor, but that would produce a less efficient parser, forcing all alternatives to always be processed.
+
+The grammar given for ABNF is not, and does not claim to be, LL(0). I expect the ABNF grammar could be recast as LL(0) but there is no need, it was written for clarity.
+
+I can't see the relevance of parser efficiency here.
+
+> In either case, the rule is ambiguous and, in my opinion, requires further definition.
+
+As discussed above, there is no ambiguity.
+
+
+> My recommendation would be to change it to
+
+> repeat = *DIGIT ["*" *DIGIT]
+>
+> This solution does not introduce any ambiguity and does not break any components of the definition of ABNF.
+
+It is not equivalent to the original in that it allows the empty string.
+
+
+> I realize that the forced presence of a digit on the <repeat> without the * is no longer present, but it was not necessary since the only use of <repeat> is by <repetition> and its presence is optional.
+
+The proposed change to <repeat> breaks the definition of <repetition> as it then becomes ambiguous.
+
+Consider the string "foo". With the proposed change to <repeat> it can be parsed as a <repetition> in two ways: <repeat> <element> or as <element>, the first with the option taken, the second with the option not taken. Two parse trees for the same string. To fix this ambiguity the definition of <repetition> would have to be changed to
+
+repetition = repeat element
+
+
+I recommend that this errata is rejected.
+
+There is no ambiguity to fix, the proposed change is unnecessary, and would require an additional change to the definition of <repetition>.
+
+Errata ID: 3096
+
+Status: Rejected
+Type: Technical
+
+Reported By: MURATA Yasuhisa
+Date Reported: 2012-01-23
+Rejected by: Peter Saint-Andre
+Date Rejected: 2012-01-26
+Section B.1 says:
+
+LWSP           =  *(WSP / CRLF WSP)
+It should say:
+
+LWSP           =  1*(WSP / CRLF WSP)
+Notes:
+
+RFC 822 said:
+linear-white-space = 1*([CRLF] LWSP-char)
+--VERIFIER NOTES-- 
+Paul Overell notes the following (and Dave Crocker concurs):
+
+###
+
+The suggested change would give LWSP the same syntactic definition as RFC822's linear-white-space.
+
+However, the successor to RFC822, RFC5322, doesn't use LWSP, it has its own definitions specifying header folding. Nor does RFC5234 itself use LWSP.
+
+There are RFCs that use the existing definition, e.g. RFC6376, RFC5191, RFC5987. These would need to be fixed if we changed the definition of LWSP.
+
+The existing definition of LWSP has been around since 1997, it is not wrong or unreasonable, just different from RFC822's linear-white-space.
+
+###

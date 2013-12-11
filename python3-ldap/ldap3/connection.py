@@ -464,8 +464,8 @@ class Connection(object):
         if searchResult is None:
             searchResult = self.response
 
-        if isinstance(self.response, list):
-            searchResultToLDIF = toLDIF('searchResponse', self.response, allBase64)
+        if isinstance(searchResult, list):
+            searchResultToLDIF = toLDIF('searchResponse', searchResult, allBase64)
         else:
             searchResultToLDIF = None
 

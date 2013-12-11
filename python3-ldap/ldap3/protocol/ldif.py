@@ -22,7 +22,6 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from base64 import b64encode
-from mailbox import linesep
 from os import linesep
 from ldap3 import LDIF_LINE_LENGTH
 """
@@ -30,38 +29,39 @@ LDIF converter RFC 2849 compliant
 """
 
 
-def safeLDIFString(value):
-    if not value:
+def safeLDIFString(bytesValue):
+    if not bytesValue:
         return True
 
     # check SAFE-INIT-CHAR: < 127, not NUL, LF, CR, SPACE, COLON, LESS-THAN
-    if ord(value[0]) > 127 or ord(value[0]) in [0, 10, 13, 32, 58, 60]:
+    if bytesValue[0] > 127 or bytesValue[0] in [0, 10, 13, 32, 58, 60]:
         return False
 
     # check SAFE-CHAR: < 127 not NUL, LF, CR
-    if chr(0) in value or chr(10) in value or chr(13) in value:
+    if 0 in bytesValue or 10 in bytesValue or 13 in bytesValue:
         return False
-
-    for char in value:
-        if ord(char) > 127:
-            return False
 
     # check last char for SPACE
-    if ord(value[-1]) == 32:
+    if bytesValue[-1] == 32:
         return False
+
+    for byte in bytesValue:
+        if byte > 127:
+            return False
 
     return True
 
-
 def convertToLDIF(descriptor, value, base64):
-    value = str(value)
+    if isinstance(value, str):
+        value = bytes(value, encoding = 'UTF-8')
     if base64 or not safeLDIFString(value):
-        line = descriptor + ':: ' + b64encode(value)
+        encoded = b64encode(value)
+        line = descriptor + ':: ' + str(encoded, encoding = 'ascii')
     else:
-        line = descriptor + ': ' + value
+        line = descriptor + ': ' + str(value, encoding = 'ascii')
 
     # check max line lenght and split as per note 2 of RFC 2849
-    lines = [' ' + line[i: i + LDIF_LINE_LENGTH] for i in range(LDIF_LINE_LENGTH, len(line), LDIF_LINE_LENGTH)] if  len(line) > LDIF_LINE_LENGTH else []
+    lines = [' ' + line[i: i + LDIF_LINE_LENGTH - 1] for i in range(LDIF_LINE_LENGTH, len(line), LDIF_LINE_LENGTH - 1)] if len(line) > LDIF_LINE_LENGTH else []
 
     return [line[0:LDIF_LINE_LENGTH]] + lines
 
@@ -69,9 +69,10 @@ def searchResponseToLDIF(entries, allBase64):
     lines = []
     for entry in entries:
         if 'dn' in entry:
+
             lines.extend(convertToLDIF('dn', entry['dn'], allBase64))
-            for attr in entry['attributes']:
-                for val in entry['attributes'][attr]:
+            for attr in entry['rawAttributes']:
+                for val in entry['rawAttributes'][attr]:
                     lines.extend(convertToLDIF(attr, val, allBase64))
             lines.append('')
         else:
@@ -79,6 +80,8 @@ def searchResponseToLDIF(entries, allBase64):
 
     if lines:
         lines.insert(0, 'version: 1')
+        lines.append('')
+        lines.append('# total number of entries: '+  str(len(entries)))
 
     return linesep.join(lines)
 

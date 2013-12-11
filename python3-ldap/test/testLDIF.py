@@ -49,13 +49,20 @@ class Test(unittest.TestCase):
         result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=test-ldif-1)', attributes = [test_name_attr, 'givenName', 'jpegPhoto'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertEqual(self.connection.responseToLDIF(), 'xxxd')
+        self.assertEqual(self.connection.responseToLDIF(), 'version: 1\r\ndn: cn=test-ldif-1,o=test\r\ncn: test-ldif-1\r\n\r\n\r\n# total number of entries: 1')
 
     def testMultipleSearchResultToLDIF(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(sn=test-ldif*)', attributes = [test_name_attr, 'givenName', 'sn'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertEqual(self.connection.responseToLDIF(), 'ddd')
+        l = self.connection.responseToLDIF()
+        self.assertTrue('dn: cn=test-ldif-1,o=test' in l)
+        self.assertTrue('cn: test-ldif-1' in l)
+        self.assertTrue('sn: test-ldif-1' in l)
+        self.assertTrue('dn: cn=test-ldif-2,o=test' in l)
+        self.assertTrue('cn: test-ldif-2' in l)
+        self.assertTrue('sn: test-ldif-2' in l)
+        self.assertTrue('total number of entries: 2' in l)
 
     def testAddRequestToLDIF(self):
         result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'})

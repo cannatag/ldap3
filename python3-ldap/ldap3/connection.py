@@ -229,6 +229,8 @@ class Connection(object):
             if self.autoBind:
                 self.open()
                 self.bind()
+                if not self.bound:
+                    raise Exception('autoBind not successful')
         else:
             self.lastError = 'invalid ldap server'
             raise Exception(self.lastError)

@@ -26,7 +26,7 @@ from setuptools import setup
 
 setup(
       name = 'python3-ldap',
-      version = '0.6.7',
+      version = '0.7.0',
       packages = ['ldap3', 'ldap3.operation', 'ldap3.protocol', 'ldap3.protocol.sasl', 'ldap3.strategy'],
       package_dir = {'': 'python3-ldap'},
       install_requires = [

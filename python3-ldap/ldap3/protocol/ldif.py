@@ -24,10 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 from base64 import b64encode
 from os import linesep
 from ldap3 import LDIF_LINE_LENGTH
-"""
-LDIF converter RFC 2849 compliant
-"""
 
+
+# LDIF converter RFC 2849 compliant
 
 def safeLDIFString(bytesValue):
     if not bytesValue:
@@ -53,12 +52,22 @@ def safeLDIFString(bytesValue):
 
 def convertToLDIF(descriptor, value, base64):
     if isinstance(value, str):
-        value = bytes(value, encoding = 'UTF-8')
+        # value = bytes(value, encoding = 'UTF-8') if str is not bytes else bytearray(value, encoding = 'UTF-8')  # in python2 str IS bytes
+        value = bytearray(value, encoding = 'UTF-8')
+
     if base64 or not safeLDIFString(value):
         encoded = b64encode(value)
-        line = descriptor + ':: ' + str(encoded, encoding = 'ascii')
+        if not isinstance(encoded, str):  # in python3 b64encode returns bytes in python2 returns str
+            encoded = str(encoded, encoding = 'ASCII')
+
+        line = descriptor + ':: ' + encoded
     else:
-        line = descriptor + ': ' + str(value, encoding = 'ascii')
+        if not isinstance(value, bytearray):  # python3
+            value = str(value, encoding = 'ASCII')
+        else:  # python2
+            value = value.decode(encoding = 'ASCII')
+
+        line = descriptor + ': ' + value
 
     # check max line lenght and split as per note 2 of RFC 2849
     lines = [' ' + line[i: i + LDIF_LINE_LENGTH - 1] for i in range(LDIF_LINE_LENGTH, len(line), LDIF_LINE_LENGTH - 1)] if len(line) > LDIF_LINE_LENGTH else []
@@ -86,16 +95,16 @@ def searchResponseToLDIF(entries, allBase64):
     return linesep.join(lines)
 
 def addRequestToLDIF(entry, allBase64):
-    return 'yyy'
+    raise NotImplementedError
 
 def deleteRequestToLDIF(entry, allBase64):
-    return 'vvv'
+    raise NotImplementedError
 
 def modifyRequestToLDIF(entry, allBase64):
-    return 'zzz'
+    raise NotImplementedError
 
 def modifyDnRequestToLDIF(entry, allBase64):
-    return "www"
+    raise NotImplementedError
 
 def toLDIF(operationType, entries, allBase64):
     if operationType == 'searchResponse':

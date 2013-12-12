@@ -73,7 +73,23 @@ class ConnectionUsage(object):
         self.unbindOperations = 0
 
     def __init__(self):
-        self.reset()
+        self.connectionStartTime = None
+        self.connectionStopTime = None
+        self.bytesTransmitted = 0
+        self.bytesReceived = 0
+        self.messagesTransmitted = 0
+        self.messagesReceived = 0
+        self.operations = 0
+        self.abandonOperations = 0
+        self.addOperations = 0
+        self.bindOperations = 0
+        self.compareOperations = 0
+        self.deleteOperations = 0
+        self.extendedOperations = 0
+        self.modifyOperations = 0
+        self.modifyDnOperations = 0
+        self.searchOperations = 0
+        self.unbindOperations = 0
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep
@@ -290,7 +306,7 @@ class Connection(object):
 
     def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = None,
                sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False,
-               pagedCookie = None, toLDIF = False, allBase64LDIF = False):
+               pagedCookie = None):
         """
         Perform an ldap search
         if attributes is empty no attribute is returned

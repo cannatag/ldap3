@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 # noinspection PyUnresolvedReferences
-from Tools.Scripts.find_recursionlimit import test_getattr
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
 test_server = 'edir.vbox'  # the ldap server where tests executed
@@ -36,7 +35,7 @@ test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = AUTH_SIMPLE  # authentication type
 test_strategy = STRATEGY_SYNC  # strategy for executing tests
-#test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to the the async strategy
+test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to the the async strategy
 
 
 def testDnBuilder(base, name):

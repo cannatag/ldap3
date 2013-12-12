@@ -105,17 +105,17 @@ After any operation, either synchronous or asynchronous, you'll find the followi
 - bound: True if bound else False
 - listening: True if the socket is listening to the server
 - closed: True if the socket is not open
-
+- responseToLDIF(): response in LDIF format
 
 Examples
 --------
 
 You can create a connection with::
 
-    from ldap3 import connection, server
+    from ldap3 import Server, Connection
     from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, SEARCH_SCOPE_WHOLE_SUBTREE, GET_ALL_INFO
-    s = server.Server('servername', port = 389, getInfo = GET_ALL_INFO)  # define an unsecure ldap server, requesting info on DSE and schema
-    c = connection.Connection(s, autoBind = True, clientStrategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE)  # define a synchronous connection to the server with basic authentication
+    s = Server('servername', port = 389, getInfo = GET_ALL_INFO)  # define an unsecure ldap server, requesting info on DSE and schema
+    c = Connection(s, autoBind = True, clientStrategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE)  # define a synchronous connection to the server with basic authentication
     print(s.info) # display info from the DSE. OID are decoded when recognized
     result = c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
     if result:
@@ -187,6 +187,59 @@ To start a TLS connection on an already created clear connection::
 You can customize the tls object with reference to key, certificate and CAs. See Tls() constructor docstring for details
 
 
+LDIF
+----
+
+LDIF is a data interchange format for LDAP. It is defined in RFC 2849 in two different flavours: ldif-content and ldif-change.
+ldif-content is used to describe DIT entries in an ASCII stream (i.e. a file), while ldif-change is used to describe Add, Delete, Modfify and
+ModifyDn operations. These two format have different purposes and cannot be mixed in the same stream.
+If the dn of the entry or an attribute contains any unicode character the value must be base64 encoded, as specified in RFC 2849.
+
+Python3-ldap is compliant to the latest LDIF format (version: 1). You can use the ldif-content flavour with any search result::
+
+    ...
+    result = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
+    ldifStream = c.responseToLDIF()
+    ...
+
+
+ldifStream will contain::
+
+    version: 1
+    dn: cn=test-ldif-1,o=test
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: Person
+    objectClass: ndsLoginProperties
+    objectClass: Top
+    sn: test-ldif-1
+
+    dn: cn=test-ldif-2,o=test
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: Person
+    objectClass: ndsLoginProperties
+    objectClass: Top
+    sn:: dGVzdC1sZGlmLTItw6DDssO5
+
+
+    # total number of entries: 2
+
+
+you can even request a ldif-content for a response you saved early::
+
+     ...
+        result1 = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
+        result2 = c.search('o=test','(!(cn=test-ldif*))', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
+        ldifStream = c.responseToLDIF(result1)
+        ...
+
+ldifStream will contain the LDIF representation of the result1 entries.
+
+
+ldif-change
+    TBD
+
 Testing
 -------
 
@@ -209,6 +262,7 @@ test_strategy = STRATEGY_SYNC  # strategy for executing tests
 
 To execute the test suite you need and ldap server with the test_base and test_moved containers
 and a test_user with privileges to add, modify and remove objects in that organization context.
+To execute the testTLS unit test you must supply your own certificates or it will fail.
 
 
 Contact me
@@ -230,6 +284,11 @@ I wish to thank Assembla for providing the source repository space and the agile
 =========
 CHANGELOG
 =========
+
+* 0.7.0 - 2013.12.12
+    - Added support for LDIF as per rfc 2849
+    - Added ldif-content compliant search responses
+    - Added exception when using autoBind if connection is not successful
 
 * 0.6.7 - 2013.12.03
     - Fixed exception when DSA is not willing to return rootDSE and schema info

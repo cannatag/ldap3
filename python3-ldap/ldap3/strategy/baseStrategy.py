@@ -200,7 +200,7 @@ class BaseStrategy(object):
         Returns -1 if too few data to compute message length
         """
         if isinstance(data, str):  # fix for python2, data is string not bytes
-            data = bytearray(data)
+            data = bytearray(data)  # python2 bytearray is equivalent to python3 bytes
 
         retValue = -1
         if len(data) > 2:

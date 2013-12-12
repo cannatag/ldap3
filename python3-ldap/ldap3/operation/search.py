@@ -370,7 +370,6 @@ def attributesToDict(attributeList):
 
 def decodeRawVals(vals):
     if vals:
-        # return [bytes(val) for val in vals if val]
         return [bytes(val) for val in vals]
     else:
         return None
@@ -452,8 +451,3 @@ def searchResultDoneResponseToDict(response):
 
 def searchResultReferenceResponseToDict(response):
     return {'uri': searchRefsToList(response)}
-
-
-def searchResultToLDIF(allBase64 = False):
-    # TODO
-    raise NotImplementedError()

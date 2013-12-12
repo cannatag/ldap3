@@ -39,7 +39,6 @@ class Test(unittest.TestCase):
                                      {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif-2', test_name_attr: 'test-ldif-2'})
 
     def tearDown(self):
-        self.connection.delete
         self.connection.delete(testDnBuilder(test_base, 'test-ldif-1'))
         self.connection.delete(testDnBuilder(test_base, 'test-ldif-2'))
         self.connection.unbind()

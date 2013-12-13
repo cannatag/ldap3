@@ -200,12 +200,14 @@ class Connection(object):
             raise Exception('unknown authentication method')
 
         self.autoReferrals = True if autoReferrals else False
+
         # map strategy functions to connection functions
         self.send = self.strategy.send
         self.open = self.strategy.open
         self.getResponse = self.strategy.getResponse
         self.postSendSingleResponse = self.strategy.postSendSingleResponse
         self.postSendSearch = self.strategy.postSendSearch
+
         self.request = None
         self.response = None
         self.result = None
@@ -379,8 +381,10 @@ class Connection(object):
 
         request = addOperation(dn, attributes)
         response = self.postSendSingleResponse(self.send('addRequest', request, controls))
-        if isinstance(response, int):
+
+        if isinstance(response, int) or isinstance(response, str):
             return response
+
         return True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
 
     def delete(self, dn, controls = None):
@@ -389,8 +393,10 @@ class Connection(object):
         """
         request = deleteOperation(dn)
         response = self.postSendSingleResponse(self.send('delRequest', request, controls))
-        if isinstance(response, int):
+
+        if isinstance(response, int) or isinstance(response, str):
             return response
+
         return True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
 
     def modify(self, dn, changes, controls = None):
@@ -412,8 +418,10 @@ class Connection(object):
 
         request = modifyOperation(dn, changes)
         response = self.postSendSingleResponse(self.send('modifyRequest', request, controls))
-        if isinstance(response, int):
+
+        if isinstance(response, int) or isinstance(response, str):
             return response
+
         return True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
 
     def modifyDn(self, dn, relativeDn, deleteOldDn = True, newSuperior = None, controls = None):
@@ -425,8 +433,10 @@ class Connection(object):
 
         request = modifyDnOperation(dn, relativeDn, deleteOldDn, newSuperior)
         response = self.postSendSingleResponse(self.send('modDNRequest', request, controls))
-        if isinstance(response, int):
+
+        if isinstance(response, int) or isinstance(response, str):
             return response
+
         return True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
 
     def abandon(self, messageId, controls = None):

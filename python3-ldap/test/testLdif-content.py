@@ -1,5 +1,5 @@
 """
-Created on 2013.06.06
+Created on 2013.12.10
 
 @author: Giovanni Cannata
 
@@ -67,9 +67,3 @@ class Test(unittest.TestCase):
         self.assertTrue('cn: test-ldif-2' in l)
         self.assertTrue('sn: test-ldif-2' in l)
         self.assertTrue('total number of entries: 2' in l)
-
-    def testAddRequestToLDIF(self):
-        result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'})
-        if not isinstance(result, bool):
-            self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success', 'entryAlreadyExists'])

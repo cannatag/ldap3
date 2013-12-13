@@ -95,7 +95,7 @@ def searchResponseToLDIF(entries, allBase64):
     return linesep.join(lines)
 
 def addRequestToLDIF(entry, allBase64):
-    raise NotImplementedError
+    return "ADD LDIF!"
 
 def deleteRequestToLDIF(entry, allBase64):
     raise NotImplementedError

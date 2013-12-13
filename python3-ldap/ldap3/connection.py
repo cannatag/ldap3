@@ -27,7 +27,7 @@ from datetime import datetime
 from os import linesep
 from pyasn1.codec.ber import encoder
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT
+from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER
 from ldap3.operation.abandon import abandonOperation
 from ldap3.operation.add import addOperation
 from ldap3.operation.bind import bindOperation
@@ -39,6 +39,7 @@ from ldap3.operation.modifyDn import modifyDnOperation
 from ldap3.operation.search import searchOperation
 from ldap3.protocol.ldif import toLDIF
 from ldap3.strategy.asyncThreaded import AsyncThreadedStrategy
+from ldap3.strategy.ldifProducer import LDIFProducerStrategy
 from ldap3.strategy.syncWait import SyncWaitStrategy
 from ldap3.protocol.sasl.sasl import saslExternal, saslDigestMd5
 from ldap3.operation.unbind import unbindOperation
@@ -185,6 +186,9 @@ class Connection(object):
             self.strategy = SyncWaitStrategy(self)
         elif self.strategyType == STRATEGY_ASYNC_THREADED:
             self.strategy = AsyncThreadedStrategy(self)
+        elif self.strategyType == STRATEGY_LDIF_PRODUCER:
+            self.strategy = LDIFProducerStrategy(self)
+
         else:
             self.strategy = None
 
@@ -225,7 +229,7 @@ class Connection(object):
         self.tlsStarted = False
         self.saslInProgress = False
 
-        if server.isValid():
+        if not self.strategy.noRealDSA and server.isValid():
             self.server = server
             self.version = version
             if self.autoBind:
@@ -233,15 +237,16 @@ class Connection(object):
                 self.bind()
                 if not self.bound:
                     raise Exception('autoBind not successful')
+        elif self.strategy.noRealDSA:
+            self.server = None
+            self.version = None
         else:
             self.lastError = 'invalid ldap server'
             raise Exception(self.lastError)
 
     def __str__(self):
         return (str(self.server) if self.server.isValid else 'None') + ' - ' + 'user: ' + str(self.user) + ' - version ' + str(self.version) + ' - ' + (
-            'bound' if self.bound else 'unbound') + ' - ' + (
-                   'closed' if self.closed else 'open') + ' - ' + (
-                   'listening' if self.listening else 'not listening') + ' - ' + self.strategy.__class__.__name__
+            'bound' if self.bound else 'unbound') + ' - ' + ('closed' if self.closed else 'open') + ' - ' + ('listening' if self.listening else 'not listening') + ' - ' + self.strategy.__class__.__name__
 
     def __repr__(self):
         r = 'Connection(server={0.server!r}'.format(self)

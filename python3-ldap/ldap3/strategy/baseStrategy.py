@@ -52,6 +52,8 @@ class BaseStrategy(object):
     """
 
     def __init__(self, ldapConnection):
+        self.sync = None  # indicate a synchronous connection
+        self.noRealDSA = None  # indicate a connection to a real LDAP server
         self.connection = ldapConnection
         self._outstanding = None
         self._referrals = []

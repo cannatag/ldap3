@@ -43,11 +43,14 @@ class LDIFProducerStrategy(BaseStrategy):
     """
 
     def __init__(self, ldapConnection):
-        self.connection = None
+        self.connection = ldapConnection
         self._outstanding = None
+        self.sync = True
+        self.noRealDSA = True
+        random.seed()
+        self._outstanding = dict()
 
     def open(self, startListening = True):
-        random.seed()
         pass
 
     def _startListen(self):
@@ -77,7 +80,7 @@ class LDIFProducerStrategy(BaseStrategy):
         self.connection.result = None
         if self._outstanding and messageId in self._outstanding:
             request = self._outstanding.pop(messageId)
-            self.connection.response = toLDIF(self.connection.request['operationType'], request)
+            self.connection.response = toLDIF(self.connection.request['type'], request, False)
             return True
 
         return False

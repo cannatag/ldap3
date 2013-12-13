@@ -44,6 +44,8 @@ class AsyncThreadedStrategy(BaseStrategy):
 
     def __init__(self, ldapConnection):
         super(AsyncThreadedStrategy, self).__init__(ldapConnection)
+        self.sync = False
+        self.noRealDSA = False
         self._responses = None
         self.receiver = None
 

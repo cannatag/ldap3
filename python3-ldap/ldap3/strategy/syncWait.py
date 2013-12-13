@@ -39,6 +39,8 @@ class SyncWaitStrategy(BaseStrategy):
 
     def __init__(self, ldapConnection):
         super(SyncWaitStrategy, self).__init__(ldapConnection)
+        self.sync = True
+        self.noRealDSA = False
 
     def open(self, startListening = True):
         super(SyncWaitStrategy, self).open(startListening)

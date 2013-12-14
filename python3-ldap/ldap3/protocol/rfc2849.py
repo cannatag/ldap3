@@ -78,7 +78,6 @@ def searchResponseToLDIF(entries, allBase64):
     lines = []
     for entry in entries:
         if 'dn' in entry:
-
             lines.extend(convertToLDIF('dn', entry['dn'], allBase64))
             for attr in entry['rawAttributes']:
                 for val in entry['rawAttributes'][attr]:
@@ -95,7 +94,12 @@ def searchResponseToLDIF(entries, allBase64):
     return linesep.join(lines)
 
 def addRequestToLDIF(entry, allBase64):
-    return "ADD LDIF!"
+    lines = []
+    print(entry)
+    if 'entry' in entry:
+        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+
+    return 'bbb'
 
 def deleteRequestToLDIF(entry, allBase64):
     raise NotImplementedError

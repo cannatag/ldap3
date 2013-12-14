@@ -39,9 +39,9 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testSearchWithControls(self):
-        ctrls = list()
-        ctrls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
-        result = self.connection.search(test_base, '(objectClass=*)', attributes = ['sn, givenName'], sizeLimit = 0, controls = ctrls)
+        controls = list()
+        controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
+        result = self.connection.search(test_base, '(objectClass=*)', attributes = ['sn, givenName'], sizeLimit = 0, controls = controls)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertIn(self.connection.result['description'], ['success', 'operationsError'])

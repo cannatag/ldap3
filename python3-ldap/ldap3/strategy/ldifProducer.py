@@ -25,7 +25,7 @@ import random
 
 from pyasn1.codec.ber import decoder
 from ldap3.protocol.convert import buildControlsList
-from ldap3.protocol.ldif import convertToLDIF, toLDIF
+from ldap3.protocol.rfc2849 import convertToLDIF, toLDIF
 
 from ldap3.strategy.baseStrategy import BaseStrategy
 from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAP_MAX_INT
@@ -81,6 +81,7 @@ class LDIFProducerStrategy(BaseStrategy):
         if self._outstanding and messageId in self._outstanding:
             request = self._outstanding.pop(messageId)
             self.connection.response = toLDIF(self.connection.request['type'], request, False)
+
             return True
 
         return False

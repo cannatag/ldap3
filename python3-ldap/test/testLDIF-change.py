@@ -40,5 +40,8 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testAddRequestToLDIF(self):
-        result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+        controls = list()
+        controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
+        controls.append(('2.16.840.1.113719.1.27.103.7', False, 'sn'))
+        result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls = controls)
         self.assertEqual(self.connection.response, "abc")

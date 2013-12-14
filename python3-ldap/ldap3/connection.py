@@ -37,7 +37,7 @@ from ldap3.operation.extended import extendedOperation
 from ldap3.operation.modify import modifyOperation
 from ldap3.operation.modifyDn import modifyDnOperation
 from ldap3.operation.search import searchOperation
-from ldap3.protocol.ldif import toLDIF
+from ldap3.protocol.rfc2849 import toLDIF
 from ldap3.strategy.asyncThreaded import AsyncThreadedStrategy
 from ldap3.strategy.ldifProducer import LDIFProducerStrategy
 from ldap3.strategy.syncWait import SyncWaitStrategy

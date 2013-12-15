@@ -50,6 +50,7 @@ def safeLDIFString(bytesValue):
 
     return True
 
+
 def convertToLDIF(descriptor, value, base64):
     if isinstance(value, str):
         # value = bytes(value, encoding = 'UTF-8') if str is not bytes else bytearray(value, encoding = 'UTF-8')  # in python2 str IS bytes
@@ -74,15 +75,18 @@ def convertToLDIF(descriptor, value, base64):
 
     return [line[0:LDIF_LINE_LENGTH]] + lines
 
+
 def addControls(controls, allBase64):
     lines = []
-    for control in controls:
-        line = 'control: ' + control[0]
-        line += ' ' + ('true' if control[1] else 'false')
-        if control[2]:
-            lines.extend(convertToLDIF(line, control[2], allBase64))
+    if controls:
+        for control in controls:
+            line = 'control: ' + control[0]
+            line += ' ' + ('true' if control[1] else 'false')
+            if control[2]:
+                lines.extend(convertToLDIF(line, control[2], allBase64))
 
     return lines
+
 
 def addAttributes(attributes, allBase64):
     lines = []
@@ -102,6 +106,8 @@ def addAttributes(attributes, allBase64):
                 lines.extend(convertToLDIF(attr, val, allBase64))
 
     return lines
+
+
 def searchResponseToLDIF(entries, allBase64):
     lines = []
     for entry in entries:
@@ -118,9 +124,9 @@ def searchResponseToLDIF(entries, allBase64):
 
     return lines
 
+
 def addRequestToLDIF(entry, allBase64):
     lines = []
-    print(entry)
     if 'entry' in entry:
         lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
         lines.extend(addControls(entry['controls'], allBase64))
@@ -131,21 +137,41 @@ def addRequestToLDIF(entry, allBase64):
 
     return lines
 
+
 def deleteRequestToLDIF(entry, allBase64):
-    raise NotImplementedError
+    lines = []
+    if 'entry' in entry:
+        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(addControls(entry['controls'], allBase64))
+        lines.append('changetype: delete')
+    else:
+        raise Exception('Unable to convert to LDIF-CHANGE-DELETE - missing DN ')
+
+    return lines
+
 
 def modifyRequestToLDIF(entry, allBase64):
     raise NotImplementedError
 
+
 def modifyDnRequestToLDIF(entry, allBase64):
-    raise NotImplementedError
+    lines = []
+    if 'entry' in entry:
+        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(addControls(entry['controls'], allBase64))
+        lines.append('changetype: delete')
+    else:
+        raise Exception('Unable to convert to LDIF-CHANGE-DELETE - missing DN ')
+
+    return lines
+
 
 def toLDIF(operationType, entries, allBase64):
     if operationType == 'searchResponse':
         lines = searchResponseToLDIF(entries, allBase64)
     elif operationType == 'addRequest':
         lines = addRequestToLDIF(entries, allBase64)
-    elif operationType == 'deleteRequest':
+    elif operationType == 'delRequest':
         lines = deleteRequestToLDIF(entries, allBase64)
     elif operationType == 'modifyRequest':
         lines = modifyRequestToLDIF(entries, allBase64)
@@ -154,5 +180,8 @@ def toLDIF(operationType, entries, allBase64):
     else:
         lines = []
 
-    lines.insert(0, 'version: 1')
-    return linesep.join(lines)
+    if lines:
+        lines.insert(0, 'version: 1')
+        return linesep.join(lines)
+    else:
+        return None

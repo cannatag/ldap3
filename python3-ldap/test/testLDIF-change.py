@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on 2013.12.13
 
@@ -44,7 +43,7 @@ class Test(unittest.TestCase):
         controls = list()
         controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'sn'))
-        controls.append(('2.16.840.1.113719.1.27.103.7', False, u'à'))
+        controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(u'\u00e0\u00e0', encoding = 'UTF-8')))  # for python2 compatability
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'trailingspace '))
         self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls = controls)
         response = self.connection.response
@@ -58,3 +57,18 @@ class Test(unittest.TestCase):
         self.assertTrue('objectClass: inetorgperson' in response)
         self.assertTrue('sn: test-add' in response)
         self.assertTrue('cn: test-add-operation' in response)
+
+    def testDeleteRequestToLDIF(self):
+        self.connection.delete(testDnBuilder(test_base, 'test-del-operation'))
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=test-del-operation,o=test' in response)
+        self.assertTrue('changetype: delete' in response)
+
+
+def testModifyDnRequestToLDIF(self):
+    self.connection.delete(testDnBuilder(test_base, 'test-modifydn-operation'))
+    response = self.connection.response
+    self.assertTrue('version: 1' in response)
+    self.assertTrue('dn: cn=test-modifydn-operation,o=test' in response)
+    self.assertTrue('changetype: modifydn' in response)

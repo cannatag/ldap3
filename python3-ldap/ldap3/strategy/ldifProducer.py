@@ -72,6 +72,7 @@ class LDIFProducerStrategy(BaseStrategy):
             ldapMessage['controls'] = messageControls
 
         self.connection.request = BaseStrategy.decodeRequest(ldapMessage)
+        self.connection.request['controls'] = controls
         self._outstanding[messageId] = self.connection.request
         return messageId
 

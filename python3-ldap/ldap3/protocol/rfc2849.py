@@ -74,32 +74,62 @@ def convertToLDIF(descriptor, value, base64):
 
     return [line[0:LDIF_LINE_LENGTH]] + lines
 
+def addControls(controls, allBase64):
+    lines = []
+    for control in controls:
+        line = 'control: ' + control[0]
+        line += ' ' + ('true' if control[1] else 'false')
+        if control[2]:
+            lines.extend(convertToLDIF(line, control[2], allBase64))
+
+    return lines
+
+def addAttributes(attributes, allBase64):
+    lines = []
+    ocattr = None
+    # objectclass first, even if this is not specified in the RFC
+    for attr in attributes:
+        if attr.lower() == 'objectclass':
+            for val in attributes[attr]:
+                lines.extend(convertToLDIF(attr, val, allBase64))
+            ocattr = attr
+            break
+
+    # remaing attributes
+    for attr in attributes:
+        if attr != ocattr:
+            for val in attributes[attr]:
+                lines.extend(convertToLDIF(attr, val, allBase64))
+
+    return lines
 def searchResponseToLDIF(entries, allBase64):
     lines = []
     for entry in entries:
         if 'dn' in entry:
             lines.extend(convertToLDIF('dn', entry['dn'], allBase64))
-            for attr in entry['rawAttributes']:
-                for val in entry['rawAttributes'][attr]:
-                    lines.extend(convertToLDIF(attr, val, allBase64))
-            lines.append('')
+            lines.extend(addAttributes(entry['rawAttributes'], allBase64))
         else:
-            raise Exception('Unable to convert to LDIF - missing DN')
+            raise Exception('Unable to convert to LDIF-CONTENT - missing DN')
+        lines.append('')
 
     if lines:
-        lines.insert(0, 'version: 1')
         lines.append('')
         lines.append('# total number of entries: '+  str(len(entries)))
 
-    return linesep.join(lines)
+    return lines
 
 def addRequestToLDIF(entry, allBase64):
     lines = []
     print(entry)
     if 'entry' in entry:
         lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(addControls(entry['controls'], allBase64))
+        lines.append('changetype: add')
+        lines.extend(addAttributes(entry['attributes'], allBase64))
+    else:
+        raise Exception('Unable to convert to LDIF-CHANGE-ADD - missing DN ')
 
-    return 'bbb'
+    return lines
 
 def deleteRequestToLDIF(entry, allBase64):
     raise NotImplementedError
@@ -112,12 +142,17 @@ def modifyDnRequestToLDIF(entry, allBase64):
 
 def toLDIF(operationType, entries, allBase64):
     if operationType == 'searchResponse':
-        return searchResponseToLDIF(entries, allBase64)
+        lines = searchResponseToLDIF(entries, allBase64)
     elif operationType == 'addRequest':
-        return addRequestToLDIF(entries, allBase64)
+        lines = addRequestToLDIF(entries, allBase64)
     elif operationType == 'deleteRequest':
-        return deleteRequestToLDIF(entries, allBase64)
+        lines = deleteRequestToLDIF(entries, allBase64)
     elif operationType == 'modifyRequest':
-        return modifyRequestToLDIF(entries, allBase64)
+        lines = modifyRequestToLDIF(entries, allBase64)
     elif operationType == 'modifyDnRequest':
-        return modifyDnRequestToLDIF(entries, allBase64)
+        lines = modifyDnRequestToLDIF(entries, allBase64)
+    else:
+        lines = []
+
+    lines.insert(0, 'version: 1')
+    return linesep.join(lines)

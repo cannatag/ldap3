@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Created on 2013.12.13
 
@@ -43,5 +44,17 @@ class Test(unittest.TestCase):
         controls = list()
         controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'sn'))
-        result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls = controls)
-        self.assertEqual(self.connection.response, "abc")
+        controls.append(('2.16.840.1.113719.1.27.103.7', False, u'à'))
+        controls.append(('2.16.840.1.113719.1.27.103.7', False, 'trailingspace '))
+        self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls = controls)
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=test-add-operation,o=test' in response)
+        self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 true: givenName' in response)
+        self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false: sn' in response)
+        self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: w6DDoA==' in response)
+        self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: dHJhaWxpbmdzcGFjZSA=' in response)
+        self.assertTrue('changetype: add' in response)
+        self.assertTrue('objectClass: inetorgperson' in response)
+        self.assertTrue('sn: test-add' in response)
+        self.assertTrue('cn: test-add-operation' in response)

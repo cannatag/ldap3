@@ -154,6 +154,7 @@ class BaseStrategy(object):
                 raise Exception(self.connection.lastError)
 
             self.connection.request = BaseStrategy.decodeRequest(ldapMessage)
+            self.connection.request['controls'] = controls
             self._outstanding[messageId] = self.connection.request
             if self.connection.usage:
                 self.connection.usage.transmittedMessage(self.connection.request, len(encodedMessage))
@@ -414,8 +415,8 @@ class BaseStrategy(object):
             referralServer = Server(host = selectedReferral['host'], port = selectedReferral['port'] or self.connection.server.port,
                                     useSsl = selectedReferral['ssl'], allowedReferralHosts = self.connection.server.allowedReferralHosts,
                                     tls = Tls(localPrivateKeyFile = self.connection.server.tls.privateKeyFile,
-                                              localCertificateFile = self.connection.server.tls.certificateFile, validate = self.connection.server.tls.validate,
-                                              version = self.connection.server.tls.version, caCertsFile = self.connection.server.tls.caCertsFile))
+                                    localCertificateFile = self.connection.server.tls.certificateFile, validate = self.connection.server.tls.validate,
+                                    version = self.connection.server.tls.version, caCertsFile = self.connection.server.tls.caCertsFile))
             from ldap3.connection import Connection
 
             referralConnection = Connection(server = referralServer, user = self.connection.user if not selectedReferral['anonymousBindOnly'] else None,
@@ -433,20 +434,20 @@ class BaseStrategy(object):
                 referralConnection.search(selectedReferral['base'] or request['base'], selectedReferral['filter'] or request['filter'],
                                           selectedReferral['scope'] or request['scope'], request['dereferenceAlias'],
                                           selectedReferral['attributes'] or request['attributes'], request['sizeLimit'], request['timeLimit'],
-                                          request['typeOnly'])
+                                          request['typeOnly'], controls = request['controls'])
             elif request['type'] == 'addRequest':
-                referralConnection.add(selectedReferral['base'] or request['entry'], None, request['attributes'])
+                referralConnection.add(selectedReferral['base'] or request['entry'], None, request['attributes'], controls = request['controls'])
             elif request['type'] == 'compareRequest':
-                referralConnection.compare(selectedReferral['base'] or request['entry'], request['attribute'], request['value'])
+                referralConnection.compare(selectedReferral['base'] or request['entry'], request['attribute'], request['value'], controls = request['controls'])
             elif request['type'] == 'delRequest':
-                referralConnection.delete(selectedReferral['base'] or request['entry'])
+                referralConnection.delete(selectedReferral['base'] or request['entry'], controls = request['controls'])
             elif request['type'] == 'extendedRequest':
                 # tbd
                 raise NotImplemented()
             elif request['type'] == 'modifyRequest':
-                referralConnection.modify(selectedReferral['base'] or request['entry'], prepareChangesForRequest(request['changes']))
+                referralConnection.modify(selectedReferral['base'] or request['entry'], prepareChangesForRequest(request['changes']), controls = request['controls'])
             elif request['type'] == 'modDNRequest':
-                referralConnection.modifyDn(selectedReferral['base'] or request['entry'], request['newRdn'], request['deleteOldRdn'], request['newSuperior'])
+                referralConnection.modifyDn(selectedReferral['base'] or request['entry'], request['newRdn'], request['deleteOldRdn'], request['newSuperior'], controls = request['controls'])
             else:
                 raise Exception('referral operation not permitted')
 

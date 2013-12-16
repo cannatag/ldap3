@@ -285,6 +285,11 @@ I wish to thank Assembla for providing the source repository space and the agile
 CHANGELOG
 =========
 
+* 0.7.1 - 2013.12.19
+    - Completed support for LDFI as per rfc 2849
+    - Added new LDIF_PRODUCER strategy to generate LDIF-CHANGE stream
+    - Fixed a bug in the autoReferral feature when controls where used in operation
+
 * 0.7.0 - 2013.12.12
     - Added support for LDIF as per rfc 2849
     - Added ldif-content compliant search responses

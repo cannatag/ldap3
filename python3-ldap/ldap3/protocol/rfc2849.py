@@ -52,6 +52,9 @@ def safeLDIFString(bytesValue):
 
 
 def convertToLDIF(descriptor, value, base64):
+    if not value:
+        value = ''
+
     if isinstance(value, str):
         # value = bytes(value, encoding = 'UTF-8') if str is not bytes else bytearray(value, encoding = 'UTF-8')  # in python2 str IS bytes
         value = bytearray(value, encoding = 'UTF-8')
@@ -159,9 +162,13 @@ def modifyDnRequestToLDIF(entry, allBase64):
     if 'entry' in entry:
         lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
         lines.extend(addControls(entry['controls'], allBase64))
-        lines.append('changetype: delete')
+        lines.append('changetype: modrdn') if 'newSuperior' in entry and entry['newSuperior'] else lines.append('changetype: moddn')
+        lines.extend(convertToLDIF('newrdn', entry['newRdn'], allBase64))
+        lines.append('deleteoldrdn: ' + ('0' if entry['deleteOldRdn'] else '1'))
+        if 'newSuperior' in entry and entry['newSuperior']:
+            lines.extend(convertToLDIF('newsuperior', entry['newSuperior'], allBase64))
     else:
-        raise Exception('Unable to convert to LDIF-CHANGE-DELETE - missing DN ')
+        raise Exception('Unable to convert to LDIF-CHANGE-MODDN - missing DN ')
 
     return lines
 
@@ -175,7 +182,7 @@ def toLDIF(operationType, entries, allBase64):
         lines = deleteRequestToLDIF(entries, allBase64)
     elif operationType == 'modifyRequest':
         lines = modifyRequestToLDIF(entries, allBase64)
-    elif operationType == 'modifyDnRequest':
+    elif operationType == 'modDNRequest':
         lines = modifyDnRequestToLDIF(entries, allBase64)
     else:
         lines = []

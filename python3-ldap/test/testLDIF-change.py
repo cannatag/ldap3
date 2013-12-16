@@ -26,7 +26,7 @@ import unittest
 from ldap3 import STRATEGY_LDIF_PRODUCER
 from ldap3.server import Server
 from ldap3.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr, test_moved
 
 
 class Test(unittest.TestCase):
@@ -65,10 +65,26 @@ class Test(unittest.TestCase):
         self.assertTrue('dn: cn=test-del-operation,o=test' in response)
         self.assertTrue('changetype: delete' in response)
 
+    def testModifyDnRequestToLDIF(self):
+        result = self.connection.modifyDn(testDnBuilder(test_base, 'test-modify-dn-operation'), test_name_attr + '=test-modified-dn-operation')
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=test-modify-dn-operation,o=test' in response)
+        self.assertTrue('changetype: moddn' in response)
+        self.assertTrue('newrdn: cn=test-modified-dn-operation' in response)
+        self.assertTrue('deleteoldrdn: 0' in response)
 
-def testModifyDnRequestToLDIF(self):
-    self.connection.delete(testDnBuilder(test_base, 'test-modifydn-operation'))
-    response = self.connection.response
-    self.assertTrue('version: 1' in response)
-    self.assertTrue('dn: cn=test-modifydn-operation,o=test' in response)
-    self.assertTrue('changetype: modifydn' in response)
+
+    def testMoveDnRequestToLDIF(self):
+        result = self.connection.modifyDn(testDnBuilder(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', deleteOldDn = False,  newSuperior = test_moved)
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=test-move-dn-operation,o=test' in response)
+        self.assertTrue('changetype: modrdn' in response)
+        self.assertTrue('newrdn: cn=test-move-dn-operation' in response)
+        self.assertTrue('deleteoldrdn: 1' in response)
+        self.assertTrue('newsuperior: ou=moved,o=test' in response)

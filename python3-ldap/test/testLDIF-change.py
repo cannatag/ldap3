@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3 import STRATEGY_LDIF_PRODUCER
+from ldap3 import STRATEGY_LDIF_PRODUCER, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 from ldap3.server import Server
 from ldap3.connection import Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr, test_moved
@@ -31,12 +31,10 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = STRATEGY_LDIF_PRODUCER, user = test_user, password = test_password,
-                                     authentication = test_authentication)
+        # server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
+        self.connection = Connection(server = None, clientStrategy = STRATEGY_LDIF_PRODUCER)
 
     def tearDown(self):
-        self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
     def testAddRequestToLDIF(self):
@@ -88,3 +86,62 @@ class Test(unittest.TestCase):
         self.assertTrue('newrdn: cn=test-move-dn-operation' in response)
         self.assertTrue('deleteoldrdn: 1' in response)
         self.assertTrue('newsuperior: ou=moved,o=test' in response)
+
+    def testModifyAddToLDIF(self):
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
+        self.assertTrue('changetype: modify' in response)
+        self.assertTrue('add: givenName' in response)
+        self.assertTrue('givenName: test-modified-added' in response)
+        self.assertEqual('-', response[-1])
+
+    def testModifyReplaceToLDIF(self):
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
+        self.assertTrue('changetype: modify' in response)
+        self.assertTrue('replace: givenName' in response)
+        self.assertTrue('givenName: test-modified-replace' in response)
+        self.assertEqual('-', response[-1])
+
+    def testModifyDeleteToLDIF(self):
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
+        self.assertTrue('changetype: modify' in response)
+        self.assertTrue('delete: givenName' in response)
+        self.assertTrue('givenName: test-modified-added2' in response)
+        self.assertEqual('-', response[-1])
+
+    def testMultipleModifyToLDIF(self):
+        # from rfc 2849 example
+        result = self.connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
+                                        {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),
+                                         'description': (MODIFY_DELETE, []),
+                                         'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),
+                                         'facsimiletelephonenumber': (MODIFY_DELETE, ['+1 408 555 9876'])})
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        response = self.connection.response
+        self.assertTrue('version: 1' in response)
+        self.assertTrue('dn: cn=Paula Jensen, ou=Product Development, dc=airius, dc=com' in response)
+        self.assertTrue('changetype: modify' in response)
+        self.assertTrue('delete: facsimiletelephonenumber' in response)
+        self.assertTrue('facsimiletelephonenumber: +1 408 555 9876' in response)
+        self.assertTrue('replace: telephonenumber' in response)
+        self.assertTrue('telephonenumber: +1 408 555 1234' in response)
+        self.assertTrue('telephonenumber: +1 408 555 5678' in response)
+        self.assertTrue('add: postaladdress' in response)
+        self.assertTrue('postaladdress: 123 Anystreet $ Sunnyvale, CA $ 94086' in response)
+        self.assertTrue('delete: description' in response)
+        self.assertEqual('-', response[-1])

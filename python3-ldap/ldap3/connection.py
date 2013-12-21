@@ -407,9 +407,13 @@ class Connection(object):
     def modify(self, dn, changes, controls = None):
         """
         Modify attributes of entry
-        Changes is a dictionary in the form 'attribute': [(operation, [val1, val2])]
-        Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE)
+        Changes is a dictionary in the form {'attribute1': [(operation, [val1, val2])], 'attribute2': [(operation, [val1, val2])]}
+        Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
+        if not isinstance(changes, dict):
+            self.lastError = 'changes must be a dictionary'
+            raise Exception(self.lastError)
+
         for change in changes:
             if len(changes[change]) != 2:
                 self.lastError = 'malformed change'

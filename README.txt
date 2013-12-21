@@ -58,7 +58,7 @@ Project goals
 5. Multiple *connection strategies* to choose from, either synchronous or asynchronous
     - I'm planning to use different ways to connect to the LDAP server (no thread, single threaded, multithreaded, event...)
     - I'm not sure about which connection strategy is the best to use on ldap messages communication, so I'm writing a connection object with a **pluggable** socket connection strategy.
-    - For now I have "syncWait" and "asyncThreaded" strategies
+    - For now I have "syncWait", "asyncThreaded" and "ldifProducer" strategies
     - Planned strategies are "sync-threaded" strategy and an "event-nonblocking".
 
 6. Semplified query construction language
@@ -74,7 +74,7 @@ Installation
 You need "setuptools" and "pip" to install python3-ldap (or any other package manager that can download and install from pypi).
 Then you can download the python3-ldap library directly from pypi::
 
-    pip install python3-ldap --pre
+    pip install python3-ldap
 
 This library has only one dependence on the pyasn1 module, you don't need the pyasn1_modules package, you can install it or let the installer do it for you.
 
@@ -193,9 +193,12 @@ LDIF
 LDIF is a data interchange format for LDAP. It is defined in RFC 2849 in two different flavours: ldif-content and ldif-change.
 ldif-content is used to describe DIT entries in an ASCII stream (i.e. a file), while ldif-change is used to describe Add, Delete, Modfify and
 ModifyDn operations. These two format have different purposes and cannot be mixed in the same stream.
-If the dn of the entry or an attribute contains any unicode character the value must be base64 encoded, as specified in RFC 2849.
+If the dn of the entry or an attribute value contains any unicode character the value must be base64 encoded, as specified in RFC 2849.
+Python3-ldap is compliant to the latest LDIF format (version: 1).
 
-Python3-ldap is compliant to the latest LDIF format (version: 1). You can use the ldif-content flavour with any search result::
+LDIF-content
+
+You can use the ldif-content flavour with any search result::
 
     ...
     result = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
@@ -237,8 +240,54 @@ you can even request a ldif-content for a response you saved early::
 ldifStream will contain the LDIF representation of the result1 entries.
 
 
-ldif-change
-    TBD
+LDIF-change
+
+To have the ldif representation of Add, Modify, Delete and ModifyDn operation you must use the LDIF_PRODUCER strtegy. With this strategy operations are
+not executed on an LDAP server but are converted to an LDIF-change format that can be sent to an LDAP server with different mechanisms.
+
+For example::
+
+    from ldap3 import Connection, STRATEGY_LDIF_PRODUCER
+    connection = Connection(server = None, clientStrategy = STRATEGY_LDIF_PRODUCER)  # no need of real LDAP server
+    connection.add('cn=test-add-operation,o=test'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
+
+    in connection.response you will find:
+
+    version: 1
+    dn: cn=test-add-operation,o=test
+    changetype: add
+    objectClass: inetorgperson
+    sn: test-add
+    cn: test-add-operation
+
+A more complex modify operation (from the RFC 2849 examples)::
+
+    from ldap3 import MODIFY_ADD. MODIFY_DELETE, MODIFY_REPLACE
+    connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
+        {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),
+         'description': (MODIFY_DELETE, []),
+         'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),
+         'facsimiletelephonenumber': (MODIFY_DELETE, ['+1 408 555 9876'])
+        })
+
+    returns:
+
+    version: 1
+    dn: cn=Paula Jensen, ou=Product Development, dc=airius, dc=com
+    changetype: modify
+    add: postaladdress
+    postaladdress: 123 Anystreet $ Sunnyvale, CA $ 94086
+    -
+    delete: description
+    -
+    replace: telephonenumber
+    telephonenumber: +1 408 555 1234
+    telephonenumber: +1 408 555 5678
+    -
+    delete: facsimiletelephonenumber
+    facsimiletelephonenumber: +1 408 555 9876
+    -
+
 
 Testing
 -------
@@ -285,7 +334,7 @@ I wish to thank Assembla for providing the source repository space and the agile
 CHANGELOG
 =========
 
-* 0.7.1 - 2013.12.19
+* 0.7.1 - 2013.12.21
     - Completed support for LDFI as per rfc 2849
     - Added new LDIF_PRODUCER strategy to generate LDIF-CHANGE stream
     - Fixed a bug in the autoReferral feature when controls where used in operation

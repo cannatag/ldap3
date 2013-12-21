@@ -40,8 +40,8 @@ from ldap3.protocol.convert import changesToList
 
 
 def modifyOperation(dn, changes):
-    # changes is a dictionary in the form 'attribute': [(operation, [val1, val2])]
-    # operation is 0 (add), 1 (mod), 2 (replace), 3 (increment)
+    # changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
+    # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
     # increment as per rfc 4525
 
     changeList = Changes()

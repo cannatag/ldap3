@@ -154,7 +154,19 @@ def deleteRequestToLDIF(entry, allBase64):
 
 
 def modifyRequestToLDIF(entry, allBase64):
-    raise NotImplementedError
+    lines = []
+    if 'entry' in entry:
+        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(addControls(entry['controls'], allBase64))
+        lines.append('changetype: modify')
+        if 'changes' in entry:
+            for change in entry['changes']:
+                lines.append(['add', 'delete', 'replace', 'increment'][change['operation']] + ': ' + change['attribute']['type'])
+                for value in change['attribute']['value']:
+                    lines.extend(convertToLDIF(change['attribute']['type'], value, allBase64))
+                lines.append('-')
+
+    return lines
 
 
 def modifyDnRequestToLDIF(entry, allBase64):

@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testModifyReplace(self):
-        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
+        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'),  {'givenName': (MODIFY_REPLACE, ['test-modified-replace']), 'sn': (MODIFY_REPLACE, ['test-modified-sn-replace'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')

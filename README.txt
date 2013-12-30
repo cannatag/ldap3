@@ -139,12 +139,12 @@ Searching
 ---------
 
 Search operation is enhanced with a few parameters:
+
 - getOperationalAttributes: if True retrieve the operational (system generated) attributes for each of the result entries
 - pagedSize: if greater than 0 return a simple paged search response with the number of entries required (server must conform to rfc 2696)
 - pagedCookie: used for subsequent retrieve of additional entries in a simple paged search
 - pagedCriticality: if True the search should fail if simple paged search is not available on the server else a full search is performed
-- if the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC 4515 (section 3):
-  '*': '\\2A', '(': '\\28', ')': '\\29', '\': '5C', chr(0): '\\00'
+- if the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC 4515 (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'
 
 Simple Paged search
 -------------------

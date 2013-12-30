@@ -143,7 +143,8 @@ Search operation is enhanced with a few parameters:
 - pagedSize: if greater than 0 return a simple paged search response with the number of entries required (server must conform to rfc 2696)
 - pagedCookie: used for subsequent retrieve of additional entries in a simple paged search
 - pagedCriticality: if True the search should fail if simple paged search is not available on the server else a full search is performed
-
+- if the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC 4515 (section 3):
+  '*': '\\2A', '(': '\\28', ')': '\\29', '\': '5C', chr(0): '\\00'
 
 Simple Paged search
 -------------------
@@ -333,6 +334,9 @@ I wish to thank Assembla for providing the source repository space and the agile
 =========
 CHANGELOG
 =========
+
+* 0.7.2 - 2013.12.30
+    - Fixed a bug when parentheses are used in search filter as ASCII escaped sequences
 
 * 0.7.1 - 2013.12.21
     - Completed support for LDFI as per rfc 2849

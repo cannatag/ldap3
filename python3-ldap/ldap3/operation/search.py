@@ -99,13 +99,26 @@ class FilterNode():
 
 def validateAssertionValue(value):
     value = value.strip()
-    value.replace('\\2a', '*')
-    value.replace('\\2A', '*')
-    value.replace('\\28', '(')
-    value.replace('\\29', ')')
-    value.replace('\\5c', '\\')
-    value.replace('\\5C', '\\')
-    value.replace('\\00', chr(0))
+    if r'\2a' in value:
+        value = value.replace(r'\2a', '*')
+
+    if r'\2A' in value:
+        value = value.replace(r'\2A', '*')
+
+    if r'\28' in value:
+        value = value.replace(r'\28', '(')
+
+    if r'\29' in value:
+        value = value.replace(r'\29', ')')
+
+    if r'\5c' in value:
+        value = value.replace(r'\5c', '\\')
+
+    if r'\5C' in value:
+        value = value.replace(r'\5C', '\\')
+
+    if r'\00' in value:
+        value.replace(r'\00', chr(0))
     return value
 
 
@@ -132,10 +145,10 @@ def evaluateMatch(match):
         attributeName = None
         if extendedFilterList[0] == '':  # extensible filter format [:dn]:matchingRule:=assertionValue
             if len(extendedFilterList) == 2 and extendedFilterList[1].lower().strip() != 'dn':
-                matchingRule = extendedFilterList[1].strip()
+                matchingRule = validateAssertionValue(extendedFilterList[1])
             elif len(extendedFilterList) == 3 and extendedFilterList[1].lower().strip() == 'dn':
                 dnAttributes = True
-                matchingRule = extendedFilterList[2].strip()
+                matchingRule = validateAssertionValue(extendedFilterList[2])
             else:
                 raise Exception('invalid extensible filter')
         elif len(extendedFilterList) <= 3: # extensible filter format attr[:dn][:matchingRule]:=assertionValue
@@ -146,11 +159,11 @@ def evaluateMatch(match):
                 if extendedFilterList[1].lower().strip() == 'dn':
                     dnAttributes = True
                 else:
-                    matchingRule = extendedFilterList[1].strip()
+                    matchingRule = validateAssertionValue(extendedFilterList[1])
             elif len(extendedFilterList) == 3 and extendedFilterList[1].lower().strip() == 'dn':
                 attributeName = extendedFilterList[0]
                 dnAttributes = True
-                matchingRule = extendedFilterList[2].strip()
+                matchingRule = validateAssertionValue(extendedFilterList[2])
             else:
                 raise Exception('invalid extensible filter')
 
@@ -166,9 +179,9 @@ def evaluateMatch(match):
         tag = MATCH_SUBSTRING
         leftPart, _, rightPart = match.partition('=')
         substrings = rightPart.split('*')
-        initial = substrings[0] if substrings[0] else None
-        final = substrings[-1] if substrings[-1] else None
-        anyString = [substring for substring in substrings[1:-1] if substring]
+        initial = validateAssertionValue(substrings[0]) if substrings[0] else None
+        final = validateAssertionValue(substrings[-1]) if substrings[-1] else None
+        anyString = [validateAssertionValue(substring) for substring in substrings[1:-1] if substring]
         assertion = {'attr': leftPart, 'initial': initial, 'any': anyString, 'final': final}
     elif '=' in match:
         tag = MATCH_EQUAL

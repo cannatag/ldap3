@@ -34,6 +34,8 @@ class Test(unittest.TestCase):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
         self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
                                      authentication = test_authentication)
+        self.connection.add(testDnBuilder(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)'})
+
 
     def tearDown(self):
         self.connection.unbind()
@@ -117,3 +119,12 @@ class Test(unittest.TestCase):
             self.assertLessEqual(len(self.connection.response), pagedSize)
             cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
         self.assertGreater(totalEntries, 9)
+
+
+    def testSearchExactMatchWithParenthesesInFilter(self):
+        result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + r'=*\29*)', attributes = [test_name_attr, 'sn'])
+        if not isinstance(result, bool):
+            self.connection.getResponse(result)
+        self.assertEqual(self.connection.result['description'], 'success')
+        self.assertEqual(len(self.connection.response), 1)
+        self.assertEqual(self.connection.response[0]['attributes']['cn'][0], 'test-search-(parentheses)')

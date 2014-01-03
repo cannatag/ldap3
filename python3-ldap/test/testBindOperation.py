@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3.connection import Connection
 from ldap3.server import Server
-from ldap3 import AUTH_ANONYMOUS
+from ldap3 import AUTH_ANONYMOUS, AUTH_SASL
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl
 
 
@@ -53,6 +53,15 @@ class Test(unittest.TestCase):
     def testBindAnonymous(self):
         server = Server(host = test_server, port = test_port)
         connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_ANONYMOUS)
+        connection.open()
+        connection.bind()
+        self.assertTrue(connection.bound)
+        connection.unbind()
+        self.assertFalse(connection.bound)
+
+    def testBindSaslDigestMD5(self):
+        server = Server(host = test_server, port = test_port)
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'DIGEST-MD5')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)

@@ -27,7 +27,7 @@ from datetime import datetime
 from os import linesep
 from pyasn1.codec.ber import encoder
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER
+from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS
 from ldap3.operation.abandon import abandonOperation
 from ldap3.operation.add import addOperation
 from ldap3.operation.bind import bindOperation
@@ -274,7 +274,7 @@ class Connection(object):
                 request = bindOperation(self.version, self.authentication, self.user, self.password)
                 response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
             elif self.authentication == AUTH_SASL:
-                if self.saslMechanism in ['EXTERNAL', 'DIGEST-MD5']:
+                if self.saslMechanism in SASL_AVAILABLE_MECHANISMS:
                     request = bindOperation(self.version, self.authentication, self.user, None, self.saslMechanism, self.saslCredentials)
                     response = self.doSaslBind(self.saslMechanism, request, controls)
                 else:

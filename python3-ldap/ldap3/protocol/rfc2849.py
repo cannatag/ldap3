@@ -23,12 +23,13 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from base64 import b64encode
 from os import linesep
+
 from ldap3 import LDIF_LINE_LENGTH
 
 
 # LDIF converter RFC 2849 compliant
 
-def safeLDIFString(bytesValue):
+def safeLdifString(bytesValue):
     if not bytesValue:
         return True
 
@@ -51,7 +52,7 @@ def safeLDIFString(bytesValue):
     return True
 
 
-def convertToLDIF(descriptor, value, base64):
+def convertToLdif(descriptor, value, base64):
     if not value:
         value = ''
 
@@ -59,7 +60,7 @@ def convertToLDIF(descriptor, value, base64):
         # value = bytes(value, encoding = 'UTF-8') if str is not bytes else bytearray(value, encoding = 'UTF-8')  # in python2 str IS bytes
         value = bytearray(value, encoding = 'UTF-8')
 
-    if base64 or not safeLDIFString(value):
+    if base64 or not safeLdifString(value):
         encoded = b64encode(value)
         if not isinstance(encoded, str):  # in python3 b64encode returns bytes in python2 returns str
             encoded = str(encoded, encoding = 'ASCII')
@@ -86,7 +87,7 @@ def addControls(controls, allBase64):
             line = 'control: ' + control[0]
             line += ' ' + ('true' if control[1] else 'false')
             if control[2]:
-                lines.extend(convertToLDIF(line, control[2], allBase64))
+                lines.extend(convertToLdif(line, control[2], allBase64))
 
     return lines
 
@@ -98,7 +99,7 @@ def addAttributes(attributes, allBase64):
     for attr in attributes:
         if attr.lower() == 'objectclass':
             for val in attributes[attr]:
-                lines.extend(convertToLDIF(attr, val, allBase64))
+                lines.extend(convertToLdif(attr, val, allBase64))
             ocattr = attr
             break
 
@@ -106,16 +107,16 @@ def addAttributes(attributes, allBase64):
     for attr in attributes:
         if attr != ocattr:
             for val in attributes[attr]:
-                lines.extend(convertToLDIF(attr, val, allBase64))
+                lines.extend(convertToLdif(attr, val, allBase64))
 
     return lines
 
 
-def searchResponseToLDIF(entries, allBase64):
+def searchResponseToLdif(entries, allBase64):
     lines = []
     for entry in entries:
         if 'dn' in entry:
-            lines.extend(convertToLDIF('dn', entry['dn'], allBase64))
+            lines.extend(convertToLdif('dn', entry['dn'], allBase64))
             lines.extend(addAttributes(entry['rawAttributes'], allBase64))
         else:
             raise Exception('Unable to convert to LDIF-CONTENT - missing DN')
@@ -128,10 +129,10 @@ def searchResponseToLDIF(entries, allBase64):
     return lines
 
 
-def addRequestToLDIF(entry, allBase64):
+def addRequestToLdif(entry, allBase64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
         lines.extend(addControls(entry['controls'], allBase64))
         lines.append('changetype: add')
         lines.extend(addAttributes(entry['attributes'], allBase64))
@@ -141,10 +142,10 @@ def addRequestToLDIF(entry, allBase64):
     return lines
 
 
-def deleteRequestToLDIF(entry, allBase64):
+def deleteRequestToLdif(entry, allBase64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
         lines.extend(addControls(entry['controls'], allBase64))
         lines.append('changetype: delete')
     else:
@@ -153,49 +154,49 @@ def deleteRequestToLDIF(entry, allBase64):
     return lines
 
 
-def modifyRequestToLDIF(entry, allBase64):
+def modifyRequestToLdif(entry, allBase64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
         lines.extend(addControls(entry['controls'], allBase64))
         lines.append('changetype: modify')
         if 'changes' in entry:
             for change in entry['changes']:
                 lines.append(['add', 'delete', 'replace', 'increment'][change['operation']] + ': ' + change['attribute']['type'])
                 for value in change['attribute']['value']:
-                    lines.extend(convertToLDIF(change['attribute']['type'], value, allBase64))
+                    lines.extend(convertToLdif(change['attribute']['type'], value, allBase64))
                 lines.append('-')
 
     return lines
 
 
-def modifyDnRequestToLDIF(entry, allBase64):
+def modifyDnRequestToLdif(entry, allBase64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLDIF('dn', entry['entry'], allBase64))
+        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
         lines.extend(addControls(entry['controls'], allBase64))
         lines.append('changetype: modrdn') if 'newSuperior' in entry and entry['newSuperior'] else lines.append('changetype: moddn')
-        lines.extend(convertToLDIF('newrdn', entry['newRdn'], allBase64))
+        lines.extend(convertToLdif('newrdn', entry['newRdn'], allBase64))
         lines.append('deleteoldrdn: ' + ('0' if entry['deleteOldRdn'] else '1'))
         if 'newSuperior' in entry and entry['newSuperior']:
-            lines.extend(convertToLDIF('newsuperior', entry['newSuperior'], allBase64))
+            lines.extend(convertToLdif('newsuperior', entry['newSuperior'], allBase64))
     else:
         raise Exception('Unable to convert to LDIF-CHANGE-MODDN - missing DN ')
 
     return lines
 
 
-def toLDIF(operationType, entries, allBase64):
+def toLdif(operationType, entries, allBase64):
     if operationType == 'searchResponse':
-        lines = searchResponseToLDIF(entries, allBase64)
+        lines = searchResponseToLdif(entries, allBase64)
     elif operationType == 'addRequest':
-        lines = addRequestToLDIF(entries, allBase64)
+        lines = addRequestToLdif(entries, allBase64)
     elif operationType == 'delRequest':
-        lines = deleteRequestToLDIF(entries, allBase64)
+        lines = deleteRequestToLdif(entries, allBase64)
     elif operationType == 'modifyRequest':
-        lines = modifyRequestToLDIF(entries, allBase64)
+        lines = modifyRequestToLdif(entries, allBase64)
     elif operationType == 'modDNRequest':
-        lines = modifyDnRequestToLDIF(entries, allBase64)
+        lines = modifyDnRequestToLdif(entries, allBase64)
     else:
         lines = []
 

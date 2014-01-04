@@ -25,25 +25,25 @@ If not, see <http://www.gnu.org/licenses/>.
 import socket
 from time import sleep
 from random import choice
-
 from pyasn1.codec.ber import encoder, decoder
 
-from ldap3.protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
-from ldap3.operation.add import addResponseToDict, addRequestToDict
-from ldap3.operation.modify import modifyRequestToDict, modifyResponseToDict
-from ldap3.operation.search import searchResultReferenceResponseToDict, searchResultDoneResponseToDict, searchResultEntryResponseToDict, searchRequestToDict
-from ldap3.operation.bind import bindResponseToDict, bindRequestToDict
-from ldap3.operation.compare import compareResponseToDict, compareRequestToDict
-from ldap3.operation.extended import extendedRequestToDict, extendedResponseToDict, intermediateResponseToDict
 from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS
-from ldap3.server import Server
-from ldap3.operation.modifyDn import modifyDnRequestToDict, modifyDnResponseToDict
-from ldap3.operation.delete import deleteResponseToDict, deleteRequestToDict
-from ldap3.protocol.convert import prepareChangesForRequest, buildControlsList
-from ldap3.operation.abandon import abandonRequestToDict
-from ldap3.tls import Tls
-from ldap3.protocol.oid import Oids
-from ldap3.protocol.rfc2696 import RealSearchControlValue
+
+from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
+from ..operation.add import addResponseToDict, addRequestToDict
+from ..operation.modify import modifyRequestToDict, modifyResponseToDict
+from ..operation.search import searchResultReferenceResponseToDict, searchResultDoneResponseToDict, searchResultEntryResponseToDict, searchRequestToDict
+from ..operation.bind import bindResponseToDict, bindRequestToDict
+from ..operation.compare import compareResponseToDict, compareRequestToDict
+from ..operation.extended import extendedRequestToDict, extendedResponseToDict, intermediateResponseToDict
+from ..server import Server
+from ..operation.modifyDn import modifyDnRequestToDict, modifyDnResponseToDict
+from ..operation.delete import deleteResponseToDict, deleteRequestToDict
+from ..protocol.convert import prepareChangesForRequest, buildControlsList
+from ..operation.abandon import abandonRequestToDict
+from ..tls import Tls
+from ..protocol.oid import Oids
+from ..protocol.rfc2696 import RealSearchControlValue
 
 
 class BaseStrategy(object):

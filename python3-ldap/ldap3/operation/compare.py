@@ -22,10 +22,10 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, ResultCode
+from ..protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, ResultCode
 
-from ldap3.operation.search import avaToDict
-from ldap3.operation.bind import referralsToList
+from ..operation.search import avaToDict
+from ..operation.bind import referralsToList
 
 
 # CompareRequest ::= [APPLICATION 14] SEQUENCE {

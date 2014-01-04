@@ -22,8 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.sasl.saslPrep import saslPrep
-
+from .saslPrep import saslPrep
 
 def validateSimplePassword(password):
     """

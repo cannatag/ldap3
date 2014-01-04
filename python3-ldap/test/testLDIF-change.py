@@ -37,7 +37,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.assertFalse(self.connection.bound)
 
-    def testAddRequestToLDIF(self):
+    def testAddRequestToLdif(self):
         controls = list()
         controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'sn'))
@@ -56,14 +56,14 @@ class Test(unittest.TestCase):
         self.assertTrue('sn: test-add' in response)
         self.assertTrue('cn: test-add-operation' in response)
 
-    def testDeleteRequestToLDIF(self):
+    def testDeleteRequestToLdif(self):
         self.connection.delete(testDnBuilder(test_base, 'test-del-operation'))
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-del-operation,o=test' in response)
         self.assertTrue('changetype: delete' in response)
 
-    def testModifyDnRequestToLDIF(self):
+    def testModifyDnRequestToLdif(self):
         result = self.connection.modifyDn(testDnBuilder(test_base, 'test-modify-dn-operation'), test_name_attr + '=test-modified-dn-operation')
         if not isinstance(result, bool):
             self.connection.getResponse(result)
@@ -75,7 +75,7 @@ class Test(unittest.TestCase):
         self.assertTrue('deleteoldrdn: 0' in response)
 
 
-    def testMoveDnRequestToLDIF(self):
+    def testMoveDnRequestToLdif(self):
         result = self.connection.modifyDn(testDnBuilder(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', deleteOldDn = False,  newSuperior = test_moved)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
@@ -87,7 +87,7 @@ class Test(unittest.TestCase):
         self.assertTrue('deleteoldrdn: 1' in response)
         self.assertTrue('newsuperior: ou=moved,o=test' in response)
 
-    def testModifyAddToLDIF(self):
+    def testModifyAddToLdif(self):
         result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
@@ -99,7 +99,7 @@ class Test(unittest.TestCase):
         self.assertTrue('givenName: test-modified-added' in response)
         self.assertEqual('-', response[-1])
 
-    def testModifyReplaceToLDIF(self):
+    def testModifyReplaceToLdif(self):
         result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
@@ -111,7 +111,7 @@ class Test(unittest.TestCase):
         self.assertTrue('givenName: test-modified-replace' in response)
         self.assertEqual('-', response[-1])
 
-    def testModifyDeleteToLDIF(self):
+    def testModifyDeleteToLdif(self):
         result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
@@ -123,7 +123,7 @@ class Test(unittest.TestCase):
         self.assertTrue('givenName: test-modified-added2' in response)
         self.assertEqual('-', response[-1])
 
-    def testMultipleModifyToLDIF(self):
+    def testMultipleModifyToLdif(self):
         # from rfc 2849 example
         result = self.connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
                                         {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),

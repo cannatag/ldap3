@@ -48,6 +48,7 @@ def addSaslCredentialsToBindRequest(request, mechanism, credentials):
 
     return request
 
+
 def saslExternal(connection, partialInitialRequest, saslCredentials, controls):
     initialRequest = addSaslCredentialsToBindRequest(partialInitialRequest, 'EXTERNAL', saslCredentials)
     response = connection.postSendSingleResponse(connection.send('bindRequest', initialRequest, controls))
@@ -59,10 +60,7 @@ def saslExternal(connection, partialInitialRequest, saslCredentials, controls):
 def saslDigestMd5(connection, partialInitialRequest, saslCredentials, controls):
     initialRequest = addSaslCredentialsToBindRequest(partialInitialRequest, 'DIGEST-MD5', saslCredentials)
     response = connection.postSendSingleResponse(connection.send('bindRequest', partialInitialRequest, controls))
-    if isinstance(response, int):  # get response if async
-        result = connection.getResponse(response).result
-    else:
-        result
-    while connection.response
 
+    result = connection.getResponse(response).result if isinstance(response, int) else connection.result
+    print(result)
     return connection.result

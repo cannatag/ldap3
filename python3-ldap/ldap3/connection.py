@@ -277,8 +277,8 @@ class Connection(object):
                 response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
             elif self.authentication == AUTH_SASL:
                 if self.saslMechanism in SASL_AVAILABLE_MECHANISMS:
-                    request = bindOperation(self.version, self.authentication, self.user, None, self.saslMechanism, self.saslCredentials)
-                    response = self.doSaslBind(self.saslMechanism, request, controls)
+                    partialInitialRequest = bindOperation(self.version, self.authentication, self.user, None, None, None)  # build a partial bind request, without saslCredentials and saslMechanism
+                    response = self.doSaslBind(partialInitialRequest, self.saslMechanism, self.saslCredentials, controls)
                 else:
                     self.lastError = 'requested sasl mechanism not supported'
                     raise Exception(self.lastError)
@@ -481,14 +481,14 @@ class Connection(object):
 
         return False
 
-    def doSaslBind(self, mechanism, initialRequest, controls):
+    def doSaslBind(self, partialInitialRequest, mechanism, credentials, controls):
         response = None
         if not self.saslInProgress:
             self.saslInProgress = True
             if mechanism == 'EXTERNAL':
-                response = saslExternal(self, initialRequest, controls)
+                response = saslExternal(self, partialInitialRequest, credentials, controls)
             elif mechanism == 'DIGEST-MD5':
-                response = saslDigestMd5(self, initialRequest, controls)
+                response = saslDigestMd5(self, partialInitialRequest, credentials, controls)
             else:
                 raise Exception('requested sasl mechanism not supported')
             self.saslInProgress = False

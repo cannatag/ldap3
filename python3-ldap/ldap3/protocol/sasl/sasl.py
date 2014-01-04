@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
+from ...protocol.rfc4511 import SaslCredentials, AuthenticationChoice
 from .saslPrep import saslPrep
 
 def validateSimplePassword(password):
@@ -38,17 +39,30 @@ def validateSimplePassword(password):
     return password
 
 
-def saslExternal(connection, initialRequest, controls):
+def addSaslCredentialsToBindRequest(request, mechanism, credentials):
+    saslCredentials = SaslCredentials()
+    saslCredentials['mechanism'] = mechanism
+    if credentials:
+        saslCredentials['credentials'] = credentials
+    request['authentication'] = AuthenticationChoice().setComponentByName('sasl', saslCredentials)
+
+    return request
+
+def saslExternal(connection, partialInitialRequest, saslCredentials, controls):
+    initialRequest = addSaslCredentialsToBindRequest(partialInitialRequest, 'EXTERNAL', saslCredentials)
     response = connection.postSendSingleResponse(connection.send('bindRequest', initialRequest, controls))
+    result = connection.getResponse(response).result if isinstance(response, int) else connection.result
+
+    return result
+
+
+def saslDigestMd5(connection, partialInitialRequest, saslCredentials, controls):
+    initialRequest = addSaslCredentialsToBindRequest(partialInitialRequest, 'DIGEST-MD5', saslCredentials)
+    response = connection.postSendSingleResponse(connection.send('bindRequest', partialInitialRequest, controls))
     if isinstance(response, int):  # get response if async
-        connection.getResponse(response)
-
-    return connection.result
-
-
-def saslDigestMd5(connection, initialRequest, controls):
-    response = connection.postSendSingleResponse(connection.send('bindRequest', initialRequest, controls))
-    if isinstance(response, int):  # get response if async
-        connection.getResponse(response)
+        result = connection.getResponse(response).result
+    else:
+        result
+    while connection.response
 
     return connection.result

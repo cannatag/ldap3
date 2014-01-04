@@ -23,12 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from threading import Thread
-
 from pyasn1.codec.ber import decoder
 
-from ldap3.strategy.baseStrategy import BaseStrategy
 from ldap3 import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
-from ldap3.protocol.rfc4511 import LDAPMessage
+from ..strategy.baseStrategy import BaseStrategy
+from ..protocol.rfc4511 import LDAPMessage
 
 
 class AsyncThreadedStrategy(BaseStrategy):

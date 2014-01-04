@@ -23,16 +23,15 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import random
 
-from pyasn1.codec.ber import decoder
-from ldap3.protocol.convert import buildControlsList
-from ldap3.protocol.rfc2849 import convertToLDIF, toLDIF
+from ldap3 import LDAP_MAX_INT
 
-from ldap3.strategy.baseStrategy import BaseStrategy
-from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAP_MAX_INT
-from ldap3.protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
+from ..protocol.convert import buildControlsList
+from ..protocol.rfc2849 import toLdif
+from ..strategy.baseStrategy import BaseStrategy
+from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
 
 
-class LDIFProducerStrategy(BaseStrategy):
+class LdifProducerStrategy(BaseStrategy):
     """
     This strategy is used to create the LDIF stream for the Add, Delete, Modify, ModifyDn operations.
     You send the request and get the request in the ldif-change representation of the operation.
@@ -81,7 +80,7 @@ class LDIFProducerStrategy(BaseStrategy):
         self.connection.result = None
         if self._outstanding and messageId in self._outstanding:
             request = self._outstanding.pop(messageId)
-            self.connection.response = toLDIF(self.connection.request['type'], request, False)
+            self.connection.response = toLdif(self.connection.request['type'], request, False)
 
             return True
 

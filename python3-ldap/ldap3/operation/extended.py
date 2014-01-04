@@ -22,8 +22,8 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.rfc4511 import ExtendedRequest, RequestName, RequestValue, ResultCode
-from ldap3.protocol.convert import decodeReferrals
+from ..protocol.rfc4511 import ExtendedRequest, RequestName, RequestValue, ResultCode
+from ..protocol.convert import decodeReferrals
 
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {

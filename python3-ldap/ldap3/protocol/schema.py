@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 import re
 from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
-from ldap3.protocol.oid import Oids
+from ..protocol.oid import Oids
 
 
 def constantToClassKind(value):

@@ -44,12 +44,12 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testSingleSearchResultToLDIF(self):
+    def testSingleSearchResultToLdif(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=test-ldif-1)', attributes = [test_name_attr, 'givenName', 'jpegPhoto', 'sn', 'cn', 'objectClass'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
 
-        l = self.connection.responseToLDIF()
+        l = self.connection.responseToLdif()
         self.assertTrue('version: 1' in l)
         self.assertTrue('dn: cn=test-ldif-1,o=test' in l)
         self.assertTrue('objectClass: inetOrgPerson' in l)
@@ -58,11 +58,11 @@ class Test(unittest.TestCase):
         self.assertTrue('sn: test-ldif-1' in l)
         self.assertTrue('total number of entries: 1' in l)
 
-    def testMultipleSearchResultToLDIF(self):
+    def testMultipleSearchResultToLdif(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(sn=test-ldif*)', attributes = [test_name_attr, 'givenName', 'sn', 'objectClass'])
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        l = self.connection.responseToLDIF()
+        l = self.connection.responseToLdif()
         self.assertTrue('version: 1' in l)
         self.assertTrue('dn: cn=test-ldif-1,o=test' in l)
         self.assertTrue('objectClass: inetOrgPerson' in l)

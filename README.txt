@@ -58,7 +58,7 @@ Project goals
 5. Multiple *connection strategies* to choose from, either synchronous or asynchronous
     - I'm planning to use different ways to connect to the LDAP server (no thread, single threaded, multithreaded, event...)
     - I'm not sure about which connection strategy is the best to use on ldap messages communication, so I'm writing a connection object with a **pluggable** socket connection strategy.
-    - For now I have "syncWait", "asyncThreaded" and "ldifProducer" strategies
+    - "SyncWaitStrategy", "AsyncThreadedStrategy" and "LdifProducerStrategy" are defined.
     - Planned strategies are "sync-threaded" strategy and an "event-nonblocking".
 
 6. Semplified query construction language
@@ -105,7 +105,7 @@ After any operation, either synchronous or asynchronous, you'll find the followi
 - bound: True if bound else False
 - listening: True if the socket is listening to the server
 - closed: True if the socket is not open
-- responseToLDIF(): response in LDIF format
+- responseToLdif(): response in LDIF format
 
 Examples
 --------
@@ -203,7 +203,7 @@ You can use the ldif-content flavour with any search result::
 
     ...
     result = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
-    ldifStream = c.responseToLDIF()
+    ldifStream = c.responseToLdif()
     ...
 
 
@@ -235,7 +235,7 @@ you can even request a ldif-content for a response you saved early::
      ...
         result1 = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
         result2 = c.search('o=test','(!(cn=test-ldif*))', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
-        ldifStream = c.responseToLDIF(result1)
+        ldifStream = c.responseToLdif(result1)
         ...
 
 ldifStream will contain the LDIF representation of the result1 entries.
@@ -334,6 +334,10 @@ I wish to thank Assembla for providing the source repository space and the agile
 =========
 CHANGELOG
 =========
+
+* 0.7.3 - 2014.02.04
+    - Added SASL DIGEST-MD5 support
+    - Moved to intrapackage (relative) imports
 
 * 0.7.2 - 2013.12.30
     - Fixed a bug when parentheses are used in search filter as ASCII escaped sequences

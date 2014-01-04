@@ -22,8 +22,8 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3.protocol.rfc4511 import DelRequest, LDAPDN, ResultCode
-from ldap3.operation.bind import referralsToList
+from ..protocol.rfc4511 import DelRequest, LDAPDN, ResultCode
+from ..operation.bind import referralsToList
 
 # DelRequest ::= [APPLICATION 10] LDAPDN
 

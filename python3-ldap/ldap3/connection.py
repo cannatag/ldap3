@@ -25,24 +25,26 @@ If not, see <http://www.gnu.org/licenses/>.
 from threading import Lock
 from datetime import datetime
 from os import linesep
+
 from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS
-from ldap3.operation.abandon import abandonOperation
-from ldap3.operation.add import addOperation
-from ldap3.operation.bind import bindOperation
-from ldap3.operation.compare import compareOperation
-from ldap3.operation.delete import deleteOperation
-from ldap3.operation.extended import extendedOperation
-from ldap3.operation.modify import modifyOperation
-from ldap3.operation.modifyDn import modifyDnOperation
-from ldap3.operation.search import searchOperation
-from ldap3.protocol.rfc2849 import toLDIF
-from ldap3.strategy.asyncThreaded import AsyncThreadedStrategy
-from ldap3.strategy.ldifProducer import LDIFProducerStrategy
-from ldap3.strategy.syncWait import SyncWaitStrategy
-from ldap3.protocol.sasl.sasl import saslExternal, saslDigestMd5
-from ldap3.operation.unbind import unbindOperation
+
+from .operation.abandon import abandonOperation
+from .operation.add import addOperation
+from .operation.bind import bindOperation
+from .operation.compare import compareOperation
+from .operation.delete import deleteOperation
+from .operation.extended import extendedOperation
+from .operation.modify import modifyOperation
+from .operation.modifyDn import modifyDnOperation
+from .operation.search import searchOperation
+from .protocol.rfc2849 import toLdif
+from .strategy.asyncThreaded import AsyncThreadedStrategy
+from .strategy.ldifProducer import LdifProducerStrategy
+from .strategy.syncWait import SyncWaitStrategy
+from .protocol.sasl.sasl import saslExternal, saslDigestMd5
+from .operation.unbind import unbindOperation
 
 
 #noinspection PyAttributeOutsideInit
@@ -187,7 +189,7 @@ class Connection(object):
         elif self.strategyType == STRATEGY_ASYNC_THREADED:
             self.strategy = AsyncThreadedStrategy(self)
         elif self.strategyType == STRATEGY_LDIF_PRODUCER:
-            self.strategy = LDIFProducerStrategy(self)
+            self.strategy = LdifProducerStrategy(self)
 
         else:
             self.strategy = None
@@ -497,14 +499,14 @@ class Connection(object):
         if not self.closed:
             self.server.getInfoFromServer(self)
 
-    def responseToLDIF(self, searchResult = None, allBase64 = False):
+    def responseToLdif(self, searchResult = None, allBase64 = False):
         if searchResult is None:
             searchResult = self.response
 
         if isinstance(searchResult, list):
-            searchResultToLDIF = toLDIF('searchResponse', searchResult, allBase64)
+            searchResultToLdif = toLdif('searchResponse', searchResult, allBase64)
         else:
-            searchResultToLDIF = None
+            searchResultToLdif = None
 
-        return searchResultToLDIF
+        return searchResultToLdif
 

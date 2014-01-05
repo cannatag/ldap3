@@ -30,6 +30,7 @@ from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS
 
+
 from .operation.abandon import abandonOperation
 from .operation.add import addOperation
 from .operation.bind import bindOperation
@@ -40,10 +41,11 @@ from .operation.modify import modifyOperation
 from .operation.modifyDn import modifyDnOperation
 from .operation.search import searchOperation
 from .protocol.rfc2849 import toLdif
+from .protocol.sasl.digestMd5 import saslDigestMd5
+from .protocol.sasl.external import saslExternal
 from .strategy.asyncThreaded import AsyncThreadedStrategy
 from .strategy.ldifProducer import LdifProducerStrategy
 from .strategy.syncWait import SyncWaitStrategy
-from .protocol.sasl.sasl import saslExternal, saslDigestMd5
 from .operation.unbind import unbindOperation
 
 
@@ -277,8 +279,7 @@ class Connection(object):
                 response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
             elif self.authentication == AUTH_SASL:
                 if self.saslMechanism in SASL_AVAILABLE_MECHANISMS:
-                    partialInitialRequest = bindOperation(self.version, self.authentication, self.user, None, None, None)  # build a partial bind request, without saslCredentials and saslMechanism
-                    response = self.doSaslBind(partialInitialRequest, self.saslMechanism, self.saslCredentials, controls)
+                    response = self.doSaslBind(controls)
                 else:
                     self.lastError = 'requested sasl mechanism not supported'
                     raise Exception(self.lastError)
@@ -289,7 +290,10 @@ class Connection(object):
             if isinstance(response, int):  # get response if async
                 self.getResponse(response)
 
-            self.bound = True if self.result['result'] == RESULT_SUCCESS else False
+            if response is None:
+                self.bound = False
+            else:
+                self.bound = True if self.result['result'] == RESULT_SUCCESS else False
 
             if self.bound:
                 self.refreshDsaInfo()
@@ -481,16 +485,15 @@ class Connection(object):
 
         return False
 
-    def doSaslBind(self, partialInitialRequest, mechanism, credentials, controls):
+    def doSaslBind(self, controls):
         response = None
         if not self.saslInProgress:
             self.saslInProgress = True
-            if mechanism == 'EXTERNAL':
-                response = saslExternal(self, partialInitialRequest, credentials, controls)
-            elif mechanism == 'DIGEST-MD5':
-                response = saslDigestMd5(self, partialInitialRequest, credentials, controls)
-            else:
-                raise Exception('requested sasl mechanism not supported')
+            if self.saslMechanism == 'EXTERNAL':
+                response = saslExternal(self, controls)
+            elif self.saslMechanism == 'DIGEST-MD5':
+                response = saslDigestMd5(self, controls)
+
             self.saslInProgress = False
 
         return response

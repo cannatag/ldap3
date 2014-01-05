@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from binascii import hexlify
 
 import hashlib
 import hmac
@@ -32,11 +33,24 @@ def MD5_H(value):
     if not isinstance(value, bytes):
         value = value.encode()
 
-    return hashlib.md5(value).hexdigest()
+    return hashlib.md5(value).digest()
 
 
 def MD5_KD(k, s):
-    return MD5_H(k + ':' + s)
+    if not isinstance(k, bytes):
+        k = k.encode()
+
+    if not isinstance(s, bytes):
+        s = s.encode()
+
+    return MD5_H(k + b':' + s)
+
+
+def MD5_HEX(value):
+    if not isinstance(value, bytes):
+        value = value.encode()
+
+    return hexlify(value)
 
 
 def MD5_HMAC(k, s):
@@ -48,9 +62,6 @@ def MD5_HMAC(k, s):
 
     return hmac.new(k, s).hexdigest()
 
-
-def MD5_A1():
-    pass
 
 def saslDigestMd5(connection, controls):
     # saslCredential must be a tuple made up of the following elements: (realm, user, password)
@@ -68,16 +79,28 @@ def saslDigestMd5(connection, controls):
         return None
 
     # step Two of rfc 2831
-    digestResponse = 'username="' + connection.saslCredentials[1] + '",'
-    digestResponse += 'realm="' + (connection.saslCredentials[0] if connection.saslCredentials[0] else (serverDirectives['realm'] if 'realm' in serverDirectives else '')) + '",'
-    digestResponse += 'nonce="' + serverDirectives['nonce'] + '",'
-    digestResponse += 'cnonce="' + randomHexString(16) + '",'
-    digestResponse += 'nc=00000001' + ','
-    if 'charset' in serverDirectives and (serverDirectives['charset'].lower() == 'utf-8' or serverDirectives['charset'].lower() == 'utf8'):
-        digestResponse += 'charset="' + serverDirectives['charset'] + '",'
+    charset = serverDirectives['charset'] if 'charset' in serverDirectives and serverDirectives['charset'].lower() == 'utf-8' else 'iso8859-1'
+    user = connection.saslCredentials[1].encode(encoding = charset)
+    realm = (connection.saslCredentials[0] if connection.saslCredentials[0] else (serverDirectives['realm'] if 'realm' in serverDirectives else '')).encode(encoding = charset)
+    password = connection.saslCredentials[2].encode(encoding = charset)
+    nonce = serverDirectives['nonce'].encode(encoding = charset)
+    cnonce = randomHexString(16).encode(encoding = charset)
 
-    digestResponse += 'response="' + 'abc' + '"'
+    digestResponse = b'username="' + user + b'",'
+    digestResponse += b'realm="' + realm + b'",'
+    digestResponse += b'nonce="' + nonce + b'",'
+    digestResponse += b'cnonce="' + cnonce + b'",'
+    digestResponse += b'nc=00000001' + b','
+    if charset == 'utf-8':
+        digestResponse += b'charset="utf-8",'
 
-    result = sendSaslNegotiation(connection, controls, digestResponse
+    A1 = MD5_H(user + b':' + realm + b':' + password) + b':' + nonce + b':' + cnonce
+    A2 = b'AUTHENTICATE:' + b'ldap/'
 
+    response = MD5_HEX(MD5_KD(MD5_HEX(MD5_H(A1)), nonce + b':' + b'00000001' + b':' + cnonce + b':' + b'auth' + b':' + MD5_HEX(MD5_H(A2))))
+
+    digestResponse += b'response="' + response + b'"'
+
+    result = sendSaslNegotiation(connection, controls, digestResponse)
+    pprint(result)
     return result

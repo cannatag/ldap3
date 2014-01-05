@@ -64,9 +64,9 @@ def MD5_HMAC(k, s):
 
 
 def saslDigestMd5(connection, controls):
-    # saslCredential must be a tuple made up of the following elements: (realm, user, password)
+    # saslCredential must be a tuple made up of the following elements: (realm, user, password, authorizationId)
     # if realm is None will be used the realm received from the server, if available
-    if not isinstance(connection.saslCredentials, tuple) or not len(connection.saslCredentials) == 3:
+    if not isinstance(connection.saslCredentials, tuple) or not len(connection.saslCredentials) == 4:
         return None
 
     # step One of rfc 2831
@@ -83,23 +83,27 @@ def saslDigestMd5(connection, controls):
     user = connection.saslCredentials[1].encode(encoding = charset)
     realm = (connection.saslCredentials[0] if connection.saslCredentials[0] else (serverDirectives['realm'] if 'realm' in serverDirectives else '')).encode(encoding = charset)
     password = connection.saslCredentials[2].encode(encoding = charset)
+    authzId = connection.saslCredentials[3].encode(encoding = charset) if connection.saslCredentials[3] else b''
     nonce = serverDirectives['nonce'].encode(encoding = charset)
     cnonce = randomHexString(16).encode(encoding = charset)
+    uri = b'ldap/'
+    qop = b'auth'
 
     digestResponse = b'username="' + user + b'",'
     digestResponse += b'realm="' + realm + b'",'
     digestResponse += b'nonce="' + nonce + b'",'
     digestResponse += b'cnonce="' + cnonce + b'",'
+    digestResponse += b'digest-uri="' + uri + b'",'
+    digestResponse += b'qop=' + qop + b','
     digestResponse += b'nc=00000001' + b','
     if charset == 'utf-8':
         digestResponse += b'charset="utf-8",'
 
-    A1 = MD5_H(user + b':' + realm + b':' + password) + b':' + nonce + b':' + cnonce
-    A2 = b'AUTHENTICATE:' + b'ldap/'
+    A0 = MD5_H(b':'.join([user, realm, password]))
+    A1 = b':'.join([A0, nonce, cnonce, authzId]) if authzId else b':'.join([A0, nonce, cnonce])
+    A2 = b'AUTHENTICATE:' + uri + (':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
 
-    response = MD5_HEX(MD5_KD(MD5_HEX(MD5_H(A1)), nonce + b':' + b'00000001' + b':' + cnonce + b':' + b'auth' + b':' + MD5_HEX(MD5_H(A2))))
-
-    digestResponse += b'response="' + response + b'"'
+    digestResponse += b'response="' + MD5_HEX(MD5_KD(MD5_HEX(MD5_H(A1)), b':'.join([nonce, b'00000001', cnonce, qop, MD5_HEX(MD5_H(A2))]))) + b'"'
 
     result = sendSaslNegotiation(connection, controls, digestResponse)
     pprint(result)

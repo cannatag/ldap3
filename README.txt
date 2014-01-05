@@ -135,6 +135,31 @@ That's all you have to do to have an asynchronous threaded ldap client.
 To get operational attributes (info as createStamp, modifiedStamp, ...) for response objects add in getOperationalAttribute = True in the search request.
 
 
+SASL
+----
+
+Two SASL mechanism are implemented in the python3-ldap library: EXTERNAL and DIGEST-MD5. Even if DIGEST-MD5 is deprecated and moved to historic by RFC 6331
+because it is "insecure and unsuitable for use in protocols" I've developed the authentication phase of the protocol because it is still used in ldap servers.
+
+You can use the EXTERNAL mechanism when you're on a secure (TLS) channel. You can provide an authorization identity string in saslCredentials or let the
+server trust the credential provided when establishing the secure channel::
+
+     tls = Tls(localPrivateKeyFile = 'key.pem', localCertificateFile = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, caCertsFile = 'cacert.b64')
+     server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = tls)
+     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'EXTERNAL', saslCredentials = 'username')
+
+To use the DIGEST-MD5 you must pass a 4-value tuple as saslCredentials: (realm, user, password, authzId). You can pass None for realm and authzId if not used.
+Quality of Protection is always 'auth'::
+
+     server = Server(host = test_server, port = test_port)
+     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'DIGEST-MD5', saslCredentials = (None, 'username', 'password', None))
+
+UserId is not required to be an ldap entry, but it can be any identifier recognized by the server (i.e. email). If
+you pass None as realm the default realm of the server will be used.
+
+Keep in mind that DIGEST-MD5 is deprecated and *should not be used*.
+
+
 Searching
 ---------
 
@@ -293,7 +318,7 @@ A more complex modify operation (from the RFC 2849 examples)::
 Testing
 -------
 
-You can look inside the "test" package for examples on each LDAP operation.
+Inside the "test" package you can find examples for each of the LDAP operations.
 You can customize the test modifying the variables in the __init__.py in the test package. You can set the following parameters:
 
 test_server = 'server'  # the ldap server where tests executed
@@ -328,14 +353,14 @@ Acknowledgements
 ----------------
 I wish to thank JetBrains for donating to this project the Open Source license of PyCharm 3 Professional.
 
-I wish to thank Assembla for providing the source repository space and the agile tools to develop this project.
+I wish to thank Assembla for providing the free source repository space and the agile tools to develop this project.
 
 
 =========
 CHANGELOG
 =========
 
-* 0.7.3 - 2014.02.04
+* 0.7.3 - 2014.01.05
     - Added SASL DIGEST-MD5 support
     - Moved to intrapackage (relative) imports
 

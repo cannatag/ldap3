@@ -5,7 +5,7 @@ python3-ldap
 python3-ldap is a pure Python 3 LDAP v3 strictly conforming to RFC4511.
 Its development is at beta stage.
 
-EXPERIMENTAL SUPPORT FOR PYTHON 2 starting from version 0.6.1 (no direct unicode support)
+SUPPORT FOR PYTHON 2 starting from version 0.6.1 (no direct unicode support)
 
 
 License
@@ -115,9 +115,11 @@ You can create a connection with::
     from ldap3 import Server, Connection
     from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, SEARCH_SCOPE_WHOLE_SUBTREE, GET_ALL_INFO
     s = Server('servername', port = 389, getInfo = GET_ALL_INFO)  # define an unsecure ldap server, requesting info on DSE and schema
-    c = Connection(s, autoBind = True, clientStrategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE)  # define a synchronous connection to the server with basic authentication
+    # define a synchronous connection to the server with basic authentication
+    c = Connection(s, autoBind = True, clientStrategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE)
     print(s.info) # display info from the DSE. OID are decoded when recognized
-    result = c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
+    # request a few objects from the ldap server
+    result = c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
     if result:
         for r in c.response:
             print(r['dn'], r['attributes']) # for unicode attributes
@@ -144,20 +146,23 @@ because it is "insecure and unsuitable for use in protocols" I've developed the 
 You can use the EXTERNAL mechanism when you're on a secure (TLS) channel. You can provide an authorization identity string in saslCredentials or let the
 server trust the credential provided when establishing the secure channel::
 
-     tls = Tls(localPrivateKeyFile = 'key.pem', localCertificateFile = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, caCertsFile = 'cacert.b64')
+     tls = Tls(localPrivateKeyFile = 'key.pem', localCertificateFile = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1,
+               caCertsFile = 'cacert.b64')
      server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = tls)
-     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'EXTERNAL', saslCredentials = 'username')
+     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL,
+                             saslMechanism = 'EXTERNAL', saslCredentials = 'username')
 
 To use the DIGEST-MD5 you must pass a 4-value tuple as saslCredentials: (realm, user, password, authzId). You can pass None for realm and authzId if not used.
 Quality of Protection is always 'auth'::
 
      server = Server(host = test_server, port = test_port)
-     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'DIGEST-MD5', saslCredentials = (None, 'username', 'password', None))
+     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL,
+                             saslMechanism = 'DIGEST-MD5', saslCredentials = (None, 'username', 'password', None))
 
-UserId is not required to be an ldap entry, but it can be any identifier recognized by the server (i.e. email). If
+UsernameId is not required to be an ldap entry, but it can be any identifier recognized by the server (i.e. email, principal). If
 you pass None as realm the default realm of the server will be used.
 
-Keep in mind that DIGEST-MD5 is deprecated and *should not be used*.
+Keep in mind that DIGEST-MD5 is deprecated and should not be used.
 
 
 Searching
@@ -186,11 +191,13 @@ Example::
     totalEntries = 0
     server = Server('test-server')
     connection = Connection(server, user = 'test-user', password = 'test-password')
-    connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = 5)
+    connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                      attributes = ['cn', 'givenName'], pagedSize = 5)
     totalEntries += len(connection.response)
     cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
-        connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['cn', 'givenName'], pagedSize = 5, pagedCookie = cookie)
+        connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                          attributes = ['cn', 'givenName'], pagedSize = 5, pagedCookie = cookie)
         totalEntries += len(connection.response)
         cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     print('Total entries retrieved:', totalEntries)
@@ -227,7 +234,8 @@ LDIF-content
 You can use the ldif-content flavour with any search result::
 
     ...
-    result = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
+    # request a few objects from the ldap server
+    result = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
     ldifStream = c.responseToLdif()
     ...
 
@@ -258,7 +266,8 @@ ldifStream will contain::
 you can even request a ldif-content for a response you saved early::
 
      ...
-        result1 = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # request a few object from the ldap server
+        # request a few objects from the ldap server
+        result1 = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
         result2 = c.search('o=test','(!(cn=test-ldif*))', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
         ldifStream = c.responseToLdif(result1)
         ...
@@ -275,7 +284,8 @@ For example::
 
     from ldap3 import Connection, STRATEGY_LDIF_PRODUCER
     connection = Connection(server = None, clientStrategy = STRATEGY_LDIF_PRODUCER)  # no need of real LDAP server
-    connection.add('cn=test-add-operation,o=test'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
+    connection.add('cn=test-add-operation,o=test'), 'iNetOrgPerson',
+                   {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
 
     in connection.response you will find:
 

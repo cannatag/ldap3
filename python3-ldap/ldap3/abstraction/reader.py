@@ -26,24 +26,27 @@ def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
 
 
+def _createQueryDict(self, text):
+    """
+    crea un dizionario con le coppie chiave:valore di una query
+    Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
+    """
+    queryDict = dict()
+    for argValueStr in text.split(','):
+        if ':' in argValueStr:
+            argValueList = argValueStr.split(':')
+            queryDict[argValueList[0].strip()] = argValueList[1].strip()
+
+    return queryDict
+
+
 class Reader(object):
-    def __init__(self, connection, objectDef, query):
+    def __init__(self, connection, objectDef, query, queryBase, queryScope = SCOP):
         self.connection = connection
         self.query = query
         self.definition = objectDef
-
-    def _createQueryDict(self, text):
-        '''
-        crea un dizionario con le coppie chiave:valore di una query
-        Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
-        '''
-        queryDict = dict()
-        for argValueStr in text.split(','):
-            if ':' in argValueStr:
-                argValueList = argValueStr.split(':')
-                queryDict[argValueList[0].strip()] = argValueList[1].strip()
-
-        return queryDict
+        self.base = queryBase
+        self.scope
 
     def _validateQueryText(self, text):
         """
@@ -67,7 +70,7 @@ class Reader(object):
         come chiave di ricerca delle funzioni _cerca dei reader di classe ldap.
         """
 
-        queryDict = self._createQueryDict(text)
+        queryDict = _createQueryDict(text)
         query = ''
         for d in sorted(queryDict):
             attr = d[1:] if d[0] in '&|' else d
@@ -121,7 +124,6 @@ class Reader(object):
                         query += 'query_scope: ' + queryDict[d].lower() + ', '
 
         return query[:-2]
-
 
     def _createQueryFilter(self, queryDict):
         """

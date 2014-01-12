@@ -41,7 +41,6 @@ class AttrDef(object):
         r += '' if self.preQuery is None else ', preQuery={0.preQuery!r}'.format(self)
         r += '' if self.postQuery is None else ', postQuery={0.postQuery!r}'.format(self)
         r += '' if self.default is None else ', default={0.default!r}'.format(self)
-        r += '' if self.always is False else ', always={0.always!r}'.format(self)
         r += ')'
 
         return r
@@ -63,12 +62,10 @@ class AttrDef(object):
             return id(self)  # unique for each istance
 
     def __setattr__(self, key, value):
-        print ('setattr', key, value)
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is used for __hash__
             raise Exception('key already set')
         else:
             super(AttrDef, self).__setattr__(key, value)
-
 
 class ObjectDef(object):
     """
@@ -85,8 +82,9 @@ class ObjectDef(object):
     "2"
     """
 
-    def __init__(self):
+    def __init__(self, objectClass = None):
         self.clear()
+        self.objectClass = objectClass
 
     def add(self, attributeDef = None):
         if hasattr(attributeDef, '__iter__'):
@@ -108,7 +106,11 @@ class ObjectDef(object):
             del self.attributes[key]
 
     def clear(self):
+        self.objectClass = None
         self.attributes = dict()
+
+    def __iter__(self):
+        return self.attributes.__iter__()
 
     def __len__(self):
         return len(self.attributes)

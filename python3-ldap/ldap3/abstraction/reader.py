@@ -22,6 +22,9 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
+def _retSearchValue(value):
+    return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
+
 
 class Reader(object):
     def __init__(self, connection, objectDef, query):
@@ -29,7 +32,7 @@ class Reader(object):
         self.query = query
         self.definition = objectDef
 
-    def _creaDict(self, text):
+    def _createQueryDict(self, text):
         '''
         crea un dizionario con le coppie chiave:valore di una query
         Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
@@ -64,7 +67,7 @@ class Reader(object):
         come chiave di ricerca delle funzioni _cerca dei reader di classe ldap.
         """
 
-        queryDict = self._creaDict(text)
+        queryDict = self._createQueryDict(text)
         query = ''
         for d in sorted(queryDict):
             attr = d[1:] if d[0] in '&|' else d
@@ -118,3 +121,73 @@ class Reader(object):
                         query += 'query_scope: ' + queryDict[d].lower() + ', '
 
         return query[:-2]
+
+
+    def _createQueryFilter(self, queryDict):
+        """
+        Prepara la query ldap e verifica che gli attributi siano presenti in attrDefs
+        La query e' composta di un dizionario contenente le chiavi di ricerca cosi'
+        come sono definite nelle classi readers. Se e' presente una funzione di 'preQuery'
+        questa viene eseguita passandogli il valore della chiave di ricerca e il suo risultato
+        viene aggiunto alla query.
+        Sono riconosciute alcune chiavi speciali che modificano il funzionamento della query:
+        'query_and_or' (con valore 'AND' oppure 'OR') -> indica che i campi di ricerca sono in AND oppure in OR
+        'query_filtro' -> esegue un generico filtro LDAP con base indicata in 'query_base'
+        'query_base' -> indica la base su cui eseguire 'query_filtro'. Deve essere usata solo insieme a 'query_filtro'
+        'query_livello' (con valore 'SUB' oppure 'LIVELLO') -> indica il livello di esecuziones della query
+        Eventuali ',' presenti in 'query_base' o in 'query_filtro' devono essere sostituite con ';'
+        I valori di default delle chiavi speciali sono:
+        query_and_or: AND
+        query_filtro: None
+        query_livello: SUB
+        query_base: la base definita nel reader del tipo di oggetto
+        Per eseguire un AND o un OR nello stesso campo far precedere il campo dal segno '&' oppure '|' e
+        dividere le chiavi multiple con ';'
+        Il default dei campi con valori di ricerca combinati e' in OR
+        Se e' presente un '!' prima di una chiave di ricerca questa viene eseguita in NOT.
+        """
+        if self.definition.objectClass:
+            ldapFilter = '(&(objectClass=' + self.definition.objectClass + ')'
+
+        if 'query_and_or' in queryDict and queryDict['query_and_or'] == 'or':
+            ldapFilter += '(|'
+        elif not self.definition.objectClass:
+            ldapFilter = '(&'
+
+        attrCounter = 0
+        for attr in queryDict:
+            if attr not in ['query_and_or', 'query_filter', 'query_scope', 'query_base']:
+                attrCounter += 1
+                multi = True if ';' in queryDict[attr] else False
+                vals = queryDict[attr].split(';')
+                attrDef = self.definition.attributes[attr[1:]] if attr[0] in '&|' else self.definition.attributes[attr]
+                if multi:
+                    if attr[0] in '&|':
+                        ldapFilter += '(' + attr[0]
+                    else:
+                        ldapFilter += '(|'
+                if attrDef.preQuery:
+                    if multi:
+                        for val in vals:
+                            ldapFilter += '(' + attrDef.preQuery(attr, val) + ')'
+                    else:
+                        ldapFilter += '(' + attrDef.preQuery(attr, queryDict[attr]) + ')'
+                else:
+                    for val in vals:
+                        if val[0] == '!':
+                            ldapFilter += '(!(' + attrDef.name + _retSearchValue(val[1:]) + '))'
+                        else:
+                            ldapFilter += '(' + attrDef.name + _retSearchValue(val) + ')'
+                if multi:
+                    ldapFilter += ')'
+            elif attr == 'query_filter':
+                ldapFilter += queryDict['query_filter'].replace(';', ',')
+
+        if 'query_and_or' in queryDict and queryDict['query_and_or'] == 'or':
+            ldapFilter += '))'
+        else:
+            ldapFilter += ')'
+
+        if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
+            ldapFilter = ldapFilter[2:-1]
+        return ldapFilter

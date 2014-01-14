@@ -21,6 +21,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL
+
 
 def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -41,13 +43,13 @@ def _createQueryDict(text):
 
 
 class Reader(object):
-    def __init__(self, connection, objectDef, query, base, subTree = True, componentInAnd = True):
+    def __init__(self, connection, objectDef, query, base, subTree = True, componentInAnd = True, attributes = None):
         self.connection = connection
         self.query = query
         self.validatedQuery = None
         self.definition = objectDef
         self.base = base
-        self.subtree = subTree
+        self.subTree = subTree
         self.componentInAnd = componentInAnd
         self._queryDict = dict()
         self._validatedQueryDict = dict()
@@ -200,3 +202,11 @@ class Reader(object):
 
         if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
             self.queryFilter = self.queryFilter[2:-1]
+
+    def execute(self):
+        if not self.connection:
+            raise Exception('No connection available')
+
+        queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
+
+        results = self.connection.search(searchBase = self.base, searchFilter = self.queryFilter, searchScope = queryScope)

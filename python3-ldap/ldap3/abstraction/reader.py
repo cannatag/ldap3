@@ -26,13 +26,13 @@ def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
 
 
-def _createQueryDict(self, text):
+def _createQueryDict(text):
     """
     crea un dizionario con le coppie chiave:valore di una query
     Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
     """
     queryDict = dict()
-    for argValueStr in text.split(','):
+    for argValueStr in sorted(text.split(',')):
         if ':' in argValueStr:
             argValueList = argValueStr.split(':')
             queryDict[argValueList[0].strip()] = argValueList[1].strip()
@@ -41,14 +41,19 @@ def _createQueryDict(self, text):
 
 
 class Reader(object):
-    def __init__(self, connection, objectDef, query, queryBase, queryScope = SCOP):
+    def __init__(self, connection, objectDef, query, base, subTree = True, componentInAnd = True):
         self.connection = connection
         self.query = query
+        self.validatedQuery = None
         self.definition = objectDef
-        self.base = queryBase
-        self.scope
+        self.base = base
+        self.subtree = subTree
+        self.componentInAnd = componentInAnd
+        self._queryDict = dict()
+        self._validatedQueryDict = dict()
+        self.queryFilter = None
 
-    def _validateQueryText(self, text):
+    def _validateQuery(self):
         """
         Elabora il testo di una query e verifica che i campi richiesti siano presenti nel dizionario
         del reader relativo. Se non sono presenti il campo viene ignorato.
@@ -70,62 +75,56 @@ class Reader(object):
         come chiave di ricerca delle funzioni _cerca dei reader di classe ldap.
         """
 
-        queryDict = _createQueryDict(text)
+        if not self._queryDict:
+            self._queryDict = _createQueryDict(self.query)
+
         query = ''
-        for d in sorted(queryDict):
+        for d in self._queryDict:
             attr = d[1:] if d[0] in '&|' else d
+            for attrDef in self.definition:
+                if attr.lower() == attrDef.lower():
+                    attr = attrDef
+                    break
 
-            if attr.lower() not in ['query_and_or', 'query_filter', 'query_base', 'query_scope']:
-                for attrDef in self.definition:
-                    if attr.lower() == attrDef.lower():
-                        attr = attrDef
-                        break
+            if attr in self.definition:
+                vals = sorted(self._queryDict[d].split(';'))
 
-                if attr in self.definition:
-                    vals = queryDict[d].split(';')
-
-                    query += d[0] + attr if d[0] in '&|' else attr
-                    query += ': '
-                    for val in vals:
-                        val = val.strip()
-                        valNot = True if val[0] == '!' else False
-                        if valNot:
+                query += d[0] + attr if d[0] in '&|' else attr
+                query += ': '
+                for val in vals:
+                    val = val.strip()
+                    valNot = True if val[0] == '!' else False
+                    valSearchOperator = '='  # default
+                    if valNot:
+                        if val[1:].lstrip()[0] not in '=<>~':
+                            value = val[1:].lstrip()
+                        else:
                             valSearchOperator = val[1:].lstrip()[0]
                             value = val[1:].lstrip()[1:]
+                    else:
+                        if val[0] not in '=<>~':
+                            value = val.lstrip()
                         else:
                             valSearchOperator = val[0]
                             value = val[1:].lstrip()
 
-                        if valSearchOperator not in '=<>~':
-                            raise Exception('invalid operator, must be one of =, <, > or ~')
+                    if self.definition[attr].validate:
+                        if not self.definition[attr].validate(value):
+                            raise Exception('validation failed for attribute %s with value %s' % (val, self._queryDict[d]))
 
-                        if self.definition[attr].validate:
-                            if not self.definition[attr].validate(value):
-                                raise Exception('validation failed for attribute %s with value %s' % (val, queryDict[d]))
+                    if valNot:
+                        query += '!' + valSearchOperator + value
+                    else:
+                        query += valSearchOperator + value
 
-                        if valNot:
-                            query += '!' + valSearchOperator + value
-                        else:
-                            query += valSearchOperator + value
+                    query += ';'
+                query = query[:-1]
+                query += ', '
 
-                        query += ';'
-                    query = query[:-1]
-                    query += ', '
-            else:
-                if attr.lower() == 'query_and_or':
-                    if queryDict[d].lower() in ['and', 'or']:
-                        query += 'query_and_or: ' + queryDict[d].lower() + ', '
-                elif attr.lower() == 'query_filter':
-                    query += 'query_filter: ' + queryDict[d] + ', '
-                elif attr.lower() == 'query_base':
-                    query += 'query_base: ' + queryDict[d] + ', '
-                elif attr.lower() == 'query_scope':
-                    if queryDict[d].lower() in ['sub', 'level']:
-                        query += 'query_scope: ' + queryDict[d].lower() + ', '
+        self.validatedQuery = query[:-2]
+        self._validatedQueryDict = _createQueryDict(self.validatedQuery)
 
-        return query[:-2]
-
-    def _createQueryFilter(self, queryDict):
+    def _createQueryFilter(self):
         """
         Prepara la query ldap e verifica che gli attributi siano presenti in attrDefs
         La query e' composta di un dizionario contenente le chiavi di ricerca cosi'
@@ -148,48 +147,56 @@ class Reader(object):
         Il default dei campi con valori di ricerca combinati e' in OR
         Se e' presente un '!' prima di una chiave di ricerca questa viene eseguita in NOT.
         """
-        if self.definition.objectClass:
-            ldapFilter = '(&(objectClass=' + self.definition.objectClass + ')'
 
-        if 'query_and_or' in queryDict and queryDict['query_and_or'] == 'or':
-            ldapFilter += '(|'
+        if self.query.startswith('(') and self.query.stopswith(')'):
+            self.queryFilter = self.query
+            return
+
+        self.queryFilter = ''
+
+        if self.definition.objectClass:
+            self.queryFilter += '(&(objectClass=' + self.definition.objectClass + ')'
+
+        if not self.componentInAnd:
+            self.queryFilter += '(|'
         elif not self.definition.objectClass:
-            ldapFilter = '(&'
+            self.queryFilter += '(&'
+
+        if not self._validatedQueryDict:
+            self._validateQuery()
 
         attrCounter = 0
-        for attr in queryDict:
-            if attr not in ['query_and_or', 'query_filter', 'query_scope', 'query_base']:
-                attrCounter += 1
-                multi = True if ';' in queryDict[attr] else False
-                vals = queryDict[attr].split(';')
-                attrDef = self.definition.attributes[attr[1:]] if attr[0] in '&|' else self.definition.attributes[attr]
-                if multi:
-                    if attr[0] in '&|':
-                        ldapFilter += '(' + attr[0]
-                    else:
-                        ldapFilter += '(|'
-                if attrDef.preQuery:
-                    if multi:
-                        for val in vals:
-                            ldapFilter += '(' + attrDef.preQuery(attr, val) + ')'
-                    else:
-                        ldapFilter += '(' + attrDef.preQuery(attr, queryDict[attr]) + ')'
+        for attr in self._validatedQueryDict:
+            attrCounter += 1
+            multi = True if ';' in self._validatedQueryDict[attr] else False
+            vals = self._validatedQueryDict[attr].split(';')
+            attrDef = self.definition.attributes[attr[1:]] if attr[0] in '&|' else self.definition.attributes[attr]
+            if multi:
+                if attr[0] in '&|':
+                    self.queryFilter += '(' + attr[0]
                 else:
-                    for val in vals:
-                        if val[0] == '!':
-                            ldapFilter += '(!(' + attrDef.name + _retSearchValue(val[1:]) + '))'
-                        else:
-                            ldapFilter += '(' + attrDef.name + _retSearchValue(val) + ')'
+                    self.queryFilter += '(|'
+            if attrDef.preQuery:
                 if multi:
-                    ldapFilter += ')'
-            elif attr == 'query_filter':
-                ldapFilter += queryDict['query_filter'].replace(';', ',')
+                    for val in vals:
+                        self.queryFilter += '(' + attrDef.preQuery(attr, val) + ')'
+                else:
+                    self.queryFilter += '(' + attrDef.preQuery(attr, self._validatedQueryDict[attr]) + ')'
+            else:
+                for val in vals:
+                    if val[0] == '!':
+                        self.queryFilter += '(!(' + attrDef.name + _retSearchValue(val[1:]) + '))'
+                    else:
+                        self.queryFilter += '(' + attrDef.name + _retSearchValue(val) + ')'
+            if multi:
+                self.queryFilter += ')'
+        # elif attr == 'query_filter':
+        #     self.queryFilter += queryDict['query_filter'].replace(';', ',')
 
-        if 'query_and_or' in queryDict and queryDict['query_and_or'] == 'or':
-            ldapFilter += '))'
+        if not self.componentInAnd:
+            self.queryFilter += '))'
         else:
-            ldapFilter += ')'
+            self.queryFilter += ')'
 
         if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
-            ldapFilter = ldapFilter[2:-1]
-        return ldapFilter
+            self.queryFilter = self.queryFilter[2:-1]

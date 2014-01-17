@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
 
         r._validateQuery()
 
-        self.assertEqual('Surname: =smith, |Common Name: =john;=Bob', r.validatedQuery)
+        self.assertEqual('Surname: =smith, |Common Name: =Bob;=john', r.validatedQuery)
 
     def testCreateQueryFilter(self):
         o = ObjectDef()
@@ -65,7 +65,7 @@ class Test(unittest.TestCase):
 
         r._createQueryFilter()
 
-        self.assertEqual('(&(sn=smith)(|(cn=john)(cn=Bob)))', r.queryFilter)
+        self.assertEqual('(&(sn=smith)(|(cn=Bob)(cn=john)))', r.queryFilter)
 
     def testCreateQueryFilterSingleAttributeSingleValue(self):
         o = ObjectDef()
@@ -87,7 +87,7 @@ class Test(unittest.TestCase):
 
         r._createQueryFilter()
 
-        self.assertEqual('(|(cn=john)(cn=Bob))', r.queryFilter)
+        self.assertEqual('(|(cn=Bob)(cn=john))', r.queryFilter)
 
     def testCreateQueryFilterWithObjectClass(self):
         o = ObjectDef('inetOrgPerson')
@@ -100,4 +100,4 @@ class Test(unittest.TestCase):
 
         r._createQueryFilter()
 
-        self.assertEqual('(&(objectClass=inetOrgPerson)(|(cn=john)(cn=Bob))(sn=smith))', r.queryFilter)
+        self.assertEqual('(&(objectClass=inetOrgPerson)(sn=smith)(|(cn=Bob)(cn=john)))', r.queryFilter)

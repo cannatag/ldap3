@@ -191,8 +191,6 @@ class Reader(object):
                         self.queryFilter += '(' + attrDef.name + _retSearchValue(val) + ')'
             if multi:
                 self.queryFilter += ')'
-        # elif attr == 'query_filter':
-        #     self.queryFilter += queryDict['query_filter'].replace(';', ',')
 
         if not self.componentInAnd:
             self.queryFilter += '))'

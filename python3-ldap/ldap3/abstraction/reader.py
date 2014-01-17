@@ -27,14 +27,13 @@ from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL
 def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
 
-
 def _createQueryDict(text):
     """
     crea un dizionario con le coppie chiave:valore di una query
     Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
     """
     queryDict = dict()
-    for argValueStr in sorted(text.split(',')):
+    for argValueStr in text.split(','):
         if ':' in argValueStr:
             argValueList = argValueStr.split(':')
             queryDict[argValueList[0].strip()] = argValueList[1].strip()
@@ -81,7 +80,7 @@ class Reader(object):
             self._queryDict = _createQueryDict(self.query)
 
         query = ''
-        for d in self._queryDict:
+        for d in sorted(self._queryDict):
             attr = d[1:] if d[0] in '&|' else d
             for attrDef in self.definition:
                 if attr.lower() == attrDef.lower():
@@ -168,10 +167,10 @@ class Reader(object):
             self._validateQuery()
 
         attrCounter = 0
-        for attr in self._validatedQueryDict:
+        for attr in sorted(self._validatedQueryDict):
             attrCounter += 1
             multi = True if ';' in self._validatedQueryDict[attr] else False
-            vals = self._validatedQueryDict[attr].split(';')
+            vals = sorted(self._validatedQueryDict[attr].split(';'))
             attrDef = self.definition.attributes[attr[1:]] if attr[0] in '&|' else self.definition.attributes[attr]
             if multi:
                 if attr[0] in '&|':

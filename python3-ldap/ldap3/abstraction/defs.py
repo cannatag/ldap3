@@ -67,6 +67,7 @@ class AttrDef(object):
         else:
             super(AttrDef, self).__setattr__(key, value)
 
+
 class ObjectDef(object):
     """
     Ogni attributo e' definito da un dizionario che ha come chiave il

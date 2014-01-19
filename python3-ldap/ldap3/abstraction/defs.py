@@ -65,7 +65,7 @@ class AttrDef(object):
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is used for __hash__
             raise Exception('key already set')
         else:
-            super(AttrDef, self).__setattr__(key, value)
+            object.__setattr__(self, key, value)
 
 
 class ObjectDef(object):
@@ -84,8 +84,8 @@ class ObjectDef(object):
     """
 
     def __init__(self, objectClass = None):
-        self.clear()
         self.objectClass = objectClass
+        self.attributes = dict()
 
     def add(self, attributeDef = None):
         if hasattr(attributeDef, '__iter__'):

@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL
+from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
 
 
 def _retSearchValue(value):
@@ -42,17 +42,30 @@ def _createQueryDict(text):
 
 
 class Reader(object):
-    def __init__(self, connection, objectDef, query, base, subTree = True, componentInAnd = True, attributes = None):
+    def __init__(self, connection, objectDef, query, componentsInAnd = True, base = '', subTree = True, attributes = None, getOperationalAttributes = False, controls = None):
         self.connection = connection
         self.query = query
         self.validatedQuery = None
         self.definition = objectDef
         self.base = base
-        self.subTree = subTree
-        self.componentInAnd = componentInAnd
+        self.componentsInAnd = componentsInAnd
         self._queryDict = dict()
         self._validatedQueryDict = dict()
         self.queryFilter = None
+        self.attributes = attributes
+        self.getOperationalAttributes = getOperationalAttributes
+        self.controls = None
+        self.subTree = subTree
+        self.pagedCookie = None
+        self.clear()
+
+    def clear(self):
+        self.dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS
+        self.sizeLimit = 0
+        self.timeLimit = 0
+        self.typesOnly = False
+        self.pagedSize = 0
+        self.pagedCriticality = False
 
     def _validateQuery(self):
         """
@@ -158,7 +171,7 @@ class Reader(object):
         if self.definition.objectClass:
             self.queryFilter += '(&(objectClass=' + self.definition.objectClass + ')'
 
-        if not self.componentInAnd:
+        if not self.componentsInAnd:
             self.queryFilter += '(|'
         elif not self.definition.objectClass:
             self.queryFilter += '(&'
@@ -192,7 +205,7 @@ class Reader(object):
             if multi:
                 self.queryFilter += ')'
 
-        if not self.componentInAnd:
+        if not self.componentsInAnd:
             self.queryFilter += '))'
         else:
             self.queryFilter += ')'
@@ -200,10 +213,95 @@ class Reader(object):
         if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
             self.queryFilter = self.queryFilter[2:-1]
 
-    def execute(self):
+    def _getResult(self, result):
+        return result
+
+    def _executeQuery(self):
         if not self.connection:
             raise Exception('No connection available')
 
+        self._createQueryFilter()
+
         queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
 
-        results = self.connection.search(searchBase = self.base, searchFilter = self.queryFilter, searchScope = queryScope)
+        result = self.connection.search(searchBase = self.base,
+                                         searchFilter = self.queryFilter,
+                                         searchScope = queryScope,
+                                         dereferenceAliases = self.dereferenceAliases,
+                                         attributes = self.attributes,
+                                         sizeLimit = self.sizeLimit,
+                                         timeLimit = self.timeLimit,
+                                         typesOnly  = self.typesOnly,
+                                         getOperationalAttributes = self.getOperationalAttributes,
+                                         controls = self.controls,
+                                         pagedSize = self.pagedSize,
+                                         pagedCriticality = self.pagedCriticality,
+                                         pagedCookie = self.pagedCookie)
+
+        if not self.connection.strategy.sync:
+            response = self.connection.getResponse(result)
+        else:
+            response = self.connection.response
+
+        return [self._getResult(r) for r in response]
+
+    def search(self):
+        self.clear()
+        results = self._executeQuery()
+
+        return results
+
+    def searchLevel(self):
+        self.clear()
+        subTree = self.subTree
+        self.subTree = False
+        results = self._executeQuery()
+        self.subTree = subTree
+
+        return results
+
+    def searchSubtree(self):
+        self.clear()
+        subTree = self.subTree
+        self.subTree = True
+        results = self._executeQuery()
+        self.subTree = subTree
+
+        return results
+
+    def searchSizeLimit(self, sizeLimit):
+        self.clear()
+        self.sizeLimit = sizeLimit
+
+        results = self._executeQuery()
+
+        return results
+
+    def searchTimeLimit(self, TimeLimit):
+        self.clear()
+        self.TimeLimit = TimeLimit
+
+        results = self._executeQuery()
+
+        return results
+    def searchTypesOnly(self):
+        self.clear()
+        self.typesOnly = True
+
+        results = self._executeQuery()
+
+        return results
+
+    def searchPaged(self, pagedSize, pagedCriticality = True):
+        if not self.pagedCookie:
+            self.clear()
+
+        self.pagedSize = pagedSize
+        self.pagedCriticality = pagedCriticality
+
+        results = self._executeQuery()
+
+        if results:
+            yield results
+        else:
+            raise StopIteration

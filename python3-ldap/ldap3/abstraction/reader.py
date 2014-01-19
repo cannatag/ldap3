@@ -21,8 +21,42 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
+from os import linesep
 
+from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
+from ldap3.abstraction.attribute import Attribute
+from ldap3.abstraction.object import Object
+
+
+def _getAttributeValues(result, attrDefs):
+    """
+    Assegna il risultato della query LDAP al dizionario 'valori' dell'oggetto. Se il campo e' definito
+    'multivalue' viene ritornato come una lista di valori.
+    Se e' presente una funzione di 'postQuery' questa viene eseguita sul valore trovato e il risultato
+    della funzione viene ritornato nell'attributo relativo.
+    Fa in modo che se un attributo richiesto e' assente questo venga inserito nei valori con il valore di default
+    """
+    values = dict()
+    for attrDef in attrDefs:
+        name = None
+        for attrName in result['attributes']:
+            if attrDef.name.lower() == attrName.lower():
+                name = attrName
+                break
+
+        if name:
+            attribute = Attribute(attrDef.key)
+            if attrDef.multiValue:
+                attribute.multi = True
+                attribute.values = result['attributes'][name] or attrDef.default
+            else:
+                attribute.multi = False
+                attribute.values = result['attributes'][name][0] or attrDef.default
+
+            if attrDef.postQuery and attrDef.name in result['attributes']:
+                attribute.values = attrDef.postQuery(attribute.values)
+
+    return values
 
 def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -42,7 +76,7 @@ def _createQueryDict(text):
 
 
 class Reader(object):
-    def __init__(self, connection, objectDef, query, componentsInAnd = True, base = '', subTree = True, attributes = None, getOperationalAttributes = False, controls = None):
+    def __init__(self, connection, objectDef, query, componentsInAnd = True, base = '', subTree = True, getOperationalAttributes = False, controls = None):
         self.connection = connection
         self.query = query
         self.validatedQuery = None
@@ -52,12 +86,26 @@ class Reader(object):
         self._queryDict = dict()
         self._validatedQueryDict = dict()
         self.queryFilter = None
-        self.attributes = attributes
+        self.attributes = sorted([self.definition.attributes[attr].name for attr in self.definition.attributes])
         self.getOperationalAttributes = getOperationalAttributes
         self.controls = None
         self.subTree = subTree
         self.pagedCookie = None
+        self._createQueryFilter()
         self.clear()
+
+    def __repr__(self):
+        r = 'CONNECTION: ' + str(self.connection) + linesep
+        r += 'BASE: ' + repr(self.base) + linesep
+        r += 'QUERY: ' + repr(self.query) + (' [AND]' if self.componentsInAnd else ' [OR]') + linesep
+        r += 'DEFINITION: ' + repr(self.definition) + linesep
+        r += 'ATTRIBUTES: ' + repr(self.attributes) + (' [OPERATIONAL]' if self.getOperationalAttributes else '') + linesep
+        r += 'FILTER: ' + repr(self.queryFilter) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
+
+        return r
+
+    def __str__(self):
+        return self.__repr__()
 
     def clear(self):
         self.dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS
@@ -96,8 +144,8 @@ class Reader(object):
         for d in sorted(self._queryDict):
             attr = d[1:] if d[0] in '&|' else d
             for attrDef in self.definition:
-                if attr.lower() == attrDef.lower():
-                    attr = attrDef
+                if attr.lower() == attrDef.name.lower():
+                    attr = attrDef.name
                     break
 
             if attr in self.definition:
@@ -214,7 +262,15 @@ class Reader(object):
             self.queryFilter = self.queryFilter[2:-1]
 
     def _getResult(self, result):
-        return result
+        if not result['type'] == 'searchResEntry':
+            return None
+
+        o = Object(result['dn'])
+        o.attributes = _getAttributeValues(result, self.definition)
+        o.rawAttributes = result['rawAttributes']
+
+        return o
+
 
     def _executeQuery(self):
         if not self.connection:

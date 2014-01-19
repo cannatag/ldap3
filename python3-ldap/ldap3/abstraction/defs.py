@@ -111,7 +111,8 @@ class ObjectDef(object):
         self.attributes = dict()
 
     def __iter__(self):
-        return self.attributes.__iter__()
+        for attribute in self.attributes:
+            yield self.attributes[attribute]
 
     def __len__(self):
         return len(self.attributes)
@@ -120,18 +121,18 @@ class ObjectDef(object):
         return True if item in self.attributes else False
 
     def __repr__(self):
-        s = ''
-        for attr in self.attributes:
-            s += attr.__repr__() + ', '
+        if self.objectClass:
+            r = 'objectClass: ' + self.objectClass + ' - '
+        else:
+            r = ''
 
-        return s[:-2]
+        for attr in self.attributes:
+            r += self.attributes[attr].__repr__() + ', '
+
+        return r[:-2]
 
     def __str__(self):
-        s = ''
-        for attr in self.attributes:
-            s += attr.__str__()
-
-        return s
+        return self.__repr__()
 
     def __getitem__(self, item):
         return self.attributes[item]

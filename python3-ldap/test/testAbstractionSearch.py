@@ -22,12 +22,14 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
+from pprint import pprint
 import unittest
 from ldap3.abstraction.defs import ObjectDef, AttrDef
 from ldap3.abstraction.reader import Reader, _createQueryDict
 from ldap3 import Server, Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
+
 
 class Test(unittest.TestCase):
     def setUp(self):
@@ -50,5 +52,5 @@ class Test(unittest.TestCase):
         r = Reader(self.connection, o, queryText, base = 'o=test')
 
         results = r.search()
-
+        print(results)
         self.assertEqual(len(results), 127)

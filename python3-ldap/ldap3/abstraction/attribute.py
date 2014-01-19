@@ -21,10 +21,30 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from os import linesep
+
 
 class Attribute(object):
-    def __init__(self):
+    def __init__(self, key):
+        self.key = key
         self.name = None
         self.values = None
         self.syntax = None
         self.multi = None
+
+
+def __repr__(self):
+    if not self.multi:
+        r = self.name + ': ' + str(self.values)
+    else:
+        r = self.name + ': ' + str(self.values[0])
+        if len(self.values > 1):
+            filler = ' ' * (len(self.name) + 2)
+            for value in self.values[1:]:
+                r += linesep + filler + value
+
+    return r
+
+
+def __str__(self):
+    return self.__repr__()

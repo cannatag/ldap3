@@ -72,8 +72,8 @@ def saslDigestMd5(connection, controls):
     # step One of rfc 2831
     result = sendSaslNegotiation(connection, controls, None)
     serverDirectives = {attr[0]: attr[1].strip('"') for attr in [line.split('=') for line in result['saslCreds'].split(',')]}  # convert directives to dict, unquote values
-    print(result['saslCreds'])
-    pprint(serverDirectives)
+    # print(result['saslCreds'])
+    # pprint(serverDirectives)
     if 'realm' not in serverDirectives or 'nonce' not in serverDirectives or 'algorithm' not in serverDirectives:  # mandatory directives, as per rfc 2831
         abortSaslNegotiation(connection, controls)
         return None
@@ -106,5 +106,5 @@ def saslDigestMd5(connection, controls):
     digestResponse += b'response="' + MD5_HEX(MD5_KD(MD5_HEX(MD5_H(A1)), b':'.join([nonce, b'00000001', cnonce, qop, MD5_HEX(MD5_H(A2))]))) + b'"'
 
     result = sendSaslNegotiation(connection, controls, digestResponse)
-    pprint(result)
+    # pprint(result)
     return result

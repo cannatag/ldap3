@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
 
     def testBindSaslDigestMd5(self):
         server = Server(host = test_server, port = test_port)
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'DIGEST-MD5', saslCredentials = (None, 'testSasl.risorse', 'password', 'u:testSasl-risorse'))
+        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'DIGEST-MD5', saslCredentials = (None, 'testSasl.risorse', 'password', None))
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)

@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         o + AttrDef('givenName', 'GivenName')
 
         queryText = 'Common Name:=test*'
-        r = Reader(self.connection, o, queryText, base = 'o=test')
+        r = Reader(self.connection, o, queryText, 'o=test')
 
         results = r.search()
         print(results)

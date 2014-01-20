@@ -84,7 +84,7 @@ class Server(object):
         if self.host:
             s = self.name + (' - ssl ' if self.ssl else ' - cleartext')
         else:
-            s = super(Server, self).__str__()
+            s = object.__str__(self)
         return s
 
     def __repr__(self):

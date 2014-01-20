@@ -293,13 +293,13 @@ class MatchingRuleInfo(BaseObjectInfo):
     """
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, syntax = None, extensions = None, experimental = None, definition = None):
-        super(MatchingRuleInfo, self).__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
                                                experimental = experimental, definition = definition)
         self.syntax = syntax
 
     def __repr__(self):
         r = (linesep + '  Syntax: ' + listToString(self.syntax)) if self.syntax else ''
-        return 'Matching rule' + super(MatchingRuleInfo, self).__repr__().replace('<__desc__>', r)
+        return 'Matching rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
 class MatchingRuleUseInfo(BaseObjectInfo):
@@ -309,13 +309,13 @@ class MatchingRuleUseInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, applyTo = None, extensions = None, experimental = None,
                  definition = None):
-        super(MatchingRuleUseInfo, self).__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
                                                   experimental = experimental, definition = definition)
         self.applyTo = applyTo
 
     def __repr__(self):
         r = (linesep + '  Apply to: ' + listToString(self.applyTo)) if self.applyTo else ''
-        return 'Matching rule use' + super(MatchingRuleUseInfo, self).__repr__().replace('<__desc__>', r)
+        return 'Matching rule use' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
 class ObjectClassInfo(BaseObjectInfo):
@@ -325,7 +325,7 @@ class ObjectClassInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, kind = None, mustContain = None, mayContain = None,
                  extensions = None, experimental = None, definition = None):
-        super(ObjectClassInfo, self).__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
                                               experimental = experimental, definition = definition)
         self.superior = superior
         self.kind = kind
@@ -337,7 +337,7 @@ class ObjectClassInfo(BaseObjectInfo):
         r += (linesep + '  Type: ' + constantToClassKind(self.kind)) if isinstance(self.kind, int) else ''
         r += (linesep + '  Must contain attributes: ' + listToString(self.mustContain)) if self.mustContain else ''
         r += (linesep + '  May contain attributes: ' + listToString(self.mayContain)) if self.mayContain else ''
-        return 'Object Class' + super(ObjectClassInfo, self).__repr__().replace('<__desc__>', r)
+        return 'Object Class' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
 class AttributeTypeInfo(BaseObjectInfo):
@@ -348,7 +348,7 @@ class AttributeTypeInfo(BaseObjectInfo):
     def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, equality = None, ordering = None, substring = None,
                  syntax = None, singleValue = False, collective = False, noUserModification = False, usage = None, extensions = None, experimental = None,
                  definition = None):
-        super(AttributeTypeInfo, self).__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
                                                 experimental = experimental, definition = definition)
         self.superior = superior
         self.equality = equality
@@ -370,7 +370,7 @@ class AttributeTypeInfo(BaseObjectInfo):
         r += (linesep + '  Ordering rule: ' + listToString(self.ordering)) if self.ordering else ''
         r += (linesep + '  Substring rule: ' + listToString(self.substring)) if self.substring else ''
         r += (linesep + '  Syntax: ' + listToString(self.syntax)) if self.syntax else ''
-        return 'Attribute type' + super(AttributeTypeInfo, self).__repr__().replace('<__desc__>', r)
+        return 'Attribute type' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
 class LdapSyntaxInfo(BaseObjectInfo):
@@ -379,11 +379,11 @@ class LdapSyntaxInfo(BaseObjectInfo):
     """
 
     def __init__(self, oid = None, description = None, extensions = None, experimental = None, definition = None):
-        super(LdapSyntaxInfo, self).__init__(oid = oid, name = None, description = description, obsolete = False, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = None, description = description, obsolete = False, extensions = extensions,
                                              experimental = experimental, definition = definition)
 
     def __repr__(self):
-        return 'LDAP syntax' + super(LdapSyntaxInfo, self).__repr__().replace('<__desc__>', '')
+        return 'LDAP syntax' + BaseObjectInfo.__repr__(self).replace('<__desc__>', '')
 
 
 class DitContentRuleInfo(BaseObjectInfo):
@@ -393,7 +393,7 @@ class DitContentRuleInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, auxiliaryClasses = None, mustContain = None, mayContain = None,
                  notContains = None, extensions = None, experimental = None, definition = None):
-        super(DitContentRuleInfo, self).__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
                                                  experimental = experimental, definition = definition)
         self.auxiliaryClasses = auxiliaryClasses
         self.mustContain = mustContain
@@ -405,7 +405,7 @@ class DitContentRuleInfo(BaseObjectInfo):
         r += (linesep + '  Must contain: ' + listToString(self.mustContain)) if self.mustContain else ''
         r += (linesep + '  May contain: ' + listToString(self.mayContain)) if self.mayContain else ''
         r += (linesep + '  Not contains: ' + listToString(self.notContains)) if self.notContains else ''
-        return 'DIT content rule' + super(DitContentRuleInfo, self).__repr__().replace('<__desc__>', r)
+        return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
 class DitStructureRuleInfo(BaseObjectInfo):
@@ -415,7 +415,7 @@ class DitStructureRuleInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, nameForm = None, superior = None, extensions = None, experimental = None,
                  definition = None):
-        super(DitStructureRuleInfo, self).__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
                                                    experimental = experimental, definition = definition)
         self.superior = superior
         self.nameForm = nameForm
@@ -423,7 +423,7 @@ class DitStructureRuleInfo(BaseObjectInfo):
     def __repr__(self):
         r = (linesep + '  Superior rules: ' + listToString(self.superior)) if self.superior else ''
         r += (linesep + '  Name form: ' + listToString(self.nameForm)) if self.nameForm else ''
-        return 'DIT content rule' + super(DitStructureRuleInfo, self).__repr__().replace('<__desc__>', r)
+        return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
 class NameFormInfo(BaseObjectInfo):
@@ -433,7 +433,7 @@ class NameFormInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, objectClass = None, mustContain = None, mayContain = None,
                  extensions = None, experimental = None, definition = None):
-        super(NameFormInfo, self).__init__(oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
                                            experimental = experimental, definition = definition)
         self.objectClass = objectClass
         self.mustContain = mustContain
@@ -443,4 +443,4 @@ class NameFormInfo(BaseObjectInfo):
         r = (linesep + '  Object class: ' + self.objectClass) if self.objectClass else ''
         r += (linesep + '  Must contain: ' + listToString(self.mustContain)) if self.mustContain else ''
         r += (linesep + '  May contain: ' + listToString(self.mayContain)) if self.mayContain else ''
-        return 'DIT content rule' + super(NameFormInfo, self).__repr__().replace('<__desc__>', r)
+        return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)

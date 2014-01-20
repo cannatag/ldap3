@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 
 
-class Object(object):
+class Record(object):
     def __init__(self, dn):
         self.dn = dn
         self.attributes = None

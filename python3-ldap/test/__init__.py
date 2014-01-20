@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 # noinspection PyUnresolvedReferences
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
-test_server = 'edir'  # the ldap server where tests executed
-test_user = 'cn=admin,o=risorse'  # the user that performs the tests
-test_password = 'password'  # user's password
+test_server = 'sl10'  # the ldap server where tests executed
+test_user = 'cn=admin,o=services'  # the user that performs the tests
+test_password = 'camera'  # user's password
 
 test_base = 'o=test'  # base context where test objects are created
 test_moved = 'ou=moved,o=test'  # base context where  objects are moved in ModifyDN operations

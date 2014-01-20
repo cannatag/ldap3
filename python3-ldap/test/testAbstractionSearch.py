@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
         o = ObjectDef('inetOrgPerson')
         o + AttrDef('cn', 'Common Name')
         o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'GivenName')
+        o + AttrDef('givenName', 'Given Name')
 
         queryText = 'Common Name:=test*'
         r = Reader(self.connection, o, queryText, 'o=test')

@@ -42,7 +42,7 @@ class AsyncThreadedStrategy(BaseStrategy):
     """
 
     def __init__(self, ldapConnection):
-        super(AsyncThreadedStrategy, self).__init__(ldapConnection)
+        BaseStrategy.__init__(self, ldapConnection)
         self.sync = False
         self.noRealDSA = False
         self._responses = None
@@ -53,7 +53,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         Open connection and start listen on the socket in a different thread
         """
         with self.connection.lock:
-            super(AsyncThreadedStrategy, self).open(startListening)
+            BaseStrategy.open(self, startListening)
             self._responses = dict()
 
         self.connection.refreshDsaInfo()
@@ -63,7 +63,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         Close connection and stop socket thread
         """
         with self.connection.lock:
-            super(AsyncThreadedStrategy, self).close()
+            BaseStrategy.close(self)
 
     def postSendSearch(self, messageId):
         """
@@ -118,7 +118,7 @@ class ReceiverSocketThread(Thread):
     """
 
     def __init__(self, ldapConnection):
-        super(ReceiverSocketThread, self).__init__()
+        Thread.__init__(self)
         self.connection = ldapConnection
 
     def run(self):

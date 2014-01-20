@@ -39,12 +39,12 @@ class SyncWaitStrategy(BaseStrategy):
     """
 
     def __init__(self, ldapConnection):
-        super(SyncWaitStrategy, self).__init__(ldapConnection)
+        BaseStrategy.__init__(self, ldapConnection)
         self.sync = True
         self.noRealDSA = False
 
     def open(self, startListening = True):
-        super(SyncWaitStrategy, self).open(startListening)
+        BaseStrategy.open(self, startListening)
         self.connection.refreshDsaInfo()
 
     def _startListen(self):

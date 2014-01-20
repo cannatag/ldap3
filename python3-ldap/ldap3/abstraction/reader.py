@@ -25,7 +25,7 @@ from os import linesep
 
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
 from ldap3.abstraction.attribute import Attribute
-from ldap3.abstraction.object import Object
+from ldap3.abstraction.record import Record
 
 
 def _getAttributeValues(result, attrDefs):
@@ -265,7 +265,7 @@ class Reader(object):
         if not result['type'] == 'searchResEntry':
             return None
 
-        o = Object(result['dn'])
+        o = Record(result['dn'])
         o.attributes = _getAttributeValues(result, self.definition)
         o.rawAttributes = result['rawAttributes']
 

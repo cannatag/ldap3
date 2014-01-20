@@ -76,7 +76,7 @@ def _createQueryDict(text):
 
 
 class Reader(object):
-    def __init__(self, connection, objectDef, query, componentsInAnd = True, base = '', subTree = True, getOperationalAttributes = False, controls = None):
+    def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False, controls = None):
         self.connection = connection
         self.query = query
         self.validatedQuery = None
@@ -91,6 +91,7 @@ class Reader(object):
         self.controls = None
         self.subTree = subTree
         self.pagedCookie = None
+        self.records = []
         self._createQueryFilter()
         self.clear()
 
@@ -101,7 +102,7 @@ class Reader(object):
         r += 'DEFINITION: ' + repr(self.definition) + linesep
         r += 'ATTRIBUTES: ' + repr(self.attributes) + (' [OPERATIONAL]' if self.getOperationalAttributes else '') + linesep
         r += 'FILTER: ' + repr(self.queryFilter) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
-
+        r += 'RECORDS: ' + str(len(self.records))
         return r
 
     def __str__(self):
@@ -114,6 +115,9 @@ class Reader(object):
         self.typesOnly = False
         self.pagedSize = 0
         self.pagedCriticality = False
+
+    def __iter__(self):
+        return self.records.__iter__()
 
     def _validateQuery(self):
         """
@@ -261,16 +265,15 @@ class Reader(object):
         if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
             self.queryFilter = self.queryFilter[2:-1]
 
-    def _getResult(self, result):
+    def _getRecord(self, result):
         if not result['type'] == 'searchResEntry':
             return None
 
-        o = Record(result['dn'])
-        o.attributes = _getAttributeValues(result, self.definition)
-        o.rawAttributes = result['rawAttributes']
+        record = Record(result['dn'])
+        record.attributes = _getAttributeValues(result, self.definition)
+        record.rawAttributes = result['rawAttributes']
 
-        return o
-
+        return record
 
     def _executeQuery(self):
         if not self.connection:
@@ -299,54 +302,55 @@ class Reader(object):
         else:
             response = self.connection.response
 
-        return [self._getResult(r) for r in response]
+        self.records = []
+        for r in response:
+            record = self._getRecord(r)
+            self.records.append(record)
 
     def search(self):
         self.clear()
-        results = self._executeQuery()
+        self._executeQuery()
 
-        return results
+        return self.records
 
     def searchLevel(self):
         self.clear()
         subTree = self.subTree
         self.subTree = False
-        results = self._executeQuery()
+        self._executeQuery()
         self.subTree = subTree
 
-        return results
+        return self.record
 
     def searchSubtree(self):
         self.clear()
         subTree = self.subTree
         self.subTree = True
-        results = self._executeQuery()
+        self._executeQuery()
         self.subTree = subTree
 
-        return results
+        return self.records
 
     def searchSizeLimit(self, sizeLimit):
         self.clear()
         self.sizeLimit = sizeLimit
+        self._executeQuery()
 
-        results = self._executeQuery()
-
-        return results
+        return self.records
 
     def searchTimeLimit(self, TimeLimit):
         self.clear()
         self.TimeLimit = TimeLimit
+        self._executeQuery()
 
-        results = self._executeQuery()
+        return self.records
 
-        return results
     def searchTypesOnly(self):
         self.clear()
         self.typesOnly = True
+        self._executeQuery()
 
-        results = self._executeQuery()
-
-        return results
+        return self.records
 
     def searchPaged(self, pagedSize, pagedCriticality = True):
         if not self.pagedCookie:
@@ -355,9 +359,9 @@ class Reader(object):
         self.pagedSize = pagedSize
         self.pagedCriticality = pagedCriticality
 
-        results = self._executeQuery()
+        self._executeQuery()
 
-        if results:
-            yield results
+        if self.records:
+            yield self.records
         else:
             raise StopIteration

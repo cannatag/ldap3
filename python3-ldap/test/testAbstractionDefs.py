@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
         o = ObjectDef()
         o + AttrDef('cn', 'Common Name')
         o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'GivenName')
+        o + AttrDef('givenName', 'Given Name')
 
         queryText = 'Common Name:=|john;Bob, Surname:=smith'
         r = Reader(None, o, queryText, base='o=test')
@@ -45,7 +45,7 @@ class Test(unittest.TestCase):
         o = ObjectDef()
         o + AttrDef('cn', 'Common Name')
         o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'GivenName')
+        o + AttrDef('givenName', 'Given Name')
 
         queryText = '|Common Name:=john;=Bob, Surname:=smith'
         r = Reader(None, o, queryText, base = 'o=test')
@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
         o = ObjectDef()
         o + AttrDef('cn', 'Common Name')
         o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'GivenName')
+        o + AttrDef('givenName', 'Given Name')
 
         queryText = '|Common Name:=john;Bob, Surname:=smith'
         r = Reader(None, o, queryText, base = 'o=test')
@@ -93,7 +93,7 @@ class Test(unittest.TestCase):
         o = ObjectDef('inetOrgPerson')
         o + AttrDef('cn', 'Common Name')
         o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'GivenName')
+        o + AttrDef('givenName', 'Given Name')
 
         queryText = '|Common Name:=john;=Bob, Surname:=smith'
         r = Reader(None, o, queryText, base='o=test')

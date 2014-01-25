@@ -43,3 +43,6 @@ class Record(object):
 
     def __str__(self):
         return self.__repr__()
+
+    def __iter__(self):
+        return self.attributes.__iter__()

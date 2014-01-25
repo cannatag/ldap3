@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from operator import getitem
 from os import linesep
 
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
@@ -55,6 +56,7 @@ def _getAttributeValues(result, attrDefs):
 
             if attrDef.postQuery and attrDef.name in result['attributes']:
                 attribute.values = attrDef.postQuery(attribute.values)
+            values[attribute.key] = attribute
 
     return values
 
@@ -113,11 +115,14 @@ class Reader(object):
         self.sizeLimit = 0
         self.timeLimit = 0
         self.typesOnly = False
-        self.pagedSize = 0
+        self.pagedSize = None
         self.pagedCriticality = False
 
     def __iter__(self):
         return self.records.__iter__()
+
+    def __getitem__(self, item):
+        return self.records[item]
 
     def _validateQuery(self):
         """

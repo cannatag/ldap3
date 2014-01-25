@@ -48,9 +48,9 @@ class Test(unittest.TestCase):
         o + AttrDef('sn', 'Surname')
         o + AttrDef('givenName', 'Given Name')
 
-        queryText = 'Common Name:=test*'
+        queryText = 'Common Name:=test-add*'
         r = Reader(self.connection, o, queryText, 'o=test')
 
         results = r.search()
-        print(results)
-        self.assertEqual(len(results), 127)
+        print (len(r.records))
+        self.assertEqual(len(results), 19)

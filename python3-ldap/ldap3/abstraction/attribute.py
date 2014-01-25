@@ -33,18 +33,27 @@ class Attribute(object):
         self.multi = None
 
 
-def __repr__(self):
-    if not self.multi:
-        r = self.name + ': ' + str(self.values)
-    else:
-        r = self.name + ': ' + str(self.values[0])
-        if len(self.values > 1):
-            filler = ' ' * (len(self.name) + 2)
-            for value in self.values[1:]:
-                r += linesep + filler + value
+    def __repr__(self):
+        if not self.multi:
+            r = self.key + ': ' + str(self.values)
+        else:
+            r = self.key + ': ' + str(self.values[0])
+            if len(self.values > 1):
+                filler = ' ' * (len(self.key) + 2)
+                for value in self.values[1:]:
+                    r += linesep + filler + value
 
-    return r
+        return r
 
 
-def __str__(self):
-    return self.__repr__()
+    def __str__(self):
+        return self.__repr__()
+
+    def __iter__(self):
+        if isinstance(self.values, list):
+            return self.values.__iter__()
+        elif self.values:
+            yield self.values
+            yield StopIteration
+        else:
+            yield StopIteration

@@ -35,7 +35,7 @@ class Record(object):
             r = 'DN: ' + str(self.dn) + linesep
             if self.attributes:
                 for attr in self.attributes:
-                    r += repr(attr) + linesep
+                    r += ' ' * 4 + repr(self.attributes[attr]) + linesep
 
             return r
         else:
@@ -46,3 +46,6 @@ class Record(object):
 
     def __iter__(self):
         return self.attributes.__iter__()
+
+    def __getitem__(self, item):
+        return self.attributes[item]

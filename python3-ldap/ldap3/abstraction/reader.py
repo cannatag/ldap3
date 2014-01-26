@@ -31,8 +31,7 @@ from ldap3.abstraction.record import Record
 
 def _getAttributeValues(result, attrDefs):
     """
-    Assegna il risultato della query LDAP al dizionario 'valori' dell'oggetto. Se il campo e' definito
-    'multivalue' viene ritornato come una lista di valori.
+    Assegna il risultato della query LDAP al dizionario 'valori' dell'oggetto.
     Se e' presente una funzione di 'postQuery' questa viene eseguita sul valore trovato e il risultato
     della funzione viene ritornato nell'attributo relativo.
     Fa in modo che se un attributo richiesto e' assente questo venga inserito nei valori con il valore di default
@@ -47,12 +46,7 @@ def _getAttributeValues(result, attrDefs):
 
         if name:
             attribute = Attribute(attrDef.key)
-            if attrDef.multiValue:
-                attribute.multi = True
-                attribute.values = result['attributes'][name] or attrDef.default
-            else:
-                attribute.multi = False
-                attribute.values = result['attributes'][name][0] or attrDef.default
+            attribute.values = result['attributes'][name] or attrDef.default
 
             if attrDef.postQuery and attrDef.name in result['attributes']:
                 attribute.values = attrDef.postQuery(attribute.values)

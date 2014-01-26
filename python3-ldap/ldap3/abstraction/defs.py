@@ -24,10 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 class AttrDef(object):
-    def __init__(self, name, key = None, multiValue = False, validate = None, preQuery = None, postQuery = None, default = None):
+    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None):
         self.name = name
         self.key = key or name  # key set to name if not present
-        self.multiValue = multiValue if multiValue else False
         self.validate = validate
         self.preQuery = preQuery
         self.postQuery = postQuery
@@ -36,7 +35,6 @@ class AttrDef(object):
     def __repr__(self):
         r = 'AttrDef(name={0.name!r}'.format(self)
         r += '' if self.key is None or self.name == self.key else ', key={0.key!r}'.format(self)
-        r += '' if self.multiValue is False else ', multiValue={0.multiValue!r}'.format(self)
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
         r += '' if self.preQuery is None else ', preQuery={0.preQuery!r}'.format(self)
         r += '' if self.postQuery is None else ', postQuery={0.postQuery!r}'.format(self)
@@ -73,7 +71,6 @@ class ObjectDef(object):
     Ogni attributo e' definito da un dizionario che ha come chiave il
     nome con cui si accede all'attributo e come campi:
     attr -> il nome dell'attributo nell'ldap
-    multivalue -> un booleano che indica se l'attributo puo' avere piu' valori
     valida -> una funzione che valida il valore di ricerca prima di aggiungere l'attributo alla query di ricerca
     preQuery -> una funzione da eseguire sul valore di ricerca il cui risultato viene aggiunto alla query di ricerca
     postQuery -> una funzione da eseguire dopo la ricerca il cui risultato viene ritornato come valore del campo

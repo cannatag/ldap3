@@ -28,32 +28,38 @@ class Attribute(object):
     def __init__(self, key):
         self.key = key
         self.name = None
-        self.values = None
+        self.values = []
         self.syntax = None
-        self.multi = None
-
 
     def __repr__(self):
-        if not self.multi:
-            r = self.key + ': ' + str(self.values)
-        else:
+        if len(self.values) == 1:
             r = self.key + ': ' + str(self.values[0])
-            if len(self.values > 1):
-                filler = ' ' * (len(self.key) + 2)
-                for value in self.values[1:]:
-                    r += linesep + filler + value
+        elif len(self.values) > 1:
+            r = self.key + ': ' + str(self.values[0])
+            filler = ' ' * (len(self.key) + 6)
+            for value in self.values[1:]:
+                r += linesep + filler + value
+        else:
+            r = ''
 
         return r
 
-
     def __str__(self):
-        return self.__repr__()
+        if len(self.values) == 1:
+            return self.values[0]
+        else:
+            return str(self.values)
 
     def __iter__(self):
+        print(type(self.values))
         if isinstance(self.values, list):
+            print('XXX')
             return self.values.__iter__()
         elif self.values:
             yield self.values
             yield StopIteration
         else:
             yield StopIteration
+
+    def __getitem__(self, item):
+        return self.values[item]

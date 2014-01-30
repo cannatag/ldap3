@@ -25,17 +25,18 @@ from os import linesep
 
 
 class Record(object):
+
     def __init__(self, dn):
-        self.dn = dn
-        self.attributes = None
-        self.rawAttributes = None
+        self._dn = dn
+        self._attributes = dict()
+        self._rawAttributes = None
 
     def __repr__(self):
-        if self.dn:
-            r = 'DN: ' + str(self.dn) + linesep
-            if self.attributes:
-                for attr in self.attributes:
-                    r += ' ' * 4 + repr(self.attributes[attr]) + linesep
+        if self._dn:
+            r = 'DN: ' + str(self._dn) + linesep
+            if self._attributes:
+                for attr in self._attributes:
+                    r += ' ' * 4 + repr(self._attributes[attr]) + linesep
 
             return r
         else:
@@ -45,7 +46,9 @@ class Record(object):
         return self.__repr__()
 
     def __iter__(self):
-        return self.attributes.__iter__()
+        for attribute in self._attributes:
+            yield self._attributes[attribute]
+        raise StopIteration
 
     def __getitem__(self, item):
-        return self.attributes[item]
+        return self._attributes[item]

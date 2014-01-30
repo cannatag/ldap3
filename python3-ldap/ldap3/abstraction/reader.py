@@ -269,8 +269,12 @@ class Reader(object):
             return None
 
         record = Record(result['dn'])
-        record.attributes = _getAttributeValues(result, self.definition)
-        record.rawAttributes = result['rawAttributes']
+        record._attributes = _getAttributeValues(result, self.definition)
+        record._rawAttributes = result['rawAttributes']
+        for attr in record:
+            print(type(attr))
+            attrName = attr.key.replace(' ', '')
+            record.__dict__[attrName] = attr.values
 
         return record
 

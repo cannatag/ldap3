@@ -50,16 +50,11 @@ class Attribute(object):
         else:
             return str(self.values)
 
+    def __len__(self):
+        return len(self.values)
+
     def __iter__(self):
-        print(type(self.values))
-        if isinstance(self.values, list):
-            print('XXX')
-            return self.values.__iter__()
-        elif self.values:
-            yield self.values
-            yield StopIteration
-        else:
-            yield StopIteration
+        return self.values.__iter__()
 
     def __getitem__(self, item):
         return self.values[item]

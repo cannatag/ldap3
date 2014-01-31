@@ -27,8 +27,8 @@ from os import linesep
 class Record(object):
 
     def __init__(self, dn):
+        self.__dict__['_attributes'] = dict()
         self._dn = dn
-        self._attributes = dict()
         self._rawAttributes = None
 
     def __repr__(self):
@@ -52,3 +52,12 @@ class Record(object):
 
     def __getitem__(self, item):
         return self._attributes[item]
+
+    def entryDN(self):
+        return self._dn
+
+    def __setattr__(self, key, value):
+        if key in self._attributes:
+            raise Exception('Attribute is readonly')
+        else:
+            object.__setattr__(self, key, value)

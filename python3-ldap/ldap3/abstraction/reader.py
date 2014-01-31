@@ -21,7 +21,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from operator import getitem
 from os import linesep
 
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
@@ -272,7 +271,6 @@ class Reader(object):
         record._attributes = _getAttributeValues(result, self.definition)
         record._rawAttributes = result['rawAttributes']
         for attr in record:
-            print(type(attr))
             attrName = attr.key.replace(' ', '')
             record.__dict__[attrName] = attr.values
 

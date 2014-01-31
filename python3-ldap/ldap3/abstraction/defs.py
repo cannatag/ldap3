@@ -106,7 +106,8 @@ class ObjectDef(object):
             item = ''.join(item.split()).lower()
             for attr in self._attributes:
                 if item == attr.lower():
-                    del self._attributes[item]
+                    del self._attributes[attr]
+                    break
 
     def clear(self):
         self.objectClass = None

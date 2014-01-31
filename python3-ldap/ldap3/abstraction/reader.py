@@ -87,24 +87,24 @@ class Reader(object):
         self.reset()
 
     def __repr__(self):
-        r = 'CONNECTION: ' + str(self.connection) + linesep
-        r += 'BASE: ' + repr(self.base) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
-        r += 'QUERY: ' + repr(self.query) + (' [AND]' if self.componentsInAnd else ' [OR]') + linesep
-        r += 'DEFINITION: ' + self.definition.objectClass + ' ['
+        r = 'Connection:' + str(self.connection) + linesep
+        r += 'Base: ' + repr(self.base) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
+        r += 'Definition: ' + self.definition.objectClass + ' ['
         for attrDef in self.definition:
-            r += (attrDef.key if attrDef.key == attrDef.name else (attrDef.key + '(' + attrDef.name + ')')) + ', '
+            r += (attrDef.key if attrDef.key == attrDef.name else (attrDef.key + ' <' + attrDef.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
-
         r += ']' + linesep
-        r += 'ATTRIBUTES: ' + repr(self.attributes) + (' [OPERATIONAL]' if self.getOperationalAttributes else '') + linesep
-        r += 'FILTER: ' + repr(self.queryFilter) + linesep
+        r += 'Query: ' + repr(self.query) + (' [AND]' if self.componentsInAnd else ' [OR]') + linesep
+        r += 'Attributes: ' + repr(self.attributes) + (' [OPERATIONAL]' if self.getOperationalAttributes else '') + linesep
+        r += 'Filter: ' + repr(self.queryFilter) + linesep
         if self.executionTime:
-            r += '*** EXECUTED AT ' + str(self.executionTime.ctime()) + ' ***' + linesep
-            r += '    RECORDS: ' + str(len(self.records))
-            r += ' [SUB]' if self.lastSubTree else ' [LEVEL]'
-            r += ' [SIZE LIMIT: ' + str(self.sizeLimit) + ']'if self.sizeLimit else ''
-            r += ' [TIME LIMIT: ' + str(self.timeLimit) + ']' if self.sizeLimit else ''
+            r += 'Executed at: ' + str(self.executionTime.ctime()) + linesep
+            r += 'Records found: ' + str(len(self.records))
+            r += ' [sub]' if self.lastSubTree else ' [level]'
+            r += ' [size limit: ' + str(self.sizeLimit) + ']'if self.sizeLimit else ''
+            r += ' [time limit: ' + str(self.timeLimit) + ']' if self.sizeLimit else ''
+            r += ' [no list for single value]' if self.noSingleValueList else ''
 
         return r
 

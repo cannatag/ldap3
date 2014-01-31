@@ -25,11 +25,13 @@ from os import linesep
 
 
 class Record(object):
+    valid_attrs = ['_dn', '_rawAttributes', '_attributes', '_reader']
 
-    def __init__(self, dn):
+    def __init__(self, dn, reader):
         self.__dict__['_attributes'] = dict()
         self._dn = dn
         self._rawAttributes = None
+        self._reader = reader
 
     def __repr__(self):
         if self._dn:
@@ -50,8 +52,25 @@ class Record(object):
             yield self._attributes[attribute]
         raise StopIteration
 
+    def __contains__(self, item):
+        return True if self.__getitem__(item) else False
+
+    def __getattr__(self, item):
+        if isinstance(item, str):
+            item = ''.join(item.split()).lower()
+            for attr in self._attributes:
+                if item == attr.lower():
+                    break
+            else:
+                raise Exception('invalid key')
+
+            if len(self._attributes[attr].values) == 1 and self._reader.noSingleValueList:
+                return self._attributes[attr].values[0]
+
+            return self._attributes[attr].values
+
     def __getitem__(self, item):
-        return self._attributes[item]
+        return self.__getattr__(item)
 
     def entryDN(self):
         return self._dn
@@ -59,5 +78,7 @@ class Record(object):
     def __setattr__(self, key, value):
         if key in self._attributes:
             raise Exception('Attribute is readonly')
-        else:
+        elif key in Record.valid_attrs:
             object.__setattr__(self, key, value)
+        else:
+            raise Exception('record is read only')

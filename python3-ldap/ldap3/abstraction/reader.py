@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from datetime import datetime
 from os import linesep
 
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
@@ -45,10 +46,11 @@ def _getAttributeValues(result, attrDefs):
 
         if name:
             attribute = Attribute(attrDef.key)
-            attribute.values = result['attributes'][name] or attrDef.default
-
             if attrDef.postQuery and attrDef.name in result['attributes']:
-                attribute.values = attrDef.postQuery(attribute.values)
+                attribute.values = [attrDef.postQuery(value) for value in result['attributes'][name]] or attrDef.default
+            else:
+                attribute.values = result['attributes'][name] or attrDef.default
+
             values[attribute.key] = attribute
 
     return values
@@ -71,33 +73,39 @@ def _createQueryDict(text):
 
 
 class Reader(object):
-    def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False, controls = None):
+    def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False, controls = None, noSingleValueList = True):
         self.connection = connection
         self.query = query
-        self.validatedQuery = None
         self.definition = objectDef
         self.base = base
         self.componentsInAnd = componentsInAnd
-        self._queryDict = dict()
-        self._validatedQueryDict = dict()
-        self.queryFilter = None
-        self.attributes = sorted([self.definition.attributes[attr].name for attr in self.definition.attributes])
+        self.attributes = sorted([attr.name for attr in self.definition])
         self.getOperationalAttributes = getOperationalAttributes
-        self.controls = None
+        self.controls = controls
         self.subTree = subTree
-        self.pagedCookie = None
-        self.records = []
-        self._createQueryFilter()
-        self.clear()
+        self.noSingleValueList = noSingleValueList
+        self.reset()
 
     def __repr__(self):
         r = 'CONNECTION: ' + str(self.connection) + linesep
-        r += 'BASE: ' + repr(self.base) + linesep
+        r += 'BASE: ' + repr(self.base) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
         r += 'QUERY: ' + repr(self.query) + (' [AND]' if self.componentsInAnd else ' [OR]') + linesep
-        r += 'DEFINITION: ' + repr(self.definition) + linesep
+        r += 'DEFINITION: ' + self.definition.objectClass + ' ['
+        for attrDef in self.definition:
+            r += (attrDef.key if attrDef.key == attrDef.name else (attrDef.key + '(' + attrDef.name + ')')) + ', '
+        if r[-2] == ',':
+            r = r[:-2]
+
+        r += ']' + linesep
         r += 'ATTRIBUTES: ' + repr(self.attributes) + (' [OPERATIONAL]' if self.getOperationalAttributes else '') + linesep
-        r += 'FILTER: ' + repr(self.queryFilter) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
-        r += 'RECORDS: ' + str(len(self.records))
+        r += 'FILTER: ' + repr(self.queryFilter) + linesep
+        if self.executionTime:
+            r += '*** EXECUTED AT ' + str(self.executionTime.ctime()) + ' ***' + linesep
+            r += '    RECORDS: ' + str(len(self.records))
+            r += ' [SUB]' if self.lastSubTree else ' [LEVEL]'
+            r += ' [SIZE LIMIT: ' + str(self.sizeLimit) + ']'if self.sizeLimit else ''
+            r += ' [TIME LIMIT: ' + str(self.timeLimit) + ']' if self.sizeLimit else ''
+
         return r
 
     def __str__(self):
@@ -111,11 +119,26 @@ class Reader(object):
         self.pagedSize = None
         self.pagedCriticality = False
 
+    def reset(self):
+        self.clear()
+        self.validatedQuery = None
+        self._queryDict = dict()
+        self._validatedQueryDict = dict()
+        self.executionTime = None
+        self.queryFilter = None
+        self.records = []
+        self.pagedCookie = None
+        self.lastSubTree = None
+        self._createQueryFilter()
+
     def __iter__(self):
         return self.records.__iter__()
 
     def __getitem__(self, item):
         return self.records[item]
+
+    def __len__(self):
+        return len(self.records)
 
     def _validateQuery(self):
         """
@@ -146,8 +169,8 @@ class Reader(object):
         for d in sorted(self._queryDict):
             attr = d[1:] if d[0] in '&|' else d
             for attrDef in self.definition:
-                if attr.lower() == attrDef.name.lower():
-                    attr = attrDef.name
+                if ''.join(attr.split()).lower() == attrDef.key.lower():
+                    attr = attrDef.key
                     break
 
             if attr in self.definition:
@@ -234,7 +257,7 @@ class Reader(object):
             attrCounter += 1
             multi = True if ';' in self._validatedQueryDict[attr] else False
             vals = sorted(self._validatedQueryDict[attr].split(';'))
-            attrDef = self.definition.attributes[attr[1:]] if attr[0] in '&|' else self.definition.attributes[attr]
+            attrDef = self.definition[attr[1:]] if attr[0] in '&|' else self.definition[attr]
             if multi:
                 if attr[0] in '&|':
                     self.queryFilter += '(' + attr[0]
@@ -267,11 +290,11 @@ class Reader(object):
         if not result['type'] == 'searchResEntry':
             return None
 
-        record = Record(result['dn'])
+        record = Record(result['dn'], self)
         record._attributes = _getAttributeValues(result, self.definition)
         record._rawAttributes = result['rawAttributes']
         for attr in record:
-            attrName = attr.key.replace(' ', '')
+            attrName = attr.key
             record.__dict__[attrName] = attr.values
 
         return record
@@ -308,6 +331,9 @@ class Reader(object):
             record = self._getRecord(r)
             self.records.append(record)
 
+        self.lastSubTree = self.subTree
+        self.executionTime = datetime.now()
+
     def search(self):
         self.clear()
         self._executeQuery()
@@ -321,7 +347,7 @@ class Reader(object):
         self._executeQuery()
         self.subTree = subTree
 
-        return self.record
+        return self.records
 
     def searchSubtree(self):
         self.clear()

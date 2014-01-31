@@ -21,12 +21,13 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from os import linesep
 
 
 class AttrDef(object):
     def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None):
         self.name = name
-        self.key = key or name  # key set to name if not present
+        self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
         self.preQuery = preQuery
         self.postQuery = postQuery
@@ -60,7 +61,7 @@ class AttrDef(object):
             return id(self)  # unique for each istance
 
     def __setattr__(self, key, value):
-        if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is used for __hash__
+        if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is being used for __hash__
             raise Exception('key already set')
         else:
             object.__setattr__(self, key, value)
@@ -82,63 +83,74 @@ class ObjectDef(object):
 
     def __init__(self, objectClass = None):
         self.objectClass = objectClass
-        self.attributes = dict()
+        self.__dict__['_attributes'] = dict()
 
-    def add(self, attributeDef = None):
-        if hasattr(attributeDef, '__iter__'):
-            for element in attributeDef:
+    def add(self, definition = None):
+        if isinstance(definition, str):
+            element = AttrDef(definition)
+            self.add(element)
+        elif isinstance(definition, AttrDef):
+            key = definition.key
+            for attr in self._attributes:
+                if key.lower() == attr.lower():
+                    raise Exception('attribute already defined')
+            self._attributes[key] = definition
+        elif isinstance(definition, list):
+            for element in definition:
                 self.add(element)
-            return
+        else:
+            raise Exception('unable to add element to object definition')
 
-        if not isinstance(attributeDef, AttrDef):
-            raise Exception('invalid attribute definition')
-
-        key = attributeDef.key or attributeDef.name  # key set to name if not present
-        if key in self.attributes:
-            raise Exception('attribute already defined')
-
-        self.attributes[key] = attributeDef
-
-    def remove(self, key):
-        if key in self.attributes:
-            del self.attributes[key]
+    def remove(self, item):
+        if isinstance(item, str):
+            item = ''.join(item.split()).lower()
+            for attr in self._attributes:
+                if item == attr.lower():
+                    del self._attributes[item]
 
     def clear(self):
         self.objectClass = None
-        self.attributes = dict()
+        self.__dict__['_attributes'] = dict()
 
     def __iter__(self):
-        for attribute in self.attributes:
-            yield self.attributes[attribute]
+        for attribute in self._attributes:
+            yield self._attributes[attribute]
 
     def __len__(self):
-        return len(self.attributes)
+        return len(self._attributes)
 
     def __contains__(self, item):
-        return True if item in self.attributes else False
+        return True if self.__getitem__(item) else False
 
     def __repr__(self):
-        if self.objectClass:
-            r = 'objectClass: ' + self.objectClass + ' - '
-        else:
-            r = ''
+        r = 'objectClass: ' + self.objectClass if self.objectClass else ''
+        for attr in self._attributes:
+            r += linesep + self._attributes[attr].__repr__() + ', '
 
-        for attr in self.attributes:
-            r += self.attributes[attr].__repr__() + ', '
-
-        return r[:-2]
+        return r[:-2] if r[-2] == ',' else r
 
     def __str__(self):
         return self.__repr__()
 
+
     def __getitem__(self, item):
-        return self.attributes[item]
+        return self.__getattr__(item)
 
-    def __add__(self, other):
+    def __getattr__(self, item):
+        if isinstance(item, str):
+            item = ''.join(item.split()).lower()
+            for attr in self._attributes:
+                if item == attr.lower():
+                    return self._attributes[attr]
+
+    def __iadd__(self, other):
         self.add(other)
+        return self
 
-    def __sub__(self, other):
+    def __isub__(self, other):
         if isinstance(other, AttrDef):
             self.remove(other.key)
         elif isinstance(other, str):
             self.remove(other)
+
+        return self

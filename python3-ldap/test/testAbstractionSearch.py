@@ -43,14 +43,15 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testSearchFilterWithObjectClass(self):
+        reverse = lambda x: x[::-1]
         o = ObjectDef('inetOrgPerson')
         o + AttrDef('cn', 'Common Name')
         o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'Given Name')
+        o + AttrDef('givenName', 'Given Name', postQuery = reverse)
 
         queryText = 'Common Name:=test-add*'
         r = Reader(self.connection, o, queryText, 'o=test')
 
         results = r.search()
         print (len(r.records))
-        self.assertEqual(len(results), 19)
+        self.assertEqual(len(results), 42)

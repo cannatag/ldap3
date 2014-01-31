@@ -69,6 +69,8 @@ class Record(object):
 
             return self._attributes[attr].values
 
+        raise Exception('invalid key')
+
     def __getitem__(self, item):
         return self.__getattr__(item)
 

@@ -35,6 +35,7 @@ def _getAttributeValues(result, attrDefs):
     Se e' presente una funzione di 'postQuery' questa viene eseguita sulla lista dei valori trovato e il risultato
     della funzione viene ritornato nell'attributo relativo.
     Fa in modo che se un attributo richiesto e' assente questo venga inserito nei valori con il valore di default
+    Se dereference == True tenta di recuperare da ldap l'oggetto memorizzato nel value di tipo dereferenceObjectDef
     """
     values = dict()
     for attrDef in attrDefs:
@@ -47,7 +48,10 @@ def _getAttributeValues(result, attrDefs):
         if name:
             attribute = Attribute(attrDef.key)
             if attrDef.postQuery and attrDef.name in result['attributes']:
-                attribute.values = attrDef.postQuery(result['attributes'][name]) or attrDef.default
+                if attrDef.postQueryReturnsList:
+                    attribute.values = attrDef.postQuery(result['attributes'][name]) or attrDef.default
+                else:
+                    attribute.values = [attrDef.postQuery(value) for value in result['attributes'][name]]
             else:
                 attribute.values = result['attributes'][name] or attrDef.default
 

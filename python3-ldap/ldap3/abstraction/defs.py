@@ -25,13 +25,16 @@ from os import linesep
 
 
 class AttrDef(object):
-    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None):
+    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, postQueryReturnsList = False, default = None, dereference = False, dereferencedObjectDef = None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
         self.preQuery = preQuery
         self.postQuery = postQuery
+        self.postQueryReturnsList = postQueryReturnsList
         self.default = default
+        self.dereference = dereference
+        self.dereferencedObjectDef = dereferencedObjectDef
 
     def __repr__(self):
         r = 'AttrDef(name={0.name!r}'.format(self)

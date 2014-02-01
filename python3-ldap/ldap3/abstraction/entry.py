@@ -24,14 +24,13 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 
 
-class Record(object):
-    valid_attrs = ['_dn', '_rawAttributes', '_attributes', '_reader']
+class Entry(object):
 
     def __init__(self, dn, reader):
         self.__dict__['_attributes'] = dict()
-        self._dn = dn
-        self._rawAttributes = None
-        self._reader = reader
+        self.__dict__['_dn'] = dn
+        self.__dict__['_rawAttributes'] = None
+        self.__dict__['_reader'] = reader
 
     def __repr__(self):
         if self._dn:
@@ -74,13 +73,16 @@ class Record(object):
     def __getitem__(self, item):
         return self.__getattr__(item)
 
+    @property
     def entryDN(self):
         return self._dn
 
-    def __setattr__(self, key, value):
-        if key in self._attributes:
+    @property
+    def entryReader(self):
+        return self._reader
+
+    def __setattr__(self, item, value):
+        if item in self._attributes:
             raise Exception('Attribute is readonly')
-        elif key in Record.valid_attrs:
-            object.__setattr__(self, key, value)
         else:
-            raise Exception('record is read only')
+            raise Exception('entry is read only')

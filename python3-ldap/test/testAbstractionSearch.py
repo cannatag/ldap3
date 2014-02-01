@@ -53,5 +53,5 @@ class Test(unittest.TestCase):
         r = Reader(self.connection, o, queryText, 'o=test')
 
         results = r.search()
-        print (len(r.records))
+        print (len(r.entries))
         self.assertEqual(len(results), 42)

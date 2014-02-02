@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .attribute import Attribute
-from .defs import AttrDef, ObjectDef
+from .attrDef import AttrDef
+from .objectDef import ObjectDef
 from .entry import Entry
 from .reader import Reader

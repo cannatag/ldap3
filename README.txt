@@ -220,6 +220,14 @@ To start a TLS connection on an already created clear connection::
 You can customize the tls object with reference to key, certificate and CAs. See Tls() constructor docstring for details
 
 
+Abstraction Layer
+-----------------
+
+The ldap3.abstraction package is a tool to abstract access to LDAP data. It has a semplified query language for performing search operations
+and a bunch of objects to define
+
+
+
 LDIF
 ----
 
@@ -361,6 +369,11 @@ You can also open a ticket on https://www.assembla.com/spaces/python3-ldap/suppo
 
 Acknowledgements
 ----------------
+
+I want to thank Mark Lutz for his 'Learning Python' and 'Programming Python' books series and John Goerzen and Brandon Rhodes
+for their book 'Foundations of Python Network Programming'. These books are a wonderful tool for learning Python in the pythonic way
+and this project owes a lot to them.
+
 I wish to thank JetBrains for donating to this project the Open Source license of PyCharm 3 Professional.
 
 I wish to thank Assembla for providing the free source repository space and the agile tools to develop this project.
@@ -369,6 +382,10 @@ I wish to thank Assembla for providing the free source repository space and the 
 =========
 CHANGELOG
 =========
+
+* 0.8.0 - 2014.02.01
+    - Added abstraction layer
+    - Added context manager to Connection class
 
 * 0.7.3 - 2014.01.05
     - Added SASL DIGEST-MD5 support

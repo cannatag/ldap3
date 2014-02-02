@@ -72,8 +72,7 @@ def saslDigestMd5(connection, controls):
     # step One of rfc 2831
     result = sendSaslNegotiation(connection, controls, None)
     serverDirectives = {attr[0]: attr[1].strip('"') for attr in [line.split('=') for line in result['saslCreds'].split(',')]}  # convert directives to dict, unquote values
-    # print(result['saslCreds'])
-    # pprint(serverDirectives)
+
     if 'realm' not in serverDirectives or 'nonce' not in serverDirectives or 'algorithm' not in serverDirectives:  # mandatory directives, as per rfc 2831
         abortSaslNegotiation(connection, controls)
         return None

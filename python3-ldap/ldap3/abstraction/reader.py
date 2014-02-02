@@ -24,40 +24,10 @@ If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 from os import linesep
 
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS
-from ldap3.abstraction.attribute import Attribute
-from ldap3.abstraction.entry import Entry
+from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT
+from .attribute import Attribute
+from .entry import Entry
 
-
-def _getAttributeValues(result, attrDefs):
-    """
-    Assegna il risultato della query LDAP al dizionario 'valori' dell'oggetto.
-    Se e' presente una funzione di 'postQuery' questa viene eseguita sulla lista dei valori trovato e il risultato
-    della funzione viene ritornato nell'attributo relativo.
-    Fa in modo che se un attributo richiesto e' assente questo venga inserito nei valori con il valore di default
-    Se dereference == True tenta di recuperare da ldap l'oggetto memorizzato nel value di tipo dereferenceObjectDef
-    """
-    values = dict()
-    for attrDef in attrDefs:
-        name = None
-        for attrName in result['attributes']:
-            if attrDef.name.lower() == attrName.lower():
-                name = attrName
-                break
-
-        if name:
-            attribute = Attribute(attrDef.key)
-            if attrDef.postQuery and attrDef.name in result['attributes']:
-                if attrDef.postQueryReturnsList:
-                    attribute.values = attrDef.postQuery(result['attributes'][name]) or attrDef.default
-                else:
-                    attribute.values = [attrDef.postQuery(value) for value in result['attributes'][name]]
-            else:
-                attribute.values = result['attributes'][name] or attrDef.default
-
-            values[attribute.key] = attribute
-
-    return values
 
 def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -68,10 +38,11 @@ def _createQueryDict(text):
     Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
     """
     queryDict = dict()
-    for argValueStr in text.split(','):
-        if ':' in argValueStr:
-            argValueList = argValueStr.split(':')
-            queryDict[argValueList[0].strip()] = argValueList[1].strip()
+    if text:
+        for argValueStr in text.split(','):
+            if ':' in argValueStr:
+                argValueList = argValueStr.split(':')
+                queryDict[argValueList[0].strip()] = argValueList[1].strip()
 
     return queryDict
 
@@ -238,7 +209,7 @@ class Reader(object):
         Se e' presente un '!' prima di una chiave di ricerca questa viene eseguita in NOT.
         """
 
-        if self.query.startswith('(') and self.query.stopswith(')'):
+        if self.query and self.query.startswith('(') and self.query.stopswith(')'):
             self.queryFilter = self.query
             return
 
@@ -261,23 +232,22 @@ class Reader(object):
             multi = True if ';' in self._validatedQueryDict[attr] else False
             vals = sorted(self._validatedQueryDict[attr].split(';'))
             attrDef = self.definition[attr[1:]] if attr[0] in '&|' else self.definition[attr]
+            if attrDef.preQuery:
+                modvals = []
+                for val in vals:
+                    modvals.append(val[0] + attrDef.preQuery(attr, val[1:]))
+                vals = modvals
             if multi:
                 if attr[0] in '&|':
                     self.queryFilter += '(' + attr[0]
                 else:
                     self.queryFilter += '(|'
-            if attrDef.preQuery:
-                if multi:
-                    for val in vals:
-                        self.queryFilter += '(' + attrDef.preQuery(attr, val) + ')'
+
+            for val in vals:
+                if val[0] == '!':
+                    self.queryFilter += '(!(' + attrDef.name + _retSearchValue(val[1:]) + '))'
                 else:
-                    self.queryFilter += '(' + attrDef.preQuery(attr, self._validatedQueryDict[attr]) + ')'
-            else:
-                for val in vals:
-                    if val[0] == '!':
-                        self.queryFilter += '(!(' + attrDef.name + _retSearchValue(val[1:]) + '))'
-                    else:
-                        self.queryFilter += '(' + attrDef.name + _retSearchValue(val) + ')'
+                    self.queryFilter += '(' + attrDef.name + _retSearchValue(val) + ')'
             if multi:
                 self.queryFilter += ')'
 
@@ -289,12 +259,54 @@ class Reader(object):
         if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
             self.queryFilter = self.queryFilter[2:-1]
 
+    def _getAttributeValues(self, result, attrDefs):
+        """
+        Assegna il risultato della query LDAP al dizionario 'valori' dell'oggetto.
+        Se e' presente una funzione di 'postQuery' questa viene eseguita sulla lista dei valori trovato e il risultato
+        della funzione viene ritornato nell'attributo relativo.
+        Fa in modo che se un attributo richiesto e' assente questo venga inserito nei valori con il valore di default
+        Se dereferencedObjectDef != None tenta di recuperare da ldap l'oggetto di tipo dereferenceObjectDef memorizzato nel value
+        """
+        values = dict()
+        for attrDef in attrDefs:
+            name = None
+            for attrName in result['attributes']:
+                if attrDef.name.lower() == attrName.lower():
+                    name = attrName
+                    break
+
+            if name:
+                attribute = Attribute(attrDef.key)
+                if not attrDef.dereferencedObjectDef:
+                    if attrDef.postQuery and attrDef.name in result['attributes']:
+                        if attrDef.postQueryReturnsList:
+                            attribute.values = attrDef.postQuery(result['attributes'][name]) or attrDef.default
+                        else:
+                            attribute.values = [attrDef.postQuery(value) for value in result['attributes'][name]]
+                    else:
+                        attribute.values = result['attributes'][name] or attrDef.default
+                else:  # try to get object referenced in value
+                    attribute.values = result['attributes'][name] or attrDef.default
+                    if attribute.values:
+                        tempReader = Reader(self.connection, attrDef.dereferencedObjectDef, query = None, base = None, getOperationalAttributes = self.getOperationalAttributes, controls = self.controls, noSingleValueList = self.noSingleValueList)
+                        tempValues = []
+
+                        for element in attribute.values:
+                            tempReader.base = element
+                            tempValues.append(tempReader.searchObject())
+                        del tempReader
+                        attribute.values = tempValues
+
+                values[attribute.key] = attribute
+
+        return values
+
     def _getEntry(self, result):
         if not result['type'] == 'searchResEntry':
             return None
 
         entry = Entry(result['dn'], self)
-        entry.__dict__['_attributes'] = _getAttributeValues(result, self.definition)
+        entry.__dict__['_attributes'] = self._getAttributeValues(result, self.definition)
         entry.__dict__['_rawAttributes'] = result['rawAttributes']
         for attr in entry:
             attrName = attr.key
@@ -302,13 +314,11 @@ class Reader(object):
 
         return entry
 
-    def _executeQuery(self):
+    def _executeQuery(self, queryScope):
         if not self.connection:
             raise Exception('No connection available')
 
         self._createQueryFilter()
-
-        queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
 
         result = self.connection.search(searchBase = self.base,
                                          searchFilter = self.queryFilter,
@@ -326,6 +336,8 @@ class Reader(object):
 
         if not self.connection.strategy.sync:
             response = self.connection.getResponse(result)
+            if len(response) > 1:
+                response = response[:-1]
         else:
             response = self.connection.response
 
@@ -339,46 +351,49 @@ class Reader(object):
 
     def search(self):
         self.clear()
-        self._executeQuery()
+        queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
+        self._executeQuery(queryScope)
 
         return self.entries
 
     def searchLevel(self):
         self.clear()
-        subTree = self.subTree
-        self.subTree = False
-        self._executeQuery()
-        self.subTree = subTree
+        self._executeQuery(SEARCH_SCOPE_SINGLE_LEVEL)
 
         return self.entries
 
     def searchSubtree(self):
         self.clear()
-        subTree = self.subTree
-        self.subTree = True
-        self._executeQuery()
-        self.subTree = subTree
+        self._executeQuery(SEARCH_SCOPE_WHOLE_SUBTREE)
 
         return self.entries
+
+    def searchObject(self):  # base must be a single dn
+        self.clear()
+        self._executeQuery(SEARCH_SCOPE_BASE_OBJECT)
+        return self.entries[0]
 
     def searchSizeLimit(self, sizeLimit):
         self.clear()
         self.sizeLimit = sizeLimit
-        self._executeQuery()
+        queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
+        self._executeQuery(queryScope)
 
         return self.entries
 
     def searchTimeLimit(self, TimeLimit):
         self.clear()
         self.TimeLimit = TimeLimit
-        self._executeQuery()
+        queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
+        self._executeQuery(queryScope)
 
         return self.entries
 
     def searchTypesOnly(self):
         self.clear()
         self.typesOnly = True
-        self._executeQuery()
+        queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
+        self._executeQuery(queryScope)
 
         return self.entries
 
@@ -388,8 +403,9 @@ class Reader(object):
 
         self.pagedSize = pagedSize
         self.pagedCriticality = pagedCriticality
+        queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
 
-        self._executeQuery()
+        self._executeQuery(queryScope)
 
         if self.entries:
             yield self.entries

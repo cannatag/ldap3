@@ -23,16 +23,17 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3.abstraction.defs import ObjectDef, AttrDef
-from ldap3.abstraction.reader import Reader, _createQueryDict
+from ldap3.abstraction import ObjectDef, AttrDef
+from ldap3.abstraction import Reader
+from ldap3.abstraction.reader import _createQueryDict
 
 
 class Test(unittest.TestCase):
     def testCreateQueryDict(self):
         o = ObjectDef()
-        o + AttrDef('cn', 'Common Name')
-        o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'Given Name')
+        o += AttrDef('cn', 'Common Name')
+        o += AttrDef('sn', 'Surname')
+        o += AttrDef('givenName', 'Given Name')
 
         queryText = 'Common Name:=|john;Bob, Surname:=smith'
         r = Reader(None, o, queryText, base='o=test')
@@ -43,22 +44,22 @@ class Test(unittest.TestCase):
 
     def testValidateQueryFilter(self):
         o = ObjectDef()
-        o + AttrDef('cn', 'Common Name')
-        o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'Given Name')
+        o += AttrDef('cn', 'Common Name')
+        o += AttrDef('sn', 'Surname')
+        o += AttrDef('givenName', 'Given Name')
 
         queryText = '|Common Name:=john;=Bob, Surname:=smith'
         r = Reader(None, o, queryText, base = 'o=test')
 
         r._validateQuery()
 
-        self.assertEqual('Surname: =smith, |Common Name: =Bob;=john', r.validatedQuery)
+        self.assertEqual('Surname: =smith, |CommonName: =Bob;=john', r.validatedQuery)
 
     def testCreateQueryFilter(self):
         o = ObjectDef()
-        o + AttrDef('cn', 'Common Name')
-        o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'Given Name')
+        o += AttrDef('cn', 'Common Name')
+        o += AttrDef('sn', 'Surname')
+        o += AttrDef('givenName', 'Given Name')
 
         queryText = '|Common Name:=john;Bob, Surname:=smith'
         r = Reader(None, o, queryText, base = 'o=test')
@@ -69,7 +70,7 @@ class Test(unittest.TestCase):
 
     def testCreateQueryFilterSingleAttributeSingleValue(self):
         o = ObjectDef()
-        o + AttrDef('cn', 'Common Name')
+        o += AttrDef('cn', 'Common Name')
 
         queryText = 'Common Name:John'
         r = Reader(None, o, queryText, base = 'o=test')
@@ -80,7 +81,7 @@ class Test(unittest.TestCase):
 
     def testCreateQueryFilterSingleAttributeMultipleValue(self):
         o = ObjectDef()
-        o + AttrDef('cn', 'Common Name')
+        o += AttrDef('cn', 'Common Name')
 
         queryText = '|Common Name:=john;=Bob'
         r = Reader(None, o, queryText, base='o=test')
@@ -91,9 +92,9 @@ class Test(unittest.TestCase):
 
     def testCreateQueryFilterWithObjectClass(self):
         o = ObjectDef('inetOrgPerson')
-        o + AttrDef('cn', 'Common Name')
-        o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'Given Name')
+        o += AttrDef('cn', 'Common Name')
+        o += AttrDef('sn', 'Surname')
+        o += AttrDef('givenName', 'Given Name')
 
         queryText = '|Common Name:=john;=Bob, Surname:=smith'
         r = Reader(None, o, queryText, base='o=test')

@@ -43,15 +43,65 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testSearchFilterWithObjectClass(self):
-        reverse = lambda x: x[::-1]
+        reverse = lambda e: e[::-1]
         o = ObjectDef('inetOrgPerson')
-        o + AttrDef('cn', 'Common Name')
-        o + AttrDef('sn', 'Surname')
-        o + AttrDef('givenName', 'Given Name', postQuery = reverse)
+        o += AttrDef('cn', 'Common Name')
+        o += AttrDef('sn', 'Surname')
+        o += AttrDef('givenName', 'Given Name', postQuery = reverse)
 
         queryText = 'Common Name:=test-add*'
         r = Reader(self.connection, o, queryText, 'o=test')
 
         results = r.search()
-        print (len(r.entries))
-        self.assertEqual(len(results), 42)
+        self.assertEqual(len(results), 6)
+
+    def testSearchWithDereference(self):
+        reverse = lambda e: e[::-1]
+
+        def raiseParenthesesRank(l):
+            up = {'(': '[', ')': ']', '[': '{', ']': '}', '{': '<', '}': '>'}
+            r = []
+            for e in l:
+                s = ''
+                for c in e:
+                    s += up[c] if c in up else c
+                r.append(s)
+
+            return r
+
+        ou = ObjectDef('iNetOrgPerson')
+        ou += AttrDef('cn', 'Common Name', postQuery = reverse)
+        ou += AttrDef('sn', 'Surname')
+        ou += AttrDef('givenName', 'Given Name', postQuery = raiseParenthesesRank, postQueryReturnsList = True)
+        ou += AttrDef('ACL')
+        qu = 'Common Name := test-add*'
+        ru = Reader(self.connection, ou, qu, test_base)
+        lu = ru.search()
+        self.assertEqual(len(lu), 6)
+
+        og = ObjectDef('groupOFNames')
+        og += AttrDef('member', dereferencedObjectDef = ou)
+        og += 'cn'
+        qg = 'cn := test*'
+        rg = Reader(self.connection, og, qg, test_base)
+        lg = rg.search()
+        self.assertEqual(len(lg), 1)
+
+        eg = lg[0]
+        mg = eg.member
+        self.assertEqual(len(mg), 3)
+        ug = eg.member[0]
+        self.assertEqual(ug.surname, 'tost')
+
+    def testSearchWithPreQuery(self):
+        change = lambda attr, value: 'test*' if value == attr else attr
+
+        ou = ObjectDef('iNetOrgPerson')
+        ou += AttrDef('cn', 'Common Name', preQuery = change)
+        ou += AttrDef('sn', 'Surname')
+        ou += AttrDef('givenName', 'Given Name')
+        ou += AttrDef('ACL')
+        qu = 'Common Name := bug'
+        ru = Reader(self.connection, ou, qu, test_base)
+        lu = ru.search()
+        self.assertEqual(len(lu), 6)

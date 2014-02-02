@@ -38,7 +38,7 @@ class Attribute(object):
             r = self.key + ': ' + str(self.values[0])
             filler = ' ' * (len(self.key) + 6)
             for value in self.values[1:]:
-                r += linesep + filler + value
+                r += linesep + filler + str(value)
         else:
             r = ''
 

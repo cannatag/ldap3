@@ -265,6 +265,21 @@ class Connection(object):
 
         return r
 
+    def __enter__(self):
+        if self.closed:
+            self.open()
+        if not self.bound:
+            self.bind()
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unbind()
+
+        if not exc_type is None:
+            return False  # reraise exception
+
+
     def bind(self, forceBind = False, controls = None):
         """
         Bind to ldap with the user defined in Server object

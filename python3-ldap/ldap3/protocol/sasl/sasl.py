@@ -147,7 +147,7 @@ def abortSaslNegotiation(connection, controls):
     from ldap3.operation.bind import bindOperation
     request = bindOperation(connection.version, AUTH_SASL, None, None, '', None)
     response = connection.postSendSingleResponse(connection.send('bindRequest', request, controls))
-    result = connection.getResponse(response).result if isinstance(response, int) else connection.result
+    result = connection.getResponse(response)[0] if isinstance(response, int) else connection.result
 
     return True if result['result'] == RESULT_AUTH_METHOD_NOT_SUPPORTED else False
 
@@ -156,7 +156,7 @@ def sendSaslNegotiation(connection, controls, payload):
     from ldap3.operation.bind import bindOperation
     request = bindOperation(connection.version, AUTH_SASL, None, None, connection.saslMechanism, payload)
     response = connection.postSendSingleResponse(connection.send('bindRequest', request, controls))
-    result = connection.getResponse(response).result if isinstance(response, int) else connection.result
+    result = connection.getResponse(response)[0] if isinstance(response, int) else connection.result
 
     return result
 

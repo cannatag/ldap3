@@ -25,7 +25,7 @@ from os import linesep
 
 
 class AttrDef(object):
-    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, postQueryReturnsList = False, default = None, dereference = False, dereferencedObjectDef = None):
+    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None, dereferencedObjectDef = None, postQueryReturnsList = False):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
@@ -33,7 +33,6 @@ class AttrDef(object):
         self.postQuery = postQuery
         self.postQueryReturnsList = postQueryReturnsList
         self.default = default
-        self.dereference = dereference
         self.dereferencedObjectDef = dereferencedObjectDef
 
     def __repr__(self):
@@ -129,7 +128,7 @@ class ObjectDef(object):
     def __repr__(self):
         r = 'objectClass: ' + self.objectClass if self.objectClass else ''
         for attr in self._attributes:
-            r += linesep + self._attributes[attr].__repr__() + ', '
+            r += linesep + '    ' + self._attributes[attr].__repr__() + ', '
 
         return r[:-2] if r[-2] == ',' else r
 

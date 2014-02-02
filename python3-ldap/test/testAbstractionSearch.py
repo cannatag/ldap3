@@ -24,8 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from pprint import pprint
 import unittest
-from ldap3.abstraction.defs import ObjectDef, AttrDef
-from ldap3.abstraction.reader import Reader, _createQueryDict
+from ldap3.abstraction import ObjectDef, AttrDef, Reader
+from ldap3.abstraction.reader import _createQueryDict
 from ldap3 import Server, Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
@@ -94,7 +94,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ug.surname, 'tost')
 
     def testSearchWithPreQuery(self):
-        change = lambda attr, value: 'test*' if value == attr else attr
+        change = lambda attr, value: 'test-del*'
 
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'Common Name', preQuery = change)
@@ -104,4 +104,4 @@ class Test(unittest.TestCase):
         qu = 'Common Name := bug'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 6)
+        self.assertEqual(len(lu), 1)

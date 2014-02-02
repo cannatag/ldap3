@@ -25,6 +25,17 @@ from os import linesep
 
 
 class AttrDef(object):
+    """
+    Attribute definition for abstraction layer:
+    'name' is the real attribut name
+    'key' is the friendly name to use in query and while accessing the attribute, if not set is the same of name
+    'default' is the value returned if the attribute is not present
+    'validate' is an optional callable, called to check if the value in the query is valid, the callable is called with the value parameter
+    'preQuery' is an optional callable, called to transform values to be searched
+    'postQuery' is an optional callable, called to transform values returned by search
+    'dereferenceObjectDef' is a reference to an ObjectDef instance. If present when attribute value contains a dn it will be searched and substituted in the entry
+    AttrDef('name') creates an AttrDef object for attribute 'name' with all default values
+    """
     def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None, dereferencedObjectDef = None, postQueryReturnsList = False):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present

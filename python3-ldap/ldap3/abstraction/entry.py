@@ -25,7 +25,12 @@ from os import linesep
 
 
 class Entry(object):
-
+    """
+    The Entry object contains a single entry from the result of an LDAP search
+    Attributes can be accessed either by sequence, by assignment or as dictonary keys. Keys are not case sensitive
+    DN is in the entryDN property, Reader reference is in the EntryReader property
+    Entry object is read only
+    """
     def __init__(self, dn, reader):
         self.__dict__['_attributes'] = dict()
         self.__dict__['_dn'] = dn
@@ -61,14 +66,11 @@ class Entry(object):
                 if item == attr.lower():
                     break
             else:
-                raise Exception('invalid key')
+                raise Exception('key not found')
 
-            if len(self._attributes[attr].values) == 1 and self._reader.noSingleValueList:
-                return self._attributes[attr].values[0]
+            return self._attributes[attr]
 
-            return self._attributes[attr].values
-
-        raise Exception('invalid key')
+        raise Exception('key must be a string')
 
     def __getitem__(self, item):
         return self.__getattr__(item)
@@ -83,6 +85,6 @@ class Entry(object):
 
     def __setattr__(self, item, value):
         if item in self._attributes:
-            raise Exception('Attribute is readonly')
+            raise Exception('attribute is read only')
         else:
             raise Exception('entry is read only')

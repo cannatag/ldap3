@@ -25,11 +25,15 @@ from os import linesep
 
 
 class Attribute(object):
-    def __init__(self, key):
-        self.key = key
-        self.name = None
-        self.values = []
-        self.syntax = None
+    """
+    Attribute/values object, it includes the search result (after postQuery transformation) of each attribute in an entry
+    Attribute object is read only
+    """
+    def __init__(self, key, attrDef, entry):
+        self.__dict__['key'] = key
+        self.__dict__['def'] = attrDef
+        self.__dict__['values'] = []
+        self.__dict__['entry'] = entry
 
     def __repr__(self):
         if len(self.values) == 1:
@@ -58,3 +62,6 @@ class Attribute(object):
 
     def __getitem__(self, item):
         return self.values[item]
+
+    def __setattr__(self, item, value):
+        raise Exception('attribute is read only')

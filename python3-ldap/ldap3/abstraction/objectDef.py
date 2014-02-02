@@ -23,19 +23,14 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from . import AttrDef
+from os import linesep
 
 class ObjectDef(object):
     """
-    Ogni attributo e' definito da un dizionario che ha come chiave il
-    nome con cui si accede all'attributo e come campi:
-    attr -> il nome dell'attributo nell'ldap
-    valida -> una funzione che valida il valore di ricerca prima di aggiungere l'attributo alla query di ricerca
-    preQuery -> una funzione da eseguire sul valore di ricerca il cui risultato viene aggiunto alla query di ricerca
-    postQuery -> una funzione da eseguire dopo la ricerca il cui risultato viene ritornato come valore del campo
-    ritornaSempre -> un booleano che indica se il valore deve essere ritornato sempre oppure solo se richiesto esplicitamente
-    default -> un valore di default da ritornare quando l'attributo non viene trovato
-    Se ritornaSempre e' impostato a False viene ritornato il valore di default
-    "2"
+    AttrDefs are stored in a dictionary, the key is the friendly name defined in attrDef
+    AttrDefs can be added and removedusing the += ad -= operators
+    ObjectDef can be accessed either as a sequence and a dictionary. Wnen accessed the whole AttrDef instance is returned
+
     """
 
     def __init__(self, objectClass = None):
@@ -89,7 +84,6 @@ class ObjectDef(object):
 
     def __str__(self):
         return self.__repr__()
-
 
     def __getitem__(self, item):
         return self.__getattr__(item)

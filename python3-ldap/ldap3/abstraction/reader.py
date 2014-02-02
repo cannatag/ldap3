@@ -32,14 +32,14 @@ from .entry import Entry
 def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
 
-def _createQueryDict(text):
+def _createQueryDict(queryText):
     """
-    crea un dizionario con le coppie chiave:valore di una query
-    Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
+    Create a dictonary  with query key:value definitions
+    QUeryText is a comma delimited key:value sequence
     """
     queryDict = dict()
-    if text:
-        for argValueStr in text.split(','):
+    if queryText:
+        for argValueStr in queryText.split(','):
             if ':' in argValueStr:
                 argValueList = argValueStr.split(':')
                 queryDict[argValueList[0].strip()] = argValueList[1].strip()
@@ -48,7 +48,18 @@ def _createQueryDict(text):
 
 
 class Reader(object):
-    def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False, controls = None, noSingleValueList = True):
+    """
+    Reader object perform the search with the requested parameters:
+    'connection': the connection to use
+    'objectDef': the definition of the LDAP object to be returned
+    'query': the simplified query to be transformed in an LDAP filter
+    'base': starting base of the DIT
+    'componentInAnd': specify if components of query mus be all satisfied or not (AND/OR)
+    'subTree': a boolean to specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
+    'getOperationalAttributes': a boolean to specify if operational attributes are returned or not
+    'controls': controls to be used in search
+    """
+    def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False,  noSingleValueList = True, controls = None):
         self.connection = connection
         self.query = query
         self.definition = objectDef
@@ -276,17 +287,17 @@ class Reader(object):
                     break
 
             if name:
-                attribute = Attribute(attrDef.key)
+                attribute = Attribute(attrDef.key, attrDef, self)
                 if not attrDef.dereferencedObjectDef:
                     if attrDef.postQuery and attrDef.name in result['attributes']:
                         if attrDef.postQueryReturnsList:
-                            attribute.values = attrDef.postQuery(result['attributes'][name]) or attrDef.default
+                            attribute.__dict__['values'] = attrDef.postQuery(result['attributes'][name]) or attrDef.default
                         else:
-                            attribute.values = [attrDef.postQuery(value) for value in result['attributes'][name]]
+                            attribute.__dict__['values'] = [attrDef.postQuery(value) for value in result['attributes'][name]]
                     else:
-                        attribute.values = result['attributes'][name] or attrDef.default
+                        attribute.__dict__['values'] = result['attributes'][name] or attrDef.default
                 else:  # try to get object referenced in value
-                    attribute.values = result['attributes'][name] or attrDef.default
+                    attribute.__dict__['values'] = result['attributes'][name] or attrDef.default
                     if attribute.values:
                         tempReader = Reader(self.connection, attrDef.dereferencedObjectDef, query = None, base = None, getOperationalAttributes = self.getOperationalAttributes, controls = self.controls, noSingleValueList = self.noSingleValueList)
                         tempValues = []
@@ -295,7 +306,7 @@ class Reader(object):
                             tempReader.base = element
                             tempValues.append(tempReader.searchObject())
                         del tempReader
-                        attribute.values = tempValues
+                        attribute.__dict__['values'] = tempValues
 
                 values[attribute.key] = attribute
 

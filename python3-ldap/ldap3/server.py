@@ -158,10 +158,10 @@ class Server(object):
         read info from DSE and from subschema
         """
         if not connection.closed:
-            if self.getInfo == GET_DSA_INFO or self.getInfo == GET_ALL_INFO:
+            if self.getInfo in [GET_DSA_INFO, GET_ALL_INFO]:
                 self._getDsaInfo(connection)
 
-            if self.getInfo == GET_SCHEMA_INFO or self.getInfo == GET_ALL_INFO:
+            if self.getInfo in [GET_SCHEMA_INFO, GET_ALL_INFO]:
                 self._getSchemaInfo(connection)
 
     @property

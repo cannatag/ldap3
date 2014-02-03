@@ -28,11 +28,14 @@ class Attribute(object):
     """
     Attribute/values object, it includes the search result (after postQuery transformation) of each attribute in an entry
     Attribute object is read only
+    'values' contains the processed attribute values
+    'rawValues' contains the unprocessed attribute values
     """
-    def __init__(self, key, attrDef, entry):
-        self.__dict__['key'] = key
-        self.__dict__['def'] = attrDef
+    def __init__(self, attrDef, entry):
+        self.__dict__['key'] = attrDef.key
+        self.__dict__['definition'] = attrDef
         self.__dict__['values'] = []
+        self.__dict__['rawValues'] = []
         self.__dict__['entry'] = entry
 
     def __repr__(self):

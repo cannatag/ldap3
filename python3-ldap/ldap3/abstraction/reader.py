@@ -32,6 +32,7 @@ from .entry import Entry
 def _retSearchValue(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
 
+
 def _createQueryDict(queryText):
     """
     Create a dictonary  with query key:value definitions
@@ -59,7 +60,7 @@ class Reader(object):
     'getOperationalAttributes': a boolean to specify if operational attributes are returned or not
     'controls': controls to be used in search
     """
-    def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False,  noSingleValueList = True, controls = None):
+    def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False,  controls = None):
         self.connection = connection
         self.query = query
         self.definition = objectDef
@@ -69,7 +70,7 @@ class Reader(object):
         self.getOperationalAttributes = getOperationalAttributes
         self.controls = controls
         self.subTree = subTree
-        self.noSingleValueList = noSingleValueList
+
         self.reset()
 
     def __repr__(self):
@@ -89,7 +90,6 @@ class Reader(object):
             r += ' [SUB]' if self.lastSubTree else ' [level]'
             r += ' [SIZE LIMIT: ' + str(self.sizeLimit) + ']'if self.sizeLimit else ''
             r += ' [TIME LIMIT: ' + str(self.timeLimit) + ']' if self.sizeLimit else ''
-            r += ' [no single value list]' if self.noSingleValueList else ''
             r += ' [executed at: ' + str(self.executionTime.ctime()) + ']' + linesep
         return r
 
@@ -114,7 +114,10 @@ class Reader(object):
         self.entries = []
         self.pagedCookie = None
         self.lastSubTree = None
+        self.schemaInfo = None
         self._createQueryFilter()
+
+        #TODO schema)
 
     def __iter__(self):
         return self.entries.__iter__()
@@ -127,24 +130,8 @@ class Reader(object):
 
     def _validateQuery(self):
         """
-        Elabora il testo di una query e verifica che i campi richiesti siano presenti nel dizionario
-        del reader relativo. Se non sono presenti il campo viene ignorato.
-        Se l'attributo nel dizionario ha un campo 'valida' la relativa funzione viene eseguita per
-        verificare se il valore da ricercare sia tra quelli possibili. In caso di
-        valore non validato viene generata un'eccezione.
-        Il testo della query deve essere composto da coppie chiave:valore separate dalla virgola.
-        Sono riconosciute alcune chiavi speciali che modificano il funzionamento della query:
-        'query_and_or' (con valore 'AND' oppure 'OR') -> indica che i campi di ricerca sono in AND oppure in OR
-        'query_filtro' -> esegue un generico filtro LDAP
-        'query_base' -> base su cui eseguire 'query_filtro', non puo' essere usato senza 'query_filtro'
-        'query_livello' (con valore 'SUB' oppure 'LIVELLO') -> indica il livello di esecuzione della query
-        Per eseguire un AND o un OR nello stesso attributo far precedere la chiave dal segno '&' oppure '|'
-        e dividere i valori multipli con un ';'
-        In 'query_filtro' e in 'query_base' eventuali ',' devono essere indicate con ';'
-        Un valore preceduto da un '!' indica un NOT
-        Il valore e' composto da un segno di ricerca (=, >, <, ~) e dalla chiave di ricerca
-        Ritorna il testo della query validato che puo' essere trasformato in dizionario per essere utilizzato
-        come chiave di ricerca delle funzioni _cerca dei reader di classe ldap.
+        Processes the text query and verifies that the requested friendly names are in the Reader dictionary
+        If the AttrDef has a 'validate' property the callable is executed and if it returns False an Exception is raised
         """
 
         if not self._queryDict:
@@ -198,26 +185,7 @@ class Reader(object):
 
     def _createQueryFilter(self):
         """
-        Prepara la query ldap e verifica che gli attributi siano presenti in attrDefs
-        La query e' composta di un dizionario contenente le chiavi di ricerca cosi'
-        come sono definite nelle classi readers. Se e' presente una funzione di 'preQuery'
-        questa viene eseguita passandogli il valore della chiave di ricerca e il suo risultato
-        viene aggiunto alla query.
-        Sono riconosciute alcune chiavi speciali che modificano il funzionamento della query:
-        'query_and_or' (con valore 'AND' oppure 'OR') -> indica che i campi di ricerca sono in AND oppure in OR
-        'query_filtro' -> esegue un generico filtro LDAP con base indicata in 'query_base'
-        'query_base' -> indica la base su cui eseguire 'query_filtro'. Deve essere usata solo insieme a 'query_filtro'
-        'query_livello' (con valore 'SUB' oppure 'LIVELLO') -> indica il livello di esecuziones della query
-        Eventuali ',' presenti in 'query_base' o in 'query_filtro' devono essere sostituite con ';'
-        I valori di default delle chiavi speciali sono:
-        query_and_or: AND
-        query_filtro: None
-        query_livello: SUB
-        query_base: la base definita nel reader del tipo di oggetto
-        Per eseguire un AND o un OR nello stesso campo far precedere il campo dal segno '&' oppure '|' e
-        dividere le chiavi multiple con ';'
-        Il default dei campi con valori di ricerca combinati e' in OR
-        Se e' presente un '!' prima di una chiave di ricerca questa viene eseguita in NOT.
+        Convert the query Dictonary in the filter text
         """
 
         if self.query and self.query.startswith('(') and self.query.stopswith(')'):
@@ -270,15 +238,14 @@ class Reader(object):
         if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
             self.queryFilter = self.queryFilter[2:-1]
 
-    def _getAttributeValues(self, result, attrDefs):
+    def _getAttributes(self, result, attrDefs):
         """
-        Assegna il risultato della query LDAP al dizionario 'valori' dell'oggetto.
-        Se e' presente una funzione di 'postQuery' questa viene eseguita sulla lista dei valori trovato e il risultato
-        della funzione viene ritornato nell'attributo relativo.
-        Fa in modo che se un attributo richiesto e' assente questo venga inserito nei valori con il valore di default
-        Se dereferencedObjectDef != None tenta di recuperare da ldap l'oggetto di tipo dereferenceObjectDef memorizzato nel value
+        Assign the result of the LDAP query to the Entry object dictionary.
+        If the optional 'postQuery' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute
+        Returns the default value for missing attributes
+        If the 'dereferencedObjectDef' in AttrDef is a ObjectDef the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
         """
-        values = dict()
+        attributes = dict()
         for attrDef in attrDefs:
             name = None
             for attrName in result['attributes']:
@@ -287,19 +254,18 @@ class Reader(object):
                     break
 
             if name:
-                attribute = Attribute(attrDef.key, attrDef, self)
-                if not attrDef.dereferencedObjectDef:
-                    if attrDef.postQuery and attrDef.name in result['attributes']:
-                        if attrDef.postQueryReturnsList:
-                            attribute.__dict__['values'] = attrDef.postQuery(result['attributes'][name]) or attrDef.default
-                        else:
-                            attribute.__dict__['values'] = [attrDef.postQuery(value) for value in result['attributes'][name]]
+                attribute = Attribute(attrDef, self)
+                attribute.__dict__['rawValues'] = result['rawAttributes'][name]
+                if attrDef.postQuery and attrDef.name in result['attributes']:
+                    if attrDef.postQueryReturnsList:
+                        attribute.__dict__['values'] = attrDef.postQuery(result['attributes'][name]) or attrDef.default
                     else:
-                        attribute.__dict__['values'] = result['attributes'][name] or attrDef.default
-                else:  # try to get object referenced in value
+                        attribute.__dict__['values'] = [attrDef.postQuery(value) for value in result['attributes'][name]]
+                else:
                     attribute.__dict__['values'] = result['attributes'][name] or attrDef.default
+                if attrDef.dereferencedObjectDef:  # try to get object referenced in value
                     if attribute.values:
-                        tempReader = Reader(self.connection, attrDef.dereferencedObjectDef, query = None, base = None, getOperationalAttributes = self.getOperationalAttributes, controls = self.controls, noSingleValueList = self.noSingleValueList)
+                        tempReader = Reader(self.connection, attrDef.dereferencedObjectDef, query = None, base = None, getOperationalAttributes = self.getOperationalAttributes, controls = self.controls)
                         tempValues = []
 
                         for element in attribute.values:
@@ -308,20 +274,21 @@ class Reader(object):
                         del tempReader
                         attribute.__dict__['values'] = tempValues
 
-                values[attribute.key] = attribute
+                attribute.__dict__['value'] = attribute.__dict__['values'][0] if len(attribute.__dict__['values']) == 1 else attribute.__dict__['values']
+                attributes[attribute.key] = attribute
 
-        return values
+        return attributes
 
     def _getEntry(self, result):
         if not result['type'] == 'searchResEntry':
             return None
 
         entry = Entry(result['dn'], self)
-        entry.__dict__['_attributes'] = self._getAttributeValues(result, self.definition)
+        entry.__dict__['_attributes'] = self._getAttributes(result, self.definition)
         entry.__dict__['_rawAttributes'] = result['rawAttributes']
-        for attr in entry:
+        for attr in entry:  # return the whole attribute object
             attrName = attr.key
-            entry.__dict__[attrName] = attr.values
+            entry.__dict__[attrName] = attr
 
         return entry
 

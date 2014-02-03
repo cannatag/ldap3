@@ -36,7 +36,7 @@ class Test(unittest.TestCase):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
         self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
                                      authentication = test_authentication)
-        self.connection.add(testDnBuilder(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)'})
+        self.connection.add(testDnBuilder(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-delete,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
 
     def tearDown(self):
         self.connection.unbind()
@@ -89,9 +89,9 @@ class Test(unittest.TestCase):
 
         eg = lg[0]
         mg = eg.member
-        self.assertEqual(len(mg), 3)
+        self.assertEqual(len(mg), 5)
         ug = eg.member[0]
-        self.assertEqual(ug.surname, 'tost')
+        self.assertEqual(str(ug.surname), 'tost')
 
     def testSearchWithPreQuery(self):
         change = lambda attr, value: 'test-del*'

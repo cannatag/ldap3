@@ -34,7 +34,7 @@ class ObjectDef(object):
     """
 
     def __init__(self, objectClass = None):
-        self.objectClass = objectClass
+        self.__dict__['objectClass'] = objectClass
         self.__dict__['_attributes'] = dict()
 
     def add(self, definition = None):
@@ -45,8 +45,9 @@ class ObjectDef(object):
             key = definition.key
             for attr in self._attributes:
                 if key.lower() == attr.lower():
-                    raise Exception('attribute already defined')
+                    raise Exception('attribute already present')
             self._attributes[key] = definition
+            self.__dict__[key] = definition
         elif isinstance(definition, list):
             for element in definition:
                 self.add(element)
@@ -54,12 +55,21 @@ class ObjectDef(object):
             raise Exception('unable to add element to object definition')
 
     def remove(self, item):
+        key = None
         if isinstance(item, str):
-            item = ''.join(item.split()).lower()
+            key = ''.join(item.split()).lower()
+        elif isinstance(item, AttrDef):
+            key = item.key
+
+        if key:
             for attr in self._attributes:
                 if item == attr.lower():
                     del self._attributes[attr]
                     break
+            else:
+                raise Exception('key not present')
+        else:
+            raise Exception('key must be str or AttrDef')
 
     def clear(self):
         self.objectClass = None
@@ -89,11 +99,17 @@ class ObjectDef(object):
         return self.__getattr__(item)
 
     def __getattr__(self, item):
-        if isinstance(item, str):
-            item = ''.join(item.split()).lower()
-            for attr in self._attributes:
-                if item == attr.lower():
-                    return self._attributes[attr]
+        item = ''.join(item.split()).lower()
+        for attr in self._attributes:
+            if item == attr.lower():
+                break
+        else:
+            raise Exception('key not present')
+
+        return self._attributes[attr]
+
+    def __setattr__(self, key, value):
+        raise Exception('object is read only')
 
     def __iadd__(self, other):
         self.add(other)

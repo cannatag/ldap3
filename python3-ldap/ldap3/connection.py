@@ -47,10 +47,7 @@ from .strategy.asyncThreaded import AsyncThreadedStrategy
 from .strategy.ldifProducer import LdifProducerStrategy
 from .strategy.syncWait import SyncWaitStrategy
 from .operation.unbind import unbindOperation
-
-
-#noinspection PyAttributeOutsideInit
-from ldap3.protocol.rfc2696 import RealSearchControlValue, Cookie, Size
+from .protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 
 
 class ConnectionUsage(object):

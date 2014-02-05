@@ -120,7 +120,7 @@ class Reader(object):
         self.typesOnly = False
         self.pagedSize = None
         self.pagedCriticality = False
-
+        # test
     def reset(self):
         print('reset')
         self.clear()

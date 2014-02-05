@@ -83,7 +83,12 @@ class ObjectDef(object):
         return len(self._attributes)
 
     def __contains__(self, item):
-        return True if self.__getitem__(item) else False
+        try:
+            self.__getitem__(item)
+            return True
+        except:
+            return False
+
 
     def __repr__(self):
         r = 'objectClass: ' + self.objectClass if self.objectClass else ''

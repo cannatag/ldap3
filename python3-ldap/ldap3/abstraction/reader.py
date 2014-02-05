@@ -38,6 +38,7 @@ def _createQueryDict(queryText):
     Create a dictonary  with query key:value definitions
     QUeryText is a comma delimited key:value sequence
     """
+    print('createQueryDict: ', queryText)
     queryDict = dict()
     if queryText:
         for argValueStr in queryText.split(','):
@@ -62,27 +63,42 @@ class Reader(object):
     """
     def __init__(self, connection, objectDef, query, base, componentsInAnd = True, subTree = True, getOperationalAttributes = False,  controls = None):
         self.connection = connection
-        self.query = query
-        self.definition = objectDef
+        self._definition = objectDef
         self.base = base
         self.componentsInAnd = componentsInAnd
-        self.attributes = sorted([attr.name for attr in self.definition])
+        self.attributes = sorted([attr.name for attr in self._definition])
         self.getOperationalAttributes = getOperationalAttributes
         self.controls = controls
         self.subTree = subTree
+        self._query = query
+        self.reset()
 
+    @property
+    def definition(self):
+        return self._definition
+
+    @property
+    def query(self):
+        print('queryGetter')
+        return self._query
+
+    @query.setter
+    def query(self, value):
+        print('querySetter')
+        self._query = value
         self.reset()
 
     def __repr__(self):
         r = 'CONN   : ' + str(self.connection) + linesep
         r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
-        r += 'DEFS   : ' + self.definition.objectClass + ' ['
-        for attrDef in self.definition:
+        r += 'DEFS   : ' + self._definition.objectClass + ' ['
+        for attrDef in self._definition:
             r += (attrDef.key if attrDef.key == attrDef.name else (attrDef.key + ' <' + attrDef.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
         r += ']' + linesep
-        r += 'QUERY  : ' + repr(self.query) + (' [AND]' if self.componentsInAnd else ' [OR]') + linesep
+        r += 'QUERY  : ' + repr(self._query) + (' [AND]' if self.componentsInAnd else ' [OR]') + linesep
+        r += 'PARSED : ' + repr(self.validatedQuery) + (' [AND]' if self.componentsInAnd else ' [OR]') + linesep
         r += 'ATTRS  : ' + repr(self.attributes) + (' [OPERATIONAL]' if self.getOperationalAttributes else '') + linesep
         r += 'FILTER : ' + repr(self.queryFilter) + linesep
         if self.executionTime:
@@ -97,6 +113,7 @@ class Reader(object):
         return self.__repr__()
 
     def clear(self):
+        print('clear')
         self.dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS
         self.sizeLimit = 0
         self.timeLimit = 0
@@ -105,6 +122,7 @@ class Reader(object):
         self.pagedCriticality = False
 
     def reset(self):
+        print('reset')
         self.clear()
         self.validatedQuery = None
         self._queryDict = dict()
@@ -114,10 +132,7 @@ class Reader(object):
         self.entries = []
         self.pagedCookie = None
         self.lastSubTree = None
-        self.schemaInfo = None
         self._createQueryFilter()
-
-        #TODO schema)
 
     def __iter__(self):
         return self.entries.__iter__()
@@ -133,19 +148,19 @@ class Reader(object):
         Processes the text query and verifies that the requested friendly names are in the Reader dictionary
         If the AttrDef has a 'validate' property the callable is executed and if it returns False an Exception is raised
         """
-
+        print('validateQuery')
         if not self._queryDict:
-            self._queryDict = _createQueryDict(self.query)
+            self._queryDict = _createQueryDict(self._query)
 
         query = ''
         for d in sorted(self._queryDict):
             attr = d[1:] if d[0] in '&|' else d
-            for attrDef in self.definition:
+            for attrDef in self._definition:
                 if ''.join(attr.split()).lower() == attrDef.key.lower():
                     attr = attrDef.key
                     break
 
-            if attr in self.definition:
+            if attr in self._definition:
                 vals = sorted(self._queryDict[d].split(';'))
 
                 query += d[0] + attr if d[0] in '&|' else attr
@@ -167,9 +182,9 @@ class Reader(object):
                             valSearchOperator = val[0]
                             value = val[1:].lstrip()
 
-                    if self.definition[attr].validate:
-                        if not self.definition[attr].validate(value):
-                            raise Exception('validation failed for attribute %s with value %s' % (val, self._queryDict[d]))
+                    if self._definition[attr].validate:
+                        if not self._definition[attr].validate(value):
+                            raise Exception('validation failed for attribute %s and value %s' % (d, val))
 
                     if valNot:
                         query += '!' + valSearchOperator + value
@@ -181,36 +196,36 @@ class Reader(object):
                 query += ', '
 
         self.validatedQuery = query[:-2]
+        print('validated query: ',self.validatedQuery)
         self._validatedQueryDict = _createQueryDict(self.validatedQuery)
 
     def _createQueryFilter(self):
         """
-        Convert the query Dictonary in the filter text
+        Converts the query Dictonary in the filter text
         """
-
-        if self.query and self.query.startswith('(') and self.query.stopswith(')'):
-            self.queryFilter = self.query
+        print('createQueryFilter')
+        if self._query and self._query.startswith('(') and self._query.stopswith(')'):  # query is alread an LDAP filter
+            self.queryFilter = self._query
             return
 
         self.queryFilter = ''
 
-        if self.definition.objectClass:
-            self.queryFilter += '(&(objectClass=' + self.definition.objectClass + ')'
+        if self._definition.objectClass:
+            self.queryFilter += '(&(objectClass=' + self._definition.objectClass + ')'
 
         if not self.componentsInAnd:
             self.queryFilter += '(|'
-        elif not self.definition.objectClass:
+        elif not self._definition.objectClass:
             self.queryFilter += '(&'
 
-        if not self._validatedQueryDict:
-            self._validateQuery()
+        self._validateQuery()
 
         attrCounter = 0
         for attr in sorted(self._validatedQueryDict):
             attrCounter += 1
             multi = True if ';' in self._validatedQueryDict[attr] else False
             vals = sorted(self._validatedQueryDict[attr].split(';'))
-            attrDef = self.definition[attr[1:]] if attr[0] in '&|' else self.definition[attr]
+            attrDef = self._definition[attr[1:]] if attr[0] in '&|' else self._definition[attr]
             if attrDef.preQuery:
                 modvals = []
                 for val in vals:
@@ -235,7 +250,7 @@ class Reader(object):
         else:
             self.queryFilter += ')'
 
-        if not self.definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
+        if not self._definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
             self.queryFilter = self.queryFilter[2:-1]
 
     def _getAttributes(self, result, attrDefs):
@@ -245,6 +260,7 @@ class Reader(object):
         Returns the default value for missing attributes
         If the 'dereferencedObjectDef' in AttrDef is a ObjectDef the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
         """
+        print('getAttributes')
         attributes = dict()
         for attrDef in attrDefs:
             name = None
@@ -280,11 +296,12 @@ class Reader(object):
         return attributes
 
     def _getEntry(self, result):
+        print('getEntry')
         if not result['type'] == 'searchResEntry':
             return None
 
         entry = Entry(result['dn'], self)
-        entry.__dict__['_attributes'] = self._getAttributes(result, self.definition)
+        entry.__dict__['_attributes'] = self._getAttributes(result, self._definition)
         entry.__dict__['_rawAttributes'] = result['rawAttributes']
         for attr in entry:  # return the whole attribute object
             attrName = attr.key
@@ -293,6 +310,7 @@ class Reader(object):
         return entry
 
     def _executeQuery(self, queryScope):
+        print('executeQuery')
         if not self.connection:
             raise Exception('No connection available')
 
@@ -328,6 +346,7 @@ class Reader(object):
         self.executionTime = datetime.now()
 
     def search(self):
+        print('search')
         self.clear()
         queryScope = SEARCH_SCOPE_WHOLE_SUBTREE if self.subTree else SEARCH_SCOPE_SINGLE_LEVEL
         self._executeQuery(queryScope)

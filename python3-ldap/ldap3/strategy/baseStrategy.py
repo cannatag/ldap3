@@ -423,7 +423,7 @@ class BaseStrategy(object):
                                             password = self.connection.password if not selectedReferral['anonymousBindOnly'] else None,
                                             version = self.connection.version,
                                             authentication = self.connection.authentication if not selectedReferral['anonymousBindOnly'] else AUTH_ANONYMOUS,
-                                            clientStrategy = STRATEGY_SYNC, autoReferrals = True)
+                                            clientStrategy = STRATEGY_SYNC, autoReferrals = True, readOnly = self.connection.readOnly)
 
             referralConnection.open()
             referralConnection.strategy._referrals = self._referrals

@@ -386,6 +386,7 @@ CHANGELOG
 * 0.8.0 - 2014.02.01
     - Added abstraction layer
     - Added context manager to Connection class
+    - Added readOnly parameter to Connection class
 
 * 0.7.3 - 2014.01.05
     - Added SASL DIGEST-MD5 support

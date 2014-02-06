@@ -174,7 +174,7 @@ class Connection(object):
     """
 
     def __init__(self, server, user = None, password = None, autoBind = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
-                 autoReferrals = True, saslMechanism = None, saslCredentials = None, collectUsage = False):
+                 autoReferrals = True, saslMechanism = None, saslCredentials = None, collectUsage = False, readOnly = False):
         """
         Constructor
         """
@@ -229,6 +229,7 @@ class Connection(object):
         self.socket = None
         self.tlsStarted = False
         self.saslInProgress = False
+        self.readOnly = readOnly
 
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server
@@ -414,6 +415,9 @@ class Connection(object):
         """
         Delete in the dib the entry identified by dn
         """
+        if self.readOnly:
+            raise Exception('Connetion is in read-only mode')
+
         request = deleteOperation(dn)
         response = self.postSendSingleResponse(self.send('delRequest', request, controls))
 
@@ -428,6 +432,9 @@ class Connection(object):
         Changes is a dictionary in the form {'attribute1': [(operation, [val1, val2])], 'attribute2': [(operation, [val1, val2])]}
         Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
+        if self.readOnly:
+            raise Exception('Connetion is in read-only mode')
+
         if not isinstance(changes, dict):
             self.lastError = 'changes must be a dictionary'
             raise Exception(self.lastError)
@@ -455,6 +462,10 @@ class Connection(object):
         """
         Modify dn of the entry and optionally performs a move of the entry in the dib
         """
+
+        if self.readOnly:
+            raise Exception('Connetion is in read-only mode')
+
         if newSuperior and not dn.startswith(relativeDn):  # as per rfc 4511 (4.9)
             raise Exception('dn cannot change while moving object')
 
@@ -524,4 +535,3 @@ class Connection(object):
             searchResultToLdif = None
 
         return searchResultToLdif
-

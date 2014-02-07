@@ -134,7 +134,7 @@ def evaluateMatch(match):
         assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
     elif '<=' in match:
         tag = MATCH_LESS_OR_EQUAL
-        leftPart, _, rightPart = match.partition('>=')
+        leftPart, _, rightPart = match.partition('<=')
         assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
     elif ':=' in match:
         tag = MATCH_EXTENSIBLE

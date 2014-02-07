@@ -387,6 +387,7 @@ CHANGELOG
     - Added abstraction layer
     - Added context manager to Connection class
     - Added readOnly parameter to Connection class
+    - Fixed a bug in search with 'less than' parameter
 
 * 0.7.3 - 2014.01.05
     - Added SASL DIGEST-MD5 support

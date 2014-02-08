@@ -43,7 +43,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testSearchFilterWithObjectClass(self):
-        reverse = lambda e: e[::-1]
+        reverse = lambda a, e: e[::-1]
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
@@ -56,9 +56,9 @@ class Test(unittest.TestCase):
         self.assertEqual(len(results), 6)
 
     def testSearchWithDereference(self):
-        reverse = lambda e: e[::-1]
+        reverse = lambda a, e: e[::-1]
 
-        def raiseParenthesesRank(l):
+        def raiseParenthesesRank(a, l):
             up = {'(': '[', ')': ']', '[': '{', ']': '}', '{': '<', '}': '>'}
             r = []
             for e in l:
@@ -72,15 +72,15 @@ class Test(unittest.TestCase):
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'Common Name', postQuery = reverse)
         ou += AttrDef('sn', 'Surname')
-        ou += AttrDef('givenName', 'Given Name', postQuery = raiseParenthesesRank, postQueryReturnsList = True)
+        ou += AttrDef('givenName', 'Given Name', postQuery = raiseParenthesesRank)
         ou += AttrDef('ACL')
-        qu = 'Common Name := test-add*'
+        qu = 'Common Name: test-add*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
         self.assertEqual(len(lu), 6)
 
-        og = ObjectDef('groupOFNames')
-        og += AttrDef('member', dereferencedObjectDef = ou)
+        og = ObjectDef('groupOfNames')
+        og += AttrDef('member', dereferenceDN = ou)
         og += 'cn'
         qg = 'cn := test*'
         rg = Reader(self.connection, og, qg, test_base)
@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
 
         eg = lg[0]
         mg = eg.member
-        self.assertEqual(len(mg), 5)
+        self.assertEqual(len(mg), 3)
         ug = eg.member[0]
         self.assertEqual(str(ug.surname), 'tost')
 
@@ -105,3 +105,12 @@ class Test(unittest.TestCase):
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
         self.assertEqual(len(lu), 1)
+
+    def testSearchWithDefault(self):
+        ou = ObjectDef('iNetOrgPerson')
+        ou += AttrDef('cn', 'CommonName')
+        ou += AttrDef('employeeType', key = 'Employee', default = 'not employed')
+        qu = 'CommonName := test-add*'
+        ru = Reader(self.connection, ou, qu, test_base)
+        lu = ru.search()
+        self.assertEqual(str(lu[0].employee), 'not employed')

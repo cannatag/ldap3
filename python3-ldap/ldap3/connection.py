@@ -264,6 +264,8 @@ class Connection(object):
         return r
 
     def __enter__(self):
+        self.__bound = self.bound  # save status out of context
+        self.__closed = self.closed
         if self.closed:
             self.open()
         if not self.bound:
@@ -272,7 +274,11 @@ class Connection(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.unbind()
+        if not self.__bound:  # restore status prior to entering context
+            self.unbind()
+
+        if not self.__closed:
+            self.open()
 
         if not exc_type is None:
             return False  # reraise exception

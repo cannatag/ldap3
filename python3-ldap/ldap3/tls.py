@@ -41,11 +41,6 @@ class Tls(object):
         elif validate:
             raise Exception('invalid validate parameter')
 
-        if version in [ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_SSLv23, ssl.PROTOCOL_SSLv3, ssl.PROTOCOL_TLSv1]:
-            self.version = version
-        elif version:
-            raise Exception('invalid version parameter')
-
         if caCertsFile and path.exists(caCertsFile):
             self.caCertsFile = caCertsFile
         elif caCertsFile:
@@ -53,6 +48,7 @@ class Tls(object):
         else:
             self.caCertsFile = None
 
+        self.version = version
         self.privateKeyFile = localPrivateKeyFile
         self.certificateFile = localCertificateFile
 

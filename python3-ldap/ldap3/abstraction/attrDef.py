@@ -33,18 +33,17 @@ class AttrDef(object):
     'validate' is an optional callable, called to check if the value in the query is valid, the callable is called with the value parameter
     'preQuery' is an optional callable, called to transform values to be searched
     'postQuery' is an optional callable, called to transform values returned by search
-    'dereferenceObjectDef' is a reference to an ObjectDef instance. If present when attribute value contains a dn it will be searched and substituted in the entry
+    'dereferenceDN' is a reference to an ObjectDef instance. If present when attribute value contains a dn it will be searched and substituted in the entry
     AttrDef('name') creates an AttrDef object for attribute 'name' with all default values
     """
-    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None, dereferencedObjectDef = None, postQueryReturnsList = False):
+    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None, dereferenceDN = None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
         self.preQuery = preQuery
         self.postQuery = postQuery
-        self.postQueryReturnsList = postQueryReturnsList
         self.default = default
-        self.dereferencedObjectDef = dereferencedObjectDef
+        self.dereferenceDN = dereferenceDN
 
     def __repr__(self):
         r = 'AttrDef(name={0.name!r}'.format(self)
@@ -53,6 +52,7 @@ class AttrDef(object):
         r += '' if self.preQuery is None else ', preQuery={0.preQuery!r}'.format(self)
         r += '' if self.postQuery is None else ', postQuery={0.postQuery!r}'.format(self)
         r += '' if self.default is None else ', default={0.default!r}'.format(self)
+        r += '' if self.dereferenceDN is None else ', dereferenceDN={0.dereferenceDN!r}'.format(self)
         r += ')'
 
         return r

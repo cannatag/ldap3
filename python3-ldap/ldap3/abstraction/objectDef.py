@@ -24,6 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from . import AttrDef
 from os import linesep
+from ldap3 import LDAPException
+
 
 class ObjectDef(object):
     """
@@ -37,61 +39,8 @@ class ObjectDef(object):
         self.__dict__['objectClass'] = objectClass
         self.__dict__['_attributes'] = dict()
 
-    def add(self, definition = None):
-        if isinstance(definition, str):
-            element = AttrDef(definition)
-            self.add(element)
-        elif isinstance(definition, AttrDef):
-            key = definition.key
-            for attr in self._attributes:
-                if key.lower() == attr.lower():
-                    raise Exception('attribute already present')
-            self._attributes[key] = definition
-            self.__dict__[key] = definition
-        elif isinstance(definition, list):
-            for element in definition:
-                self.add(element)
-        else:
-            raise Exception('unable to add element to object definition')
-
-    def remove(self, item):
-        key = None
-        if isinstance(item, str):
-            key = ''.join(item.split()).lower()
-        elif isinstance(item, AttrDef):
-            key = item.key
-
-        if key:
-            for attr in self._attributes:
-                if item == attr.lower():
-                    del self._attributes[attr]
-                    break
-            else:
-                raise Exception('key not present')
-        else:
-            raise Exception('key must be str or AttrDef')
-
-    def clear(self):
-        self.objectClass = None
-        self.__dict__['_attributes'] = dict()
-
-    def __iter__(self):
-        for attribute in self._attributes:
-            yield self._attributes[attribute]
-
-    def __len__(self):
-        return len(self._attributes)
-
-    def __contains__(self, item):
-        try:
-            self.__getitem__(item)
-            return True
-        except:
-            return False
-
-
     def __repr__(self):
-        r = 'objectClass: ' + self.objectClass if self.objectClass else ''
+        r = 'objectClass: ' + str(self.objectClass) if self.objectClass else ''
         for attr in self._attributes:
             r += linesep + '    ' + self._attributes[attr].__repr__() + ', '
 
@@ -109,12 +58,12 @@ class ObjectDef(object):
             if item == attr.lower():
                 break
         else:
-            raise Exception('key not present')
+            raise LDAPException('key not present')
 
         return self._attributes[attr]
 
     def __setattr__(self, key, value):
-        raise Exception('object is read only')
+        raise LDAPException('object is read only')
 
     def __iadd__(self, other):
         self.add(other)
@@ -127,3 +76,59 @@ class ObjectDef(object):
             self.remove(other)
 
         return self
+
+    def __iter__(self):
+        for attribute in self._attributes:
+            yield self._attributes[attribute]
+
+
+    def __len__(self):
+        return len(self._attributes)
+
+
+    def __contains__(self, item):
+        try:
+            self.__getitem__(item)
+            return True
+        except:
+            return False
+
+    def add(self, definition = None):
+        if isinstance(definition, str):
+            element = AttrDef(definition)
+            self.add(element)
+        elif isinstance(definition, AttrDef):
+            key = definition.key
+            for attr in self._attributes:
+                if key.lower() == attr.lower():
+                    raise LDAPException('attribute already present')
+            self._attributes[key] = definition
+            self.__dict__[key] = definition
+        elif isinstance(definition, list):
+            for element in definition:
+                self.add(element)
+        else:
+            raise LDAPException('unable to add element to object definition')
+
+
+    def remove(self, item):
+        key = None
+        if isinstance(item, str):
+            key = ''.join(item.split()).lower()
+        elif isinstance(item, AttrDef):
+            key = item.key
+
+        if key:
+            for attr in self._attributes:
+                if item == attr.lower():
+                    del self._attributes[attr]
+                    break
+            else:
+                raise LDAPException('key not present')
+        else:
+            raise LDAPException('key must be str or AttrDef')
+
+
+    def clear(self):
+        self.objectClass = None
+        self.__dict__['_attributes'] = dict()

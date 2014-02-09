@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3.server import Server
 from ldap3.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
 
 
 class Test(unittest.TestCase):

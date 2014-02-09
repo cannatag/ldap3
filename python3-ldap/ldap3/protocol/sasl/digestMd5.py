@@ -26,8 +26,6 @@ from binascii import hexlify
 import hashlib
 import hmac
 from .sasl import abortSaslNegotiation, sendSaslNegotiation, randomHexString
-from pprint import pprint
-
 
 def MD5_H(value):
     if not isinstance(value, bytes):

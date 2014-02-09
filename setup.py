@@ -26,12 +26,10 @@ from setuptools import setup
 
 setup(
       name = 'python3-ldap',
-      version = '0.8.0',
-      packages = ['ldap3', 'ldap3.operation', 'ldap3.protocol', 'ldap3.protocol.sasl', 'ldap3.strategy'],
+      version = '0.8.1',
+      packages = ['ldap3', 'ldap3.abstraction', 'ldap3.operation', 'ldap3.protocol', 'ldap3.protocol.sasl', 'ldap3.strategy'],
       package_dir = {'': 'python3-ldap'},
-      install_requires = [
-                  'pyasn1 >= 0.1.7'
-                ],
+      install_requires = ['pyasn1 >= 0.1.7'],
       license = 'LGPL v3',
       author = 'Giovanni Cannata',
       author_email = 'python3ldap@gmail.com',
@@ -50,5 +48,5 @@ setup(
                     "Programming Language :: Python :: 3",
                     "Topic :: Software Development :: Libraries :: Python Modules",
                     "Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP"
-                     ]
+                    ]
       )

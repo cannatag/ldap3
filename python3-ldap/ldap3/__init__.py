@@ -157,6 +157,14 @@ ATTRIBUTE_DIRECTORY_OPERATION = 1
 ATTRIBUTE_DISTRIBUTED_OPERATION = 2
 ATTRIBUTE_DSA_OPERATION = 3
 
+ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OP_'
+
+
+class LDAPException(Exception):
+    pass
+
 from .server import Server
 from .connection import Connection
 from .tls import Tls
+
+

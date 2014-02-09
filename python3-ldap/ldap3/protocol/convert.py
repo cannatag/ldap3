@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from ldap3 import LDAPException
 
 from ..protocol.rfc4511 import Controls, Control
 
@@ -111,7 +112,7 @@ def buildControlsList(controls):
         return None
 
     if not isinstance(controls, list):
-        raise Exception('controls must be a list')
+        raise LDAPException('controls must be a list')
 
     builtControls = Controls()
     for idx, control in enumerate(controls):
@@ -122,6 +123,6 @@ def buildControlsList(controls):
             builtControl['controlValue'] = control[2]
             builtControls.setComponentByPosition(idx, builtControl)
         else:
-            raise Exception('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
+            raise LDAPException('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
 
     return builtControls

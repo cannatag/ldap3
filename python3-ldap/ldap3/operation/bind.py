@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3 import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL
+from ldap3 import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL, LDAPException
 from ..protocol.sasl.sasl import validateSimplePassword
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
 from ..protocol.convert import authenticationChoiceToDict, referralsToList
@@ -43,7 +43,7 @@ def bindOperation(version, authentication, name = '', password = None, saslMecha
         if password:
             request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(validateSimplePassword(password)))
         else:
-            raise Exception('password cannot be empty')
+            raise LDAPException('password cannot be empty')
     elif authentication == AUTH_SASL:
         saslCredentials = SaslCredentials()
         saslCredentials['mechanism'] = saslMechanism

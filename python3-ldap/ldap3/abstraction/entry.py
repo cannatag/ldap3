@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
+from ldap3 import LDAPException
 
 
 class Entry(object):
@@ -41,7 +42,7 @@ class Entry(object):
         if self._dn:
             r = 'DN: ' + str(self._dn) + linesep
             if self._attributes:
-                for attr in self._attributes:
+                for attr in sorted(self._attributes):
                     r += ' ' * 4 + repr(self._attributes[attr]) + linesep
 
             return r
@@ -66,14 +67,25 @@ class Entry(object):
                 if item == attr.lower():
                     break
             else:
-                raise Exception('key not found')
+                raise LDAPException('key not found')
 
             return self._attributes[attr]
 
-        raise Exception('key must be a string')
+        raise LDAPException('key must be a string')
 
     def __getitem__(self, item):
         return self.__getattr__(item)
+
+    def __eq__(self, other):
+        if isinstance(other, Entry):
+            return self._dn == other._dn
+
+        return False
+    def __lt__(self, other):
+        if isinstance(other, Entry):
+            return self._dn <= other._dn
+
+        return False
 
     def getEntryDN(self):
         return self._dn
@@ -89,6 +101,6 @@ class Entry(object):
 
     def __setattr__(self, item, value):
         if item in self._attributes:
-            raise Exception('attribute is read only')
+            raise LDAPException('attribute is read only')
         else:
-            raise Exception('entry is read only')
+            raise LDAPException('entry is read only')

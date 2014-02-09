@@ -25,7 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from string import whitespace
 from os import linesep
 
-from ldap3 import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES
+from ldap3 import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, \
+    LDAPException
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referralsToList
 from ..protocol.convert import avaToDict, attributesToList, searchRefsToList
@@ -150,7 +151,7 @@ def evaluateMatch(match):
                 dnAttributes = True
                 matchingRule = validateAssertionValue(extendedFilterList[2])
             else:
-                raise Exception('invalid extensible filter')
+                raise LDAPException('invalid extensible filter')
         elif len(extendedFilterList) <= 3: # extensible filter format attr[:dn][:matchingRule]:=assertionValue
             if len(extendedFilterList) == 1:
                 attributeName = extendedFilterList[0]
@@ -165,10 +166,10 @@ def evaluateMatch(match):
                 dnAttributes = True
                 matchingRule = validateAssertionValue(extendedFilterList[2])
             else:
-                raise Exception('invalid extensible filter')
+                raise LDAPException('invalid extensible filter')
 
         if not attributeName and not matchingRule:
-            raise Exception('invalid extensible filter')
+            raise LDAPException('invalid extensible filter')
 
         assertion = {'attr': attributeName.strip() if attributeName else None, 'value': validateAssertionValue(rightPart),
                      'matchingRule': matchingRule.strip() if matchingRule else None, 'dnAttributes': dnAttributes}
@@ -188,7 +189,7 @@ def evaluateMatch(match):
         leftPart, _, rightPart = match.partition('=')
         assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
     else:
-        raise Exception('invalid matching assertion')
+        raise LDAPException('invalid matching assertion')
 
     return FilterNode(tag, assertion)
 
@@ -225,7 +226,7 @@ def parseFilter(searchFilter):
                     endPos = pos
                     if startPos:
                         if currentNode.tag == NOT and len(currentNode.elements) > 0:
-                            raise Exception('Not clause in filter cannot be multiple')
+                            raise LDAPException('Not clause in filter cannot be multiple')
                         currentNode.append(evaluateMatch(searchFilter[startPos:endPos]))
                 startPos = None
                 state = SEARCH_OPEN_OR_CLOSE
@@ -235,12 +236,12 @@ def parseFilter(searchFilter):
                     startPos = pos
                 state = SEARCH_MATCH_OR_CLOSE
             else:
-                raise Exception('malformed filter')
+                raise LDAPException('malformed filter')
         if len(root.elements) != 1:
-            raise Exception('missing boolean operator in filter')
+            raise LDAPException('missing boolean operator in filter')
         return root
     else:
-        raise Exception('invalid filter')
+        raise LDAPException('invalid filter')
 
 
 def compileFilter(filterNode):
@@ -312,7 +313,7 @@ def compileFilter(filterNode):
         matchingFilter['assertionValue'] = AssertionValue(filterNode.assertion['value'])
         compiledFilter.setComponentByName('equalityMatch', matchingFilter)
     else:
-        raise Exception('unknown filter')
+        raise LDAPException('unknown filter')
 
     return compiledFilter
 
@@ -340,7 +341,7 @@ def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, a
     elif searchScope == SEARCH_SCOPE_WHOLE_SUBTREE:
         request['scope'] = Scope('wholeSubtree')
     else:
-        raise Exception('invalid scope type')
+        raise LDAPException('invalid scope type')
 
     if dereferenceAliases == SEARCH_NEVER_DEREFERENCE_ALIASES:
         request['derefAliases'] = DerefAliases('neverDerefAliases')
@@ -351,7 +352,7 @@ def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, a
     elif dereferenceAliases == SEARCH_DEREFERENCE_ALWAYS:
         request['derefAliases'] = DerefAliases('derefAlways')
     else:
-        raise Exception('invalid dereference aliases type')
+        raise LDAPException('invalid dereference aliases type')
 
     request['sizeLimit'] = Integer0ToMax(sizeLimit)
     request['timeLimit'] = Integer0ToMax(timeLimit)
@@ -441,7 +442,7 @@ def filterToString(filterObject):
     elif filterType == 'extensibleMatch':
         filterString += matchingRuleAssertionToString(filterObject['extensibleMatch'])
     else:
-        raise Exception('error converting filter to string')
+        raise LDAPException('error converting filter to string')
 
     filterString += ')'
     return filterString

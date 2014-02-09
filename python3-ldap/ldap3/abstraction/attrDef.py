@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from os import linesep
+from ldap3 import LDAPException
 
 
 class AttrDef(object):
@@ -46,8 +46,8 @@ class AttrDef(object):
         self.dereferenceDN = dereferenceDN
 
     def __repr__(self):
-        r = 'AttrDef(name={0.name!r}'.format(self)
-        r += '' if self.key is None or self.name == self.key else ', key={0.key!r}'.format(self)
+        r = 'AttrDef(key={0.key!r}'.format(self)
+        r += ', name={0.name!r}'.format(self)
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
         r += '' if self.preQuery is None else ', preQuery={0.preQuery!r}'.format(self)
         r += '' if self.postQuery is None else ', postQuery={0.postQuery!r}'.format(self)
@@ -62,8 +62,13 @@ class AttrDef(object):
 
     def __eq__(self, other):
         if isinstance(other, AttrDef):
-            if self.key == other.key:
-                return True
+            return self.key == other.key
+
+        return False
+
+    def __lt__(self, other):
+        if isinstance(other, AttrDef):
+            return self.key < other.key
 
         return False
 
@@ -75,6 +80,6 @@ class AttrDef(object):
 
     def __setattr__(self, key, value):
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is being used for __hash__
-            raise Exception('key already set')
+            raise LDAPException('key already set')
         else:
             object.__setattr__(self, key, value)

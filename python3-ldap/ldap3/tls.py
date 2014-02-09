@@ -21,12 +21,13 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from ldap3 import LDAPException
 
 try:
     # noinspection PyUnresolvedReferences
     import ssl
 except ImportError:
-    raise Exception('ssl not supported in this Python interpreter')
+    raise LDAPException('ssl not supported in this Python interpreter')
 from os import path
 
 
@@ -39,12 +40,12 @@ class Tls(object):
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
         elif validate:
-            raise Exception('invalid validate parameter')
+            raise LDAPException('invalid validate parameter')
 
         if caCertsFile and path.exists(caCertsFile):
             self.caCertsFile = caCertsFile
         elif caCertsFile:
-            raise Exception('invalid CA public key parameter')
+            raise LDAPException('invalid CA public key parameter')
         else:
             self.caCertsFile = None
 
@@ -90,7 +91,7 @@ class Tls(object):
         else:
             if connection.result['description'] not in ['success']:  # startTLS failed
                 connection.lastError = 'startTLS failed'
-                raise Exception(connection.lastError)
+                raise LDAPException(connection.lastError)
             return self._startTls(connection)
 
     def _startTls(self, connection):
@@ -99,12 +100,12 @@ class Tls(object):
             connection.socket.do_handshake()
         except:
             connection.lastError = 'Tls handshake error'
-            raise Exception(connection.lastError)
+            raise LDAPException(connection.lastError)
 
         if self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL:
             serverCertificate = connection.socket.getpeercert()
             try:
-                ssl.match_hostname(serverCertificate, connection.server.host)  # raise exception if certificate doesn't match server name
+                ssl.match_hostname(serverCertificate, connection.server.host)  # raise LDAPException if certificate doesn't match server name
             except AttributeError:
                 match_hostname_backport(serverCertificate, connection.server.host)
             except:

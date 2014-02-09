@@ -230,6 +230,7 @@ class Connection(object):
         self.tlsStarted = False
         self.saslInProgress = False
         self.readOnly = readOnly
+        self._contextState = []
 
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server
@@ -264,8 +265,7 @@ class Connection(object):
         return r
 
     def __enter__(self):
-        self.__bound = self.bound  # save status out of context
-        self.__closed = self.closed
+        self._contextState.append((self.bound, self.closed))  # save status out of context as a tuple in a list
         if self.closed:
             self.open()
         if not self.bound:
@@ -274,14 +274,13 @@ class Connection(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not self.__bound:  # restore status prior to entering context
+        contextBound, contextClosed = self._contextState.pop()
+        if not contextBound and self.bound:  # restore status prior to entering context
             self.unbind()
 
-        if not self.__closed:
+        if not contextClosed and self.closed:
             self.open()
 
-        del self.__bound
-        del self.__closed
         if not exc_type is None:
             return False  # reraise exception
 

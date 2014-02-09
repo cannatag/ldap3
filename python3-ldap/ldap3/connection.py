@@ -280,6 +280,8 @@ class Connection(object):
         if not self.__closed:
             self.open()
 
+        del self.__bound
+        del self.__closed
         if not exc_type is None:
             return False  # reraise exception
 

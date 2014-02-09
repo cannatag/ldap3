@@ -268,7 +268,7 @@ class Reader(object):
         Assign the result of the LDAP query to the Entry object dictionary.
         If the optional 'postQuery' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute
         Returns the default value for missing attributes
-        If the 'dereferencedObjectDef' in AttrDef is a ObjectDef the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
+        If the 'dereferenceDN' in AttrDef is a ObjectDef the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
         """
         attributes = dict()
         for attrDef in attrDefs:
@@ -296,7 +296,6 @@ class Reader(object):
                         del tempReader  # remove the temporary Reader
                         attribute.__dict__['values'] = tempValues
 
-                attribute.__dict__['value'] = attribute.__dict__['values'][0] if len(attribute.__dict__['values']) == 1 else attribute.__dict__['values']
                 attributes[attribute.key] = attribute
 
         return attributes

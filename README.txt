@@ -300,7 +300,7 @@ implicitly defined)::
 
 You can even add a list of attrDefs or attribute names to ObjectDef:
 
-    person += [AttrDef('cn', key = 'Common Name)), AttDef('sn', key = 'Surname')]
+    person += [AttrDef('cn', key = 'Common Name')), AttDef('sn', key = 'Surname')]
     person += ['cn', 'sn']  # as above, but keys are the attribute names
 
     deps = {'A': 'Accounting', 'F': 'Finance', 'E': 'Engineering'}
@@ -392,11 +392,41 @@ Reader
 
     A Reader object is an iterable that returns the entries found in the last search performed.
 
+    The reader object has a useful representation that summarize the Reader configuration and status::
+
+    print(personReader)
+    ...
 
 Simplified Query Language
 
 
-EntrY
+Entry
+
+Entry objects contain the result of the search. You can access entry attributes either as a dictionary or as properties using the attrDef key you specified in
+the ObjectDef: entry['CommonName'] is the same of entry.CommonName.
+
+Each Entry has a getEntryDN() method that contains the distinguished name of the ldap entry, and a getEntryReader() method that contains a reference
+to the Reader used to read the entry.
+
+Attributes are stored in an internal dictionary with case insensitive access by the key defined in the AttrDef. You can even access the raw attribute with
+the getRawAttribute(attributeName) to get an attribute raw value, or getRawAttributes() to get the whole dictionary
+
+Entry is a read only objects, you cannot modify or add any property to it. It's an iterable object that return an attribute object at each iteration. Note that
+ you get back the whole attribute object, not only the key as in a standard dictionary::
+
+    personEntry = personReader.entry[0]
+    for attr in personEntry:
+        print(attr)
+
+
+Attribute
+Values found for each attribute are stored in the Attribute object. You can access the 'values' and the 'rawValues' lists. You can also get a reference to the
+relevant AttrDef in the 'definition' property, and to the relevant entry in the 'entry' property. You can iterate over the Attribute to get each value::
+
+    personCommonName = personEntry.CommonName
+    for cn in personCommonName:
+        print(cn)
+        print(cn.rawValues)
 
 Example::
     #Define a new Object to search entries of the 'inetOrgPerson' LDAP class

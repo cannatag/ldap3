@@ -148,7 +148,7 @@ Connections respond to the context manager protocol, so you can have automatic b
         c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
     print(connection.result)
 
-or, even shorter:
+or, even shorter::
 
     from ldap3 import Server, Connection
     with Connection(Server('servername'), user = 'username', password = 'password') as c

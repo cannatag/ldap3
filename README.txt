@@ -268,7 +268,7 @@ The object class(es) will be automatically added to the query filter.
 For example::
 
     person = ObjectDef('inetOrgPerson')
-    engineer = ObjectDef(['inetOrgPerson'. 'auxEngineer'])
+    engineer = ObjectDef(['inetOrgPerson', 'auxEngineer'])
 
 Once you defined an ObjectDef instance you can add the attributes definition with the add() method. You can also use the += operator as a shortcut.
 AttrDef can be remove with the remove() method or using the -= operator.
@@ -276,9 +276,9 @@ AttrDef can be remove with the remove() method or using the -= operator.
 ObjectDef is an iterable that return each AttrDef object (the whole AttrDef object, not only the key).
 AttrDefs can be accessed either with the dictionary protocol or the property protocol, spaces are removed and they are not case sensitive::
 
-    cnAttrDef = person['Given Name']
-    cnAttrDef = person['givenName']  # same as above
-    cnAttrDef = person.GIVENNAME  # same as above
+    cnAttrDef = person['Common Name']
+    cnAttrDef = person['commonName']  # same as above
+    cnAttrDef = person.CommonName  # same as above
 
 
 This eases the use at interactive prompt where you don't have to remember the case of the attribute and  can type use the
@@ -292,7 +292,7 @@ AttrDef has a single mandatory parameter (the attribute name) and a number of op
 friendly name to use while accessing the attribute. When defining only the attribute name you can add it directly to the ObjectDef (the AttrDef is
 implicitly defined)::
 
-    cnAttribute = AttrDef(cn)
+    cnAttribute = AttrDef('cn')
     person.add(cnAttribute)
 
     person += AttrDef('cn')  # same as above
@@ -300,7 +300,7 @@ implicitly defined)::
 
 You can even add a list of attrDefs or attribute names to ObjectDef:
 
-    person += [AttrDef('cn', key = 'Common Name')), AttDef('sn', key = 'Surname')]
+    person += [AttrDef('cn', key = 'Common Name'), AttrDef('sn', key = 'Surname')]
     person += ['cn', 'sn']  # as above, but keys are the attribute names
 
     deps = {'A': 'Accounting', 'F': 'Finance', 'E': 'Engineering'}
@@ -320,26 +320,21 @@ You can even add a list of attrDefs or attribute names to ObjectDef:
 
         # transform value to be search
         def getDepartmentCode(attr, value):
-            if attr == 'Department':
-                for dep in deps.item():
-                    if dep(1) == value:
-                        value = dep(0)
-                    break
-                else:
-                value = 'not a department'
-
-            return value
+            for dep in deps.items():
+                if dep[1] == value:
+                    return dep[0]
+            return 'not a department'
 
         person += AttrDef('employeeStatus', key = 'Department', preQuery = getDepartmentCode)
 
     When you try a search with 'Accounting', 'Finance' or 'Engineering' for the Department key, the real search will be for employeeStatus = 'A', 'F' or 'E'
 
     PostQuery
-    A 'postQuery' parameter indicates a callable to perform transormations on the returned value:
+    A 'postQuery' parameter indicates a callable to perform transormations on the returned value::
 
-    getDepartmentName = lambda attr, value: return deps.get(value, 'not a department) if attr == 'Department' else value
+        getDepartmentName = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
 
-    person += AttrDef('employeeStatus', key = 'Department', postQuery = getDepartmentName))
+        person += AttrDef('employeeStatus', key = 'Department', postQuery = getDepartmentName)
 
     When you have an 'A', an 'F', or an 'E' in the employeeStatus attribute you get 'Accounting' 'Finance', or 'Engineering' in the 'Department' property
     of the Person entry.
@@ -384,8 +379,8 @@ Reader
 
     s = Server('server')
     c = Connection(s, user = 'username', password = 'password')
-    query = ''Department: Accounting'  # explained in next paragraph
-    personReader = Reader(c, person, query, 'o='test')
+    query = 'Department: Accounting'  # explained in next paragraph
+    personReader = Reader(c, person, query, 'o=test')
     personReader.search()
 
     The result of the search will be found in the entries property of the personReader object.
@@ -399,6 +394,32 @@ Reader
 
 Simplified Query Language
 
+In the reader yYou can express the query filter using the standard LDAP filter syntax or using a simplified query language that resembles a dictionary structure.
+If you use the standard LDAP filter syntax you must use the real attribute names because the filter is directly passed to the Search operation.
+THe Simplified Query Language is a string of key-values couples separated with a ',' (comma), in each of the couples has the left part is the attribute key defined
+in an AttrDef object while the right part is the value or values to be searched. Parts are separed with a ':' (colon). Key can be prefixed with a '&' or a '|'
+or searching all the values or at least one of them. Values can be prefixed with an optional '!' (exclamation mark) for negating the search and by the search
+operator ('=', '<', '>', '~') requested. Multiple values are separated by a ';' (semi-colon)..
+
+    A few examples::
+
+    'CommonName: bob' -> (cn=bob)
+    'CommonName: bob; john; michael' -> (|(cn=bob)(cn=john)(cn=michael))
+    'Age: > 21' -> (age>=21)
+    '&Age: > 21; < 65' ->&(age<=65)(age>=21))
+    'Department: != Accounting'' -> (!(EmployeeType=A))
+    '|Department:Accounting; Finance' -> (|(EmployeeType=A)(EmployeeType=C))
+
+There are no parentheses in the simplified query language, this means that you cannot mix components with '&' (and)  and '|' (or). You have the 'componentInAnd'
+flag in the Reader object to specify if components are in '&' (true) or in '|' (false). 'componentInAnd' defaults to True::
+
+    'CommonName: b*, Department: Engineering' -> (&(cn=b*)(EmployeeType=E'))
+
+Object classes defined in the ObjectDef are always included in the filter, so for the previous example the resulting filter is::
+
+    (&(&(objectClass=iNetOrgPerson)(objectClass=AuxEngineer))(cn=b*)(EmployeeType=E))
+
+when using a Reader with the engineer ObjectDef.
 
 Entry
 
@@ -412,9 +433,9 @@ Attributes are stored in an internal dictionary with case insensitive access by 
 the getRawAttribute(attributeName) to get an attribute raw value, or getRawAttributes() to get the whole dictionary
 
 Entry is a read only objects, you cannot modify or add any property to it. It's an iterable object that return an attribute object at each iteration. Note that
- you get back the whole attribute object, not only the key as in a standard dictionary::
+you get back the whole attribute object, not only the key as in a standard dictionary::
 
-    personEntry = personReader.entry[0]
+    personEntry = personReader.entries[0]
     for attr in personEntry:
         print(attr)
 
@@ -428,32 +449,11 @@ relevant AttrDef in the 'definition' property, and to the relevant entry in the 
         print(cn)
         print(cn.rawValues)
 
-Example::
-    #Define a new Object to search entries of the 'inetOrgPerson' LDAP class
-    person = ObjectDef('iNetOrgPerson')
+If attribute has a single value you get it in the 'value' property. This is useful while using the Python interpreter at the interactive prompt. If attribute
+has more than one value you get the same 'values' list. When you want to assign the attribute value to a variable you must use 'value' (or 'values' if you always
+want a list) because assigning::
 
-    #Define and add attribute definition using the AttrDef class
-    #AttrDef has a mandatory attribute name paramenter and an optional key to be used as a friendly name in queries:
-    person.add(AttrDef('cn', key = 'Common Name'))
-
-    #you can use the += operator as a shortcut for add
-    person += AttrDef('sn', 'Surname')
-
-    #You can optionally speficy 'validate', 'preQuery' and 'postQuery' parameters to define callables to be called when validating the input and the output of the query
-
-    person.add(AttrDef('sn', 'Surname', postQuery=reverse, preQuery=change))
-person.add(AttrDef('givenName', 'Given Name', postQuery=raiseParenthesesRank, postQueryReturnsList = True)
-query = 'Common Name :test-add*, surname:=test*'
-
-
-ach AttrDef has its own pre and post query
-validation option. An AttrDef can be used to dereference another ObjectDef.
-::
-
-from ldap3.abstraction import ObjectDef, AttrDef, Reader
-
-
-
+    myDepartment = personEntry.Department.value
 
 LDIF
 ----

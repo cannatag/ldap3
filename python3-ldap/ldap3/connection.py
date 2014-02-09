@@ -28,8 +28,8 @@ from os import linesep
 
 from pyasn1.codec.ber import encoder
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS
-
+from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
+    LDAPException
 
 from .operation.abandon import abandonOperation
 from .operation.add import addOperation
@@ -142,7 +142,7 @@ class ConnectionUsage(object):
         elif message['type'] == 'unbindRequest':
             self.unbindOperations += 1
         else:
-            raise Exception('unable to collect usage for unknown message type')
+            raise LDAPException('unable to collect usage for unknown message type')
 
     def receivedMessage(self, length):
         self.bytesReceived += length
@@ -180,7 +180,7 @@ class Connection(object):
         """
         if clientStrategy not in CLIENT_STRATEGIES:
             self.lastError = 'unknown client connection strategy'
-            raise Exception(self.lastError)
+            raise LDAPException(self.lastError)
 
         self.strategyType = clientStrategy
         if self.strategyType == STRATEGY_SYNC:
@@ -202,7 +202,7 @@ class Connection(object):
         elif authentication in [AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL]:
             self.authentication = authentication
         else:
-            raise Exception('unknown authentication method')
+            raise LDAPException('unknown authentication method')
 
         self.autoReferrals = True if autoReferrals else False
 
@@ -239,13 +239,13 @@ class Connection(object):
                 self.open()
                 self.bind()
                 if not self.bound:
-                    raise Exception('autoBind not successful')
+                    raise LDAPException('autoBind not successful')
         elif self.strategy.noRealDSA:
             self.server = None
             self.version = None
         else:
             self.lastError = 'invalid ldap server'
-            raise Exception(self.lastError)
+            raise LDAPException(self.lastError)
 
     def __str__(self):
         return (str(self.server) if self.server.isValid else 'None') + ' - ' + 'user: ' + str(self.user) + ' - version ' + str(self.version) + ' - ' + (
@@ -282,7 +282,7 @@ class Connection(object):
             self.open()
 
         if not exc_type is None:
-            return False  # reraise exception
+            return False  # reraise LDAPException
 
 
     def bind(self, forceBind = False, controls = None):
@@ -302,10 +302,10 @@ class Connection(object):
                     response = self.doSaslBind(controls)
                 else:
                     self.lastError = 'requested sasl mechanism not supported'
-                    raise Exception(self.lastError)
+                    raise LDAPException(self.lastError)
             else:
                 self.lastError = 'unknown authentication method'
-                raise Exception(self.lastError)
+                raise LDAPException(self.lastError)
 
             if isinstance(response, int):  # get response if async
                 self.getResponse(response)
@@ -408,7 +408,7 @@ class Connection(object):
         attributes['objectClass'] = list(set([objectClass.lower() for objectClass in parmObjectClass + attrObjectClass]))  # remove duplicate objectClass
         if not attributes['objectClass']:
             self.lastError = 'objectClass is mandatory'
-            raise Exception(self.lastError)
+            raise LDAPException(self.lastError)
 
         request = addOperation(dn, attributes)
         response = self.postSendSingleResponse(self.send('addRequest', request, controls))
@@ -423,7 +423,7 @@ class Connection(object):
         Delete in the dib the entry identified by dn
         """
         if self.readOnly:
-            raise Exception('Connetion is in read-only mode')
+            raise LDAPException('Connetion is in read-only mode')
 
         request = deleteOperation(dn)
         response = self.postSendSingleResponse(self.send('delRequest', request, controls))
@@ -440,22 +440,22 @@ class Connection(object):
         Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
         if self.readOnly:
-            raise Exception('Connetion is in read-only mode')
+            raise LDAPException('Connetion is in read-only mode')
 
         if not isinstance(changes, dict):
             self.lastError = 'changes must be a dictionary'
-            raise Exception(self.lastError)
+            raise LDAPException(self.lastError)
 
         for change in changes:
             if len(changes[change]) != 2:
                 self.lastError = 'malformed change'
-                raise Exception(self.lastError)
+                raise LDAPException(self.lastError)
             elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT]:
                 self.lastError = 'unknown change type'
-                raise Exception(self.lastError)
+                raise LDAPException(self.lastError)
         if not changes:
             self.lastError = 'no changes in modify request'
-            raise Exception(self.lastError)
+            raise LDAPException(self.lastError)
 
         request = modifyOperation(dn, changes)
         response = self.postSendSingleResponse(self.send('modifyRequest', request, controls))
@@ -471,10 +471,10 @@ class Connection(object):
         """
 
         if self.readOnly:
-            raise Exception('Connetion is in read-only mode')
+            raise LDAPException('Connetion is in read-only mode')
 
         if newSuperior and not dn.startswith(relativeDn):  # as per rfc 4511 (4.9)
-            raise Exception('dn cannot change while moving object')
+            raise LDAPException('dn cannot change while moving object')
 
         request = modifyDnOperation(dn, relativeDn, deleteOldDn, newSuperior)
         response = self.postSendSingleResponse(self.send('modDNRequest', request, controls))

@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT
+from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException
 
 from socket import getaddrinfo, gaierror
 from .protocol.dse import DsaInfo
@@ -60,7 +60,7 @@ class Server(object):
         if isinstance(port, int):
             self.port = port
         else:
-            raise Exception('port must be an integer')
+            raise LDAPException('port must be an integer')
         if isinstance(allowedReferralHosts, list):
             self.allowedReferralHosts = []
             for refServer in allowedReferralHosts:

@@ -24,9 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 from ldap3 import STRATEGY_LDIF_PRODUCER, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
-from ldap3.server import Server
 from ldap3.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr, test_moved
+from test import test_base, testDnBuilder, test_name_attr, test_moved
 
 
 class Test(unittest.TestCase):

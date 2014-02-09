@@ -95,9 +95,9 @@ With asynchronous strategy (asyncThreaded) all LDAP operations request (except B
 You can send multiple request without waiting for responses. You can get the response with the getResponse(messageId) method of the connection object.
 If you get None the response has not yet arrived. You can set a timeout (getResponse(messageId, timeout = 10)) to set the seconds to wait for the response to appears.
 
-Library raise exceptions to signal errors, last exception message is stored in the lastError attribute of the connection object.
+Library raise LDAPException to signal errors, last exception message is stored in the lastError attribute of the Connection object when available..
 
-After any operation, either synchronous or asynchronous, you'll find the following attributes popolated in the connection object:
+After any operation, either synchronous or asynchronous, you'll find the following attributes popolated in the Connection object:
 
 - result: the result of the last operation
 - response: the response of the last operation (for example, a search)
@@ -280,10 +280,10 @@ AttrDefs can be accessed either with the dictionary protocol or the property pro
     cnAttrDef = person['commonName']  # same as above
     cnAttrDef = person.CommonName  # same as above
 
-
 This eases the use at interactive prompt where you don't have to remember the case of the attribute and  can type use the
 autocompletion feature (pressing tab) to get a list of all defined attributes as property.
 
+Each class has a useful representation that summarize the istance status.
 
 AttrDef class
 
@@ -301,7 +301,8 @@ implicitly defined)::
 You can even add a list of attrDefs or attribute names to ObjectDef:
 
     person += [AttrDef('cn', key = 'Common Name'), AttrDef('sn', key = 'Surname')]
-    person += ['cn', 'sn']  # as above, but keys are the attribute names
+    person += ['cn', 'sn']  # as above, but keys are the attributes name
+    p
 
     deps = {'A': 'Accounting', 'F': 'Finance', 'E': 'Engineering'}
 
@@ -311,7 +312,7 @@ You can even add a list of attrDefs or attribute names to ObjectDef:
 
         # checks that the parameter in query is in a specific range
         validDepartment = lambda attr, value: True if value in deps.values() else False
-        person += AttrDef('employeeStatus', key = 'Department', validate = validDepartment)
+        person += AttrDef('employeeType', key = 'Department', validate = validDepartment)
 
     When performing a search the Reader object will raise an exception if value for the 'Department' is not 'Accounting', 'Finance' or 'Engineering'..
 
@@ -325,18 +326,18 @@ You can even add a list of attrDefs or attribute names to ObjectDef:
                     return dep[0]
             return 'not a department'
 
-        person += AttrDef('employeeStatus', key = 'Department', preQuery = getDepartmentCode)
+        person += AttrDef('employeeType', key = 'Department', preQuery = getDepartmentCode)
 
-    When you try a search with 'Accounting', 'Finance' or 'Engineering' for the Department key, the real search will be for employeeStatus = 'A', 'F' or 'E'
+    When you try a search with 'Accounting', 'Finance' or 'Engineering' for the Department key, the real search will be for employeeType = 'A', 'F' or 'E'
 
     PostQuery
     A 'postQuery' parameter indicates a callable to perform transormations on the returned value::
 
         getDepartmentName = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
 
-        person += AttrDef('employeeStatus', key = 'Department', postQuery = getDepartmentName)
+        person += AttrDef('employeeType', key = 'Department', postQuery = getDepartmentName)
 
-    When you have an 'A', an 'F', or an 'E' in the employeeStatus attribute you get 'Accounting' 'Finance', or 'Engineering' in the 'Department' property
+    When you have an 'A', an 'F', or an 'E' in the employeeType attribute you get 'Accounting' 'Finance', or 'Engineering' in the 'Department' property
     of the Person entry.
 
     With a multivalue attribute postQuery receives a list of all values in the attribute. You can return an equivalent list or a single string.
@@ -364,7 +365,9 @@ Reader
     'getOperationalAttributes?: specifies if the search must return operational attributes (True) of found entries. Default to False
     'controls': optional controls to use in the search
 
-    TO perform the search you can use any of the following methods:
+    Connection is open and closed automatically by the Reader.
+
+    To perform the search you can use any of the following methods:
     search()  # standard search
     searchLevel()  # force a Level search
     searchSubTree()  # force a whole sub-tree search
@@ -390,10 +393,17 @@ Reader
     The reader object has a useful representation that summarize the Reader configuration and status::
 
     print(personReader)
-    ...
+    CONN   : ldap://server:389 - cleartext - user: cn=admin,o=test - version 3 - unbound - closed - not listening - SyncWaitStrategy
+    BASE   : 'o=test' [SUB]
+    DEFS   : 'iNetOrgPerson' [CommonName <cn>, Department <employeeType>, Surname <sn>]
+    QUERY  : 'Common Name :test-add*, surname:=t*' [AND]
+    PARSED : 'CommonName: =test-add*, Surname: =t*' [AND]
+    ATTRS  : ['cn', 'employeeType', 'sn', '+'] [OPERATIONAL]
+    FILTER : '(&(objectClass=iNetOrgPerson)(cn=test-add*)(sn=t*))'
+    ENTRIES: 1 [SUB] [executed at: Sun Feb  9 20:43:47 2014]
+
 
 Simplified Query Language
-
 In the reader yYou can express the query filter using the standard LDAP filter syntax or using a simplified query language that resembles a dictionary structure.
 If you use the standard LDAP filter syntax you must use the real attribute names because the filter is directly passed to the Search operation.
 THe Simplified Query Language is a string of key-values couples separated with a ',' (comma), in each of the couples has the left part is the attribute key defined
@@ -422,7 +432,6 @@ Object classes defined in the ObjectDef are always included in the filter, so fo
 when using a Reader with the engineer ObjectDef.
 
 Entry
-
 Entry objects contain the result of the search. You can access entry attributes either as a dictionary or as properties using the attrDef key you specified in
 the ObjectDef: entry['CommonName'] is the same of entry.CommonName.
 
@@ -454,6 +463,10 @@ has more than one value you get the same 'values' list. When you want to assign 
 want a list) because assigning::
 
     myDepartment = personEntry.Department.value
+
+OperationalAttribute
+THe OperationalAttribute class is used to store Operational Attributes read with the 'getOperationalAttributes' of the Reader object set to True. It's the same
+of the Attribute class except for the 'definition' property that is not present.
 
 LDIF
 ----
@@ -610,8 +623,11 @@ I wish to thank Assembla for providing the free source repository space and the 
 CHANGELOG
 =========
 
-* 0.8.0 - 2014.02.01
-    - Added abstraction layer
+* 0.8,1
+    - Changed Exception returned by the library to LDAPException, a subclass of Exception.
+
+* 0.8.0 - 2014.02.08
+    - Added abstraction layer (for searching)
     - Added context manager to Connection class
     - Added readOnly parameter to Connection class
     - Fixed a bug in search with 'less than' parameter

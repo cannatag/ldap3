@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import random
 
-from ldap3 import LDAP_MAX_INT
+from ldap3 import LDAP_MAX_INT, LDAPException
 
 from ..protocol.convert import buildControlsList
 from ..protocol.rfc2849 import toLdif
@@ -87,7 +87,7 @@ class LdifProducerStrategy(BaseStrategy):
         return False
 
     def postSendSearch(self, messageId):
-        raise Exception('This strategy cannot produce ldif-content for Search Operations')
+        raise LDAPException('This strategy cannot produce ldif-content for Search Operations')
 
     def _getResponse(self, messageId):
         pass

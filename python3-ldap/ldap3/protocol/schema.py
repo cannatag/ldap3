@@ -24,7 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
 import re
-from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
+from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, \
+    LDAPException
 from ..protocol.oid import Oids
 
 
@@ -214,7 +215,7 @@ class BaseObjectInfo(object):
             elif cls is NameFormInfo:
                 pattern = '| OC | MUST | MAY  '
             else:
-                raise Exception('unknown schema definition class')
+                raise LDAPException('unknown schema definition class')
 
             splitted = re.split('( NAME | DESC | OBSOLETE| X-| E-' + pattern + ')', objectDefinition[1:-1])
             values = splitted[::2]
@@ -280,11 +281,11 @@ class BaseObjectInfo(object):
                         objectDef.experimental = []
                     objectDef.experimental.append(extensionToTuple('E-' + value))
                 else:
-                    raise Exception('malformed schema definition key:' + key)
+                    raise LDAPException('malformed schema definition key:' + key)
             objectDef.rawDefinition = objectDefinition
             return objectDef
         else:
-            raise Exception('malformed schema definition')
+            raise LDAPException('malformed schema definition')
 
 
 class MatchingRuleInfo(BaseObjectInfo):

@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from base64 import b64encode
 from os import linesep
 
-from ldap3 import LDIF_LINE_LENGTH
+from ldap3 import LDIF_LINE_LENGTH, LDAPException
 
 
 # LDIF converter RFC 2849 compliant
@@ -119,7 +119,7 @@ def searchResponseToLdif(entries, allBase64):
             lines.extend(convertToLdif('dn', entry['dn'], allBase64))
             lines.extend(addAttributes(entry['rawAttributes'], allBase64))
         else:
-            raise Exception('Unable to convert to LDIF-CONTENT - missing DN')
+            raise LDAPException('Unable to convert to LDIF-CONTENT - missing DN')
         lines.append('')
 
     if lines:
@@ -137,7 +137,7 @@ def addRequestToLdif(entry, allBase64):
         lines.append('changetype: add')
         lines.extend(addAttributes(entry['attributes'], allBase64))
     else:
-        raise Exception('Unable to convert to LDIF-CHANGE-ADD - missing DN ')
+        raise LDAPException('Unable to convert to LDIF-CHANGE-ADD - missing DN ')
 
     return lines
 
@@ -149,7 +149,7 @@ def deleteRequestToLdif(entry, allBase64):
         lines.extend(addControls(entry['controls'], allBase64))
         lines.append('changetype: delete')
     else:
-        raise Exception('Unable to convert to LDIF-CHANGE-DELETE - missing DN ')
+        raise LDAPException('Unable to convert to LDIF-CHANGE-DELETE - missing DN ')
 
     return lines
 
@@ -181,7 +181,7 @@ def modifyDnRequestToLdif(entry, allBase64):
         if 'newSuperior' in entry and entry['newSuperior']:
             lines.extend(convertToLdif('newsuperior', entry['newSuperior'], allBase64))
     else:
-        raise Exception('Unable to convert to LDIF-CHANGE-MODDN - missing DN ')
+        raise LDAPException('Unable to convert to LDIF-CHANGE-MODDN - missing DN ')
 
     return lines
 

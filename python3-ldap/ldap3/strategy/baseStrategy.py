@@ -27,7 +27,8 @@ from time import sleep
 from random import choice
 from pyasn1.codec.ber import encoder, decoder
 
-from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS
+from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, \
+    LDAPException
 
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import addResponseToDict, addRequestToDict
@@ -88,40 +89,40 @@ class BaseStrategy(object):
     def _openSocket(self, useSsl = False):
         """
         Try to open and connect a socket to a Server
-        Raise exception if unable to open or connect socket
+        raise LDAPException if unable to open or connect socket
         """
         try:
             self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except Exception as e:
             self.connection.lastError = 'socket creation error: ' + str(e)
-            raise Exception(self.connection.lastError)
+            raise LDAPException(self.connection.lastError)
 
         try:
             self.connection.socket.connect((self.connection.server.host, self.connection.server.port))
         except socket.error as e:
             self.connection.lastError = 'socket connection error: ' + str(e)
-            raise Exception(self.connection.lastError)
+            raise LDAPException(self.connection.lastError)
 
         if useSsl:
             try:
                 self.connection.socket = self.connection.server.tls.wrapSocket(self.connection.socket, doHandshake = True)
             except Exception as e:
                 self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
-                raise Exception(self.connection.lastError)
+                raise LDAPException(self.connection.lastError)
 
         self.connection.closed = False
 
     def _closeSocket(self):
         """
         Try to close a socket
-        Raise exception if unable to close socket
+        raise LDAPException if unable to close socket
         """
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)
             self.connection.socket.close()
         except Exception as e:
             self.connection.lastError = 'socket closing error' + str(e)
-            raise Exception(self.connection.lastError)
+            raise LDAPException(self.connection.lastError)
         self.connection.socket = None
         self.connection.closed = True
 
@@ -137,7 +138,7 @@ class BaseStrategy(object):
         if self.connection.listening:
             if self.connection.saslInProgress and messageType not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
                 self.connection.lastError = 'cannot send operation requests while SASL bind is in progress'
-                raise Exception(self.connection.lastError)
+                raise LDAPException(self.connection.lastError)
             messageId = self.connection.server.nextMessageId()
             ldapMessage = LDAPMessage()
             ldapMessage['messageID'] = MessageID(messageId)
@@ -151,7 +152,7 @@ class BaseStrategy(object):
                 self.connection.socket.sendall(encodedMessage)
             except socket.error as e:
                 self.connection.lastError = 'socket sending error' + str(e)
-                raise Exception(self.connection.lastError)
+                raise LDAPException(self.connection.lastError)
 
             self.connection.request = BaseStrategy.decodeRequest(ldapMessage)
             self.connection.request['controls'] = controls
@@ -160,7 +161,7 @@ class BaseStrategy(object):
                 self.connection.usage.transmittedMessage(self.connection.request, len(encodedMessage))
         else:
             self.connection.lastError = 'unable to send message, socket is not open'
-            raise Exception(self.connection.lastError)
+            raise LDAPException(self.connection.lastError)
 
         return messageId
 
@@ -182,7 +183,7 @@ class BaseStrategy(object):
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     self.close()
                     self.connection.lastError = 'session terminated by server'
-                    raise Exception(self.connection.lastError)
+                    raise LDAPException(self.connection.lastError)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME
@@ -253,7 +254,7 @@ class BaseStrategy(object):
         elif messageType == 'intermediateResponse':
             result = intermediateResponseToDict(component)
         else:
-            raise Exception('unknown response')
+            raise LDAPException('unknown response')
         result['type'] = messageType
         if controls:
             result['controls'] = dict()
@@ -304,7 +305,7 @@ class BaseStrategy(object):
         elif messageType == 'abandonRequest':
             result = abandonRequestToDict(component)
         else:
-            raise Exception('unknown request')
+            raise LDAPException('unknown request')
         result['type'] = messageType
         return result
 
@@ -449,7 +450,7 @@ class BaseStrategy(object):
             elif request['type'] == 'modDNRequest':
                 referralConnection.modifyDn(selectedReferral['base'] or request['entry'], request['newRdn'], request['deleteOldRdn'], request['newSuperior'], controls = request['controls'])
             else:
-                raise Exception('referral operation not permitted')
+                raise LDAPException('referral operation not permitted')
 
             response = referralConnection.response
             result = referralConnection.result

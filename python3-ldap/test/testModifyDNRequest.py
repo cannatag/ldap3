@@ -26,7 +26,7 @@ import unittest
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, ValsAtLeast1, ModifyDNRequest, RelativeLDAPDN, DeleteOldRDN
 from ldap3.connection import Connection
 from ldap3.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_moved, test_name_attr
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr
 
 
 class Test(unittest.TestCase):

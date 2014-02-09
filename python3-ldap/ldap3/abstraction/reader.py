@@ -24,9 +24,11 @@ If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 from os import linesep
 
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT
+from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, \
+    LDAPException
 from .attribute import Attribute
 from .entry import Entry
+from .operationalAttribute import OperationalAttribute
 
 
 def _retSearchValue(value):
@@ -98,7 +100,7 @@ class Reader(object):
         r = 'CONN   : ' + str(self.connection) + linesep
         r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.subTree else ' [LEVEL]') + linesep
         r += 'DEFS   : ' + repr(self._definition.objectClass) + ' ['
-        for attrDef in self._definition:
+        for attrDef in sorted(self._definition):
             r += (attrDef.key if attrDef.key == attrDef.name else (attrDef.key + ' <' + attrDef.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
@@ -187,7 +189,7 @@ class Reader(object):
 
                     if self._definition[attr].validate:
                         if not self._definition[attr].validate(self._definition[attr].key, value):
-                            raise Exception('validation failed for attribute %s and value %s' % (d, val))
+                            raise LDAPException('validation failed for attribute %s and value %s' % (d, val))
 
                     if valNot:
                         query += '!' + valSearchOperator + value
@@ -221,7 +223,7 @@ class Reader(object):
                     self.queryFilter += '(objectClass=' + objectClass + ')'
                 self.queryFilter += ')'
             else:
-                raise Exception('objectClass must be string or list')
+                raise LDAPException('objectClass must be string or list')
 
         if not self.componentsInAnd:
             self.queryFilter += '(|'
@@ -263,7 +265,7 @@ class Reader(object):
         if not self._definition.objectClass and attrCounter == 1:  # remove unneeded starting filter
             self.queryFilter = self.queryFilter[2:-1]
 
-    def _getAttributes(self, result, attrDefs):
+    def _getAttributes(self, result, attrDefs, entry):
         """
         Assign the result of the LDAP query to the Entry object dictionary.
         If the optional 'postQuery' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute
@@ -271,6 +273,7 @@ class Reader(object):
         If the 'dereferenceDN' in AttrDef is a ObjectDef the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
         """
         attributes = dict()
+        usedAttributeNames = []
         for attrDef in attrDefs:
             name = None
             for attrName in result['attributes']:
@@ -279,7 +282,7 @@ class Reader(object):
                     break
 
             if name or attrDef.default:  # attribute value found in result or default value present
-                attribute = Attribute(attrDef, self)
+                attribute = Attribute(attrDef, entry)
                 attribute.__dict__['rawValues'] = result['rawAttributes'][name] if name else None
                 if attrDef.postQuery and attrDef.name in result['attributes']:
                         attribute.__dict__['values'] = attrDef.postQuery(attrDef.key, result['attributes'][name])
@@ -297,6 +300,15 @@ class Reader(object):
                         attribute.__dict__['values'] = tempValues
 
                 attributes[attribute.key] = attribute
+                usedAttributeNames.append(name)
+
+        for name in result['attributes']:
+            if name not in usedAttributeNames:
+                attribute = OperationalAttribute(ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name, entry)
+                attribute.__dict__['rawValues'] = result['rawAttributes'][name]
+                attribute.__dict__['values'] = result['attributes'][name]
+                if (ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name) not in attributes:
+                    attributes['op_' + name] = attribute
 
         return attributes
 
@@ -305,9 +317,9 @@ class Reader(object):
             return None
 
         entry = Entry(result['dn'], self)
-        entry.__dict__['_attributes'] = self._getAttributes(result, self._definition)
+        entry.__dict__['_attributes'] = self._getAttributes(result, self._definition, entry)
         entry.__dict__['_rawAttributes'] = result['rawAttributes']
-        for attr in entry:  # return the whole attribute object
+        for attr in entry:  # returns the whole attribute object
             attrName = attr.key
             entry.__dict__[attrName] = attr
 
@@ -315,7 +327,7 @@ class Reader(object):
 
     def _executeQuery(self, queryScope):
         if not self.connection:
-            raise Exception('No connection available')
+            raise LDAPException('No connection available')
 
         self._createQueryFilter()
         with self.connection:

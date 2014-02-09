@@ -21,14 +21,10 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-
-from pprint import pprint
 import unittest
 from ldap3.abstraction import ObjectDef, AttrDef, Reader
-from ldap3.abstraction.reader import _createQueryDict
 from ldap3 import Server, Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder, test_name_attr
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
 
 
 class Test(unittest.TestCase):

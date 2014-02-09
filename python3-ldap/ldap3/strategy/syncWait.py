@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.codec.ber import decoder
 
-from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
+from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAPException
 
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
@@ -69,7 +69,7 @@ class SyncWaitStrategy(BaseStrategy):
                     # if e.winerror == 10004:  # window error for socket not open
                     self.close()
                     self.connection.lastError = 'Error receiving data: ' + str(e)
-                    raise Exception(self.connection.lastError)
+                    raise LDAPException(self.connection.lastError)
                 unprocessed += data
             if len(data) > 0:
                 length = BaseStrategy.computeLDAPMessageSize(unprocessed)
@@ -107,7 +107,7 @@ class SyncWaitStrategy(BaseStrategy):
                     break
             if not checkIntermediateResponse:
                 self.connection.lastError = 'multiple messages error'
-                raise Exception(self.connection.lastError)
+                raise LDAPException(self.connection.lastError)
 
         return responses
 
@@ -121,7 +121,7 @@ class SyncWaitStrategy(BaseStrategy):
             self.connection.response = responses[:-1] if responses[-1]['type'] == 'searchResDone' else responses
             return self.connection.response
 
-        raise Exception('error receiving response')
+        raise LDAPException('error receiving response')
 
     def _getResponse(self, messageId):
         """
@@ -148,11 +148,11 @@ class SyncWaitStrategy(BaseStrategy):
                                 return SESSION_TERMINATED_BY_SERVER
                         else:
                             self.connection.lastError = 'invalid messageID received'
-                            raise Exception(self.connection.lastError)
+                            raise LDAPException(self.connection.lastError)
                         response = unprocessed
                         if response:  # if this statement is removed unprocessed data will be processed as another message
                             self.connection.lastError = 'unprocessed substrate error'
-                            raise Exception(self.connection.lastError)
+                            raise LDAPException(self.connection.lastError)
             else:
                 return SESSION_TERMINATED_BY_SERVER
 

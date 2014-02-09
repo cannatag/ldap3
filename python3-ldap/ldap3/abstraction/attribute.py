@@ -68,3 +68,7 @@ class Attribute(object):
 
     def __setattr__(self, item, value):
         raise Exception('attribute is read only')
+
+    @property
+    def value(self):
+        return self.__dict__['values'][0] if len(self.__dict__['values']) == 1 else self.__dict__['values']

@@ -75,13 +75,17 @@ class Entry(object):
     def __getitem__(self, item):
         return self.__getattr__(item)
 
-    @property
-    def entryDN(self):
+    def getEntryDN(self):
         return self._dn
 
-    @property
-    def entryReader(self):
+    def getEntryReader(self):
         return self._reader
+
+    def getRawAttributes(self):
+        return self._rawAttributes
+
+    def getRawAttribute(self, name):
+        return self._rawAttributes[name] if name in self._rawAttributes else None
 
     def __setattr__(self, item, value):
         if item in self._attributes:

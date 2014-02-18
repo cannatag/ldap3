@@ -641,21 +641,21 @@ Testing
 -------
 
 Inside the "test" package you can find examples for each of the LDAP operations.
-You can customize the test modifying the variables in the __init__.py in the test package. You can set the following parameters:
+You can customize the test modifying the variables in the __init__.py in the test package. You can set the following parameters::
 
-test_server = 'server'  # the LDAP server where tests are executed
-test_user = 'user'  # the user that performs the tests
-test_password = 'password'  # user's password
+    test_server = 'server'  # the LDAP server where tests are executed
+    test_user = 'user'  # the user that performs the tests
+    test_password = 'password'  # user's password
 
-test_base = 'o=test'  # base context where test objects are created
-test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
-test_name_attr = 'cn'  # naming attribute for test objects
+    test_base = 'o=test'  # base context where test objects are created
+    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
 
-test_port = 389  # ldap port
-test_port_ssl = 636  # ldap secure port
-test_authentication = AUTH_SIMPLE  # authentication type
-test_strategy = STRATEGY_SYNC  # strategy for executing tests
-#test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+    test_port = 389  # ldap port
+    test_port_ssl = 636  # ldap secure port
+    test_authentication = AUTH_SIMPLE  # authentication type
+    test_strategy = STRATEGY_SYNC  # strategy for executing tests
+    #test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
 
 To execute the test suite you need an LDAP server with the test_base and test_moved containers and a test_user with privileges to add, modify and remove objects
 in that context.
@@ -674,7 +674,7 @@ You can also open a ticket on https://www.assembla.com/spaces/python3-ldap/suppo
 Acknowledgements
 ----------------
 
-I want to thank Mark Lutz for his 'Learning Python' and 'Programming Python' excellent books series and John Goerzen and Brandon Rhodes
+I want to thank Mark Lutz for his 'Learning Python' and 'Programming Python' excellent books serie and John Goerzen and Brandon Rhodes
 for their book 'Foundations of Python Network Programming'. These books are a wonderful tool for learning Python and this project owes a lot to them.
 
 I wish to thank JetBrains for donating to this project the Open Source license of PyCharm 3 Professional.
@@ -682,7 +682,6 @@ I wish to thank JetBrains for donating to this project the Open Source license o
 I wish to thank Assembla for providing the free source repository space and the agile tools to develop this project.
 
 
-=========
 CHANGELOG
 =========
 

@@ -685,6 +685,9 @@ I wish to thank Assembla for providing the free source repository space and the 
 CHANGELOG
 =========
 
+* 0.8.2
+    - Added refresh() method to Entry object to read again the attributes from the Reader
+
 * 0.8,1
     - Changed Exception returned by the library to LDAPException, a subclass of Exception.
     - Fixed documentation typos

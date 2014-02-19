@@ -294,8 +294,7 @@ class Reader(object):
                         tempValues = []
 
                         for element in attribute.values:
-                            tempReader.base = element
-                            tempValues.append(tempReader.searchObject())
+                            tempValues.append(tempReader.searchObject(element))
                         del tempReader  # remove the temporary Reader
                         attribute.__dict__['values'] = tempValues
 
@@ -379,10 +378,17 @@ class Reader(object):
 
         return self.entries
 
-    def searchObject(self):  # base must be a single dn
+    def searchObject(self, entryDn = None):  # base must be a single dn
         self.clear()
-        self._executeQuery(SEARCH_SCOPE_BASE_OBJECT)
-        return self.entries[0]
+        if entryDn:
+            oldbase = self.base
+            self.base = entryDn
+            self._executeQuery(SEARCH_SCOPE_BASE_OBJECT)
+            self.base = oldbase
+        else:
+            self._executeQuery(SEARCH_SCOPE_BASE_OBJECT)
+
+        return self.entries[0] if len(self.entries) > 0 else None
 
     def searchSizeLimit(self, sizeLimit):
         self.clear()

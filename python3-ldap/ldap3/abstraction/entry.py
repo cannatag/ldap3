@@ -73,17 +73,24 @@ class Entry(object):
 
         raise LDAPException('key must be a string')
 
+    def __setattr__(self, item, value):
+        if item in self._attributes:
+            raise LDAPException('attribute is read only')
+        else:
+            raise LDAPException('entry is read only')
+
     def __getitem__(self, item):
         return self.__getattr__(item)
 
     def __eq__(self, other):
         if isinstance(other, Entry):
-            return self._dn == other._dn
+            return self._dn == other.getEntryDN()
 
         return False
+
     def __lt__(self, other):
         if isinstance(other, Entry):
-            return self._dn <= other._dn
+            return self._dn <= other.getEntryDN()
 
         return False
 
@@ -99,8 +106,9 @@ class Entry(object):
     def getRawAttribute(self, name):
         return self._rawAttributes[name] if name in self._rawAttributes else None
 
-    def __setattr__(self, item, value):
-        if item in self._attributes:
-            raise LDAPException('attribute is read only')
-        else:
-            raise LDAPException('entry is read only')
+    def refresh(self):
+        tempEntry = self.getEntryReader().searchObject(self.getEntryDN())
+        self.__dict__['_attributes'] = tempEntry._attributes
+        self.__dict__['_rawAttributes'] = tempEntry._rawAttributes
+        del tempEntry
+        return self

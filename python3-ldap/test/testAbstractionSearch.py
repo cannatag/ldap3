@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         r = Reader(self.connection, o, queryText, 'o=test')
 
         results = r.search()
-        self.assertEqual(len(results), 6)
+        self.assertEqual(len(results), 7)
 
     def testSearchWithDereference(self):
         reverse = lambda a, e: e[::-1]
@@ -73,7 +73,7 @@ class Test(unittest.TestCase):
         qu = 'Common Name: test-add*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 6)
+        self.assertEqual(len(lu), 7)
 
         og = ObjectDef('groupOfNames')
         og += AttrDef('member', dereferenceDN = ou)
@@ -85,7 +85,7 @@ class Test(unittest.TestCase):
 
         eg = lg[0]
         mg = eg.member
-        self.assertEqual(len(mg), 3)
+        self.assertEqual(len(mg), 5)
         ug = eg.member[0]
         self.assertEqual(str(ug.surname), 'tost')
 
@@ -110,3 +110,15 @@ class Test(unittest.TestCase):
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
         self.assertEqual(str(lu[0].employee), 'not employed')
+
+
+    def testRefreshEntry(self):
+        ou = ObjectDef('iNetOrgPerson')
+        ou += AttrDef('cn', 'CommonName')
+        ou += AttrDef('sn', 'Surname')
+        qu = 'CommonName := test-add*'
+        ru = Reader(self.connection, ou, qu, test_base)
+        lu = ru.search()
+        eu = lu[0]
+        eu.refresh()
+        self.assertEqual(str(eu.surname), 'tost')

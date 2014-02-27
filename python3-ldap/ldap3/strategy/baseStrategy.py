@@ -119,9 +119,11 @@ class BaseStrategy(object):
         raise LDAPException if unable to open or connect socket
         if connection is restartable tries for the number of restarting requested or forever
         """
-        restartableTries = self.connection.restartable or 1
+        if self.connection._restartableTries == 0:
+            self.connection._restartableTries = self.connection.restartable or 1
+
         localException = None
-        while restartableTries:
+        while self.connection._restartableTries:
             try:
                 self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             except Exception as e:
@@ -140,10 +142,10 @@ class BaseStrategy(object):
                     self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
                     localException = self.connection.lastError
 
-            if isinstance(restartableTries, int):
-                restartableTries -= 1
+            if isinstance(self.connection._restartableTries, int):
+                self.connection._restartableTries -= 1
 
-            if restartableTries > 0:  # wait for retrying connection, always for True
+            if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
                 sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
 
         if localException:
@@ -209,9 +211,10 @@ class BaseStrategy(object):
         Send an LDAP message
         Returns the messageId
         """
-        restartableTries = self.connection.restartable or 1
+        if self.connection._restartableTries == 0:
+            self.connection._restartableTries = self.connection.restartable or 1
         localException = None
-        while restartableTries:
+        while self.connection._restartableTries:
             self.connection.request = None
             if self.connection.listening:
                 if self.connection.saslInProgress and messageType not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
@@ -241,10 +244,10 @@ class BaseStrategy(object):
                 self.connection.lastError = 'unable to send message, socket is not open'
                 raise LDAPException(self.connection.lastError)
 
-            if isinstance(restartableTries, int):
-                restartableTries -= 1
+            if isinstance(self.connection._restartableTries, int):
+                self.connection._restartableTries -= 1
 
-            if restartableTries > 0:  # wait for retrying connection, always for True
+            if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
                 sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
                 self.connection._rebind()
 

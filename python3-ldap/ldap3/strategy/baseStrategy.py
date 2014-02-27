@@ -168,7 +168,7 @@ class BaseStrategy(object):
     def _stopListen(self):
         self.connection.listening = False
 
-    def send(self, messageType, request, controls = None):
+    def sendOld(self, messageType, request, controls = None):
         """
         Send an LDAP message
         Returns the messageId
@@ -201,6 +201,55 @@ class BaseStrategy(object):
         else:
             self.connection.lastError = 'unable to send message, socket is not open'
             raise LDAPException(self.connection.lastError)
+
+        return messageId
+
+    def send(self, messageType, request, controls = None):
+        """
+        Send an LDAP message
+        Returns the messageId
+        """
+        restartableTries = self.connection.restartable or 1
+        localException = None
+        while restartableTries:
+            self.connection.request = None
+            if self.connection.listening:
+                if self.connection.saslInProgress and messageType not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
+                    self.connection.lastError = 'cannot send operation requests while SASL bind is in progress'
+                    raise LDAPException(self.connection.lastError)
+                messageId = self.connection.server.nextMessageId()
+                ldapMessage = LDAPMessage()
+                ldapMessage['messageID'] = MessageID(messageId)
+                ldapMessage['protocolOp'] = ProtocolOp().setComponentByName(messageType, request)
+                messageControls = buildControlsList(controls)
+                if messageControls is not None:
+                    ldapMessage['controls'] = messageControls
+
+                try:
+                    encodedMessage = encoder.encode(ldapMessage)
+                    self.connection.socket.sendall(encodedMessage)
+                except socket.error as e:
+                    self.connection.lastError = 'socket sending error' + str(e)
+                    raise LDAPException(self.connection.lastError)
+
+                self.connection.request = BaseStrategy.decodeRequest(ldapMessage)
+                self.connection.request['controls'] = controls
+                self._outstanding[messageId] = self.connection.request
+                if self.connection.usage:
+                    self.connection.usage.transmittedMessage(self.connection.request, len(encodedMessage))
+            else:
+                self.connection.lastError = 'unable to send message, socket is not open'
+                raise LDAPException(self.connection.lastError)
+
+            if isinstance(restartableTries, int):
+                restartableTries -= 1
+
+            if restartableTries > 0:  # wait for retrying connection, always for True
+                sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
+                self.connection._rebind()
+
+        if localException:
+            raise localException
 
         return messageId
 

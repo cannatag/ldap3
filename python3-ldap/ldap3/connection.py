@@ -292,7 +292,7 @@ class Connection(object):
         Bind to ldap with the user defined in Server object
         set forceBind to True to repeat bind (if you set different credentials in connection object)
         """
-        self._bindControls = controls  # useful for restart connection if restartable
+        self._bindControls = controls  # needed for restarting connection (if restartable)
 
         if not self.bound or forceBind:
             if self.authentication == AUTH_ANONYMOUS:
@@ -323,6 +323,15 @@ class Connection(object):
                 self.refreshDsaInfo()
 
         return self.bound
+
+    def _rebind(self):
+        try:
+            self.close()
+        except LDAPException:
+            pass
+
+        self.open()
+        self.bind(forceBind = True, controls = self._controls)
 
     def unbind(self, controls = None):
         """

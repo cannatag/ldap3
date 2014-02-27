@@ -76,7 +76,7 @@ class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
     def __str__(self):
         r = self.oid + ' - '
         if self.name:
-            r += (', '.join(self.name)) if isinstance(self.name, list) else  self.name + ' - '
+            r += (', '.join(self.name)) if isinstance(self.name, list) else self.name + ' - '
         r += constantToOidKind(self.kind) + ' - ' if self.kind is not None else ''
         r += self.docs + ' - ' if self.docs else ''
 
@@ -86,7 +86,8 @@ class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
         return self.__str__()
 
 
-Oids = {# administrative role
+Oids = {
+        # administrative role
         '2.5.23.1': OidInfo('2.5.23.1', OID_ADMINISTRATIVE_ROLE, 'autonomousArea', 'RFC3672'),
         '2.5.23.2': OidInfo('2.5.23.2', OID_ADMINISTRATIVE_ROLE, 'accessControlSpecificArea', 'RFC3672'),
         '2.5.23.3': OidInfo('2.5.23.3', OID_ADMINISTRATIVE_ROLE, 'accessControlInnerArea', 'RFC3672'),

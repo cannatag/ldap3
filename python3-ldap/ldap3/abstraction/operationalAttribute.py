@@ -25,6 +25,7 @@ from os import linesep
 
 from .attribute import Attribute
 
+
 class OperationalAttribute(Attribute):
     """
     Operational attribute/values object, it includes the search result of an operational attribute in an entry
@@ -39,7 +40,6 @@ class OperationalAttribute(Attribute):
         self.__dict__['values'] = []
         self.__dict__['rawValues'] = []
         self.__dict__['entry'] = entry
-
 
     def __repr__(self):
         if len(self.values) == 1:

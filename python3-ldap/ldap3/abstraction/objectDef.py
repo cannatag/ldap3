@@ -81,10 +81,8 @@ class ObjectDef(object):
         for attribute in self._attributes:
             yield self._attributes[attribute]
 
-
     def __len__(self):
         return len(self._attributes)
-
 
     def __contains__(self, item):
         try:
@@ -109,7 +107,6 @@ class ObjectDef(object):
                 self.add(element)
         else:
             raise LDAPException('unable to add element to object definition')
-
 
     def remove(self, item):
         key = None

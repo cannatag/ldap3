@@ -196,7 +196,6 @@ class BaseStrategy(object):
                         response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
         return response
 
-
     @classmethod
     def computeLDAPMessageSize(cls, data):
         """
@@ -208,8 +207,7 @@ class BaseStrategy(object):
 
         retValue = -1
         if len(data) > 2:
-            if data[
-                1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
+            if data[1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
                 retValue = data[1] + 2
             else:  # BER definite length - long form. Highest bit of byte 1 is 1, last 7 bits counts the number of following octets containing the value length
                 bytesLength = data[1] - 128

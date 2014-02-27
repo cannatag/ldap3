@@ -124,7 +124,7 @@ def searchResponseToLdif(entries, allBase64):
 
     if lines:
         lines.append('')
-        lines.append('# total number of entries: '+  str(len(entries)))
+        lines.append('# total number of entries: ' + str(len(entries)))
 
     return lines
 

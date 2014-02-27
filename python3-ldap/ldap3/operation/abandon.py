@@ -28,7 +28,6 @@ from ..protocol.rfc4511 import AbandonRequest, MessageID
 # AbandonRequest ::= [APPLICATION 16] MessageID
 
 
-
 def abandonOperation(msgId):
     request = AbandonRequest(MessageID(msgId))
 

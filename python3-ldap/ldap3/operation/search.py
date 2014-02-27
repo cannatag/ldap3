@@ -152,7 +152,7 @@ def evaluateMatch(match):
                 matchingRule = validateAssertionValue(extendedFilterList[2])
             else:
                 raise LDAPException('invalid extensible filter')
-        elif len(extendedFilterList) <= 3: # extensible filter format attr[:dn][:matchingRule]:=assertionValue
+        elif len(extendedFilterList) <= 3:  # extensible filter format attr[:dn][:matchingRule]:=assertionValue
             if len(extendedFilterList) == 1:
                 attributeName = extendedFilterList[0]
             elif len(extendedFilterList) == 2:

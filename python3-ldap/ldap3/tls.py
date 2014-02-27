@@ -115,11 +115,11 @@ class Tls(object):
         return True
 
 
-class CertificateError_backport(ValueError): # fix for Python2, code from python 3.3 standard library
+class CertificateError_backport(ValueError):  # fix for Python2, code from python 3.3 standard library
     pass
 
 
-def _dnsname_to_pat_backport(dn): # fix for Python2, code from python 3.3 standard library
+def _dnsname_to_pat_backport(dn):  # fix for Python2, code from python 3.3 standard library
     import re
 
     pats = []
@@ -135,7 +135,7 @@ def _dnsname_to_pat_backport(dn): # fix for Python2, code from python 3.3 standa
     return re.compile(r'\A' + r'\.'.join(pats) + r'\Z', re.IGNORECASE)
 
 
-def match_hostname_backport(cert, hostname): # fix for Python2, code from python 3.3 standard library
+def match_hostname_backport(cert, hostname):  # fix for Python2, code from python 3.3 standard library
     """Verify that *cert* (in decoded format as returned by
     SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules
     are mostly followed, but IP addresses are not accepted for *hostname*.

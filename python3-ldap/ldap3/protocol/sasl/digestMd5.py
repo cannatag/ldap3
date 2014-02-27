@@ -27,6 +27,7 @@ import hashlib
 import hmac
 from .sasl import abortSaslNegotiation, sendSaslNegotiation, randomHexString
 
+
 def MD5_H(value):
     if not isinstance(value, bytes):
         value = value.encode()

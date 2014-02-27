@@ -33,7 +33,6 @@ from ..operation.bind import referralsToList
 #     ava             AttributeValueAssertion }
 
 
-
 def compareOperation(dn, attribute, value):
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)

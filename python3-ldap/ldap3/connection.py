@@ -173,7 +173,7 @@ class Connection(object):
     Mixing controls must be defined in controls specification (as per rfc 4511)
     """
 
-    def __init__(self, server, user = None, password = None, autoBind = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
+    def __init__(self, server, user = None, password = None, autoBind = False, restartable = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
                  autoReferrals = True, saslMechanism = None, saslCredentials = None, collectUsage = False, readOnly = False):
         """
         Constructor
@@ -230,7 +230,9 @@ class Connection(object):
         self.tlsStarted = False
         self.saslInProgress = False
         self.readOnly = readOnly
+        self.restartable = restartable
         self._contextState = []
+        self._bindControls = None
 
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server
@@ -256,6 +258,7 @@ class Connection(object):
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
         r += '' if self.password is None else ', password={0.password!r}'.format(self)
         r += '' if self.autoBind is None else ', autoBind={0.autoBind!r}'.format(self)
+        r += '' if self.restartable is None else ', restartable={0.restartable!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
         r += '' if self.strategyType is None else ', clientStrategy={0.strategyType!r}'.format(self)
@@ -289,6 +292,8 @@ class Connection(object):
         Bind to ldap with the user defined in Server object
         set forceBind to True to repeat bind (if you set different credentials in connection object)
         """
+        self._bindControls = controls  # useful for restart connection if restartable
+
         if not self.bound or forceBind:
             if self.authentication == AUTH_ANONYMOUS:
                 request = bindOperation(self.version, self.authentication, '', '')

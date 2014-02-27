@@ -28,7 +28,7 @@ from random import choice
 from pyasn1.codec.ber import encoder, decoder
 
 from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, \
-    LDAPException
+    LDAPException, RESTARTABLE_SLEEPTIME
 
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import addResponseToDict, addRequestToDict
@@ -65,6 +65,7 @@ class BaseStrategy(object):
         """
         self._outstanding = dict()
         self._openSocket(self.connection.server.ssl)
+
         if self.connection.usage:
             self.connection.usage.start()
 
@@ -86,7 +87,7 @@ class BaseStrategy(object):
             if self.connection.usage:
                 self.connection.usage.stop()
 
-    def _openSocket(self, useSsl = False):
+    def _openSocketOld(self, useSsl = False):
         """
         Try to open and connect a socket to a Server
         raise LDAPException if unable to open or connect socket
@@ -109,6 +110,44 @@ class BaseStrategy(object):
             except Exception as e:
                 self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
                 raise LDAPException(self.connection.lastError)
+
+        self.connection.closed = False
+
+    def _openSocket(self, useSsl = False):
+        """
+        Try to open and connect a socket to a Server
+        raise LDAPException if unable to open or connect socket
+        if connection is restartable tries for the number of restarting requested or forever
+        """
+        restartableTries = self.connection.restartable or 1
+        localException = None
+        while restartableTries:
+            try:
+                self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            except Exception as e:
+                self.connection.lastError = 'socket creation error: ' + str(e)
+                localException = self.connection.lastError
+            try:
+                self.connection.socket.connect((self.connection.server.host, self.connection.server.port))
+            except socket.error as e:
+                self.connection.lastError = 'socket connection error: ' + str(e)
+                localException = self.connection.lastError
+
+            if useSsl:
+                try:
+                    self.connection.socket = self.connection.server.tls.wrapSocket(self.connection.socket, doHandshake = True)
+                except Exception as e:
+                    self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
+                    localException = self.connection.lastError
+
+            if isinstance(restartableTries, int):
+                restartableTries -= 1
+
+            if restartableTries > 0:  # wait for retrying connection, always for True
+                sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
+
+        if localException:
+            raise localException
 
         self.connection.closed = False
 

@@ -172,7 +172,6 @@ class BaseObjectInfo(object):
 
         return self._oidInfo if self._oidInfo else None
 
-
     def __str__(self):
         return self.__repr__()
 
@@ -294,8 +293,7 @@ class MatchingRuleInfo(BaseObjectInfo):
     """
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, syntax = None, extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
-                                               experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.syntax = syntax
 
     def __repr__(self):
@@ -310,8 +308,7 @@ class MatchingRuleUseInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, applyTo = None, extensions = None, experimental = None,
                  definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
-                                                  experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.applyTo = applyTo
 
     def __repr__(self):
@@ -326,8 +323,7 @@ class ObjectClassInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, kind = None, mustContain = None, mayContain = None,
                  extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
-                                              experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.superior = superior
         self.kind = kind
         self.mustContain = mustContain
@@ -349,8 +345,7 @@ class AttributeTypeInfo(BaseObjectInfo):
     def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, equality = None, ordering = None, substring = None,
                  syntax = None, singleValue = False, collective = False, noUserModification = False, usage = None, extensions = None, experimental = None,
                  definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
-                                                experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.superior = superior
         self.equality = equality
         self.ordering = ordering
@@ -380,8 +375,7 @@ class LdapSyntaxInfo(BaseObjectInfo):
     """
 
     def __init__(self, oid = None, description = None, extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = None, description = description, obsolete = False, extensions = extensions,
-                                             experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = None, description = description, obsolete = False, extensions = extensions, experimental = experimental, definition = definition)
 
     def __repr__(self):
         return 'LDAP syntax' + BaseObjectInfo.__repr__(self).replace('<__desc__>', '')
@@ -394,8 +388,7 @@ class DitContentRuleInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, auxiliaryClasses = None, mustContain = None, mayContain = None,
                  notContains = None, extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
-                                                 experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.auxiliaryClasses = auxiliaryClasses
         self.mustContain = mustContain
         self.mayContain = mayContain
@@ -416,8 +409,7 @@ class DitStructureRuleInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, nameForm = None, superior = None, extensions = None, experimental = None,
                  definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
-                                                   experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.superior = superior
         self.nameForm = nameForm
 
@@ -434,8 +426,7 @@ class NameFormInfo(BaseObjectInfo):
 
     def __init__(self, oid = None, name = None, description = None, obsolete = False, objectClass = None, mustContain = None, mayContain = None,
                  extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions,
-                                           experimental = experimental, definition = definition)
+        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
         self.objectClass = objectClass
         self.mustContain = mustContain
         self.mayContain = mayContain

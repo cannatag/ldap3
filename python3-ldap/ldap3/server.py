@@ -42,6 +42,7 @@ class Server(object):
     """
     _realServers = dict()   # dictionary of real servers currently active, the key is the host part of the server address
     # and the value is the messageId counter for all connection to that host)
+
     def __init__(self, host, port = 389, useSsl = False, allowedReferralHosts = None, getInfo = None, tls = None):
         """
         Constructor
@@ -86,6 +87,7 @@ class Server(object):
         else:
             s = object.__str__(self)
         return s
+
     def __repr__(self):
         r = 'Server(host={0.host!r}, port={0.port!r}, ssl={0.ssl!r}'.format(self)
         r += '' if not self.allowedReferralHosts else ', allowedReferralHosts={0.allowedReferralHosts!r}'.format(self)
@@ -118,7 +120,7 @@ class Server(object):
         self._dsaInfo = None
 
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
-        if isinstance(result, bool):  #sync request
+        if isinstance(result, bool):  # sync request
             self._dsaInfo = DsaInfo(connection.response[0]['attributes']) if result else None
         elif result:  # async request, must check if attributes in response
             results = connection.getResponse(result)
@@ -144,7 +146,7 @@ class Server(object):
                     schemaEntry = results[0]['attributes']['subschemaSubentry'][0]
 
         if schemaEntry:
-            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT,attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
+            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
             if isinstance(result, bool):  # sync request
                 self._schemaInfo = SchemaInfo(schemaEntry, connection.response[0]['attributes']) if result else None
             else:  # async request, must check if attributes in response

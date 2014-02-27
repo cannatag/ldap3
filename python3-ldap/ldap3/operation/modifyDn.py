@@ -32,7 +32,6 @@ from ..operation.bind import referralsToList
 #     newSuperior     [0] LDAPDN OPTIONAL }
 
 
-
 def modifyDnOperation(dn, newRelativeDn, deleteOldRdn = True, newSuperior = None):
     request = ModifyDNRequest()
     request['entry'] = LDAPDN(dn)

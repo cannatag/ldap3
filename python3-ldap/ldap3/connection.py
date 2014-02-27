@@ -284,7 +284,6 @@ class Connection(object):
         if not exc_type is None:
             return False  # reraise LDAPException
 
-
     def bind(self, forceBind = False, controls = None):
         """
         Bind to ldap with the user defined in Server object
@@ -337,7 +336,6 @@ class Connection(object):
         Alias for unbind operation
         """
         self.unbind()
-
 
     def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = None,
                sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False,

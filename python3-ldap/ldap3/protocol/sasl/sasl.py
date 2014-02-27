@@ -160,5 +160,6 @@ def sendSaslNegotiation(connection, controls, payload):
 
     return result
 
+
 def randomHexString(size):
     return str(hexlify(urandom(size)).decode('ascii'))  # str fix for python 2

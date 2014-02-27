@@ -128,6 +128,7 @@ class Reader(object):
         self.pagedSize = None
         self.pagedCriticality = False
         # test
+
     def reset(self):
         self.clear()
         self.validatedQuery = None
@@ -331,18 +332,18 @@ class Reader(object):
         self._createQueryFilter()
         with self.connection:
             result = self.connection.search(searchBase = self.base,
-                                         searchFilter = self.queryFilter,
-                                         searchScope = queryScope,
-                                         dereferenceAliases = self.dereferenceAliases,
-                                         attributes = self.attributes,
-                                         sizeLimit = self.sizeLimit,
-                                         timeLimit = self.timeLimit,
-                                         typesOnly  = self.typesOnly,
-                                         getOperationalAttributes = self.getOperationalAttributes,
-                                         controls = self.controls,
-                                         pagedSize = self.pagedSize,
-                                         pagedCriticality = self.pagedCriticality,
-                                         pagedCookie = self.pagedCookie)
+                                            searchFilter = self.queryFilter,
+                                            searchScope = queryScope,
+                                            dereferenceAliases = self.dereferenceAliases,
+                                            attributes = self.attributes,
+                                            sizeLimit = self.sizeLimit,
+                                            timeLimit = self.timeLimit,
+                                            typesOnly = self.typesOnly,
+                                            getOperationalAttributes = self.getOperationalAttributes,
+                                            controls = self.controls,
+                                            pagedSize = self.pagedSize,
+                                            pagedCriticality = self.pagedCriticality,
+                                            pagedCookie = self.pagedCookie)
 
             if not self.connection.strategy.sync:
                 response = self.connection.getResponse(result)

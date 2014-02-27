@@ -233,6 +233,7 @@ class Connection(object):
         self.restartable = restartable
         self._contextState = []
         self._bindControls = None
+        self._restartableTries = 0
 
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server

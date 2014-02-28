@@ -33,9 +33,9 @@ class Test(unittest.TestCase):
         server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
         self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
                                      authentication = test_authentication)
-        result = self.connection.add(testDnBuilder(test_base, 'test-ldif-1'), 'iNetOrgPerson',
+        self.connection.add(testDnBuilder(test_base, 'test-ldif-1'), 'iNetOrgPerson',
                                      {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif-1', test_name_attr: 'test-ldif-1'})
-        result = self.connection.add(testDnBuilder(test_base, 'test-ldif-2'), 'iNetOrgPerson',
+        self.connection.add(testDnBuilder(test_base, 'test-ldif-2'), 'iNetOrgPerson',
                                      {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif-2', test_name_attr: 'test-ldif-2'})
 
     def tearDown(self):

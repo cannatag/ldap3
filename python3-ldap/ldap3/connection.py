@@ -25,11 +25,12 @@ If not, see <http://www.gnu.org/licenses/>.
 from threading import Lock
 from datetime import datetime
 from os import linesep
+from time import sleep
 
 from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
-    LDAPException
+    LDAPException, RESTARTABLE_SLEEPTIME
 
 from .operation.abandon import abandonOperation
 from .operation.add import addOperation
@@ -73,25 +74,11 @@ class ConnectionUsage(object):
         self.modifyDnOperations = 0
         self.searchOperations = 0
         self.unbindOperations = 0
+        self.restartableTries = 0
+        self.restartableSuccess = 0
 
     def __init__(self):
-        self.connectionStartTime = None
-        self.connectionStopTime = None
-        self.bytesTransmitted = 0
-        self.bytesReceived = 0
-        self.messagesTransmitted = 0
-        self.messagesReceived = 0
-        self.operations = 0
-        self.abandonOperations = 0
-        self.addOperations = 0
-        self.bindOperations = 0
-        self.compareOperations = 0
-        self.deleteOperations = 0
-        self.extendedOperations = 0
-        self.modifyOperations = 0
-        self.modifyDnOperations = 0
-        self.searchOperations = 0
-        self.unbindOperations = 0
+        self.reset()
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep
@@ -114,7 +101,8 @@ class ConnectionUsage(object):
         r += '    ModifyDn: ' + str(self.modifyDnOperations) + linesep
         r += '    Search: ' + str(self.searchOperations) + linesep
         r += '    Unbind: ' + str(self.unbindOperations) + linesep
-
+        r += '  Restartable tries: ' + str(self.restartableTries) + linesep
+        r += '    Successful restarts: ' + str(self.restartableSuccess) + linesep
         return r
 
     def transmittedMessage(self, message, length):
@@ -326,13 +314,29 @@ class Connection(object):
         return self.bound
 
     def _rebind(self):
-        try:
-            self.close()
-        except LDAPException:
-            pass
+
+        if not self.closed:
+            try:
+                self.close()
+            except LDAPException:
+                pass
 
         self.open()
         self.bind(forceBind = True, controls = self._controls)
+
+    def _tryRestart(self, rebind = False):
+        print('restart, trying...', self._restartableTries)
+        if self.usage:
+            self.usage.restartableTries += 1
+
+        sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
+
+        if self.bound:
+            print('  restart, rebind')
+            self._rebind()
+            if self.bound:
+                self.usage.restartableSuccess += 1
+
 
     def unbind(self, controls = None):
         """
@@ -555,3 +559,4 @@ class Connection(object):
             searchResultToLdif = None
 
         return searchResultToLdif
+

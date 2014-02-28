@@ -120,7 +120,6 @@ class Test(unittest.TestCase):
             cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
         self.assertGreater(totalEntries, 9)
 
-
     def testSearchExactMatchWithParenthesesInFilter(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + r'=*\29*)', attributes = [test_name_attr, 'sn'])
         if not isinstance(result, bool):

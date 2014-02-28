@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
     def testSearchWithDereference(self):
         reverse = lambda a, e: e[::-1]
 
-        def raiseParenthesesRank(a, l):
+        def raiseParenthesesRank(_, l):
             up = {'(': '[', ')': ']', '[': '{', ']': '}', '{': '<', '}': '>'}
             r = []
             for e in l:

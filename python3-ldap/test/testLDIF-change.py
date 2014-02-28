@@ -73,7 +73,6 @@ class Test(unittest.TestCase):
         self.assertTrue('newrdn: cn=test-modified-dn-operation' in response)
         self.assertTrue('deleteoldrdn: 0' in response)
 
-
     def testMoveDnRequestToLdif(self):
         result = self.connection.modifyDn(testDnBuilder(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', deleteOldDn = False,  newSuperior = test_moved)
         if not isinstance(result, bool):

@@ -25,7 +25,7 @@ from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
 test_server = 'sl10.intra.camera.it'  # the ldap server where tests executed
 test_user = 'cn=admin,o=services'  # the user that performs the tests
-test_password = 'camera' # user's password
+test_password = 'camera'  # user's password
 
 test_base = 'o=test'  # base context where test objects are created
 test_moved = 'ou=moved,o=test'  # base context where  objects are moved in ModifyDN operations

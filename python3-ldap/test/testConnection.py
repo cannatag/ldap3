@@ -45,7 +45,6 @@ class Test(unittest.TestCase):
         self.assertEquals(self.connection.closed, True)
         self.assertEquals(self.connection.bound, False)
 
-
     def testBindConnection(self):
         self.connection.open()
         self.assertEquals(self.connection.closed, False)
@@ -62,7 +61,6 @@ class Test(unittest.TestCase):
 
         self.assertEquals(self.connection.closed, True)
         self.assertEquals(self.connection.bound, False)
-
 
     def testConnectionInContextWithAs(self):
         with self.connection as c:

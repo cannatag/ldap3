@@ -36,7 +36,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         queryText = 'Common Name:=|john;Bob, Surname:=smith'
-        r = Reader(None, o, queryText, base='o=test')
+        # r = Reader(None, o, queryText, base='o=test')
 
         queryDict = _createQueryDict(queryText)
 

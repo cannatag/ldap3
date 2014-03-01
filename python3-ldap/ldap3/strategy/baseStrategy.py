@@ -67,7 +67,7 @@ class BaseStrategy(object):
         self._openSocket(self.connection.server.ssl)
 
         if self.connection.usage:
-            self.connection.usage.start()
+            self.connection.usage.start(self.connection.restartable)  # reset usage only if not restartable
 
         if startListening:
             self._startListen()
@@ -151,7 +151,7 @@ class BaseStrategy(object):
 
                 print(localException)
                 if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
-                    self.connection._tryRestart()
+                    self.connection._restart()
                     restart = True
 
         if localException:
@@ -259,7 +259,7 @@ class BaseStrategy(object):
 
                 print(localException)
                 if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
-                    self.connection._tryRestart()
+                    self.connection._restart()
                     restart = True
 
         if localException:

@@ -57,6 +57,7 @@ class ConnectionUsage(object):
     """
 
     def reset(self):
+        self.initialConnectionStartTime = None
         self.connectionStartTime = None
         self.connectionStopTime = None
         self.bytesTransmitted = 0
@@ -83,8 +84,9 @@ class ConnectionUsage(object):
     def __repr__(self):
         r = 'Connection Usage:' + linesep
         r += '  Time: [elapsed: ' + str(self.elapsedTime) + ']' + linesep
-        r += '    Start Time: ' + (str(self.connectionStartTime.ctime()) if self.connectionStartTime else '') + linesep
-        r += '    Stop Time: ' + (str(self.connectionStopTime.ctime()) if self.connectionStopTime else '') + linesep
+        r += '    Initial start time: ' + (str(self.initialConnectionStartTime.ctime()) if self.initialConnectionStartTime else '') + linesep
+        r += '    Last start time: ' + (str(self.connectionStartTime.ctime()) if self.connectionStartTime else '') + linesep
+        r += '    Last stop time: ' + (str(self.connectionStopTime.ctime()) if self.connectionStopTime else '') + linesep
         r += '  Bytes: ' + str(self.bytesTransmitted + self.bytesReceived) + linesep
         r += '    Transmitted: ' + str(self.bytesTransmitted) + linesep
         r += '    Received: ' + str(self.bytesReceived) + linesep
@@ -136,9 +138,12 @@ class ConnectionUsage(object):
         self.bytesReceived += length
         self.messagesReceived += 1
 
-    def start(self):
-        self.reset()
+    def start(self, reset = True):
+        if reset:
+            self.reset()
         self.connectionStartTime = datetime.now()
+        if not self.initialConnectionStartTime:
+            self.initialConnectionStartTime = self.connectionStartTime
 
     def stop(self):
         if self.connectionStartTime:
@@ -239,9 +244,15 @@ class Connection(object):
             raise LDAPException(self.lastError)
 
     def __str__(self):
-        return (str(self.server) if self.server.isValid else 'None') + ' - ' + 'user: ' + str(self.user) + ' - version ' + str(self.version) + ' - ' + (
-            'bound' if self.bound else 'unbound') + ' - ' + ('closed' if self.closed else 'open') + ' - ' + ('listening' if self.listening else 'not listening') + ' - ' + self.strategy.__class__.__name__
+        r = str(self.server) if self.server.isValid else 'None' + ' - '
+        r += 'user: ' + str(self.user) + ' - '
+        r += ('restartable: ' + str(self.restartable)) if self.restartable else 'not restartable' + ' - '
+        r += 'bound' if self.bound else 'unbound' + ' - '
+        r += 'closed' if self.closed else 'open' + ' - '
+        r += 'listening' if self.listening else 'not listening' + ' - '
+        r += self.strategy.__class__.__name__
 
+        return r
     def __repr__(self):
         r = 'Connection(server={0.server!r}'.format(self)
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
@@ -324,7 +335,7 @@ class Connection(object):
         self.open()
         self.bind(forceBind = True, controls = self._controls)
 
-    def _tryRestart(self, rebind = False):
+    def _restart(self, rebind = False):
         print('restart, trying...', self._restartableTries)
         if self.usage:
             self.usage.restartableTries += 1
@@ -505,12 +516,13 @@ class Connection(object):
         """
         Abandon the operation indicated by messageId
         """
-        if messageId in self.strategy._outstanding and self.strategy._outstanding[messageId]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
-            request = abandonOperation(messageId)
-            self.send('abandonRequest', request, controls)
-            self.response = None
-            self.result = None
-            return True
+        if self.strategy._outstanding:
+            if messageId in self.strategy._outstanding and self.strategy._outstanding[messageId]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
+                request = abandonOperation(messageId)
+                self.send('abandonRequest', request, controls)
+                self.response = None
+                self.result = None
+                return True
 
         return False
 

@@ -28,7 +28,7 @@ from random import choice
 from pyasn1.codec.ber import encoder, decoder
 
 from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, \
-    LDAPException
+    LDAPException, RESTARTABLE_SLEEPTIME
 
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import addResponseToDict, addRequestToDict
@@ -53,8 +53,9 @@ class BaseStrategy(object):
     """
 
     def __init__(self, ldapConnection):
-        self.sync = None  # indicate a synchronous connection
-        self.noRealDSA = None  # indicate a connection to a fake LDAP server
+        self.sync = None  # indicates a synchronous connection
+        self.noRealDSA = None  # indicates a connection to a fake LDAP server
+        self.restartable = False  # indicates if the strategy is restartable
         self.connection = ldapConnection
         self._outstanding = None
         self._referrals = []
@@ -67,7 +68,7 @@ class BaseStrategy(object):
         self._openSocket(self.connection.server.ssl)
 
         if self.connection.usage:
-            self.connection.usage.start(self.connection.restartable)  # reset usage only if not restartable
+            self.connection.usage.start(not self.connection.restartable)  # don't reset if restartable
 
         if startListening:
             self._startListen()
@@ -87,7 +88,7 @@ class BaseStrategy(object):
             if self.connection.usage:
                 self.connection.usage.stop()
 
-    def _openSocketOld(self, useSsl = False):
+    def _openSocket(self, useSsl = False):
         """
         Try to open and connect a socket to a Server
         raise LDAPException if unable to open or connect socket
@@ -113,7 +114,7 @@ class BaseStrategy(object):
 
         self.connection.closed = False
 
-    def _openSocket(self, useSsl = False):
+    def _openSocketNew(self, useSsl = False):
         """
         Try to open and connect a socket to a Server
         raise LDAPException if unable to open or connect socket
@@ -122,6 +123,7 @@ class BaseStrategy(object):
         if self.connection._restartableTries == 0:
             self.connection._restartableTries = self.connection.restartable
 
+        restarted = False
         restart = True
         while restart:
             localException = None
@@ -149,13 +151,15 @@ class BaseStrategy(object):
                 if isinstance(self.connection._restartableTries, int):
                     self.connection._restartableTries -= 1
 
-                print(localException)
                 if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
                     self.connection._restart()
                     restart = True
+                    restarted = True
 
         if localException:
             raise localException
+        elif restarted:  # successful restarted
+            self.connection._restarted()
 
         self.connection.closed = False
 
@@ -176,7 +180,7 @@ class BaseStrategy(object):
     def _stopListen(self):
         self.connection.listening = False
 
-    def sendOld(self, messageType, request, controls = None):
+    def send(self, messageType, request, controls = None):
         """
         Send an LDAP message
         Returns the messageId
@@ -212,7 +216,44 @@ class BaseStrategy(object):
 
         return messageId
 
-    def send(self, messageType, request, controls = None):
+    def _restartableSend(self, messageType, request, controls = None):
+        try:
+            return self.send(messageType, request, controls)  # try to send as usual
+        except LDAPException as e:  # restart machinery
+            if self.connection.restartable:
+                ret_value = None
+                counter = self.connection.restartable
+                while counter > 0:
+                    print('sleep...')
+                    sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
+
+                    try:
+                        self.close()
+                        self.open()
+                        if self.connection.request.type != 'bindRequest':
+                            self.bind(True, self.connection._bindControls)  # force bind with previously used controls unless the request is already a bindRequest
+                    except Exception as e:
+                        print('close/open/bind exception', e)
+
+                    try:
+                        if self.connection.usage:
+                            self.connection.usage.restartableTries += 1
+                        print('try:', counter)
+                        ret_value = self.send(messageType, request, controls)
+                        if self.connection.usage:
+                            self.connection.usage.restartableSuccess += 1
+                        return ret_value  # successful send
+                    except LDAPException as e:
+                        pass
+
+                    if not isinstance(counter, bool):
+                        counter -= 1
+
+
+    :
+        raise e  # re-raise same exception
+
+    def sendNew(self, messageType, request, controls = None):
         """
         Send an LDAP message
         Returns the messageId
@@ -222,6 +263,7 @@ class BaseStrategy(object):
 
         restart = True
         while restart:
+            print('enter send loop')
             localException = None
             self.connection.request = None
             if self.connection.listening:
@@ -259,8 +301,9 @@ class BaseStrategy(object):
 
                 print(localException)
                 if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
-                    self.connection._restart()
+                    self.connection._restart(request)
                     restart = True
+            print(restart)
 
         if localException:
             raise localException
@@ -285,7 +328,8 @@ class BaseStrategy(object):
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     self.close()
                     self.connection.lastError = 'session terminated by server'
-                    raise LDAPException(self.connection.lastError)
+                    if not self.connection.restartable:
+                        raise LDAPException(self.connection.lastError)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME

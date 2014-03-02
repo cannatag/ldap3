@@ -42,6 +42,7 @@ class SyncWaitStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldapConnection)
         self.sync = True
         self.noRealDSA = False
+        self.restartable = True
 
     def open(self, startListening = True):
         BaseStrategy.open(self, startListening)
@@ -54,7 +55,7 @@ class SyncWaitStrategy(BaseStrategy):
     def receiving(self):
         """
         Receive data over the socket
-        Check if the socket is closed
+        Checks if the socket is closed
         """
         messages = []
         receiving = True

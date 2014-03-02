@@ -58,7 +58,7 @@ class ConnectionUsage(object):
 
     def reset(self):
         self.initialConnectionStartTime = None
-        self.connectionStartTime = None
+        self.open_socket_start_time = None
         self.connectionStopTime = None
         self.bytesTransmitted = 0
         self.bytesReceived = 0
@@ -85,8 +85,8 @@ class ConnectionUsage(object):
         r = 'Connection Usage:' + linesep
         r += '  Time: [elapsed: ' + str(self.elapsedTime) + ']' + linesep
         r += '    Initial start time: ' + (str(self.initialConnectionStartTime.ctime()) if self.initialConnectionStartTime else '') + linesep
-        r += '    Last start time: ' + (str(self.connectionStartTime.ctime()) if self.connectionStartTime else '') + linesep
-        r += '    Last stop time: ' + (str(self.connectionStopTime.ctime()) if self.connectionStopTime else '') + linesep
+        r += '    Open socket time  : ' + (str(self.open_socket_start_time.ctime()) if self.open_socket_start_time else '') + linesep
+        r += '    Close socket time : ' + (str(self.connectionStopTime.ctime()) if self.connectionStopTime else '') + linesep
         r += '  Bytes: ' + str(self.bytesTransmitted + self.bytesReceived) + linesep
         r += '    Transmitted: ' + str(self.bytesTransmitted) + linesep
         r += '    Received: ' + str(self.bytesReceived) + linesep
@@ -141,20 +141,21 @@ class ConnectionUsage(object):
     def start(self, reset = True):
         if reset:
             self.reset()
-        self.connectionStartTime = datetime.now()
+            print('usage reset')
+        self.open_socket_start_time = datetime.now()
         if not self.initialConnectionStartTime:
-            self.initialConnectionStartTime = self.connectionStartTime
+            self.initialConnectionStartTime = self.open_socket_start_time
 
     def stop(self):
-        if self.connectionStartTime:
+        if self.open_socket_start_time:
             self.connectionStopTime = datetime.now()
 
     @property
     def elapsedTime(self):
         if self.connectionStopTime:
-            return self.connectionStopTime - self.connectionStartTime
+            return self.connectionStopTime - self.open_socket_start_time
         else:
-            return datetime.now() - self.connectionStartTime if self.connectionStartTime else 'not started'
+            return datetime.now() - self.open_socket_start_time if self.open_socket_start_time else 'not started'
 
 
 class Connection(object):
@@ -223,10 +224,15 @@ class Connection(object):
         self.tlsStarted = False
         self.saslInProgress = False
         self.readOnly = readOnly
-        self.restartable = restartable
         self._contextState = []
         self._bindControls = None
-        self._restartableTries = 0
+
+        if restartable and self.strategy.restartable:
+            self.restartable = restartable
+            self._restartableTries = 0
+            self.send = self.strategy._restartableSend
+        elif self.restartable:
+            raise LDAPException('chosen strategy is not restartable')
 
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server
@@ -244,15 +250,16 @@ class Connection(object):
             raise LDAPException(self.lastError)
 
     def __str__(self):
-        r = str(self.server) if self.server.isValid else 'None' + ' - '
-        r += 'user: ' + str(self.user) + ' - '
-        r += ('restartable: ' + str(self.restartable)) if self.restartable else 'not restartable' + ' - '
-        r += 'bound' if self.bound else 'unbound' + ' - '
-        r += 'closed' if self.closed else 'open' + ' - '
-        r += 'listening' if self.listening else 'not listening' + ' - '
-        r += self.strategy.__class__.__name__
+        r = [str(self.server) if self.server.isValid else 'None']
+        r.append('user: ' + str(self.user))
+        r.append(('restartable: ' + str(self.restartable)) if self.restartable else 'not restartable')
+        r.append('bound' if self.bound else 'unbound')
+        r.append('closed' if self.closed else 'open')
+        r.append('listening' if self.listening else 'not listening')
+        r.append(self.strategy.__class__.__name__)
 
-        return r
+        return ' - '.join(r)
+
     def __repr__(self):
         r = 'Connection(server={0.server!r}'.format(self)
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
@@ -324,30 +331,43 @@ class Connection(object):
 
         return self.bound
 
-    def _rebind(self):
-
-        if not self.closed:
-            try:
-                self.close()
-            except LDAPException:
-                pass
-
-        self.open()
-        self.bind(forceBind = True, controls = self._controls)
-
-    def _restart(self, rebind = False):
+    def _restart(self, request = None):
         print('restart, trying...', self._restartableTries)
         if self.usage:
             self.usage.restartableTries += 1
 
+        print('  sleeping for ', RESTARTABLE_SLEEPTIME, 's')
         sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
 
-        if self.bound:
-            print('  restart, rebind')
-            self._rebind()
-            if self.bound:
-                self.usage.restartableSuccess += 1
+        success = False
+        print('  request:', request)
+        if not self.closed:
+            try:
+                '  closing...'
+                self.close()
+            except LDAPException as e:
+                print('  got exception while closing:', e)
+        if request:
+            print('  rebind')
+            try:
+                self.open()
+            except LDAPException as e:
+                print('  got exception while opening:', e)
 
+            self.bind(forceBind=True, controls=self._bindControls)
+
+        if self.bound:
+            success = True
+
+        if success:
+            self.usage.restartableSuccess += 1
+
+    def _restarted(self):
+        print('Succesfully restarted')
+        if self.usage:
+            self.usage.restartableSuccess += 1
+
+        self._restartableTries = 0
 
     def unbind(self, controls = None):
         """

@@ -67,7 +67,7 @@ class AsyncThreadedStrategy(BaseStrategy):
 
     def postSendSearch(self, messageId):
         """
-        Clears connection.response and returns messageId.
+        Clears connection.response and returns messageId
         """
         self.connection.response = None
         self.connection.result = messageId

@@ -75,8 +75,8 @@ class ConnectionUsage(object):
         self.modifyDnOperations = 0
         self.searchOperations = 0
         self.unbindOperations = 0
-        self.restartableTries = 0
-        self.restartableSuccess = 0
+        self.restartableFailures = 0
+        self.restartableSuccesses = 0
 
     def __init__(self):
         self.reset()
@@ -103,8 +103,9 @@ class ConnectionUsage(object):
         r += '    ModifyDn: ' + str(self.modifyDnOperations) + linesep
         r += '    Search: ' + str(self.searchOperations) + linesep
         r += '    Unbind: ' + str(self.unbindOperations) + linesep
-        r += '  Restartable tries: ' + str(self.restartableTries) + linesep
-        r += '    Successful restarts: ' + str(self.restartableSuccess) + linesep
+        r += '  Restartable tries: ' + str(self.restartableFailures + self.restartableSuccesses) + linesep
+        r += '    Failed restarts: ' + str(self.restartableFailures) + linesep
+        r += '    Successful restarts: ' + str(self.restartableSuccesses) + linesep
         return r
 
     def transmittedMessage(self, message, length):
@@ -229,10 +230,11 @@ class Connection(object):
 
         if restartable and self.strategy.restartable:
             self.restartable = restartable
-            self._restartableTries = 0
             self.send = self.strategy._restartableSend
-        elif self.restartable:
+        elif restartable:
             raise LDAPException('chosen strategy is not restartable')
+        else:
+            self.restartable = False
 
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server
@@ -330,44 +332,6 @@ class Connection(object):
                 self.refreshDsaInfo()
 
         return self.bound
-
-    def _restart(self, request = None):
-        print('restart, trying...', self._restartableTries)
-        if self.usage:
-            self.usage.restartableTries += 1
-
-        print('  sleeping for ', RESTARTABLE_SLEEPTIME, 's')
-        sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
-
-        success = False
-        print('  request:', request)
-        if not self.closed:
-            try:
-                '  closing...'
-                self.close()
-            except LDAPException as e:
-                print('  got exception while closing:', e)
-        if request:
-            print('  rebind')
-            try:
-                self.open()
-            except LDAPException as e:
-                print('  got exception while opening:', e)
-
-            self.bind(forceBind=True, controls=self._bindControls)
-
-        if self.bound:
-            success = True
-
-        if success:
-            self.usage.restartableSuccess += 1
-
-    def _restarted(self):
-        print('Succesfully restarted')
-        if self.usage:
-            self.usage.restartableSuccess += 1
-
-        self._restartableTries = 0
 
     def unbind(self, controls = None):
         """

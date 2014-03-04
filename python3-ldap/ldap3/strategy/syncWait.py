@@ -42,7 +42,7 @@ class SyncWaitStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldapConnection)
         self.sync = True
         self.noRealDSA = False
-        self.restartable = True
+        self.restartable = False
 
     def open(self, startListening = True):
         BaseStrategy.open(self, startListening)
@@ -69,6 +69,9 @@ class SyncWaitStrategy(BaseStrategy):
                 except OSError as e:
                     # if e.winerror == 10004:  # window error for socket not open
                     self.close()
+                    self.connection.lastError = 'Error receiving data: ' + str(e)
+                    raise LDAPException(self.connection.lastError)
+                except AttributeError as e:
                     self.connection.lastError = 'Error receiving data: ' + str(e)
                     raise LDAPException(self.connection.lastError)
                 unprocessed += data

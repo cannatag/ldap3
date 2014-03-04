@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
-        self.assertGreater(len(self.connection.response), 8)
+        self.assertTrue(len(self.connection.response) > 8)
 
     def testSearchPresent(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(objectClass=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
@@ -62,7 +62,7 @@ class Test(unittest.TestCase):
         if not isinstance(result, bool):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
-        self.assertGreater(len(self.connection.response), 9)
+        self.assertTrue(len(self.connection.response) > 9)
 
     def testSearchSubstringMany(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(sn=t*)', attributes = [test_name_attr, 'givenName', 'sn'])
@@ -70,7 +70,7 @@ class Test(unittest.TestCase):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
 
-        self.assertGreater(len(self.connection.response), 8)
+        self.assertTrue(len(self.connection.response) > 8)
 
     def testSearchSubstringOne(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=*y)', attributes = [test_name_attr, 'givenName', 'sn'])
@@ -78,7 +78,7 @@ class Test(unittest.TestCase):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
 
-        self.assertGreater(len(self.connection.response), 1)
+        self.assertTrue(len(self.connection.response) > 1)
 
     def testSearchRaw(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=*)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
@@ -87,7 +87,7 @@ class Test(unittest.TestCase):
             self.connection.getResponse(result)
         self.assertEqual(self.connection.result['description'], 'success')
 
-        self.assertGreater(len(self.connection.response), 8)
+        self.assertTrue(len(self.connection.response) > 8)
 
     def testSearchWithOperationalAttributes(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + '=test-add-operation)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
@@ -116,9 +116,9 @@ class Test(unittest.TestCase):
                 self.connection.getResponse(result)
             self.assertEqual(self.connection.result['description'], 'success')
             totalEntries += len(self.connection.response)
-            self.assertLessEqual(len(self.connection.response), pagedSize)
+            self.assertTrue(len(self.connection.response) <= pagedSize)
             cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-        self.assertGreater(totalEntries, 9)
+        self.assertTrue(totalEntries > 9)
 
     def testSearchExactMatchWithParenthesesInFilter(self):
         result = self.connection.search(searchBase = test_base, searchFilter = '(' + test_name_attr + r'=*\29*)', attributes = [test_name_attr, 'sn'])

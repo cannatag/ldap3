@@ -43,4 +43,4 @@ class Test(unittest.TestCase):
         result = self.connection.delete(testDnBuilder(test_base, 'test-add-for-delete'))
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success', 'noSuchObject'])
+        self.assertTrue(self.connection.result['description'] in ['success', 'noSuchObject'])

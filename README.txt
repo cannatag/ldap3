@@ -687,6 +687,7 @@ CHANGELOG
 
 * 0.8.2
     - Added refresh() method to Entry object to read again the attributes from the Reader
+    - Fixed python2.6 issues
 
 * 0.8,1
     - Changed Exception returned by the library to LDAPException, a subclass of Exception.

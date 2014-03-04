@@ -50,7 +50,7 @@ class Test(unittest.TestCase):
         if not isinstance(result, bool):
             connection.getResponse(result)
         self.assertEqual(connection.result['description'], 'success')
-        self.assertGreater(len(connection.response), 15)
+        self.assertTrue(len(connection.response) > 15)
         connection.unbind()
 
     def testSearchWithTlsAfterBind(self):
@@ -64,7 +64,7 @@ class Test(unittest.TestCase):
         if not isinstance(result, bool):
             connection.getResponse(result)
         self.assertEqual(connection.result['description'], 'success')
-        self.assertGreater(len(connection.response), 15)
+        self.assertTrue(len(connection.response) > 15)
 
     def testBindSslWithCertificate(self):
         tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED,

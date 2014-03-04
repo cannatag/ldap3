@@ -44,4 +44,4 @@ class Test(unittest.TestCase):
         result = self.connection.search(test_base, '(objectClass=*)', attributes = ['sn, givenName'], sizeLimit = 0, controls = controls)
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success', 'operationsError'])
+        self.assertTrue(self.connection.result['description'] in ['success', 'operationsError'])

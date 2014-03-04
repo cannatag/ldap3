@@ -23,8 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 # noinspection PyUnresolvedReferences
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED
 
-test_server = 'edir.vbox'  # the ldap server where tests executed
-test_user = 'cn=admin,o=risorse'  # the user that performs the tests
+test_server = 'server'  # the ldap server where tests executed
+test_user = 'user'  # the user that performs the tests
 test_password = 'password'  # user's password
 
 test_base = 'o=test'  # base context where test objects are created

@@ -43,23 +43,23 @@ class Test(unittest.TestCase):
         result = self.connection.extended('2.16.840.1.113719.1.27.100.19', 'cn=server')
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success', 'noSuchObject'])
+        self.assertTrue(self.connection.result['description'] in ['success', 'noSuchObject'])
 
     def testWhoAmIExtension(self):
         result = self.connection.extended('1.3.6.1.4.1.4203.1.11.3')
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success', 'protocolError'])
+        self.assertTrue(self.connection.result['description'] in ['success', 'protocolError'])
 
     def testGetBindDNExtension(self):
         result = self.connection.extended('2.16.840.1.113719.1.27.100.31')
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success'])
+        self.assertTrue(self.connection.result['description'] in ['success'])
 
     def testStartTLSExtension(self):
         self.connection.server.tls = Tls()
         result = self.connection.extended('1.3.6.1.4.1.1466.20037')
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success'])
+        self.assertTrue(self.connection.result['description'] in ['success'])

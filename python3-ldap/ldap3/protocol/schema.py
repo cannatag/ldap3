@@ -109,16 +109,15 @@ class SchemaInfo(object):
         self.schemaEntry = schemaEntry
         self.createTimeStamp = attributes.pop('createTimestamp', None)
         self.modifyTimeStamp = attributes.pop('modifyTimestamp', None)
-        self.attributeTypes = {obj.oid: obj for obj in [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])]}
-        self.objectClasses = {obj.oid: obj for obj in [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])]}
-        self.matchingRules = {obj.oid: obj for obj in [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])]}
-        self.matchingRuleUses = {obj.oid: obj for obj in
-                                 [MatchingRuleUseInfo.fromDefinition(definition) for definition in attributes.pop('matchingRuleUse', [])]}
-        self.ditContentRules = {obj.oid: obj for obj in [DitContentRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITContentRules', [])]}
-        self.ditStructureRules = {obj.oid: obj for obj in
-                                  [DitStructureRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITStructureRules', [])]}
-        self.nameForms = {obj.oid: obj for obj in [NameFormInfo.fromDefinition(definition) for definition in attributes.pop('nameForms', [])]}
-        self.ldapSyntaxes = {obj.oid: obj for obj in [LdapSyntaxInfo.fromDefinition(definition) for definition in attributes.pop('ldapSyntaxes', [])]}
+
+        self.attributeTypes = dict((obj.oid, obj) for obj in [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])])
+        self.objectClasses = dict((obj.oid, obj) for obj in [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])])
+        self.matchingRules = dict((obj.oid, obj) for obj in [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])])
+        self.matchingRuleUses = dict((obj.oid, obj) for obj in [MatchingRuleUseInfo.fromDefinition(definition) for definition in attributes.pop('matchingRuleUse', [])])
+        self.ditContentRules = dict((obj.oid, obj) for obj in [DitContentRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITContentRules', [])])
+        self.ditStructureRules = dict((obj.oid, obj) for obj in [DitStructureRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITStructureRules', [])])
+        self.nameForms = dict((obj.oid, obj) for obj in [NameFormInfo.fromDefinition(definition) for definition in attributes.pop('nameForms', [])])
+        self.ldapSyntaxes = dict((obj.oid, obj) for obj in [LdapSyntaxInfo.fromDefinition(definition) for definition in attributes.pop('ldapSyntaxes', [])])
         self.other = attributes
 
     def __str__(self):

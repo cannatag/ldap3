@@ -28,7 +28,7 @@ from random import choice
 from pyasn1.codec.ber import encoder, decoder
 
 from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, \
-    LDAPException, RESTARTABLE_SLEEPTIME
+    LDAPException
 
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import addResponseToDict, addRequestToDict
@@ -68,7 +68,7 @@ class BaseStrategy(object):
         self._openSocket(self.connection.server.ssl)
 
         if self.connection.usage:
-            self.connection.usage.start(not self.connection.restartable)  # don't reset if restartable
+            self.connection.usage.start()
 
         if startListening:
             self._startListen()
@@ -111,55 +111,6 @@ class BaseStrategy(object):
             except Exception as e:
                 self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
                 raise LDAPException(self.connection.lastError)
-
-        self.connection.closed = False
-
-    def _openSocketNew(self, useSsl = False):
-        """
-        Try to open and connect a socket to a Server
-        raise LDAPException if unable to open or connect socket
-        if connection is restartable tries for the number of restarting requested or forever
-        """
-        if self.connection._restartableTries == 0:
-            self.connection._restartableTries = self.connection.restartable
-
-        restarted = False
-        restart = True
-        while restart:
-            localException = None
-            print('openSocket, restartable tries:', self.connection._restartableTries)
-            try:
-                self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            except Exception as e:
-                self.connection.lastError = 'socket creation error: ' + str(e)
-                localException = e
-            try:
-                self.connection.socket.connect((self.connection.server.host, self.connection.server.port))
-            except socket.error as e:
-                self.connection.lastError = 'socket connection error: ' + str(e)
-                localException = e
-
-            if useSsl:
-                try:
-                    self.connection.socket = self.connection.server.tls.wrapSocket(self.connection.socket, doHandshake = True)
-                except Exception as e:
-                    self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
-                    localException = e
-
-            restart = False
-            if localException:
-                if isinstance(self.connection._restartableTries, int):
-                    self.connection._restartableTries -= 1
-
-                if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
-                    self.connection._restart()
-                    restart = True
-                    restarted = True
-
-        if localException:
-            raise localException
-        elif restarted:  # successful restarted
-            self.connection._restarted()
 
         self.connection.closed = False
 
@@ -216,100 +167,6 @@ class BaseStrategy(object):
 
         return messageId
 
-    def _restartableSend(self, messageType, request, controls = None):
-        try:
-            return self.send(messageType, request, controls)  # try to send as usual
-        except LDAPException as e:  # restart machinery
-            if self.connection.restartable:
-                ret_value = None
-                counter = self.connection.restartable
-                while counter > 0:
-                    print('sleep...')
-                    sleep(RESTARTABLE_SLEEPTIME)  # defined in __init__.py
-
-                    try:
-                        self.close()
-                        self.open()
-                        if self.connection.request.type != 'bindRequest':
-                            self.bind(True, self.connection._bindControls)  # force bind with previously used controls unless the request is already a bindRequest
-                    except Exception as e:
-                        print('close/open/bind exception', e)
-
-                    try:
-                        if self.connection.usage:
-                            self.connection.usage.restartableTries += 1
-                        print('try:', counter)
-                        ret_value = self.send(messageType, request, controls)
-                        if self.connection.usage:
-                            self.connection.usage.restartableSuccess += 1
-                        return ret_value  # successful send
-                    except LDAPException as e:
-                        pass
-
-                    if not isinstance(counter, bool):
-                        counter -= 1
-
-
-    :
-        raise e  # re-raise same exception
-
-    def sendNew(self, messageType, request, controls = None):
-        """
-        Send an LDAP message
-        Returns the messageId
-        """
-        if self.connection._restartableTries == 0:
-            self.connection._restartableTries = self.connection.restartable
-
-        restart = True
-        while restart:
-            print('enter send loop')
-            localException = None
-            self.connection.request = None
-            if self.connection.listening:
-                if self.connection.saslInProgress and messageType not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
-                    self.connection.lastError = 'cannot send operation requests while SASL bind is in progress'
-                    raise LDAPException(self.connection.lastError)
-                messageId = self.connection.server.nextMessageId()
-                ldapMessage = LDAPMessage()
-                ldapMessage['messageID'] = MessageID(messageId)
-                ldapMessage['protocolOp'] = ProtocolOp().setComponentByName(messageType, request)
-                messageControls = buildControlsList(controls)
-                if messageControls is not None:
-                    ldapMessage['controls'] = messageControls
-
-                try:
-                    encodedMessage = encoder.encode(ldapMessage)
-                    self.connection.socket.sendall(encodedMessage)
-                except socket.error as e:
-                    self.connection.lastError = 'socket sending error' + str(e)
-                    localException = e
-
-                self.connection.request = BaseStrategy.decodeRequest(ldapMessage)
-                self.connection.request['controls'] = controls
-                self._outstanding[messageId] = self.connection.request
-                if self.connection.usage:
-                    self.connection.usage.transmittedMessage(self.connection.request, len(encodedMessage))
-            else:
-                self.connection.lastError = 'unable to send message, socket is not open'
-                localException = LDAPException(self.connection.lastError)
-
-            restart = False
-            if localException:
-                if isinstance(self.connection._restartableTries, int):
-                    self.connection._restartableTries -= 1
-
-                print(localException)
-                if self.connection._restartableTries > 0:  # wait for retrying connection, always for True
-                    self.connection._restart(request)
-                    restart = True
-            print(restart)
-
-        if localException:
-            raise localException
-
-        return messageId
-
     def getResponse(self, messageId, timeout = RESPONSE_WAITING_TIMEOUT):
         """
         Get response LDAP messages
@@ -328,8 +185,7 @@ class BaseStrategy(object):
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     self.close()
                     self.connection.lastError = 'session terminated by server'
-                    if not self.connection.restartable:
-                        raise LDAPException(self.connection.lastError)
+                    raise LDAPException(self.connection.lastError)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME

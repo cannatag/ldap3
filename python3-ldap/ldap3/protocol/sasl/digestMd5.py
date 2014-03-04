@@ -70,7 +70,7 @@ def saslDigestMd5(connection, controls):
 
     # step One of rfc 2831
     result = sendSaslNegotiation(connection, controls, None)
-    serverDirectives = {attr[0]: attr[1].strip('"') for attr in [line.split('=') for line in result['saslCreds'].split(',')]}  # convert directives to dict, unquote values
+    serverDirectives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in result['saslCreds'].split(',')])  # convert directives to dict, unquote values
 
     if 'realm' not in serverDirectives or 'nonce' not in serverDirectives or 'algorithm' not in serverDirectives:  # mandatory directives, as per rfc 2831
         abortSaslNegotiation(connection, controls)
@@ -78,12 +78,12 @@ def saslDigestMd5(connection, controls):
 
     # step Two of rfc 2831
     charset = serverDirectives['charset'] if 'charset' in serverDirectives and serverDirectives['charset'].lower() == 'utf-8' else 'iso8859-1'
-    user = connection.saslCredentials[1].encode(encoding = charset)
-    realm = (connection.saslCredentials[0] if connection.saslCredentials[0] else (serverDirectives['realm'] if 'realm' in serverDirectives else '')).encode(encoding = charset)
-    password = connection.saslCredentials[2].encode(encoding = charset)
-    authzId = connection.saslCredentials[3].encode(encoding = charset) if connection.saslCredentials[3] else b''
-    nonce = serverDirectives['nonce'].encode(encoding = charset)
-    cnonce = randomHexString(16).encode(encoding = charset)
+    user = connection.saslCredentials[1].encode(charset)
+    realm = (connection.saslCredentials[0] if connection.saslCredentials[0] else (serverDirectives['realm'] if 'realm' in serverDirectives else '')).encode(charset)
+    password = connection.saslCredentials[2].encode(charset)
+    authzId = connection.saslCredentials[3].encode(charset) if connection.saslCredentials[3] else b''
+    nonce = serverDirectives['nonce'].encode(charset)
+    cnonce = randomHexString(16).encode(charset)
     uri = b'ldap/'
     qop = b'auth'
 

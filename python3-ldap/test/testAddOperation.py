@@ -43,4 +43,4 @@ class Test(unittest.TestCase):
         result = self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'})
         if not isinstance(result, bool):
             self.connection.getResponse(result)
-        self.assertIn(self.connection.result['description'], ['success', 'entryAlreadyExists'])
+        self.assertTrue(self.connection.result['description'] in ['success', 'entryAlreadyExists'])

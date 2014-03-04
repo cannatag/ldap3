@@ -41,10 +41,10 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def testSchema(self):
-        self.assertIsInstance(self.server.schema, SchemaInfo)
+        self.assertTrue(type(self.server.schema), SchemaInfo)
 
     def testObjectClasses(self):
-        self.assertIsInstance(self.server.schema.objectClasses['2.5.6.6'], ObjectClassInfo)
+        self.assertTrue(type(self.server.schema.objectClasses['2.5.6.6']), ObjectClassInfo)
 
     def testAttributesTypes(self):
-        self.assertIsInstance(self.server.schema.attributeTypes['2.5.4.3'], AttributeTypeInfo)
+        self.assertTrue(type(self.server.schema.attributeTypes['2.5.4.3']), AttributeTypeInfo)

@@ -61,7 +61,11 @@ def convertToLdif(descriptor, value, base64):
         value = bytearray(value, encoding = 'UTF-8')
 
     if base64 or not safeLdifString(value):
-        encoded = b64encode(value)
+        try:
+            encoded = b64encode(value)
+        except TypeError:
+            encoded = b64encode(str(value))  # patch for python2.6
+
         if not isinstance(encoded, str):  # in python3 b64encode returns bytes in python2 returns str
             encoded = str(encoded, encoding = 'ASCII')
 
@@ -70,8 +74,8 @@ def convertToLdif(descriptor, value, base64):
         if not isinstance(value, bytearray):  # python3
             value = str(value, encoding = 'ASCII')
         else:  # python2
-            value = value.decode(encoding = 'ASCII')
-
+            # value = value.decode(encoding = 'ASCII')
+            value = value.decode('ASCII')
         line = descriptor + ': ' + value
 
     # check max line lenght and split as per note 2 of RFC 2849

@@ -30,7 +30,7 @@ from time import sleep
 from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
-    LDAPException, RESTARTABLE_SLEEPTIME
+    LDAPException, STRATEGY_SYNC_RESTARTABLE
 
 from .operation.abandon import abandonOperation
 from .operation.add import addOperation
@@ -47,6 +47,7 @@ from .protocol.sasl.external import saslExternal
 from .strategy.asyncThreaded import AsyncThreadedStrategy
 from .strategy.ldifProducer import LdifProducerStrategy
 from .strategy.syncWait import SyncWaitStrategy
+from .strategy.syncWaitRestartable import SyncWaitRestartableStrategy
 from .operation.unbind import unbindOperation
 from .protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 
@@ -142,7 +143,6 @@ class ConnectionUsage(object):
     def start(self, reset = True):
         if reset:
             self.reset()
-            print('usage reset')
         self.open_socket_start_time = datetime.now()
         if not self.initialConnectionStartTime:
             self.initialConnectionStartTime = self.open_socket_start_time
@@ -168,7 +168,7 @@ class Connection(object):
     Mixing controls must be defined in controls specification (as per rfc 4511)
     """
 
-    def __init__(self, server, user = None, password = None, autoBind = False, restartable = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
+    def __init__(self, server, user = None, password = None, autoBind = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
                  autoReferrals = True, saslMechanism = None, saslCredentials = None, collectUsage = False, readOnly = False):
         """
         Constructor
@@ -184,7 +184,8 @@ class Connection(object):
             self.strategy = AsyncThreadedStrategy(self)
         elif self.strategyType == STRATEGY_LDIF_PRODUCER:
             self.strategy = LdifProducerStrategy(self)
-
+        elif self.strategyType == STRATEGY_SYNC_RESTARTABLE:
+            self.strategy = SyncWaitRestartableStrategy(self)
         else:
             self.strategy = None
 
@@ -228,14 +229,6 @@ class Connection(object):
         self._contextState = []
         self._bindControls = None
 
-        if restartable and self.strategy.restartable:
-            self.restartable = restartable
-            self.send = self.strategy._restartableSend
-        elif restartable:
-            raise LDAPException('chosen strategy is not restartable')
-        else:
-            self.restartable = False
-
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server
             self.version = version
@@ -254,7 +247,6 @@ class Connection(object):
     def __str__(self):
         r = [str(self.server) if self.server.isValid else 'None']
         r.append('user: ' + str(self.user))
-        r.append(('restartable: ' + str(self.restartable)) if self.restartable else 'not restartable')
         r.append('bound' if self.bound else 'unbound')
         r.append('closed' if self.closed else 'open')
         r.append('listening' if self.listening else 'not listening')
@@ -267,7 +259,6 @@ class Connection(object):
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
         r += '' if self.password is None else ', password={0.password!r}'.format(self)
         r += '' if self.autoBind is None else ', autoBind={0.autoBind!r}'.format(self)
-        r += '' if self.restartable is None else ', restartable={0.restartable!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
         r += '' if self.strategyType is None else ', clientStrategy={0.strategyType!r}'.format(self)
@@ -301,7 +292,7 @@ class Connection(object):
         Bind to ldap with the user defined in Server object
         set forceBind to True to repeat bind (if you set different credentials in connection object)
         """
-        self._bindControls = controls  # needed for restarting connection (if restartable)
+        self._bindControls = controls  # needed for restarting connection (if a restartable strategy is used)
 
         if not self.bound or forceBind:
             if self.authentication == AUTH_ANONYMOUS:

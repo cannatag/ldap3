@@ -685,12 +685,15 @@ I wish to thank Assembla for providing the free source repository space and the 
 CHANGELOG
 =========
 
-* 0.8.2
+* 0.8.3
+    - SyncWaitRestartable strategy
+
+* 0.8.2 2014.03.04
     - Added refresh() method to Entry object to read again the attributes from the Reader
     - Fixed python 2.6 issues
     - Fixed test suite for python 2.6
 
-* 0.8,1
+* 0.8,1 2014.02.12
     - Changed Exception returned by the library to LDAPException, a subclass of Exception.
     - Fixed documentation typos
 

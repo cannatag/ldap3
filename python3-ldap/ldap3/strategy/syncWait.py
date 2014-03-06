@@ -44,8 +44,8 @@ class SyncWaitStrategy(BaseStrategy):
         self.noRealDSA = False
         self.restartable = False
 
-    def open(self, startListening = True):
-        BaseStrategy.open(self, startListening)
+    def open(self, startListening = True, resetUsage = True):
+        BaseStrategy.open(self, startListening, resetUsage)
         self.connection.refreshDsaInfo()
 
     def _startListen(self):

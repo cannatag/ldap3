@@ -68,7 +68,7 @@ class Tls(object):
 
     def wrapSocket(self, sock, doHandshake = False):
         """
-        Add TLS to a plain socket and return the SSL socket
+        Adds TLS to a plain socket and returns the SSL socket
         """
         return ssl.wrap_socket(sock, keyfile = self.privateKeyFile, certfile = self.certificateFile, server_side = False, cert_reqs = self.validate,
                                ssl_version = self.version, ca_certs = self.caCertsFile, do_handshake_on_connect = doHandshake)
@@ -76,7 +76,7 @@ class Tls(object):
     @staticmethod
     def unwrapSocket(sock):
         """
-        Remove TLS from an SSL socket and return the plain socket
+        Removes TLS from an SSL socket and returns the plain socket
         """
         return sock.unwrap()
 
@@ -96,6 +96,9 @@ class Tls(object):
 
     def _startTls(self, connection):
         connection.socket = self.wrapSocket(connection.socket, False)
+        if connection.usage:
+            connection.usage.wrappedSocket += 1
+
         try:
             connection.socket.do_handshake()
         except:

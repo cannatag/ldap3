@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+
 from collections import namedtuple
 from ldap3 import OID_CONTROL, OID_EXTENSION, OID_FEATURE, OID_UNSOLICITED_NOTICE, OID_LDAP_SYNTAX, OID_ATTRIBUTE_TYPE, OID_MATCHING_RULE, OID_NAME_FORM, OID_OBJECT_CLASS, OID_ADMINISTRATIVE_ROLE
 

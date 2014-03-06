@@ -48,12 +48,12 @@ class AsyncThreadedStrategy(BaseStrategy):
         self._responses = None
         self.receiver = None
 
-    def open(self, startListening = True):
+    def open(self, startListening = True, resetUsage = True):
         """
         Open connection and start listen on the socket in a different thread
         """
         with self.connection.lock:
-            BaseStrategy.open(self, startListening)
+            BaseStrategy.open(self, startListening, resetUsage = True)
             self._responses = dict()
 
         self.connection.refreshDsaInfo()

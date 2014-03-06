@@ -60,15 +60,16 @@ class BaseStrategy(object):
         self._outstanding = None
         self._referrals = []
 
-    def open(self, startListening = True):
+    def open(self, startListening = True, resetUsage = True):
         """
         Open a socket to a server
         """
         self._outstanding = dict()
-        self._openSocket(self.connection.server.ssl)
-
         if self.connection.usage:
-            self.connection.usage.start()
+            if resetUsage or not self.connection.usage.initialConnectionStartTime:
+                self.connection.usage.start()
+
+        self._openSocket(self.connection.server.ssl)
 
         if startListening:
             self._startListen()
@@ -108,9 +109,14 @@ class BaseStrategy(object):
         if useSsl:
             try:
                 self.connection.socket = self.connection.server.tls.wrapSocket(self.connection.socket, doHandshake = True)
+                if self.connection.usage:
+                    self.connection.usage.wrappedSocket += 1
             except Exception as e:
                 self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
                 raise LDAPException(self.connection.lastError)
+
+        if self.connection.usage:
+            self.connection.usage.openedSockets += 1
 
         self.connection.closed = False
 
@@ -127,6 +133,9 @@ class BaseStrategy(object):
             raise LDAPException(self.connection.lastError)
         self.connection.socket = None
         self.connection.closed = True
+
+        if self.connection.usage:
+            self.connection.usage.closedSockets += 1
 
     def _stopListen(self):
         self.connection.listening = False

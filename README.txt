@@ -5,7 +5,7 @@ python3-ldap is a pure Python 3 LDAP version 3 strictly conforming to RFC4511.
 RFC4511 is the current LDAP specification (June 2006) from IETF and obsoletes the previous LDAP
 RFCs 2251, 2830, 3771 (December 1997)
 
-python3-ldap can be used on python3 and python2  (starting from version 0.6.1). In python2 there is no direct Unicode support.
+python3-ldap can be used on Python 3 and Python 2 (starting from 2.6). In Python 2 there is no direct Unicode support, you get always str (bytes) as response.
 
 
 License
@@ -687,6 +687,8 @@ CHANGELOG
 
 * 0.8.3
     - SyncWaitRestartable strategy
+    - removed forceBind parameter
+    - usage statistics updated with restartable successes/failures counters and open/closed/wrapped sockets counter
 
 * 0.8.2 2014.03.04
     - Added refresh() method to Entry object to read again the attributes from the Reader

@@ -61,6 +61,10 @@ class ConnectionUsage(object):
         self.initialConnectionStartTime = None
         self.open_socket_start_time = None
         self.connectionStopTime = None
+        self.openedSockets = 0
+        self.closedSockets = 0
+        self.wrappedSockets = 0
+        self.unwrappedSockets = 0
         self.bytesTransmitted = 0
         self.bytesReceived = 0
         self.messagesTransmitted = 0
@@ -85,13 +89,17 @@ class ConnectionUsage(object):
     def __repr__(self):
         r = 'Connection Usage:' + linesep
         r += '  Time: [elapsed: ' + str(self.elapsedTime) + ']' + linesep
-        r += '    Initial start time: ' + (str(self.initialConnectionStartTime.ctime()) if self.initialConnectionStartTime else '') + linesep
-        r += '    Open socket time  : ' + (str(self.open_socket_start_time.ctime()) if self.open_socket_start_time else '') + linesep
-        r += '    Close socket time : ' + (str(self.connectionStopTime.ctime()) if self.connectionStopTime else '') + linesep
+        r += '    Initial start time: ' + (str(self.initialConnectionStartTime.isoformat()) if self.initialConnectionStartTime else '') + linesep
+        r += '    Open socket time  : ' + (str(self.open_socket_start_time.isoformat()) if self.open_socket_start_time else '') + linesep
+        r += '    Close socket time : ' + (str(self.connectionStopTime.isoformat()) if self.connectionStopTime else '') + linesep
+        r += '  Sockets:' + linesep
+        r += '    Sockets opened: ' + str(self.openedSockets) + linesep
+        r += '    Sockets closed: ' + str(self.closedSockets) + linesep
+        r += '    Sockets wrapped : ' + str(self.wrappedSockets) + linesep
         r += '  Bytes: ' + str(self.bytesTransmitted + self.bytesReceived) + linesep
         r += '    Transmitted: ' + str(self.bytesTransmitted) + linesep
         r += '    Received: ' + str(self.bytesReceived) + linesep
-        r += '  Messages:' + str(self.messagesTransmitted + self.messagesReceived) + linesep
+        r += '  Messages: ' + str(self.messagesTransmitted + self.messagesReceived) + linesep
         r += '    Trasmitted: ' + str(self.messagesTransmitted) + linesep
         r += '    Received: ' + str(self.messagesReceived) + linesep
         r += '  Operations: ' + str(self.operations) + linesep
@@ -227,7 +235,6 @@ class Connection(object):
         self.saslInProgress = False
         self.readOnly = readOnly
         self._contextState = []
-        self._bindControls = None
 
         if not self.strategy.noRealDSA and server.isValid():
             self.server = server
@@ -287,40 +294,37 @@ class Connection(object):
         if not exc_type is None:
             return False  # reraise LDAPException
 
-    def bind(self, forceBind = False, controls = None):
+    def bind(self, controls = None):
         """
         Bind to ldap with the user defined in Server object
-        set forceBind to True to repeat bind (if you set different credentials in connection object)
         """
-        self._bindControls = controls  # needed for restarting connection (if a restartable strategy is used)
 
-        if not self.bound or forceBind:
-            if self.authentication == AUTH_ANONYMOUS:
-                request = bindOperation(self.version, self.authentication, '', '')
-                response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
-            elif self.authentication == AUTH_SIMPLE:
-                request = bindOperation(self.version, self.authentication, self.user, self.password)
-                response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
-            elif self.authentication == AUTH_SASL:
-                if self.saslMechanism in SASL_AVAILABLE_MECHANISMS:
-                    response = self.doSaslBind(controls)
-                else:
-                    self.lastError = 'requested sasl mechanism not supported'
-                    raise LDAPException(self.lastError)
+        if self.authentication == AUTH_ANONYMOUS:
+            request = bindOperation(self.version, self.authentication, '', '')
+            response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
+        elif self.authentication == AUTH_SIMPLE:
+            request = bindOperation(self.version, self.authentication, self.user, self.password)
+            response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
+        elif self.authentication == AUTH_SASL:
+            if self.saslMechanism in SASL_AVAILABLE_MECHANISMS:
+                response = self.doSaslBind(controls)
             else:
-                self.lastError = 'unknown authentication method'
+                self.lastError = 'requested sasl mechanism not supported'
                 raise LDAPException(self.lastError)
+        else:
+            self.lastError = 'unknown authentication method'
+            raise LDAPException(self.lastError)
 
-            if isinstance(response, int):  # get response if async
-                self.getResponse(response)
+        if isinstance(response, int):  # get response if async
+            self.getResponse(response)
 
-            if response is None:
-                self.bound = False
-            else:
-                self.bound = True if self.result['result'] == RESULT_SUCCESS else False
+        if response is None:
+            self.bound = False
+        else:
+            self.bound = True if self.result['result'] == RESULT_SUCCESS else False
 
-            if self.bound:
-                self.refreshDsaInfo()
+        if self.bound:
+            self.refreshDsaInfo()
 
         return self.bound
 

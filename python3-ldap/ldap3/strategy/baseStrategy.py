@@ -53,7 +53,7 @@ class BaseStrategy(object):
 
     def __init__(self, ldap_connection):
         self.connection = ldap_connection
-        self._outstanding = None
+        self._outstanding = dict()
         self._referrals = []
         self.sync = None  # indicates a synchronous connection
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server

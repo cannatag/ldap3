@@ -79,7 +79,6 @@ class LdifProducerStrategy(BaseStrategy):
         if self._outstanding and message_id in self._outstanding:
             request = self._outstanding.pop(message_id)
             self.connection.response = to_ldif(self.connection.request['type'], request, False)
-
             return True
 
         return False

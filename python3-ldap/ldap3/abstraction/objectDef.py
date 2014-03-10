@@ -22,8 +22,9 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from . import AttrDef
 from os import linesep
+
+from . import AttrDef
 from ldap3 import LDAPException
 
 
@@ -35,12 +36,12 @@ class ObjectDef(object):
 
     """
 
-    def __init__(self, objectClass = None):
-        self.__dict__['objectClass'] = objectClass
+    def __init__(self, object_class=None):
+        self.__dict__['object_class'] = object_class
         self.__dict__['_attributes'] = dict()
 
     def __repr__(self):
-        r = 'objectClass: ' + str(self.objectClass) if self.objectClass else ''
+        r = 'object_class: ' + str(self.object_class) if self.object_class else ''
         for attr in self._attributes:
             r += linesep + '    ' + self._attributes[attr].__repr__() + ', '
 
@@ -87,11 +88,11 @@ class ObjectDef(object):
     def __contains__(self, item):
         try:
             self.__getitem__(item)
-            return True
         except:
             return False
 
-    def add(self, definition = None):
+        return True
+    def add(self, definition=None):
         if isinstance(definition, str):
             element = AttrDef(definition)
             self.add(element)
@@ -125,7 +126,6 @@ class ObjectDef(object):
         else:
             raise LDAPException('key must be str or AttrDef')
 
-
     def clear(self):
-        self.objectClass = None
+        self.__dict__['object_class'] = None
         self.__dict__['_attributes'] = dict()

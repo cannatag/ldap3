@@ -23,26 +23,27 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+
 from ldap3 import STRATEGY_LDIF_PRODUCER, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 from ldap3.connection import Connection
-from test import test_base, testDnBuilder, test_name_attr, test_moved
+from test import test_base, test_dn_builder, test_name_attr, test_moved
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        # server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server = None, clientStrategy = STRATEGY_LDIF_PRODUCER)
+        # server = Server(host = test_server, port = test_port, allowed_referral_hosts = ('*', True))
+        self.connection = Connection(server=None, client_strategy=STRATEGY_LDIF_PRODUCER)
 
     def tearDown(self):
         self.assertFalse(self.connection.bound)
 
-    def testAddRequestToLdif(self):
+    def test_add_request_to_ldif(self):
         controls = list()
         controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'sn'))
-        controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(u'\u00e0\u00e0', encoding = 'UTF-8')))  # for python2 compatability
+        controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(u'\u00e0\u00e0', encoding='UTF-8')))  # for python2 compatability
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'trailingspace '))
-        self.connection.add(testDnBuilder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls = controls)
+        self.connection.add(test_dn_builder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls=controls)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-add-operation,o=test' in response)
@@ -55,17 +56,17 @@ class Test(unittest.TestCase):
         self.assertTrue('sn: test-add' in response)
         self.assertTrue('cn: test-add-operation' in response)
 
-    def testDeleteRequestToLdif(self):
-        self.connection.delete(testDnBuilder(test_base, 'test-del-operation'))
+    def test_delete_request_to_ldif(self):
+        self.connection.delete(test_dn_builder(test_base, 'test-del-operation'))
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-del-operation,o=test' in response)
         self.assertTrue('changetype: delete' in response)
 
-    def testModifyDnRequestToLdif(self):
-        result = self.connection.modifyDn(testDnBuilder(test_base, 'test-modify-dn-operation'), test_name_attr + '=test-modified-dn-operation')
+    def test_modify_dn_request_to_ldif(self):
+        result = self.connection.modify_dn(test_dn_builder(test_base, 'test-modify-dn-operation'), test_name_attr + '=test-modified-dn-operation')
         if not isinstance(result, bool):
-            self.connection.getResponse(result)
+            self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-modify-dn-operation,o=test' in response)
@@ -73,10 +74,10 @@ class Test(unittest.TestCase):
         self.assertTrue('newrdn: cn=test-modified-dn-operation' in response)
         self.assertTrue('deleteoldrdn: 0' in response)
 
-    def testMoveDnRequestToLdif(self):
-        result = self.connection.modifyDn(testDnBuilder(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', deleteOldDn = False,  newSuperior = test_moved)
+    def test_move_dn_request_to_ldif(self):
+        result = self.connection.modify_dn(test_dn_builder(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', delete_old_dn=False, new_superior=test_moved)
         if not isinstance(result, bool):
-            self.connection.getResponse(result)
+            self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-move-dn-operation,o=test' in response)
@@ -85,10 +86,10 @@ class Test(unittest.TestCase):
         self.assertTrue('deleteoldrdn: 1' in response)
         self.assertTrue('newsuperior: ou=moved,o=test' in response)
 
-    def testModifyAddToLdif(self):
-        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
+    def test_modify_add_to_ldif(self):
+        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
         if not isinstance(result, bool):
-            self.connection.getResponse(result)
+            self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
@@ -97,10 +98,10 @@ class Test(unittest.TestCase):
         self.assertTrue('givenName: test-modified-added' in response)
         self.assertEqual('-', response[-1])
 
-    def testModifyReplaceToLdif(self):
-        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
+    def test_modify_replace_to_ldif(self):
+        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
         if not isinstance(result, bool):
-            self.connection.getResponse(result)
+            self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
@@ -109,10 +110,10 @@ class Test(unittest.TestCase):
         self.assertTrue('givenName: test-modified-replace' in response)
         self.assertEqual('-', response[-1])
 
-    def testModifyDeleteToLdif(self):
-        result = self.connection.modify(testDnBuilder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
+    def test_modify_delete_to_ldif(self):
+        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
         if not isinstance(result, bool):
-            self.connection.getResponse(result)
+            self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
@@ -121,15 +122,13 @@ class Test(unittest.TestCase):
         self.assertTrue('givenName: test-modified-added2' in response)
         self.assertEqual('-', response[-1])
 
-    def testMultipleModifyToLdif(self):
+    def test_multiple_modify_to_ldif(self):
         # from rfc 2849 example
         result = self.connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
-                                        {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),
-                                         'description': (MODIFY_DELETE, []),
-                                         'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),
+                                        {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']), 'description': (MODIFY_DELETE, []), 'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),
                                          'facsimiletelephonenumber': (MODIFY_DELETE, ['+1 408 555 9876'])})
         if not isinstance(result, bool):
-            self.connection.getResponse(result)
+            self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: cn=Paula Jensen, ou=Product Development, dc=airius, dc=com' in response)

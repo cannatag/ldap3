@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+
 from ldap3.protocol.rfc4511 import rangeInt0ToMaxConstraint
 
 

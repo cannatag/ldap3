@@ -22,9 +22,9 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException
-
 from socket import getaddrinfo, gaierror
+
+from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException
 from .protocol.dse import DsaInfo
 from .protocol.schema import SchemaInfo
 from .tls import Tls
@@ -33,17 +33,17 @@ from .tls import Tls
 class Server(object):
     """
     LDAP Server definition class
-    allowedReferralHosts can be None (which is the default)
+    allowed_referral_hosts can be None (which is the default)
     or a list of tuples of allowed servers ip address or names to contact while redirecting search to referrals.
     Second element of tuple is a boolean to indicate if authentication to that server is allowed,
     if False only anonymous bind will be used.
     as per RFC 4516. Use ('*', False) to allow any host with anonymous bind,
     use ('*', True) to allow any host with same authentication of Server.
     """
-    _realServers = dict()   # dictionary of real servers currently active, the key is the host part of the server address
+    _realServers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
     # and the value is the messageId counter for all connection to that host)
 
-    def __init__(self, host, port = 389, useSsl = False, allowedReferralHosts = None, getInfo = None, tls = None):
+    def __init__(self, host, port=389, use_ssl=False, allowed_referral_hosts=None, get_info=None, tls=None):
         """
         Constructor
         """
@@ -62,22 +62,22 @@ class Server(object):
             self.port = port
         else:
             raise LDAPException('port must be an integer')
-        if isinstance(allowedReferralHosts, list):
-            self.allowedReferralHosts = []
-            for refServer in allowedReferralHosts:
+        if isinstance(allowed_referral_hosts, list):
+            self.allowed_referral_hosts = []
+            for refServer in allowed_referral_hosts:
                 if isinstance(refServer, tuple):
                     if isinstance(refServer[1], bool):
-                        self.allowedReferralHosts.append(refServer)
-        elif isinstance(allowedReferralHosts, tuple):
-            if isinstance(allowedReferralHosts[1], bool):
-                self.allowedReferralHosts = [allowedReferralHosts]
+                        self.allowed_referral_hosts.append(refServer)
+        elif isinstance(allowed_referral_hosts, tuple):
+            if isinstance(allowed_referral_hosts[1], bool):
+                self.allowed_referral_hosts = [allowed_referral_hosts]
         else:
-            self.allowedReferralHosts = []
+            self.allowed_referral_hosts = []
 
-        self.ssl = True if useSsl else False
+        self.ssl = True if use_ssl else False
         self.tls = Tls() if self.ssl and not tls else tls
         self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
-        self.getInfo = getInfo
+        self.get_info = get_info
         self._dsaInfo = None
         self._schemaInfo = None
 
@@ -90,17 +90,17 @@ class Server(object):
 
     def __repr__(self):
         r = 'Server(host={0.host!r}, port={0.port!r}, ssl={0.ssl!r}'.format(self)
-        r += '' if not self.allowedReferralHosts else ', allowedReferralHosts={0.allowedReferralHosts!r}'.format(self)
+        r += '' if not self.allowed_referral_hosts else ', allowed_referral_hosts={0.allowed_referral_hosts!r}'.format(self)
         r += '' if self.tls is None else ', tls={0.tls!r}'.format(self)
-        r += '' if not self.getInfo else ', getInfo={0.getInfo!r}'.format(self)
+        r += '' if not self.get_info else ', get_info={0.get_info!r}'.format(self)
         r += ')'
 
         return r
 
-    def isValid(self):
+    def is_valid(self):
         return True if self.address else False
 
-    def nextMessageId(self):
+    def next_message_id(self):
         """
         messageId is unique in all connections to the server
         """
@@ -113,57 +113,57 @@ class Server(object):
 
         return Server._realServers[self.address]
 
-    def _getDsaInfo(self, connection):
+    def _get_dsa_info(self, connection):
         """
         retrieve DSE operational attribute as per rfc 4512 (5.1)
         """
         self._dsaInfo = None
 
-        result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
+        result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
         if isinstance(result, bool):  # sync request
             self._dsaInfo = DsaInfo(connection.response[0]['attributes']) if result else None
         elif result:  # async request, must check if attributes in response
-            results = connection.getResponse(result)
+            results = connection.get_response(result)
             if len(results) == 2 and 'attributes' in results[0]:
                 self._dsaInfo = DsaInfo(results[0]['attributes'])
 
-    def _getSchemaInfo(self, connection, entry = ''):
+    def _get_schema_info(self, connection, entry=''):
         """
         retrive schema from subschemaSubentry DSE attribute as per rfc 4512 (4.4 and 5.1)
         entry = '' means DSE
         """
         self._schemaInfo = None
-        schemaEntry = None
+        schema_entry = None
         if self._dsaInfo and entry == '':  # subschemaSubentry already present in dsaInfo
-            schemaEntry = self._dsaInfo.schemaEntry[0] if self._dsaInfo.schemaEntry else None
+            schema_entry = self._dsaInfo.schema_entry[0] if self._dsaInfo.schema_entry else None
         else:
-            result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes = ['subschemaSubentry'], getOperationalAttributes = True)
+            result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
-                schemaEntry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
+                schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
             else:  # async request, must check if subschemaSubentry in attributes
-                results = connection.getResponse(result)
+                results = connection.get_response(result)
                 if len(results) == 2 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
-                    schemaEntry = results[0]['attributes']['subschemaSubentry'][0]
+                    schema_entry = results[0]['attributes']['subschemaSubentry'][0]
 
-        if schemaEntry:
-            result = connection.search(schemaEntry, searchFilter = '(objectClass=subschema)', searchScope = SEARCH_SCOPE_BASE_OBJECT, attributes = ALL_ATTRIBUTES, getOperationalAttributes = True)
+        if schema_entry:
+            result = connection.search(schema_entry, search_filter='(objectClass=subschema)', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
-                self._schemaInfo = SchemaInfo(schemaEntry, connection.response[0]['attributes']) if result else None
+                self._schemaInfo = SchemaInfo(schema_entry, connection.response[0]['attributes']) if result else None
             else:  # async request, must check if attributes in response
-                results = connection.getResponse(result)
+                results = connection.get_response(result)
                 if len(results) == 2 and 'attributes' in results[0]:
-                    self._schemaInfo = SchemaInfo(schemaEntry, results[0]['attributes'])
+                    self._schemaInfo = SchemaInfo(schema_entry, results[0]['attributes'])
 
-    def getInfoFromServer(self, connection):
+    def get_info_from_server(self, connection):
         """
         read info from DSE and from subschema
         """
         if not connection.closed:
-            if self.getInfo in [GET_DSA_INFO, GET_ALL_INFO]:
-                self._getDsaInfo(connection)
+            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO]:
+                self._get_dsa_info(connection)
 
-            if self.getInfo in [GET_SCHEMA_INFO, GET_ALL_INFO]:
-                self._getSchemaInfo(connection)
+            if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
+                self._get_schema_info(connection)
 
     @property
     def info(self):

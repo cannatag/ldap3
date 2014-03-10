@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ValsAtLeast1, ResultCode
-from ..protocol.convert import referralsToList, attributesToDict
+from ..protocol.convert import referrals_to_list, attributes_to_dict
 
 
 # AddRequest ::= [APPLICATION 8] SEQUENCE {
@@ -31,12 +31,12 @@ from ..protocol.convert import referralsToList, attributesToDict
 #     attributes      AttributeList }
 
 
-def addOperation(dn, attributes):
+def add_operation(dn, attributes):
     # attributes is a dictionary in the form 'attribute': ['val1', 'val2', 'valN']
-    attributeList = AttributeList()
+    attribute_list = AttributeList()
     for pos, attribute in enumerate(attributes):
-        attributeList[pos] = Attribute()
-        attributeList[pos]['type'] = AttributeDescription(attribute)
+        attribute_list[pos] = Attribute()
+        attribute_list[pos]['type'] = AttributeDescription(attribute)
         vals = ValsAtLeast1()
         if isinstance(attributes[attribute], list):
             for index, value in enumerate(attributes[attribute]):
@@ -44,20 +44,19 @@ def addOperation(dn, attributes):
         else:
             vals.setComponentByPosition(0, attributes[attribute])
 
-        attributeList[pos]['vals'] = vals
+        attribute_list[pos]['vals'] = vals
 
     request = AddRequest()
     request['entry'] = LDAPDN(dn)
-    request['attributes'] = attributeList
+    request['attributes'] = attribute_list
 
     return request
 
 
-def addRequestToDict(request):
-    return {'entry': str(request['entry']), 'attributes': attributesToDict(request['attributes'])}
+def add_request_to_dict(request):
+    return {'entry': str(request['entry']), 'attributes': attributes_to_dict(request['attributes'])}
 
 
-def addResponseToDict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
-            'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']), }
+def add_response_to_dict(response):
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'referrals': referrals_to_list(response['referral']), }
 

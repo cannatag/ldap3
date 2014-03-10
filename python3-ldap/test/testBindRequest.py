@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+
 from ldap3.protocol.rfc4511 import BindRequest, LDAPDN, AuthenticationChoice, Simple, Version
 from ldap3.connection import Connection
 from ldap3.server import Server
@@ -32,8 +33,7 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(test_server, test_port)
-        self.connection = Connection(server, autoBind = True, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                     authentication = test_authentication)
+        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
 
     def tearDown(self):
         self.connection.unbind()

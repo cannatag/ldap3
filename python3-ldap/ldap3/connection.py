@@ -25,30 +25,28 @@ If not, see <http://www.gnu.org/licenses/>.
 from threading import Lock
 from datetime import datetime
 from os import linesep
-from time import sleep
 
 from pyasn1.codec.ber import encoder
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
-    LDAPException, STRATEGY_SYNC_RESTARTABLE
-
-from .operation.abandon import abandonOperation
-from .operation.add import addOperation
-from .operation.bind import bindOperation
-from .operation.compare import compareOperation
-from .operation.delete import deleteOperation
-from .operation.extended import extendedOperation
-from .operation.modify import modifyOperation
-from .operation.modifyDn import modifyDnOperation
-from .operation.search import searchOperation
-from .protocol.rfc2849 import toLdif
-from .protocol.sasl.digestMd5 import saslDigestMd5
-from .protocol.sasl.external import saslExternal
+from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
+    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE
+from .operation.abandon import abandon_operation
+from .operation.add import add_operation
+from .operation.bind import bind_operation
+from .operation.compare import compare_operation
+from .operation.delete import delete_operation
+from .operation.extended import extended_operation
+from .operation.modify import modify_operation
+from .operation.modifyDn import modify_dn_operation
+from .operation.search import search_operation
+from .protocol.rfc2849 import to_ldif
+from .protocol.sasl.digestMd5 import sasl_digest_md5
+from .protocol.sasl.external import sasl_external
 from .strategy.asyncThreaded import AsyncThreadedStrategy
 from .strategy.ldifProducer import LdifProducerStrategy
 from .strategy.syncWait import SyncWaitStrategy
 from .strategy.syncWaitRestartable import SyncWaitRestartableStrategy
-from .operation.unbind import unbindOperation
+from .operation.unbind import unbind_operation
 from .protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 
 
@@ -58,113 +56,112 @@ class ConnectionUsage(object):
     """
 
     def reset(self):
-        self.initialConnectionStartTime = None
-        self.open_socket_start_time = None
-        self.connectionStopTime = None
-        self.openedSockets = 0
-        self.closedSockets = 0
-        self.wrappedSockets = 0
-        self.unwrappedSockets = 0
-        self.bytesTransmitted = 0
-        self.bytesReceived = 0
-        self.messagesTransmitted = 0
-        self.messagesReceived = 0
-        self.operations = 0
-        self.abandonOperations = 0
-        self.addOperations = 0
-        self.bindOperations = 0
-        self.compareOperations = 0
-        self.deleteOperations = 0
-        self.extendedOperations = 0
-        self.modifyOperations = 0
-        self.modifyDnOperations = 0
-        self.searchOperations = 0
-        self.unbindOperations = 0
-        self.restartableFailures = 0
-        self.restartableSuccesses = 0
+        self.__init__()
 
     def __init__(self):
-        self.reset()
+        self.initial_connection_start_time = None
+        self.open_socket_start_time = None
+        self.connection_stop_time = None
+        self.opened_sockets = 0
+        self.closed_sockets = 0
+        self.wrapped_sockets = 0
+        self.bytes_transmitted = 0
+        self.bytes_received = 0
+        self.messages_transmitted = 0
+        self.messages_received = 0
+        self.operations = 0
+        self.abandon_operations = 0
+        self.add_operations = 0
+        self.bind_operations = 0
+        self.compare_operations = 0
+        self.delete_operations = 0
+        self.extended_operations = 0
+        self.modify_operations = 0
+        self.modify_dn_operations = 0
+        self.search_operations = 0
+        self.unbind_operations = 0
+        self.restartable_failures = 0
+        self.restartable_successes = 0
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep
-        r += '  Time: [elapsed: ' + str(self.elapsedTime) + ']' + linesep
-        r += '    Initial start time: ' + (str(self.initialConnectionStartTime.isoformat()) if self.initialConnectionStartTime else '') + linesep
+        r += '  Time: [elapsed: ' + str(self.elapsed_time) + ']' + linesep
+        r += '    Initial start time: ' + (str(self.initial_connection_start_time.isoformat()) if self.initial_connection_start_time else '') + linesep
         r += '    Open socket time  : ' + (str(self.open_socket_start_time.isoformat()) if self.open_socket_start_time else '') + linesep
-        r += '    Close socket time : ' + (str(self.connectionStopTime.isoformat()) if self.connectionStopTime else '') + linesep
+        r += '    Close socket time : ' + (str(self.connection_stop_time.isoformat()) if self.connection_stop_time else '') + linesep
         r += '  Sockets:' + linesep
-        r += '    Sockets opened: ' + str(self.openedSockets) + linesep
-        r += '    Sockets closed: ' + str(self.closedSockets) + linesep
-        r += '    Sockets wrapped : ' + str(self.wrappedSockets) + linesep
-        r += '  Bytes: ' + str(self.bytesTransmitted + self.bytesReceived) + linesep
-        r += '    Transmitted: ' + str(self.bytesTransmitted) + linesep
-        r += '    Received: ' + str(self.bytesReceived) + linesep
-        r += '  Messages: ' + str(self.messagesTransmitted + self.messagesReceived) + linesep
-        r += '    Trasmitted: ' + str(self.messagesTransmitted) + linesep
-        r += '    Received: ' + str(self.messagesReceived) + linesep
+        r += '    Sockets opened: ' + str(self.opened_sockets) + linesep
+        r += '    Sockets closed: ' + str(self.closed_sockets) + linesep
+        r += '    Sockets wrapped : ' + str(self.wrapped_sockets) + linesep
+        r += '  Bytes: ' + str(self.bytes_transmitted + self.bytes_received) + linesep
+        r += '    Transmitted: ' + str(self.bytes_transmitted) + linesep
+        r += '    Received: ' + str(self.bytes_received) + linesep
+        r += '  Messages: ' + str(self.messages_transmitted + self.messages_received) + linesep
+        r += '    Trasmitted: ' + str(self.messages_transmitted) + linesep
+        r += '    Received: ' + str(self.messages_received) + linesep
         r += '  Operations: ' + str(self.operations) + linesep
-        r += '    Abandon: ' + str(self.abandonOperations) + linesep
-        r += '    Bind: ' + str(self.bindOperations) + linesep
-        r += '    Compare: ' + str(self.compareOperations) + linesep
-        r += '    Delete: ' + str(self.deleteOperations) + linesep
-        r += '    Extended: ' + str(self.extendedOperations) + linesep
-        r += '    Modify: ' + str(self.modifyOperations) + linesep
-        r += '    ModifyDn: ' + str(self.modifyDnOperations) + linesep
-        r += '    Search: ' + str(self.searchOperations) + linesep
-        r += '    Unbind: ' + str(self.unbindOperations) + linesep
-        r += '  Restartable tries: ' + str(self.restartableFailures + self.restartableSuccesses) + linesep
-        r += '    Failed restarts: ' + str(self.restartableFailures) + linesep
-        r += '    Successful restarts: ' + str(self.restartableSuccesses) + linesep
+        r += '    Abandon: ' + str(self.abandon_operations) + linesep
+        r += '    Bind: ' + str(self.bind_operations) + linesep
+        r += '    Compare: ' + str(self.compare_operations) + linesep
+        r += '    Delete: ' + str(self.delete_operations) + linesep
+        r += '    Extended: ' + str(self.extended_operations) + linesep
+        r += '    Modify: ' + str(self.modify_operations) + linesep
+        r += '    ModifyDn: ' + str(self.modify_dn_operations) + linesep
+        r += '    Search: ' + str(self.search_operations) + linesep
+        r += '    Unbind: ' + str(self.unbind_operations) + linesep
+        r += '  Restartable tries: ' + str(self.restartable_failures + self.restartable_successes) + linesep
+        r += '    Failed restarts: ' + str(self.restartable_failures) + linesep
+        r += '    Successful restarts: ' + str(self.restartable_successes) + linesep
         return r
 
-    def transmittedMessage(self, message, length):
-        self.bytesTransmitted += length
+    def transmitted_message(self, message, length):
+        self.bytes_transmitted += length
         self.operations += 1
-        self.messagesTransmitted += 1
+        self.messages_transmitted += 1
         if message['type'] == 'abandonRequest':
-            self.abandonOperations += 1
+            self.abandon_operations += 1
         elif message['type'] == 'addRequest':
-            self.addOperations += 1
+            self.add_operations += 1
         elif message['type'] == 'bindRequest':
-            self.bindOperations += 1
+            self.bind_operations += 1
         elif message['type'] == 'compareRequest':
-            self.compareOperations += 1
+            self.compare_operations += 1
         elif message['type'] == 'delRequest':
-            self.deleteOperations += 1
+            self.delete_operations += 1
         elif message['type'] == 'extendedReq':
-            self.extendedOperations += 1
+            self.extended_operations += 1
         elif message['type'] == 'modifyRequest':
-            self.modifyOperations += 1
+            self.modify_operations += 1
         elif message['type'] == 'modDNRequest':
-            self.modifyDnOperations += 1
+            self.modify_dn_operations += 1
         elif message['type'] == 'searchRequest':
-            self.searchOperations += 1
+            self.search_operations += 1
         elif message['type'] == 'unbindRequest':
-            self.unbindOperations += 1
+            self.unbind_operations += 1
         else:
             raise LDAPException('unable to collect usage for unknown message type')
 
-    def receivedMessage(self, length):
-        self.bytesReceived += length
-        self.messagesReceived += 1
+    def received_message(self, length):
+        self.bytes_received += length
+        self.messages_received += 1
 
-    def start(self, reset = True):
+    def start(self, reset=True):
         if reset:
             self.reset()
         self.open_socket_start_time = datetime.now()
-        if not self.initialConnectionStartTime:
-            self.initialConnectionStartTime = self.open_socket_start_time
+        if not self.initial_connection_start_time:
+            self.initial_connection_start_time = self.open_socket_start_time
 
     def stop(self):
         if self.open_socket_start_time:
-            self.connectionStopTime = datetime.now()
+            self.connection_stop_time = datetime.now()
 
     @property
-    def elapsedTime(self):
-        if self.connectionStopTime:
-            return self.connectionStopTime - self.open_socket_start_time
+    def elapsed_time(self):
+        if self.connection_stop_time:
+            return self.connection_stop_time - self.open_socket_start_time
         else:
-            return datetime.now() - self.open_socket_start_time if self.open_socket_start_time else 'not started'
+            return (datetime.now() - self.open_socket_start_time) if self.open_socket_start_time else 'not started'
 
 
 class Connection(object):
@@ -176,23 +173,22 @@ class Connection(object):
     Mixing controls must be defined in controls specification (as per rfc 4511)
     """
 
-    def __init__(self, server, user = None, password = None, autoBind = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
-                 autoReferrals = True, saslMechanism = None, saslCredentials = None, collectUsage = False, readOnly = False):
+    def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False):
         """
         Constructor
         """
-        if clientStrategy not in CLIENT_STRATEGIES:
-            self.lastError = 'unknown client connection strategy'
-            raise LDAPException(self.lastError)
+        if client_strategy not in CLIENT_STRATEGIES:
+            self.last_error = 'unknown client connection strategy'
+            raise LDAPException(self.last_error)
 
-        self.strategyType = clientStrategy
-        if self.strategyType == STRATEGY_SYNC:
+        self.strategy_type = client_strategy
+        if self.strategy_type == STRATEGY_SYNC:
             self.strategy = SyncWaitStrategy(self)
-        elif self.strategyType == STRATEGY_ASYNC_THREADED:
+        elif self.strategy_type == STRATEGY_ASYNC_THREADED:
             self.strategy = AsyncThreadedStrategy(self)
-        elif self.strategyType == STRATEGY_LDIF_PRODUCER:
+        elif self.strategy_type == STRATEGY_LDIF_PRODUCER:
             self.strategy = LdifProducerStrategy(self)
-        elif self.strategyType == STRATEGY_SYNC_RESTARTABLE:
+        elif self.strategy_type == STRATEGY_SYNC_RESTARTABLE:
             self.strategy = SyncWaitRestartableStrategy(self)
         else:
             self.strategy = None
@@ -208,14 +204,14 @@ class Connection(object):
         else:
             raise LDAPException('unknown authentication method')
 
-        self.autoReferrals = True if autoReferrals else False
+        self.auto_referrals = True if auto_referrals else False
 
         # map strategy functions to connection functions
         self.send = self.strategy.send
         self.open = self.strategy.open
-        self.getResponse = self.strategy.getResponse
-        self.postSendSingleResponse = self.strategy.postSendSingleResponse
-        self.postSendSearch = self.strategy.postSendSearch
+        self.get_response = self.strategy.get_response
+        self.post_send_single_response = self.strategy.post_send_single_response
+        self.post_send_search = self.strategy.post_send_search
 
         self.request = None
         self.response = None
@@ -224,32 +220,32 @@ class Connection(object):
         self.bound = False
         self.listening = False
         self.closed = True
-        self.lastError = None
-        self.autoBind = True if autoBind else False
-        self.saslMechanism = saslMechanism
-        self.saslCredentials = saslCredentials
-        self.authorizationState = None
-        self.usage = ConnectionUsage() if collectUsage else None
+        self.last_error = None
+        self.auto_bind = True if auto_bind else False
+        self.sasl_mechanism = sasl_mechanism
+        self.sasl_credentials = sasl_credentials
+        self.authorization_state = None
+        self.usage = ConnectionUsage() if collect_usage else None
         self.socket = None
-        self.tlsStarted = False
-        self.saslInProgress = False
-        self.readOnly = readOnly
-        self._contextState = []
+        self.tls_started = False
+        self.sasl_in_progress = False
+        self.read_only = read_only
+        self._context_state = []
 
-        if not self.strategy.noRealDSA and server.isValid():
+        if not self.strategy.no_real_dsa and server.is_valid():
             self.server = server
             self.version = version
-            if self.autoBind:
+            if self.auto_bind:
                 self.open()
                 self.bind()
                 if not self.bound:
-                    raise LDAPException('autoBind not successful')
-        elif self.strategy.noRealDSA:
+                    raise LDAPException('auto_bind not successful')
+        elif self.strategy.no_real_dsa:
             self.server = None
             self.version = None
         else:
-            self.lastError = 'invalid ldap server'
-            raise LDAPException(self.lastError)
+            self.last_error = 'invalid ldap server'
+            raise LDAPException(self.last_error)
 
     def __str__(self):
         r = [str(self.server) if self.server.isValid else 'None']
@@ -265,17 +261,17 @@ class Connection(object):
         r = 'Connection(server={0.server!r}'.format(self)
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
         r += '' if self.password is None else ', password={0.password!r}'.format(self)
-        r += '' if self.autoBind is None else ', autoBind={0.autoBind!r}'.format(self)
+        r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
-        r += '' if self.strategyType is None else ', clientStrategy={0.strategyType!r}'.format(self)
-        r += '' if self.autoReferrals is None else ', autoReferrals={0.autoReferrals!r}'.format(self)
+        r += '' if self.strategy_type is None else ', clientStrategy={0.strategy_type!r}'.format(self)
+        r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
         r += ')'
 
         return r
 
     def __enter__(self):
-        self._contextState.append((self.bound, self.closed))  # save status out of context as a tuple in a list
+        self._context_state.append((self.bound, self.closed))  # save status out of context as a tuple in a list
         if self.closed:
             self.open()
         if not self.bound:
@@ -284,39 +280,39 @@ class Connection(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        contextBound, contextClosed = self._contextState.pop()
-        if not contextBound and self.bound:  # restore status prior to entering context
+        context_bound, context_closed = self._context_state.pop()
+        if not context_bound and self.bound:  # restore status prior to entering context
             self.unbind()
 
-        if not contextClosed and self.closed:
+        if not context_closed and self.closed:
             self.open()
 
         if not exc_type is None:
             return False  # reraise LDAPException
 
-    def bind(self, controls = None):
+    def bind(self, controls=None):
         """
         Bind to ldap with the user defined in Server object
         """
 
         if self.authentication == AUTH_ANONYMOUS:
-            request = bindOperation(self.version, self.authentication, '', '')
-            response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
+            request = bind_operation(self.version, self.authentication, '', '')
+            response = self.post_send_single_response(self.send('bindRequest', request, controls))
         elif self.authentication == AUTH_SIMPLE:
-            request = bindOperation(self.version, self.authentication, self.user, self.password)
-            response = self.postSendSingleResponse(self.send('bindRequest', request, controls))
+            request = bind_operation(self.version, self.authentication, self.user, self.password)
+            response = self.post_send_single_response(self.send('bindRequest', request, controls))
         elif self.authentication == AUTH_SASL:
-            if self.saslMechanism in SASL_AVAILABLE_MECHANISMS:
-                response = self.doSaslBind(controls)
+            if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
+                response = self.do_sasl_bind(controls)
             else:
-                self.lastError = 'requested sasl mechanism not supported'
-                raise LDAPException(self.lastError)
+                self.last_error = 'requested sasl mechanism not supported'
+                raise LDAPException(self.last_error)
         else:
-            self.lastError = 'unknown authentication method'
-            raise LDAPException(self.lastError)
+            self.last_error = 'unknown authentication method'
+            raise LDAPException(self.last_error)
 
         if isinstance(response, int):  # get response if async
-            self.getResponse(response)
+            self.get_response(response)
 
         if response is None:
             self.bound = False
@@ -324,17 +320,17 @@ class Connection(object):
             self.bound = True if self.result['result'] == RESULT_SUCCESS else False
 
         if self.bound:
-            self.refreshDsaInfo()
+            self.refresh_dsa_info()
 
         return self.bound
 
-    def unbind(self, controls = None):
+    def unbind(self, controls=None):
         """
         Unbinds the connected user
         Unbind implies closing session as per rfc 4511 (4.3)
         """
         if not self.closed:
-            request = unbindOperation()
+            request = unbind_operation()
             self.send('unbindRequest', request, controls)
             self.strategy.close()
 
@@ -346,14 +342,13 @@ class Connection(object):
         """
         self.unbind()
 
-    def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = None,
-               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False,
-               pagedCookie = None):
+    def search(self, search_base, search_filter, search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, dereference_aliases=SEARCH_DEREFERENCE_ALWAYS, attributes=None, size_limit=0, time_limit=0, types_only=False, get_operational_attributes=False, controls=None,
+               paged_size=None, paged_criticality=False, paged_cookie=None):
         """
         Perform an ldap search
         if attributes is empty no attribute is returned
         if attributes is ALL_ATTRIBUTES all attributes are returned
-        if pagedSize is an int greater than 0 a simple paged search is tried as described in rfc 2696 with the specified size
+        if paged_size is an int greater than 0 a simple paged search is tried as described in rfc 2696 with the specified size
         if paged is 0 and cookie is present the search is abandoned on server
         cookie is an opaque string received in the last paged search and must be used on the next paged search response
         """
@@ -362,20 +357,20 @@ class Connection(object):
         elif attributes == ALL_ATTRIBUTES:
             attributes = ['*']
 
-        if getOperationalAttributes:
+        if get_operational_attributes:
             attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
 
-        if isinstance(pagedSize, int):
-            realSearchControlValue = RealSearchControlValue()
-            realSearchControlValue['size'] = Size(pagedSize)
-            realSearchControlValue['cookie'] = Cookie(pagedCookie) if pagedCookie else Cookie('')
+        if isinstance(paged_size, int):
+            real_search_control_value = RealSearchControlValue()
+            real_search_control_value['size'] = Size(paged_size)
+            real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
             if controls is None:
                 controls = []
-            controls.append(('1.2.840.113556.1.4.319', pagedCriticality if isinstance(pagedCriticality, bool) else False, encoder.encode(realSearchControlValue)))
+            controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
 
-        request = searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly)
+        request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only)
 
-        response = self.postSendSearch(self.send('searchRequest', request, controls))
+        response = self.post_send_search(self.send('searchRequest', request, controls))
         if isinstance(response, int):
             return response
 
@@ -384,120 +379,120 @@ class Connection(object):
 
         return False
 
-    def compare(self, dn, attribute, value, controls = None):
+    def compare(self, dn, attribute, value, controls=None):
         """
         Perform a compare operation
         """
-        request = compareOperation(dn, attribute, value)
-        response = self.postSendSingleResponse(self.send('compareRequest', request, controls))
+        request = compare_operation(dn, attribute, value)
+        response = self.post_send_single_response(self.send('compareRequest', request, controls))
         if isinstance(response, int):
             return response
         return True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
 
-    def add(self, dn, objectClass, attributes = None, controls = None):
+    def add(self, dn, object_class, attributes=None, controls=None):
         """
-        add dn to the dib, objectClass is None, a class name or a list of class names,
+        add dn to the dib, object_class is None, a class name or a list of class names,
         attributes is a dictionary in the form 'attr': 'val'
         or 'attr': ['val1', 'val2', 'valN'] for multivalued types
         """
-        attrObjectClass = []
-        if objectClass is None:
-            parmObjectClass = []
+        attr_object_class = []
+        if object_class is None:
+            parm_object_class = []
         else:
-            parmObjectClass = objectClass if isinstance(objectClass, list) else [objectClass]
+            parm_object_class = object_class if isinstance(object_class, list) else [object_class]
 
         if attributes:
             if 'objectClass' in attributes:
-                attrObjectClass = attributes['objectClass'] if isinstance(attributes['objectClass'], list) else [attributes['objectClass']]
+                attr_object_class = attributes['objectClass'] if isinstance(attributes['objectClass'], list) else [attributes['objectClass']]
         else:
             attributes = dict()
 
-        attributes['objectClass'] = list(set([objectClass.lower() for objectClass in parmObjectClass + attrObjectClass]))  # remove duplicate objectClass
+        attributes['objectClass'] = list(set([object_class.lower() for object_class in parm_object_class + attr_object_class]))  # remove duplicate object_class
         if not attributes['objectClass']:
-            self.lastError = 'objectClass is mandatory'
-            raise LDAPException(self.lastError)
+            self.last_error = 'object_class is mandatory'
+            raise LDAPException(self.last_error)
 
-        request = addOperation(dn, attributes)
-        response = self.postSendSingleResponse(self.send('addRequest', request, controls))
+        request = add_operation(dn, attributes)
+        response = self.post_send_single_response(self.send('addRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):
             return response
 
         return True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def delete(self, dn, controls = None):
+    def delete(self, dn, controls=None):
         """
         Delete in the dib the entry identified by dn
         """
-        if self.readOnly:
-            raise LDAPException('Connetion is in read-only mode')
+        if self.read_only:
+            raise LDAPException('Connection is in read-only mode')
 
-        request = deleteOperation(dn)
-        response = self.postSendSingleResponse(self.send('delRequest', request, controls))
+        request = delete_operation(dn)
+        response = self.post_send_single_response(self.send('delRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):
             return response
 
         return True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def modify(self, dn, changes, controls = None):
+    def modify(self, dn, changes, controls=None):
         """
         Modify attributes of entry
         Changes is a dictionary in the form {'attribute1': [(operation, [val1, val2])], 'attribute2': [(operation, [val1, val2])]}
         Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
-        if self.readOnly:
-            raise LDAPException('Connetion is in read-only mode')
+        if self.read_only:
+            raise LDAPException('Connection is in read-only mode')
 
         if not isinstance(changes, dict):
-            self.lastError = 'changes must be a dictionary'
-            raise LDAPException(self.lastError)
+            self.last_error = 'changes must be a dictionary'
+            raise LDAPException(self.last_error)
 
         for change in changes:
             if len(changes[change]) != 2:
-                self.lastError = 'malformed change'
-                raise LDAPException(self.lastError)
+                self.last_error = 'malformed change'
+                raise LDAPException(self.last_error)
             elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT]:
-                self.lastError = 'unknown change type'
-                raise LDAPException(self.lastError)
+                self.last_error = 'unknown change type'
+                raise LDAPException(self.last_error)
         if not changes:
-            self.lastError = 'no changes in modify request'
-            raise LDAPException(self.lastError)
+            self.last_error = 'no changes in modify request'
+            raise LDAPException(self.last_error)
 
-        request = modifyOperation(dn, changes)
-        response = self.postSendSingleResponse(self.send('modifyRequest', request, controls))
+        request = modify_operation(dn, changes)
+        response = self.post_send_single_response(self.send('modifyRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):
             return response
 
         return True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def modifyDn(self, dn, relativeDn, deleteOldDn = True, newSuperior = None, controls = None):
+    def modify_dn(self, dn, relative_dn, delete_old_dn=True, new_superior=None, controls=None):
         """
         Modify dn of the entry and optionally performs a move of the entry in the dib
         """
 
-        if self.readOnly:
-            raise LDAPException('Connetion is in read-only mode')
+        if self.read_only:
+            raise LDAPException('Connection is in read-only mode')
 
-        if newSuperior and not dn.startswith(relativeDn):  # as per rfc 4511 (4.9)
+        if new_superior and not dn.startswith(relative_dn):  # as per rfc 4511 (4.9)
             raise LDAPException('dn cannot change while moving object')
 
-        request = modifyDnOperation(dn, relativeDn, deleteOldDn, newSuperior)
-        response = self.postSendSingleResponse(self.send('modDNRequest', request, controls))
+        request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
+        response = self.post_send_single_response(self.send('modDNRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):
             return response
 
         return True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def abandon(self, messageId, controls = None):
+    def abandon(self, message_id, controls=None):
         """
-        Abandon the operation indicated by messageId
+        Abandon the operation indicated by message_id
         """
         if self.strategy._outstanding:
-            if messageId in self.strategy._outstanding and self.strategy._outstanding[messageId]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
-                request = abandonOperation(messageId)
+            if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
+                request = abandon_operation(message_id)
                 self.send('abandonRequest', request, controls)
                 self.response = None
                 self.result = None
@@ -505,49 +500,49 @@ class Connection(object):
 
         return False
 
-    def extended(self, requestName, requestValue = None, controls = None):
+    def extended(self, request_name, request_value=None, controls=None):
         """
         Perform an extended operation
         """
-        request = extendedOperation(requestName, requestValue)
-        response = self.postSendSingleResponse(self.send('extendedReq', request, controls))
+        request = extended_operation(request_name, request_value)
+        response = self.post_send_single_response(self.send('extendedReq', request, controls))
         if isinstance(response, int):
             return response
         return True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
-    def startTls(self):  # as per rfc 4511. Removal of TLS is defined as MAY in rfc 4511 so the client can't implement a generic StopTls method
+    def start_tls(self):  # as per rfc 4511. Removal of TLS is defined as MAY in rfc 4511 so the client can't implement a generic StopTls method
         if self.server.tls:
-            if self.server.tls.startTls(self):
-                self.refreshDsaInfo()  # refresh server info as per rfc 4515 (3.1.5)
+            if self.server.tls.start_tls(self):
+                self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
                 return True
 
         return False
 
-    def doSaslBind(self, controls):
+    def do_sasl_bind(self, controls):
         response = None
-        if not self.saslInProgress:
-            self.saslInProgress = True
-            if self.saslMechanism == 'EXTERNAL':
-                response = saslExternal(self, controls)
-            elif self.saslMechanism == 'DIGEST-MD5':
-                response = saslDigestMd5(self, controls)
+        if not self.sasl_in_progress:
+            self.sasl_in_progress = True
+            if self.sasl_mechanism == 'EXTERNAL':
+                response = sasl_external(self, controls)
+            elif self.sasl_mechanism == 'DIGEST-MD5':
+                response = sasl_digest_md5(self, controls)
 
-            self.saslInProgress = False
+            self.sasl_in_progress = False
 
         return response
 
-    def refreshDsaInfo(self):
+    def refresh_dsa_info(self):
         if not self.closed:
-            self.server.getInfoFromServer(self)
+            self.server.get_info_from_server(self)
 
-    def responseToLdif(self, searchResult = None, allBase64 = False):
-        if searchResult is None:
-            searchResult = self.response
+    def response_to_ldif(self, search_result=None, all_base64=False):
+        if search_result is None:
+            search_result = self.response
 
-        if isinstance(searchResult, list):
-            searchResultToLdif = toLdif('searchResponse', searchResult, allBase64)
+        if isinstance(search_result, list):
+            search_result_to_ldif = to_ldif('searchResponse', search_result, all_base64)
         else:
-            searchResultToLdif = None
+            search_result_to_ldif = None
 
-        return searchResultToLdif
+        return search_result_to_ldif
 

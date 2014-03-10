@@ -25,6 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from ..protocol.rfc4511 import UnbindRequest
 
 
-def unbindOperation():
+def unbind_operation():
     request = UnbindRequest()
     return request

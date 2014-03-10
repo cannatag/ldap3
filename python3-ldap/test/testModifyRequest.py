@@ -23,18 +23,17 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, ModifyRequest, ValsAtLeast1, Changes, Change, Operation, PartialAttribute, Vals
 
+from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, ModifyRequest, ValsAtLeast1, Changes, Change, Operation, PartialAttribute, Vals
 from ldap3.connection import Connection
 from ldap3.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(test_server, test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                     authentication = test_authentication)
+        server = Server(test_server, test_port, allowed_referral_hosts=('*', True))
+        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
 
     def tearDown(self):
         self.connection.unbind()
@@ -64,7 +63,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         addReq = AddRequest()
-        addReq['entry'] = LDAPDN(testDnBuilder(test_base, 'test-modify'))
+        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
         addReq['attributes'] = attributes
 
         self.connection.send('addRequest', addReq)
@@ -80,7 +79,7 @@ class Test(unittest.TestCase):
         changes = Changes()
         changes[0] = change1
         modifyReq = ModifyRequest()
-        modifyReq['object'] = LDAPDN(testDnBuilder(test_base, 'test-modify'))
+        modifyReq['object'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
         modifyReq['changes'] = changes
 
         self.connection.send('modifyRequest', modifyReq)

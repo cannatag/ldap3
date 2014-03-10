@@ -24,12 +24,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
 import re
-from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, \
-    LDAPException
+
+from ldap3 import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, LDAPException
 from ..protocol.oid import Oids
 
 
-def constantToClassKind(value):
+def constant_to_class_kind(value):
     if value == CLASS_STRUCTURAL:
         return 'Structural'
     elif value == CLASS_ABSTRACT:
@@ -40,7 +40,7 @@ def constantToClassKind(value):
         return 'unknown'
 
 
-def constantToAttributeUsage(value):
+def constant_to_attribute_usage(value):
     if value == ATTRIBUTE_USER_APPLICATION:
         return 'User Application'
     elif value == ATTRIBUTE_DIRECTORY_OPERATION:
@@ -53,7 +53,7 @@ def constantToAttributeUsage(value):
         return 'unknown'
 
 
-def attributeUsageToConstant(value):
+def attribute_usage_to_constant(value):
     if value == 'userApplications':
         return ATTRIBUTE_USER_APPLICATION
     elif value == 'directoryOperation':
@@ -66,35 +66,35 @@ def attributeUsageToConstant(value):
         return 'unknown'
 
 
-def quotedStringToList(quotedString):
-    string = quotedString.strip()
+def quoted_string_to_list(quoted_string):
+    string = quoted_string.strip()
     if string[0] == '(' and string[-1] == ')':
         string = string[1:-1]
     elements = string.split("'")
     return [element.strip("'").strip() for element in elements if element]
 
 
-def oidsStringToList(oidString):
-    string = oidString.strip()
+def oids_string_to_list(oid_string):
+    string = oid_string.strip()
     if string[0] == '(' and string[-1] == ')':
         string = string[1:-1]
     elements = string.split('$')
     return [element.strip() for element in elements if element]
 
 
-def extensionToTuple(extensionString):
-    string = extensionString.strip()
+def extension_to_tuple(extension_string):
+    string = extension_string.strip()
     name, _, values = string.partition(' ')
-    return name, quotedStringToList(values)
+    return name, quoted_string_to_list(values)
 
 
-def listToString(listObject):
-    if not isinstance(listObject, list):
-        return listObject
+def list_to_string(list_object):
+    if not isinstance(list_object, list):
+        return list_object
 
     r = ''
-    for element in listObject:
-        r += (listToString(element) if isinstance(element, list) else str(element)) + ', '
+    for element in list_object:
+        r += (list_to_string(element) if isinstance(element, list) else str(element)) + ', '
 
     return r[:-2] if r else ''
 
@@ -105,42 +105,36 @@ class SchemaInfo(object):
     as defined in rfc 4512. Unkwnown attributes are stored in the "other" dict
     """
 
-    def __init__(self, schemaEntry, attributes):
-        self.schemaEntry = schemaEntry
-        self.createTimeStamp = attributes.pop('createTimestamp', None)
-        self.modifyTimeStamp = attributes.pop('modifyTimestamp', None)
+    def __init__(self, schema_entry, attributes):
+        self.schema_entry = schema_entry
+        self.create_time_stamp = attributes.pop('createTimestamp', None)
+        self.modify_time_stamp = attributes.pop('modifyTimestamp', None)
 
-        self.attributeTypes = dict((obj.oid, obj) for obj in [AttributeTypeInfo.fromDefinition(definition) for definition in attributes.pop('attributeTypes', [])])
-        self.objectClasses = dict((obj.oid, obj) for obj in [ObjectClassInfo.fromDefinition(definition) for definition in attributes.pop('objectClasses', [])])
-        self.matchingRules = dict((obj.oid, obj) for obj in [MatchingRuleInfo.fromDefinition(definition) for definition in attributes.pop('matchingRules', [])])
-        self.matchingRuleUses = dict((obj.oid, obj) for obj in [MatchingRuleUseInfo.fromDefinition(definition) for definition in attributes.pop('matchingRuleUse', [])])
-        self.ditContentRules = dict((obj.oid, obj) for obj in [DitContentRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITContentRules', [])])
-        self.ditStructureRules = dict((obj.oid, obj) for obj in [DitStructureRuleInfo.fromDefinition(definition) for definition in attributes.pop('dITStructureRules', [])])
-        self.nameForms = dict((obj.oid, obj) for obj in [NameFormInfo.fromDefinition(definition) for definition in attributes.pop('nameForms', [])])
-        self.ldapSyntaxes = dict((obj.oid, obj) for obj in [LdapSyntaxInfo.fromDefinition(definition) for definition in attributes.pop('ldapSyntaxes', [])])
+        self.attribute_types = dict((obj.oid, obj) for obj in [AttributeTypeInfo.from_definition(definition) for definition in attributes.pop('attributeTypes', [])])
+        self.object_classes = dict((obj.oid, obj) for obj in [ObjectClassInfo.from_definition(definition) for definition in attributes.pop('objectClasses', [])])
+        self.matching_rules = dict((obj.oid, obj) for obj in [MatchingRuleInfo.from_definition(definition) for definition in attributes.pop('matchingRules', [])])
+        self.matching_rule_uses = dict((obj.oid, obj) for obj in [MatchingRuleUseInfo.from_definition(definition) for definition in attributes.pop('matchingRuleUse', [])])
+        self.dit_content_rules = dict((obj.oid, obj) for obj in [DitContentRuleInfo.from_definition(definition) for definition in attributes.pop('dITContentRules', [])])
+        self.dit_structure_rules = dict((obj.oid, obj) for obj in [DitStructureRuleInfo.from_definition(definition) for definition in attributes.pop('dITStructureRules', [])])
+        self.name_forms = dict((obj.oid, obj) for obj in [NameFormInfo.from_definition(definition) for definition in attributes.pop('nameForms', [])])
+        self.ldap_syntaxes = dict((obj.oid, obj) for obj in [LdapSyntaxInfo.from_definition(definition) for definition in attributes.pop('ldapSyntaxes', [])])
         self.other = attributes
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        r = 'DSA Schema from: ' + self.schemaEntry + linesep
-        r += ('  Attribute types:' + linesep + '    ' + ', '.join(
-            [str(self.attributeTypes[s]) for s in self.attributeTypes]) + linesep) if self.attributeTypes else ''
+        r = 'DSA Schema from: ' + self.schema_entry + linesep
+        r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attribute_types[s]) for s in self.attribute_types]) + linesep) if self.attribute_types else ''
         r += (
-            '  Object classes:' + linesep + '    ' + ', '.join(
-                [str(self.objectClasses[s]) for s in self.objectClasses]) + linesep) if self.objectClasses else ''
+            '  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes]) + linesep) if self.object_classes else ''
         r += (
-            '  Matching rules:' + linesep + '    ' + ', '.join(
-                [str(self.matchingRules[s]) for s in self.matchingRules]) + linesep) if self.matchingRules else ''
-        r += ('  Matching rule uses:' + linesep + '    ' + ', '.join(
-            [str(self.matchingRuleUses[s]) for s in self.matchingRuleUses]) + linesep) if self.matchingRuleUses else ''
-        r += ('  DIT content rule:' + linesep + '    ' + ', '.join(
-            [str(self.ditContentRules[s]) for s in self.ditContentRules]) + linesep) if self.ditContentRules else ''
-        r += ('  DIT structure rule:' + linesep + '    ' + ', '.join(
-            [str(self.ditStructureRules[s]) for s in self.ditStructureRules]) + linesep) if self.ditStructureRules else ''
-        r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.nameForms[s]) for s in self.nameForms]) + linesep) if self.nameForms else ''
-        r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldapSyntaxes[s]) for s in self.ldapSyntaxes]) + linesep) if self.ldapSyntaxes else ''
+            '  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules]) + linesep) if self.matching_rules else ''
+        r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matching_rule_uses[s]) for s in self.matching_rule_uses]) + linesep) if self.matching_rule_uses else ''
+        r += ('  DIT content rule:' + linesep + '    ' + ', '.join([str(self.dit_content_rules[s]) for s in self.dit_content_rules]) + linesep) if self.dit_content_rules else ''
+        r += ('  DIT structure rule:' + linesep + '    ' + ', '.join([str(self.dit_structure_rules[s]) for s in self.dit_structure_rules]) + linesep) if self.dit_structure_rules else ''
+        r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.name_forms[s]) for s in self.name_forms]) + linesep) if self.name_forms else ''
+        r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldap_syntaxes[s]) for s in self.ldap_syntaxes]) + linesep) if self.ldap_syntaxes else ''
         r += 'Other:' + linesep
 
         for k, v in self.other.items():
@@ -154,18 +148,18 @@ class BaseObjectInfo(object):
     Base class for objects defined in the schema as per rfc 4512
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, extensions = None, experimental = None, definition = None):
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, extensions=None, experimental=None, definition=None):
         self.oid = oid
         self.name = name
         self.description = description
         self.obsolete = obsolete
         self.extensions = extensions
         self.experimental = experimental
-        self.rawDefinition = definition
+        self.raw_definition = definition
         self._oidInfo = None
 
     @property
-    def oidInfo(self):
+    def oid_info(self):
         if self._oidInfo is None and self.oid:
             self._oidInfo = Oids.get(self.oid, '')
 
@@ -177,23 +171,22 @@ class BaseObjectInfo(object):
     def __repr__(self):
         r = ': ' + self.oid
         r += ' [OBSOLETE]' if self.obsolete else ''
-        r += (linesep + '  Short name: ' + listToString(self.name)) if self.name else ''
+        r += (linesep + '  Short name: ' + list_to_string(self.name)) if self.name else ''
         r += (linesep + '  Description: ' + self.description) if self.description else ''
         r += '<__desc__>'
         r += (
-            linesep + '  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + listToString(s[1]) for s in self.extensions])) if self.extensions else ''
-        r += (linesep + '  Experimental:' + linesep + linesep.join(
-            ['    ' + s[0] + ': ' + listToString(s[1]) for s in self.experimental])) if self.experimental else ''
-        r += (linesep + '  OidInfo: ' + str(self.oidInfo)) if self.oidInfo else ''
+            linesep + '  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + list_to_string(s[1]) for s in self.extensions])) if self.extensions else ''
+        r += (linesep + '  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + list_to_string(s[1]) for s in self.experimental])) if self.experimental else ''
+        r += (linesep + '  OidInfo: ' + str(self.oid_info)) if self.oid_info else ''
         r += linesep
         return r
 
     @classmethod
-    def fromDefinition(cls, objectDefinition):
-        if not objectDefinition:
+    def from_definition(cls, object_definition):
+        if not object_definition:
             return None
 
-        if [objectDefinition[0] == ')' and objectDefinition[:-1] == ')']:
+        if [object_definition[0] == ')' and object_definition[:-1] == ')']:
             if cls is MatchingRuleInfo:
                 pattern = '| SYNTAX '
             elif cls is ObjectClassInfo:
@@ -215,73 +208,73 @@ class BaseObjectInfo(object):
             else:
                 raise LDAPException('unknown schema definition class')
 
-            splitted = re.split('( NAME | DESC | OBSOLETE| X-| E-' + pattern + ')', objectDefinition[1:-1])
+            splitted = re.split('( NAME | DESC | OBSOLETE| X-| E-' + pattern + ')', object_definition[1:-1])
             values = splitted[::2]
             separators = splitted[1::2]
             separators.insert(0, 'OID')
             defs = list(zip(separators, values))
-            objectDef = cls()
+            object_def = cls()
             for d in defs:
                 key = d[0].strip()
                 value = d[1].strip()
                 if key == 'OID':
-                    objectDef.oid = value
+                    object_def.oid = value
                 elif key == 'NAME':
-                    objectDef.name = quotedStringToList(value)
+                    object_def.name = quoted_string_to_list(value)
                 elif key == 'DESC':
-                    objectDef.description = value.strip("'")
+                    object_def.description = value.strip("'")
                 elif key == 'OBSOLETE':
-                    objectDef.obsolete = True
+                    object_def.obsolete = True
                 elif key == 'SYNTAX':
-                    objectDef.syntax = oidsStringToList(value)
+                    object_def.syntax = oids_string_to_list(value)
                 elif key == 'SUP':
-                    objectDef.superior = oidsStringToList(value)
+                    object_def.superior = oids_string_to_list(value)
                 elif key == 'ABSTRACT':
-                    objectDef.kind = CLASS_ABSTRACT
+                    object_def.kind = CLASS_ABSTRACT
                 elif key == 'STRUCTURAL':
-                    objectDef.kind = CLASS_STRUCTURAL
+                    object_def.kind = CLASS_STRUCTURAL
                 elif key == 'AUXILIARY':
-                    objectDef.kind = CLASS_AUXILIARY
+                    object_def.kind = CLASS_AUXILIARY
                 elif key == 'MUST':
-                    objectDef.mustContain = oidsStringToList(value)
+                    object_def.must_contain = oids_string_to_list(value)
                 elif key == 'MAY':
-                    objectDef.mayContain = oidsStringToList(value)
+                    object_def.may_contain = oids_string_to_list(value)
                 elif key == 'EQUALITY':
-                    objectDef.equality = oidsStringToList(value)
+                    object_def.equality = oids_string_to_list(value)
                 elif key == 'ORDERING':
-                    objectDef.ordering = oidsStringToList(value)
+                    object_def.ordering = oids_string_to_list(value)
                 elif key == 'SUBSTR':
-                    objectDef.substr = oidsStringToList(value)
+                    object_def.substr = oids_string_to_list(value)
                 elif key == 'SYNTAX':
-                    objectDef.syntax = oidsStringToList(value)
+                    object_def.syntax = oids_string_to_list(value)
                 elif key == 'SINGLE-VALUE':
-                    objectDef.singleValue = True
+                    object_def.single_value = True
                 elif key == 'COLLECTIVE':
-                    objectDef.collective = True
+                    object_def.collective = True
                 elif key == 'NO-USER-MODIFICATION':
-                    objectDef.noUserModification = True
+                    object_def.no_user_modification = True
                 elif key == 'USAGE':
-                    objectDef.usage = attributeUsageToConstant(value)
+                    object_def.usage = attribute_usage_to_constant(value)
                 elif key == 'APPLIES':
-                    objectDef.applyTo = oidsStringToList(value)
+                    object_def.apply_to = oids_string_to_list(value)
                 elif key == 'AUX':
-                    objectDef.auxiliaryClasses = oidsStringToList(value)
+                    object_def.auxiliary_classes = oids_string_to_list(value)
                 elif key == 'FORM':
-                    objectDef.nameForm = oidsStringToList(value)
+                    object_def.name_form = oids_string_to_list(value)
                 elif key == 'OC':
-                    objectDef.objectClass = oidsStringToList(value)
+                    object_def.object_class = oids_string_to_list(value)
                 elif key == 'X-':
-                    if not objectDef.extensions:
-                        objectDef.extensions = []
-                    objectDef.extensions.append(extensionToTuple('X-' + value))
+                    if not object_def.extensions:
+                        object_def.extensions = []
+                    object_def.extensions.append(extension_to_tuple('X-' + value))
                 elif key == 'E-':
-                    if not objectDef.experimental:
-                        objectDef.experimental = []
-                    objectDef.experimental.append(extensionToTuple('E-' + value))
+                    if not object_def.experimental:
+                        object_def.experimental = []
+                    object_def.experimental.append(extension_to_tuple('E-' + value))
                 else:
                     raise LDAPException('malformed schema definition key:' + key)
-            objectDef.rawDefinition = objectDefinition
-            return objectDef
+            object_def.raw_definition = object_definition
+            return object_def
         else:
             raise LDAPException('malformed schema definition')
 
@@ -291,12 +284,12 @@ class MatchingRuleInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.3)
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, syntax = None, extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, syntax=None, extensions=None, experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=name, description=description, obsolete=obsolete, extensions=extensions, experimental=experimental, definition=definition)
         self.syntax = syntax
 
     def __repr__(self):
-        r = (linesep + '  Syntax: ' + listToString(self.syntax)) if self.syntax else ''
+        r = (linesep + '  Syntax: ' + list_to_string(self.syntax)) if self.syntax else ''
         return 'Matching rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
@@ -305,13 +298,12 @@ class MatchingRuleUseInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.4)
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, applyTo = None, extensions = None, experimental = None,
-                 definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
-        self.applyTo = applyTo
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, apply_to=None, extensions=None, experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=name, description=description, obsolete=obsolete, extensions=extensions, experimental=experimental, definition=definition)
+        self.apply_to = apply_to
 
     def __repr__(self):
-        r = (linesep + '  Apply to: ' + listToString(self.applyTo)) if self.applyTo else ''
+        r = (linesep + '  Apply to: ' + list_to_string(self.apply_to)) if self.apply_to else ''
         return 'Matching rule use' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
@@ -320,19 +312,18 @@ class ObjectClassInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.1)
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, kind = None, mustContain = None, mayContain = None,
-                 extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, superior=None, kind=None, must_contain=None, may_contain=None, extensions=None, experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=name, description=description, obsolete=obsolete, extensions=extensions, experimental=experimental, definition=definition)
         self.superior = superior
         self.kind = kind
-        self.mustContain = mustContain
-        self.mayContain = mayContain
+        self.must_contain = must_contain
+        self.may_contain = may_contain
 
     def __repr__(self):
         r = ''
-        r += (linesep + '  Type: ' + constantToClassKind(self.kind)) if isinstance(self.kind, int) else ''
-        r += (linesep + '  Must contain attributes: ' + listToString(self.mustContain)) if self.mustContain else ''
-        r += (linesep + '  May contain attributes: ' + listToString(self.mayContain)) if self.mayContain else ''
+        r += (linesep + '  Type: ' + constant_to_class_kind(self.kind)) if isinstance(self.kind, int) else ''
+        r += (linesep + '  Must contain attributes: ' + list_to_string(self.must_contain)) if self.must_contain else ''
+        r += (linesep + '  May contain attributes: ' + list_to_string(self.may_contain)) if self.may_contain else ''
         return 'Object Class' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
@@ -341,30 +332,29 @@ class AttributeTypeInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.2)
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, superior = None, equality = None, ordering = None, substring = None,
-                 syntax = None, singleValue = False, collective = False, noUserModification = False, usage = None, extensions = None, experimental = None,
-                 definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, superior=None, equality=None, ordering=None, substring=None, syntax=None, single_value=False, collective=False, no_user_modification=False, usage=None, extensions=None,
+                 experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=name, description=description, obsolete=obsolete, extensions=extensions, experimental=experimental, definition=definition)
         self.superior = superior
         self.equality = equality
         self.ordering = ordering
         self.substring = substring
         self.syntax = syntax
-        self.singleValue = singleValue
+        self.single_value = single_value
         self.collective = collective
-        self.noUserModification = noUserModification
+        self.no_user_modification = no_user_modification
         self.usage = usage
 
     def __repr__(self):
         r = ''
-        r += linesep + '  Single Value: True' if self.singleValue else ''
+        r += linesep + '  Single Value: True' if self.single_value else ''
         r += linesep + '  Collective: True' if self.collective else ''
-        r += linesep + '  No user modification: True' if self.noUserModification else ''
-        r += (linesep + '  Usage: ' + constantToAttributeUsage(self.usage)) if self.usage else ''
-        r += (linesep + '  Equality rule: ' + listToString(self.equality)) if self.equality else ''
-        r += (linesep + '  Ordering rule: ' + listToString(self.ordering)) if self.ordering else ''
-        r += (linesep + '  Substring rule: ' + listToString(self.substring)) if self.substring else ''
-        r += (linesep + '  Syntax: ' + listToString(self.syntax)) if self.syntax else ''
+        r += linesep + '  No user modification: True' if self.no_user_modification else ''
+        r += (linesep + '  Usage: ' + constant_to_attribute_usage(self.usage)) if self.usage else ''
+        r += (linesep + '  Equality rule: ' + list_to_string(self.equality)) if self.equality else ''
+        r += (linesep + '  Ordering rule: ' + list_to_string(self.ordering)) if self.ordering else ''
+        r += (linesep + '  Substring rule: ' + list_to_string(self.substring)) if self.substring else ''
+        r += (linesep + '  Syntax: ' + list_to_string(self.syntax)) if self.syntax else ''
         return 'Attribute type' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
@@ -373,8 +363,8 @@ class LdapSyntaxInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.5)
     """
 
-    def __init__(self, oid = None, description = None, extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = None, description = description, obsolete = False, extensions = extensions, experimental = experimental, definition = definition)
+    def __init__(self, oid=None, description=None, extensions=None, experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=None, description=description, obsolete=False, extensions=extensions, experimental=experimental, definition=definition)
 
     def __repr__(self):
         return 'LDAP syntax' + BaseObjectInfo.__repr__(self).replace('<__desc__>', '')
@@ -385,19 +375,18 @@ class DitContentRuleInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.6)
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, auxiliaryClasses = None, mustContain = None, mayContain = None,
-                 notContains = None, extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
-        self.auxiliaryClasses = auxiliaryClasses
-        self.mustContain = mustContain
-        self.mayContain = mayContain
-        self.notContains = notContains
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, auxiliary_classes=None, must_contain=None, may_contain=None, not_contains=None, extensions=None, experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=name, description=description, obsolete=obsolete, extensions=extensions, experimental=experimental, definition=definition)
+        self.auxiliary_classes = auxiliary_classes
+        self.must_contain = must_contain
+        self.may_contain = may_contain
+        self.not_contains = not_contains
 
     def __repr__(self):
-        r = (linesep + '  Auxiliary classes: ' + listToString(self.auxiliaryClasses)) if self.auxiliaryClasses else ''
-        r += (linesep + '  Must contain: ' + listToString(self.mustContain)) if self.mustContain else ''
-        r += (linesep + '  May contain: ' + listToString(self.mayContain)) if self.mayContain else ''
-        r += (linesep + '  Not contains: ' + listToString(self.notContains)) if self.notContains else ''
+        r = (linesep + '  Auxiliary classes: ' + list_to_string(self.auxiliary_classes)) if self.auxiliary_classes else ''
+        r += (linesep + '  Must contain: ' + list_to_string(self.must_contain)) if self.must_contain else ''
+        r += (linesep + '  May contain: ' + list_to_string(self.may_contain)) if self.may_contain else ''
+        r += (linesep + '  Not contains: ' + list_to_string(self.not_contains)) if self.not_contains else ''
         return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
@@ -406,15 +395,14 @@ class DitStructureRuleInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.7.1)
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, nameForm = None, superior = None, extensions = None, experimental = None,
-                 definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, name_form=None, superior=None, extensions=None, experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=name, description=description, obsolete=obsolete, extensions=extensions, experimental=experimental, definition=definition)
         self.superior = superior
-        self.nameForm = nameForm
+        self.name_form = name_form
 
     def __repr__(self):
-        r = (linesep + '  Superior rules: ' + listToString(self.superior)) if self.superior else ''
-        r += (linesep + '  Name form: ' + listToString(self.nameForm)) if self.nameForm else ''
+        r = (linesep + '  Superior rules: ' + list_to_string(self.superior)) if self.superior else ''
+        r += (linesep + '  Name form: ' + list_to_string(self.name_form)) if self.name_form else ''
         return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 
@@ -423,15 +411,14 @@ class NameFormInfo(BaseObjectInfo):
     As per RFC 4512 (4.1.7.2)
     """
 
-    def __init__(self, oid = None, name = None, description = None, obsolete = False, objectClass = None, mustContain = None, mayContain = None,
-                 extensions = None, experimental = None, definition = None):
-        BaseObjectInfo.__init__(self, oid = oid, name = name, description = description, obsolete = obsolete, extensions = extensions, experimental = experimental, definition = definition)
-        self.objectClass = objectClass
-        self.mustContain = mustContain
-        self.mayContain = mayContain
+    def __init__(self, oid=None, name=None, description=None, obsolete=False, object_class=None, must_contain=None, may_contain=None, extensions=None, experimental=None, definition=None):
+        BaseObjectInfo.__init__(self, oid=oid, name=name, description=description, obsolete=obsolete, extensions=extensions, experimental=experimental, definition=definition)
+        self.object_class = object_class
+        self.must_contain = must_contain
+        self.may_contain = may_contain
 
     def __repr__(self):
-        r = (linesep + '  Object class: ' + self.objectClass) if self.objectClass else ''
-        r += (linesep + '  Must contain: ' + listToString(self.mustContain)) if self.mustContain else ''
-        r += (linesep + '  May contain: ' + listToString(self.mayContain)) if self.mayContain else ''
+        r = (linesep + '  Object class: ' + self.object_class) if self.object_class else ''
+        r += (linesep + '  Must contain: ' + list_to_string(self.must_contain)) if self.must_contain else ''
+        r += (linesep + '  May contain: ' + list_to_string(self.may_contain)) if self.may_contain else ''
         return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)

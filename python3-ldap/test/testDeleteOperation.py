@@ -23,24 +23,24 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+
 from ldap3.server import Server
 from ldap3.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                     authentication = test_authentication)
-        self.connection.add(testDnBuilder(test_base, 'test-add-for-delete'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add'})
+        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
+        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        self.connection.add(test_dn_builder(test_base, 'test-add-for-delete'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add'})
 
     def tearDown(self):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
     def testDelete(self):
-        result = self.connection.delete(testDnBuilder(test_base, 'test-add-for-delete'))
+        result = self.connection.delete(test_dn_builder(test_base, 'test-add-for-delete'))
         if not isinstance(result, bool):
-            self.connection.getResponse(result)
+            self.connection.get_response(result)
         self.assertTrue(self.connection.result['description'] in ['success', 'noSuchObject'])

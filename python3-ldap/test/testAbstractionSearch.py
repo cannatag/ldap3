@@ -22,17 +22,17 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 import unittest
+
 from ldap3.abstraction import ObjectDef, AttrDef, Reader
 from ldap3 import Server, Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, testDnBuilder
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True))
-        self.connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                     authentication = test_authentication)
-        self.connection.add(testDnBuilder(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-delete,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
+        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
+        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        self.connection.add(test_dn_builder(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-delete,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
 
     def tearDown(self):
         self.connection.unbind()
@@ -43,13 +43,13 @@ class Test(unittest.TestCase):
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
-        o += AttrDef('givenName', 'Given Name', postQuery = reverse)
+        o += AttrDef('givenName', 'Given Name', post_query=reverse)
 
         queryText = 'Common Name:=test-add*'
         r = Reader(self.connection, o, queryText, 'o=test')
 
         results = r.search()
-        self.assertEqual(len(results), 6)
+        self.assertEqual(len(results), 7)
 
     def testSearchWithDereference(self):
         reverse = lambda a, e: e[::-1]
@@ -66,17 +66,17 @@ class Test(unittest.TestCase):
             return r
 
         ou = ObjectDef('iNetOrgPerson')
-        ou += AttrDef('cn', 'Common Name', postQuery = reverse)
+        ou += AttrDef('cn', 'Common Name', post_query=reverse)
         ou += AttrDef('sn', 'Surname')
-        ou += AttrDef('givenName', 'Given Name', postQuery = raiseParenthesesRank)
+        ou += AttrDef('givenName', 'Given Name', post_query=raiseParenthesesRank)
         ou += AttrDef('ACL')
         qu = 'Common Name: test-add*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 6)
+        self.assertEqual(len(lu), 7)
 
         og = ObjectDef('groupOfNames')
-        og += AttrDef('member', dereferenceDN = ou)
+        og += AttrDef('member', dereference_dn=ou)
         og += 'cn'
         qg = 'cn := test*'
         rg = Reader(self.connection, og, qg, test_base)
@@ -93,7 +93,7 @@ class Test(unittest.TestCase):
         change = lambda attr, value: 'test-del*'
 
         ou = ObjectDef('iNetOrgPerson')
-        ou += AttrDef('cn', 'Common Name', preQuery = change)
+        ou += AttrDef('cn', 'Common Name', pre_query=change)
         ou += AttrDef('sn', 'Surname')
         ou += AttrDef('givenName', 'Given Name')
         ou += AttrDef('ACL')
@@ -105,7 +105,7 @@ class Test(unittest.TestCase):
     def testSearchWithDefault(self):
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
-        ou += AttrDef('employeeType', key = 'Employee', default = 'not employed')
+        ou += AttrDef('employeeType', key='Employee', default='not employed')
         qu = 'CommonName := test-add*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()

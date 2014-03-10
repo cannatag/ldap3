@@ -26,11 +26,13 @@ import stringprep
 from unicodedata import ucd_3_2_0 as unicode32
 from os import urandom
 from binascii import hexlify
+
 from ldap3 import AUTH_SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED, LDAPException
+
 # from ...protocol.rfc4511 import SaslCredentials, AuthenticationChoice
 
 
-def saslPrep(data):
+def sasl_prep(data):
     """
     implement SASLPrep profile as per RFC4013:
     it defines the "SASLprep" profile of the "stringprep" algorithm [StringPrep].
@@ -45,28 +47,28 @@ def saslPrep(data):
     """
 
     # mapping
-    preparedData = ''
+    prepared_data = ''
     for c in data:
         if stringprep.in_table_c12(c):
             # non-ASCII space characters [StringPrep, C.1.2] that can be mapped to SPACE (U+0020)
-            preparedData += ' '
+            prepared_data += ' '
         elif stringprep.in_table_b1(c):
             # the "commonly mapped to nothing" characters [StringPrep, B.1] that can be mapped to nothing.
             pass
         else:
-            preparedData += c
+            prepared_data += c
 
     # normalizing
     # This profile specifies using Unicode normalization form KC
     # The repertoire is Unicode 3.2 as per RFC 4013 (2)
 
-    preparedData = unicode32.normalize('NFKC', preparedData)
+    prepared_data = unicode32.normalize('NFKC', prepared_data)
 
-    if not preparedData:
+    if not prepared_data:
         raise LDAPException('SASLprep error: unable to normalize string')
 
     # prohibit
-    for c in preparedData:
+    for c in prepared_data:
         if stringprep.in_table_c12(c):
             # Non-ASCII space characters [StringPrep, C.1.2]
             raise LDAPException('SASLprep error: non-ASCII space character present')
@@ -100,66 +102,68 @@ def saslPrep(data):
 
     # check bidi
     # if a string contains any RandALCat character, the string MUST NOT contain any LCat character.
-    flagRAndALCat = False
-    flagLCat = False
-    for c in preparedData:
+    flag_r_and_al_cat = False
+    flag_l_cat = False
+    for c in prepared_data:
         if stringprep.in_table_d1(c):
-            flagRAndALCat = True
+            flag_r_and_al_cat = True
         elif stringprep.in_table_d2(c):
-            flagLCat = True
+            flag_l_cat = True
 
-        if flagRAndALCat and flagLCat:
+        if flag_r_and_al_cat and flag_l_cat:
             raise LDAPException('SASLprep error: string cannot contain (R or AL) and L bidirectional chars')
 
     # If a string contains any RandALCat character, a RandALCat character MUST be the first character of the string
     # and a RandALCat character MUST be the last character of the string.
-    if flagRAndALCat and not stringprep.in_table_d1(preparedData[0]) and not stringprep.in_table_d2(preparedData[-1]):
+    if flag_r_and_al_cat and not stringprep.in_table_d1(prepared_data[0]) and not stringprep.in_table_d2(prepared_data[-1]):
         raise LDAPException('RandALCat character present, must be first and last character of the string')
 
-    return preparedData
+    return prepared_data
 
 
-def validateSimplePassword(password):
+def validate_simple_password(password):
     """
-    validate simple password as per RFC4013 using saslPrep:
+    validate simple password as per RFC4013 using sasl_prep:
     """
 
     if password == '' or password is None:
         raise LDAPException("simple password can't be empty")
 
     if not isinstance(password, bytes):  # bytes are returned raw, as per rfc (4.2)
-        password = saslPrep(password)
+        password = sasl_prep(password)
 
     return password
 
 
 # def addSaslCredentialsToBindRequest(request, mechanism, credentials):
-#     saslCredentials = SaslCredentials()
-#     saslCredentials['mechanism'] = mechanism
+#     sasl_credentials = SaslCredentials()
+#     sasl_credentials['mechanism'] = mechanism
 #     if credentials:
-#         saslCredentials['credentials'] = credentials
-#     request['authentication'] = AuthenticationChoice().setComponentByName('sasl', saslCredentials)
+#         sasl_credentials['credentials'] = credentials
+#     request['authentication'] = AuthenticationChoice().setComponentByName('sasl', sasl_credentials)
 #
 #     return request
 
 
-def abortSaslNegotiation(connection, controls):
-    from ldap3.operation.bind import bindOperation
-    request = bindOperation(connection.version, AUTH_SASL, None, None, '', None)
-    response = connection.postSendSingleResponse(connection.send('bindRequest', request, controls))
-    result = connection.getResponse(response)[0] if isinstance(response, int) else connection.result
+def abort_sasl_negotiation(connection, controls):
+    from ldap3.operation.bind import bind_operation
+
+    request = bind_operation(connection.version, AUTH_SASL, None, None, '', None)
+    response = connection.post_send_single_response(connection.send('bindRequest', request, controls))
+    result = connection.get_response(response)[0] if isinstance(response, int) else connection.result
 
     return True if result['result'] == RESULT_AUTH_METHOD_NOT_SUPPORTED else False
 
 
-def sendSaslNegotiation(connection, controls, payload):
-    from ldap3.operation.bind import bindOperation
-    request = bindOperation(connection.version, AUTH_SASL, None, None, connection.saslMechanism, payload)
-    response = connection.postSendSingleResponse(connection.send('bindRequest', request, controls))
-    result = connection.getResponse(response)[0] if isinstance(response, int) else connection.result
+def send_sasl_negotiation(connection, controls, payload):
+    from ldap3.operation.bind import bind_operation
+
+    request = bind_operation(connection.version, AUTH_SASL, None, None, connection.sasl_mechanism, payload)
+    response = connection.post_send_single_response(connection.send('bindRequest', request, controls))
+    result = connection.get_response(response)[0] if isinstance(response, int) else connection.result
 
     return result
 
 
-def randomHexString(size):
+def random_hex_string(size):
     return str(hexlify(urandom(size)).decode('ascii'))  # str fix for python 2

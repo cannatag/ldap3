@@ -26,75 +26,73 @@ from ldap3 import LDAPException
 from ..protocol.rfc4511 import Controls, Control
 
 
-def attributeToDict(attribute):
+def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
 
 
-def attributesToDict(attributes):
-    attributesDict = dict()
+def attributes_to_dict(attributes):
+    attributes_dict = dict()
     for attribute in attributes:
-        attributeDict = attributeToDict(attribute)
-        attributesDict[attributeDict['type']] = attributeDict['values']
+        attribute_dict = attribute_to_dict(attribute)
+        attributes_dict[attribute_dict['type']] = attribute_dict['values']
 
-    return attributesDict
+    return attributes_dict
 
 
-def referralsToList(referrals):
+def referrals_to_list(referrals):
     if referrals:
         return [str(referral) for referral in referrals if referral]
     else:
         return None
 
 
-def searchRefsToList(searchRefs):
-    if searchRefs:
-        return [str(searchRef) for searchRef in searchRefs if searchRef]
+def search_refs_to_list(search_refs):
+    if search_refs:
+        return [str(searchRef) for searchRef in search_refs if searchRef]
     else:
         return None
 
 
-def saslToDict(sasl):
+def sasl_to_dict(sasl):
     return {'mechanism': str(sasl['mechanism']), 'credentials': str(sasl['credentials'])}
 
 
-def authenticationChoiceToDict(authenticationChoice):
-    return {'simple': str(authenticationChoice['simple']) if authenticationChoice.getName() == 'simple' else None,
-            'sasl': saslToDict(authenticationChoice['sasl']) if authenticationChoice.getName() == 'sasl' else None}
+def authentication_choice_to_dict(authentication_choice):
+    return {'simple': str(authentication_choice['simple']) if authentication_choice.getName() == 'simple' else None, 'sasl': sasl_to_dict(authentication_choice['sasl']) if authentication_choice.getName() == 'sasl' else None}
 
 
-def decodeReferrals(referrals):
+def decode_referrals(referrals):
     if referrals:
         return [str(referral) for referral in referrals if referral]
     else:
         return None
 
 
-def partialAttributeToDict(modification):
+def partial_attribute_to_dict(modification):
     return {'type': str(modification['type']), 'value': [str(value) for value in modification['vals']]}
 
 
-def changeToDict(change):
-    return {'operation': int(change['operation']), 'attribute': partialAttributeToDict(change['modification'])}
+def change_to_dict(change):
+    return {'operation': int(change['operation']), 'attribute': partial_attribute_to_dict(change['modification'])}
 
 
-def changesToList(changes):
-    return [changeToDict(change) for change in changes]
+def changes_to_list(changes):
+    return [change_to_dict(change) for change in changes]
 
 
-def attributesToList(attributes):
+def attributes_to_list(attributes):
     return [str(attribute) for attribute in attributes]
 
 
-def avaToDict(ava):
+def ava_to_dict(ava):
     return {'attribute': str(ava['attributeDesc']), 'value': str(ava['assertionValue'])}
 
 
-def substringToDict(substring):
-    return {'initial': substring['initial'] if substring['initial'] else '', 'any': [middle for middle in substring['any']] if substring['any'] else '',
-            'final': substring['final'] if substring['final'] else ''}
+def substring_to_dict(substring):
+    return {'initial': substring['initial'] if substring['initial'] else '', 'any': [middle for middle in substring['any']] if substring['any'] else '', 'final': substring['final'] if substring['final'] else ''}
 
 
-def prepareChangesForRequest(changes):
+def prepare_changes_for_request(changes):
     prepared = {}
     for change in changes:
         prepared[change['attribute']['type']] = (change['operation'], change['attribute']['value'])
@@ -102,7 +100,7 @@ def prepareChangesForRequest(changes):
     return prepared
 
 
-def buildControlsList(controls):
+def build_controls_list(controls):
     """
     controls is a list of tuple
     each tuple must have 3 elements: the control OID, the criticality, the value
@@ -114,15 +112,15 @@ def buildControlsList(controls):
     if not isinstance(controls, list):
         raise LDAPException('controls must be a list')
 
-    builtControls = Controls()
+    built_controls = Controls()
     for idx, control in enumerate(controls):
         if len(control) == 3 and isinstance(control[1], bool):
-            builtControl = Control()
-            builtControl['controlType'] = control[0]
-            builtControl['criticality'] = control[1]
-            builtControl['controlValue'] = control[2]
-            builtControls.setComponentByPosition(idx, builtControl)
+            built_control = Control()
+            built_control['controlType'] = control[0]
+            built_control['criticality'] = control[1]
+            built_control['controlValue'] = control[2]
+            built_controls.setComponentByPosition(idx, built_control)
         else:
             raise LDAPException('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
 
-    return builtControls
+    return built_controls

@@ -24,8 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from ..protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, ResultCode
 
-from ..operation.search import avaToDict
-from ..operation.bind import referralsToList
+from ..operation.search import ava_to_dict
+from ..operation.bind import referrals_to_list
 
 
 # CompareRequest ::= [APPLICATION 14] SEQUENCE {
@@ -33,7 +33,7 @@ from ..operation.bind import referralsToList
 #     ava             AttributeValueAssertion }
 
 
-def compareOperation(dn, attribute, value):
+def compare_operation(dn, attribute, value):
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
     ava['assertionValue'] = AssertionValue(value)
@@ -45,11 +45,10 @@ def compareOperation(dn, attribute, value):
     return request
 
 
-def compareRequestToDict(request):
-    ava = avaToDict(request['ava'])
+def compare_request_to_dict(request):
+    ava = ava_to_dict(request['ava'])
     return {'entry': str(request['entry']), 'attribute': ava['attribute'], 'value': ava['value']}
 
 
-def compareResponseToDict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
-            'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']), }
+def compare_response_to_dict(response):
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'referrals': referrals_to_list(response['referral']), }

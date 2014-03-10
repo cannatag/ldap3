@@ -25,23 +25,22 @@ If not, see <http://www.gnu.org/licenses/>.
 import socket
 from time import sleep
 from random import choice
+
 from pyasn1.codec.ber import encoder, decoder
 
-from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, \
-    LDAPException
-
+from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, LDAPException
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
-from ..operation.add import addResponseToDict, addRequestToDict
-from ..operation.modify import modifyRequestToDict, modifyResponseToDict
-from ..operation.search import searchResultReferenceResponseToDict, searchResultDoneResponseToDict, searchResultEntryResponseToDict, searchRequestToDict
-from ..operation.bind import bindResponseToDict, bindRequestToDict
-from ..operation.compare import compareResponseToDict, compareRequestToDict
-from ..operation.extended import extendedRequestToDict, extendedResponseToDict, intermediateResponseToDict
+from ..operation.add import add_response_to_dict, add_request_to_dict
+from ..operation.modify import modify_request_to_dict, modify_response_to_dict
+from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict, search_result_entry_response_to_dict, search_request_to_dict
+from ..operation.bind import bind_response_to_dict, bind_request_to_dict
+from ..operation.compare import compare_response_to_dict, compare_request_to_dict
+from ..operation.extended import extended_request_to_dict, extended_response_to_dict, intermediate_response_to_dict
 from ..server import Server
-from ..operation.modifyDn import modifyDnRequestToDict, modifyDnResponseToDict
-from ..operation.delete import deleteResponseToDict, deleteRequestToDict
-from ..protocol.convert import prepareChangesForRequest, buildControlsList
-from ..operation.abandon import abandonRequestToDict
+from ..operation.modifyDn import modify_dn_request_to_dict, modify_dn_response_to_dict
+from ..operation.delete import delete_response_to_dict, delete_request_to_dict
+from ..protocol.convert import prepare_changes_for_request, build_controls_list
+from ..operation.abandon import abandon_request_to_dict
 from ..tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
@@ -52,35 +51,36 @@ class BaseStrategy(object):
     Base class for connection strategy
     """
 
-    def __init__(self, ldapConnection):
-        self.sync = None  # indicates a synchronous connection
-        self.noRealDSA = None  # indicates a connection to a fake LDAP server
-        self.restartable = False  # indicates if the strategy is restartable
-        self.connection = ldapConnection
+    def __init__(self, ldap_connection):
+        self.connection = ldap_connection
         self._outstanding = None
         self._referrals = []
+        self.sync = None  # indicates a synchronous connection
+        self.no_real_dsa = None  # indicates a connection to a fake LDAP server
+        self.restartable = None  # indicates if the strategy is restartable
 
-    def open(self, startListening = True, resetUsage = True):
+
+    def open(self, start_listening=True, reset_usage=True):
         """
         Open a socket to a server
         """
         self._outstanding = dict()
         if self.connection.usage:
-            if resetUsage or not self.connection.usage.initialConnectionStartTime:
+            if reset_usage or not self.connection.usage.initialConnectionStartTime:
                 self.connection.usage.start()
 
-        self._openSocket(self.connection.server.ssl)
+        self._open_socket(self.connection.server.ssl)
 
-        if startListening:
-            self._startListen()
+        if start_listening:
+            self._start_listen()
 
     def close(self):
         """
         Close connection
         """
         if not self.connection.closed:
-            self._stopListen()
-            self._closeSocket()
+            self._stop_listen()
+            self._close_socket()
             self.connection.bound = False
             self.connection.request = None
             self.connection.response = None
@@ -89,7 +89,7 @@ class BaseStrategy(object):
             if self.connection.usage:
                 self.connection.usage.stop()
 
-    def _openSocket(self, useSsl = False):
+    def _open_socket(self, use_ssl=False):
         """
         Try to open and connect a socket to a Server
         raise LDAPException if unable to open or connect socket
@@ -97,30 +97,30 @@ class BaseStrategy(object):
         try:
             self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except Exception as e:
-            self.connection.lastError = 'socket creation error: ' + str(e)
-            raise LDAPException(self.connection.lastError)
+            self.connection.last_error = 'socket creation error: ' + str(e)
+            raise LDAPException(self.connection.last_error)
 
         try:
             self.connection.socket.connect((self.connection.server.host, self.connection.server.port))
         except socket.error as e:
-            self.connection.lastError = 'socket connection error: ' + str(e)
-            raise LDAPException(self.connection.lastError)
+            self.connection.last_error = 'socket connection error: ' + str(e)
+            raise LDAPException(self.connection.last_error)
 
-        if useSsl:
+        if use_ssl:
             try:
-                self.connection.socket = self.connection.server.tls.wrapSocket(self.connection.socket, doHandshake = True)
+                self.connection.socket = self.connection.server.tls.wrap_socket(self.connection.socket, do_handshake=True)
                 if self.connection.usage:
                     self.connection.usage.wrappedSocket += 1
             except Exception as e:
-                self.connection.lastError = 'socket ssl wrapping error: ' + str(e)
-                raise LDAPException(self.connection.lastError)
+                self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
+                raise LDAPException(self.connection.last_error)
 
         if self.connection.usage:
             self.connection.usage.openedSockets += 1
 
         self.connection.closed = False
 
-    def _closeSocket(self):
+    def _close_socket(self):
         """
         Try to close a socket
         raise LDAPException if unable to close socket
@@ -129,58 +129,58 @@ class BaseStrategy(object):
             self.connection.socket.shutdown(socket.SHUT_RDWR)
             self.connection.socket.close()
         except Exception as e:
-            self.connection.lastError = 'socket closing error' + str(e)
-            raise LDAPException(self.connection.lastError)
+            self.connection.last_error = 'socket closing error' + str(e)
+            raise LDAPException(self.connection.last_error)
         self.connection.socket = None
         self.connection.closed = True
 
         if self.connection.usage:
             self.connection.usage.closedSockets += 1
 
-    def _stopListen(self):
+    def _stop_listen(self):
         self.connection.listening = False
 
-    def send(self, messageType, request, controls = None):
+    def send(self, message_type, request, controls=None):
         """
         Send an LDAP message
-        Returns the messageId
+        Returns the message_id
         """
         self.connection.request = None
         if self.connection.listening:
-            if self.connection.saslInProgress and messageType not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
-                self.connection.lastError = 'cannot send operation requests while SASL bind is in progress'
-                raise LDAPException(self.connection.lastError)
-            messageId = self.connection.server.nextMessageId()
-            ldapMessage = LDAPMessage()
-            ldapMessage['messageID'] = MessageID(messageId)
-            ldapMessage['protocolOp'] = ProtocolOp().setComponentByName(messageType, request)
-            messageControls = buildControlsList(controls)
-            if messageControls is not None:
-                ldapMessage['controls'] = messageControls
+            if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
+                self.connection.last_error = 'cannot send operation requests while SASL bind is in progress'
+                raise LDAPException(self.connection.last_error)
+            message_id = self.connection.server.next_message_id()
+            ldap_message = LDAPMessage()
+            ldap_message['messageID'] = MessageID(message_id)
+            ldap_message['protocolOp'] = ProtocolOp().setComponentByName(message_type, request)
+            message_controls = build_controls_list(controls)
+            if message_controls is not None:
+                ldap_message['controls'] = message_controls
 
             try:
-                encodedMessage = encoder.encode(ldapMessage)
-                self.connection.socket.sendall(encodedMessage)
+                encoded_message = encoder.encode(ldap_message)
+                self.connection.socket.sendall(encoded_message)
             except socket.error as e:
-                self.connection.lastError = 'socket sending error' + str(e)
-                raise LDAPException(self.connection.lastError)
+                self.connection.last_error = 'socket sending error' + str(e)
+                raise LDAPException(self.connection.last_error)
 
-            self.connection.request = BaseStrategy.decodeRequest(ldapMessage)
+            self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls
-            self._outstanding[messageId] = self.connection.request
+            self._outstanding[message_id] = self.connection.request
             if self.connection.usage:
-                self.connection.usage.transmittedMessage(self.connection.request, len(encodedMessage))
+                self.connection.usage.transmitted_message(self.connection.request, len(encoded_message))
         else:
-            self.connection.lastError = 'unable to send message, socket is not open'
-            raise LDAPException(self.connection.lastError)
+            self.connection.last_error = 'unable to send message, socket is not open'
+            raise LDAPException(self.connection.last_error)
 
-        return messageId
+        return message_id
 
-    def getResponse(self, messageId, timeout = RESPONSE_WAITING_TIMEOUT):
+    def get_response(self, message_id, timeout=RESPONSE_WAITING_TIMEOUT):
         """
         Get response LDAP messages
         Responses are returned by the underlying connection strategy
-        Check if messageId LDAP message is still outstanding and wait for timeout to see if it appears in _getResponse
+        Check if message_id LDAP message is still outstanding and wait for timeout to see if it appears in _get_response
         All response messages are returned
         Result is stored in connection.result
         Responses without result is stored in connection.response
@@ -188,27 +188,27 @@ class BaseStrategy(object):
         response = None
         self.connection.response = None
         self.connection.result = None
-        if self._outstanding and messageId in self._outstanding:
+        if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in _responses
-                responses = self._getResponse(messageId)
+                responses = self._get_response(message_id)
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     self.close()
-                    self.connection.lastError = 'session terminated by server'
-                    raise LDAPException(self.connection.lastError)
+                    self.connection.last_error = 'session terminated by server'
+                    raise LDAPException(self.connection.last_error)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME
                 else:
                     timeout = -1
                     if responses:
-                        self._outstanding.pop(messageId)
+                        self._outstanding.pop(message_id)
                         self.connection.response = responses[:-2] if len(responses) > 2 else []
                         self.connection.result = responses[-2]
                         response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
         return response
 
     @classmethod
-    def computeLDAPMessageSize(cls, data):
+    def compute_ldap_message_size(cls, data):
         """
         Compute LDAP Message size according to BER definite length rules
         Returns -1 if too few data to compute message length
@@ -216,124 +216,124 @@ class BaseStrategy(object):
         if isinstance(data, str):  # fix for python2, data is string not bytes
             data = bytearray(data)  # python2 bytearray is equivalent to python3 bytes
 
-        retValue = -1
+        ret_value = -1
         if len(data) > 2:
             if data[1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
-                retValue = data[1] + 2
+                ret_value = data[1] + 2
             else:  # BER definite length - long form. Highest bit of byte 1 is 1, last 7 bits counts the number of following octets containing the value length
-                bytesLength = data[1] - 128
-                if len(data) >= bytesLength + 2:
-                    valueLength = 0
-                    cont = bytesLength
-                    for byte in data[2:2 + bytesLength]:
+                bytes_length = data[1] - 128
+                if len(data) >= bytes_length + 2:
+                    value_length = 0
+                    cont = bytes_length
+                    for byte in data[2:2 + bytes_length]:
                         cont -= 1
-                        valueLength += byte * (256 ** cont)
-                    retValue = valueLength + 2 + bytesLength
+                        value_length += byte * (256 ** cont)
+                    ret_value = value_length + 2 + bytes_length
 
-        return retValue
+        return ret_value
 
     @classmethod
-    def decodeResponse(cls, ldapMessage):
+    def decode_response(cls, ldap_message):
         """
         Convert received LDAPMessage to a dict
         """
-        messageType = ldapMessage.getComponentByName('protocolOp').getName()
-        component = ldapMessage['protocolOp'].getComponent()
-        controls = ldapMessage['controls']
-        if messageType == 'bindResponse':
-            result = bindResponseToDict(component)
-        elif messageType == 'searchResEntry':
-            result = searchResultEntryResponseToDict(component)
-        elif messageType == 'searchResDone':
-            result = searchResultDoneResponseToDict(component)
-        elif messageType == 'searchResRef':
-            result = searchResultReferenceResponseToDict(component)
-        elif messageType == 'modifyResponse':
-            result = modifyResponseToDict(component)
-        elif messageType == 'addResponse':
-            result = addResponseToDict(component)
-        elif messageType == 'delResponse':
-            result = deleteResponseToDict(component)
-        elif messageType == 'modDNResponse':
-            result = modifyDnResponseToDict(component)
-        elif messageType == 'compareResponse':
-            result = compareResponseToDict(component)
-        elif messageType == 'extendedResp':
-            result = extendedResponseToDict(component)
-        elif messageType == 'intermediateResponse':
-            result = intermediateResponseToDict(component)
+        message_type = ldap_message.getComponentByName('protocolOp').getName()
+        component = ldap_message['protocolOp'].getComponent()
+        controls = ldap_message['controls']
+        if message_type == 'bindResponse':
+            result = bind_response_to_dict(component)
+        elif message_type == 'searchResEntry':
+            result = search_result_entry_response_to_dict(component)
+        elif message_type == 'searchResDone':
+            result = search_result_done_response_to_dict(component)
+        elif message_type == 'searchResRef':
+            result = search_result_reference_response_to_dict(component)
+        elif message_type == 'modifyResponse':
+            result = modify_response_to_dict(component)
+        elif message_type == 'addResponse':
+            result = add_response_to_dict(component)
+        elif message_type == 'delResponse':
+            result = delete_response_to_dict(component)
+        elif message_type == 'modDNResponse':
+            result = modify_dn_response_to_dict(component)
+        elif message_type == 'compareResponse':
+            result = compare_response_to_dict(component)
+        elif message_type == 'extendedResp':
+            result = extended_response_to_dict(component)
+        elif message_type == 'intermediateResponse':
+            result = intermediate_response_to_dict(component)
         else:
             raise LDAPException('unknown response')
-        result['type'] = messageType
+        result['type'] = message_type
         if controls:
             result['controls'] = dict()
             for control in controls:
-                decodedControl = cls.decodeControl(control)
-                result['controls'][decodedControl[0]] = decodedControl[1]
+                decoded_control = cls.decode_control(control)
+                result['controls'][decoded_control[0]] = decoded_control[1]
         return result
 
     @classmethod
-    def decodeControl(cls, control):
+    def decode_control(cls, control):
         """
         decode control, return a 2-element tuple where the first element is the control oid
         and the second element is a dictionary with description (from Oids), criticality and decoded control value
         """
-        controlType = str(control['controlType'])
+        control_type = str(control['controlType'])
         criticality = bool(control['criticality'])
-        controlValue = bytes(control['controlValue'])
-        if controlType == '1.2.840.113556.1.4.319':  # simple paged search as per rfc 2696
-            controlResp, unprocessed = decoder.decode(controlValue, asn1Spec = RealSearchControlValue())
-            controlValue = dict()
-            controlValue['size'] = int(controlResp['size'])
-            controlValue['cookie'] = bytes(controlResp['cookie'])
+        control_value = bytes(control['controlValue'])
+        if control_type == '1.2.840.113556.1.4.319':  # simple paged search as per rfc 2696
+            control_resp, unprocessed = decoder.decode(control_value, asn1Spec=RealSearchControlValue())
+            control_value = dict()
+            control_value['size'] = int(control_resp['size'])
+            control_value['cookie'] = bytes(control_resp['cookie'])
 
-        return controlType, {'description': Oids.get(controlType, ''), 'criticality': criticality, 'value': controlValue}
+        return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @classmethod
-    def decodeRequest(cls, ldapMessage):
-        messageType = ldapMessage.getComponentByName('protocolOp').getName()
-        component = ldapMessage['protocolOp'].getComponent()
-        if messageType == 'bindRequest':
-            result = bindRequestToDict(component)
-        elif messageType == 'unbindRequest':
+    def decode_request(cls, ldap_message):
+        message_type = ldap_message.getComponentByName('protocolOp').getName()
+        component = ldap_message['protocolOp'].getComponent()
+        if message_type == 'bindRequest':
+            result = bind_request_to_dict(component)
+        elif message_type == 'unbindRequest':
             result = dict()
-        elif messageType == 'addRequest':
-            result = addRequestToDict(component)
-        elif messageType == 'compareRequest':
-            result = compareRequestToDict(component)
-        elif messageType == 'delRequest':
-            result = deleteRequestToDict(component)
-        elif messageType == 'extendedReq':
-            result = extendedRequestToDict(component)
-        elif messageType == 'modifyRequest':
-            result = modifyRequestToDict(component)
-        elif messageType == 'modDNRequest':
-            result = modifyDnRequestToDict(component)
-        elif messageType == 'searchRequest':
-            result = searchRequestToDict(component)
-        elif messageType == 'abandonRequest':
-            result = abandonRequestToDict(component)
+        elif message_type == 'addRequest':
+            result = add_request_to_dict(component)
+        elif message_type == 'compareRequest':
+            result = compare_request_to_dict(component)
+        elif message_type == 'delRequest':
+            result = delete_request_to_dict(component)
+        elif message_type == 'extendedReq':
+            result = extended_request_to_dict(component)
+        elif message_type == 'modifyRequest':
+            result = modify_request_to_dict(component)
+        elif message_type == 'modDNRequest':
+            result = modify_dn_request_to_dict(component)
+        elif message_type == 'searchRequest':
+            result = search_request_to_dict(component)
+        elif message_type == 'abandonRequest':
+            result = abandon_request_to_dict(component)
         else:
             raise LDAPException('unknown request')
-        result['type'] = messageType
+        result['type'] = message_type
         return result
 
-    def validReferralList(self, referrals):
-        referralList = []
+    def valid_referral_list(self, referrals):
+        referral_list = []
         for referral in referrals:
-            candidateReferral = BaseStrategy.decodeReferral(referral)
-            if candidateReferral:
+            candidate_referral = BaseStrategy.decode_referral(referral)
+            if candidate_referral:
                 for refHost in self.connection.server.allowedReferralHosts:
-                    if refHost[0] == candidateReferral['host'] or refHost[0] == '*':
-                        if candidateReferral['host'] not in self._referrals:
-                            candidateReferral['anonymousBindOnly'] = not refHost[1]
-                            referralList.append(candidateReferral)
+                    if refHost[0] == candidate_referral['host'] or refHost[0] == '*':
+                        if candidate_referral['host'] not in self._referrals:
+                            candidate_referral['anonymousBindOnly'] = not refHost[1]
+                            referral_list.append(candidate_referral)
                             break
 
-        return referralList
+        return referral_list
 
     @classmethod
-    def decodeReferral(cls, uri):
+    def decode_referral(cls, uri):
         """
         Decoce referral URI as specified in RFC 4516 relaxing specifications
         permitting 'ldaps' as scheme meaning ssl-ldap
@@ -416,64 +416,59 @@ class BaseStrategy(object):
 
         return referral
 
-    def doOperationOnReferral(self, request, referrals):
-        validReferralList = self.validReferralList(referrals)
-        if validReferralList:
-            preferredReferralList = [referral for referral in validReferralList if referral['ssl'] == self.connection.server.ssl]
-            selectedReferral = choice(preferredReferralList) if preferredReferralList else choice(validReferralList)
+    def do_operation_on_referral(self, request, referrals):
+        valid_referral_list = self.valid_referral_list(referrals)
+        if valid_referral_list:
+            preferred_referral_list = [referral for referral in valid_referral_list if referral['ssl'] == self.connection.server.ssl]
+            selected_referral = choice(preferred_referral_list) if preferred_referral_list else choice(valid_referral_list)
 
-            referralServer = Server(host = selectedReferral['host'], port = selectedReferral['port'] or self.connection.server.port,
-                                    useSsl = selectedReferral['ssl'], allowedReferralHosts = self.connection.server.allowedReferralHosts,
-                                    tls = Tls(localPrivateKeyFile = self.connection.server.tls.privateKeyFile,
-                                    localCertificateFile = self.connection.server.tls.certificateFile, validate = self.connection.server.tls.validate,
-                                    version = self.connection.server.tls.version, caCertsFile = self.connection.server.tls.caCertsFile))
+            referral_server = Server(host=selected_referral['host'], port=selected_referral['port'] or self.connection.server.port, use_ssl=selected_referral['ssl'], allowed_referral_hosts=self.connection.server.allowedReferralHosts,
+                                     tls=Tls(local_private_key_file=self.connection.server.tls.privateKeyFile, local_certificate_file=self.connection.server.tls.certificateFile, validate=self.connection.server.tls.validate,
+                                             version=self.connection.server.tls.version, ca_certs_file=self.connection.server.tls.caCertsFile))
+
             from ldap3.connection import Connection
 
-            referralConnection = Connection(server = referralServer, user = self.connection.user if not selectedReferral['anonymousBindOnly'] else None,
-                                            password = self.connection.password if not selectedReferral['anonymousBindOnly'] else None,
-                                            version = self.connection.version,
-                                            authentication = self.connection.authentication if not selectedReferral['anonymousBindOnly'] else AUTH_ANONYMOUS,
-                                            clientStrategy = STRATEGY_SYNC, autoReferrals = True, readOnly = self.connection.readOnly)
+            referral_connection = Connection(server=referral_server, user=self.connection.user if not selected_referral['anonymousBindOnly'] else None, password=self.connection.password if not selected_referral['anonymousBindOnly'] else None,
+                                             version=self.connection.version, authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else AUTH_ANONYMOUS, client_strategy=STRATEGY_SYNC, auto_referrals=True,
+                                             read_only=self.connection.readOnly)
 
-            referralConnection.open()
-            referralConnection.strategy._referrals = self._referrals
+            referral_connection.open()
+            referral_connection.strategy._referrals = self._referrals
             if self.connection.bound:
-                referralConnection.bind()
+                referral_connection.bind()
 
             if request['type'] == 'searchRequest':
-                referralConnection.search(selectedReferral['base'] or request['base'], selectedReferral['filter'] or request['filter'],
-                                          selectedReferral['scope'] or request['scope'], request['dereferenceAlias'],
-                                          selectedReferral['attributes'] or request['attributes'], request['sizeLimit'], request['timeLimit'],
-                                          request['typeOnly'], controls = request['controls'])
+                referral_connection.search(selected_referral['base'] or request['base'], selected_referral['filter'] or request['filter'], selected_referral['scope'] or request['scope'], request['dereferenceAlias'],
+                                           selected_referral['attributes'] or request['attributes'], request['sizeLimit'], request['timeLimit'], request['typeOnly'], controls=request['controls'])
             elif request['type'] == 'addRequest':
-                referralConnection.add(selectedReferral['base'] or request['entry'], None, request['attributes'], controls = request['controls'])
+                referral_connection.add(selected_referral['base'] or request['entry'], None, request['attributes'], controls=request['controls'])
             elif request['type'] == 'compareRequest':
-                referralConnection.compare(selectedReferral['base'] or request['entry'], request['attribute'], request['value'], controls = request['controls'])
+                referral_connection.compare(selected_referral['base'] or request['entry'], request['attribute'], request['value'], controls=request['controls'])
             elif request['type'] == 'delRequest':
-                referralConnection.delete(selectedReferral['base'] or request['entry'], controls = request['controls'])
+                referral_connection.delete(selected_referral['base'] or request['entry'], controls=request['controls'])
             elif request['type'] == 'extendedRequest':
                 # tbd
                 raise NotImplemented()
             elif request['type'] == 'modifyRequest':
-                referralConnection.modify(selectedReferral['base'] or request['entry'], prepareChangesForRequest(request['changes']), controls = request['controls'])
+                referral_connection.modify(selected_referral['base'] or request['entry'], prepare_changes_for_request(request['changes']), controls=request['controls'])
             elif request['type'] == 'modDNRequest':
-                referralConnection.modifyDn(selectedReferral['base'] or request['entry'], request['newRdn'], request['deleteOldRdn'], request['newSuperior'], controls = request['controls'])
+                referral_connection.modify_dn(selected_referral['base'] or request['entry'], request['newRdn'], request['deleteOldRdn'], request['newSuperior'], controls=request['controls'])
             else:
                 raise LDAPException('referral operation not permitted')
 
-            response = referralConnection.response
-            result = referralConnection.result
-            referralConnection.close()
+            response = referral_connection.response
+            result = referral_connection.result
+            referral_connection.close()
         else:
             response = None
             result = None
 
         return response, result
 
-    def _startListen(self):
+    def _start_listen(self):
         #overridden on strategy class
         pass
 
-    def _getResponse(self, messageId):
+    def _get_response(self, message_id):
         # overridden in strategy class
         pass

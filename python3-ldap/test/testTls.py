@@ -31,47 +31,42 @@ from test import test_server, test_port, test_port_ssl, test_user, test_password
 
 class Test(unittest.TestCase):
     def testStartTls(self):
-        server = Server(host = test_server, port = test_port, tls = Tls())
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                authentication = test_authentication)
+        server = Server(host=test_server, port=test_port, tls=Tls())
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
         connection.open()
-        connection.startTls()
+        connection.start_tls()
         self.assertFalse(connection.closed)
         connection.unbind()
 
     def testSearchWithTlsBeforeBind(self):
-        server = Server(host = test_server, port = test_port, tls = Tls())
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                authentication = test_authentication)
+        server = Server(host=test_server, port=test_port, tls=Tls())
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
         connection.open()
-        connection.startTls()
+        connection.start_tls()
         connection.bind()
-        result = connection.search(test_base, '(objectClass=*)', attributes = 'sn')
+        result = connection.search(test_base, '(objectClass=*)', attributes='sn')
         if not isinstance(result, bool):
-            connection.getResponse(result)
+            connection.get_response(result)
         self.assertEqual(connection.result['description'], 'success')
         self.assertTrue(len(connection.response) > 15)
         connection.unbind()
 
     def testSearchWithTlsAfterBind(self):
-        server = Server(host = test_server, port = test_port, tls = Tls())
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                authentication = test_authentication)
+        server = Server(host=test_server, port=test_port, tls=Tls())
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
         connection.open()
         connection.bind()
-        connection.startTls()
-        result = connection.search(test_base, '(objectClass=*)', attributes = 'sn')
+        connection.start_tls()
+        result = connection.search(test_base, '(objectClass=*)', attributes='sn')
         if not isinstance(result, bool):
-            connection.getResponse(result)
+            connection.get_response(result)
         self.assertEqual(connection.result['description'], 'success')
         self.assertTrue(len(connection.response) > 15)
 
     def testBindSslWithCertificate(self):
-        tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED,
-                  version = ssl.PROTOCOL_TLSv1, caCertsFile = 'c:/idmprofiler2524CA.b64')
-        server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = tls)
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                authentication = test_authentication)
+        tls = Tls(local_private_key_file='c:/admin2524KeyPlain.pem', local_certificate_file='c:/admin2524Cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='c:/idmprofiler2524CA.b64')
+        server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
@@ -79,36 +74,35 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def testSaslWithExternalCertificate(self):
-        tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED,
-                  version = ssl.PROTOCOL_TLSv1, caCertsFile = 'c:/idmprofiler2524CA.b64')
-        server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = tls)
-        connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, saslMechanism = 'EXTERNAL')
+        tls = Tls(local_private_key_file='c:/admin2524KeyPlain.pem', local_certificate_file='c:/admin2524Cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='c:/idmprofiler2524CA.b64')
+        server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='EXTERNAL')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
         self.assertFalse(connection.bound)
 
-    #===============================================================================
-    # removal os TLS layer is defined as MAY in rfc4511. It can't be implemented againsta a generic LDAP server
-    #     def testStopTls(self):
-    #         server = Server(host = test_server, port = test_port, tls = Tls())
-    #         connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
-    #         connection.open()
-    #         connection.startTls()
-    #         self.assertFalse(connection.closed)
-    #         connection.stopTls()
-    #         connection.unbind()
-    #===============================================================================
+        #===============================================================================
+        # removal os TLS layer is defined as MAY in rfc4511. It can't be implemented againsta a generic LDAP server
+        #     def testStopTls(self):
+        #         server = Server(host = test_server, port = test_port, tls = Tls())
+        #         connection = Connection(server, auto_bind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
+        #         connection.open()
+        #         connection.start_tls()
+        #         self.assertFalse(connection.closed)
+        #         connection.stopTls()
+        #         connection.unbind()
+        #===============================================================================
 
-    #===========================================================================
-    # def testSaslWithDigestMD5(self):
-    #     # tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, caCertsFile = 'c:/idmprofiler2524CA.b64')
-    #     server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = Tls())
-    #     connection = Connection(server, autoBind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, user = test_user, saslMechanism = 'DIGEST-MD5', saslCredentials = test_password)
-    #     connection.open()
-    #     connection.bind()
-    #     self.assertTrue(connection.bound)
-    #     connection.unbind()
-    #     self.assertFalse(connection.bound)
-    #===========================================================================
+        #===========================================================================
+        # def testSaslWithDigestMD5(self):
+        #     # tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, ca_certs_file = 'c:/idmprofiler2524CA.b64')
+        #     server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = Tls())
+        #     connection = Connection(server, auto_bind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, user = test_user, sasl_mechanism = 'DIGEST-MD5', sasl_credentials = test_password)
+        #     connection.open()
+        #     connection.bind()
+        #     self.assertTrue(connection.bound)
+        #     connection.unbind()
+        #     self.assertFalse(connection.bound)
+        #===========================================================================

@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
+
 from ldap3 import LDAPException
 
 
@@ -32,10 +33,11 @@ class Entry(object):
     DN is in the entryDN property, Reader reference is in the EntryReader property
     Entry object is read only
     """
+
     def __init__(self, dn, reader):
         self.__dict__['_attributes'] = dict()
         self.__dict__['_dn'] = dn
-        self.__dict__['_rawAttributes'] = None
+        self.__dict__['_raw_attributes'] = None
         self.__dict__['_reader'] = reader
 
     def __repr__(self):
@@ -84,31 +86,31 @@ class Entry(object):
 
     def __eq__(self, other):
         if isinstance(other, Entry):
-            return self._dn == other.getEntryDN()
+            return self._dn == other.get_entry_dn()
 
         return False
 
     def __lt__(self, other):
         if isinstance(other, Entry):
-            return self._dn <= other.getEntryDN()
+            return self._dn <= other.get_entry_dn()
 
         return False
 
-    def getEntryDN(self):
+    def get_entry_dn(self):
         return self._dn
 
-    def getEntryReader(self):
+    def get_entry_reader(self):
         return self._reader
 
-    def getRawAttributes(self):
-        return self._rawAttributes
+    def get_raw_attributes(self):
+        return self._raw_attributes
 
-    def getRawAttribute(self, name):
-        return self._rawAttributes[name] if name in self._rawAttributes else None
+    def get_raw_attribute(self, name):
+        return self._raw_attributes[name] if name in self._raw_attributes else None
 
     def refresh(self):
-        tempEntry = self.getEntryReader().searchObject(self.getEntryDN())
-        self.__dict__['_attributes'] = tempEntry._attributes
-        self.__dict__['_rawAttributes'] = tempEntry._rawAttributes
-        del tempEntry
+        temp_entry = self.get_entry_reader().search_object(self.get_entry_dn())
+        self.__dict__['_attributes'] = temp_entry._attributes
+        self.__dict__['_raw_attributes'] = temp_entry._raw_attributes
+        del temp_entry
         return self

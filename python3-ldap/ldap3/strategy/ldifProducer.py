@@ -24,9 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 import random
 
 from ldap3 import LDAP_MAX_INT, LDAPException
-
-from ..protocol.convert import buildControlsList
-from ..protocol.rfc2849 import toLdif
+from ..protocol.convert import build_controls_list
+from ..protocol.rfc2849 import to_ldif
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
 
@@ -41,53 +40,52 @@ class LdifProducerStrategy(BaseStrategy):
     You don't need a real server to connect to for this strategy
     """
 
-    def __init__(self, ldapConnection):
-        self.connection = ldapConnection
-        self._outstanding = None
+    def __init__(self, ldap_connection):
+        BaseStrategy.__init__(self, ldap_connection)
         self.sync = True
-        self.noRealDSA = True
+        self.no_real_dsa = True
+        self.restartable = False
         random.seed()
-        self._outstanding = dict()
 
-    def open(self, startListening = True):
+    def open(self, start_listening=True, reset_usage=True):
         pass
 
-    def _startListen(self):
+    def _start_listen(self):
         pass
 
     def receiving(self):
         return None
 
-    def send(self, messageType, request, controls = None):
+    def send(self, message_type, request, controls=None):
         """
         Build the LDAPMessage without sending to server
         """
-        messageId = random.randint(0, LDAP_MAX_INT)
-        ldapMessage = LDAPMessage()
-        ldapMessage['messageID'] = MessageID(messageId)
-        ldapMessage['protocolOp'] = ProtocolOp().setComponentByName(messageType, request)
-        messageControls = buildControlsList(controls)
-        if messageControls is not None:
-            ldapMessage['controls'] = messageControls
+        message_id = random.randint(0, LDAP_MAX_INT)
+        ldap_message = LDAPMessage()
+        ldap_message['messageID'] = MessageID(message_id)
+        ldap_message['protocolOp'] = ProtocolOp().setComponentByName(message_type, request)
+        message_controls = build_controls_list(controls)
+        if message_controls is not None:
+            ldap_message['controls'] = message_controls
 
-        self.connection.request = BaseStrategy.decodeRequest(ldapMessage)
+        self.connection.request = BaseStrategy.decode_request(ldap_message)
         self.connection.request['controls'] = controls
-        self._outstanding[messageId] = self.connection.request
-        return messageId
+        self._outstanding[message_id] = self.connection.request
+        return message_id
 
-    def postSendSingleResponse(self, messageId):
+    def post_send_single_response(self, message_id):
         self.connection.response = None
         self.connection.result = None
-        if self._outstanding and messageId in self._outstanding:
-            request = self._outstanding.pop(messageId)
-            self.connection.response = toLdif(self.connection.request['type'], request, False)
+        if self._outstanding and message_id in self._outstanding:
+            request = self._outstanding.pop(message_id)
+            self.connection.response = to_ldif(self.connection.request['type'], request, False)
 
             return True
 
         return False
 
-    def postSendSearch(self, messageId):
+    def post_send_search(self, message_id):
         raise LDAPException('This strategy cannot produce ldif-content for Search Operations')
 
-    def _getResponse(self, messageId):
+    def _get_response(self, message_id):
         pass

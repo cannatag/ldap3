@@ -28,51 +28,50 @@ from ldap3 import LDIF_LINE_LENGTH, LDAPException
 
 
 # LDIF converter RFC 2849 compliant
-
-def safeLdifString(bytesValue):
-    if not bytesValue:
+def safe_ldif_string(bytes_value):
+    if not bytes_value:
         return True
 
     # check SAFE-INIT-CHAR: < 127, not NUL, LF, CR, SPACE, COLON, LESS-THAN
-    if bytesValue[0] > 127 or bytesValue[0] in [0, 10, 13, 32, 58, 60]:
+    if bytes_value[0] > 127 or bytes_value[0] in [0, 10, 13, 32, 58, 60]:
         return False
 
     # check SAFE-CHAR: < 127 not NUL, LF, CR
-    if 0 in bytesValue or 10 in bytesValue or 13 in bytesValue:
+    if 0 in bytes_value or 10 in bytes_value or 13 in bytes_value:
         return False
 
     # check last char for SPACE
-    if bytesValue[-1] == 32:
+    if bytes_value[-1] == 32:
         return False
 
-    for byte in bytesValue:
+    for byte in bytes_value:
         if byte > 127:
             return False
 
     return True
 
 
-def convertToLdif(descriptor, value, base64):
+def convert_to_ldif(descriptor, value, base64):
     if not value:
         value = ''
 
     if isinstance(value, str):
         # value = bytes(value, encoding = 'UTF-8') if str is not bytes else bytearray(value, encoding = 'UTF-8')  # in python2 str IS bytes
-        value = bytearray(value, encoding = 'UTF-8')
+        value = bytearray(value, encoding='UTF-8')
 
-    if base64 or not safeLdifString(value):
+    if base64 or not safe_ldif_string(value):
         try:
             encoded = b64encode(value)
         except TypeError:
             encoded = b64encode(str(value))  # patch for python2.6
 
         if not isinstance(encoded, str):  # in python3 b64encode returns bytes in python2 returns str
-            encoded = str(encoded, encoding = 'ASCII')
+            encoded = str(encoded, encoding='ASCII')
 
         line = descriptor + ':: ' + encoded
     else:
         if not isinstance(value, bytearray):  # python3
-            value = str(value, encoding = 'ASCII')
+            value = str(value, encoding='ASCII')
         else:  # python2
             # value = value.decode(encoding = 'ASCII')
             value = value.decode('ASCII')
@@ -84,26 +83,26 @@ def convertToLdif(descriptor, value, base64):
     return [line[0:LDIF_LINE_LENGTH]] + lines
 
 
-def addControls(controls, allBase64):
+def add_controls(controls, all_base64):
     lines = []
     if controls:
         for control in controls:
             line = 'control: ' + control[0]
             line += ' ' + ('true' if control[1] else 'false')
             if control[2]:
-                lines.extend(convertToLdif(line, control[2], allBase64))
+                lines.extend(convert_to_ldif(line, control[2], all_base64))
 
     return lines
 
 
-def addAttributes(attributes, allBase64):
+def add_attributes(attributes, all_base64):
     lines = []
     ocattr = None
     # objectclass first, even if this is not specified in the RFC
     for attr in attributes:
         if attr.lower() == 'objectclass':
             for val in attributes[attr]:
-                lines.extend(convertToLdif(attr, val, allBase64))
+                lines.extend(convert_to_ldif(attr, val, all_base64))
             ocattr = attr
             break
 
@@ -111,17 +110,17 @@ def addAttributes(attributes, allBase64):
     for attr in attributes:
         if attr != ocattr:
             for val in attributes[attr]:
-                lines.extend(convertToLdif(attr, val, allBase64))
+                lines.extend(convert_to_ldif(attr, val, all_base64))
 
     return lines
 
 
-def searchResponseToLdif(entries, allBase64):
+def search_response_to_ldif(entries, all_base64):
     lines = []
     for entry in entries:
         if 'dn' in entry:
-            lines.extend(convertToLdif('dn', entry['dn'], allBase64))
-            lines.extend(addAttributes(entry['rawAttributes'], allBase64))
+            lines.extend(convert_to_ldif('dn', entry['dn'], all_base64))
+            lines.extend(add_attributes(entry['raw_attributes'], all_base64))
         else:
             raise LDAPException('Unable to convert to LDIF-CONTENT - missing DN')
         lines.append('')
@@ -133,24 +132,24 @@ def searchResponseToLdif(entries, allBase64):
     return lines
 
 
-def addRequestToLdif(entry, allBase64):
+def add_request_to_ldif(entry, all_base64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
-        lines.extend(addControls(entry['controls'], allBase64))
+        lines.extend(convert_to_ldif('dn', entry['entry'], all_base64))
+        lines.extend(add_controls(entry['controls'], all_base64))
         lines.append('changetype: add')
-        lines.extend(addAttributes(entry['attributes'], allBase64))
+        lines.extend(add_attributes(entry['attributes'], all_base64))
     else:
         raise LDAPException('Unable to convert to LDIF-CHANGE-ADD - missing DN ')
 
     return lines
 
 
-def deleteRequestToLdif(entry, allBase64):
+def delete_request_to_ldif(entry, all_base64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
-        lines.extend(addControls(entry['controls'], allBase64))
+        lines.extend(convert_to_ldif('dn', entry['entry'], all_base64))
+        lines.extend(add_controls(entry['controls'], all_base64))
         lines.append('changetype: delete')
     else:
         raise LDAPException('Unable to convert to LDIF-CHANGE-DELETE - missing DN ')
@@ -158,49 +157,49 @@ def deleteRequestToLdif(entry, allBase64):
     return lines
 
 
-def modifyRequestToLdif(entry, allBase64):
+def modify_request_to_ldif(entry, all_base64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
-        lines.extend(addControls(entry['controls'], allBase64))
+        lines.extend(convert_to_ldif('dn', entry['entry'], all_base64))
+        lines.extend(add_controls(entry['controls'], all_base64))
         lines.append('changetype: modify')
         if 'changes' in entry:
             for change in entry['changes']:
                 lines.append(['add', 'delete', 'replace', 'increment'][change['operation']] + ': ' + change['attribute']['type'])
                 for value in change['attribute']['value']:
-                    lines.extend(convertToLdif(change['attribute']['type'], value, allBase64))
+                    lines.extend(convert_to_ldif(change['attribute']['type'], value, all_base64))
                 lines.append('-')
 
     return lines
 
 
-def modifyDnRequestToLdif(entry, allBase64):
+def modify_dn_request_to_ldif(entry, all_base64):
     lines = []
     if 'entry' in entry:
-        lines.extend(convertToLdif('dn', entry['entry'], allBase64))
-        lines.extend(addControls(entry['controls'], allBase64))
+        lines.extend(convert_to_ldif('dn', entry['entry'], all_base64))
+        lines.extend(add_controls(entry['controls'], all_base64))
         lines.append('changetype: modrdn') if 'newSuperior' in entry and entry['newSuperior'] else lines.append('changetype: moddn')
-        lines.extend(convertToLdif('newrdn', entry['newRdn'], allBase64))
+        lines.extend(convert_to_ldif('newrdn', entry['newRdn'], all_base64))
         lines.append('deleteoldrdn: ' + ('0' if entry['deleteOldRdn'] else '1'))
         if 'newSuperior' in entry and entry['newSuperior']:
-            lines.extend(convertToLdif('newsuperior', entry['newSuperior'], allBase64))
+            lines.extend(convert_to_ldif('newsuperior', entry['newSuperior'], all_base64))
     else:
         raise LDAPException('Unable to convert to LDIF-CHANGE-MODDN - missing DN ')
 
     return lines
 
 
-def toLdif(operationType, entries, allBase64):
-    if operationType == 'searchResponse':
-        lines = searchResponseToLdif(entries, allBase64)
-    elif operationType == 'addRequest':
-        lines = addRequestToLdif(entries, allBase64)
-    elif operationType == 'delRequest':
-        lines = deleteRequestToLdif(entries, allBase64)
-    elif operationType == 'modifyRequest':
-        lines = modifyRequestToLdif(entries, allBase64)
-    elif operationType == 'modDNRequest':
-        lines = modifyDnRequestToLdif(entries, allBase64)
+def to_ldif(operation_type, entries, all_base64):
+    if operation_type == 'searchResponse':
+        lines = search_response_to_ldif(entries, all_base64)
+    elif operation_type == 'addRequest':
+        lines = add_request_to_ldif(entries, all_base64)
+    elif operation_type == 'delRequest':
+        lines = delete_request_to_ldif(entries, all_base64)
+    elif operation_type == 'modifyRequest':
+        lines = modify_request_to_ldif(entries, all_base64)
+    elif operation_type == 'modDNRequest':
+        lines = modify_dn_request_to_ldif(entries, all_base64)
     else:
         lines = []
 

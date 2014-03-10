@@ -22,7 +22,8 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
-from ..protocol.oid import decodeOids
+
+from ..protocol.oid import decode_oids
 
 
 class DsaInfo():
@@ -32,16 +33,16 @@ class DsaInfo():
     """
 
     def __init__(self, attributes):
-        self.altServers = attributes.pop('altServer', None)
-        self.namingContexts = attributes.pop('namingContexts', None)
-        self.supportedControls = decodeOids(attributes.pop('supportedControl', None))
-        self.supportedExtensions = decodeOids(attributes.pop('supportedExtension', None))
-        self.supportedFeatures = decodeOids(attributes.pop('supportedFeatures', None)) + decodeOids(attributes.pop('supportedCapabilities', None))
-        self.supportedLdapVersions = attributes.pop('supportedLDAPVersion', None)
-        self.supportedSaslMechanisms = attributes.pop('supportedSASLMechanisms', None)
-        self.vendorName = attributes.pop('vendorName', None)
-        self.vendorVersion = attributes.pop('vendorVersion', None)
-        self.schemaEntry = attributes.pop('subschemaSubentry', None)
+        self.alt_servers = attributes.pop('altServer', None)
+        self.naming_contexts = attributes.pop('namingContexts', None)
+        self.supported_controls = decode_oids(attributes.pop('supportedControl', None))
+        self.supported_extensions = decode_oids(attributes.pop('supportedExtension', None))
+        self.supported_features = decode_oids(attributes.pop('supportedFeatures', None)) + decode_oids(attributes.pop('supportedCapabilities', None))
+        self.supported_ldap_versions = attributes.pop('supportedLDAPVersion', None)
+        self.supported_sasl_mechanisms = attributes.pop('supportedSASLMechanisms', None)
+        self.vendor_name = attributes.pop('vendorName', None)
+        self.vendor_version = attributes.pop('vendorVersion', None)
+        self.schema_entry = attributes.pop('subschemaSubentry', None)
         self.other = attributes
 
     def __str__(self):
@@ -49,17 +50,15 @@ class DsaInfo():
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
-        r += ('  Supported LDAP Versions: ' + ', '.join([s for s in self.supportedLdapVersions]) + linesep) if self.supportedLdapVersions else ''
-        r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + s for s in self.namingContexts]) + linesep) if self.namingContexts else ''
-        r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + s for s in self.altServers]) + linesep) if self.altServers else ''
-        r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedControls]) + linesep) if self.supportedControls else ''
+        r += ('  Supported LDAP Versions: ' + ', '.join([s for s in self.supported_ldap_versions]) + linesep) if self.supported_ldap_versions else ''
+        r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + s for s in self.naming_contexts]) + linesep) if self.naming_contexts else ''
+        r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + s for s in self.alt_servers]) + linesep) if self.alt_servers else ''
+        r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls]) + linesep) if self.supported_controls else ''
         r += (
-            '  Supported Extensions:' + linesep + linesep.join(
-                ['    ' + str(s) for s in self.supportedExtensions]) + linesep) if self.supportedExtensions else ''
-        r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supportedFeatures]) + linesep) if self.supportedFeatures else ''
-        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join(
-            [s for s in self.supportedSaslMechanisms]) + linesep) if self.supportedSaslMechanisms else ''
-        r += ('  Schema Entry:' + linesep + linesep.join(['    ' + s for s in self.schemaEntry]) + linesep) if self.schemaEntry else ''
+            '  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions]) + linesep) if self.supported_extensions else ''
+        r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features]) + linesep) if self.supported_features else ''
+        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([s for s in self.supported_sasl_mechanisms]) + linesep) if self.supported_sasl_mechanisms else ''
+        r += ('  Schema Entry:' + linesep + linesep.join(['    ' + s for s in self.schema_entry]) + linesep) if self.schema_entry else ''
 
         r += 'Other:' + linesep
         for k, v in self.other.items():

@@ -164,6 +164,7 @@ ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OP_'
 class LDAPException(Exception):
     pass
 
+
 from .server import Server
 from .connection import Connection
 from .tls import Tls

@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, RequestValue, ResultCode
-from ..protocol.convert import decodeReferrals
+from ..protocol.convert import decode_referrals
 
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
@@ -31,24 +31,23 @@ from ..protocol.convert import decodeReferrals
 #     requestValue     [1] OCTET STRING OPTIONAL }
 
 
-def extendedOperation(requestName, requestValue = None):
+def extended_operation(request_name, request_value=None):
     request = ExtendedRequest()
-    request['requestName'] = RequestName(requestName)
-    if requestValue:
-        request['requestValue'] = RequestValue(requestValue)
+    request['requestName'] = RequestName(request_name)
+    if request_value:
+        request['requestValue'] = RequestValue(request_value)
 
     return request
 
 
-def extendedRequestToDict(request):
+def extended_request_to_dict(request):
     return {'name': str(request['requestName']), 'value': str(request['requestValue']) if request['requestValue'] else None}
 
 
-def extendedResponseToDict(response):
-    return {'result': int(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']),
-            'description': ResultCode().getNamedValues().getName(response[0]), 'referrals': decodeReferrals(response['referral']),
+def extended_response_to_dict(response):
+    return {'result': int(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'description': ResultCode().getNamedValues().getName(response[0]), 'referrals': decode_referrals(response['referral']),
             'responseName': str(response['responseName']), 'responseValue': str(response['responseValue'])}
 
 
-def intermediateResponseToDict(response):
+def intermediate_response_to_dict(response):
     return {'responseName': str(response['responseName']), 'responseValue': str(response(['responseValue']))}

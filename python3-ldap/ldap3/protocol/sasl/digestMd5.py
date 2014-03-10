@@ -22,37 +22,37 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from binascii import hexlify
-
 import hashlib
 import hmac
-from .sasl import abortSaslNegotiation, sendSaslNegotiation, randomHexString
+
+from .sasl import abort_sasl_negotiation, send_sasl_negotiation, random_hex_string
 
 
-def MD5_H(value):
+def md5_h(value):
     if not isinstance(value, bytes):
         value = value.encode()
 
     return hashlib.md5(value).digest()
 
 
-def MD5_KD(k, s):
+def md5_kd(k, s):
     if not isinstance(k, bytes):
         k = k.encode()
 
     if not isinstance(s, bytes):
         s = s.encode()
 
-    return MD5_H(k + b':' + s)
+    return md5_h(k + b':' + s)
 
 
-def MD5_HEX(value):
+def md5_hex(value):
     if not isinstance(value, bytes):
         value = value.encode()
 
     return hexlify(value)
 
 
-def MD5_HMAC(k, s):
+def md5_hmac(k, s):
     if not isinstance(k, bytes):
         k = k.encode()
 
@@ -62,47 +62,46 @@ def MD5_HMAC(k, s):
     return hmac.new(k, s).hexdigest()
 
 
-def saslDigestMd5(connection, controls):
+def sasl_digest_md5(connection, controls):
     # saslCredential must be a tuple made up of the following elements: (realm, user, password, authorizationId)
     # if realm is None will be used the realm received from the server, if available
-    if not isinstance(connection.saslCredentials, tuple) or not len(connection.saslCredentials) == 4:
+    if not isinstance(connection.sasl_credentials, tuple) or not len(connection.sasl_credentials) == 4:
         return None
 
     # step One of rfc 2831
-    result = sendSaslNegotiation(connection, controls, None)
-    serverDirectives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in result['saslCreds'].split(',')])  # convert directives to dict, unquote values
+    result = send_sasl_negotiation(connection, controls, None)
+    server_directives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in result['saslCreds'].split(',')])  # convert directives to dict, unquote values
 
-    if 'realm' not in serverDirectives or 'nonce' not in serverDirectives or 'algorithm' not in serverDirectives:  # mandatory directives, as per rfc 2831
-        abortSaslNegotiation(connection, controls)
+    if 'realm' not in server_directives or 'nonce' not in server_directives or 'algorithm' not in server_directives:  # mandatory directives, as per rfc 2831
+        abort_sasl_negotiation(connection, controls)
         return None
 
     # step Two of rfc 2831
-    charset = serverDirectives['charset'] if 'charset' in serverDirectives and serverDirectives['charset'].lower() == 'utf-8' else 'iso8859-1'
-    user = connection.saslCredentials[1].encode(charset)
-    realm = (connection.saslCredentials[0] if connection.saslCredentials[0] else (serverDirectives['realm'] if 'realm' in serverDirectives else '')).encode(charset)
-    password = connection.saslCredentials[2].encode(charset)
-    authzId = connection.saslCredentials[3].encode(charset) if connection.saslCredentials[3] else b''
-    nonce = serverDirectives['nonce'].encode(charset)
-    cnonce = randomHexString(16).encode(charset)
+    charset = server_directives['charset'] if 'charset' in server_directives and server_directives['charset'].lower() == 'utf-8' else 'iso8859-1'
+    user = connection.sasl_credentials[1].encode(charset)
+    realm = (connection.sasl_credentials[0] if connection.sasl_credentials[0] else (server_directives['realm'] if 'realm' in server_directives else '')).encode(charset)
+    password = connection.sasl_credentials[2].encode(charset)
+    authz_id = connection.sasl_credentials[3].encode(charset) if connection.sasl_credentials[3] else b''
+    nonce = server_directives['nonce'].encode(charset)
+    cnonce = random_hex_string(16).encode(charset)
     uri = b'ldap/'
     qop = b'auth'
 
-    digestResponse = b'username="' + user + b'",'
-    digestResponse += b'realm="' + realm + b'",'
-    digestResponse += b'nonce="' + nonce + b'",'
-    digestResponse += b'cnonce="' + cnonce + b'",'
-    digestResponse += b'digest-uri="' + uri + b'",'
-    digestResponse += b'qop=' + qop + b','
-    digestResponse += b'nc=00000001' + b','
+    digest_response = b'username="' + user + b'",'
+    digest_response += b'realm="' + realm + b'",'
+    digest_response += b'nonce="' + nonce + b'",'
+    digest_response += b'cnonce="' + cnonce + b'",'
+    digest_response += b'digest-uri="' + uri + b'",'
+    digest_response += b'qop=' + qop + b','
+    digest_response += b'nc=00000001' + b','
     if charset == 'utf-8':
-        digestResponse += b'charset="utf-8",'
+        digest_response += b'charset="utf-8",'
 
-    A0 = MD5_H(b':'.join([user, realm, password]))
-    A1 = b':'.join([A0, nonce, cnonce, authzId]) if authzId else b':'.join([A0, nonce, cnonce])
-    A2 = b'AUTHENTICATE:' + uri + (':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
+    a0 = md5_h(b':'.join([user, realm, password]))
+    a1 = b':'.join([a0, nonce, cnonce, authz_id]) if authz_id else b':'.join([a0, nonce, cnonce])
+    a2 = b'AUTHENTICATE:' + uri + (':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
 
-    digestResponse += b'response="' + MD5_HEX(MD5_KD(MD5_HEX(MD5_H(A1)), b':'.join([nonce, b'00000001', cnonce, qop, MD5_HEX(MD5_H(A2))]))) + b'"'
+    digest_response += b'response="' + md5_hex(md5_kd(md5_hex(md5_h(a1)), b':'.join([nonce, b'00000001', cnonce, qop, md5_hex(md5_h(a2))]))) + b'"'
 
-    result = sendSaslNegotiation(connection, controls, digestResponse)
-    # pprint(result)
+    result = send_sasl_negotiation(connection, controls, digest_response)
     return result

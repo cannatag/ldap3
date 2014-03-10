@@ -22,10 +22,10 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .sasl import sendSaslNegotiation
+from .sasl import send_sasl_negotiation
 
 
-def saslExternal(connection, controls):
-    result = sendSaslNegotiation(connection, controls, connection.saslCredentials)
+def sasl_external(connection, controls):
+    result = send_sasl_negotiation(connection, controls, connection.saslCredentials)
 
     return result

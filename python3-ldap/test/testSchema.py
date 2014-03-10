@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+
 from ldap3 import GET_ALL_INFO
 from ldap3.protocol.schema import SchemaInfo, ObjectClassInfo, AttributeTypeInfo
 from ldap3.server import Server
@@ -32,9 +33,8 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.server = Server(host = test_server, port = test_port, allowedReferralHosts = ('*', True), getInfo = GET_ALL_INFO)
-        self.connection = Connection(self.server, autoBind = True, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password,
-                                     authentication = test_authentication)
+        self.server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
+        self.connection = Connection(self.server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
 
     def tearDown(self):
         self.connection.unbind()
@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
         self.assertTrue(type(self.server.schema), SchemaInfo)
 
     def testObjectClasses(self):
-        self.assertTrue(type(self.server.schema.objectClasses['2.5.6.6']), ObjectClassInfo)
+        self.assertTrue(type(self.server.schema.object_classes['2.5.6.6']), ObjectClassInfo)
 
     def testAttributesTypes(self):
-        self.assertTrue(type(self.server.schema.attributeTypes['2.5.4.3']), AttributeTypeInfo)
+        self.assertTrue(type(self.server.schema.attribute_types['2.5.4.3']), AttributeTypeInfo)

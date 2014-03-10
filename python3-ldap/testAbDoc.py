@@ -8,7 +8,7 @@ person.add(cnAttribute)
 #person += AttrDef('cn')  # same as above
 #person += 'cn'  # same as above
 
-person += [AttrDef('cn', key = 'Common Name'), AttrDef('sn', key = 'Surname')]
+person += [AttrDef('cn', key='Common Name'), AttrDef('sn', key='Surname')]
 # person += ['cn', 'sn']  # as above, but keys are the attribute names
 cnAttrDef = person['Common Name']
 cnAttrDef = person['commonName']  # same as above
@@ -27,17 +27,17 @@ def getDepartmentCode(attr, value):
 
 #person += AttrDef('employeeStatus', key = 'Department', preQuery = getDepartmentCode)
 getDepartmentName = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
-person += AttrDef('employeeStatus', key = 'Department', validate = validDepartment, preQuery = getDepartmentCode, postQuery = getDepartmentName)
+person += AttrDef('employeeStatus', key='Department', validate=validDepartment, pre_query=getDepartmentCode, post_query=getDepartmentName)
 department = ObjectDef('groupOfNames')
 department += 'cn'
-department += AttrDef('member', key = 'employeer', dereferenceDN = person)  # values of 'employeer' will be the 'Person' entries members of the found department
+department += AttrDef('member', key='employeer', dereference_dn=person)  # values of 'employeer' will be the 'Person' entries members of the found department
 s = Server('edir')
-c = Connection(s, user = 'cn=admin,o=risorse', password = 'password')
+c = Connection(s, user='cn=admin,o=risorse', password='password')
 query = 'Department: Accounting'  # explained in next paragraph
 personReader = Reader(c, person, query, 'o=test')
 personReader.search()
 print(personReader)
-                      
+
 personEntry = personReader.entries[0]
 for attr in personEntry:
     print(attr)

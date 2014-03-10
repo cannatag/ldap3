@@ -23,8 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode
-from ..operation.bind import referralsToList
-from ..protocol.convert import changesToList
+from ..operation.bind import referrals_to_list
+from ..protocol.convert import changes_to_list
 
 
 # ModifyRequest ::= [APPLICATION 6] SEQUENCE {
@@ -38,39 +38,38 @@ from ..protocol.convert import changesToList
 #    modification    PartialAttribute } }
 
 
-def modifyOperation(dn, changes):
+def modify_operation(dn, changes):
     # changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
     # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
     # increment as per rfc 4525
 
-    changeList = Changes()
+    change_list = Changes()
     for pos, attribute in enumerate(changes):
-        partialAttribute = PartialAttribute()
-        partialAttribute['type'] = AttributeDescription(attribute)
-        partialAttribute['vals'] = Vals()
+        partial_attribute = PartialAttribute()
+        partial_attribute['type'] = AttributeDescription(attribute)
+        partial_attribute['vals'] = Vals()
         if isinstance(changes[attribute][1], list):
             for index, value in enumerate(changes[attribute][1]):
-                partialAttribute['vals'].setComponentByPosition(index, value)
+                partial_attribute['vals'].setComponentByPosition(index, value)
         else:
-            partialAttribute['vals'].setComponentByPosition(0, changes[attribute][1])
+            partial_attribute['vals'].setComponentByPosition(0, changes[attribute][1])
 
         change = Change()
         change['operation'] = Operation(changes[attribute][0])
-        change['modification'] = partialAttribute
+        change['modification'] = partial_attribute
 
-        changeList[pos] = change
+        change_list[pos] = change
 
     request = ModifyRequest()
     request['object'] = LDAPDN(dn)
-    request['changes'] = changeList
+    request['changes'] = change_list
 
     return request
 
 
-def modifyRequestToDict(request):
-    return {'entry': str(request['object']), 'changes': changesToList(request['changes'])}
+def modify_request_to_dict(request):
+    return {'entry': str(request['object']), 'changes': changes_to_list(request['changes'])}
 
 
-def modifyResponseToDict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'message': str(response['diagnosticMessage']),
-            'dn': str(response['matchedDN']), 'referrals': referralsToList(response['referral']), }
+def modify_response_to_dict(response):
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'message': str(response['diagnosticMessage']), 'dn': str(response['matchedDN']), 'referrals': referrals_to_list(response['referral']), }

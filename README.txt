@@ -119,8 +119,8 @@ You can choose the strategy the client will use to connect to the server. There 
 With synchronous strategy (syncWait) all LDAP operations return a boolean: True if they're successful, False if they fail.
 
 With asynchronous strategy (asyncThreaded) all LDAP operations request (except Bind) return an integer, the 'messageId' of the request.
-You can send multiple request without waiting for responses. You can get the response with the getResponse(messageId) method of the Connection object.
-If you get None the response has not yet arrived. You can set a timeout (getResponse(messageId, timeout = 10)) to set the number of seconds to wait for the response to appear.
+You can send multiple request without waiting for responses. You can get the response with the get_response(messageId) method of the Connection object.
+If you get None the response has not yet arrived. You can set a timeout (get_response(messageId, timeout = 10)) to set the number of seconds to wait for the response to appear.
 
 Library raise LDAPException to signal errors, last exception message is stored in the lastError attribute of the Connection object when available.
 
@@ -132,7 +132,7 @@ After any operation, either synchronous or asynchronous, you'll find the followi
 - bound: True if bound else False
 - listening: True if the socket is listening to the server
 - closed: True if the socket is not open
-- responseToLdif(): response in LDIF format
+- response_to_ldif(): response in LDIF format
 
 
 Connections
@@ -151,14 +151,14 @@ You can create a connection with::
     if result:
         for r in c.response:
             print(r['dn'], r['attributes']) # return unicode attributes
-            print(r['dn'], r['rawAttributes']) return raw (bytes) attributes
+            print(r['dn'], r['raw_attributes']) return raw (bytes) attributes
     else:
         print('result', conn.result)
     c.unbind()
 
 To move from synchronous to asynchronous connection you have just to change the 'clientStrategy' to 'STRATEGY_ASYNC_THREADED' and add the following line before the 'if result:'::
 
-    c.getResponse(result, timeout = 10)
+    c.get_response(result, timeout = 10)
 
 That's all you have to do to have an asynchronous threaded LDAP client.
 
@@ -241,7 +241,7 @@ To use SSL basic authentication change the server definition to::
 To start a TLS connection on an already created clear connection::
 
     c.tls = Tls()
-    c.startTls()
+    c.start_tls()
 
 You can customize the Tls object with references to key, certificate and CAs. See the Tls() constructor docstring for details
 
@@ -410,7 +410,7 @@ Reader has the following parameters:
 
 - 'base': the DIT base where to start the search.
 
-- 'componentsInAnd': defines if the query components are in AND (True, default) or in OR (False).
+- 'components_in_and': defines if the query components are in AND (True, default) or in OR (False).
 
 - 'subTree': specifies if the search must be performed through the whole subtree (True, default) or only in the specified base (False).
 
@@ -424,19 +424,19 @@ To perform the search you can use any of the following methods:
 
 - search()  # standard search
 
-- searchLevel()  # force a Level search.
+- search_level()  # force a Level search.
 
 - searchSubTree()  # force a whole sub-tree search, starting from 'base'.
 
-- searchObject()  # force a object search, DN to search must be specified in 'base'.
+- search_object()  # force a object search, DN to search must be specified in 'base'.
 
-- searchSizeLimit(limit)  # search with a size limit of 'limit'.
+- search_size_limit(limit)  # search with a size limit of 'limit'.
 
-- searchTimeLimit(limit)  # search with a time limit of 'limit'.
+- search_time_limit(limit)  # search with a time limit of 'limit'.
 
-- searchTypesOnly()  # standard search without the attributes values.
+- search_types_only()  # standard search without the attributes values.
 
-- searchPaged(pageSize, criticality)  # perform a paged search, with 'pageSize' number of entries for each call to this method. If 'criticality' is
+- search_paged(pageSize, criticality)  # perform a paged search, with 'pageSize' number of entries for each call to this method. If 'criticality' is
                                       True the server aborts the operation if the Simple Paged Search extension is not available, else return the whole result set.
 
 Example::
@@ -498,11 +498,11 @@ Entry
 Entry objects contain the result of the search. You can access entry attributes either as a dictionary or as properties using the AttrDef key you specified in
 the ObjectDef. entry['CommonName'] is the same of entry.CommonName.
 
-Each Entry has a getEntryDN() method that contains the distinguished name of the LDAP entry, and a getEntryReader() method that contains a reference
+Each Entry has a get_entry_dn() method that contains the distinguished name of the LDAP entry, and a get_entry_reader() method that contains a reference
 to the Reader used to read the entry.
 
 Attributes are stored in an internal dictionary with case insensitive access by the key defined in the AttrDef. You can even access the raw attribute with
-the getRawAttribute(attributeName) to get an attribute raw value, or getRawAttributes() to get the whole raw attributes dictionary.
+the get_raw_attribute(attributeName) to get an attribute raw value, or get_raw_attributes() to get the whole raw attributes dictionary.
 
 Entry is a read only object, you cannot modify or add any property to it. It's an iterable object that returns an attribute object at each iteration. Note that
 you get back the whole attribute object, not only the key as in a standard dictionary::
@@ -550,7 +550,7 @@ You can use the ldif-content flavour with any search result::
     ...
     # request a few objects from the ldap server
     result = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
-    ldifStream = c.responseToLdif()
+    ldifStream = c.response_to_ldif()
     ...
 
 
@@ -582,7 +582,7 @@ you can even request a ldif-content for a response you saved early::
         # request a few objects from the ldap server
         result1 = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
         result2 = c.search('o=test','(!(cn=test-ldif*))', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
-        ldifStream = c.responseToLdif(result1)
+        ldifStream = c.response_to_ldif(result1)
 
 ldifStream will contain the LDIF representation of the result entries.
 
@@ -796,7 +796,7 @@ CHANGELOG
 	- Test suite refactored
 	- Fixed single object search response error
 	- Changed attributes returned in search from tuple to dict
-	- Added 'rawAttributes' key in search response to hold undecoded (binary) attribute values read from ldap
+	- Added 'raw_attributes' key in search response to hold undecoded (binary) attribute values read from ldap
 	- Added __repr__ for Server and Connection objects to re-create the object instance
 
 * 0.4.2 - 2013.07.29

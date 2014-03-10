@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..protocol.rfc4511 import ModifyDNRequest, LDAPDN, RelativeLDAPDN, DeleteOldRDN, NewSuperior, ResultCode
-from ..operation.bind import referralsToList
+from ..operation.bind import referrals_to_list
 
 # ModifyDNRequest ::= [APPLICATION 12] SEQUENCE {
 #     entry           LDAPDN,
@@ -32,22 +32,20 @@ from ..operation.bind import referralsToList
 #     newSuperior     [0] LDAPDN OPTIONAL }
 
 
-def modifyDnOperation(dn, newRelativeDn, deleteOldRdn = True, newSuperior = None):
+def modify_dn_operation(dn, new_relative_dn, delete_old_rdn=True, new_superior=None):
     request = ModifyDNRequest()
     request['entry'] = LDAPDN(dn)
-    request['newrdn'] = RelativeLDAPDN(newRelativeDn)
-    request['deleteoldrdn'] = DeleteOldRDN(deleteOldRdn)
-    if newSuperior:
-        request['newSuperior'] = NewSuperior(newSuperior)
+    request['newrdn'] = RelativeLDAPDN(new_relative_dn)
+    request['deleteoldrdn'] = DeleteOldRDN(delete_old_rdn)
+    if new_superior:
+        request['newSuperior'] = NewSuperior(new_superior)
 
     return request
 
 
-def modifyDnRequestToDict(request):
-    return {'entry': str(request['entry']), 'newRdn': str(request['newrdn']), 'deleteOldRdn': bool(request['deleteoldrdn']),
-            'newSuperior': str(request['newSuperior']) if request['newSuperior'] else None}
+def modify_dn_request_to_dict(request):
+    return {'entry': str(request['entry']), 'newRdn': str(request['newrdn']), 'deleteOldRdn': bool(request['deleteoldrdn']), 'newSuperior': str(request['newSuperior']) if request['newSuperior'] else None}
 
 
-def modifyDnResponseToDict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
-            'referrals': referralsToList(response['referral']), 'message': str(response['diagnosticMessage']), }
+def modify_dn_response_to_dict(response):
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']), 'referrals': referrals_to_list(response['referral']), 'message': str(response['diagnosticMessage']), }

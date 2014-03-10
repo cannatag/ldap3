@@ -21,34 +21,32 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from socket import socket
+
 from time import sleep
-from pyasn1.codec.ber import encoder
+
 from ldap3 import LDAPException, RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
-from ..protocol.convert import buildControlsList
-from ..protocol.rfc4511 import MessageID, ProtocolOp
-from .baseStrategy import BaseStrategy
 from .syncWait import SyncWaitStrategy
 
 
 class SyncWaitRestartableStrategy(SyncWaitStrategy):
-    def __init__(self, ldapConnection):
-        SyncWaitStrategy.__init__(self, ldapConnection)
+    def __init__(self, ldap_connection):
+        SyncWaitStrategy.__init__(self, ldap_connection)
         self.sync = True
-        self.noRealDSA = False
+        self.no_real_dsa = False
         self.restartable = True
-        self.restartableSleepTime = RESTARTABLE_SLEEPTIME
-        self.restartableTries = RESTARTABLE_TRIES
+        self.restartable_sleep_time = RESTARTABLE_SLEEPTIME
+        self.restartable_tries = RESTARTABLE_TRIES
         self._restarting = False
-        self._lastBindControls = None
-        self._currentMessageType = None
-        self._currentRequest = None
-        self._currentControls = None
+        self._last_bind_controls = None
+        self._current_message_type = None
+        self._current_request = None
+        self._current_controls = None
+        self._restart_tls = None
 
-    def open(self, startListening=True, resetUsage=False):
-        SyncWaitStrategy.open(self, startListening, resetUsage)
+    def open(self, start_listening=True, reset_usage=False):
+        SyncWaitStrategy.open(self, start_listening, reset_usage)
 
-    def _openSocket(self, useSsl=False):
+    def _open_socket(self, use_ssl=False):
         """
         Try to open and connect a socket to a Server
         raise LDAPException if unable to open or connect socket
@@ -56,15 +54,15 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         """
 
         try:
-            return SyncWaitStrategy._openSocket(self, useSsl)  # try to open socket using SyncWait
+            return SyncWaitStrategy._open_socket(self, use_ssl)  # try to open socket using SyncWait
         except LDAPException:  # machinery for restartable connection
             pass
 
         if not self._restarting:  # if not already performing a restart
             self._restarting = True
-            counter = self.restartableTries
+            counter = self.restartable_tries
             while counter > 0:
-                sleep(self.restartableSleepTime)
+                sleep(self.restartable_sleep_time)
 
                 if not self.connection.closed:
                     try:  # resetting connection
@@ -73,7 +71,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         pass
 
                 try:  # reissuing same operation
-                    SyncWaitStrategy._openSocket(self, useSsl)  # calls super (not restartable) _openSocket()
+                    SyncWaitStrategy._open_socket(self, use_ssl)  # calls super (not restartable) _open_socket()
                     if self.connection.usage:
                         self.connection.usage.restartableSuccesses += 1
                     self.connection.closed = False
@@ -86,42 +84,45 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                     counter -= 1
             self._restarting = False
 
-        raise LDAPException('restartable connection strategy failed in _openSocket')
+        raise LDAPException('restartable connection strategy failed in _open_socket')
 
-    def send(self, messageType, request, controls=None):
-        self._currentMessageType = messageType
-        self._currentRequest = request
-        self._currentControls = controls
-        if messageType == 'bindRequest':  # store controls used in bind to be used again when restarting the connection
-            self._lastBindControls = controls
+    def send(self, message_type, request, controls=None):
+        self._current_message_type = message_type
+        self._current_request = request
+        self._current_controls = controls
+        self._restart_tls = self.connection.tlsStarted
+        if message_type == 'bindRequest':  # store controls used in bind to be used again when restarting the connection
+            self._last_bind_controls = controls
 
         try:
-            return SyncWaitStrategy.send(self, messageType, request, controls)  # try to send using SyncWait
-        except LDAPException as e:
+            return SyncWaitStrategy.send(self, message_type, request, controls)  # try to send using SyncWait
+        except LDAPException:
             pass
 
         if not self._restarting:  # machinery for restartable connection
             self._restarting = True
-            counter = self.restartableTries
+            counter = self.restartable_tries
             while counter > 0:
-                sleep(self.restartableSleepTime)
+                sleep(self.restartable_sleep_time)
                 failure = False
                 try:  # resetting connection
                     self.connection.close()
-                    self.connection.open(resetUsage = False)
-                    if messageType != 'bindRequest':
-                        self.connection.bind(self._lastBindControls)  # binds with previously used controls unless the request is already a bindRequest
-                except LDAPException as e:
+                    self.connection.open(reset_usage=False)
+                    if self._restart_tls:  # restart tls if start_tls was previously used
+                        self.connection.start_tls()
+                    if message_type != 'bindRequest':
+                        self.connection.bind(self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
+                except LDAPException:
                     failure = True
 
                 if not failure:
                     try:  # reissuing same operation
-                        ret_value = self.connection.send(messageType, request, controls)
+                        ret_value = self.connection.send(message_type, request, controls)
                         if self.connection.usage:
                             self.connection.usage.restartableSuccesses += 1
                         self._restarting = False
                         return ret_value  # successful send
-                    except LDAPException as e:
+                    except LDAPException:
                         failure = True
 
                 if failure and self.connection.usage:
@@ -133,28 +134,28 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             self._restarting = False
         raise LDAPException('restartable connection strategy failed in send')
 
-    def postSendSingleResponse(self, messageId):
+    def post_send_single_response(self, message_id):
         try:
-            return SyncWaitStrategy.postSendSingleResponse(self, messageId)
+            return SyncWaitStrategy.post_send_single_response(self, message_id)
         except LDAPException:
             pass
 
         try:
-            return SyncWaitStrategy.postSendSingleResponse(self, self.send(self._currentMessageType, self._currentRequest, self._currentControls))
+            return SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
         except LDAPException:
             pass
 
-        raise LDAPException('restartable connection strategy failed in postSendSingleResponse')
+        raise LDAPException('restartable connection strategy failed in post_send_single_response')
 
-    def postSendSearch(self, messageId):
+    def post_send_search(self, message_id):
         try:
-            return SyncWaitStrategy.postSendSearch(self, messageId)
+            return SyncWaitStrategy.post_send_search(self, message_id)
         except LDAPException:
             pass
 
         try:
-            return SyncWaitStrategy.postSendSearch(self, self.connection.send(self._currentMessageType, self._currentRequest, self._currentControls))
+            return SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
         except LDAPException:
             pass
 
-        raise LDAPException('restartable connection strategy failed in postSendSearch')
+        raise LDAPException('restartable connection strategy failed in post_send_search')

@@ -36,23 +36,24 @@ class AttrDef(object):
     'dereferenceDN' is a reference to an ObjectDef instance. If present when attribute value contains a dn it will be searched and substituted in the entry
     AttrDef('name') creates an AttrDef object for attribute 'name' with all default values
     """
-    def __init__(self, name, key = None, validate = None, preQuery = None, postQuery = None, default = None, dereferenceDN = None):
+
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=None, dereference_dn=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
-        self.preQuery = preQuery
-        self.postQuery = postQuery
+        self.pre_query = pre_query
+        self.post_query = post_query
         self.default = default
-        self.dereferenceDN = dereferenceDN
+        self.dereference_dn = dereference_dn
 
     def __repr__(self):
         r = 'AttrDef(key={0.key!r}'.format(self)
         r += ', name={0.name!r}'.format(self)
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
-        r += '' if self.preQuery is None else ', preQuery={0.preQuery!r}'.format(self)
-        r += '' if self.postQuery is None else ', postQuery={0.postQuery!r}'.format(self)
+        r += '' if self.pre_query is None else ', pre_query={0.pre_query!r}'.format(self)
+        r += '' if self.post_query is None else ', post_query={0.post_query!r}'.format(self)
         r += '' if self.default is None else ', default={0.default!r}'.format(self)
-        r += '' if self.dereferenceDN is None else ', dereferenceDN={0.dereferenceDN!r}'.format(self)
+        r += '' if self.dereference_dn is None else ', dereference_dn={0.dereference_dn!r}'.format(self)
         r += ')'
 
         return r

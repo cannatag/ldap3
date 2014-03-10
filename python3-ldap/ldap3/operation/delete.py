@@ -23,21 +23,20 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..protocol.rfc4511 import DelRequest, LDAPDN, ResultCode
-from ..operation.bind import referralsToList
+from ..operation.bind import referrals_to_list
 
 # DelRequest ::= [APPLICATION 10] LDAPDN
 
 
-def deleteOperation(dn):
+def delete_operation(dn):
     request = DelRequest(LDAPDN(dn))
 
     return request
 
 
-def deleteRequestToDict(request):
+def delete_request_to_dict(request):
     return {'entry': str(request)}
 
 
-def deleteResponseToDict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']),
-            'message': str(response['diagnosticMessage']), 'referrals': referralsToList(response['referral']), }
+def delete_response_to_dict(response):
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'referrals': referrals_to_list(response['referral']), }

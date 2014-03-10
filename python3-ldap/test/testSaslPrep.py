@@ -24,31 +24,31 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from unicodedata import lookup
 
-from ldap3.protocol.sasl.sasl import validateSimplePassword
+from ldap3.protocol.sasl.sasl import validate_simple_password
 
 
 class Test(unittest.TestCase):
     def testValidSimpleAlphanumericPassword(self):
         password = 'abcdefg1234567890ABCDEFG'
-        validated = validateSimplePassword(password)
+        validated = validate_simple_password(password)
         self.assertEqual(password, validated)
 
     def testValidSimpleAlphanumericPasswordWithASCIICharacters(self):
         password = 'abcdefg1234567890ABCDEFG!"$%&/()='
-        validated = validateSimplePassword(password)
+        validated = validate_simple_password(password)
         self.assertEqual(password, validated)
 
     def testValidSimpleAlphanumericPasswordWithNonASCIICharacters(self):
         password = ''.join(['123', lookup('POUND SIGN'), 'abc'])
-        validated = validateSimplePassword(password)
+        validated = validate_simple_password(password)
         self.assertEqual(password, validated)
 
     def testValidSimpleAlphanumericPasswordWithMappedToNothingCharacters(self):
         password = ''.join(['123', lookup('SOFT HYPHEN'), 'abc'])
-        validated = validateSimplePassword(password)
+        validated = validate_simple_password(password)
         self.assertEqual('123abc', validated)
 
     def testValidSimpleAlphanumericPasswordWithMappedToSpace(self):
         password = ''.join(['123', lookup('FIGURE SPACE'), 'abc'])
-        validated = validateSimplePassword(password)
+        validated = validate_simple_password(password)
         self.assertEqual('123 abc', validated)

@@ -31,14 +31,14 @@ class OperationalAttribute(Attribute):
     Operational attribute/values object, it includes the search result of an operational attribute in an entry
     Attribute object is read only
     'values' contains the processed attribute values
-    'rawValues' contains the unprocessed attribute values
+    'raw_values' contains the unprocessed attribute values
     It doesn't have any AttrDef
     """
 
     def __init__(self, key, entry):
         self.__dict__['key'] = key
         self.__dict__['values'] = []
-        self.__dict__['rawValues'] = []
+        self.__dict__['raw_values'] = []
         self.__dict__['entry'] = entry
 
     def __repr__(self):

@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
+
 from ldap3 import LDAPException
 
 
@@ -30,13 +31,14 @@ class Attribute(object):
     Attribute/values object, it includes the search result (after postQuery transformation) of each attribute in an entry
     Attribute object is read only
     'values' contains the processed attribute values
-    'rawValues' contains the unprocessed attribute values
+    'raw_values' contains the unprocessed attribute values
     """
-    def __init__(self, attrDef, entry):
-        self.__dict__['key'] = attrDef.key
-        self.__dict__['definition'] = attrDef
+
+    def __init__(self, attr_def, entry):
+        self.__dict__['key'] = attr_def.key
+        self.__dict__['definition'] = attr_def
         self.__dict__['values'] = []
-        self.__dict__['rawValues'] = []
+        self.__dict__['raw_values'] = []
         self.__dict__['entry'] = entry
 
     def __repr__(self):

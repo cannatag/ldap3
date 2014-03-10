@@ -27,9 +27,11 @@ from os import linesep
 
 from ldap3 import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, \
     LDAPException
-from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
-from ..operation.bind import referralsToList
-from ..protocol.convert import avaToDict, attributesToList, searchRefsToList
+from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, \
+    ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
+from ..operation.bind import referrals_to_list
+from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list
+
 
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
 #     baseObject      LDAPDN,
@@ -71,23 +73,22 @@ __memoizedFilters = dict()
 
 
 class FilterNode():
-    def __init__(self, tag = None, assertion = None):
+    def __init__(self, tag=None, assertion=None):
         self.tag = tag
         self.parent = None
         self.assertion = assertion
         self.elements = []
 
-    def append(self, filterNode):
-        filterNode.parent = self
-        self.elements.append(filterNode)
-        return filterNode
+    def append(self, filter_node):
+        filter_node.parent = self
+        self.elements.append(filter_node)
+        return filter_node
 
-    def __str__(self, pos = 0):
+    def __str__(self, pos=0):
         self.__repr__(pos)
 
-    def __repr__(self, pos = 0):
-        nodetags = ['ROOT', 'AND', 'OR', 'NOT', 'MATCH_APPROX', 'MATCH_GREATER_OR_EQUAL', 'MATCH_LESS_OR_EQUAL', 'MATCH_EXTENSIBLE', 'MATCH_PRESENT',
-                    'MATCH_SUBSTRING', 'MATCH_EQUAL']
+    def __repr__(self, pos=0):
+        nodetags = ['ROOT', 'AND', 'OR', 'NOT', 'MATCH_APPROX', 'MATCH_GREATER_OR_EQUAL', 'MATCH_LESS_OR_EQUAL', 'MATCH_EXTENSIBLE', 'MATCH_PRESENT', 'MATCH_SUBSTRING', 'MATCH_EQUAL']
         representation = ' ' * pos + 'tag: ' + nodetags[self.tag] + ' - assertion: ' + str(self.assertion)
         if self.elements:
             representation += ' - elements: ' + str(len(self.elements))
@@ -98,7 +99,7 @@ class FilterNode():
         return representation
 
 
-def validateAssertionValue(value):
+def validate_assertion_value(value):
     value = value.strip()
     if r'\2a' in value:
         value = value.replace(r'\2a', '*')
@@ -123,117 +124,116 @@ def validateAssertionValue(value):
     return value
 
 
-def evaluateMatch(match):
+def evaluate_match(match):
     match = match.strip()
     if '~=' in match:
         tag = MATCH_APPROX
-        leftPart, _, rightPart = match.split('~=')
-        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
+        left_part, _, right_part = match.split('~=')
+        assertion = {'attr': left_part.strip(), 'value': validate_assertion_value(right_part)}
     elif '>=' in match:
         tag = MATCH_GREATER_OR_EQUAL
-        leftPart, _, rightPart = match.partition('>=')
-        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
+        left_part, _, right_part = match.partition('>=')
+        assertion = {'attr': left_part.strip(), 'value': validate_assertion_value(right_part)}
     elif '<=' in match:
         tag = MATCH_LESS_OR_EQUAL
-        leftPart, _, rightPart = match.partition('<=')
-        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
+        left_part, _, right_part = match.partition('<=')
+        assertion = {'attr': left_part.strip(), 'value': validate_assertion_value(right_part)}
     elif ':=' in match:
         tag = MATCH_EXTENSIBLE
-        leftPart, _, rightPart = match.partition(':=')
-        extendedFilterList = leftPart.split(':')
-        matchingRule = None
-        dnAttributes = None
-        attributeName = None
-        if extendedFilterList[0] == '':  # extensible filter format [:dn]:matchingRule:=assertionValue
-            if len(extendedFilterList) == 2 and extendedFilterList[1].lower().strip() != 'dn':
-                matchingRule = validateAssertionValue(extendedFilterList[1])
-            elif len(extendedFilterList) == 3 and extendedFilterList[1].lower().strip() == 'dn':
-                dnAttributes = True
-                matchingRule = validateAssertionValue(extendedFilterList[2])
+        left_part, _, right_part = match.partition(':=')
+        extended_filter_list = left_part.split(':')
+        matching_rule = None
+        dn_attributes = None
+        attribute_name = None
+        if extended_filter_list[0] == '':  # extensible filter format [:dn]:matchingRule:=assertionValue
+            if len(extended_filter_list) == 2 and extended_filter_list[1].lower().strip() != 'dn':
+                matching_rule = validate_assertion_value(extended_filter_list[1])
+            elif len(extended_filter_list) == 3 and extended_filter_list[1].lower().strip() == 'dn':
+                dn_attributes = True
+                matching_rule = validate_assertion_value(extended_filter_list[2])
             else:
                 raise LDAPException('invalid extensible filter')
-        elif len(extendedFilterList) <= 3:  # extensible filter format attr[:dn][:matchingRule]:=assertionValue
-            if len(extendedFilterList) == 1:
-                attributeName = extendedFilterList[0]
-            elif len(extendedFilterList) == 2:
-                attributeName = extendedFilterList[0]
-                if extendedFilterList[1].lower().strip() == 'dn':
-                    dnAttributes = True
+        elif len(extended_filter_list) <= 3:  # extensible filter format attr[:dn][:matchingRule]:=assertionValue
+            if len(extended_filter_list) == 1:
+                attribute_name = extended_filter_list[0]
+            elif len(extended_filter_list) == 2:
+                attribute_name = extended_filter_list[0]
+                if extended_filter_list[1].lower().strip() == 'dn':
+                    dn_attributes = True
                 else:
-                    matchingRule = validateAssertionValue(extendedFilterList[1])
-            elif len(extendedFilterList) == 3 and extendedFilterList[1].lower().strip() == 'dn':
-                attributeName = extendedFilterList[0]
-                dnAttributes = True
-                matchingRule = validateAssertionValue(extendedFilterList[2])
+                    matching_rule = validate_assertion_value(extended_filter_list[1])
+            elif len(extended_filter_list) == 3 and extended_filter_list[1].lower().strip() == 'dn':
+                attribute_name = extended_filter_list[0]
+                dn_attributes = True
+                matching_rule = validate_assertion_value(extended_filter_list[2])
             else:
                 raise LDAPException('invalid extensible filter')
 
-        if not attributeName and not matchingRule:
+        if not attribute_name and not matching_rule:
             raise LDAPException('invalid extensible filter')
 
-        assertion = {'attr': attributeName.strip() if attributeName else None, 'value': validateAssertionValue(rightPart),
-                     'matchingRule': matchingRule.strip() if matchingRule else None, 'dnAttributes': dnAttributes}
+        assertion = {'attr': attribute_name.strip() if attribute_name else None, 'value': validate_assertion_value(right_part), 'matchingRule': matching_rule.strip() if matching_rule else None, 'dnAttributes': dn_attributes}
     elif match.endswith('=*'):
         tag = MATCH_PRESENT
         assertion = {'attr': match[:-2]}
     elif '=' in match and '*' in match:
         tag = MATCH_SUBSTRING
-        leftPart, _, rightPart = match.partition('=')
-        substrings = rightPart.split('*')
-        initial = validateAssertionValue(substrings[0]) if substrings[0] else None
-        final = validateAssertionValue(substrings[-1]) if substrings[-1] else None
-        anyString = [validateAssertionValue(substring) for substring in substrings[1:-1] if substring]
-        assertion = {'attr': leftPart, 'initial': initial, 'any': anyString, 'final': final}
+        left_part, _, right_part = match.partition('=')
+        substrings = right_part.split('*')
+        initial = validate_assertion_value(substrings[0]) if substrings[0] else None
+        final = validate_assertion_value(substrings[-1]) if substrings[-1] else None
+        any_string = [validate_assertion_value(substring) for substring in substrings[1:-1] if substring]
+        assertion = {'attr': left_part, 'initial': initial, 'any': any_string, 'final': final}
     elif '=' in match:
         tag = MATCH_EQUAL
-        leftPart, _, rightPart = match.partition('=')
-        assertion = {'attr': leftPart.strip(), 'value': validateAssertionValue(rightPart)}
+        left_part, _, right_part = match.partition('=')
+        assertion = {'attr': left_part.strip(), 'value': validate_assertion_value(right_part)}
     else:
         raise LDAPException('invalid matching assertion')
 
     return FilterNode(tag, assertion)
 
 
-def parseFilter(searchFilter):
-    searchFilter = searchFilter.strip()
-    if searchFilter and searchFilter.count('(') == searchFilter.count(')') and searchFilter.startswith('(') and searchFilter.endswith(')'):
+def parse_filter(search_filter):
+    search_filter = search_filter.strip()
+    if search_filter and search_filter.count('(') == search_filter.count(')') and search_filter.startswith('(') and search_filter.endswith(')'):
         state = SEARCH_OPEN_OR_CLOSE
         root = FilterNode(ROOT)
-        currentNode = root
-        startPos = None
-        skipWhiteSpace = True
-        justClosed = False
-        for pos, c in enumerate(searchFilter):
-            if skipWhiteSpace and c in whitespace:
+        current_node = root
+        start_pos = None
+        skip_white_space = True
+        just_closed = False
+        for pos, c in enumerate(search_filter):
+            if skip_white_space and c in whitespace:
                 continue
             elif (state == SEARCH_OPEN or state == SEARCH_OPEN_OR_CLOSE) and c == '(':
                 state = SEARCH_MATCH_OR_CONTROL
-                justClosed = False
+                just_closed = False
             elif state == SEARCH_MATCH_OR_CONTROL and c in '&!|':
                 if c == '&':
-                    currentNode = currentNode.append(FilterNode(AND))
+                    current_node = current_node.append(FilterNode(AND))
                 elif c == '|':
-                    currentNode = currentNode.append(FilterNode(OR))
+                    current_node = current_node.append(FilterNode(OR))
                 elif c == '!':
-                    currentNode = currentNode.append(FilterNode(NOT))
+                    current_node = current_node.append(FilterNode(NOT))
                 state = SEARCH_OPEN
             elif (state == SEARCH_MATCH_OR_CLOSE or state == SEARCH_OPEN_OR_CLOSE) and c == ')':
-                if justClosed:
-                    currentNode = currentNode.parent
+                if just_closed:
+                    current_node = current_node.parent
                 else:
-                    justClosed = True
-                    skipWhiteSpace = True
-                    endPos = pos
-                    if startPos:
-                        if currentNode.tag == NOT and len(currentNode.elements) > 0:
+                    just_closed = True
+                    skip_white_space = True
+                    end_pos = pos
+                    if start_pos:
+                        if current_node.tag == NOT and len(current_node.elements) > 0:
                             raise LDAPException('Not clause in filter cannot be multiple')
-                        currentNode.append(evaluateMatch(searchFilter[startPos:endPos]))
-                startPos = None
+                        current_node.append(evaluate_match(search_filter[start_pos:end_pos]))
+                start_pos = None
                 state = SEARCH_OPEN_OR_CLOSE
             elif (state == SEARCH_MATCH_OR_CLOSE or state == SEARCH_MATCH_OR_CONTROL) and c not in '()':
-                skipWhiteSpace = False
-                if not startPos:
-                    startPos = pos
+                skip_white_space = False
+                if not start_pos:
+                    start_pos = pos
                 state = SEARCH_MATCH_OR_CLOSE
             else:
                 raise LDAPException('malformed filter')
@@ -244,224 +244,222 @@ def parseFilter(searchFilter):
         raise LDAPException('invalid filter')
 
 
-def compileFilter(filterNode):
-    compiledFilter = Filter()
-    if filterNode.tag == AND:
-        booleanFilter = And()
+def compile_filter(filter_node):
+    compiled_filter = Filter()
+    if filter_node.tag == AND:
+        boolean_filter = And()
         pos = 0
-        for element in filterNode.elements:
-            booleanFilter[pos] = compileFilter(element)
+        for element in filter_node.elements:
+            boolean_filter[pos] = compile_filter(element)
             pos += 1
-        compiledFilter['and'] = booleanFilter
-    elif filterNode.tag == OR:
-        booleanFilter = Or()
+        compiled_filter['and'] = boolean_filter
+    elif filter_node.tag == OR:
+        boolean_filter = Or()
         pos = 0
-        for element in filterNode.elements:
-            booleanFilter[pos] = compileFilter(element)
+        for element in filter_node.elements:
+            boolean_filter[pos] = compile_filter(element)
             pos += 1
-        compiledFilter['or'] = booleanFilter
-    elif filterNode.tag == NOT:
-        booleanFilter = Not()
-        booleanFilter['innerNotFilter'] = compileFilter(filterNode.elements[0])
-        compiledFilter['notFilter'] = booleanFilter
-    elif filterNode.tag == MATCH_APPROX:
-        matchingFilter = ApproxMatch()
-        matchingFilter['attributeDesc'] = AttributeDescription(filterNode.assertion['attr'])
-        matchingFilter['assertionValue'] = AssertionValue(filterNode.assertion['value'])
-        compiledFilter['approxMatch'] = matchingFilter
-    elif filterNode.tag == MATCH_GREATER_OR_EQUAL:
-        matchingFilter = GreaterOrEqual()
-        matchingFilter['attributeDesc'] = AttributeDescription(filterNode.assertion['attr'])
-        matchingFilter['assertionValue'] = AssertionValue(filterNode.assertion['value'])
-        compiledFilter['greaterOrEqual'] = matchingFilter
-    elif filterNode.tag == MATCH_LESS_OR_EQUAL:
-        matchingFilter = LessOrEqual()
-        matchingFilter['attributeDesc'] = AttributeDescription(filterNode.assertion['attr'])
-        matchingFilter['assertionValue'] = AssertionValue(filterNode.assertion['value'])
-        compiledFilter['lessOrEqual'] = matchingFilter
-    elif filterNode.tag == MATCH_EXTENSIBLE:
-        matchingFilter = ExtensibleMatch()
-        if filterNode.assertion['matchingRule']:
-            matchingFilter['matchingRule'] = MatchingRule(filterNode.assertion['matchingRule'])
-        if filterNode.assertion['attr']:
-            matchingFilter['type'] = Type(filterNode.assertion['attr'])
-        matchingFilter['matchValue'] = MatchValue(filterNode.assertion['value'])
-        matchingFilter['dnAttributes'] = DnAttributes(filterNode.assertion['dnAttributes'])
-        compiledFilter['extensibleMatch'] = matchingFilter
-    elif filterNode.tag == MATCH_PRESENT:
-        matchingFilter = Present(AttributeDescription(filterNode.assertion['attr']))
-        compiledFilter['present'] = matchingFilter
-    elif filterNode.tag == MATCH_SUBSTRING:
-        matchingFilter = SubstringFilter()
-        matchingFilter['type'] = AttributeDescription(filterNode.assertion['attr'])
+        compiled_filter['or'] = boolean_filter
+    elif filter_node.tag == NOT:
+        boolean_filter = Not()
+        boolean_filter['innerNotFilter'] = compile_filter(filter_node.elements[0])
+        compiled_filter['notFilter'] = boolean_filter
+    elif filter_node.tag == MATCH_APPROX:
+        matching_filter = ApproxMatch()
+        matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
+        matching_filter['assertionValue'] = AssertionValue(filter_node.assertion['value'])
+        compiled_filter['approxMatch'] = matching_filter
+    elif filter_node.tag == MATCH_GREATER_OR_EQUAL:
+        matching_filter = GreaterOrEqual()
+        matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
+        matching_filter['assertionValue'] = AssertionValue(filter_node.assertion['value'])
+        compiled_filter['greaterOrEqual'] = matching_filter
+    elif filter_node.tag == MATCH_LESS_OR_EQUAL:
+        matching_filter = LessOrEqual()
+        matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
+        matching_filter['assertionValue'] = AssertionValue(filter_node.assertion['value'])
+        compiled_filter['lessOrEqual'] = matching_filter
+    elif filter_node.tag == MATCH_EXTENSIBLE:
+        matching_filter = ExtensibleMatch()
+        if filter_node.assertion['matchingRule']:
+            matching_filter['matchingRule'] = MatchingRule(filter_node.assertion['matchingRule'])
+        if filter_node.assertion['attr']:
+            matching_filter['type'] = Type(filter_node.assertion['attr'])
+        matching_filter['matchValue'] = MatchValue(filter_node.assertion['value'])
+        matching_filter['dnAttributes'] = DnAttributes(filter_node.assertion['dnAttributes'])
+        compiled_filter['extensibleMatch'] = matching_filter
+    elif filter_node.tag == MATCH_PRESENT:
+        matching_filter = Present(AttributeDescription(filter_node.assertion['attr']))
+        compiled_filter['present'] = matching_filter
+    elif filter_node.tag == MATCH_SUBSTRING:
+        matching_filter = SubstringFilter()
+        matching_filter['type'] = AttributeDescription(filter_node.assertion['attr'])
         substrings = Substrings()
         pos = 0
-        if filterNode.assertion['initial']:
-            substrings[pos] = Substring().setComponentByName('initial', Initial(filterNode.assertion['initial']))
+        if filter_node.assertion['initial']:
+            substrings[pos] = Substring().setComponentByName('initial', Initial(filter_node.assertion['initial']))
             pos += 1
-        if filterNode.assertion['any']:
-            for substring in filterNode.assertion['any']:
+        if filter_node.assertion['any']:
+            for substring in filter_node.assertion['any']:
                 substrings[pos] = Substring().setComponentByName('any', Any(substring))
                 pos += 1
-        if filterNode.assertion['final']:
-            substrings[pos] = Substring().setComponentByName('final', Final(filterNode.assertion['final']))
-        matchingFilter['substrings'] = substrings
-        compiledFilter['substringFilter'] = matchingFilter
-    elif filterNode.tag == MATCH_EQUAL:
-        matchingFilter = EqualityMatch()
-        matchingFilter['attributeDesc'] = AttributeDescription(filterNode.assertion['attr'])
-        matchingFilter['assertionValue'] = AssertionValue(filterNode.assertion['value'])
-        compiledFilter.setComponentByName('equalityMatch', matchingFilter)
+        if filter_node.assertion['final']:
+            substrings[pos] = Substring().setComponentByName('final', Final(filter_node.assertion['final']))
+        matching_filter['substrings'] = substrings
+        compiled_filter['substringFilter'] = matching_filter
+    elif filter_node.tag == MATCH_EQUAL:
+        matching_filter = EqualityMatch()
+        matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
+        matching_filter['assertionValue'] = AssertionValue(filter_node.assertion['value'])
+        compiled_filter.setComponentByName('equalityMatch', matching_filter)
     else:
         raise LDAPException('unknown filter')
 
-    return compiledFilter
+    return compiled_filter
 
 
-def buildFilter(searchFilter):
-    return compileFilter(parseFilter(searchFilter).elements[0])
+def build_filter(search_filter):
+    return compile_filter(parse_filter(search_filter).elements[0])
 
 
-def buildAttributeSelection(attributeList):
-    attributeSelection = AttributeSelection()
-    for index, attribute in enumerate(attributeList):
-        attributeSelection[index] = Selector(attribute)
+def build_attribute_selection(attribute_list):
+    attribute_selection = AttributeSelection()
+    for index, attribute in enumerate(attribute_list):
+        attribute_selection[index] = Selector(attribute)
 
-    return attributeSelection
+    return attribute_selection
 
 
-def searchOperation(searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly):
+def search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only):
     request = SearchRequest()
-    request['baseObject'] = LDAPDN(searchBase)
+    request['baseObject'] = LDAPDN(search_base)
 
-    if searchScope == SEARCH_SCOPE_BASE_OBJECT:
+    if search_scope == SEARCH_SCOPE_BASE_OBJECT:
         request['scope'] = Scope('baseObject')
-    elif searchScope == SEARCH_SCOPE_SINGLE_LEVEL:
+    elif search_scope == SEARCH_SCOPE_SINGLE_LEVEL:
         request['scope'] = Scope('singleLevel')
-    elif searchScope == SEARCH_SCOPE_WHOLE_SUBTREE:
+    elif search_scope == SEARCH_SCOPE_WHOLE_SUBTREE:
         request['scope'] = Scope('wholeSubtree')
     else:
         raise LDAPException('invalid scope type')
 
-    if dereferenceAliases == SEARCH_NEVER_DEREFERENCE_ALIASES:
+    if dereference_aliases == SEARCH_NEVER_DEREFERENCE_ALIASES:
         request['derefAliases'] = DerefAliases('neverDerefAliases')
-    elif dereferenceAliases == SEARCH_DEREFERENCE_IN_SEARCHING:
+    elif dereference_aliases == SEARCH_DEREFERENCE_IN_SEARCHING:
         request['derefAliases'] = DerefAliases('derefInSearching')
-    elif dereferenceAliases == SEARCH_DEREFERENCE_FINDING_BASE_OBJECT:
+    elif dereference_aliases == SEARCH_DEREFERENCE_FINDING_BASE_OBJECT:
         request['derefAliases'] = DerefAliases('derefFindingBaseObj')
-    elif dereferenceAliases == SEARCH_DEREFERENCE_ALWAYS:
+    elif dereference_aliases == SEARCH_DEREFERENCE_ALWAYS:
         request['derefAliases'] = DerefAliases('derefAlways')
     else:
         raise LDAPException('invalid dereference aliases type')
 
-    request['sizeLimit'] = Integer0ToMax(sizeLimit)
-    request['timeLimit'] = Integer0ToMax(timeLimit)
-    request['typesOnly'] = TypesOnly(True) if typesOnly else TypesOnly(False)
-    request['filter'] = compileFilter(parseFilter(searchFilter).elements[0])  # parse the searchFilter string and compile it starting from the root node
+    request['sizeLimit'] = Integer0ToMax(size_limit)
+    request['timeLimit'] = Integer0ToMax(time_limit)
+    request['typesOnly'] = TypesOnly(True) if types_only else TypesOnly(False)
+    request['filter'] = compile_filter(parse_filter(search_filter).elements[0])  # parse the searchFilter string and compile it starting from the root node
 
     if not isinstance(attributes, list):
         attributes = [NO_ATTRIBUTES]
 
-    request['attributes'] = buildAttributeSelection(attributes)
+    request['attributes'] = build_attribute_selection(attributes)
 
     return request
 
 
-def decodeVals(vals):
+def decode_vals(vals):
     if vals:
         return [str(val) for val in vals if val]
     else:
         return None
 
 
-def attributesToDict(attributeList):
+def attributes_to_dict(attribute_list):
     attributes = dict()
-    for attribute in attributeList:
-        attributes[str(attribute['type'])] = decodeVals(attribute['vals'])
+    for attribute in attribute_list:
+        attributes[str(attribute['type'])] = decode_vals(attribute['vals'])
 
     return attributes
 
 
-def decodeRawVals(vals):
+def decode_raw_vals(vals):
     if vals:
         return [bytes(val) for val in vals]
     else:
         return None
 
 
-def rawAttributesToDict(attributeList):
+def raw_attributes_to_dict(attribute_list):
     attributes = dict()
-    for attribute in attributeList:
-        attributes[str(attribute['type'])] = decodeRawVals(attribute['vals'])
+    for attribute in attribute_list:
+        attributes[str(attribute['type'])] = decode_raw_vals(attribute['vals'])
 
     return attributes
 
 
-def matchingRuleAssertionToString(matchingRuleAssertion):
-    return str(matchingRuleAssertion)
+def matching_rule_assertion_to_string(matching_rule_assertion):
+    return str(matching_rule_assertion)
 
 
-def filterToString(filterObject):
-    filterType = filterObject.getName()
-    filterString = '('
-    if filterType == 'and':
-        filterString += '&'
-        for f in filterObject['and']:
-            filterString += filterToString(f)
-    elif filterType == 'or':
-        filterString += '!'
-        for f in filterObject['or']:
-            filterString += filterToString(f)
-    elif filterType == 'notFilter':
-        filterString += '!' + filterToString(filterObject['notFilter']['innerNotFilter'])
-    elif filterType == 'equalityMatch':
-        ava = avaToDict(filterObject['equalityMatch'])
-        filterString += ava['attribute'] + '=' + ava['value']
-    elif filterType == 'substringFilter':
-        attribute = filterObject['substringFilter']['type']
-        filterString += str(attribute) + '='
-        for substring in filterObject['substringFilter']['substrings']:
+def filter_to_string(filter_object):
+    filter_type = filter_object.getName()
+    filter_string = '('
+    if filter_type == 'and':
+        filter_string += '&'
+        for f in filter_object['and']:
+            filter_string += filter_to_string(f)
+    elif filter_type == 'or':
+        filter_string += '!'
+        for f in filter_object['or']:
+            filter_string += filter_to_string(f)
+    elif filter_type == 'notFilter':
+        filter_string += '!' + filter_to_string(filter_object['notFilter']['innerNotFilter'])
+    elif filter_type == 'equalityMatch':
+        ava = ava_to_dict(filter_object['equalityMatch'])
+        filter_string += ava['attribute'] + '=' + ava['value']
+    elif filter_type == 'substringFilter':
+        attribute = filter_object['substringFilter']['type']
+        filter_string += str(attribute) + '='
+        for substring in filter_object['substringFilter']['substrings']:
             if substring['initial']:
-                filterString += str(substring['initial']) + '*'
+                filter_string += str(substring['initial']) + '*'
             elif substring['any']:
-                filterString += str(substring['any']) if filterString.endswith('*') else '*' + str(substring['any'])
-                filterString += '*'
+                filter_string += str(substring['any']) if filter_string.endswith('*') else '*' + str(substring['any'])
+                filter_string += '*'
             elif substring['final']:
-                filterString += '*' + str(substring['final'])
-    elif filterType == 'greaterOrEqual':
-        ava = avaToDict(filterObject['greaterOrEqual'])
-        filterString += ava['attribute'] + '>=' + ava['value']
-    elif filterType == 'lessOrEqual':
-        ava = avaToDict(filterObject['lessOrEqual'])
-        filterString += ava['attribute'] + '<=' + ava['value']
-    elif filterType == 'present':
-        filterString += str(filterObject['present']) + '=*'
-    elif filterType == 'approxMatch':
-        ava = avaToDict(filterObject['approxMatch'])
-        filterString += ava['attribute'] + '~=' + ava['value']
-    elif filterType == 'extensibleMatch':
-        filterString += matchingRuleAssertionToString(filterObject['extensibleMatch'])
+                filter_string += '*' + str(substring['final'])
+    elif filter_type == 'greaterOrEqual':
+        ava = ava_to_dict(filter_object['greaterOrEqual'])
+        filter_string += ava['attribute'] + '>=' + ava['value']
+    elif filter_type == 'lessOrEqual':
+        ava = ava_to_dict(filter_object['lessOrEqual'])
+        filter_string += ava['attribute'] + '<=' + ava['value']
+    elif filter_type == 'present':
+        filter_string += str(filter_object['present']) + '=*'
+    elif filter_type == 'approxMatch':
+        ava = ava_to_dict(filter_object['approxMatch'])
+        filter_string += ava['attribute'] + '~=' + ava['value']
+    elif filter_type == 'extensibleMatch':
+        filter_string += matching_rule_assertion_to_string(filter_object['extensibleMatch'])
     else:
         raise LDAPException('error converting filter to string')
 
-    filterString += ')'
-    return filterString
+    filter_string += ')'
+    return filter_string
 
 
-def searchRequestToDict(request):
-    return {'base': str(request['baseObject']), 'scope': int(request['scope']), 'dereferenceAlias': int(request['derefAliases']),
-            'sizeLimit': int(request['sizeLimit']), 'timeLimit': int(request['timeLimit']), 'typeOnly': bool(request['typesOnly']),
-            'filter': filterToString(request['filter']), 'attributes': attributesToList(request['attributes'])}
+def search_request_to_dict(request):
+    return {'base': str(request['baseObject']), 'scope': int(request['scope']), 'dereferenceAlias': int(request['derefAliases']), 'sizeLimit': int(request['sizeLimit']), 'timeLimit': int(request['timeLimit']), 'typeOnly': bool(request['typesOnly']),
+            'filter': filter_to_string(request['filter']), 'attributes': attributes_to_list(request['attributes'])}
 
 
-def searchResultEntryResponseToDict(response):
-    return {'dn': str(response['object']), 'attributes': attributesToDict(response['attributes']), 'rawAttributes': rawAttributesToDict(response['attributes'])}
+def search_result_entry_response_to_dict(response):
+    return {'dn': str(response['object']), 'attributes': attributes_to_dict(response['attributes']), 'raw_attributes': raw_attributes_to_dict(response['attributes'])}
 
 
-def searchResultDoneResponseToDict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'message': str(response['diagnosticMessage']),
-            'dn': str(response['matchedDN']), 'referrals': referralsToList(response['referral'])}
+def search_result_done_response_to_dict(response):
+    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'message': str(response['diagnosticMessage']), 'dn': str(response['matchedDN']), 'referrals': referrals_to_list(response['referral'])}
 
 
-def searchResultReferenceResponseToDict(response):
-    return {'uri': searchRefsToList(response)}
+def search_result_reference_response_to_dict(response):
+    return {'uri': search_refs_to_list(response)}

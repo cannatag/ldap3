@@ -684,10 +684,17 @@ I wish to thank Assembla for providing the free source repository space and the 
 CHANGELOG
 =========
 
-* 0.8.3
+* 0.8.4 2014.03.12
+    - PEP8 compliance
+    - added ldap3.compat package with non PEP8-compliant signatures
+    - renamed ldap3.abstraction to ldap3.abstract
+    - fixed SyncWaitRestartableStrategy (thanks to Christoph)
+
+* 0.8.3 2014.03.08
     - SyncWaitRestartable strategy
     - removed forceBind parameter
     - usage statistics updated with restartable successes/failures counters and open/closed/wrapped sockets counter
+
 
 * 0.8.2 2014.03.04
     - Added refresh() method to Entry object to read again the attributes from the Reader

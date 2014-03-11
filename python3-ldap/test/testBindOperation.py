@@ -31,7 +31,7 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 
 
 class Test(unittest.TestCase):
-    def testBindClearText(self):
+    def test_bind_clear_text(self):
         server = Server(host=test_server, port=test_port)
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
         connection.open()
@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         connection.unbind()
         self.assertFalse(connection.bound)
 
-    def testBindSsl(self):
+    def test_bind_ssl(self):
         server = Server(host=test_server, port=test_port_ssl, use_ssl=True)
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
         connection.open()
@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         connection.unbind()
         self.assertFalse(connection.bound)
 
-    def testBindAnonymous(self):
+    def test_bind_anonymous(self):
         server = Server(host=test_server, port=test_port)
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_ANONYMOUS)
         connection.open()
@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
         connection.unbind()
         self.assertFalse(connection.bound)
 
-    def testBindSaslDigestMd5(self):
+    def test_bind_sasl_digest_md5(self):
         server = Server(host=test_server, port=test_port)
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(None, 'testSasl.risorse', 'password', None))
         connection.open()

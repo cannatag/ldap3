@@ -59,7 +59,6 @@ class BaseStrategy(object):
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
         self.restartable = None  # indicates if the strategy is restartable
 
-
     def open(self, start_listening=True, reset_usage=True):
         """
         Open a socket to a server

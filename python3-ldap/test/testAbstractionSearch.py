@@ -38,23 +38,23 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testSearchFilterWithObjectClass(self):
+    def test_search_filter_with_object_class(self):
         reverse = lambda a, e: e[::-1]
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
         o += AttrDef('givenName', 'Given Name', post_query=reverse)
 
-        queryText = 'Common Name:=test-add*'
-        r = Reader(self.connection, o, queryText, 'o=test')
+        query_text = 'Common Name:=test-add*'
+        r = Reader(self.connection, o, query_text, 'o=test')
 
         results = r.search()
         self.assertEqual(len(results), 7)
 
-    def testSearchWithDereference(self):
+    def test_search_with_dereference(self):
         reverse = lambda a, e: e[::-1]
 
-        def raiseParenthesesRank(_, l):
+        def raise_parentheses_rank(_, l):
             up = {'(': '[', ')': ']', '[': '{', ']': '}', '{': '<', '}': '>'}
             r = []
             for e in l:
@@ -68,7 +68,7 @@ class Test(unittest.TestCase):
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'Common Name', post_query=reverse)
         ou += AttrDef('sn', 'Surname')
-        ou += AttrDef('givenName', 'Given Name', post_query=raiseParenthesesRank)
+        ou += AttrDef('givenName', 'Given Name', post_query=raise_parentheses_rank)
         ou += AttrDef('ACL')
         qu = 'Common Name: test-add*'
         ru = Reader(self.connection, ou, qu, test_base)
@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
         ug = eg.member[0]
         self.assertEqual(str(ug.surname), 'tost')
 
-    def testSearchWithPreQuery(self):
+    def test_search_with_pre_query(self):
         change = lambda attr, value: 'test-del*'
 
         ou = ObjectDef('iNetOrgPerson')
@@ -102,7 +102,7 @@ class Test(unittest.TestCase):
         lu = ru.search()
         self.assertEqual(len(lu), 1)
 
-    def testSearchWithDefault(self):
+    def test_search_with_default(self):
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='not employed')
@@ -111,8 +111,7 @@ class Test(unittest.TestCase):
         lu = ru.search()
         self.assertEqual(str(lu[0].employee), 'not employed')
 
-
-    def testRefreshEntry(self):
+    def test_refresh_entry(self):  # require manual modification of attribute value
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('sn', 'Surname')

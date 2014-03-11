@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
 
-from . import AttrDef
+from .attrDef import AttrDef
 from ldap3 import LDAPException
 
 
@@ -91,6 +91,7 @@ class ObjectDef(object):
             return False
 
         return True
+
     def add(self, definition=None):
         if isinstance(definition, str):
             element = AttrDef(definition)

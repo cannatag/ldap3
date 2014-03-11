@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.connection.unbind()
 
-    def testModify(self):
+    def test_modify(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('tost')
@@ -62,26 +62,26 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
-        addReq['attributes'] = attributes
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
+        add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq)
+        self.connection.send('addRequest', add_req)
 
-        valsMod1 = Vals()
-        valsMod1[0] = 'test-modified'
-        partAttr1 = PartialAttribute()
-        partAttr1['type'] = AttributeDescription('sn')
-        partAttr1['vals'] = valsMod1
+        vals_mod1 = Vals()
+        vals_mod1[0] = 'test-modified'
+        part_attr1 = PartialAttribute()
+        part_attr1['type'] = AttributeDescription('sn')
+        part_attr1['vals'] = vals_mod1
         change1 = Change()
         change1['operation'] = Operation('replace')
-        change1['modification'] = partAttr1
+        change1['modification'] = part_attr1
         changes = Changes()
         changes[0] = change1
-        modifyReq = ModifyRequest()
-        modifyReq['object'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
-        modifyReq['changes'] = changes
+        modify_req = ModifyRequest()
+        modify_req['object'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
+        modify_req['changes'] = changes
 
-        self.connection.send('modifyRequest', modifyReq)
+        self.connection.send('modifyRequest', modify_req)
 
         self.assertTrue(True)

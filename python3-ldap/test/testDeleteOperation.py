@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testDelete(self):
+    def test_delete(self):
         result = self.connection.delete(test_dn_builder(test_base, 'test-add-for-delete'))
         if not isinstance(result, bool):
             self.connection.get_response(result)

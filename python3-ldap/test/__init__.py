@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 # noinspection PyUnresolvedReferences
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE
 
-test_server = 'idmprofiler.hyperv'  # the ldap server where tests executed
+test_server = 'sl10.intra.camera.it'  # the ldap server where tests executed
 test_user = 'cn=admin,o=services'  # the user that performs the tests
 test_password = 'camera'  # user's password
 

@@ -56,7 +56,7 @@ class Test(unittest.TestCase):
         self.assertTrue('sn: test-ldif-1' in l)
         self.assertTrue('total number of entries: 1' in l)
 
-    def testMultipleSearchResultToLdif(self):
+    def test_multiple_search_result_to_ldif(self):
         result = self.connection.search(search_base=test_base, search_filter='(sn=test-ldif*)', attributes=[test_name_attr, 'givenName', 'sn', 'objectClass'])
         if not isinstance(result, bool):
             self.connection.get_response(result)

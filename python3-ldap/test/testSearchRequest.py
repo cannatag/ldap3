@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.connection.unbind()
 
-    def testSearchEquality(self):
+    def test_search_equality(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('tost1')
@@ -63,38 +63,38 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-1'))
-        addReq['attributes'] = attributes
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-1'))
+        add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq)
+        self.connection.send('addRequest', add_req)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
         assertion1['assertionValue'] = AssertionValue('test-search-1')
 
-        searchFilter = Filter()
-        searchFilter['equalityMatch'] = assertion1
+        search_filter = Filter()
+        search_filter['equalityMatch'] = assertion1
 
         attributes = AttributeSelection()
         attributes[0] = Selector('cn')
         attributes[1] = Selector('givenName')
         attributes[2] = Selector('sn')
 
-        searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN(test_base)
-        searchReq['scope'] = Scope('singleLevel')
-        searchReq['derefAliases'] = 'neverDerefAliases'
-        searchReq['sizeLimit'] = Integer0ToMax(0)
-        searchReq['timeLimit'] = Integer0ToMax(0)
-        searchReq['typesOnly'] = TypesOnly(False)
-        searchReq['filter'] = searchFilter
-        searchReq['attributes'] = attributes
+        search_req = SearchRequest()
+        search_req['baseObject'] = LDAPDN(test_base)
+        search_req['scope'] = Scope('singleLevel')
+        search_req['derefAliases'] = 'neverDerefAliases'
+        search_req['sizeLimit'] = Integer0ToMax(0)
+        search_req['timeLimit'] = Integer0ToMax(0)
+        search_req['typesOnly'] = TypesOnly(False)
+        search_req['filter'] = search_filter
+        search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', searchReq)
+        self.connection.send('searchRequest', search_req)
         self.assertTrue(True)
 
-    def testSearchSubstring(self):
+    def test_search_substring(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('test2-1')
@@ -118,10 +118,10 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-2'))
-        addReq['attributes'] = attributes
-        self.connection.send('addRequest', addReq)
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-2'))
+        add_req['attributes'] = attributes
+        self.connection.send('addRequest', add_req)
 
         substrings = Substrings()
         substring1 = Substring().setComponentByName('initial', Initial('test'))
@@ -134,31 +134,31 @@ class Test(unittest.TestCase):
         substrings[2] = substring3
         substrings[3] = substring4
 
-        substringFilter = SubstringFilter()
-        substringFilter['type'] = 'cn'
-        substringFilter['substrings'] = substrings
-        searchFilter = Filter()
-        searchFilter['substringFilter'] = substringFilter
+        substring_filter = SubstringFilter()
+        substring_filter['type'] = 'cn'
+        substring_filter['substrings'] = substrings
+        search_filter = Filter()
+        search_filter['substringFilter'] = substring_filter
 
         attributes = AttributeSelection()
         attributes[0] = Selector('cn')
         attributes[1] = Selector('givenName')
         attributes[2] = Selector('sn')
 
-        searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN(test_base)
-        searchReq['scope'] = Scope('singleLevel')
-        searchReq['derefAliases'] = 'neverDerefAliases'
-        searchReq['sizeLimit'] = Integer0ToMax(0)
-        searchReq['timeLimit'] = Integer0ToMax(0)
-        searchReq['typesOnly'] = TypesOnly(False)
-        searchReq['filter'] = searchFilter
-        searchReq['attributes'] = attributes
+        search_req = SearchRequest()
+        search_req['baseObject'] = LDAPDN(test_base)
+        search_req['scope'] = Scope('singleLevel')
+        search_req['derefAliases'] = 'neverDerefAliases'
+        search_req['sizeLimit'] = Integer0ToMax(0)
+        search_req['timeLimit'] = Integer0ToMax(0)
+        search_req['typesOnly'] = TypesOnly(False)
+        search_req['filter'] = search_filter
+        search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', searchReq)
+        self.connection.send('searchRequest', search_req)
         self.assertTrue(True)
 
-    def testSearchAnd(self):
+    def test_search_and(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('test3-1')
@@ -182,11 +182,11 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-3'))
-        addReq['attributes'] = attributes
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-3'))
+        add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq)
+        self.connection.send('addRequest', add_req)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
@@ -196,38 +196,38 @@ class Test(unittest.TestCase):
         assertion2['attributeDesc'] = AttributeDescription('objectClass')
         assertion2['assertionValue'] = AssertionValue('inetOrgPerson')
 
-        searchFilter1 = Filter()
-        searchFilter1['equalityMatch'] = assertion1
+        search_filter1 = Filter()
+        search_filter1['equalityMatch'] = assertion1
 
-        searchFilter2 = Filter()
-        searchFilter2['equalityMatch'] = assertion2
+        search_filter2 = Filter()
+        search_filter2['equalityMatch'] = assertion2
 
-        andFilter = And()
-        andFilter[0] = searchFilter1
-        andFilter[1] = searchFilter2
+        and_filter = And()
+        and_filter[0] = search_filter1
+        and_filter[1] = search_filter2
 
-        searchFilter = Filter()
-        searchFilter['and'] = andFilter
+        search_filter = Filter()
+        search_filter['and'] = and_filter
 
         attributes = AttributeSelection()
         attributes[0] = Selector('cn')
         attributes[1] = Selector('givenName')
         attributes[2] = Selector('sn')
 
-        searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN(test_base)
-        searchReq['scope'] = Scope('singleLevel')
-        searchReq['derefAliases'] = 'neverDerefAliases'
-        searchReq['sizeLimit'] = Integer0ToMax(0)
-        searchReq['timeLimit'] = Integer0ToMax(0)
-        searchReq['typesOnly'] = TypesOnly(False)
-        searchReq['filter'] = searchFilter
-        searchReq['attributes'] = attributes
+        search_req = SearchRequest()
+        search_req['baseObject'] = LDAPDN(test_base)
+        search_req['scope'] = Scope('singleLevel')
+        search_req['derefAliases'] = 'neverDerefAliases'
+        search_req['sizeLimit'] = Integer0ToMax(0)
+        search_req['timeLimit'] = Integer0ToMax(0)
+        search_req['typesOnly'] = TypesOnly(False)
+        search_req['filter'] = search_filter
+        search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', searchReq)
+        self.connection.send('searchRequest', search_req)
         self.assertTrue(True)
 
-    def testSearchOr(self):
+    def test_search_or(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('test4-1')
@@ -251,11 +251,11 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq1 = AddRequest()
-        addReq1['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-4'))
-        addReq1['attributes'] = attributes
+        add_req1 = AddRequest()
+        add_req1['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-4'))
+        add_req1['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq1)
+        self.connection.send('addRequest', add_req1)
 
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
@@ -280,11 +280,11 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq2 = AddRequest()
-        addReq2['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-5'))
-        addReq2['attributes'] = attributes
+        add_req2 = AddRequest()
+        add_req2['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-5'))
+        add_req2['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq2)
+        self.connection.send('addRequest', add_req2)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
@@ -294,38 +294,38 @@ class Test(unittest.TestCase):
         assertion2['attributeDesc'] = AttributeDescription('cn')
         assertion2['assertionValue'] = AssertionValue('test-search-5')
 
-        searchFilter1 = Filter()
-        searchFilter1['equalityMatch'] = assertion1
+        search_filter1 = Filter()
+        search_filter1['equalityMatch'] = assertion1
 
-        searchFilter2 = Filter()
-        searchFilter2['equalityMatch'] = assertion2
+        search_filter2 = Filter()
+        search_filter2['equalityMatch'] = assertion2
 
-        orFilter = Or()
-        orFilter[0] = searchFilter1
-        orFilter[1] = searchFilter2
+        or_filter = Or()
+        or_filter[0] = search_filter1
+        or_filter[1] = search_filter2
 
-        searchFilter = Filter()
-        searchFilter['or'] = orFilter
+        search_filter = Filter()
+        search_filter['or'] = or_filter
 
         attributes = AttributeSelection()
         attributes[0] = Selector('cn')
         attributes[1] = Selector('givenName')
         attributes[2] = Selector('sn')
 
-        searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN(test_base)
-        searchReq['scope'] = Scope('singleLevel')
-        searchReq['derefAliases'] = 'neverDerefAliases'
-        searchReq['sizeLimit'] = Integer0ToMax(0)
-        searchReq['timeLimit'] = Integer0ToMax(0)
-        searchReq['typesOnly'] = TypesOnly(False)
-        searchReq['filter'] = searchFilter
-        searchReq['attributes'] = attributes
+        search_req = SearchRequest()
+        search_req['baseObject'] = LDAPDN(test_base)
+        search_req['scope'] = Scope('singleLevel')
+        search_req['derefAliases'] = 'neverDerefAliases'
+        search_req['sizeLimit'] = Integer0ToMax(0)
+        search_req['timeLimit'] = Integer0ToMax(0)
+        search_req['typesOnly'] = TypesOnly(False)
+        search_req['filter'] = search_filter
+        search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', searchReq)
+        self.connection.send('searchRequest', search_req)
         self.assertTrue(True)
 
-    def testSearchNot(self):
+    def test_search_not(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('test6-1')
@@ -349,36 +349,36 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-6'))
-        addReq['attributes'] = attributes
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-6'))
+        add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq)
+        self.connection.send('addRequest', add_req)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
         assertion1['assertionValue'] = AssertionValue('test-search-6')
 
-        searchFilter = Filter()
-        searchFilter['equalityMatch'] = assertion1
+        search_filter = Filter()
+        search_filter['equalityMatch'] = assertion1
 
-        notFilter = Not()
-        notFilter['innerNotFilter'] = searchFilter
+        not_filter = Not()
+        not_filter['innerNotFilter'] = search_filter
 
         attributes = AttributeSelection()
         attributes[0] = Selector('cn')
         attributes[1] = Selector('givenName')
         attributes[2] = Selector('sn')
 
-        searchReq = SearchRequest()
-        searchReq['baseObject'] = LDAPDN(test_base)
-        searchReq['scope'] = Scope('singleLevel')
-        searchReq['derefAliases'] = 'neverDerefAliases'
-        searchReq['sizeLimit'] = Integer0ToMax(0)
-        searchReq['timeLimit'] = Integer0ToMax(0)
-        searchReq['typesOnly'] = TypesOnly(False)
-        searchReq['filter'] = Filter().setComponentByName('notFilter', notFilter)
-        searchReq['attributes'] = attributes
+        search_req = SearchRequest()
+        search_req['baseObject'] = LDAPDN(test_base)
+        search_req['scope'] = Scope('singleLevel')
+        search_req['derefAliases'] = 'neverDerefAliases'
+        search_req['sizeLimit'] = Integer0ToMax(0)
+        search_req['timeLimit'] = Integer0ToMax(0)
+        search_req['typesOnly'] = TypesOnly(False)
+        search_req['filter'] = Filter().setComponentByName('notFilter', not_filter)
+        search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', searchReq)
+        self.connection.send('searchRequest', search_req)
         self.assertTrue(True)

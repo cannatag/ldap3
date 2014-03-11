@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from ..server import Server as newServer
 
+
 class Server(newServer):
-    def __init__(self, host, port = 389, useSsl = False, allowedReferralHosts = None, getInfo = None, tls = None):
+    def __init__(self, host, port=389, useSsl=False, allowedReferralHosts=None, getInfo=None, tls=None):
         newServer.__init__(self, host, port, useSsl, allowedReferralHosts, getInfo, tls)

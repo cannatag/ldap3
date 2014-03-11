@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testModifyDNOperation(self):
+    def test_modify_dn_operation(self):
         result = self.connection.delete(test_dn_builder(test_base, 'test-add-modified-dn'))
         if not isinstance(result, bool):
             self.connection.get_response(result)
@@ -59,7 +59,7 @@ class Test(unittest.TestCase):
             self.connection.get_response(result)
         self.assertTrue(self.connection.result['description'] in ['success', 'noSuchObject'])
 
-    def testMoveDN(self):
+    def test_move_dn(self):
         result = self.connection.delete(test_dn_builder(test_base, 'test-add-for-move-dn'))
         if not isinstance(result, bool):
             self.connection.get_response(result)

@@ -31,17 +31,14 @@ class Connection(newConnection):
     Proxy class 8with camel case parameters) to new Connection class (pep8 compliant)
     """
 
-    def __init__(self, server, user = None, password = None, autoBind = False, version = 3, authentication = None, clientStrategy = STRATEGY_SYNC,
-                 autoReferrals = True, saslMechanism = None, saslCredentials = None, collectUsage = False, readOnly = False):
+    def __init__(self, server, user=None, password=None, autoBind=False, version=3, authentication=None, clientStrategy=STRATEGY_SYNC, autoReferrals=True, saslMechanism=None, saslCredentials=None, collectUsage=False, readOnly=False):
         newConnection.__init__(self, server, user, password, autoBind, version, authentication, clientStrategy, autoReferrals, saslMechanism, saslCredentials, collectUsage, readOnly)
 
-
-    def search(self, searchBase, searchFilter, searchScope = SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases = SEARCH_DEREFERENCE_ALWAYS, attributes = None,
-               sizeLimit = 0, timeLimit = 0, typesOnly = False, getOperationalAttributes = False, controls = None, pagedSize = None, pagedCriticality = False,
-               pagedCookie = None):
+    def search(self, searchBase, searchFilter, searchScope=SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases=SEARCH_DEREFERENCE_ALWAYS, attributes=None, sizeLimit=0, timeLimit=0, typesOnly=False, getOperationalAttributes=False, controls=None,
+               pagedSize=None, pagedCriticality=False, pagedCookie=None):
         return newConnection.search(self, searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly, getOperationalAttributes, controls, pagedSize, pagedCriticality, pagedCookie)
 
-    def add(self, dn, objectClass, attributes = None, controls = None):
+    def add(self, dn, objectClass, attributes=None, controls=None):
         """
         add dn to the dib, objectClass is None, a class name or a list of class names,
         attributes is a dictionary in the form 'attr': 'val'
@@ -49,19 +46,19 @@ class Connection(newConnection):
         """
         return newConnection.add(dn, objectClass, attributes, controls)
 
-    def modifyDn(self, dn, relativeDn, deleteOldDn = True, newSuperior = None, controls = None):
+    def modifyDn(self, dn, relativeDn, deleteOldDn=True, newSuperior=None, controls=None):
         """
         Modify dn of the entry and optionally performs a move of the entry in the dib
         """
         return newConnection.modify_dn(self, dn, relativeDn, deleteOldDn, newSuperior, controls)
 
-    def abandon(self, messageId, controls = None):
+    def abandon(self, messageId, controls=None):
         """
         Abandon the operation indicated by messageId
         """
         return newConnection.abandon(self, messageId, controls)
 
-    def extended(self, requestName, requestValue = None, controls = None):
+    def extended(self, requestName, requestValue=None, controls=None):
         """
         Perform an extended operation
         """
@@ -76,5 +73,5 @@ class Connection(newConnection):
     def refreshDsaInfo(self):
         return newConnection.refresh_dsa_info(self)
 
-    def responseToLdif(self, searchResult = None, allBase64 = False):
+    def responseToLdif(self, searchResult=None, allBase64=False):
         return newConnection.response_to_ldif(self, searchResult, allBase64)

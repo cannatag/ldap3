@@ -2,8 +2,7 @@ python3-ldap
 ============
 
 python3-ldap is a pure Python 3 LDAP version 3 strictly conforming to RFC4511.
-RFC4511 is the current LDAP specification (June 2006) from IETF and obsoletes the previous LDAP
-RFCs 2251, 2830, 3771 (December 1997)
+RFC4511 is the current LDAP specification (June 2006) from IETF and obsoletes the previous LDAP RFCs 2251, 2830, 3771 (December 1997)
 
 python3-ldap can be used on Python 3 and Python 2 (starting from 2.6). In Python 2 there is no direct Unicode support, you get always str (bytes) as response.
 
@@ -50,7 +49,7 @@ Project goals
 
 1. Python3-ldap Conforms strictly to the current RFC for LDAP 3 (from rfc4510 to rfc4519)
 
-    - Latest RFC for LDAP v3 (dated 2006) obsoletes the previous RFC specified in rfc3377 (2251-2256, 2829, 2830, 3371) for LDAP v3 and amend and clarify the LDAP protocol.
+    - Latest RFCs for LDAP v3 (dated 2006) obsolete the previous RFCs specified in rfc3377 (2251-2256, 2829, 2830, 3371) for LDAP v3 and amend and clarify the LDAP protocol.
 
     - All the asn1 definitions from the rfc4511 must be rewritten because those in the pyasn1_modules package are not current with the RFC.
 

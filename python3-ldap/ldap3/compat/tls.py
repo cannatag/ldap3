@@ -37,7 +37,7 @@ class Tls(newTls):
     tls/ssl configuration for Server object
     """
 
-    def __init__(self, localPrivateKeyFile = None, localCertificateFile = None, validate = ssl.CERT_NONE, version = ssl.PROTOCOL_TLSv1, caCertsFile = None):
+    def __init__(self, localPrivateKeyFile=None, localCertificateFile=None, validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, caCertsFile=None):
         newTls.__init__(self, localPrivateKeyFile, localCertificateFile, validate, version, caCertsFile)
 
     def startTls(self, connection):

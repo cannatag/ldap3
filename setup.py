@@ -24,29 +24,32 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
 
-setup(
-      name = 'python3-ldap',
-      version = '0.8.3',
-      packages = ['ldap3', 'ldap3.abstraction', 'ldap3.operation', 'ldap3.protocol', 'ldap3.protocol.sasl', 'ldap3.strategy'],
-      package_dir = {'': 'python3-ldap'},
-      install_requires = ['pyasn1 >= 0.1.7'],
-      license = 'LGPL v3',
-      author = 'Giovanni Cannata',
-      author_email = 'python3ldap@gmail.com',
-      description = 'A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Python 2 compatible - Beta stage',
-      keywords = 'python3 ldap',
-      url = 'https://www.assembla.com/spaces/python3-ldap',
-      classifiers = [
-                    "Development Status :: 4 - Beta",
-                    "Intended Audience :: Developers",
-                    "Intended Audience :: System Administrators",
-                    "Operating System :: Microsoft :: Windows",
-                    "Operating System :: POSIX :: Linux",
-                    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
-                    "Programming Language :: Python",
-                    "Programming Language :: Python :: 2",
-                    "Programming Language :: Python :: 3",
-                    "Topic :: Software Development :: Libraries :: Python Modules",
-                    "Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP"
-                    ]
+setup(name='python3-ldap',
+      version='0.8.4',
+      packages=['ldap3',
+                'ldap3.abstraction',
+                'ldap3.operation',
+                'ldap3.protocol',
+                'ldap3.protocol.sasl',
+                'ldap3.strategy',
+                'ldap3.compat'],
+      package_dir={'': 'python3-ldap'},
+      install_requires=['pyasn1 >= 0.1.7'],
+      license='LGPL v3',
+      author='Giovanni Cannata',
+      author_email='python3ldap@gmail.com',
+      description='A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Python 2 compatible',
+      keywords='python3 python2 ldap',
+      url='https://www.assembla.com/spaces/python3-ldap',
+      classifiers=['Development Status :: 4 - Beta',
+                   'Intended Audience :: Developers',
+                   'Intended Audience :: System Administrators',
+                   'Operating System :: Microsoft :: Windows", "Operating System :: POSIX :: Linux',
+                   'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+                   'Programming Language :: Python',
+                   'Programming Language :: Python :: 2',
+                   'Programming Language :: Python :: 3',
+                   'Topic :: Software Development :: Libraries :: Python Modules',
+                   'Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP']
       )
+

@@ -104,9 +104,13 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             counter = self.restartable_tries
             while counter > 0:
                 sleep(self.restartable_sleep_time)
+                if not self.connection.closed:
+                    try:  # resetting connection
+                        self.connection.close()
+                    except LDAPException:
+                        pass
                 failure = False
-                try:  # resetting connection
-                    self.connection.close()
+                try:  # reopening connection
                     self.connection.open(reset_usage=False)
                     if self._restart_tls:  # restart tls if start_tls was previously used
                         self.connection.start_tls()

@@ -28,27 +28,27 @@ from ldap3.protocol.sasl.sasl import validate_simple_password
 
 
 class Test(unittest.TestCase):
-    def testValidSimpleAlphanumericPassword(self):
+    def test_valid_simple_alphanumeric_password(self):
         password = 'abcdefg1234567890ABCDEFG'
         validated = validate_simple_password(password)
         self.assertEqual(password, validated)
 
-    def testValidSimpleAlphanumericPasswordWithASCIICharacters(self):
+    def test_valid_simple_alphanumeric_password_with_ascii_characters(self):
         password = 'abcdefg1234567890ABCDEFG!"$%&/()='
         validated = validate_simple_password(password)
         self.assertEqual(password, validated)
 
-    def testValidSimpleAlphanumericPasswordWithNonASCIICharacters(self):
+    def test_valid_simple_alphanumeric_password_with_non_ascii_characters(self):
         password = ''.join(['123', lookup('POUND SIGN'), 'abc'])
         validated = validate_simple_password(password)
         self.assertEqual(password, validated)
 
-    def testValidSimpleAlphanumericPasswordWithMappedToNothingCharacters(self):
+    def test_valid_simple_alphanumeric_password_with_mapped_to_nothing_characters(self):
         password = ''.join(['123', lookup('SOFT HYPHEN'), 'abc'])
         validated = validate_simple_password(password)
         self.assertEqual('123abc', validated)
 
-    def testValidSimpleAlphanumericPasswordWithMappedToSpace(self):
+    def test_valid_simple_alphanumeric_password_with_mapped_to_space_characters(self):
         password = ''.join(['123', lookup('FIGURE SPACE'), 'abc'])
         validated = validate_simple_password(password)
         self.assertEqual('123 abc', validated)

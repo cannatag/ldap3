@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.connection.unbind()
 
-    def testModDN(self):
+    def test_mod_dn(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('tost')
@@ -62,16 +62,16 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify-dn'))
-        addReq['attributes'] = attributes
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify-dn'))
+        add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq)
+        self.connection.send('addRequest', add_req)
 
-        modDnReq = ModifyDNRequest()
-        modDnReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify-dn'))
-        modDnReq['newrdn'] = RelativeLDAPDN(test_name_attr + '=test-modified-dn')
-        modDnReq['deleteoldrdn'] = DeleteOldRDN(True)
+        mod_dn_req = ModifyDNRequest()
+        mod_dn_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify-dn'))
+        mod_dn_req['newrdn'] = RelativeLDAPDN(test_name_attr + '=test-modified-dn')
+        mod_dn_req['deleteoldrdn'] = DeleteOldRDN(True)
 
-        self.connection.send('modDNRequest', modDnReq)
+        self.connection.send('modDNRequest', mod_dn_req)
         self.assertTrue(True)

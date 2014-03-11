@@ -40,19 +40,19 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testModifyReplace(self):
+    def test_modify_replace(self):
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace']), 'sn': (MODIFY_REPLACE, ['test-modified-sn-replace'])})
         if not isinstance(result, bool):
             self.connection.get_response(result)
         self.assertEqual(self.connection.result['description'], 'success')
 
-    def testModifyAdd(self):
+    def test_modify_add(self):
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
         if not isinstance(result, bool):
             self.connection.get_response(result)
         self.assertTrue(self.connection.result['description'] in ['success', 'attributeOrValueExists'])
 
-    def testModifyDeleted(self):
+    def test_modify_deleted(self):
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added2'])})
         if not isinstance(result, bool):
             self.connection.get_response(result)

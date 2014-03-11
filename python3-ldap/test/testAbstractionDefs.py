@@ -30,75 +30,68 @@ from ldap3.abstraction.reader import _create_query_dict
 
 
 class Test(unittest.TestCase):
-    def testCreateQueryDict(self):
+    def test_create_query_dict(self):
+        query_text = 'Common Name:=|john;Bob, Surname:=smith'
+        query_dict = _create_query_dict(query_text)
+
+        self.assertDictEqual({'Common Name': '=|john;Bob', 'Surname': '=smith'}, query_dict)
+
+    def test_validate_query_filter(self):
         o = ObjectDef()
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
         o += AttrDef('givenName', 'Given Name')
 
-        queryText = 'Common Name:=|john;Bob, Surname:=smith'
-        # r = Reader(None, o, queryText, base='o=test')
-
-        queryDict = _create_query_dict(queryText)
-
-        self.assertDictEqual({'Common Name': '=|john;Bob', 'Surname': '=smith'}, queryDict)
-
-    def testValidateQueryFilter(self):
-        o = ObjectDef()
-        o += AttrDef('cn', 'Common Name')
-        o += AttrDef('sn', 'Surname')
-        o += AttrDef('givenName', 'Given Name')
-
-        queryText = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, queryText, base='o=test')
+        query_text = '|Common Name:=john;=Bob, Surname:=smith'
+        r = Reader(None, o, query_text, base='o=test')
 
         r._validate_query()
 
         self.assertEqual('Surname: =smith, |CommonName: =Bob;=john', r.validated_query)
 
-    def testCreateQueryFilter(self):
+    def test_create_query_filter(self):
         o = ObjectDef()
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
         o += AttrDef('givenName', 'Given Name')
 
-        queryText = '|Common Name:=john;Bob, Surname:=smith'
-        r = Reader(None, o, queryText, base='o=test')
+        query_text = '|Common Name:=john;Bob, Surname:=smith'
+        r = Reader(None, o, query_text, base='o=test')
 
         r._create_query_filter()
 
         self.assertEqual('(&(sn=smith)(|(cn=Bob)(cn=john)))', r.query_filter)
 
-    def testCreateQueryFilterSingleAttributeSingleValue(self):
+    def test_create_query_filter_single_attribute_single_value(self):
         o = ObjectDef()
         o += AttrDef('cn', 'Common Name')
 
-        queryText = 'Common Name:John'
-        r = Reader(None, o, queryText, base='o=test')
+        query_text = 'Common Name:John'
+        r = Reader(None, o, query_text, base='o=test')
 
         r._create_query_filter()
 
         self.assertEqual('(cn=John)', r.query_filter)
 
-    def testCreateQueryFilterSingleAttributeMultipleValue(self):
+    def test_create_query_filter_single_attribute_multiple_value(self):
         o = ObjectDef()
         o += AttrDef('cn', 'Common Name')
 
-        queryText = '|Common Name:=john;=Bob'
-        r = Reader(None, o, queryText, base='o=test')
+        query_text = '|Common Name:=john;=Bob'
+        r = Reader(None, o, query_text, base='o=test')
 
         r._create_query_filter()
 
         self.assertEqual('(|(cn=Bob)(cn=john))', r.query_filter)
 
-    def testCreateQueryFilterWithObjectClass(self):
+    def test_create_query_filter_with_object_class(self):
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
         o += AttrDef('givenName', 'Given Name')
 
-        queryText = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, queryText, base='o=test')
+        query_text = '|Common Name:=john;=Bob, Surname:=smith'
+        r = Reader(None, o, query_text, base='o=test')
 
         r._create_query_filter()
 

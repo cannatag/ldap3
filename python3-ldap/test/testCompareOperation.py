@@ -39,13 +39,13 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testCompareTrue(self):
+    def test_compare_true(self):
         result = self.connection.compare(test_dn_builder(test_base, 'test-add-for-compare'), 'givenName', 'compare')
         if not isinstance(result, bool):
             self.connection.get_response(result)
         self.assertEqual(self.connection.result['description'], 'compareTrue')
 
-    def testCompareFalse(self):
+    def test_compare_false(self):
         result = self.connection.compare(test_dn_builder(test_base, 'test-add-for-compare'), 'givenName', 'error')
         if not isinstance(result, bool):
             self.connection.get_response(result)

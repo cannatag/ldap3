@@ -40,11 +40,11 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testSchema(self):
+    def test_schema(self):
         self.assertTrue(type(self.server.schema), SchemaInfo)
 
-    def testObjectClasses(self):
+    def test_object_classes(self):
         self.assertTrue(type(self.server.schema.object_classes['2.5.6.6']), ObjectClassInfo)
 
-    def testAttributesTypes(self):
+    def test_attributes_types(self):
         self.assertTrue(type(self.server.schema.attribute_types['2.5.4.3']), AttributeTypeInfo)

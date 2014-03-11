@@ -39,25 +39,25 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testGetReplicaListExtension(self):
+    def test_get_replica_list_extension(self):
         result = self.connection.extended('2.16.840.1.113719.1.27.100.19', 'cn=server')
         if not isinstance(result, bool):
             self.connection.get_response(result)
         self.assertTrue(self.connection.result['description'] in ['success', 'noSuchObject'])
 
-    def testWhoAmIExtension(self):
+    def test_who_am_i_extension(self):
         result = self.connection.extended('1.3.6.1.4.1.4203.1.11.3')
         if not isinstance(result, bool):
             self.connection.get_response(result)
         self.assertTrue(self.connection.result['description'] in ['success', 'protocolError'])
 
-    def testGetBindDNExtension(self):
+    def test_get_bind_dn_extension(self):
         result = self.connection.extended('2.16.840.1.113719.1.27.100.31')
         if not isinstance(result, bool):
             self.connection.get_response(result)
         self.assertTrue(self.connection.result['description'] in ['success'])
 
-    def testStartTLSExtension(self):
+    def test_start_tls_extension(self):
         self.connection.server.tls = Tls()
         result = self.connection.extended('1.3.6.1.4.1.1466.20037')
         if not isinstance(result, bool):

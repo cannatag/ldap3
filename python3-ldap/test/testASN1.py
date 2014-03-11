@@ -28,7 +28,7 @@ from ldap3.protocol.rfc4511 import rangeInt0ToMaxConstraint
 
 
 class Test(unittest.TestCase):
-    def testConstraintMaxInt(self):
+    def test_constraint_max_int(self):
 
         msg = None
         try:

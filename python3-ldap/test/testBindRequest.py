@@ -38,10 +38,10 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.connection.unbind()
 
-    def testBind(self):
-        bindReq = BindRequest()
-        bindReq['version'] = Version(3)
-        bindReq['name'] = LDAPDN(test_user)
-        bindReq['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(test_password))
-        self.connection.send('bindRequest', bindReq)
+    def test_bind(self):
+        bind_req = BindRequest()
+        bind_req['version'] = Version(3)
+        bind_req['name'] = LDAPDN(test_user)
+        bind_req['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(test_password))
+        self.connection.send('bindRequest', bind_req)
         self.assertTrue(True)

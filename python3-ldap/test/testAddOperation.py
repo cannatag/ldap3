@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testAdd(self):
+    def test_add(self):
         result = self.connection.add(test_dn_builder(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'})
         if not isinstance(result, bool):
             self.connection.get_response(result)

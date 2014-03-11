@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
-    def testSearchWithControls(self):
+    def test_search_with_controls(self):
         controls = list()
         controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
         result = self.connection.search(test_base, '(objectClass=*)', attributes=['sn, givenName'], size_limit=0, controls=controls)

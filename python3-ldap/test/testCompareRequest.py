@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.connection.unbind()
 
-    def testCompare(self):
+    def test_compare(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('tost')
@@ -62,18 +62,18 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
-        addReq['attributes'] = attributes
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
+        add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq)
+        self.connection.send('addRequest', add_req)
 
         ava = AttributeValueAssertion()
         ava['attributeDesc'] = AttributeDescription('givenName')
         ava['assertionValue'] = AssertionValue('tust')
-        compareReq = CompareRequest()
-        compareReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
-        compareReq['ava'] = ava
+        compare_req = CompareRequest()
+        compare_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
+        compare_req['ava'] = ava
 
-        self.connection.send('compareRequest', compareReq)
+        self.connection.send('compareRequest', compare_req)
         self.assertTrue(True)

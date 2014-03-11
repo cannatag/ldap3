@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.connection.unbind()
 
-    def testAdd(self):
+    def test_add(self):
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
         vals1[0] = AttributeValue('tost')
@@ -62,9 +62,9 @@ class Test(unittest.TestCase):
         attributes[1] = attribute2
         attributes[2] = attribute3
 
-        addReq = AddRequest()
-        addReq['entry'] = LDAPDN(test_dn_builder(test_base, 'test-add'))
-        addReq['attributes'] = attributes
+        add_req = AddRequest()
+        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-add'))
+        add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', addReq)
+        self.connection.send('addRequest', add_req)
         self.assertTrue(True)

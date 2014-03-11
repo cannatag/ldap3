@@ -25,7 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ValsAtLeast1, ResultCode
 from ..protocol.convert import referrals_to_list, attributes_to_dict
 
-
 # AddRequest ::= [APPLICATION 8] SEQUENCE {
 #     entry           LDAPDN,
 #     attributes      AttributeList }

@@ -24,7 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from collections import namedtuple
 
-from ldap3 import OID_CONTROL, OID_EXTENSION, OID_FEATURE, OID_UNSOLICITED_NOTICE, OID_LDAP_SYNTAX, OID_ATTRIBUTE_TYPE, OID_MATCHING_RULE, OID_NAME_FORM, OID_OBJECT_CLASS, OID_ADMINISTRATIVE_ROLE
+from ldap3 import OID_CONTROL, OID_EXTENSION, OID_FEATURE, OID_UNSOLICITED_NOTICE, OID_LDAP_SYNTAX, OID_ATTRIBUTE_TYPE, OID_MATCHING_RULE, OID_NAME_FORM, OID_OBJECT_CLASS, OID_ADMINISTRATIVE_ROLE, OID_DIT_CONTENT_RULE, OID_LDAP_URL_EXTENSION, \
+    OID_FAMILY
 
 # Holds info about OIDs.
 # Each OID info is a named tuple with the following attributes:
@@ -38,31 +39,31 @@ from ldap3 import OID_CONTROL, OID_EXTENSION, OID_FEATURE, OID_UNSOLICITED_NOTIC
 
 
 def constant_to_oid_kind(oid_kind):
-    if oid_kind == 0:
+    if oid_kind == OID_CONTROL:
         return 'Control'
-    elif oid_kind == 1:
+    elif oid_kind == OID_EXTENSION:
         return 'Extension'
-    elif oid_kind == 2:
+    elif oid_kind == OID_FEATURE:
         return 'Feature'
-    elif oid_kind == 3:
+    elif oid_kind == OID_UNSOLICITED_NOTICE:
         return 'Unsolicited Notice'
-    elif oid_kind == 4:
+    elif oid_kind == OID_ATTRIBUTE_TYPE:
         return 'Attribute Type'
-    elif oid_kind == 5:
+    elif oid_kind == OID_DIT_CONTENT_RULE:
         return 'DIT Content Rule'
-    elif oid_kind == 6:
+    elif oid_kind == OID_LDAP_URL_EXTENSION:
         return 'LDAP URL Extension'
-    elif oid_kind == 7:
+    elif oid_kind == OID_FAMILY:
         return 'Family'
-    elif oid_kind == 8:
+    elif oid_kind == OID_MATCHING_RULE:
         return 'Matching Rule'
-    elif oid_kind == 9:
+    elif oid_kind == OID_NAME_FORM:
         return 'Name Form'
-    elif oid_kind == 10:
+    elif oid_kind == OID_OBJECT_CLASS:
         return 'Object Class'
-    elif oid_kind == 11:
+    elif oid_kind == OID_ADMINISTRATIVE_ROLE:
         return 'Administrative Role'
-    elif oid_kind == 12:
+    elif oid_kind == OID_LDAP_SYNTAX:
         return 'LDAP Syntax'
     else:
         return 'Unknown'

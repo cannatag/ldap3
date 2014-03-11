@@ -36,14 +36,14 @@ def _ret_search_value(value):
 
 def _create_query_dict(query_text):
     """
-    Create a dictonary  with query key:value definitions
-    QUeryText is a comma delimited key:value sequence
+    Create a dictonary with query key:value definitions
+    query_text is a comma delimited key:value sequence
     """
     query_dict = dict()
     if query_text:
-        for argValueStr in query_text.split(','):
-            if ':' in argValueStr:
-                arg_value_list = argValueStr.split(':')
+        for arg_value_str in query_text.split(','):
+            if ':' in arg_value_str:
+                arg_value_list = arg_value_str.split(':')
                 query_dict[arg_value_list[0].strip()] = arg_value_list[1].strip()
 
     return query_dict
@@ -53,12 +53,12 @@ class Reader(object):
     """
     Reader object perform the search with the requested parameters:
     'connection': the connection to use
-    'objectDef': the definition of the LDAP object to be returned
+    'object_def': the definition of the LDAP object to be returned
     'query': the simplified query to be transformed in an LDAP filter
     'base': starting base of the DIT
-    'componentInAnd': specify if components of query mus be all satisfied or not (AND/OR)
-    'subTree': a boolean to specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
-    'getOperationalAttributes': a boolean to specify if operational attributes are returned or not
+    'components_in_and': specify if components of query mus be all satisfied or not (AND/OR)
+    'sub_tree': a boolean to specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
+    'get_operational_attributes': a boolean to specify if operational attributes are returned or not
     'controls': controls to be used in search
     """
 
@@ -114,8 +114,8 @@ class Reader(object):
         r = 'CONN   : ' + str(self.connection) + linesep
         r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
         r += 'DEFS   : ' + repr(self._definition.object_class) + ' ['
-        for attrDef in sorted(self._definition):
-            r += (attrDef.key if attrDef.key == attrDef.name else (attrDef.key + ' <' + attrDef.name + '>')) + ', '
+        for attr_def in sorted(self._definition):
+            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
         r += ']' + linesep
@@ -127,8 +127,8 @@ class Reader(object):
             r += 'ENTRIES: ' + str(len(self.entries))
             r += ' [SUB]' if self.last_sub_tree else ' [level]'
             r += ' [SIZE LIMIT: ' + str(self.size_limit) + ']' if self.size_limit else ''
-            r += ' [TIME LIMIT: ' + str(self.time_limit) + ']' if self.size_limit else ''
-            r += ' [executed at: ' + str(self.execution_time.ctime()) + ']' + linesep
+            r += ' [TIME LIMIT: ' + str(self.time_limit) + ']' if self.time_limit else ''
+            r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
         return r
 
     def __str__(self):
@@ -174,16 +174,15 @@ class Reader(object):
         query = ''
         for d in sorted(self._query_dict):
             attr = d[1:] if d[0] in '&|' else d
-            for attrDef in self._definition:
-                if ''.join(attr.split()).lower() == attrDef.key.lower():
-                    attr = attrDef.key
+            for attr_def in self._definition:
+                if ''.join(attr.split()).lower() == attr_def.key.lower():
+                    attr = attr_def.key
                     break
 
             if attr in self._definition:
                 vals = sorted(self._query_dict[d].split(';'))
 
-                query += d[0] + attr if d[0] in '&|' else attr
-                query += ': '
+                query += (d[0] + attr if d[0] in '&|' else attr) + ': '
                 for val in vals:
                     val = val.strip()
                     val_not = True if val[0] == '!' else False
@@ -211,15 +210,14 @@ class Reader(object):
                         query += val_search_operator + value
 
                     query += ';'
-                query = query[:-1]
-                query += ', '
+                query = query[:-1] + ', '
 
         self.validated_query = query[:-2]
         self._validated_query_dict = _create_query_dict(self.validated_query)
 
     def _create_query_filter(self):
         """
-        Converts the query Dictonary in the filter text
+        Converts the query dictonary in the filter text
         """
         if self._query and self._query.startswith('(') and self._query.stopswith(')'):  # query is alread an LDAP filter
             self.query_filter = self._query
@@ -237,7 +235,7 @@ class Reader(object):
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
-                raise LDAPException('object_class must be string or list')
+                raise LDAPException('object_class must be a string or a list')
 
         if not self.components_in_and:
             self.query_filter += '(|'
@@ -282,17 +280,17 @@ class Reader(object):
     def _get_attributes(self, result, attr_defs, entry):
         """
         Assign the result of the LDAP query to the Entry object dictionary.
-        If the optional 'postQuery' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute
+        If the optional 'post_query' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute
         Returns the default value for missing attributes
-        If the 'dereferenceDN' in AttrDef is a ObjectDef the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
+        If the 'dereference_dn' in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
         """
         attributes = dict()
         used_attribute_names = []
         for attr_def in attr_defs:
             name = None
-            for attrName in result['attributes']:
-                if attr_def.name.lower() == attrName.lower():
-                    name = attrName
+            for attr_name in result['attributes']:
+                if attr_def.name.lower() == attr_name.lower():
+                    name = attr_name
                     break
 
             if name or attr_def.default:  # attribute value found in result or default value present
@@ -347,7 +345,6 @@ class Reader(object):
             result = self.connection.search(search_base=self.base, search_filter=self.query_filter, search_scope=query_scope, dereference_aliases=self.dereference_aliases, attributes=self.attributes, size_limit=self.size_limit, time_limit=self.time_limit,
                                             types_only=self.types_only, get_operational_attributes=self.get_operational_attributes, controls=self.controls, paged_size=self.paged_size, paged_criticality=self.paged_criticality,
                                             paged_cookie=self.paged_cookie)
-
             if not self.connection.strategy.sync:
                 response = self.connection.get_response(result)
                 if len(response) > 1:
@@ -385,10 +382,10 @@ class Reader(object):
     def search_object(self, entry_dn=None):  # base must be a single dn
         self.clear()
         if entry_dn:
-            oldbase = self.base
+            old_base = self.base
             self.base = entry_dn
             self._execute_query(SEARCH_SCOPE_BASE_OBJECT)
-            self.base = oldbase
+            self.base = old_base
         else:
             self._execute_query(SEARCH_SCOPE_BASE_OBJECT)
 

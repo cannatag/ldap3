@@ -26,6 +26,6 @@ from .sasl import send_sasl_negotiation
 
 
 def sasl_external(connection, controls):
-    result = send_sasl_negotiation(connection, controls, connection.saslCredentials)
+    result = send_sasl_negotiation(connection, controls, connection.sasl_credentials)
 
     return result

@@ -101,7 +101,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         with self.connection.lock:
             responses = self._responses.pop(message_id) if message_id in self._responses and self._responses[message_id][-1] == RESPONSE_COMPLETE else None
 
-        if responses is not None and responses[-2]['result'] == RESULT_REFERRAL and self.connection.autoReferrals:
+        if responses is not None and responses[-2]['result'] == RESULT_REFERRAL and self.connection.auto_referrals:
             ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
             if ref_response is not None:
                 responses = ref_response + [ref_result]

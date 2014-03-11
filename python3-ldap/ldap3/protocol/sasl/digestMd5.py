@@ -63,7 +63,7 @@ def md5_hmac(k, s):
 
 
 def sasl_digest_md5(connection, controls):
-    # saslCredential must be a tuple made up of the following elements: (realm, user, password, authorizationId)
+    # sasl_credential must be a tuple made up of the following elements: (realm, user, password, authorization_id)
     # if realm is None will be used the realm received from the server, if available
     if not isinstance(connection.sasl_credentials, tuple) or not len(connection.sasl_credentials) == 4:
         return None

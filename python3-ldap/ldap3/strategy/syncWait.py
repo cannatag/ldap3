@@ -94,8 +94,8 @@ class SyncWaitStrategy(BaseStrategy):
 
     def post_send_single_response(self, message_id):
         """
-        To be executed after an Operation Request (except Search)
-        Return the result message or None
+        Executed after an Operation Request (except Search)
+        Returns the result message or None
         """
         responses = self.get_response(message_id)
         if responses and len(responses) == 1 and responses[0]['type'] != 'intermediateResponse':
@@ -116,7 +116,7 @@ class SyncWaitStrategy(BaseStrategy):
 
     def post_send_search(self, message_id):
         """
-        To be executed after a search request
+        Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
         responses = self.get_response(message_id)
@@ -161,7 +161,7 @@ class SyncWaitStrategy(BaseStrategy):
 
         ldap_responses.append(RESPONSE_COMPLETE)
 
-        if ldap_responses[-2]['result'] == RESULT_REFERRAL and self.connection.autoReferrals:
+        if ldap_responses[-2]['result'] == RESULT_REFERRAL and self.connection.auto_referrals:
             ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], ldap_responses[-2]['referrals'])
             if ref_response is not None:
                 ldap_responses = ref_response + [ref_result]

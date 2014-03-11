@@ -30,7 +30,8 @@ class Entry(object):
     """
     The Entry object contains a single entry from the result of an LDAP search
     Attributes can be accessed either by sequence, by assignment or as dictonary keys. Keys are not case sensitive
-    DN is in the entryDN property, Reader reference is in the EntryReader property
+    DN is retrieved by get_entry_dn(), Reader reference is in  get_entry_reader()
+    Raw attributes values are retrieved by the get_raw_attributes() and get_raw_attribute() methods
     Entry object is read only
     """
 
@@ -46,7 +47,6 @@ class Entry(object):
             if self._attributes:
                 for attr in sorted(self._attributes):
                     r += ' ' * 4 + repr(self._attributes[attr]) + linesep
-
             return r
         else:
             return object.__repr__(self)
@@ -70,7 +70,6 @@ class Entry(object):
                     break
             else:
                 raise LDAPException('key not found')
-
             return self._attributes[attr]
 
         raise LDAPException('key must be a string')

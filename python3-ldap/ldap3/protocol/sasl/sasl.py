@@ -101,7 +101,7 @@ def sasl_prep(data):
             raise LDAPException('SASLprep error: tagging character present')
 
     # check bidi
-    # if a string contains any RandALCat character, the string MUST NOT contain any LCat character.
+    # if a string contains any r_and_al_cat character, the string MUST NOT contain any l_cat character.
     flag_r_and_al_cat = False
     flag_l_cat = False
     for c in prepared_data:
@@ -113,10 +113,10 @@ def sasl_prep(data):
         if flag_r_and_al_cat and flag_l_cat:
             raise LDAPException('SASLprep error: string cannot contain (R or AL) and L bidirectional chars')
 
-    # If a string contains any RandALCat character, a RandALCat character MUST be the first character of the string
-    # and a RandALCat character MUST be the last character of the string.
+    # If a string contains any r_and_al_cat character, a r_and_al_cat character MUST be the first character of the string
+    # and a r_and_al_cat character MUST be the last character of the string.
     if flag_r_and_al_cat and not stringprep.in_table_d1(prepared_data[0]) and not stringprep.in_table_d2(prepared_data[-1]):
-        raise LDAPException('RandALCat character present, must be first and last character of the string')
+        raise LDAPException('r_and_al_cat character present, must be first and last character of the string')
 
     return prepared_data
 

@@ -298,13 +298,57 @@ class ResultCode(Enumerated):
         authorizationDenied           123        WELTMAN                          [RFC4370]
         e-syncRefreshRequired         4096       [Kurt_Zeilenga] [Jong_Hyuk_Choi] [RFC4533]
     """
-    namedValues = NamedValues(('success', 0), ('operationsError', 1), ('protocolError', 2), ('timeLimitExceeded', 3), ('sizeLimitExceeded', 4), ('compareFalse', 5), ('compareTrue', 6), ('authMethodNotSupported', 7), ('strongerAuthRequired', 8),
-                              ('referral', 10), ('adminLimitExceeded', 11), ('unavailableCriticalExtension', 12), ('confidentialityRequired', 13), ('saslBindInProgress', 14), ('noSuchAttribute', 16), ('undefinedAttributeType', 17),
-                              ('inappropriateMatching', 18), ('constraintViolation', 19), ('attributeOrValueExists', 20), ('invalidAttributeSyntax', 21), ('noSuchObject', 32), ('aliasProblem', 33), ('invalidDNSyntax', 34),
-                              ('aliasDereferencingProblem', 36), ('inappropriateAuthentication', 48), ('invalidCredentials', 49), ('insufficientAccessRights', 50), ('busy', 51), ('unavailable', 52), ('unwillingToPerform', 53), ('loopDetected', 54),
-                              ('namingViolation', 64), ('objectClassViolation', 65), ('notAllowedOnNonLeaf', 66), ('notAllowedOnRDN', 67), ('entryAlreadyExists', 68), ('objectClassModsProhibited', 69), ('affectMultipleDSAs', 71), ('other', 80),
-                              ('lcupResourcesExhausted', 113), ('lcupSecurityViolation', 114), ('lcupInvalidData', 115), ('lcupUnsupportedScheme', 116), ('lcupReloadRequired', 117), ('canceled', 118), ('noSuchOperation', 119), ('tooLate', 120),
-                              ('cannotCancel', 121), ('assertionFailed', 122), ('authorizationDenied', 123), ('e-syncRefreshRequired', 4096))
+    namedValues = NamedValues(('success', 0),
+                              ('operationsError', 1),
+                              ('protocolError', 2),
+                              ('timeLimitExceeded', 3),
+                              ('sizeLimitExceeded', 4),
+                              ('compareFalse', 5),
+                              ('compareTrue', 6),
+                              ('authMethodNotSupported', 7),
+                              ('strongerAuthRequired', 8),
+                              ('referral', 10),
+                              ('adminLimitExceeded', 11),
+                              ('unavailableCriticalExtension', 12),
+                              ('confidentialityRequired', 13),
+                              ('saslBindInProgress', 14),
+                              ('noSuchAttribute', 16),
+                              ('undefinedAttributeType', 17),
+                              ('inappropriateMatching', 18),
+                              ('constraintViolation', 19),
+                              ('attributeOrValueExists', 20),
+                              ('invalidAttributeSyntax', 21),
+                              ('noSuchObject', 32),
+                              ('aliasProblem', 33),
+                              ('invalidDNSyntax', 34),
+                              ('aliasDereferencingProblem', 36),
+                              ('inappropriateAuthentication', 48),
+                              ('invalidCredentials', 49),
+                              ('insufficientAccessRights', 50),
+                              ('busy', 51),
+                              ('unavailable', 52),
+                              ('unwillingToPerform', 53),
+                              ('loopDetected', 54),
+                              ('namingViolation', 64),
+                              ('objectClassViolation', 65),
+                              ('notAllowedOnNonLeaf', 66),
+                              ('notAllowedOnRDN', 67),
+                              ('entryAlreadyExists', 68),
+                              ('objectClassModsProhibited', 69),
+                              ('affectMultipleDSAs', 71),
+                              ('other', 80),
+                              ('lcupResourcesExhausted', 113),
+                              ('lcupSecurityViolation', 114),
+                              ('lcupInvalidData', 115),
+                              ('lcupUnsupportedScheme', 116),
+                              ('lcupReloadRequired', 117),
+                              ('canceled', 118),
+                              ('noSuchOperation', 119),
+                              ('tooLate', 120),
+                              ('cannotCancel', 121),
+                              ('assertionFailed', 122),
+                              ('authorizationDenied', 123),
+                              ('e-syncRefreshRequired', 4096))
 
     subTypeSpec = Enumerated.subtypeSpec + responseValueConstraint
 
@@ -586,7 +630,7 @@ class Not(Choice):
     """
     not             [2] Filter
     """
-    pass  # will be defined after Filter definition to allow recursion
+    pass  # defined after Filter definition to allow recursion
 
 
 class EqualityMatch(AttributeValueAssertion):
@@ -992,11 +1036,27 @@ class ProtocolOp(Choice):
         ...,
         intermediateResponse  IntermediateResponse }
     """
-    componentType = NamedTypes(NamedType('bindRequest', BindRequest()), NamedType('bindResponse', BindResponse()), NamedType('unbindRequest', UnbindRequest()), NamedType('searchRequest', SearchRequest()),
-                               NamedType('searchResEntry', SearchResultEntry()), NamedType('searchResDone', SearchResultDone()), NamedType('searchResRef', SearchResultReference()), NamedType('modifyRequest', ModifyRequest()),
-                               NamedType('modifyResponse', ModifyResponse()), NamedType('addRequest', AddRequest()), NamedType('addResponse', AddResponse()), NamedType('delRequest', DelRequest()), NamedType('delResponse', DelResponse()),
-                               NamedType('modDNRequest', ModifyDNRequest()), NamedType('modDNResponse', ModifyDNResponse()), NamedType('compareRequest', CompareRequest()), NamedType('compareResponse', CompareResponse()),
-                               NamedType('abandonRequest', AbandonRequest()), NamedType('extendedReq', ExtendedRequest()), NamedType('extendedResp', ExtendedResponse()), NamedType('intermediateResponse', IntermediateResponse()))
+    componentType = NamedTypes(NamedType('bindRequest', BindRequest()),
+                               NamedType('bindResponse', BindResponse()),
+                               NamedType('unbindRequest', UnbindRequest()),
+                               NamedType('searchRequest', SearchRequest()),
+                               NamedType('searchResEntry', SearchResultEntry()),
+                               NamedType('searchResDone', SearchResultDone()),
+                               NamedType('searchResRef', SearchResultReference()),
+                               NamedType('modifyRequest', ModifyRequest()),
+                               NamedType('modifyResponse', ModifyResponse()),
+                               NamedType('addRequest', AddRequest()),
+                               NamedType('addResponse', AddResponse()),
+                               NamedType('delRequest', DelRequest()),
+                               NamedType('delResponse', DelResponse()),
+                               NamedType('modDNRequest', ModifyDNRequest()),
+                               NamedType('modDNResponse', ModifyDNResponse()),
+                               NamedType('compareRequest', CompareRequest()),
+                               NamedType('compareResponse', CompareResponse()),
+                               NamedType('abandonRequest', AbandonRequest()),
+                               NamedType('extendedReq', ExtendedRequest()),
+                               NamedType('extendedResp', ExtendedResponse()),
+                               NamedType('intermediateResponse', IntermediateResponse()))
 
 
 class LDAPMessage(Sequence):

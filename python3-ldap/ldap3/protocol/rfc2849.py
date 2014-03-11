@@ -57,24 +57,22 @@ def convert_to_ldif(descriptor, value, base64):
 
     if isinstance(value, str):
         # value = bytes(value, encoding = 'UTF-8') if str is not bytes else bytearray(value, encoding = 'UTF-8')  # in python2 str IS bytes
-        value = bytearray(value, encoding='UTF-8')
+        value = bytearray(value, encoding='utf-8')
 
     if base64 or not safe_ldif_string(value):
         try:
             encoded = b64encode(value)
         except TypeError:
             encoded = b64encode(str(value))  # patch for python2.6
-
         if not isinstance(encoded, str):  # in python3 b64encode returns bytes in python2 returns str
-            encoded = str(encoded, encoding='ASCII')
-
+            encoded = str(encoded, encoding='ascii')
         line = descriptor + ':: ' + encoded
     else:
         if not isinstance(value, bytearray):  # python3
-            value = str(value, encoding='ASCII')
+            value = str(value, encoding='ascii')
         else:  # python2
             # value = value.decode(encoding = 'ASCII')
-            value = value.decode('ASCII')
+            value = value.decode('ascii')
         line = descriptor + ': ' + value
 
     # check max line lenght and split as per note 2 of RFC 2849
@@ -97,18 +95,18 @@ def add_controls(controls, all_base64):
 
 def add_attributes(attributes, all_base64):
     lines = []
-    ocattr = None
+    oc_attr = None
     # objectclass first, even if this is not specified in the RFC
     for attr in attributes:
         if attr.lower() == 'objectclass':
             for val in attributes[attr]:
                 lines.extend(convert_to_ldif(attr, val, all_base64))
-            ocattr = attr
+            oc_attr = attr
             break
 
     # remaing attributes
     for attr in attributes:
-        if attr != ocattr:
+        if attr != oc_attr:
             for val in attributes[attr]:
                 lines.extend(convert_to_ldif(attr, val, all_base64))
 

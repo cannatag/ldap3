@@ -33,7 +33,7 @@ class AttrDef(object):
     'validate' is an optional callable, called to check if the value in the query is valid, the callable is called with the value parameter
     'preQuery' is an optional callable, called to transform values to be searched
     'postQuery' is an optional callable, called to transform values returned by search
-    'dereferenceDN' is a reference to an ObjectDef instance. If present when attribute value contains a dn it will be searched and substituted in the entry
+    'dereference_dn' is a reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry
     AttrDef('name') creates an AttrDef object for attribute 'name' with all default values
     """
 

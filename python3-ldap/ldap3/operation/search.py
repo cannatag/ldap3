@@ -69,7 +69,7 @@ SEARCH_MATCH_OR_CLOSE = 22
 SEARCH_MATCH_OR_CONTROL = 23
 
 # simple cache for searchFilters
-__memoizedFilters = dict()
+__memoized_Filters = dict()
 
 
 class FilterNode():
@@ -88,14 +88,12 @@ class FilterNode():
         self.__repr__(pos)
 
     def __repr__(self, pos=0):
-        nodetags = ['ROOT', 'AND', 'OR', 'NOT', 'MATCH_APPROX', 'MATCH_GREATER_OR_EQUAL', 'MATCH_LESS_OR_EQUAL', 'MATCH_EXTENSIBLE', 'MATCH_PRESENT', 'MATCH_SUBSTRING', 'MATCH_EQUAL']
-        representation = ' ' * pos + 'tag: ' + nodetags[self.tag] + ' - assertion: ' + str(self.assertion)
+        node_tags = ['ROOT', 'AND', 'OR', 'NOT', 'MATCH_APPROX', 'MATCH_GREATER_OR_EQUAL', 'MATCH_LESS_OR_EQUAL', 'MATCH_EXTENSIBLE', 'MATCH_PRESENT', 'MATCH_SUBSTRING', 'MATCH_EQUAL']
+        representation = ' ' * pos + 'tag: ' + node_tags[self.tag] + ' - assertion: ' + str(self.assertion)
         if self.elements:
             representation += ' - elements: ' + str(len(self.elements))
             for element in self.elements:
-                representation += linesep
-                representation += ' ' * pos + element.__repr__(pos + 2)
-
+                representation += linesep + ' ' * pos + element.__repr__(pos + 2)
         return representation
 
 
@@ -383,10 +381,7 @@ def attributes_to_dict(attribute_list):
 
 
 def decode_raw_vals(vals):
-    if vals:
-        return [bytes(val) for val in vals]
-    else:
-        return None
+    return [bytes(val) for val in vals] if vals else None
 
 
 def raw_attributes_to_dict(attribute_list):

@@ -37,9 +37,9 @@ class OperationalAttribute(Attribute):
 
     def __init__(self, key, entry):
         self.__dict__['key'] = key
+        self.__dict__['entry'] = entry
         self.__dict__['values'] = []
         self.__dict__['raw_values'] = []
-        self.__dict__['entry'] = entry
 
     def __repr__(self):
         if len(self.values) == 1:

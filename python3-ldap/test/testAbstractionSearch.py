@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import unittest
 
-from ldap3.abstraction import ObjectDef, AttrDef, Reader
+from ldap3.abstract import ObjectDef, AttrDef, Reader
 from ldap3 import Server, Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder
 

@@ -27,7 +27,7 @@ from setuptools import setup
 setup(name='python3-ldap',
       version='0.8.4',
       packages=['ldap3',
-                'ldap3.abstraction',
+                'ldap3.abstract',
                 'ldap3.operation',
                 'ldap3.protocol',
                 'ldap3.protocol.sasl',

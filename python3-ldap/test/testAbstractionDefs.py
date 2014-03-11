@@ -24,9 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-from ldap3.abstraction import ObjectDef, AttrDef
-from ldap3.abstraction import Reader
-from ldap3.abstraction.reader import _create_query_dict
+from ldap3.abstract import ObjectDef, AttrDef
+from ldap3.abstract import Reader
+from ldap3.abstract.reader import _create_query_dict
 
 
 class Test(unittest.TestCase):

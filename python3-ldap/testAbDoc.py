@@ -1,5 +1,5 @@
 from ldap3 import Server, Connection
-from ldap3.abstraction import ObjectDef, AttrDef, Reader
+from ldap3.abstract import ObjectDef, AttrDef, Reader
 
 person = ObjectDef('inetOrgPerson')
 engineer = ObjectDef(['inetOrgPerson', 'auxEngineer'])

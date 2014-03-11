@@ -26,7 +26,7 @@ from ldap3 import LDAPException
 
 class AttrDef(object):
     """
-    Attribute definition for abstraction layer:
+    Attribute definition for abstract layer:
     'name' is the real attribut name
     'key' is the friendly name to use in query and while accessing the attribute, if not set is the same of name
     'default' is the value returned if the attribute is not present

@@ -35,22 +35,15 @@ def attributes_to_dict(attributes):
     for attribute in attributes:
         attribute_dict = attribute_to_dict(attribute)
         attributes_dict[attribute_dict['type']] = attribute_dict['values']
-
     return attributes_dict
 
 
 def referrals_to_list(referrals):
-    if referrals:
-        return [str(referral) for referral in referrals if referral]
-    else:
-        return None
+    return [str(referral) for referral in referrals if referral] if referrals else None
 
 
 def search_refs_to_list(search_refs):
-    if search_refs:
-        return [str(searchRef) for searchRef in search_refs if searchRef]
-    else:
-        return None
+    return [str(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
 
 
 def sasl_to_dict(sasl):
@@ -62,10 +55,7 @@ def authentication_choice_to_dict(authentication_choice):
 
 
 def decode_referrals(referrals):
-    if referrals:
-        return [str(referral) for referral in referrals if referral]
-    else:
-        return None
+    return [str(referral) for referral in referrals if referral] if referrals else None
 
 
 def partial_attribute_to_dict(modification):
@@ -96,7 +86,6 @@ def prepare_changes_for_request(changes):
     prepared = {}
     for change in changes:
         prepared[change['attribute']['type']] = (change['operation'], change['attribute']['value'])
-
     return prepared
 
 

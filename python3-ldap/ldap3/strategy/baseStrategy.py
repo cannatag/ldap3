@@ -66,7 +66,7 @@ class BaseStrategy(object):
         """
         self._outstanding = dict()
         if self.connection.usage:
-            if reset_usage or not self.connection.usage.initialConnectionStartTime:
+            if reset_usage or not self.connection.usage.initial_connection_start_time:
                 self.connection.usage.start()
 
         self._open_socket(self.connection.server.ssl)
@@ -91,7 +91,7 @@ class BaseStrategy(object):
 
     def _open_socket(self, use_ssl=False):
         """
-        Try to open and connect a socket to a Server
+        Tries to open and connect a socket to a Server
         raise LDAPException if unable to open or connect socket
         """
         try:
@@ -110,13 +110,13 @@ class BaseStrategy(object):
             try:
                 self.connection.socket = self.connection.server.tls.wrap_socket(self.connection.socket, do_handshake=True)
                 if self.connection.usage:
-                    self.connection.usage.wrappedSocket += 1
+                    self.connection.usage.wrapped_socket += 1
             except Exception as e:
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 raise LDAPException(self.connection.last_error)
 
         if self.connection.usage:
-            self.connection.usage.openedSockets += 1
+            self.connection.usage.opened_sockets += 1
 
         self.connection.closed = False
 
@@ -135,7 +135,7 @@ class BaseStrategy(object):
         self.connection.closed = True
 
         if self.connection.usage:
-            self.connection.usage.closedSockets += 1
+            self.connection.usage.closed_sockets += 1
 
     def _stop_listen(self):
         self.connection.listening = False
@@ -323,10 +323,10 @@ class BaseStrategy(object):
         for referral in referrals:
             candidate_referral = BaseStrategy.decode_referral(referral)
             if candidate_referral:
-                for refHost in self.connection.server.allowedReferralHosts:
-                    if refHost[0] == candidate_referral['host'] or refHost[0] == '*':
+                for ref_host in self.connection.server.allowedReferralHosts:
+                    if ref_host[0] == candidate_referral['host'] or ref_host[0] == '*':
                         if candidate_referral['host'] not in self._referrals:
-                            candidate_referral['anonymousBindOnly'] = not refHost[1]
+                            candidate_referral['anonymousBindOnly'] = not ref_host[1]
                             referral_list.append(candidate_referral)
                             break
 
@@ -422,9 +422,9 @@ class BaseStrategy(object):
             preferred_referral_list = [referral for referral in valid_referral_list if referral['ssl'] == self.connection.server.ssl]
             selected_referral = choice(preferred_referral_list) if preferred_referral_list else choice(valid_referral_list)
 
-            referral_server = Server(host=selected_referral['host'], port=selected_referral['port'] or self.connection.server.port, use_ssl=selected_referral['ssl'], allowed_referral_hosts=self.connection.server.allowedReferralHosts,
-                                     tls=Tls(local_private_key_file=self.connection.server.tls.privateKeyFile, local_certificate_file=self.connection.server.tls.certificateFile, validate=self.connection.server.tls.validate,
-                                             version=self.connection.server.tls.version, ca_certs_file=self.connection.server.tls.caCertsFile))
+            referral_server = Server(host=selected_referral['host'], port=selected_referral['port'] or self.connection.server.port, use_ssl=selected_referral['ssl'], allowed_referral_hosts=self.connection.server.allowed_referral_hosts,
+                                     tls=Tls(local_private_key_file=self.connection.server.tls.private_key_file, local_certificate_file=self.connection.server.tls.certificate_file, validate=self.connection.server.tls.validate,
+                                             version=self.connection.server.tls.version, ca_certs_file=self.connection.server.tls.ca_certs_file))
 
             from ldap3.connection import Connection
 

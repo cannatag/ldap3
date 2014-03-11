@@ -28,7 +28,7 @@ from ldap3 import LDAPException
 
 class Attribute(object):
     """
-    Attribute/values object, it includes the search result (after postQuery transformation) of each attribute in an entry
+    Attribute/values object, it includes the search result (after post_query transformation) of each attribute in an entry
     Attribute object is read only
     'values' contains the processed attribute values
     'raw_values' contains the unprocessed attribute values

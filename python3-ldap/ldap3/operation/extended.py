@@ -36,7 +36,6 @@ def extended_operation(request_name, request_value=None):
     request['requestName'] = RequestName(request_name)
     if request_value:
         request['requestValue'] = RequestValue(request_value)
-
     return request
 
 

@@ -73,13 +73,13 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 try:  # reissuing same operation
                     SyncWaitStrategy._open_socket(self, use_ssl)  # calls super (not restartable) _open_socket()
                     if self.connection.usage:
-                        self.connection.usage.restartableSuccesses += 1
+                        self.connection.usage.restartable_successes += 1
                     self.connection.closed = False
                     self._restarting = False
                     return
                 except LDAPException:
                     if self.connection.usage:
-                        self.connection.usage.restartableFailures += 1
+                        self.connection.usage.restartable_failures += 1
                 if not isinstance(counter, bool):
                     counter -= 1
             self._restarting = False
@@ -90,7 +90,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         self._current_message_type = message_type
         self._current_request = request
         self._current_controls = controls
-        self._restart_tls = self.connection.tlsStarted
+        self._restart_tls = self.connection.tls_started
         if message_type == 'bindRequest':  # store controls used in bind to be used again when restarting the connection
             self._last_bind_controls = controls
 
@@ -119,14 +119,14 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                     try:  # reissuing same operation
                         ret_value = self.connection.send(message_type, request, controls)
                         if self.connection.usage:
-                            self.connection.usage.restartableSuccesses += 1
+                            self.connection.usage.restartable_successes += 1
                         self._restarting = False
                         return ret_value  # successful send
                     except LDAPException:
                         failure = True
 
                 if failure and self.connection.usage:
-                    self.connection.usage.restartableFailures += 1
+                    self.connection.usage.restartable_failures += 1
 
                 if not isinstance(counter, bool):
                     counter -= 1

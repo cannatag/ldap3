@@ -54,7 +54,7 @@ def bind_operation(version, authentication, name='', password=None, sasl_mechani
         request['name'] = ''
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
     else:
-        raise (Exception('Invalid authentication mechanism'))
+        raise (Exception('Invalid authentication method'))
 
     return request
 

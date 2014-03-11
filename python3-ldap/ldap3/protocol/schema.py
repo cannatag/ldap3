@@ -126,10 +126,8 @@ class SchemaInfo(object):
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry + linesep
         r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attribute_types[s]) for s in self.attribute_types]) + linesep) if self.attribute_types else ''
-        r += (
-            '  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes]) + linesep) if self.object_classes else ''
-        r += (
-            '  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules]) + linesep) if self.matching_rules else ''
+        r += ('  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes]) + linesep) if self.object_classes else ''
+        r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules]) + linesep) if self.matching_rules else ''
         r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matching_rule_uses[s]) for s in self.matching_rule_uses]) + linesep) if self.matching_rule_uses else ''
         r += ('  DIT content rule:' + linesep + '    ' + ', '.join([str(self.dit_content_rules[s]) for s in self.dit_content_rules]) + linesep) if self.dit_content_rules else ''
         r += ('  DIT structure rule:' + linesep + '    ' + ', '.join([str(self.dit_structure_rules[s]) for s in self.dit_structure_rules]) + linesep) if self.dit_structure_rules else ''
@@ -156,14 +154,14 @@ class BaseObjectInfo(object):
         self.extensions = extensions
         self.experimental = experimental
         self.raw_definition = definition
-        self._oidInfo = None
+        self._oid_info = None
 
     @property
     def oid_info(self):
-        if self._oidInfo is None and self.oid:
-            self._oidInfo = Oids.get(self.oid, '')
+        if self._oid_info is None and self.oid:
+            self._oid_info = Oids.get(self.oid, '')
 
-        return self._oidInfo if self._oidInfo else None
+        return self._oid_info if self._oid_info else None
 
     def __str__(self):
         return self.__repr__()
@@ -174,8 +172,7 @@ class BaseObjectInfo(object):
         r += (linesep + '  Short name: ' + list_to_string(self.name)) if self.name else ''
         r += (linesep + '  Description: ' + self.description) if self.description else ''
         r += '<__desc__>'
-        r += (
-            linesep + '  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + list_to_string(s[1]) for s in self.extensions])) if self.extensions else ''
+        r += (linesep + '  Extensions:' + linesep + linesep.join(['    ' + s[0] + ': ' + list_to_string(s[1]) for s in self.extensions])) if self.extensions else ''
         r += (linesep + '  Experimental:' + linesep + linesep.join(['    ' + s[0] + ': ' + list_to_string(s[1]) for s in self.experimental])) if self.experimental else ''
         r += (linesep + '  OidInfo: ' + str(self.oid_info)) if self.oid_info else ''
         r += linesep

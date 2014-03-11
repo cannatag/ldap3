@@ -27,7 +27,6 @@ from ..protocol.rfc4511 import CompareRequest, AttributeValueAssertion, Attribut
 from ..operation.search import ava_to_dict
 from ..operation.bind import referrals_to_list
 
-
 # CompareRequest ::= [APPLICATION 14] SEQUENCE {
 #     entry           LDAPDN,
 #     ava             AttributeValueAssertion }

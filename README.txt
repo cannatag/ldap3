@@ -47,11 +47,11 @@ You can submit support tickets on https://www.assembla.com/spaces/python3-ldap/s
 Project goals
 -------------
 
-1. Python3-ldap Conforms strictly to the current RFC for LDAP 3 (from rfc4510 to rfc4519)
+1. Python3-ldap conforms strictly to the current RFCs for LDAP version 3 (from RFC4510 to RFC4519)
 
-    - Latest RFCs for LDAP v3 (dated 2006) obsolete the previous RFCs specified in rfc3377 (2251-2256, 2829, 2830, 3371) for LDAP v3 and amend and clarify the LDAP protocol.
+    - Latest RFCs for LDAP v3 (dated 2006) obsolete the previous RFCs specified in RFC3377 (2251-2256, 2829, 2830, 3371) for LDAP v3 and amend and clarify the LDAP protocol.
 
-    - All the asn1 definitions from the rfc4511 must be rewritten because those in the pyasn1_modules package are not current with the RFC.
+    - All the ASN1 definitions from RFC4511 must be rewritten because those in the pyasn1_modules package are not current with the RFC.
 
 2. Platform independent (tested on Linux and Windows) architecture
 
@@ -60,6 +60,10 @@ Project goals
 3. Based only on pure Python code
 
     - I usually work on Linux and Windows boxes and each time I must install the current python-ldap library for Python2 from different sources.
+
+    - python-ldap on Windows cannot be installed from source - I want a library that can be installed on Windows without a specific installer
+
+    - python-ldap on Linux need the gcc compiler and the openldap package - I want a library that can be installed directly from source without depending from openldap
 
     - python3-ldap should be directly installed from source of from pypi using pip or a similar package manager on different platforms.
 
@@ -71,9 +75,9 @@ Project goals
 
 4. Compatible with python3 and python2
 
-    - Development and testing is done in Python 3, but as the library should (hopefully) be compatible with Python 2.
+    - Development and testing is done in Python 3, but as the library should (hopefully) be compatible with Python 2.6 and 2.7
 
-    - Unicode strings are appropriately converted.
+    - Unicode strings are appropriately managed in Python 3.
 
 5. Multiple *connection strategies* to choose from, either synchronous or asynchronous
 
@@ -81,18 +85,21 @@ Project goals
 
     - I'm not sure about which connection strategy is the best to use on LDAP  messages communication, so I'm writing a Connection object with a **pluggable** socket connection Strategy.
 
-    - "SyncWaitStrategy", "AsyncThreadedStrategy" and "LdifProducerStrategy" are defined.
+    - Currently "SyncWai", "AsyncThreaded", "LdifProducer" and "SyncWaitRestartable" strategies are defined.
 
 6. Semplified query construction language
 
-    - For a different project I developed an "abstraction layer" for LDAP query. I'd like to have a generalized LDAP abstraction layer to semplify access to the DIT.
+    - Previously I developed an "abstraction layer" for LDAP query. I'd like to have a generalized LDAP abstraction layer to semplify access to the DIT.
 
-7. Compatibility mode for application using python-ldap
+7. Compatibility mode for application using python-ldap (TBD)
 
-    - I have a number of projects using the python-ldap library. I'd like to move them to Python3 without changing what I've already done for LDAP.
+    - I have a number of projects using the python-ldap library. I'd like to move them to Python3 without changing what I've already done for LDAP access.
 
     - It should be (ideally) enough just to change the import from python-ldap to python3-ldap to use them on Python3, at least for the LDAP part.
 
+8. PEP8 compliance
+
+    - Library should be PEP8 compliance (from version 0.8.4)
 
 Installation
 ------------
@@ -102,7 +109,7 @@ Then you can download the python3-ldap library directly from pypi::
 
     pip install python3-ldap
 
-This library has only one dependence on the pyasn1 module, you don't need the pyasn1_modules package, you can install it or let the installer do it for you.
+This library has only one dependence on the pyasn1 module (you don't need the pyasn1_modules package), you can install it or let the installer do it for you.
 
 If you have downloaded the source you can build the library running in the unzipped source directory with::
 
@@ -112,14 +119,15 @@ If you have downloaded the source you can build the library running in the unzip
 Quick tour
 ----------
 
-You have to import the library from the ldap3 namespace.
-You can choose the strategy the client will use to connect to the server. There are 2 strategy defined: 'syncWait' and 'asyncThreaded'.
+Library can be imported from library from the ldap3 namespace.
+You can choose the strategy the client will use to connect to the server. The most probably strategies used are  "SyncWait" and "AsyncThreaded".
+You can even choose to use the "SyncWaitRestartable" strategy that automatically reconnect to the LDAP server in case of communication failures.
 
-With synchronous strategy (syncWait) all LDAP operations return a boolean: True if they're successful, False if they fail.
+With synchronous strategy (SyncWait) all LDAP operations return a boolean: True if they're successful, False if they fail.
 
-With asynchronous strategy (asyncThreaded) all LDAP operations request (except Bind) return an integer, the 'messageId' of the request.
-You can send multiple request without waiting for responses. You can get the response with the get_response(messageId) method of the Connection object.
-If you get None the response has not yet arrived. You can set a timeout (get_response(messageId, timeout = 10)) to set the number of seconds to wait for the response to appear.
+With asynchronous strategy (AsyncThreaded) all LDAP operations (except Bind) return an integer, the "message_id" of the request.
+You can send multiple requests without waiting for responses. You can get the responses with the get_response(message_id) method of the Connection object.
+If you get None the response has not yet arrived. You can set a timeout (get_response(message_id, timeout = 10)) to set the number of seconds (or fractions) to wait for the response to appear.
 
 Library raise LDAPException to signal errors, last exception message is stored in the lastError attribute of the Connection object when available.
 
@@ -127,7 +135,7 @@ After any operation, either synchronous or asynchronous, you'll find the followi
 
 - result: the result of the last operation
 - response: the response of the last operation (for example, a search)
-- lastError: any error occurred in the last operation
+- last_error: any error occurred in the last operation
 - bound: True if bound else False
 - listening: True if the socket is listening to the server
 - closed: True if the socket is not open
@@ -141,9 +149,9 @@ You can create a connection with::
 
     from ldap3 import Server, Connection
     from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, SEARCH_SCOPE_WHOLE_SUBTREE, GET_ALL_INFO
-    s = Server('servername', port = 389, getInfo = GET_ALL_INFO)  # define an unsecure LDAP server, requesting info on DSE and schema
+    s = Server('servername', port = 389, get_info = GET_ALL_INFO)  # define an unsecure LDAP server, requesting info on DSE and schema
     # define a synchronous connection to the server with basic authentication
-    c = Connection(s, autoBind = True, clientStrategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE)
+    c = Connection(s, auto_bind = True, client_strategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE)
     print(s.info) # display info from the DSE. OID are decoded when recognized by the library
     # request a few objects from the LDAP server
     result = c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
@@ -161,12 +169,13 @@ To move from synchronous to asynchronous connection you have just to change the 
 
 That's all you have to do to have an asynchronous threaded LDAP client.
 
-To get operational attributes (createStamp, modifiedStamp, ...) for response objects add 'getOperationalAttribute = True' in the search request.
+To get operational attributes (createStamp, modifiedStamp, ...) for response objects add 'get_operational_attribute = True' in the search request.
 
+Connection can be opened in read only mode with the read_only = True parameter. In read only mode an LDAPException will be raised if you try an operation that could modify data on the server.
 
 Connection context manager
 
-Connections respond to the context manager protocol, so you can have automatic bind and unbind with the following syntax::
+The Connection object responds to the context manager protocol, so you can have automatic bind and unbind with the following syntax::
 
     from ldap3 import Server, Connection
     s = Server('servername')
@@ -183,7 +192,7 @@ or, even shorter::
     print(connection.result)
 
 Connection retains the state when entering the context, that is if the connection was closed and unbound it will remain closed and unbound when leaving the context,
-if the connection was open or bound its status will be restored when exiting the context. Connection is always open and bound while in context.
+if the connection was open or bound its status will be restored when exiting the context.
 
 Using the context manager connections will be opened and bound as you enter the Connection context and will be unbound when you leave the context.
 Unbind will be tried even if the operations in context raise an exception.
@@ -194,10 +203,10 @@ Searching
 
 Search operation is enhanced with a few parameters:
 
-- getOperationalAttributes: when True retrieves the operational (system generated) attributes for each of the result entries.
-- pagedSize: if greater than 0 returns a simple paged search response with the number of entries specified (LDAP server must conform to RFC 2696, September 1999).
-- pagedCookie: used for subsequent retrieval of additional entries in a simple paged search.
-- pagedCriticality: if True the search should fail if simple paged search is not available on the server else a full search is performed
+- get_operational_attributes: when True retrieves the operational (system generated) attributes for each of the result entries.
+- paged_size: if greater than 0 returns a simple paged search response with the number of entries specified (LDAP server must conform to RFC 2696, September 1999).
+- paged_cookie: used for subsequent retrieval of additional entries in a simple paged search.
+- paged_criticality: if True the search should fail if simple paged search is not available on the server else a full search is performed
 
 If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC 4515 (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'
 
@@ -209,24 +218,24 @@ The search operation is capable of performing a simple paged search as per RFC 2
 After the first search you must send back the cookie you get with each response. If you send 0 as pagedSize and a valid cookie the search operation is abandoned
 Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']; the server may return an estimated total number of entries in
 connection.result['controls']['1.2.840.113556.1.4.319']['value']['size'].
-You can change the pagedSize in any subsequent search request.
+You can change the paged_size in any subsequent search request.
 
 Example::
 
     from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE
-    totalEntries = 0
+    total_entries = 0
     server = Server('test-server')
     connection = Connection(server, user = 'test-user', password = 'test-password')
-    connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
-                      attributes = ['cn', 'givenName'], pagedSize = 5)
-    totalEntries += len(connection.response)
+    connection.search(search_base = 'o=test', search_filter = '(objectClass=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                      attributes = ['cn', 'givenName'], paged_size = 5)
+    total_entries += len(connection.response)
     cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
-        connection.search(searchBase = 'o=test', searchFilter = '(objectClass=inetOrgPerson)', searchScope = SEARCH_SCOPE_WHOLE_SUBTREE,
-                          attributes = ['cn', 'givenName'], pagedSize = 5, pagedCookie = cookie)
-        totalEntries += len(connection.response)
+        connection.search(search_base = 'o=test', search_filter = '(objectClass=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                          attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
+        total_entries += len(connection.response)
         cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-    print('Total entries retrieved:', totalEntries)
+    print('Total entries retrieved:', total_entries)
     connection.close()
 
 
@@ -235,67 +244,74 @@ SSL & TLS
 
 To use SSL basic authentication change the server definition to::
 
-    s = server.Server('servername', port = 636, useSsl = True)  # define a secure LDAP server
+    s = server.Server('servername', port = 636, use_ssl = True)  # define a secure LDAP server
 
 To start a TLS connection on an already created clear connection::
 
     c.tls = Tls()
     c.start_tls()
 
-You can customize the Tls object with references to key, certificate and CAs. See the Tls() constructor docstring for details
+You can customize the Tls object with references to key, certificate and CAs::
+
+    c.tls = Tls(local_private_key_file=None,
+                local_certificate_file=None,
+                validate=ssl.CERT_NONE,
+                version=ssl.PROTOCOL_TLSv1,
+                ca_certs_file=None))
+
+Refer to the ssl package of the Python Standard Library for information on how to use these parameters to establish a secure connection.
 
 
 SASL
 ----
 
-Two SASL mechanisms are implemented in the python3-ldap library: EXTERNAL and DIGEST-MD5. Even if DIGEST-MD5 is deprecated and moved to historic (RFC 6331, July 2011)
+Two SASL mechanisms are implemented in the python3-ldap library: EXTERNAL and DIGEST-MD5. Even if DIGEST-MD5 is DEPRECATED and moved to historic (RFC6331, July 2011)
 because it is "insecure and unsuitable for use in protocols" I've developed the authentication phase of the protocol because it is still used in LDAP servers.
 
 
-External
+External mechanism
 
-You can use the EXTERNAL mechanism when you're on a secure (TLS) channel. You can provide an authorization identity string in saslCredentials or let the
+You can use the EXTERNAL mechanism when you're on a secure (TLS) channel. You can provide an authorization identity string in sasl_credentials or let the
 server trust the credential provided when establishing the secure channel::
 
-     tls = Tls(localPrivateKeyFile = 'key.pem', localCertificateFile = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1,
-               caCertsFile = 'cacert.b64')
-     server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = tls)
-     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL,
-                             saslMechanism = 'EXTERNAL', saslCredentials = 'username')
+     tls = Tls(local_private_key_file = 'key.pem', local_certificate_file = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1,
+               ca_certs_file = 'cacert.b64')
+     server = Server(host = test_server, port = test_port_ssl, use_ssl = True, tls = tls)
+     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = AUTH_SASL,
+                             sasl_mechanism = 'EXTERNAL', sasl_credentials = 'username')
 
 
 Digest-MD5
 
-To use the DIGEST-MD5 you must pass a 4-value tuple as saslCredentials: (realm, user, password, authzId). You can pass None for 'realm' and 'authzId' if not used.
+DIGEST-MD5 is DEPRECATED. If you anyway want to use it you must pass a 4-value tuple as sasl_credentials: (realm, user, password, authzId). You can pass None for 'realm' and 'authzId' if not used.
 
 Quality of Protection is always 'auth'::
 
      server = Server(host = test_server, port = test_port)
-     connection = Connection(server, autoBind = True, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL,
-                             saslMechanism = 'DIGEST-MD5', saslCredentials = (None, 'username', 'password', None))
+     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = AUTH_SASL,
+                             sasl_mechanism = 'DIGEST-MD5', sasl_credentials = (None, 'username', 'password', None))
 
-UsernameId is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...). If
-you pass None as 'realm' the default realm of the LDAP server will be used.
+The username is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...) for the
+purpose of authentication. If you pass None as 'realm' the default realm of the LDAP server will be used.
 
-Again, consider that DIGEST-MD5 is deprecated and should not be used.
+Again, consider that DIGEST-MD5 is DEPRECATED  and should not be used.
 
 
 Abstraction Layer
 -----------------
 
-The ldap3.abstraction package is a tool to abstract access to LDAP data. It has a semplified query language for performing search operations
-and a bunch of objects to define the structure of LDAP entries.
-The abstraction layer is useful at command line to perform searches without having to write complex filters and in programs when LDAP is used to records
-structured data.
+The ldap3.abstrac package is a tool to abstract access to LDAP data. It has a semplified query language for performing search operations
+and a bunch of objects to define the structure of LDAP entries. The abstraction layer is useful at command line to perform searches
+without having to write complex filters and in programs when LDAP is used to records structured data.
 
 
 Overview
 
-To use the abstraction layer you can define different LDAP objects with the ObjectDef and AttrDef classes, than you create a Reader object for the
-ObjectDef you have defined and then you perform search operations using a simplified query language.
-All classes can be imported from the ldap3.abstraction package::
+To use the abstraction layer you must "describe" the  LDAP objects you want to access using the ObjectDef and AttrDef classes,
+then you create a Reader object for the ObjectDef you have defined. After you perform search operations using a simplified query language.
+All classes can be imported from the ldap3.abstract package::
 
-    from ldap3.abstraction import ObjectDef, AttrDef, Reader, Entry, Attribute
+    from ldap3.abstract import ObjectDef, AttrDef, Reader, Entry, Attribute
 
 
 ObjectDef class
@@ -317,8 +333,8 @@ AttrDefs can be accessed either as dictionary or as property, spaces are removed
     cnAttrDef = person['commonName']  # same as above
     cnAttrDef = person.CommonName  # same as above
 
-This eases the use at interactive prompt where you don't have to remember the case of the attribute name. Aautocompletion feature is enabled, so you can get
-a list of all defined attributes as property just pressing TAB.
+This eases the use at interactive prompt where you don't have to remember the case of the attribute name.
+Autocompletion feature is enabled, so you can get a list of all defined attributes as property just pressing TAB.
 
 Each class has a useful representation that summarize the istance status. You can access it directly at command prompt, or in a program with the str() function.
 
@@ -329,8 +345,8 @@ The AttrDef class is used to define an abstract LDAP attribute.
 AttrDef has a single mandatory parameter (the attribute name) and a number of optional parameters. The 'key' optional parameter defines a friendly name to use
 while accessing the attribute. When defining only the attribute name you can add it directly to the ObjectDef (the AttrDef is automatically defined)::
 
-    cnAttribute = AttrDef('cn')
-    person.add(cnAttribute)
+    cn_attribute = AttrDef('cn')
+    person.add(cn_attribute)
 
     person += AttrDef('cn')  # same as above
     person += 'cn'  # same as above
@@ -348,50 +364,50 @@ Two parameters are passed to the callable, the AttrDef.key and the value. The ca
 
     deps = {'A': 'Accounting', 'F': 'Finance', 'E': 'Engineering'}
     # checks that the parameter in query is in a specific range
-    validDepartment = lambda attr, value: True if value in deps.values() else False
-    person += AttrDef('employeeType', key = 'Department', validate = validDepartment)
+    valid_department = lambda attr, value: True if value in deps.values() else False
+    person += AttrDef('employeeType', key = 'Department', validate = valid_department)
 
 In this example the Reader object will raise an exception if value for the 'Department' is not 'Accounting', 'Finance' or 'Engineering'.
 
 
-PreQuery
+pre_query
 
-A 'preQuery' parameter indicates a callable to perform transformations on the value to be searched for the attribute defined::
+A 'pre_query' parameter indicates a callable to perform transformations on the value to be searched for the attribute defined::
 
     # transform value to be search
-    def getDepartmentCode(attr, value):
+    def get_department_code(attr, value):
         for dep in deps.items():
             if dep[1] == value:
                 return dep[0]
         return 'not a department'
 
-    person += AttrDef('employeeType', key = 'Department', preQuery = getDepartmentCode)
+    person += AttrDef('employeeType', key='Department', pre_query=get_department_code)
 
 When you perform a search with 'Accounting', 'Finance' or 'Engineering' for the Department key, the real search will be for employeeType = 'A', 'F' or 'E'.
 
 
-PostQuery
+post_query
 
-A 'postQuery' parameter indicates a callable to perform transormations on the returned value::
+A 'post_query' parameter indicates a callable to perform transormations on the returned value::
 
-    getDepartmentName = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
-    person += AttrDef('employeeType', key = 'Department', postQuery = getDepartmentName)
+    get_department_name = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
+    person += AttrDef('employeeType', key = 'Department', post_query = get_department_name)
 
 When you have an 'A', an 'F', or an 'E' in the employeeType attribute you get 'Accounting', 'Finance' or 'Engineering' in the 'Department' property
 of the Person entry.
 
-With a multivalue attribute postQuery receives a list of all values in the attribute. You can return an equivalent list or a single string.
+With a multivalue attribute post_query receives a list of all values in the attribute. You can return an equivalent list or a single string.
 
 
-DereferenceDN
+dereference_dn
 
-With 'dereferenceDN' you can establish a relation between ObjectDefs. When dereferenceDN is set to an ObjectDef the Reader reads the attribute and use its value as
+With 'dereference_dn' you can establish a relation between ObjectDefs. When dereference_dn is set to an ObjectDef the Reader reads the attribute and use its value as
 a DN for an object to be searched with a temporary Reader using the specified ObjectDef in the same Connection. The result of the second search is returned
 as value of the first search::
 
     department = ObjectDef('groupOfNames')
     department += 'cn'
-    department += AttrDef('member', key = 'employeer', dereferenceDN = person)  # values of 'employeer' will be the 'Person' entries members of the found department
+    department += AttrDef('member', key = 'employeer', dereference_dn = person)  # values of 'employeer' will be the 'Person' entries members of the found department
 
 
 Reader
@@ -403,7 +419,7 @@ Reader has the following parameters:
 
 - 'connection': the connection to use.
 
-- 'objectDef': the ObjectDef used by the Reader instance.
+- 'object_def': the ObjectDef used by the Reader instance.
 
 - 'query': the simplified query. It can be a standard LDAP filter too (see next paragraph).
 
@@ -411,13 +427,13 @@ Reader has the following parameters:
 
 - 'components_in_and': defines if the query components are in AND (True, default) or in OR (False).
 
-- 'subTree': specifies if the search must be performed through the whole subtree (True, default) or only in the specified base (False).
+- 'sub_tree': specifies if the search must be performed through the whole subtree (True, default) or only in the specified base (False).
 
-- 'getOperationalAttributes': specifies if the search must return the operational attributes (True) of found entries. Defaults to False.
+- 'get_operational_attributes': specifies if the search must return the operational attributes (True) of found entries. Defaults to False.
 
 - 'controls': optional controls to use in the search operation.
 
-Connection is open and closed automatically by the Reader.
+The connection is open and closed automatically by the Reader.
 
 To perform the search you can use any of the following methods:
 
@@ -425,7 +441,7 @@ To perform the search you can use any of the following methods:
 
 - search_level()  # force a Level search.
 
-- searchSubTree()  # force a whole sub-tree search, starting from 'base'.
+- search_sub_tree()  # force a whole sub-tree search, starting from 'base'.
 
 - search_object()  # force a object search, DN to search must be specified in 'base'.
 
@@ -443,15 +459,15 @@ Example::
     s = Server('server')
     c = Connection(s, user = 'username', password = 'password')
     query = 'Department: Accounting'  # explained in next paragraph
-    personReader = Reader(c, person, query, 'o=test')
-    personReader.search()
+    person_reader = Reader(c, person, query, 'o=test')
+    person_reader.search()
 
-The result of the search will be found in the 'entries' property of the personReader object.
+The result of the search will be found in the 'entries' property of the person_reader object.
 
 A Reader object is an iterable that returns the entries found in the last search performed. It also  has a useful representation that summarize the Reader
 configuration and status::
 
-    print(personReader)
+    print(person_reader)
     CONN   : ldap://server:389 - cleartext - user: cn=admin,o=test - version 3 - unbound - closed - not listening - SyncWaitStrategy
     BASE   : 'o=test' [SUB]
     DEFS   : 'iNetOrgPerson' [CommonName <cn>, Department <employeeType>, Surname <sn>]
@@ -480,8 +496,8 @@ operator ('=', '<', '>', '~') requested. The default operator is '=' and can be 
     'Department: != Accounting'' -> (!(EmployeeType=A))
     '|Department:Accounting; Finance' -> (|(EmployeeType=A)(EmployeeType=C))
 
-There are no parentheses in the Simplified Query Language, this means that you cannot mix components with '&' (AND)  and '|' (OR). You have the 'componentInAnd'
-flag in the Reader object to specify if components are in '&' (true) or in '|' (false). 'componentInAnd' defaults to True::
+There are no parentheses in the Simplified Query Language, this means that you cannot mix components with '&' (AND)  and '|' (OR). You can use the 'component_in_and'
+parameter in the Reader object to specify if components are in '&' (true) or in '|' (false). 'component_in_and' defaults to True::
 
     'CommonName: b*, Department: Engineering' -> (&(cn=b*)(EmployeeType=E'))
 
@@ -501,36 +517,36 @@ Each Entry has a get_entry_dn() method that contains the distinguished name of t
 to the Reader used to read the entry.
 
 Attributes are stored in an internal dictionary with case insensitive access by the key defined in the AttrDef. You can even access the raw attribute with
-the get_raw_attribute(attributeName) to get an attribute raw value, or get_raw_attributes() to get the whole raw attributes dictionary.
+the get_raw_attribute('attributeName') to get an attribute raw value, or get_raw_attributes() to get the whole raw attributes dictionary.
 
 Entry is a read only object, you cannot modify or add any property to it. It's an iterable object that returns an attribute object at each iteration. Note that
 you get back the whole attribute object, not only the key as in a standard dictionary::
 
-    personEntry = personReader.entries[0]
-    for attr in personEntry:
+    person_entry = person_reader.entries[0]
+    for attr in person_entry:
         print(attr.key)
 
 
 Attribute
 
-Values found for each attribute are stored in the Attribute object. You can access the 'values' and the 'rawValues' lists. You can also get a reference to the
+Values found for each attribute are stored in the Attribute object. You can access the 'values' and the 'raw_values' lists. You can also get a reference to the
 relevant AttrDef in the 'definition' property, and to the relevant Entry in the 'entry' property. You can iterate over the Attribute to get each value::
 
-    personCommonName = personEntry.CommonName
-    for cn in personCommonName:
+    person_common_name = person_entry.CommonName
+    for cn in person_common_name:
         print(cn)
-        print(cn.rawValues)
+        print(cn.raw_values)
 
 If the Attribute has a single value you get it in the 'value' property. This is useful while using the Python interpreter at the interactive prompt. If the Attribute
 has more than one value you get the same 'values' list in 'value'. When you want to assign the attribute value to a variable you must use 'value' (or 'values' if you always
 want a list)::
 
-    myDepartment = personEntry.Department.value
+    my_department = person_entry.Department.value
 
 
 OperationalAttribute
 
-The OperationalAttribute class is used to store Operational Attributes read with the 'getOperationalAttributes' of the Reader object set to True. It's the same
+The OperationalAttribute class is used to store operational attributes read with the 'get_operational_attributes' of the Reader object set to True. It's the same
 of the Attribute class except for the 'definition' property that is not present.
 
 LDIF
@@ -581,20 +597,20 @@ you can even request a ldif-content for a response you saved early::
         # request a few objects from the ldap server
         result1 = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
         result2 = c.search('o=test','(!(cn=test-ldif*))', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
-        ldifStream = c.response_to_ldif(result1)
+        ldif_stream = c.response_to_ldif(result1)
 
-ldifStream will contain the LDIF representation of the result entries.
+ldif_stream will contain the LDIF representation of the result entries.
 
 
 LDIF-change
 
-To have the ldif representation of Add, Modify, Delete and ModifyDn operation you must use the LDIF_PRODUCER strategy. With this strategy operations are
+To have the ldif representation of Add, Modify, Delete and ModifyDn operations you must use the LDIF_PRODUCER strategy. With this strategy operations are
 not executed on an LDAP server but are converted to an ldif-change format that can be sent to an LDAP server.
 
 For example::
 
     from ldap3 import Connection, STRATEGY_LDIF_PRODUCER
-    connection = Connection(server = None, clientStrategy = STRATEGY_LDIF_PRODUCER)  # no need of real LDAP server
+    connection = Connection(server = None, client_strategy = STRATEGY_LDIF_PRODUCER)  # no need of real LDAP server
     connection.add('cn=test-add-operation,o=test'), 'iNetOrgPerson',
                    {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
 
@@ -639,7 +655,7 @@ A more complex modify operation (from the RFC 2849 examples)::
 Testing
 -------
 
-Inside the "test" package you can find examples for each of the LDAP operations.
+Inside the "test" package (available in the subversion repository) you can find examples for each of the LDAP operations.
 You can customize the test modifying the variables in the __init__.py in the test package. You can set the following parameters::
 
     test_server = 'server'  # the LDAP server where tests are executed
@@ -658,7 +674,7 @@ You can customize the test modifying the variables in the __init__.py in the tes
 
 To execute the test suite you need an LDAP server with the test_base and test_moved containers and a test_user with privileges to add, modify and remove objects
 in that context.
-To execute the testTLS unit test you must supply your own certificates or tests will fail.
+To execute the test_tls unit test you must supply your own certificates or tests will fail.
 
 
 Contact me

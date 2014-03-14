@@ -26,8 +26,8 @@ import unittest
 
 from ldap3 import GET_ALL_INFO
 from ldap3.protocol.schema import SchemaInfo, ObjectClassInfo, AttributeTypeInfo
-from ldap3.server import Server
-from ldap3.connection import Connection
+from ldap3.core.server import Server
+from ldap3.core.connection import Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
 
 

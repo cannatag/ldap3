@@ -704,6 +704,7 @@ CHANGELOG
     - PEP8 compliance
     - added ldap3.compat package with non PEP8-compliant signatures
     - renamed ldap3.abstraction to ldap3.abstract
+    - moved connection.py, server.py and tls.py files to ldap3.core
     - fixed SyncWaitRestartableStrategy (thanks to Christoph)
 
 * 0.8.3 2014.03.08

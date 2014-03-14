@@ -22,10 +22,11 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..connection import Connection as newConnection
+from ..ldap3.core.connection import Connection as newConnection
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS, STRATEGY_SYNC
 
 
+# noinspection PyPep8Naming
 class Connection(newConnection):
     """
     Proxy class 8with camel case parameters) to new Connection class (pep8 compliant)

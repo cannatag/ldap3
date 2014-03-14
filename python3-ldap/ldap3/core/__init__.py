@@ -1,5 +1,5 @@
 """
-Created on 2014.03.10
+Created on 2014.03.14
 
 @author: Giovanni Cannata
 
@@ -21,25 +21,3 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ldap3 import LDAPException
-from ..ldap3.core.tls import Tls as newTls
-
-
-try:
-    # noinspection PyUnresolvedReferences
-    import ssl
-except ImportError:
-    raise LDAPException('ssl not supported in this Python interpreter')
-
-
-# noinspection PyPep8Naming
-class Tls(newTls):
-    """
-    tls/ssl configuration for Server object
-    """
-
-    def __init__(self, localPrivateKeyFile=None, localCertificateFile=None, validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, caCertsFile=None):
-        newTls.__init__(self, localPrivateKeyFile, localCertificateFile, validate, version, caCertsFile)
-
-    def startTls(self, connection):
-        return newTls.start_tls(self, connection)

@@ -301,15 +301,18 @@ class Reader(object):
                 else:
                     attribute.__dict__['values'] = result['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, list) else [attr_def.default])
                 if attr_def.dereference_dn:  # try to get object referenced in value
+                    # noinspection PyUnresolvedReferences
                     if attribute.values:
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, query=None, base=None, get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []
 
+                        # noinspection PyUnresolvedReferences
                         for element in attribute.values:
                             temp_values.append(temp_reader.search_object(element))
                         del temp_reader  # remove the temporary Reader
                         attribute.__dict__['values'] = temp_values
 
+                # noinspection PyUnresolvedReferences
                 attributes[attribute.key] = attribute
                 used_attribute_names.append(name)
 

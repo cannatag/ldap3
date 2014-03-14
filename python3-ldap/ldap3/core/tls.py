@@ -95,7 +95,7 @@ class Tls(object):
     def _start_tls(self, connection):
         connection.socket = self.wrap_socket(connection.socket, False)
         if connection.usage:
-            connection.usage.wrappedSocket += 1
+            connection.usage.wrapped_socket += 1
 
         try:
             connection.socket.do_handshake()

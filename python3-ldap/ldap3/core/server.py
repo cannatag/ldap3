@@ -25,8 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from socket import getaddrinfo, gaierror
 
 from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException
-from .protocol.dse import DsaInfo
-from .protocol.schema import SchemaInfo
+from ..protocol.dse import DsaInfo
+from ..protocol.schema import SchemaInfo
 from .tls import Tls
 
 

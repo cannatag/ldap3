@@ -30,24 +30,24 @@ from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE
-from .operation.abandon import abandon_operation
-from .operation.add import add_operation
-from .operation.bind import bind_operation
-from .operation.compare import compare_operation
-from .operation.delete import delete_operation
-from .operation.extended import extended_operation
-from .operation.modify import modify_operation
-from .operation.modifyDn import modify_dn_operation
-from .operation.search import search_operation
-from .protocol.rfc2849 import to_ldif
-from .protocol.sasl.digestMd5 import sasl_digest_md5
-from .protocol.sasl.external import sasl_external
-from .strategy.asyncThreaded import AsyncThreadedStrategy
-from .strategy.ldifProducer import LdifProducerStrategy
-from .strategy.syncWait import SyncWaitStrategy
-from .strategy.syncWaitRestartable import SyncWaitRestartableStrategy
-from .operation.unbind import unbind_operation
-from .protocol.rfc2696 import RealSearchControlValue, Cookie, Size
+from ..operation.abandon import abandon_operation
+from ..operation.add import add_operation
+from ..operation.bind import bind_operation
+from ..operation.compare import compare_operation
+from ..operation.delete import delete_operation
+from ..operation.extended import extended_operation
+from ..operation.modify import modify_operation
+from ..operation.modifyDn import modify_dn_operation
+from ..operation.search import search_operation
+from ..protocol.rfc2849 import to_ldif
+from ..protocol.sasl.digestMd5 import sasl_digest_md5
+from ..protocol.sasl.external import sasl_external
+from ..strategy.asyncThreaded import AsyncThreadedStrategy
+from ..strategy.ldifProducer import LdifProducerStrategy
+from ..strategy.syncWait import SyncWaitStrategy
+from ..strategy.syncWaitRestartable import SyncWaitRestartableStrategy
+from ..operation.unbind import unbind_operation
+from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 
 
 class ConnectionUsage(object):
@@ -279,6 +279,7 @@ class Connection(object):
 
         return self
 
+    # noinspection PyUnusedLocal
     def __exit__(self, exc_type, exc_val, exc_tb):
         context_bound, context_closed = self._context_state.pop()
         if not context_bound and self.bound:  # restore status prior to entering context

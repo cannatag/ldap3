@@ -26,6 +26,7 @@ from os import linesep
 from ldap3 import LDAPException
 
 
+# noinspection PyUnresolvedReferences
 class Attribute(object):
     """
     Attribute/values object, it includes the search result (after post_query transformation) of each attribute in an entry

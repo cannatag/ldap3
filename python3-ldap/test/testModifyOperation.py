@@ -24,8 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-from ldap3.server import Server
-from ldap3.connection import Connection
+from ldap3.core.server import Server
+from ldap3.core.connection import Connection
 from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder
 

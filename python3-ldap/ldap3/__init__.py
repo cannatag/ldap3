@@ -165,8 +165,6 @@ class LDAPException(Exception):
     pass
 
 
-from .server import Server
-from .connection import Connection
-from .tls import Tls
-
-
+from .core.server import Server
+from .core.connection import Connection
+from .core.tls import Tls

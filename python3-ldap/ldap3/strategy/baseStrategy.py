@@ -36,12 +36,12 @@ from ..operation.search import search_result_reference_response_to_dict, search_
 from ..operation.bind import bind_response_to_dict, bind_request_to_dict
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
 from ..operation.extended import extended_request_to_dict, extended_response_to_dict, intermediate_response_to_dict
-from ..server import Server
+from ..core.server import Server
 from ..operation.modifyDn import modify_dn_request_to_dict, modify_dn_response_to_dict
 from ..operation.delete import delete_response_to_dict, delete_request_to_dict
 from ..protocol.convert import prepare_changes_for_request, build_controls_list
 from ..operation.abandon import abandon_request_to_dict
-from ..tls import Tls
+from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 
@@ -425,7 +425,7 @@ class BaseStrategy(object):
                                      tls=Tls(local_private_key_file=self.connection.server.tls.private_key_file, local_certificate_file=self.connection.server.tls.certificate_file, validate=self.connection.server.tls.validate,
                                              version=self.connection.server.tls.version, ca_certs_file=self.connection.server.tls.ca_certs_file))
 
-            from ldap3.connection import Connection
+            from ldap3.core.connection import Connection
 
             referral_connection = Connection(server=referral_server, user=self.connection.user if not selected_referral['anonymousBindOnly'] else None, password=self.connection.password if not selected_referral['anonymousBindOnly'] else None,
                                              version=self.connection.version, authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else AUTH_ANONYMOUS, client_strategy=STRATEGY_SYNC, auto_referrals=True,

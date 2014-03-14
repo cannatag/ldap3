@@ -89,6 +89,7 @@ class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
         return self.__str__()
 
 
+# noinspection PyPep8
 Oids = {  # administrative role
           '2.5.23.1': OidInfo('2.5.23.1', OID_ADMINISTRATIVE_ROLE, 'autonomousArea', 'RFC3672'), '2.5.23.2': OidInfo('2.5.23.2', OID_ADMINISTRATIVE_ROLE, 'accessControlSpecificArea', 'RFC3672'),
           '2.5.23.3': OidInfo('2.5.23.3', OID_ADMINISTRATIVE_ROLE, 'accessControlInnerArea', 'RFC3672'), '2.5.23.4': OidInfo('2.5.23.4', OID_ADMINISTRATIVE_ROLE, 'subschemaAdminSpecificArea', 'RFC3672'),

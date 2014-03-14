@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         r = Reader(self.connection, o, query_text, 'o=test')
 
         results = r.search()
-        self.assertEqual(len(results), 7)
+        self.assertEqual(len(results), 6)
 
     def test_search_with_dereference(self):
         reverse = lambda a, e: e[::-1]
@@ -73,7 +73,7 @@ class Test(unittest.TestCase):
         qu = 'Common Name: test-add*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 7)
+        self.assertEqual(len(lu), 6)
 
         og = ObjectDef('groupOfNames')
         og += AttrDef('member', dereference_dn=ou)

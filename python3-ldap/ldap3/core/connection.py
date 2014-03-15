@@ -28,7 +28,7 @@ from os import linesep
 from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
-    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE
+    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE
 from ldap3.core.pooling import ServerPool
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
@@ -114,6 +114,8 @@ class Connection(object):
         self.sasl_in_progress = False
         self.read_only = read_only
         self._context_state = []
+        if isinstance(server, list):
+            server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE)
         self.server_pool = server.initialize() if isinstance(server, ServerPool) else None
 
         if not self.strategy.no_real_dsa and (self.server_pool or server.is_valid()):
@@ -133,7 +135,7 @@ class Connection(object):
 
     # noinspection PyListCreation
     def __str__(self):
-        s = [str(self.server) if self.server.isValid else 'None']
+        s = [str(self.server) if self.server.is_valid else 'None']
         s.append('user: ' + str(self.user))
         s.append('bound' if self.bound else 'unbound')
         s.append('closed' if self.closed else 'open')
@@ -143,13 +145,16 @@ class Connection(object):
         return ' - '.join(s)
 
     def __repr__(self):
-        r = 'Connection(server={0.server!r}'.format(self)
+        if self.server_pool:
+            r = 'Connection(server={0.server_pool!r}'.format(self)
+        else:
+            r = 'Connection(server={0.server!r}'.format(self)
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
         r += '' if self.password is None else ', password={0.password!r}'.format(self)
         r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
-        r += '' if self.strategy_type is None else ', clientStrategy={0.strategy_type!r}'.format(self)
+        r += '' if self.strategy_type is None else ', client_strategy={0.strategy_type!r}'.format(self)
         r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
         r += ')'
 

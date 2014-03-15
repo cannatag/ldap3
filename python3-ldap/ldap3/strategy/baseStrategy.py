@@ -71,9 +71,12 @@ class BaseStrategy(object):
         if self.connection.server_pool:
             new_server = self.connection.server_pool.get_server()  # get a server from the server_pool if available
             if self.connection.server != new_server:
-                self.connection.server = new_server
+                self.connection.server = new_server.server  # get the original server object
                 if self.connection.usage:
                     self.connection.usage.servers_from_pool += 1
+
+        if not self.connection.closed:
+            self.close()
 
         self._open_socket(self.connection.server.ssl)
 
@@ -116,7 +119,7 @@ class BaseStrategy(object):
             try:
                 self.connection.socket = self.connection.server.tls.wrap_socket(self.connection.socket, do_handshake=True)
                 if self.connection.usage:
-                    self.connection.usage.wrapped_socket += 1
+                    self.connection.usage.wrapped_sockets += 1
             except Exception as e:
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 raise LDAPException(self.connection.last_error)

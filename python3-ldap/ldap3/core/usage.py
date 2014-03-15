@@ -91,6 +91,9 @@ class ConnectionUsage(object):
         r += '    Successful restarts: ' + str(self.restartable_successes) + linesep
         return r
 
+    def __str__(self):
+        return self.__repr__()
+
     def transmitted_message(self, message, length):
         self.bytes_transmitted += length
         self.operations += 1

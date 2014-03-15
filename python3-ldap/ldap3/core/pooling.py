@@ -23,13 +23,13 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
 from os import linesep
-from random import choice
+from random import choice, randint
 import socket
-from ldap3 import LDAPException, POOLING_STRATEGY_RANDOM, POOLING_STRATEGY_NONE, POOLING_STRATEGIES, POOLING_STRATEGY_FIRST_ACTIVE, POOLING_STRATEGY_ROUND_ROBIN
+from ldap3 import LDAPException, POOLING_STRATEGY_RANDOM_PASSIVE, POOLING_STRATEGY_RANDOM_ACTIVE, POOLING_STRATEGY_NONE, POOLING_STRATEGIES, POOLING_STRATEGY_FIRST_ACTIVE, POOLING_STRATEGY_ROUND_ROBIN_PASSIVE, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE
 from .server import Server
 
 
-class PooledServer(Server):
+class PooledServer(object):
     def __init__(self, server):
         self.server = server
         self.active = False
@@ -42,55 +42,19 @@ class PooledServer(Server):
         s += ('active' if self.active else 'inactive') + ' - '
         s += ('available' if self.available else 'unavailable') + ' - '
         s += 'last activity: ' + (self.last_activity.iso_format() if self.last_activity else 'never') + ' - '
-        s += 'connections: ' + len(self._connections)
+        s += 'connections: ' + str(len(self._connections))
         return s
 
     def __repr__(self):
         return self.__str__()
 
-
-class ServerPoolState(object):
-    def __init__(self, server_pool):
-        self.servers = []
-        for server in server_pool.servers:
-            self.servers.append(PooledServer(server))
-        self.initialize_time = datetime.now()
-        self.strategy = server_pool.strategy
-        self.last_used_server = 0
-
-    def get_server(self):
-        if self.servers:
-            if self.strategy == POOLING_STRATEGY_NONE:
-                return self.servers[0]
-            elif self.strategy == POOLING_STRATEGY_FIRST_ACTIVE:
-                return self.get_first_active_server()
-            elif self.strategy == POOLING_STRATEGY_ROUND_ROBIN:
-                self.last_used_server = self.last_used_server + 1 if self.last_used_server < len(self.servers) else 0
-                return self.server[self.last_used_server]
-            elif self.strategy == POOLING_STRATEGY_RANDOM:
-                return choice(self.server)
-            else:
-                raise LDAPException('unknown pool strategy')
-        else:
-            raise LDAPException('no servers in pool')
-
-    def get_active_server(self):
-        cont = -1
-        for server in self.servers:
-            cont += 1
-            if server.check_availability():
-                self.last_used_server = cont
-                return server
-
-        raise LDAPException('no active server available')
-
-    def _check_availability(self):
+    def check_availability(self):
         """
         Tries to open, connect and close a socket to check availability
         """
         try:
-            temp_socket = socket(socket.AF_INET, socket.SOCK_STREAM)
-            temp_socket.connect((self.host, self.port))
+            temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            temp_socket.connect((self.server.host, self.server.port))
             temp_socket.shutdown(socket.SHUT_RDWR)
             temp_socket.close()
         except socket.error:
@@ -99,33 +63,142 @@ class ServerPoolState(object):
         return True
 
 
+class ServerPoolState(object):
+    def __init__(self, server_pool):
+        self.servers = []
+        self.server_pool = server_pool
+        self.refresh()
+        self.initialize_time = datetime.now()
+        self.last_used_server = 0
+
+    def __str__(self):
+        s = 'servers: '
+        if self.servers:
+            for server in self.servers:
+                s += str(server) + linesep
+        else:
+            s += 'None'
+        s += 'Pool strategy: ' + str(self.strategy)
+
+        return s
+
+    def __repr__(self):
+        return repr(self.server_pool)
+
+    def refresh(self):
+        self.servers = []
+        for server in self.server_pool.servers:
+            self.servers.append(PooledServer(server))
+
+    def get_server(self):
+        if self.servers:
+            if self.server_pool.strategy == POOLING_STRATEGY_NONE:
+                return self.servers[0]
+            elif self.server_pool.strategy == POOLING_STRATEGY_FIRST_ACTIVE:
+                return self.set_active_server()
+            elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_PASSIVE:
+                self.last_used_server = self.last_used_server + 1 if self.last_used_server < len(self.servers) else 0
+                return self.servers[self.last_used_server]
+            elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_ACTIVE:
+                return self.set_active_server(self.last_used_server + 1)
+            elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_PASSIVE:
+                return choice(self.server)
+            elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_ACTIVE:
+                temp_list = self.servers[:]  # copy server list in a temporary list
+                while temp_list:
+                    server = temp_list.pop(randint(0, len(temp_list)))
+                    if server.check_availability():
+                        self.last_used_server = self.servers.index(server)
+                        return server
+                raise LDAPException('no random active server in server pool')
+            else:
+                raise LDAPException('unknown pool strategy')
+        else:
+            raise LDAPException('no servers in pool')
+
+    def set_active_server(self, starting=0):
+        index = starting
+        while index < len(self.servers):
+            if self.servers[index].check_availability():
+                self.last_used_server = index
+                return self.servers[index]
+            index += 1
+
+        index = 0
+        while index < starting:
+            if self.servers[index].check_availability():
+                self.last_used_server = index
+                return self.servers[index]
+            index += 1
+
+        raise LDAPException('no active server available in server pool')
+
+    def __len__(self):
+        return len(self.servers)
+
+
 class ServerPool(object):
-    def __init__(self, servers=None, pool_strategy=POOLING_STRATEGY_NONE):
+    def __init__(self, servers=None, pool_strategy=POOLING_STRATEGY_ROUND_ROBIN_ACTIVE):
         if pool_strategy not in POOLING_STRATEGIES:
             raise LDAPException('unknown pooling strategy')
         self.servers = []
         self.strategy = pool_strategy
-        self.states = []
+        self.pool_states = []
+        if isinstance(servers, list):
+            for server in servers:
+                self.add(server)
+        elif isinstance(servers, Server):
+            self.add(servers)
 
     def __str__(self):
         s = 'servers: '
-        for server in self.servers:
-            s += str(server) + linesep
-        s += 'pool strategy:' + self.strategy
+        if self.servers:
+            for server in self.servers:
+                s += str(server) + linesep
+        else:
+            s += 'None'
+        s += 'Pool strategy: ' + str(self.strategy)
+
+        return s
 
     def __repr__(self):
-        return self.__str__()
-
-    def add(self, server):
-        if isinstance(server, Server):
-            self.servers.append(server)
+        r = 'ServerPool(servers='
+        if self.servers:
+            r += '['
+            for server in self.servers:
+                r += server.__repr__() + ', '
+            r = r[:-2] + ']'
         else:
-            raise LDAPException('pooled server must be a Server object')
+            r += 'None'
+        r += ', pool_strategy={0.strategy!r}'.format(self)
+        r += ')'
+
+        return r
+
+    def __len__(self):
+        return len(self.servers)
+
+    def add(self, servers):
+        if isinstance(servers, Server):
+            if servers not in self.servers:
+                self.servers.append(servers)
+        elif isinstance(servers, list):
+            for server in servers:
+                if isinstance(server, Server):
+                    self.servers.append(server)
+                else:
+                    raise LDAPException('pooled server in list must be a Server object')
+        else:
+            raise LDAPException('pooled server must be a Server object or a list of Server objects')
+
+        for pool_state in self.pool_states:  # notify  connections using this pool to refresh
+            pool_state.refresh()
 
     def initialize(self):
         pool_state = ServerPoolState(self)
-        self.states.append(pool_state)
+        self.pool_states.append(pool_state)
         return pool_state
+
 
 class ConnectionPool(object):
     pass

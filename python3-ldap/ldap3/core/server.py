@@ -86,7 +86,7 @@ class Server(object):
         return s
 
     def __repr__(self):
-        r = 'Server(host={0.host!r}, port={0.port!r}, ssl={0.ssl!r}'.format(self)
+        r = 'Server(host={0.host!r}, port={0.port!r}, use_ssl={0.ssl!r}'.format(self)
         r += '' if not self.allowed_referral_hosts else ', allowed_referral_hosts={0.allowed_referral_hosts!r}'.format(self)
         r += '' if self.tls is None else ', tls={0.tls!r}'.format(self)
         r += '' if not self.get_info else ', get_info={0.get_info!r}'.format(self)

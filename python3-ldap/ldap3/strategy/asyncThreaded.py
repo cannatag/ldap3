@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from threading import Thread
+from threading import Thread, Lock
 
 from pyasn1.codec.ber import decoder
 
@@ -49,12 +49,13 @@ class AsyncThreadedStrategy(BaseStrategy):
         self.restartable = False
         self._responses = None
         self.receiver = None
+        self.lock = Lock()
 
     def open(self, start_listening=True, reset_usage=True):
         """
         Open connection and start listen on the socket in a different thread
         """
-        with self.connection.lock:
+        with self.lock:
             BaseStrategy.open(self, start_listening, reset_usage=True)
             self._responses = dict()
 
@@ -64,7 +65,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         """
         Close connection and stop socket thread
         """
-        with self.connection.lock:
+        with self.lock:
             BaseStrategy.close(self)
 
     def post_send_search(self, message_id):
@@ -98,7 +99,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         Performs the capture of LDAP response for this strategy
         Checks lock to avoid race condition with receiver thread
         """
-        with self.connection.lock:
+        with self.lock:
             responses = self._responses.pop(message_id) if message_id in self._responses and self._responses[message_id][-1] == RESPONSE_COMPLETE else None
 
         if responses is not None and responses[-2]['result'] == RESULT_REFERRAL and self.connection.auto_referrals:
@@ -164,7 +165,7 @@ class ReceiverSocketThread(Thread):
                         raise LDAPException(self.connection.last_error)
                 if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per rfc 4511 (paragraph 4.4)
 
-                    with self.connection.lock:
+                    with self.connection.strategy.lock:
                         if message_id in self.connection.strategy._responses:
                             self.connection.strategy._responses[message_id].append(dict_response)
                         else:

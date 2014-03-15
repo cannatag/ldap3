@@ -61,12 +61,19 @@ class BaseStrategy(object):
 
     def open(self, start_listening=True, reset_usage=True):
         """
-        Open a socket to a server
+        Open a socket to a server. Choose a server from the server pool if available
         """
         self._outstanding = dict()
         if self.connection.usage:
             if reset_usage or not self.connection.usage.initial_connection_start_time:
                 self.connection.usage.start()
+
+        if self.connection.server_pool:
+            new_server = self.connection.server_pool.get_server()  # get a server from the server_pool if available
+            if self.connection.server != new_server:
+                self.connection.server = new_server
+                if self.connection.usage:
+                    self.connection.usage.servers_from_pool += 1
 
         self._open_socket(self.connection.server.ssl)
 

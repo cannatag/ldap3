@@ -71,6 +71,12 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         pass
 
                 try:  # reissuing same operation
+                    if self.connection.server_pool:
+                        new_server = self.connection.server_pool.get_server()  # get a server from the server_pool if available
+                        if self.connection.server != new_server:
+                            self.connection.server = new_server
+                            if self.connection.usage:
+                                self.connection.usage.servers_from_pool += 1
                     SyncWaitStrategy._open_socket(self, use_ssl)  # calls super (not restartable) _open_socket()
                     if self.connection.usage:
                         self.connection.usage.restartable_successes += 1

@@ -44,9 +44,6 @@ class Server(object):
     # and the value is the messageId counter for all connection to that host)
 
     def __init__(self, host, port=389, use_ssl=False, allowed_referral_hosts=None, get_info=None, tls=None):
-        """
-        Constructor
-        """
         try:
             self.address = getaddrinfo(host, port)[0][4][0]
         except gaierror:

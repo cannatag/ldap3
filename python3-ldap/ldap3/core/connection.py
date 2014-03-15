@@ -22,14 +22,14 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from threading import Lock
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import linesep
 
 from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE
+from ldap3.core.pooling import ServerPool
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
 from ..operation.bind import bind_operation
@@ -48,120 +48,7 @@ from ..strategy.syncWait import SyncWaitStrategy
 from ..strategy.syncWaitRestartable import SyncWaitRestartableStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
-
-
-class ConnectionUsage(object):
-    """
-    Collect statistics on connection usage
-    """
-
-    def reset(self):
-        self.__init__()
-
-    def __init__(self):
-        self.initial_connection_start_time = None
-        self.open_socket_start_time = None
-        self.connection_stop_time = None
-        self.opened_sockets = 0
-        self.closed_sockets = 0
-        self.wrapped_sockets = 0
-        self.bytes_transmitted = 0
-        self.bytes_received = 0
-        self.messages_transmitted = 0
-        self.messages_received = 0
-        self.operations = 0
-        self.abandon_operations = 0
-        self.add_operations = 0
-        self.bind_operations = 0
-        self.compare_operations = 0
-        self.delete_operations = 0
-        self.extended_operations = 0
-        self.modify_operations = 0
-        self.modify_dn_operations = 0
-        self.search_operations = 0
-        self.unbind_operations = 0
-        self.restartable_failures = 0
-        self.restartable_successes = 0
-
-    def __repr__(self):
-        r = 'Connection Usage:' + linesep
-        r += '  Time: [elapsed: ' + str(self.elapsed_time) + ']' + linesep
-        r += '    Initial start time: ' + (str(self.initial_connection_start_time.isoformat()) if self.initial_connection_start_time else '') + linesep
-        r += '    Open socket time  : ' + (str(self.open_socket_start_time.isoformat()) if self.open_socket_start_time else '') + linesep
-        r += '    Close socket time : ' + (str(self.connection_stop_time.isoformat()) if self.connection_stop_time else '') + linesep
-        r += '  Sockets:' + linesep
-        r += '    Sockets opened: ' + str(self.opened_sockets) + linesep
-        r += '    Sockets closed: ' + str(self.closed_sockets) + linesep
-        r += '    Sockets wrapped : ' + str(self.wrapped_sockets) + linesep
-        r += '  Bytes: ' + str(self.bytes_transmitted + self.bytes_received) + linesep
-        r += '    Transmitted: ' + str(self.bytes_transmitted) + linesep
-        r += '    Received: ' + str(self.bytes_received) + linesep
-        r += '  Messages: ' + str(self.messages_transmitted + self.messages_received) + linesep
-        r += '    Trasmitted: ' + str(self.messages_transmitted) + linesep
-        r += '    Received: ' + str(self.messages_received) + linesep
-        r += '  Operations: ' + str(self.operations) + linesep
-        r += '    Abandon: ' + str(self.abandon_operations) + linesep
-        r += '    Bind: ' + str(self.bind_operations) + linesep
-        r += '    Compare: ' + str(self.compare_operations) + linesep
-        r += '    Delete: ' + str(self.delete_operations) + linesep
-        r += '    Extended: ' + str(self.extended_operations) + linesep
-        r += '    Modify: ' + str(self.modify_operations) + linesep
-        r += '    ModifyDn: ' + str(self.modify_dn_operations) + linesep
-        r += '    Search: ' + str(self.search_operations) + linesep
-        r += '    Unbind: ' + str(self.unbind_operations) + linesep
-        r += '  Restartable tries: ' + str(self.restartable_failures + self.restartable_successes) + linesep
-        r += '    Failed restarts: ' + str(self.restartable_failures) + linesep
-        r += '    Successful restarts: ' + str(self.restartable_successes) + linesep
-        return r
-
-    def transmitted_message(self, message, length):
-        self.bytes_transmitted += length
-        self.operations += 1
-        self.messages_transmitted += 1
-        if message['type'] == 'abandonRequest':
-            self.abandon_operations += 1
-        elif message['type'] == 'addRequest':
-            self.add_operations += 1
-        elif message['type'] == 'bindRequest':
-            self.bind_operations += 1
-        elif message['type'] == 'compareRequest':
-            self.compare_operations += 1
-        elif message['type'] == 'delRequest':
-            self.delete_operations += 1
-        elif message['type'] == 'extendedReq':
-            self.extended_operations += 1
-        elif message['type'] == 'modifyRequest':
-            self.modify_operations += 1
-        elif message['type'] == 'modDNRequest':
-            self.modify_dn_operations += 1
-        elif message['type'] == 'searchRequest':
-            self.search_operations += 1
-        elif message['type'] == 'unbindRequest':
-            self.unbind_operations += 1
-        else:
-            raise LDAPException('unable to collect usage for unknown message type')
-
-    def received_message(self, length):
-        self.bytes_received += length
-        self.messages_received += 1
-
-    def start(self, reset=True):
-        if reset:
-            self.reset()
-        self.open_socket_start_time = datetime.now()
-        if not self.initial_connection_start_time:
-            self.initial_connection_start_time = self.open_socket_start_time
-
-    def stop(self):
-        if self.open_socket_start_time:
-            self.connection_stop_time = datetime.now()
-
-    @property
-    def elapsed_time(self):
-        if self.connection_stop_time:
-            return self.connection_stop_time - self.open_socket_start_time
-        else:
-            return (datetime.now() - self.open_socket_start_time) if self.open_socket_start_time else 'not started'
+from .usage import ConnectionUsage
 
 
 class Connection(object):
@@ -174,9 +61,6 @@ class Connection(object):
     """
 
     def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False):
-        """
-        Constructor
-        """
         if client_strategy not in CLIENT_STRATEGIES:
             self.last_error = 'unknown client connection strategy'
             raise LDAPException(self.last_error)
@@ -216,7 +100,6 @@ class Connection(object):
         self.request = None
         self.response = None
         self.result = None
-        self.lock = Lock()
         self.bound = False
         self.listening = False
         self.closed = True
@@ -231,8 +114,9 @@ class Connection(object):
         self.sasl_in_progress = False
         self.read_only = read_only
         self._context_state = []
+        self.server_pool = server.initialize() if isinstance(server, ServerPool) else None
 
-        if not self.strategy.no_real_dsa and server.is_valid():
+        if not self.strategy.no_real_dsa and (self.server_pool or server.is_valid()):
             self.server = server
             self.version = version
             if self.auto_bind:
@@ -247,15 +131,16 @@ class Connection(object):
             self.last_error = 'invalid ldap server'
             raise LDAPException(self.last_error)
 
+    # noinspection PyListCreation
     def __str__(self):
-        r = [str(self.server) if self.server.isValid else 'None']
-        r.append('user: ' + str(self.user))
-        r.append('bound' if self.bound else 'unbound')
-        r.append('closed' if self.closed else 'open')
-        r.append('listening' if self.listening else 'not listening')
-        r.append(self.strategy.__class__.__name__)
+        s = [str(self.server) if self.server.isValid else 'None']
+        s.append('user: ' + str(self.user))
+        s.append('bound' if self.bound else 'unbound')
+        s.append('closed' if self.closed else 'open')
+        s.append('listening' if self.listening else 'not listening')
+        s.append(self.strategy.__class__.__name__)
 
-        return ' - '.join(r)
+        return ' - '.join(s)
 
     def __repr__(self):
         r = 'Connection(server={0.server!r}'.format(self)

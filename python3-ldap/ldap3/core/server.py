@@ -40,7 +40,7 @@ class Server(object):
     as per RFC 4516. Use ('*', False) to allow any host with anonymous bind,
     use ('*', True) to allow any host with same authentication of Server.
     """
-    _realServers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
+    _real_servers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
     # and the value is the messageId counter for all connection to that host)
 
     def __init__(self, host, port=389, use_ssl=False, allowed_referral_hosts=None, get_info=None, tls=None):
@@ -75,8 +75,8 @@ class Server(object):
         self.tls = Tls() if self.ssl and not tls else tls
         self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
         self.get_info = get_info
-        self._dsaInfo = None
-        self._schemaInfo = None
+        self._dsa_info = None
+        self._schema_info = None
 
     def __str__(self):
         if self.host:
@@ -101,38 +101,38 @@ class Server(object):
         """
         messageId is unique in all connections to the server
         """
-        if self.address and self.address in Server._realServers:
-            Server._realServers[self.address] += 1
-            if Server._realServers[self.address] > 2147483646:  # wrap as per MAXINT (2147483647) in rfc4511 specification
-                Server._realServers[self.address] = 1  # 0 is reserved for Unsolicited messages
+        if self.address and self.address in Server._real_servers:
+            Server._real_servers[self.address] += 1
+            if Server._real_servers[self.address] > 2147483646:  # wrap as per MAXINT (2147483647) in rfc4511 specification
+                Server._real_servers[self.address] = 1  # 0 is reserved for Unsolicited messages
         else:
-            Server._realServers[self.address] = 1
+            Server._real_servers[self.address] = 1
 
-        return Server._realServers[self.address]
+        return Server._real_servers[self.address]
 
     def _get_dsa_info(self, connection):
         """
         retrieve DSE operational attribute as per rfc 4512 (5.1)
         """
-        self._dsaInfo = None
+        self._dsa_info = None
 
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
         if isinstance(result, bool):  # sync request
-            self._dsaInfo = DsaInfo(connection.response[0]['attributes']) if result else None
+            self._dsa_info = DsaInfo(connection.response[0]['attributes']) if result else None
         elif result:  # async request, must check if attributes in response
             results = connection.get_response(result)
             if len(results) == 2 and 'attributes' in results[0]:
-                self._dsaInfo = DsaInfo(results[0]['attributes'])
+                self._dsa_info = DsaInfo(results[0]['attributes'])
 
     def _get_schema_info(self, connection, entry=''):
         """
         retrive schema from subschemaSubentry DSE attribute as per rfc 4512 (4.4 and 5.1)
         entry = '' means DSE
         """
-        self._schemaInfo = None
+        self._schema_info = None
         schema_entry = None
-        if self._dsaInfo and entry == '':  # subschemaSubentry already present in dsaInfo
-            schema_entry = self._dsaInfo.schema_entry[0] if self._dsaInfo.schema_entry else None
+        if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
+            schema_entry = self._dsa_info.schema_entry[0] if self._dsa_info.schema_entry else None
         else:
             result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
@@ -145,11 +145,11 @@ class Server(object):
         if schema_entry:
             result = connection.search(schema_entry, search_filter='(objectClass=subschema)', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
-                self._schemaInfo = SchemaInfo(schema_entry, connection.response[0]['attributes']) if result else None
+                self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes']) if result else None
             else:  # async request, must check if attributes in response
                 results = connection.get_response(result)
                 if len(results) == 2 and 'attributes' in results[0]:
-                    self._schemaInfo = SchemaInfo(schema_entry, results[0]['attributes'])
+                    self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'])
 
     def get_info_from_server(self, connection):
         """
@@ -164,8 +164,8 @@ class Server(object):
 
     @property
     def info(self):
-        return self._dsaInfo
+        return self._dsa_info
 
     @property
     def schema(self):
-        return self._schemaInfo
+        return self._schema_info

@@ -66,6 +66,7 @@ class PooledServer(object):
 class ServerPoolState(object):
     def __init__(self, server_pool):
         self.servers = []
+        self.strategy = server_pool.strategy
         self.server_pool = server_pool
         self.refresh()
         self.initialize_time = datetime.now()
@@ -81,9 +82,6 @@ class ServerPoolState(object):
         s += 'Pool strategy: ' + str(self.strategy)
 
         return s
-
-    def __repr__(self):
-        return repr(self.server_pool)
 
     def refresh(self):
         self.servers = []
@@ -104,7 +102,7 @@ class ServerPoolState(object):
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_PASSIVE:
                 return choice(self.server)
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_ACTIVE:
-                temp_list = self.servers[:]  # copy server list in a temporary list
+                temp_list = self.servers.copy()
                 while temp_list:
                     server = temp_list.pop(randint(0, len(temp_list)))
                     if server.check_availability():
@@ -143,7 +141,7 @@ class ServerPool(object):
             raise LDAPException('unknown pooling strategy')
         self.servers = []
         self.strategy = pool_strategy
-        self.pool_states = []
+        self.pool_states = dict()
         if isinstance(servers, list):
             for server in servers:
                 self.add(server)
@@ -191,14 +189,18 @@ class ServerPool(object):
         else:
             raise LDAPException('pooled server must be a Server object or a list of Server objects')
 
-        for pool_state in self.pool_states:  # notify  connections using this pool to refresh
-            pool_state.refresh()
+        for connection in self.pool_states:  # notifies connections using this pool to refresh
+            self.pool_states[connection].refresh()
 
-    def initialize(self):
+    def initialize(self, connection):
         pool_state = ServerPoolState(self)
-        self.pool_states.append(pool_state)
-        return pool_state
+        self.pool_states[connection] = pool_state  # registers pool_state in ServerPool object
 
+    def get_server(self, connection):
+        if connection in self.pool_states:
+            return self.pool_states[connection].get_server()
+        else:
+            raise LDAPException('connection not in server pool state')
 
 class ConnectionPool(object):
     pass

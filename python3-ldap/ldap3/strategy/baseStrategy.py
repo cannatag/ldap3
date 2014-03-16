@@ -69,7 +69,7 @@ class BaseStrategy(object):
                 self.connection.usage.start()
 
         if self.connection.server_pool:
-            new_server = self.connection.server_pool.get_server()  # get a server from the server_pool if available
+            new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
             if self.connection.server != new_server:
                 self.connection.server = new_server.server  # get the original server object
                 if self.connection.usage:

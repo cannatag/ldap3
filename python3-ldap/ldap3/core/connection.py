@@ -120,12 +120,12 @@ class Connection(object):
         if isinstance(server, ServerPool):
             self.server_pool = server
             self.server_pool.initialize(self)
-            self.server = self.server_pool.get_server(self)
+            self.server = self.server_pool.get_current_server(self)
         else:
             self.server_pool = None
             self.server = server
 
-        if not self.strategy.no_real_dsa and server.is_valid():
+        if not self.strategy.no_real_dsa and self.server.is_valid():
             self.version = version
             if self.auto_bind:
                 self.open()

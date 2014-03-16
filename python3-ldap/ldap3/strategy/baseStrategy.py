@@ -63,6 +63,10 @@ class BaseStrategy(object):
         """
         Open a socket to a server. Choose a server from the server pool if available
         """
+
+        if not self.connection.closed:  # try to close connection if still open
+            self.close()
+
         self._outstanding = dict()
         if self.connection.usage:
             if reset_usage or not self.connection.usage.initial_connection_start_time:
@@ -71,12 +75,9 @@ class BaseStrategy(object):
         if self.connection.server_pool:
             new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
             if self.connection.server != new_server:
-                self.connection.server = new_server.server  # get the original server object
+                self.connection.server = new_server
                 if self.connection.usage:
                     self.connection.usage.servers_from_pool += 1
-
-        if not self.connection.closed:
-            self.close()
 
         self._open_socket(self.connection.server.ssl)
 
@@ -93,7 +94,7 @@ class BaseStrategy(object):
             self.connection.bound = False
             self.connection.request = None
             self.connection.response = None
-            self._outstanding = None
+            self._outstanding = dict()
             self._referrals = []
             if self.connection.usage:
                 self.connection.usage.stop()

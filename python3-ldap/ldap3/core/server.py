@@ -28,6 +28,7 @@ from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, S
 from ..protocol.dse import DsaInfo
 from ..protocol.schema import SchemaInfo
 from .tls import Tls
+import socket
 
 
 class Server(object):
@@ -96,6 +97,25 @@ class Server(object):
 
     def is_valid(self):
         return True if self.address else False
+
+    def check_availability(self):
+        """
+        Tries to open, connect and close a socket to specified address and port to check availability
+        """
+        available = True
+        try:
+            temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            temp_socket.connect((self.server.host, self.server.port))
+        except socket.error:
+            available = False
+        finally:
+            try:
+                temp_socket.shutdown(socket.SHUT_RDWR)
+                temp_socket.close()
+            except socket.error:
+                available = False
+
+        return available
 
     def next_message_id(self):
         """

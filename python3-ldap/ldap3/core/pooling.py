@@ -35,7 +35,7 @@ class PooledServer(object):
         self.active = False
         self.available = False
         self.last_activity = None
-        self._connections = []
+        self.activation_counter = 0
 
     def __str__(self):
         s = str(self.server) + ' - '
@@ -88,22 +88,27 @@ class ServerPoolState(object):
         for server in self.server_pool.servers:
             self.servers.append(PooledServer(server))
 
+    def get_current_server(self):
+        return self.servers[self.last_used_server]
+
     def get_server(self):
         if self.servers:
             if self.server_pool.strategy == POOLING_STRATEGY_NONE:
+                self.last_used_server = 0
                 return self.servers[0]
             elif self.server_pool.strategy == POOLING_STRATEGY_FIRST_ACTIVE:
-                return self.set_active_server()
+                return self.find_active_server()
             elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_PASSIVE:
                 self.last_used_server = self.last_used_server + 1 if self.last_used_server < len(self.servers) else 0
                 return self.servers[self.last_used_server]
             elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_ACTIVE:
-                return self.set_active_server(self.last_used_server + 1)
+                return self.find_active_server(self.last_used_server + 1)
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_PASSIVE:
-                return choice(self.server)
+                self.last_used_server = randint(0, len(self.servers))
+                return self.servers[self.last_used_server]
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_ACTIVE:
                 temp_list = self.servers.copy()
-                while temp_list:
+                while temp_list:  # pops a random server from a temp list and checks its availability, if not available tries another one
                     server = temp_list.pop(randint(0, len(temp_list)))
                     if server.check_availability():
                         self.last_used_server = self.servers.index(server)
@@ -114,22 +119,23 @@ class ServerPoolState(object):
         else:
             raise LDAPException('no servers in pool')
 
-    def set_active_server(self, starting=0):
+    def find_active_server(self, starting=0):
         index = starting
         while index < len(self.servers):
             if self.servers[index].check_availability():
-                self.last_used_server = index
-                return self.servers[index]
+                break
             index += 1
+        else:  # if no server found upwards in the list checks starting from the base of the list
+            index = 0
+            while index < starting:
+                if self.servers[index].check_availability():
+                    break
+                index += 1
+            else:
+                raise LDAPException('no active server available in server pool')
 
-        index = 0
-        while index < starting:
-            if self.servers[index].check_availability():
-                self.last_used_server = index
-                return self.servers[index]
-            index += 1
-
-        raise LDAPException('no active server available in server pool')
+        self.last_used_server = index
+        return self.servers[index]
 
     def __len__(self):
         return len(self.servers)
@@ -201,6 +207,7 @@ class ServerPool(object):
             return self.pool_states[connection].get_server()
         else:
             raise LDAPException('connection not in server pool state')
+
 
 class ConnectionPool(object):
     pass

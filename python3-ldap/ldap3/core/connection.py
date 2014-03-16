@@ -122,6 +122,7 @@ class Connection(object):
             self.server_pool.initialize(self)
             self.server = self.server_pool.get_server(self)
         else:
+            self.server_pool = None
             self.server = server
 
         if not self.strategy.no_real_dsa and server.is_valid():

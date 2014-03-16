@@ -116,10 +116,15 @@ class Connection(object):
         self._context_state = []
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE)
-        self.server_pool = server.initialize() if isinstance(server, ServerPool) else None
 
-        if not self.strategy.no_real_dsa and (self.server_pool or server.is_valid()):
+        if isinstance(server, ServerPool):
+            self.server_pool = server
+            self.server_pool.initialize(self)
+            self.server = self.server_pool.get_server(self)
+        else:
             self.server = server
+
+        if not self.strategy.no_real_dsa and server.is_valid():
             self.version = version
             if self.auto_bind:
                 self.open()

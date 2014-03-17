@@ -61,16 +61,16 @@ class ServerPoolState(object):
         if self.servers:
             if self.server_pool.strategy == POOLING_STRATEGY_NONE:
                 self.last_used_server = 0
-                return self.servers[0]
+                return self.servers[0]  # return alvways the first server - no pooling
             elif self.server_pool.strategy == POOLING_STRATEGY_FIRST_ACTIVE:
-                return self.find_active_server()
+                return self.find_active_server()  # returns the first active server
             elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_PASSIVE:
                 self.last_used_server = self.last_used_server + 1 if (self.last_used_server + 1) < len(self.servers) else 0
-                return self.servers[self.last_used_server]
+                return self.servers[self.last_used_server]  # returns the next server in a circular range
             elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_ACTIVE:
-                return self.find_active_server(self.last_used_server + 1)
+                return self.find_active_server(self.last_used_server + 1)  # returns the next active server in a circular range
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_PASSIVE:
-                self.last_used_server = randint(0, len(self.servers))
+                self.last_used_server = randint(0, len(self.servers))  # returns a random server in the pool
                 return self.servers[self.last_used_server]
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_ACTIVE:
                 temp_list = self.servers.copy()
@@ -78,7 +78,7 @@ class ServerPoolState(object):
                     server = temp_list.pop(randint(0, len(temp_list)))
                     if server.check_availability():
                         self.last_used_server = self.servers.index(server)
-                        return server
+                        return server  # returns a random active server in the pool
                 raise LDAPException('no random active server in server pool')
             else:
                 raise LDAPException('unknown pool strategy')

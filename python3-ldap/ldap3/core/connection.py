@@ -442,4 +442,3 @@ class Connection(object):
             search_result_to_ldif = None
 
         return search_result_to_ldif
-

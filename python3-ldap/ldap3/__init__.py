@@ -60,19 +60,19 @@ STRATEGY_SYNC_RESTARTABLE = 3
 
 CLIENT_STRATEGIES = [STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE]
 
-# communication parameters
-RESPONSE_SLEEPTIME = 0.02
-RESPONSE_WAITING_TIMEOUT = 1
-RESPONSE_COMPLETE = -1
+# communication
 SESSION_TERMINATED_BY_SERVER = 0
-SOCKET_SIZE = 4096
-RESTARTABLE_SLEEPTIME = 1
-RESTARTABLE_TRIES = 50  # set to True for unlimited retries
+RESPONSE_COMPLETE = -1
+RESPONSE_SLEEPTIME = 0.02  # seconds to wait while waiting for a response in asynchronous strategies
+RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
+SOCKET_SIZE = 4096  # socket byte size
+RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
+RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 
-# LDAP protocol parameters
+# LDAP protocol
 LDAP_MAX_INT = 2147483647
 
-# ldif parameters
+# LDIF
 LDIF_LINE_LENGTH = 78
 
 # result codes

@@ -48,4 +48,4 @@ Project goals
 
     - I have a number of projects using the python-ldap library. I'd like to move them to Python 3 without changing what I've already done for LDAP.
 
-    - It should be (ideally) enough just to change the import from python-ldap to python3-ldap to use them on Python 3, at least for the LDAP part.
+    - It should be (possibly) enough just to change the import from python-ldap to python3-ldap to use them on Python 3, at least for the LDAP part.

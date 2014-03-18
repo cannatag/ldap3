@@ -2,7 +2,7 @@
 CHANGELOG
 #########
 
-* 0.9.0 2014.03.12
+* 0.9.0 2014.03.20
     - PEP8 compliance
     - added ldap3.compat package with non PEP8-compliant signatures
     - renamed ldap3.abstraction to ldap3.abstract

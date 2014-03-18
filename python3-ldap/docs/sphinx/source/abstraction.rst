@@ -2,22 +2,22 @@
 Abstraction Layer
 #################
 
-The ldap3.abstraction package is a tool to abstract access to LDAP data. It has a semplified query language for performing search operations
+The ldap3.abstract package is a tool to abstract access to LDAP data. It has a semplified query language for performing search operations
 and a bunch of objects to define the structure of LDAP entries.
-The abstraction layer is useful at command line to perform searches without having to write complex filters and in programs when LDAP is used to records
+The abstraction layer is useful at command line to perform searches without having to write complex filters and in programs when LDAP is used to record
 structured data.
 
-
 Overview
+--------
 
-To use the abstraction layer you can define different LDAP objects with the ObjectDef and AttrDef classes, than you create a Reader object for the
-ObjectDef you have defined and then you perform search operations using a simplified query language.
-All classes can be imported from the ldap3.abstraction package::
+To use the abstraction layer you must describe LDAP objects definition using the ObjectDef and AttrDef classes, than you create a Reader object for the
+ObjectDef you have defined and you perform search operations using a simplified query language.
+All classes can be imported from the ldap3.abstract package::
 
-    from ldap3.abstraction import ObjectDef, AttrDef, Reader, Entry, Attribute
-
+    from ldap3.abstract import ObjectDef, AttrDef, Reader, Entry, Attribute
 
 ObjectDef class
+---------------
 
 The ObjectDef class is used to define an abstract LDAP object.
 When creating a new ObjectDef instance you can optionally specify the LDAP class(es) of the entries you will get back in a search.
@@ -30,25 +30,25 @@ Once you have defined an ObjectDef instance you can add the attributes definitio
 AttrDef(s) can be removed with the remove() method or using the -= operator.
 
 ObjectDef is an iterable that returns each AttrDef object (the whole AttrDef object, not only the key).
-AttrDefs can be accessed either as dictionary or as property, spaces are removed and keys are not case sensitive::
+AttrDefs can be accessed either as a dictionary or as a property, spaces are removed and keys are not case sensitive::
 
     cnAttrDef = person['Common Name']
     cnAttrDef = person['commonName']  # same as above
     cnAttrDef = person.CommonName  # same as above
 
-This eases the use at interactive prompt where you don't have to remember the case of the attribute name. Aautocompletion feature is enabled, so you can get
-a list of all defined attributes as property just pressing TAB.
+This eases the use at interactive prompt where you don't have to remember the case of the attribute name. *Autocompletion feature* is enabled, so you can get
+a list of all defined attributes as property just pressing TAB at the interactive prompt.
 
-Each class has a useful representation that summarize the istance status. You can access it directly at command prompt, or in a program with the str() function.
-
+Each class has a useful representation that summarize the istance status. You can access it directly at the interactive prompt, or in a program with the str() function.
 
 AttrDef class
+-------------
 
 The AttrDef class is used to define an abstract LDAP attribute.
-AttrDef has a single mandatory parameter (the attribute name) and a number of optional parameters. The 'key' optional parameter defines a friendly name to use
+AttrDef has a single mandatory parameter, the attribute name, and a number of optional parameters. The 'key' optional parameter defines a friendly name to use
 while accessing the attribute. When defining only the attribute name you can add it directly to the ObjectDef (the AttrDef is automatically defined)::
 
-    cnAttribute = AttrDef('cn')
+    cn_attribute = AttrDef('cn')
     person.add(cnAttribute)
 
     person += AttrDef('cn')  # same as above
@@ -57,63 +57,62 @@ while accessing the attribute. When defining only the attribute name you can add
 You can even add a list of attrDefs or attribute names to an ObjectDef::
 
     person += [AttrDef('cn', key = 'Common Name'), AttrDef('sn', key = 'Surname')]
-    person += ['cn', 'sn']  # as above, but keys are the attributes name
+    person += ['cn', 'sn']  # as above, but keys are the attribute names
 
-
-Validate
+Validation
+^^^^^^^^^^
 
 You can specify a 'validate' parameter to check if the attribute value in a query is valid.
-Two parameters are passed to the callable, the AttrDef.key and the value. The callable must return a boolean confirming or denying the validation::
+Two parameters are passed to the callable, the AttrDef.key and the value. The callable must return a boolean allowing or denying the validation::
 
     deps = {'A': 'Accounting', 'F': 'Finance', 'E': 'Engineering'}
     # checks that the parameter in query is in a specific range
-    validDepartment = lambda attr, value: True if value in deps.values() else False
+    valid_department = lambda attr, value: True if value in deps.values() else False
     person += AttrDef('employeeType', key = 'Department', validate = validDepartment)
 
-In this example the Reader object will raise an exception if value for the 'Department' is not 'Accounting', 'Finance' or 'Engineering'.
+In this example the Reader object will raise an exception if values for the 'Department' are not 'Accounting', 'Finance' or 'Engineering'.
 
+Pre Query transformation
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-PreQuery
-
-A 'preQuery' parameter indicates a callable to perform transformations on the value to be searched for the attribute defined::
+A 'pre_query' parameter indicates a callable to perform transformations on the value to be searched for the attribute defined::
 
     # transform value to be search
-    def getDepartmentCode(attr, value):
+    def get_department_code(attr, value):
         for dep in deps.items():
             if dep[1] == value:
                 return dep[0]
         return 'not a department'
 
-    person += AttrDef('employeeType', key = 'Department', preQuery = getDepartmentCode)
+    person += AttrDef('employeeType', key = 'Department', pre_query = get_department_code)
 
 When you perform a search with 'Accounting', 'Finance' or 'Engineering' for the Department key, the real search will be for employeeType = 'A', 'F' or 'E'.
 
+Post query transformation
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-PostQuery
+A 'post_query' parameter indicates a callable to perform transormations on the returned value::
 
-A 'postQuery' parameter indicates a callable to perform transormations on the returned value::
-
-    getDepartmentName = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
-    person += AttrDef('employeeType', key = 'Department', postQuery = getDepartmentName)
+    get_department_name = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
+    person += AttrDef('employeeType', key = 'Department', post_query = get_department_name)
 
 When you have an 'A', an 'F', or an 'E' in the employeeType attribute you get 'Accounting', 'Finance' or 'Engineering' in the 'Department' property
 of the Person entry.
 
-With a multivalue attribute postQuery receives a list of all values in the attribute. You can return an equivalent list or a single string.
+With a multivalue attribute post_query receives a list of all values in the attribute. You can return an equivalent list or a single string.
 
+Dereferencing DNs
 
-DereferenceDN
-
-With 'dereferenceDN' you can establish a relation between ObjectDefs. When dereferenceDN is set to an ObjectDef the Reader reads the attribute and use its value as
+With 'dereference_dn' you can establish a relation between ObjectDefs. When dereference_dn is set to an ObjectDef the Reader reads the attribute and use its value as
 a DN for an object to be searched with a temporary Reader using the specified ObjectDef in the same Connection. The result of the second search is returned
 as value of the first search::
 
     department = ObjectDef('groupOfNames')
     department += 'cn'
-    department += AttrDef('member', key = 'employeer', dereferenceDN = person)  # values of 'employeer' will be the 'Person' entries members of the found department
-
+    department += AttrDef('member', key = 'employeer', dereference_dn = person)  # values of 'employeer' will be the 'Person' entries members of the found department
 
 Reader
+------
 
 Once you have defined the ObjectDef(s) and the AttrDef(s) you can instance a Reader for the ObjectDef. With it you can perform searches using a simplified
 query language (explained in next paragraph). The reader can be reset to its initial status with the reset() method to execute a different search.
@@ -122,17 +121,17 @@ Reader has the following parameters:
 
 - 'connection': the connection to use.
 
-- 'objectDef': the ObjectDef used by the Reader instance.
+- 'object_def': the ObjectDef used by the Reader instance.
 
-- 'query': the simplified query. It can be a standard LDAP filter too (see next paragraph).
+- 'query': the simplified query. It can be a standard LDAP filter (see next paragraph).
 
 - 'base': the DIT base where to start the search.
 
 - 'components_in_and': defines if the query components are in AND (True, default) or in OR (False).
 
-- 'subTree': specifies if the search must be performed through the whole subtree (True, default) or only in the specified base (False).
+- 'sub_tree': specifies if the search must be performed through the whole subtree (True, default) or only in the specified base (False).
 
-- 'getOperationalAttributes': specifies if the search must return the operational attributes (True) of found entries. Defaults to False.
+- 'get_operational_attributes': specifies if the search must return the operational attributes (True) of found entries. Defaults to False.
 
 - 'controls': optional controls to use in the search operation.
 
@@ -144,7 +143,7 @@ To perform the search you can use any of the following methods:
 
 - search_level()  # force a Level search.
 
-- searchSubTree()  # force a whole sub-tree search, starting from 'base'.
+- search_sub_tree()  # force a whole sub-tree search, starting from 'base'.
 
 - search_object()  # force a object search, DN to search must be specified in 'base'.
 
@@ -154,20 +153,19 @@ To perform the search you can use any of the following methods:
 
 - search_types_only()  # standard search without the attributes values.
 
-- search_paged(pageSize, criticality)  # perform a paged search, with 'pageSize' number of entries for each call to this method. If 'criticality' is
-                                      True the server aborts the operation if the Simple Paged Search extension is not available, else return the whole result set.
+- search_paged(page_size, criticality)  # perform a paged search, with 'page_size' number of entries for each call to this method. If 'criticality' is True the server aborts the operation if the Simple Paged Search extension is not available, else return the whole result set.
 
 Example::
 
     s = Server('server')
     c = Connection(s, user = 'username', password = 'password')
     query = 'Department: Accounting'  # explained in next paragraph
-    personReader = Reader(c, person, query, 'o=test')
-    personReader.search()
+    person_reader = Reader(c, person, query, 'o=test')
+    person_reader.search()
 
-The result of the search will be found in the 'entries' property of the personReader object.
+The result of the search will be found in the 'entries' property of the person_reader object.
 
-A Reader object is an iterable that returns the entries found in the last search performed. It also  has a useful representation that summarize the Reader
+A Reader object is an iterable that returns the entries found in the last search performed. It also has a useful representation that summarize the Reader
 configuration and status::
 
     print(personReader)
@@ -182,13 +180,14 @@ configuration and status::
 
 
 Simplified Query Language
+-------------------------
 
-In the Reader you can express the query filter using the standard LDAP filter syntax or using a Simplified Query Language that resembles a dictionary structure.
+In the Reader you can express the query filter using the standard LDAP filter syntax or using a *Simplified Query Language* that resembles a dictionary structure.
 If you use the standard LDAP filter syntax you must use the real attribute names because the filter is directly passed to the Search operation.
 THe Simplified Query Language is a string of key-values couples separated with a ',' (comma), in each of the couples the left part is the attribute key defined
-in an AttrDef object while the right part is the value (or values) to be searched. Parts are separed with a ':' (colon). Keys can be prefixed with a '&' or a '|'
-or searching all the values or at least one of them. Values can be prefixed with an optional '!' (exclamation mark) for negating the search and by the search
-operator ('=', '<', '>', '~') requested. The default operator is '=' and can be omitted. Multiple values are separated by a ';' (semi-colon).
+in an AttrDef object while the right part is the value (or values) to be searched. Parts are separed with a ':' (colon). Keys can be prefixed with a '&' (AND) or a '|' (OR)
+or searching all the values or at least one of them. Values can be prefixed with an optional exclamation mark '!' (NOT) for negating the search followed by the needed search
+operator ('=', '<', '>', '~'). The default operator is '=' and can be omitted. Multiple values are separated by a ';' (semi-colon).
 
     A few examples::
 
@@ -199,8 +198,8 @@ operator ('=', '<', '>', '~') requested. The default operator is '=' and can be 
     'Department: != Accounting'' -> (!(EmployeeType=A))
     '|Department:Accounting; Finance' -> (|(EmployeeType=A)(EmployeeType=C))
 
-There are no parentheses in the Simplified Query Language, this means that you cannot mix components with '&' (AND)  and '|' (OR). You have the 'componentInAnd'
-flag in the Reader object to specify if components are in '&' (true) or in '|' (false). 'componentInAnd' defaults to True::
+There are no parentheses in the Simplified Query Language, this means that you cannot mix components with '&' (AND)  and '|' (OR). You have the 'component_in_and'
+flag in the Reader object to specify if components are in '&' (AND, True value) or in '|' (OR, False value). 'component_in_and' defaults to True::
 
     'CommonName: b*, Department: Engineering' -> (&(cn=b*)(EmployeeType=E'))
 
@@ -210,44 +209,44 @@ Object classes defined in the ObjectDef are always included in the filter, so fo
 
 when using a Reader with the 'engineer' ObjectDef.
 
-
 Entry
+-----
 
 Entry objects contain the result of the search. You can access entry attributes either as a dictionary or as properties using the AttrDef key you specified in
-the ObjectDef. entry['CommonName'] is the same of entry.CommonName.
+the ObjectDef. entry['CommonName'] is the same of entry.CommonName and of entry.commonName.
 
 Each Entry has a get_entry_dn() method that contains the distinguished name of the LDAP entry, and a get_entry_reader() method that contains a reference
 to the Reader used to read the entry.
 
 Attributes are stored in an internal dictionary with case insensitive access by the key defined in the AttrDef. You can even access the raw attribute with
-the get_raw_attribute(attributeName) to get an attribute raw value, or get_raw_attributes() to get the whole raw attributes dictionary.
+the get_raw_attribute(attribute_name) to get an attribute raw value, or get_raw_attributes() to get the whole raw attributes dictionary.
 
 Entry is a read only object, you cannot modify or add any property to it. It's an iterable object that returns an attribute object at each iteration. Note that
 you get back the whole attribute object, not only the key as in a standard dictionary::
 
-    personEntry = personReader.entries[0]
-    for attr in personEntry:
+    person_entry = person_reader.entries[0]
+    for attr in person_entry:
         print(attr.key)
 
-
 Attribute
+---------
 
-Values found for each attribute are stored in the Attribute object. You can access the 'values' and the 'rawValues' lists. You can also get a reference to the
+Values found for each attribute are stored in the Attribute object. You can access the 'values' and the 'raw_values' lists. You can also get a reference to the
 relevant AttrDef in the 'definition' property, and to the relevant Entry in the 'entry' property. You can iterate over the Attribute to get each value::
 
-    personCommonName = personEntry.CommonName
-    for cn in personCommonName:
+    person_common_name = person_entry.CommonName
+    for cn in person_common_name:
         print(cn)
-        print(cn.rawValues)
+        print(cn.raw_values)
 
 If the Attribute has a single value you get it in the 'value' property. This is useful while using the Python interpreter at the interactive prompt. If the Attribute
 has more than one value you get the same 'values' list in 'value'. When you want to assign the attribute value to a variable you must use 'value' (or 'values' if you always
 want a list)::
 
-    myDepartment = personEntry.Department.value
-
+    my_department = person_entry.Department.value
 
 OperationalAttribute
+--------------------
 
-The OperationalAttribute class is used to store Operational Attributes read with the 'getOperationalAttributes' of the Reader object set to True. It's the same
+The OperationalAttribute class is used to store Operational Attributes read with the 'get_operational_attributes' of the Reader object set to True. It's the same
 of the Attribute class except for the 'definition' property that is not present.

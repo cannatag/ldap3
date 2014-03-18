@@ -7,10 +7,10 @@
 Welcome to python3-ldap's documentation
 #######################################
 
-python3-ldap is a pure Python 3 LDAP version 3 strictly conforming to RFC4511.
+python3-ldap is a pure Python 3 LDAP version 3 strictly conforming to RFC4511 released under the LGPL v3 open source license.
 RFC4511 is the current LDAP specification (June 2006) from IETF and obsoletes the previous LDAP RFCs 2251, 2830, 3771 (December 1997)
 
-python3-ldap can be used on Python 3 and Python 2 (starting from 2.6). In Python 2 there is no direct Unicode support, you get always str (bytes) as response.
+python3-ldap can be used on Python 3 and Python 2 (starting from 2.6).
 
 .. toctree::
    :maxdepth: 2

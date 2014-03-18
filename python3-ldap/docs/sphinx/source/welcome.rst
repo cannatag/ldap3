@@ -48,8 +48,7 @@ You can also open a ticket on https://www.assembla.com/spaces/python3-ldap/suppo
 Acknowledgements
 ----------------
 
-* I wish to thank Mark Lutz for his 'Learning Python' and 'Programming Python' excellent books serie and John Goerzen and Brandon Rhodes
-for their book 'Foundations of Python Network Programming'. These books are a wonderful tool for learning Python and this project owes a lot to them.
+* I wish to thank Mark Lutz for his 'Learning Python' and 'Programming Python' excellent books serie and John Goerzen and Brandon Rhodes for their book 'Foundations of Python Network Programming'. These books are a wonderful tool for learning Python and this project owes a lot to them.
 
 * I wish to thank JetBrains for donating to this project the Open Source license of PyCharm 3 Professional.
 

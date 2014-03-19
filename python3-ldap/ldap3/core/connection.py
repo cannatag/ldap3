@@ -288,9 +288,8 @@ class Connection(object):
 
     def add(self, dn, object_class, attributes=None, controls=None):
         """
-        add dn to the dib, object_class is None, a class name or a list of class names,
-        attributes is a dictionary in the form 'attr': 'val'
-        or 'attr': ['val1', 'val2', 'valN'] for multivalued types
+        add dn to the DIT, object_class is None, a class name or a list of class names,
+        attributes is a dictionary in the form 'attr': 'val' or 'attr': ['val1', 'val2', ...] for multivalued attributes
         """
         attr_object_class = []
         if object_class is None:
@@ -366,7 +365,7 @@ class Connection(object):
 
     def modify_dn(self, dn, relative_dn, delete_old_dn=True, new_superior=None, controls=None):
         """
-        Modify dn of the entry and optionally performs a move of the entry in the dib
+        Modify dn of the entry or performs a move of the entry in the DIT
         """
 
         if self.read_only:
@@ -399,7 +398,7 @@ class Connection(object):
 
     def extended(self, request_name, request_value=None, controls=None):
         """
-        Perform an extended operation
+        Performs an extended operation
         """
         request = extended_operation(request_name, request_value)
         response = self.post_send_single_response(self.send('extendedReq', request, controls))
@@ -407,7 +406,7 @@ class Connection(object):
             return response
         return True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
-    def start_tls(self):  # as per rfc 4511. Removal of TLS is defined as MAY in rfc 4511 so the client can't implement a generic StopTls method
+    def start_tls(self):  # as per RRC4511. Removal of TLS is defined as MAY in RFC4511 so the client can't implement a generic stop_tls method
         if self.server.tls:
             if self.server.tls.start_tls(self):
                 self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)

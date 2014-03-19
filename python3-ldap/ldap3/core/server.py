@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from socket import getaddrinfo, gaierror
 
-from ldap3 import GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException
+from ldap3 import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException
 from ..protocol.dse import DsaInfo
 from ..protocol.schema import SchemaInfo
 from .tls import Tls
@@ -44,7 +44,7 @@ class Server(object):
     _real_servers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
     # and the value is the messageId counter for all connection to that host)
 
-    def __init__(self, host, port=389, use_ssl=False, allowed_referral_hosts=None, get_info=None, tls=None):
+    def __init__(self, host, port=389, use_ssl=False, allowed_referral_hosts=None, get_info=GET_NO_INFO, tls=None):
         try:
             self.address = getaddrinfo(host, port)[0][4][0]
         except gaierror:

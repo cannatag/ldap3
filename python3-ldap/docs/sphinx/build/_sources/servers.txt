@@ -4,7 +4,45 @@ Server
 
 Server object
 -------------
+The Server object specify the DSA (Directory Server Agent) server that will be used by the connection. To create a new server object the following parameters are accepted:
+* host: name or ip of the server (required)
+
+* port: the port where the DSA server is listening
+
+* use_ssl: specify if the connection is on a secure port (defaults to False). Usually the secure port is 636
+
+* allowed_referral_hosts: specify which server are considered reliable as referral (defaults to None), Specify a list of referrarls server or an asterisk to accept all server
+
+* get_info: specify if the server schema and info must be read (defaults to GET_NO_INFO). Possible values are:
+
+    * ldap3.GET_NO_INFO
+
+    * ldap3.GET_DSA_INFO
+
+    * ldap3.GET_SCHEMA_INFO
+
+    * ldap3.GET_ALL_INFO
+
+* tls: Tls object that contains information about certificates and trusted roots to  establish secure connection (defaults to None). If None any server certificate will be accepted.
 
 
 Server Pool
 -----------
+
+Different Server objects can be grouped in a Server pool object. A Server pool object can be specified in the Connection object to obtain an high availability (HA).
+This is quite useful for long standing connections (for example an LDAP authenticator module in an application server). The pool can have different HA/HR strategies:
+
+.. sidebar:: Active strategies
+
+   *ACTIVE* strategies checks if the server is listening on the specified port. The strategy tries to open and close a socket on the port. If your LDAP server has problems with the opening and closing of sockets you can use a PASSIVE strategy.
+
+* POOLING_STRATEGY_NONE: no pooling strategy used, the connection use always the first server in the pool
+* POOLING_STRATEGY_FIRST_ACTIVE: get the first available and active server in the pool, if no server is active an exception is raised
+* POOLING_STRATEGY_ROUND_ROBIN_PASSIVE: each time the connection is open the subsequent server in the pool is used
+* POOLING_STRATEGY_ROUND_ROBIN_ACTIVE: each time the connection is open the subsequent active server in the pool is used, if no server is active an exception is raised
+* POOLING_STRATEGY_RANDOM_PASSIVE: each time the connection is open a random server is chosen in the pool
+* POOLING_STRATEGY_RANDOM_ACTIVE: each time the connection is open an active random server is chosen in the pool, if no server is active an exception is raised
+
+
+
+A server pool

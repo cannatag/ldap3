@@ -40,8 +40,7 @@ Connection parameters are:
 
 * read_only: inhibit modify, delete, add and modifyDn (move) operations
 
-
-Through the connection you can perform all the standard LDAP operations:
+With the connection you can perform all the standard LDAP operations:
 
 * bind: performs a bind to the LDAP Server with the authentication type and credential specified in the connection
 
@@ -171,6 +170,27 @@ Additional methods defined:
 
 * close: an alias for the unbind operation
 
+Connection attributes:
+
+* server: the active Server object used in the connection
+* server_pool: the ServerPool object used in the connection if available
+* read_only: True if the connection is in read only mode
+* version: the LDAP protocol version used
+* result: the result of the last operation
+* response: the response of the last operation (for example, the entries found in a search)
+* last_error: any error occurred in the last operation
+* bound: True if bound to server else False
+* listening: True if the socket is listening to the server
+* closed: True if the socket is not open
+* strategy_type: the strategy used by the connection
+é strategy: the strategy instance used by the connection
+* authentication: the authentication used in the connection
+* user: the user name for simple bind
+* password: password for simple bind
+* auto_bind: True if auto_bind is active else False
+* tls_started: True if the Transport Security Layer is active
+* usage: metrics of connection usage
+
 Simple Paged search
 -------------------
 
@@ -195,14 +215,28 @@ Example::
     print('Total entries retrieved:', total_entries)
     connection.close()
 
+Controls
+========
+Controls, if used, must be a list of tuples. Each tuple must have 3 elements: the control OID, a boolean to specify if the control is critical, and a value. If the boolean is set to True the server must honorate the control or refuse the operation. Mixing controls must be defined in controls specification (as per RFC4511)
 
-#########
+
 Responses
-#########
+=========
 
+Responses are received and stored in the connection.response as a list of dictionaries.
+You can get the search result entries of a Search operation iterating over the response attribute. Each entry is a dictionary with the following field:
+* dn: the distinguished name of the entry
+* attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format.
+* raw_attributes: same as 'attributes' but not encoded (bytesarray)
 
-Result code
------------
+Result
+======
 
-Search Response
----------------
+Each operation has a result stored as a dictionary in the connection.result attribute.
+You can check the result value to know if the operation has been sucessful. The dictionary has the following field:
+* result: the numeric result code of the operation as specified in RFC4511
+* description: extended description of the result code, as specified in RFC4511
+* message: a diagnostic message sent by the server (optional)
+* dn: a distinguish name of an entry related to the request (optional)
+* referrals: a list of referrals where the operation can be continued (optional)
+

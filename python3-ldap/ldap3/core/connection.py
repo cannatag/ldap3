@@ -245,7 +245,7 @@ class Connection(object):
         Perform an ldap search
         if attributes is empty no attribute is returned
         if attributes is ALL_ATTRIBUTES all attributes are returned
-        if paged_size is an int greater than 0 a simple paged search is tried as described in rfc 2696 with the specified size
+        if paged_size is an int greater than 0 a simple paged search is tried as described in RFC2696 with the specified size
         if paged is 0 and cookie is present the search is abandoned on server
         cookie is an opaque string received in the last paged search and must be used on the next paged search response
         """

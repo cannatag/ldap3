@@ -182,3 +182,4 @@ from .core.server import Server
 from .core.connection import Connection
 from .core.tls import Tls
 from .core.pooling import ServerPool, ConnectionPool
+from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalAttribute

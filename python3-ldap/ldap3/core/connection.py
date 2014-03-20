@@ -107,7 +107,6 @@ class Connection(object):
         self.auto_bind = True if auto_bind else False
         self.sasl_mechanism = sasl_mechanism
         self.sasl_credentials = sasl_credentials
-        self.authorization_state = None
         self.usage = ConnectionUsage() if collect_usage else None
         self.socket = None
         self.tls_started = False

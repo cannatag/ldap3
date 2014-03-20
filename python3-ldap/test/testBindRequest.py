@@ -25,8 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 
 from ldap3.protocol.rfc4511 import BindRequest, LDAPDN, AuthenticationChoice, Simple, Version
-from ldap3.core.connection import Connection
-from ldap3.core.server import Server
+from ldap3 import Connection, Server
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
 
 

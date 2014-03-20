@@ -1,20 +1,18 @@
-##########
-Connection
-##########
+###########
+Connections
+###########
 
-Connection object is used to send operation requests to the LDAP Server. It can use different connection strategies.
-It supports the *context manager* protocol that automatically opens and closes the connection.
+Connection object is used to send operation requests to the LDAP Server. It can use different connection strategies and supports the *context manager* protocol to automatically open, bind and unbind the connection.
 
 The following strategies are available:
 
-* STRATEGY_SYNC: the request is sent and the connection waits until the response is received. You get the response as return value of the connection
+* STRATEGY_SYNC: the request is sent and the connection waits until the response is received. You get the response in the return value of the connection
 
-* STRATEGY_ASYNC_THREADED: the request is sent and the connection immediately returns a *message_id* that can be later used to retrieve the response
+* STRATEGY_ASYNC_THREADED: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response
 
 * STRATEGY_SYNC_RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times of forever
 
-* STRATEGY_LDIF_PRODUCER: the request is transformed in a *ldif-change* format and a ldif output is returned
-
+* STRATEGY_LDIF_PRODUCER: the request is transformed in a *ldif-change* format and an LDIF output is returned
 
 Connection parameters are:
 
@@ -24,7 +22,7 @@ Connection parameters are:
 
 * password: the password of the user for simple bind (defaults to None)
 
-* auto_bind: automatically opens and bind the connection (defaults to False)
+* auto_bind: automatically opens and binds the connection (defaults to False)
 
 * version: LDAP protocol version (defaults to 3)
 
@@ -71,8 +69,6 @@ Through the connection you can perform all the standard LDAP operations:
 
     * attributes: a dictionary in the form {'attr1': 'val1', 'attr2': 'val2', ...} or {'attr1': ['val1', 'val2', ...], ...} for multivalued attributes
 
-
-
 * delete: deletes the object specified
 
     * dn: distinguish name of the object to delete
@@ -100,10 +96,49 @@ Through the connection you can perform all the standard LDAP operations:
     * controls: additional controls to be used in the request
 
 .. note::
-   modify_dn is really a two-flavours operation: you can rename the last part of the dn *or* you move the entry in another container. You cannot perform both operation at the same time.
+   modify_dn is really a two-flavours operation: you can rename the last part of the dn *or* you move the entry in another container but you cannot perform both operations at the same time.
 
 * Search: performs a search in the LDAP database
 
+    * search_base: base of the search request
+
+    * search_filter: filter of the search request. It must conform to the LDAP filter syntax specified in RFC4515. If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515 (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'
+
+    * search_scope: specifies how broad the search context is:
+
+        * SEARCH_SCOPE_BASE_OBJECT: retrieves attributes of the entry specified in the search_base
+
+        * SEARCH_SCOPE_SINGLE_LEVEL: retrieves attributes of the entries specified in the search_base. The base must reference a container object
+
+        *  SEARCH_SCOPE_WHOLE_SUBTREE: retrieves attributes of the entries specified in the search_base and all subordinate containers downward.
+
+    * dereference_aliases: specifies how the server must treat references to other entries:
+
+        * SEARCH_NEVER_DEREFERENCE_ALIASES: never dereferences entries, returns alias objects instead. The alias contains the reference to the real entry
+
+        * SEARCH_DEREFERENCE_IN_SEARCHING: while searching subordinates of the base object, dereferences any alias within the search scope. Dereferenced objects become the vertices of further search scopes where the       Search operation is also applied. The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
+
+        * SEARCH_DEREFERENCE_FINDING_BASE_OBJECT: dereferences aliases in locating the base object of the search, but not when searching subordinates of the base object.
+
+        * SEARCH_DEREFERENCE_ALWAYS: always returns the referenced entries, not the alias object
+
+    * attributes: a single attribute or a list of attributes to be returned by the search (defaults to None). If attributes is None  no attribute is returned. If attributes is ALL_ATTRIBUTES all attributes are returned
+
+    * size_limit: maximum number of entries returned by the search (defaults to None). If None the whole set of found entries is returned, unless the server has a more restrictive rule.
+
+    * time_limit: number of seconds allowed for the search (defaults to None). If None the search can take an unlimited amount of time, unless the server has a more restrictive rule.
+
+    * types_only: never returns attribute values
+
+    * get_operational_attributes: if True returns information attributes mananged automatically by the server for  each entry
+
+    * controls: additional controls to be used in the request
+
+    * paged_size: if paged_size is greater than 0 a simple paged search is executed as described in RFC2696 (defaults to None). The search will return at most the specified number of entries
+
+    * paged_criticality: if True the search will be executed only if the server is capable of performing a simple paged search. If False and the server is not capable of performing a simple paged search a standard search will be executed.
+
+    * paged_cookie: an *opaque* string received in the last paged search that must be sent while requesting subsequent entries of the search result
 
 * Abandon: abandons the operation indicated by message_id, if possible
 
@@ -117,20 +152,45 @@ Through the connection you can perform all the standard LDAP operations:
 
     * request_value: optional value sent in the request (defaults to None)
 
+    * controls: additional controls to be used in the request
+
+
 Additional methods defined:
 
 * start_tls: establishes a secure connection, can be executed before or after the bind operation
 
 * do_sasl_bind: performs a SASL bind with the parameter defined in the Connection. It's automatically executed when you call the bind operation if SASL authentication is used
 
-    * controls: additional controls to be used in the request
-
 * refresh_dsa_info: reads info from server as specified in the get_info parameter of the Connection object
 
-* response_to_ldif: converts the response of a search to a LDIF format (ldif-content)
+* response_to_ldif: a method you can call to convert the response of a search to a LDIF format (ldif-content). It has the following parameters:
 
     * search_result: the result of the search to be converted (defaults to None). If None get the last response received from the Server
 
     * all_base64: converts all the value to base64 (defaults to False)
 
 * close: an alias for the unbind operation
+
+Simple Paged search
+-------------------
+
+The search operation can perform a *simple paged search* as per RFC2696. You must specify the required number of entries in each response set. After the first search you must send back the cookie you get with each response in each subsequent search. If you send 0 as paged_size and a valid cookie the search operation referred by that cookie is abandoned.
+Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']; the server may return an estimated total number of entries in connection.result['controls']['1.2.840.113556.1.4.319']['value']['size']. You can change the paged_size in any subsequent search request.
+
+Example::
+
+    from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE
+    total_entries = 0
+    server = Server('test-server')
+    connection = Connection(server, user = 'test-user', password = 'test-password')
+    connection.search(search_base = 'o=test', search_filter = '(objectClass=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                      attributes = ['cn', 'givenName'], paged_size = 5)
+    total_entries += len(connection.response)
+    cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    while cookie:
+        connection.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                          attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
+        total_entries += len(connection.response)
+        cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    print('Total entries retrieved:', total_entries)
+    connection.close()

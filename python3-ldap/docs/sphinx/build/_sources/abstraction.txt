@@ -2,7 +2,7 @@
 Abstraction Layer
 #################
 
-The ldap3.abstract package is a tool to abstract access to LDAP data. It has a semplified query language for performing search operations
+The ldap3.abstract package is a tool to abstract access to LDAP data. It has a *simplified query language* for performing search operations
 and a bunch of objects to define the structure of LDAP entries.
 The abstraction layer is useful at command line to perform searches without having to write complex filters and in programs when LDAP is used to record
 structured data.
@@ -11,8 +11,8 @@ Overview
 --------
 
 To use the abstraction layer you must describe LDAP objects definition using the ObjectDef and AttrDef classes, than you create a Reader object for the
-ObjectDef you have defined and you perform search operations using a simplified query language.
-All classes can be imported from the ldap3.abstract package::
+ObjectDef you have defined and you perform search operations using a semplified query language.
+All classes can be imported from the ldap3 package::
 
     from ldap3.abstract import ObjectDef, AttrDef, Reader, Entry, Attribute
 

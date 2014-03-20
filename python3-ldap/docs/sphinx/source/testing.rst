@@ -22,3 +22,5 @@ To execute the test suite you need an LDAP server with the test_base and test_mo
 in that context.
 
 To execute the test_tls unit test you must supply your own certificates or tests will fail.
+
+The test package is available in the svn repository.

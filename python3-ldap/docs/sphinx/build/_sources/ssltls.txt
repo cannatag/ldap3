@@ -4,21 +4,38 @@ SSL & TLS
 
 To use SSL basic authentication change the server definition to::
 
-    s = server.Server('servername', port = 636, use_ssl = True)  # define a secure LDAP server
+    s = Server('servername', port = 636, use_ssl = True)  # define a secure LDAP server
 
 To start a TLS connection on an already created clear connection::
 
     c.tls = Tls()
     c.start_tls()
 
-You can customize the Tls object with references to keys, certificates and CAs. See the Tls() constructor docstring for details
+
+The Tls object
+==============
+
+You can customize the Tls object with references to keys, certificates and CAs. It includes all attributes needed to securely connect over an ssl socket:
+
+* local_private_key_file: the file with the private key of the client
+* local_certificate_file: the certificate of the server
+* validate: speficies if the server certificate must be validated, values can be: CERT_NONE (certificates are ignored), CERT_OPTIONAL (not required, but validated if provided) and CERT_REQUIRED (required and validated)
+* version: SSL or TLS version to use, can be one of the following: SSLv2, SSLv3, SSLv23, TLSv1 (as per Python 3.3. The version list can be different in another Python versions)
+* ca_certs_file: the file containing the certificates of the certification authorities
+
+Tls object uses the ssl module of the Python standard library with additional checking functions that are missing from the Python 2 standard library.
+
+The needed constants are defined in the ssl package.
+
+Example::
+
+    tls = Tls(local_private_key_file='client_private_key.pem', local_certificate_file='client_cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='ca_certs.b64')
 
 SASL
 ----
 
-Two SASL mechanisms are implemented in the python3-ldap library: EXTERNAL and DIGEST-MD5. Even if DIGEST-MD5 is deprecated and moved to historic (RFC6331, July 2011)
-because it is "insecure and unsuitable for use in protocols" (as stated by the RFC) I've developed the authentication phase of the protocol because it is still used in LDAP servers.
-
+Two SASL mechanisms are currently implemented in the python3-ldap library: EXTERNAL and DIGEST-MD5. Even if DIGEST-MD5 is **deprecated** and moved to historic (RFC6331, July 2011)
+because it is **"insecure and unsuitable for use in protocols"** (as stated by the RFC) I've developed the authentication phase of the protocol because it is still used in LDAP servers.
 
 External
 ^^^^^^^^
@@ -44,4 +61,4 @@ To use the DIGEST-MD5 you must pass a 4-value tuple as sasl_credentials: (realm,
 Username is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...). If
 you pass None as 'realm' the default realm of the LDAP server will be used.
 
-**Again, consider that DIGEST-MD5 is deprecated and should not be used.**
+**Again, remember that DIGEST-MD5 is deprecated and should not be used.**

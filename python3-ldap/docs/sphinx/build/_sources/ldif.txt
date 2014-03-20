@@ -3,9 +3,9 @@ LDIF
 ####
 
 LDIF is a data interchange format for LDAP. It is defined in RFC2849 (June 2000) in two different flavours: *ldif-content* and *ldif-change*.
-ldif-content is used to describe DIT entries in an ASCII stream (i.e. a file), while ldif-change is used to describe Add, Delete, Modify and
-ModifyDn operations. These two formats have different purposes and cannot be mixed in the same stream.
-If the DN of the Entry or an Attribute value that contains any unicode character the value must be base64 encoded, as specified in RFC2849.
+ldif-content is used to describe LDAP entries in an ASCII stream (i.e. a file), while ldif-change is used to describe Add, Delete, Modify and
+ModifyDn operations. *These two formats have different purposes and cannot be mixed in the same stream.*
+If the DN of the entry or an attribute value that contains any unicode character the value must be base64 encoded, as specified in RFC2849.
 python3-ldap is compliant to the latest LDIF format (version: 1).
 
 LDIF-content

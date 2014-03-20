@@ -42,9 +42,9 @@ Project goals
 
     - STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER and STRATEGY_SYNC_RESTARTABLE are currently defined.
 
-6. Semplified query construction language
+6. Simplified query construction language
 
-    - I previously developed an **abstraction layer** for LDAP query. I'd like to have a generalized LDAP abstraction layer to semplify access to the LDAP data.
+    - I previously developed an **abstraction layer** for LDAP query. I'd like to have a generalized LDAP abstraction layer to simplify access to the LDAP data.
 
 7. **Compatibility mode** for application using python-ldap
 

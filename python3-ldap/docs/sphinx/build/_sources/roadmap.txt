@@ -4,7 +4,7 @@ Roadmap
 
 * Add Connection pooling
 
-* Add ldap3.compat.notldap3 for compatability with python-ldap
+* Add ldap3.compat.ldap for compatability with python-ldap
 
 * Add mocking strategy to perform tests with mock LDAP object
 

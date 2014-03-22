@@ -33,7 +33,6 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         SyncWaitStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = False
-        self.restartable = True
         self.restartable_sleep_time = RESTARTABLE_SLEEPTIME
         self.restartable_tries = RESTARTABLE_TRIES
         self._restarting = False
@@ -43,8 +42,8 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         self._current_controls = None
         self._restart_tls = None
 
-    def open(self, start_listening=True, reset_usage=False):
-        SyncWaitStrategy.open(self, start_listening, reset_usage)
+    def open(self, reset_usage=False):
+        SyncWaitStrategy.open(self, reset_usage)
 
     def _open_socket(self, use_ssl=False):
         """

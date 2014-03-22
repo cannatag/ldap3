@@ -60,7 +60,7 @@ class Connection(object):
     Mixing controls must be defined in controls specification (as per rfc 4511)
     """
 
-    def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False):
+    def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False, lazy=False):
         if client_strategy not in CLIENT_STRATEGIES:
             self.last_error = 'unknown client connection strategy'
             raise LDAPException(self.last_error)
@@ -113,6 +113,12 @@ class Connection(object):
         self.sasl_in_progress = False
         self.read_only = read_only
         self._context_state = []
+        self._deferred_open = False
+        self._deferred_bind = False
+        self._deferred_start_tls = False
+        self._bind_controls = None
+        self._execute_deferred = False
+        self.lazy = lazy
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE)
 
@@ -142,8 +148,8 @@ class Connection(object):
     def __str__(self):
         s = [str(self.server) if self.server.is_valid else 'None']
         s.append('user: ' + str(self.user))
-        s.append('bound' if self.bound else 'unbound')
-        s.append('closed' if self.closed else 'open')
+        s.append('unbound' if not self.bound else ('deferred bind' if self._deferred_bind else  'bound'))
+        s.append('closed' if self.closed else ('deferred open' if self._deferred_open else 'open'))
         s.append('listening' if self.listening else 'not listening')
         s.append(self.strategy.__class__.__name__)
 
@@ -190,33 +196,41 @@ class Connection(object):
         """
         Bind to ldap with the user defined in Server object
         """
-
-        if self.authentication == AUTH_ANONYMOUS:
-            request = bind_operation(self.version, self.authentication, '', '')
-            response = self.post_send_single_response(self.send('bindRequest', request, controls))
-        elif self.authentication == AUTH_SIMPLE:
-            request = bind_operation(self.version, self.authentication, self.user, self.password)
-            response = self.post_send_single_response(self.send('bindRequest', request, controls))
-        elif self.authentication == AUTH_SASL:
-            if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
-                response = self.do_sasl_bind(controls)
+        if self.lazy and not self._execute_deferred:
+            print('deferred bind')
+            self._deferred_bind = True
+            self._bind_controls = controls
+            self.bound = True
+        else:
+            print('execute bind')
+            self._deferred_bind = False
+            self._bind_controls = None
+            if self.authentication == AUTH_ANONYMOUS:
+                request = bind_operation(self.version, self.authentication, '', '')
+                response = self.post_send_single_response(self.send('bindRequest', request, controls))
+            elif self.authentication == AUTH_SIMPLE:
+                request = bind_operation(self.version, self.authentication, self.user, self.password)
+                response = self.post_send_single_response(self.send('bindRequest', request, controls))
+            elif self.authentication == AUTH_SASL:
+                if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
+                    response = self.do_sasl_bind(controls)
+                else:
+                    self.last_error = 'requested sasl mechanism not supported'
+                    raise LDAPException(self.last_error)
             else:
-                self.last_error = 'requested sasl mechanism not supported'
+                self.last_error = 'unknown authentication method'
                 raise LDAPException(self.last_error)
-        else:
-            self.last_error = 'unknown authentication method'
-            raise LDAPException(self.last_error)
 
-        if isinstance(response, int):  # get response if async
-            self.get_response(response)
+            if isinstance(response, int):  # get response if async
+                self.get_response(response)
 
-        if response is None:
-            self.bound = False
-        else:
-            self.bound = True if self.result['result'] == RESULT_SUCCESS else False
+            if response is None:
+                self.bound = False
+            else:
+                self.bound = True if self.result['result'] == RESULT_SUCCESS else False
 
-        if self.bound:
-            self.refresh_dsa_info()
+            if self.bound:
+                self.refresh_dsa_info()
 
         return self.bound
 
@@ -225,6 +239,7 @@ class Connection(object):
         Unbinds the connected user
         Unbind implies closing session as per rfc 4511 (4.3)
         """
+        self._fire_deferred()
         if not self.closed:
             request = unbind_operation()
             self.send('unbindRequest', request, controls)
@@ -247,7 +262,9 @@ class Connection(object):
         if paged_size is an int greater than 0 a simple paged search is tried as described in RFC2696 with the specified size
         if paged is 0 and cookie is present the search is abandoned on server
         cookie is an opaque string received in the last paged search and must be used on the next paged search response
+        if lazy = True open and bind will be deferred until another LDAP operation is performed
         """
+        self._fire_deferred()
         if not attributes:
             attributes = [NO_ATTRIBUTES]
         elif attributes == ALL_ATTRIBUTES:
@@ -279,6 +296,7 @@ class Connection(object):
         """
         Perform a compare operation
         """
+        self._fire_deferred()
         request = compare_operation(dn, attribute, value)
         response = self.post_send_single_response(self.send('compareRequest', request, controls))
         if isinstance(response, int):
@@ -290,6 +308,7 @@ class Connection(object):
         add dn to the DIT, object_class is None, a class name or a list of class names,
         attributes is a dictionary in the form 'attr': 'val' or 'attr': ['val1', 'val2', ...] for multivalued attributes
         """
+        self._fire_deferred()
         attr_object_class = []
         if object_class is None:
             parm_object_class = []
@@ -319,6 +338,7 @@ class Connection(object):
         """
         Delete in the dib the entry identified by dn
         """
+        self._fire_deferred()
         if self.read_only:
             raise LDAPException('Connection is in read-only mode')
 
@@ -336,6 +356,7 @@ class Connection(object):
         Changes is a dictionary in the form {'attribute1': [(operation, [val1, val2])], 'attribute2': [(operation, [val1, val2])]}
         Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
+        self._fire_deferred()
         if self.read_only:
             raise LDAPException('Connection is in read-only mode')
 
@@ -366,7 +387,7 @@ class Connection(object):
         """
         Modify dn of the entry or performs a move of the entry in the DIT
         """
-
+        self._fire_deferred()
         if self.read_only:
             raise LDAPException('Connection is in read-only mode')
 
@@ -385,6 +406,7 @@ class Connection(object):
         """
         Abandon the operation indicated by message_id
         """
+        self._fire_deferred()
         if self.strategy._outstanding:
             if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
                 request = abandon_operation(message_id)
@@ -399,6 +421,7 @@ class Connection(object):
         """
         Performs an extended operation
         """
+        self._fire_deferred()
         request = extended_operation(request_name, request_value)
         response = self.post_send_single_response(self.send('extendedReq', request, controls))
         if isinstance(response, int):
@@ -407,9 +430,16 @@ class Connection(object):
 
     def start_tls(self):  # as per RRC4511. Removal of TLS is defined as MAY in RFC4511 so the client can't implement a generic stop_tls method
         if self.server.tls:
-            if self.server.tls.start_tls(self):
-                self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
+            if self.lazy and not self._execute_deferred:
+                print('deferred start_tls')
+                self._deferred_start_tls = True
                 return True
+            else:
+                print('execute start_tls')
+                self._deferred_start_tls = False
+                if self.server.tls.start_tls(self):
+                    self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
+                    return True
 
         return False
 
@@ -440,3 +470,17 @@ class Connection(object):
             search_result_to_ldif = None
 
         return search_result_to_ldif
+
+    def _fire_deferred(self):
+        if self.lazy:
+            print('fire deferred')
+            self._execute_deferred = True
+            try:
+                if self._deferred_open:
+                    self.open()
+                if self._deferred_bind:
+                    self.bind(self._bind_controls)
+                if self._deferred_start_tls:
+                    self.start_tls()
+            finally:
+                self._execute_deferred = False

@@ -44,10 +44,9 @@ class LdifProducerStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = True
-        self.restartable = False
         random.seed()
 
-    def open(self, start_listening=True, reset_usage=True):
+    def open(self, reset_usage=True):
         pass
 
     def _start_listen(self):

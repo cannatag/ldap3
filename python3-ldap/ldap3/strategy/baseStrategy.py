@@ -57,31 +57,34 @@ class BaseStrategy(object):
         self._referrals = []
         self.sync = None  # indicates a synchronous connection
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
-        self.restartable = None  # indicates if the strategy is restartable
 
-    def open(self, start_listening=True, reset_usage=True):
+    def open(self, reset_usage=True):
         """
         Open a socket to a server. Choose a server from the server pool if available
         """
+        if self.connection.lazy and not self.connection._execute_deferred:
+            print('deferred open')
+            self.connection._deferred_open = True
+            self.connection.closed = False
+        else:
+            print('execute open')
+            self.connection._deferred_open = False
+            if not self.connection.closed and not self.connection._execute_deferred:  # try to close connection if still open
+                self.close()
 
-        if not self.connection.closed:  # try to close connection if still open
-            self.close()
+            self._outstanding = dict()
+            if self.connection.usage:
+                if reset_usage or not self.connection.usage.initial_connection_start_time:
+                    self.connection.usage.start()
 
-        self._outstanding = dict()
-        if self.connection.usage:
-            if reset_usage or not self.connection.usage.initial_connection_start_time:
-                self.connection.usage.start()
+            if self.connection.server_pool:
+                new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
+                if self.connection.server != new_server:
+                    self.connection.server = new_server
+                    if self.connection.usage:
+                        self.connection.usage.servers_from_pool += 1
 
-        if self.connection.server_pool:
-            new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
-            if self.connection.server != new_server:
-                self.connection.server = new_server
-                if self.connection.usage:
-                    self.connection.usage.servers_from_pool += 1
-
-        self._open_socket(self.connection.server.ssl)
-
-        if start_listening:
+            self._open_socket(self.connection.server.ssl)
             self._start_listen()
 
     def close(self):

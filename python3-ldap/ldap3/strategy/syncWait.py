@@ -41,10 +41,9 @@ class SyncWaitStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = False
-        self.restartable = False
 
-    def open(self, start_listening=True, reset_usage=True):
-        BaseStrategy.open(self, start_listening, reset_usage)
+    def open(self, reset_usage=True):
+        BaseStrategy.open(self, reset_usage)
         self.connection.refresh_dsa_info()
 
     def _start_listen(self):

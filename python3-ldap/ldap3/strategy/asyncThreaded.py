@@ -46,17 +46,16 @@ class AsyncThreadedStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
         self.no_real_dsa = False
-        self.restartable = False
         self._responses = None
         self.receiver = None
         self.lock = Lock()
 
-    def open(self, start_listening=True, reset_usage=True):
+    def open(self, reset_usage=True):
         """
         Open connection and start listen on the socket in a different thread
         """
         with self.lock:
-            BaseStrategy.open(self, start_listening, reset_usage=True)
+            BaseStrategy.open(self, reset_usage=True)
             self._responses = dict()
 
         self.connection.refresh_dsa_info()

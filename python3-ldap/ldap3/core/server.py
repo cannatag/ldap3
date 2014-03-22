@@ -105,7 +105,7 @@ class Server(object):
         available = True
         try:
             temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            temp_socket.connect((self.server.host, self.server.port))
+            temp_socket.connect((self.host, self.port))
         except socket.error:
             available = False
         finally:

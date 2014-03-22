@@ -150,6 +150,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         except LDAPException:
             pass
 
+        # if an LDAPException is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
         except LDAPException:
@@ -163,6 +164,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         except LDAPException:
             pass
 
+        # if an LDAPException is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
         except LDAPException:

@@ -163,7 +163,7 @@ class ReceiverSocketThread(Thread):
                     else:
                         self.connection.last_error = 'Asynchronous StartTls failed'
                         raise LDAPException(self.connection.last_error)
-                if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per rfc 4511 (paragraph 4.4)
+                if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
 
                     with self.connection.strategy.lock:
                         if message_id in self.connection.strategy._responses:
@@ -177,6 +177,6 @@ class ReceiverSocketThread(Thread):
                     get_more_data = False if unprocessed else True
                     listen = True if self.connection.listening or unprocessed else False
                 else:  # Unsolicited Notification
-                    if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per rfc 4511 (paragraph 4.4.1)
+                    if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                         listen = False
         self.connection.strategy.close()

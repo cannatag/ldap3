@@ -42,7 +42,6 @@ class AsyncThreadedStrategyRestartable(AsyncThreadedStrategy):
         AsyncThreadedStrategy.__init__(self, ldap_connection)
         self.sync = False
         self.no_real_dsa = False
-        self.restartable = True
         self.restartable_sleep_time = RESTARTABLE_SLEEPTIME
         self.restartable_tries = RESTARTABLE_TRIES
         self._restarting = False
@@ -51,10 +50,9 @@ class AsyncThreadedStrategyRestartable(AsyncThreadedStrategy):
         self._responses = None
         self.receiver = None
         self.lock = Lock()
-        self.
 
-    def open(self, start_listening=True, reset_usage=False):
-        AsyncThreadedStrategy.open(self, start_listening, reset_usage)
+    def open(self, reset_usage=False):
+        AsyncThreadedStrategy.open(self,  reset_usage)
 
     def _open_socket(self, use_ssl=False):
         """
@@ -128,7 +126,7 @@ class AsyncThreadedStrategyRestartable(AsyncThreadedStrategy):
             self._last_bind_controls = controls
 
         try:
-            return SyncWaitStrategy.send(self, message_type, request, controls)  # try to send using SyncWait
+            return AsyncThreadedStrategy.send(self, message_type, request, controls)  # try to send using SyncWait
         except LDAPException:
             pass
 

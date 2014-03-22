@@ -1,6 +1,8 @@
-#######
-Roadmap
-#######
+######################
+Roadmap to version 1.0
+######################
+
+* Autoreferral on continuations
 
 * Add Connection pooling
 

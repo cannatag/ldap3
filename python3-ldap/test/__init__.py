@@ -35,7 +35,7 @@ test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = AUTH_SIMPLE  # authentication type
 test_strategy = STRATEGY_SYNC  # strategy for executing tests
-# test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
 # test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
 
 

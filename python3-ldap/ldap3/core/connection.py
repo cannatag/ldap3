@@ -49,7 +49,7 @@ from ..strategy.syncWaitRestartable import SyncWaitRestartableStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
-
+from .tls import Tls
 
 class Connection(object):
     """
@@ -148,8 +148,9 @@ class Connection(object):
     def __str__(self):
         s = [str(self.server) if self.server.is_valid else 'None']
         s.append('user: ' + str(self.user))
-        s.append('unbound' if not self.bound else ('deferred bind' if self._deferred_bind else  'bound'))
+        s.append('unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'))
         s.append('closed' if self.closed else ('deferred open' if self._deferred_open else 'open'))
+        s.append('tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'))
         s.append('listening' if self.listening else 'not listening')
         s.append(self.strategy.__class__.__name__)
 
@@ -428,18 +429,22 @@ class Connection(object):
             return response
         return True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
-    def start_tls(self):  # as per RRC4511. Removal of TLS is defined as MAY in RFC4511 so the client can't implement a generic stop_tls method
-        if self.server.tls:
-            if self.lazy and not self._execute_deferred:
-                print('deferred start_tls')
-                self._deferred_start_tls = True
+    def start_tls(self):  # as per RFC4511. Removal of TLS is defined as MAY in RFC4511 so the client can't implement a generic stop_tls method0
+        if not self.server.tls:
+            self.server.tls = Tls()
+
+        if self.lazy and not self._execute_deferred:
+            print('deferred start_tls')
+            self._deferred_start_tls = True
+            self.tls_started = True
+            return True
+        else:
+            print('execute start_tls')
+            self._deferred_start_tls = False
+            if self.server.tls.start_tls(self):
+                self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
+                self.tls_started = True
                 return True
-            else:
-                print('execute start_tls')
-                self._deferred_start_tls = False
-                if self.server.tls.start_tls(self):
-                    self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
-                    return True
 
         return False
 
@@ -482,5 +487,7 @@ class Connection(object):
                     self.bind(self._bind_controls)
                 if self._deferred_start_tls:
                     self.start_tls()
+            except LDAPException:
+                raise
             finally:
                 self._execute_deferred = False

@@ -48,6 +48,7 @@ CHANGELOG
 =========
 
 * 0.9.1 2014.03.23
+    - updated setuptools to 3.3
     - removed unneeded start_listen parameter
     - added lazy parameter to open and bind connections only when an effective operation is done
     - fixed start_tls in SyncWaitRestartable strategy

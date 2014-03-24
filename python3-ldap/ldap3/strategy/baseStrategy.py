@@ -121,7 +121,7 @@ class BaseStrategy(object):
 
         if use_ssl:
             try:
-                self.connection.socket = self.connection.server.tls.wrap_socket(self.connection.socket, do_handshake=True)
+                self.connection.socket = self.connection.server.tls.wrap_socket(self.connection, do_handshake=True)
                 if self.connection.usage:
                     self.connection.usage.wrapped_sockets += 1
             except Exception as e:

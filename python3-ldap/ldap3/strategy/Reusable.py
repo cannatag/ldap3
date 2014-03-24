@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
+from queue import Queue
 from threading import Thread, Lock
 from .baseStrategy import BaseStrategy
 from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE
@@ -42,14 +43,14 @@ class SyncWaitStrategy(BaseStrategy):
         def __init__(self, queue, pooled_connection):
             Thread.__init__(self)
             self.pooled_connection = pooled_connection
-            self.command_queue = queue
+            self.operation_queue = queue
 
         def run(self):
             self.pooled_connection.running = True
             print(self, self.command_queue)
-            with self.pooled_connection.lock:
-                print(self, 'unlocked!')
-
+            while not self.exit:
+                operation = self.operation_queue.get()
+                print(self, 'unlocked!', operation)
             print(self, 'exiting')
             self.pooled_connection.running = False
 
@@ -57,13 +58,13 @@ class SyncWaitStrategy(BaseStrategy):
         """
         Container for the Restartable connection. it includes a thread and a lock to execute the connection in the pool
         """
-        def __init__(self, connection):
+        def __init__(self, connection, queue):
             self.connection = Connection(server=connection.server,
                                          user=connection.user,
                                          password=connection.password,
                                          version=connection.version,
                                          authentication=connection.authentication,
-                                         client_stratey=STRATEGY_SYNC_RESTARTABLE,
+                                         client_strategy=STRATEGY_SYNC_RESTARTABLE,
                                          auto_referrals=connection.auto_referrals,
                                          sasl_mechanism=connection.sasl_mechanism,
                                          sasl_credentials=connection.sasl_credentials,
@@ -73,8 +74,9 @@ class SyncWaitStrategy(BaseStrategy):
             self.running = False
             self.busy = False
             self.creation_time = datetime.now()
-            self.thread = self.PooledConnectionThread()
-            self.lock = Lock()
+            self.thread = SyncWaitStrategy.PooledConnectionThread()
+            self.queue = queue
+            self.exit = False
 
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
@@ -83,7 +85,8 @@ class SyncWaitStrategy(BaseStrategy):
         self.connections = []
         self._pool_size = REUSABLE_POOL_SIZE
         self._lifetime = REUSABLE_CONNECTION_LIFETIME
-
+        self.queue = Queue()
+        self.create_pool()
     @property
     def pool_size(self):
         return self._pool_size
@@ -101,7 +104,7 @@ class SyncWaitStrategy(BaseStrategy):
         self._lifetime = value
 
     def create_pool(self):
-        self.connections = [self.ReusableConnection(self.connection) for _ in range(self.pool_size)]
+        self.connections = [SyncWaitStrategy.ReusableConnection(self.connection, self.queue) for _ in range(self.pool_size)]
         #for _ in range(self.pool_size):
         #    new_connection = self.ReusableConnection(self.connection)
         #    self.connections.append(new_connection)

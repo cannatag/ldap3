@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from ssl import CertificateError
 from ldap3 import LDAPException
 
 try:
@@ -36,7 +37,7 @@ class Tls(object):
     tls/ssl configuration for Server object
     """
 
-    def __init__(self, local_private_key_file=None, local_certificate_file=None, validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ca_certs_file=None):
+    def __init__(self, local_private_key_file=None, local_certificate_file=None, validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ca_certs_file=None, valid_names=None):
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
         elif validate:
@@ -52,6 +53,7 @@ class Tls(object):
         self.version = version
         self.private_key_file = local_private_key_file
         self.certificate_file = local_certificate_file
+        self.valid_names = valid_names
 
     def __str__(self):
         return 'version: ' + self.version + ' - local private key: ' + str(self.private_key_file) + ' - local public key:' + str(self.certificate_file) + ' - validate remote public key:' + self.validate + 'CA public key: ' + str(self.ca_certs_file)
@@ -65,11 +67,17 @@ class Tls(object):
         r = 'Tls(' + r[2:] + ')'
         return r
 
-    def wrap_socket(self, sock, do_handshake=False):
+    def wrap_socket(self, connection, do_handshake=False):
         """
         Adds TLS to a plain socket and returns the SSL socket
         """
-        return ssl.wrap_socket(sock, keyfile=self.private_key_file, certfile=self.certificate_file, server_side=False, cert_reqs=self.validate, ssl_version=self.version, ca_certs=self.ca_certs_file, do_handshake_on_connect=do_handshake)
+        wrapped_socket = ssl.wrap_socket(connection.socket, keyfile=self.private_key_file, certfile=self.certificate_file, server_side=False, cert_reqs=self.validate, ssl_version=self.version, ca_certs=self.ca_certs_file, do_handshake_on_connect=do_handshake)
+
+        if self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL:
+            check_hostname(wrapped_socket, connection.server.host, self.valid_names)
+
+        return wrapped_socket
+
 
     @staticmethod
     def unwrap_socket(sock):
@@ -83,7 +91,7 @@ class Tls(object):
             return False
 
         result = connection.extended('1.3.6.1.4.1.1466.20037')
-        if not isinstance(result, bool):  # async - start_tls must be executed by strategy
+        if not isinstance(result, bool):  # async - start_tls must be executed by the strategy
             connection.get_response(result)
             return True
         else:
@@ -93,10 +101,7 @@ class Tls(object):
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
-        connection.socket = self.wrap_socket(connection.socket, False)
-        if connection.usage:
-            connection.usage.wrapped_socket += 1
-
+        connection.socket = self.wrap_socket(connection, False)
         try:
             connection.socket.do_handshake()
         except:
@@ -104,19 +109,15 @@ class Tls(object):
             raise LDAPException(connection.last_error)
 
         if self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL:
-            server_certificate = connection.socket.getpeercert()
-            try:
-                ssl.match_hostname(server_certificate, connection.server.host)  # raise LDAPException if certificate doesn't match server name
-            except AttributeError:
-                match_hostname_backport(server_certificate, connection.server.host)
-            except:
-                raise
+            check_hostname(connection.socket, connection.server.host, self.valid_names)
+
+        if connection.usage:
+            connection.usage.wrapped_socket += 1
 
         connection.tls_started = True
         return True
 
-
-class CertificateErrorBackport(ValueError):  # fix for Python2, code from python 3.3 standard library
+class CertificateErrorBackport(ValueError):  # fix for Python 2, code from Python 3.3 standard library
     pass
 
 
@@ -170,3 +171,28 @@ def match_hostname_backport(cert, hostname):  # fix for Python2, code from pytho
         raise CertificateErrorBackport("hostname %r doesn't match %r" % (hostname, dnsnames[0]))
     else:
         raise CertificateErrorBackport("no appropriate commonName or subjectAltName fields were found")
+
+
+def check_hostname(sock, server_name, additional_names):
+    print('check_hostname')
+    server_certificate = sock.getpeercert()
+    host_names = [server_name] + (additional_names if isinstance(additional_names, list) else [additional_names])
+    valid_found = False
+    for host_name in host_names:
+        print(host_name)
+        if host_names == '*':
+            return
+        try:
+            ssl.match_hostname(server_certificate, host_name)  # raise CertificateError if certificate doesn't match server name
+            valid_found = True
+        except AttributeError:
+            match_hostname_backport(server_certificate, host_name)
+            valid_found = True
+        except CertificateError:
+            pass
+
+        if valid_found:
+            print('Valid: ', host_name)
+            return
+
+    raise LDAPException("certificate error, name doesn't match")

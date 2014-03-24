@@ -190,6 +190,7 @@ Connection attributes:
 * auto_bind: True if auto_bind is active else False
 * tls_started: True if the Transport Security Layer is active
 * usage: metrics of connection usage
+* lazy: connection will defer open and bind until another LDAP operation is requested
 
 Simple Paged search
 -------------------
@@ -227,7 +228,7 @@ Responses are received and stored in the connection.response as a list of dictio
 You can get the search result entries of a Search operation iterating over the response attribute. Each entry is a dictionary with the following field:
 * dn: the distinguished name of the entry
 * attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format.
-* raw_attributes: same as 'attributes' but not encoded (bytesarray)
+* raw_attributes: same as 'attributes' but not encoded (bytearray)
 
 Result
 ======

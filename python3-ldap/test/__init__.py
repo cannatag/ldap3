@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 # noinspection PyUnresolvedReferences
-from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE
+from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_POOL_REUSABLE
 
 test_server = 'sl10.intra.camera.it'  # the ldap server where tests executed
 test_user = 'cn=admin,o=services'  # the user that performs the tests
@@ -35,8 +35,9 @@ test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = AUTH_SIMPLE  # authentication type
 test_strategy = STRATEGY_SYNC  # strategy for executing tests
-test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
-# test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+#test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+test_strategy = STRATEGY_POOL_REUSABLE  # uncomment this line to test the sync_restartable strategy
 
 
 def test_dn_builder(base, name):

@@ -28,6 +28,7 @@ from .baseStrategy import BaseStrategy
 from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE
 from ..core.connection import Connection
 
+
 class SyncWaitStrategy(BaseStrategy):
     """
     A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
@@ -43,7 +44,7 @@ class SyncWaitStrategy(BaseStrategy):
         def __init__(self, queue, pooled_connection):
             Thread.__init__(self)
             self.pooled_connection = pooled_connection
-            self.operation_queue = queue
+            self.operation_queue = self.pooled_connection.queue
 
         def run(self):
             self.pooled_connection.running = True
@@ -78,6 +79,11 @@ class SyncWaitStrategy(BaseStrategy):
             self.queue = queue
             self.exit = False
 
+        def __str__(self):
+            s = str(self.connection)
+
+
+
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = True
@@ -87,6 +93,7 @@ class SyncWaitStrategy(BaseStrategy):
         self._lifetime = REUSABLE_CONNECTION_LIFETIME
         self.queue = Queue()
         self.create_pool()
+
     @property
     def pool_size(self):
         return self._pool_size
@@ -105,10 +112,3 @@ class SyncWaitStrategy(BaseStrategy):
 
     def create_pool(self):
         self.connections = [SyncWaitStrategy.ReusableConnection(self.connection, self.queue) for _ in range(self.pool_size)]
-        #for _ in range(self.pool_size):
-        #    new_connection = self.ReusableConnection(self.connection)
-        #    self.connections.append(new_connection)
-
-    def activate_connection(self, pool_connection):
-        pool_connection.lock.acquire()
-        pool_connection.thread.start()

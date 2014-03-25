@@ -51,6 +51,7 @@ from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
 
+
 class Connection(object):
     """
     Main ldap connection class

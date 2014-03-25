@@ -47,11 +47,13 @@ For any information and suggestions you can contact me at python3ldap@gmail.com 
 CHANGELOG
 =========
 
-* 0.9.1 2014.03.23
+* 0.9.1 2014.03.25
+    - tested against Python 3.4
     - updated setuptools to 3.3
     - removed unneeded start_listen parameter
-    - added lazy parameter to open and bind connections only when an effective operation is done
+    - added 'lazy' parameter to open and bind a connection only when an effective operation is done
     - fixed start_tls in SyncWaitRestartable strategy
+    - fixed certificate name checking while opening an ssl connection
 
 * 0.9.0 2014.03.20
     - PEP8 compliance

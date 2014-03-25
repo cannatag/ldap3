@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
+from os import linesep
 from queue import Queue
 from threading import Thread, Lock
 from .baseStrategy import BaseStrategy
@@ -29,7 +30,7 @@ from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYN
 from ..core.connection import Connection
 
 
-class SyncWaitStrategy(BaseStrategy):
+class ReusableStrategy(BaseStrategy):
     """
     A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
     The connection using this strategy presents itself as a normal connection, but internally the strategy has a pool of
@@ -41,19 +42,26 @@ class SyncWaitStrategy(BaseStrategy):
     """
 
     class PooledConnectionThread(Thread):
-        def __init__(self, queue, pooled_connection):
+        def __init__(self, reusable_connection):
             Thread.__init__(self)
-            self.pooled_connection = pooled_connection
-            self.operation_queue = self.pooled_connection.queue
+            self.reusable_connection = reusable_connection
+            self.operation_queue = self.reusable_connection.queue
 
         def run(self):
-            self.pooled_connection.running = True
-            print(self, self.command_queue)
-            while not self.exit:
+            self.reusable_connection.running = True
+            print(self, self.operation_queue)
+            terminate = False
+            while not terminate:
                 operation = self.operation_queue.get()
+                self.reusable_connection.busy = True
+                if operation == -1:
+                    terminate = True
                 print(self, 'unlocked!', operation)
+                self.reusable_connection.busy = False
+            self.reusable_connection.running = False
+
             print(self, 'exiting')
-            self.pooled_connection.running = False
+
 
     class ReusableConnection(object):
         """
@@ -74,15 +82,17 @@ class SyncWaitStrategy(BaseStrategy):
                                          lazy=True)
             self.running = False
             self.busy = False
-            self.creation_time = datetime.now()
-            self.thread = SyncWaitStrategy.PooledConnectionThread()
             self.queue = queue
-            self.exit = False
+            self.creation_time = datetime.now()
+            self.thread = ReusableStrategy.PooledConnectionThread(self)
 
         def __str__(self):
-            s = str(self.connection)
+            s = str(self.connection) + linesep
+            s += 'running ' if self.running else 'halted' + ' - '
+            s += 'busy' if self.busy else ' available' ' - '
+            s += 'creation time ' + self.creation_time.isoformat()
 
-
+            return s
 
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
@@ -106,9 +116,9 @@ class SyncWaitStrategy(BaseStrategy):
     def lifetime(self):
         return self._lifetime
 
-    @pool_size.setter
+    @lifetime.setter
     def lifetime(self, value):
         self._lifetime = value
 
     def create_pool(self):
-        self.connections = [SyncWaitStrategy.ReusableConnection(self.connection, self.queue) for _ in range(self.pool_size)]
+        self.connections = [ReusableStrategy.ReusableConnection(self.connection, self.queue) for _ in range(self.pool_size)]

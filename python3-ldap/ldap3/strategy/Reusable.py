@@ -26,7 +26,7 @@ from os import linesep
 from queue import Queue
 from threading import Thread, Lock
 from .baseStrategy import BaseStrategy
-from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE
+from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT
 from ..core.connection import Connection
 
 
@@ -54,9 +54,9 @@ class ReusableStrategy(BaseStrategy):
             while not terminate:
                 operation = self.operation_queue.get()
                 self.reusable_connection.busy = True
-                if operation == -1:
+                if operation == TERMINATE_REUSABLE:
                     terminate = True
-                print(self, 'unlocked!', operation)
+                print(self, 'received', operation)
                 self.reusable_connection.busy = False
             self.reusable_connection.running = False
 
@@ -122,3 +122,31 @@ class ReusableStrategy(BaseStrategy):
 
     def create_pool(self):
         self.connections = [ReusableStrategy.ReusableConnection(self.connection, self.queue) for _ in range(self.pool_size)]
+
+    def open(self):
+        pass
+
+    def close(self):
+        pass
+
+    def _open_socket(self, use_ssl=False):
+        pass
+
+    def _close_socket(self):
+        pass
+
+    def _stop_listen(self):
+        pass
+
+
+    def _start_listen(self):
+        pass
+
+    def _get_response(self, message_id):
+        pass
+
+    def send(self):
+        pass
+
+    def get_response(self, message_id, timeout=RESPONSE_WAITING_TIMEOUT):
+        pass

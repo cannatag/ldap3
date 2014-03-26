@@ -67,8 +67,15 @@ RESPONSE_COMPLETE = -1
 RESPONSE_SLEEPTIME = 0.02  # seconds to wait while waiting for a response in asynchronous strategies
 RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
+
+#restartable strategy
 RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
 RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+
+# reusable strategy
+TERMINATE_REUSABLE = -1
+REUSABLE_POOL_SIZE = 10
+REUSABLE_CONNECTION_LIFETIME = 3600
 
 # LDAP protocol
 LDAP_MAX_INT = 2147483647
@@ -173,10 +180,6 @@ POOLING_STRATEGY_RANDOM_PASSIVE = 4
 POOLING_STRATEGY_RANDOM_ACTIVE = 5
 POOLING_STRATEGIES = [POOLING_STRATEGY_NONE, POOLING_STRATEGY_FIRST_ACTIVE, POOLING_STRATEGY_ROUND_ROBIN_PASSIVE, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE, POOLING_STRATEGY_RANDOM_PASSIVE, POOLING_STRATEGY_RANDOM_ACTIVE]
 POOLING_CHECKING_TIMEOUT = 5
-
-# reusable
-REUSABLE_POOL_SIZE = 10
-REUSABLE_CONNECTION_LIFETIME = 3600
 
 
 class LDAPException(Exception):

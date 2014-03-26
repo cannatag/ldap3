@@ -42,6 +42,72 @@ class AsyncThreadedStrategy(BaseStrategy):
     Response appear in strategy._responses dictionary
     """
 
+    class ReceiverSocketThread(Thread):
+        """
+        The thread that actually manage the receiver socket
+        """
+
+        def __init__(self, ldap_connection):
+            Thread.__init__(self)
+            self.connection = ldap_connection
+
+        def run(self):
+            """
+            Wait for data on socket, compute the length of the message and wait for enough bytes to decode the message
+            Message are appended to strategy._responses
+            """
+            unprocessed = b''
+            get_more_data = True
+            listen = True
+            data = b''
+            while listen:
+                if get_more_data:
+                    try:
+                        data = self.connection.socket.recv(SOCKET_SIZE)
+                    except OSError:
+                        listen = False
+                    if len(data) > 0:
+                        unprocessed += data
+                        data = b''
+                    else:
+                        listen = False
+                length = BaseStrategy.compute_ldap_message_size(unprocessed)
+                if length == -1 or len(unprocessed) < length:
+                    get_more_data = True
+                elif len(unprocessed) >= length:  # add message to message list
+                    if self.connection.usage:
+                        self.connection.usage.received_message(length)
+                    ldap_resp = decoder.decode(unprocessed[:length], asn1Spec = LDAPMessage())[0]
+                    message_id = int(ldap_resp['messageID'])
+                    dict_response = BaseStrategy.decode_response(ldap_resp)
+                    if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
+                        if dict_response['result'] == 0:  # StartTls in progress
+                            if self.connection.server.tls:
+                                self.connection.server.tls._start_tls(self.connection)
+                            else:
+                                self.connection.last_error = 'no Tls object defined in server'
+                                raise LDAPException(self.connection.last_error)
+                        else:
+                            self.connection.last_error = 'Asynchronous StartTls failed'
+                            raise LDAPException(self.connection.last_error)
+                    if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
+
+                        with self.connection.strategy.lock:
+                            if message_id in self.connection.strategy._responses:
+                                self.connection.strategy._responses[message_id].append(dict_response)
+                            else:
+                                self.connection.strategy._responses[message_id] = [dict_response]
+                            if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
+                                self.connection.strategy._responses[message_id].append(RESPONSE_COMPLETE)
+
+                        unprocessed = unprocessed[length:]
+                        get_more_data = False if unprocessed else True
+                        listen = True if self.connection.listening or unprocessed else False
+                    else:  # Unsolicited Notification
+                        if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
+                            listen = False
+            self.connection.strategy.close()
+
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
@@ -88,7 +154,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         Start thread in daemon mode
         """
         if not self.connection.listening:
-            self.receiver = ReceiverSocketThread(self.connection)
+            self.receiver = AsyncThreadedStrategy.ReceiverSocketThread(self.connection)
             self.connection.listening = True
             self.receiver.daemon = True
             self.receiver.start()
@@ -112,70 +178,3 @@ class AsyncThreadedStrategy(BaseStrategy):
             self._referrals = []
 
         return responses
-
-
-class ReceiverSocketThread(Thread):
-    """
-    The thread that actually manage the receiver socket
-    """
-
-    def __init__(self, ldap_connection):
-        Thread.__init__(self)
-        self.connection = ldap_connection
-
-    def run(self):
-        """
-        Wait for data on socket, compute the length of the message and wait for enough bytes to decode the message
-        Message are appended to strategy._responses
-        """
-        unprocessed = b''
-        get_more_data = True
-        listen = True
-        data = b''
-        while listen:
-            if get_more_data:
-                try:
-                    data = self.connection.socket.recv(SOCKET_SIZE)
-                except OSError:
-                    listen = False
-                if len(data) > 0:
-                    unprocessed += data
-                    data = b''
-                else:
-                    listen = False
-            length = BaseStrategy.compute_ldap_message_size(unprocessed)
-            if length == -1 or len(unprocessed) < length:
-                get_more_data = True
-            elif len(unprocessed) >= length:  # add message to message list
-                if self.connection.usage:
-                    self.connection.usage.received_message(length)
-                ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
-                message_id = int(ldap_resp['messageID'])
-                dict_response = BaseStrategy.decode_response(ldap_resp)
-                if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
-                    if dict_response['result'] == 0:  # StartTls in progress
-                        if self.connection.server.tls:
-                            self.connection.server.tls._start_tls(self.connection)
-                        else:
-                            self.connection.last_error = 'no Tls object defined in server'
-                            raise LDAPException(self.connection.last_error)
-                    else:
-                        self.connection.last_error = 'Asynchronous StartTls failed'
-                        raise LDAPException(self.connection.last_error)
-                if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-
-                    with self.connection.strategy.lock:
-                        if message_id in self.connection.strategy._responses:
-                            self.connection.strategy._responses[message_id].append(dict_response)
-                        else:
-                            self.connection.strategy._responses[message_id] = [dict_response]
-                        if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
-                            self.connection.strategy._responses[message_id].append(RESPONSE_COMPLETE)
-
-                    unprocessed = unprocessed[length:]
-                    get_more_data = False if unprocessed else True
-                    listen = True if self.connection.listening or unprocessed else False
-                else:  # Unsolicited Notification
-                    if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
-                        listen = False
-        self.connection.strategy.close()

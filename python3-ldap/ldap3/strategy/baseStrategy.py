@@ -485,3 +485,15 @@ class BaseStrategy(object):
     def _get_response(self, message_id):
         # overridden in strategy class
         pass
+
+    def receiving(self):
+        # overridden in strategy class
+        pass
+
+    def post_send_single_response(self, message_id):
+        # overridden in strategy class
+        pass
+
+    def post_send_search(self, message_id):
+        # overridden in strategy class
+        pass

@@ -54,7 +54,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
         try:
             return SyncWaitStrategy._open_socket(self, use_ssl)  # try to open socket using SyncWait
-        except LDAPException:  # machinery for restartable connection
+        except Exception:  # machinery for restartable connection
             pass
 
         if not self._restarting:  # if not already performing a restart
@@ -66,7 +66,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not self.connection.closed:
                     try:  # resetting connection
                         self.connection.close()
-                    except LDAPException:
+                    except Exception:
                         pass
 
                 try:  # reissuing same operation
@@ -82,7 +82,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                     self.connection.closed = False
                     self._restarting = False
                     return
-                except LDAPException:
+                except Exception:
                     if self.connection.usage:
                         self.connection.usage.restartable_failures += 1
                 if not isinstance(counter, bool):
@@ -101,7 +101,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
         try:
             return SyncWaitStrategy.send(self, message_type, request, controls)  # try to send using SyncWait
-        except LDAPException:
+        except Exception:
             pass
 
         if not self._restarting:  # machinery for restartable connection
@@ -112,7 +112,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not self.connection.closed:
                     try:  # resetting connection
                         self.connection.close()
-                    except LDAPException:
+                    except Exception:
                         pass
                 failure = False
                 try:  # reopening connection
@@ -121,7 +121,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         self.connection.start_tls()
                     if message_type != 'bindRequest':
                         self.connection.bind(self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
-                except LDAPException:
+                except Exception:
                     failure = True
 
                 if not failure:
@@ -131,7 +131,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                             self.connection.usage.restartable_successes += 1
                         self._restarting = False
                         return ret_value  # successful send
-                    except LDAPException:
+                    except Exception:
                         failure = True
 
                 if failure and self.connection.usage:
@@ -146,13 +146,13 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
     def post_send_single_response(self, message_id):
         try:
             return SyncWaitStrategy.post_send_single_response(self, message_id)
-        except LDAPException:
+        except Exception:
             pass
 
         # if an LDAPException is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
-        except LDAPException:
+        except Exception:
             pass
 
         raise LDAPException('restartable connection strategy failed in post_send_single_response')
@@ -160,13 +160,13 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
     def post_send_search(self, message_id):
         try:
             return SyncWaitStrategy.post_send_search(self, message_id)
-        except LDAPException:
+        except Exception:
             pass
 
         # if an LDAPException is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
-        except LDAPException:
+        except Exception:
             pass
 
         raise LDAPException('restartable connection strategy failed in post_send_search')

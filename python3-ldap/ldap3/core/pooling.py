@@ -188,7 +188,3 @@ class ServerPool(object):
             return self.pool_states[connection].get_current_server()
         else:
             raise LDAPException('connection not in server pool state')
-
-
-class ConnectionPool(object):
-    pass

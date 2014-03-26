@@ -54,7 +54,7 @@ class ReusableStrategy(BaseStrategy):
             while not terminate:
                 operation = self.operation_queue.get()
                 self.reusable_connection.busy = True
-                if operation == TERMINATE_REUSABLE:
+                if operation == TERMINATE_REUSABLE and not self.reusable_connection.cannot_terminate:
                     terminate = True
                 print(self, 'received', operation)
                 self.reusable_connection.busy = False
@@ -82,6 +82,7 @@ class ReusableStrategy(BaseStrategy):
                                          lazy=True)
             self.running = False
             self.busy = False
+            self.cannot_terminate = False
             self.queue = queue
             self.creation_time = datetime.now()
             self.thread = ReusableStrategy.PooledConnectionThread(self)
@@ -123,29 +124,13 @@ class ReusableStrategy(BaseStrategy):
     def create_pool(self):
         self.connections = [ReusableStrategy.ReusableConnection(self.connection, self.queue) for _ in range(self.pool_size)]
 
-    def open(self):
+    def open(self, reset_usage=True):
         pass
 
     def close(self):
         pass
 
-    def _open_socket(self, use_ssl=False):
-        pass
-
-    def _close_socket(self):
-        pass
-
-    def _stop_listen(self):
-        pass
-
-
-    def _start_listen(self):
-        pass
-
-    def _get_response(self, message_id):
-        pass
-
-    def send(self):
+    def send(self, message_type, request, controls = None):
         pass
 
     def get_response(self, message_id, timeout=RESPONSE_WAITING_TIMEOUT):

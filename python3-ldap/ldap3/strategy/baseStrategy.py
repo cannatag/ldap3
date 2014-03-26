@@ -111,13 +111,13 @@ class BaseStrategy(object):
             self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except Exception as e:
             self.connection.last_error = 'socket creation error: ' + str(e)
-            raise LDAPException(self.connection.last_error)
+            raise
 
         try:
             self.connection.socket.connect((self.connection.server.host, self.connection.server.port))
         except socket.error as e:
             self.connection.last_error = 'socket connection error: ' + str(e)
-            raise LDAPException(self.connection.last_error)
+            raise
 
         if use_ssl:
             try:
@@ -126,7 +126,7 @@ class BaseStrategy(object):
                     self.connection.usage.wrapped_sockets += 1
             except Exception as e:
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
-                raise LDAPException(self.connection.last_error)
+                raise
 
         if self.connection.usage:
             self.connection.usage.opened_sockets += 1
@@ -143,7 +143,8 @@ class BaseStrategy(object):
             self.connection.socket.close()
         except Exception as e:
             self.connection.last_error = 'socket closing error' + str(e)
-            raise LDAPException(self.connection.last_error)
+            raise
+
         self.connection.socket = None
         self.connection.closed = True
 
@@ -176,7 +177,7 @@ class BaseStrategy(object):
                 self.connection.socket.sendall(encoded_message)
             except socket.error as e:
                 self.connection.last_error = 'socket sending error' + str(e)
-                raise LDAPException(self.connection.last_error)
+                raise
 
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls

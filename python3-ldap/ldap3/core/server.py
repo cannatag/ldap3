@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from socket import getaddrinfo, gaierror
 
-from ldap3 import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException
+from ldap3 import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException, LDAP_MAX_INT
 from ..protocol.dse import DsaInfo
 from ..protocol.schema import SchemaInfo
 from .tls import Tls
@@ -123,7 +123,7 @@ class Server(object):
         """
         if self.address and self.address in Server._real_servers:
             Server._real_servers[self.address] += 1
-            if Server._real_servers[self.address] > 2147483646:  # wrap as per MAXINT (2147483647) in rfc4511 specification
+            if Server._real_servers[self.address] >= LDAP_MAX_INT:  # wrap as per MAXINT (2147483647) in rfc4511 specification
                 Server._real_servers[self.address] = 1  # 0 is reserved for Unsolicited messages
         else:
             Server._real_servers[self.address] = 1

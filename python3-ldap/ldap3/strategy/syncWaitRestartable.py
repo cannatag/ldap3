@@ -51,7 +51,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         raise LDAPException if unable to open or connect socket
         if connection is restartable tries for the number of restarting requested or forever
         """
-
+        print('_open_socket in Restartable')
         try:
             return SyncWaitStrategy._open_socket(self, use_ssl)  # try to open socket using SyncWait
         except Exception:  # machinery for restartable connection
@@ -62,7 +62,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             counter = self.restartable_tries
             while counter > 0:
                 sleep(self.restartable_sleep_time)
-
+                print('_open_socket in Restartable again')
                 if not self.connection.closed:
                     try:  # resetting connection
                         self.connection.close()

@@ -148,6 +148,12 @@ class ServerPool(object):
     def __len__(self):
         return len(self.servers)
 
+    def __getitem__(self, item):
+        return self.servers[item]
+
+    def __iter__(self):
+        return self.servers.__iter__()
+
     def add(self, servers):
         if isinstance(servers, Server):
             if servers not in self.servers:

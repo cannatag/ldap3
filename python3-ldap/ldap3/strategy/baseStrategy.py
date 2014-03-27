@@ -62,6 +62,7 @@ class BaseStrategy(object):
         """
         Open a socket to a server. Choose a server from the server pool if available
         """
+        print(self.connection.lazy, self.connection._execute_deferred)
         if self.connection.lazy and not self.connection._execute_deferred:
             # print('deferred open')
             self.connection._deferred_open = True
@@ -84,6 +85,7 @@ class BaseStrategy(object):
                     if self.connection.usage:
                         self.connection.usage.servers_from_pool += 1
 
+            print('call open_socket', self.connection.lazy)
             self._open_socket(self.connection.server.ssl)
             self._start_listen()
 

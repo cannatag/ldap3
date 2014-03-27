@@ -24,10 +24,10 @@ If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 from os import linesep
 from queue import Queue
-from threading import Thread, Lock
+from threading import Thread
+
 from .baseStrategy import BaseStrategy
 from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT
-from ..core.connection import Connection
 
 
 class ReusableStrategy(BaseStrategy):
@@ -48,27 +48,29 @@ class ReusableStrategy(BaseStrategy):
 
         def run(self):
             self.active_connection.running = True
-            print(self, self.active_connection.request_queue)
+            # print(self, self.active_connection.request_queue)
             terminate = False
             while not terminate:
                 operation = self.active_connection.request_queue.get()
                 self.active_connection.busy = True
                 if operation == TERMINATE_REUSABLE and not self.active_connection.cannot_terminate:
                     terminate = True
-
                 else:
                     result = self.active_connection.connection.send(*operation)
-                    self.active_connection.response_queue.put()
+                    # self.active_connection.response_queue.put()
                 self.active_connection.busy = False
             self.active_connection.running = False
 
-            print(self, 'exiting')
+            # print(self, 'exiting')
 
     class ReusableConnection(object):
         """
         Container for the Restartable connection. it includes a thread and a lock to execute the connection in the pool
         """
-        def __init__(self, connection, request_queue, response_queue):
+        def __init__(self, connection, request_queue):
+            from ..core.connection import Connection
+            print(type(connection))
+            print(connection)
             self.connection = Connection(server=connection.server,
                                          user=connection.user,
                                          password=connection.password,
@@ -85,7 +87,6 @@ class ReusableStrategy(BaseStrategy):
             self.busy = False
             self.cannot_terminate = False
             self.request_queue = request_queue
-            self.response_queue = response_queue
             self.creation_time = datetime.now()
             self.thread = ReusableStrategy.PooledConnectionThread(self)
 
@@ -105,7 +106,6 @@ class ReusableStrategy(BaseStrategy):
         self._pool_size = REUSABLE_POOL_SIZE
         self._lifetime = REUSABLE_CONNECTION_LIFETIME
         self.request_queue = Queue()
-        self.response_queue = Queue()
         self.counter = 0
         self.create_pool()
 
@@ -126,7 +126,7 @@ class ReusableStrategy(BaseStrategy):
         self._lifetime = value
 
     def create_pool(self):
-        self.connections = [ReusableStrategy.ReusableConnection(self.connection, self.queue) for _ in range(self.pool_size)]
+        self.connections = [ReusableStrategy.ReusableConnection(self.connection, self.request_queue) for _ in range(self.pool_size)]
 
     def open(self, reset_usage=True):
         pass
@@ -145,8 +145,8 @@ class ReusableStrategy(BaseStrategy):
     def get_response(self, message_id, timeout=RESPONSE_WAITING_TIMEOUT):
         pass
 
-    def post_send_single_response(self, message_id):
-        pass
+    def post_send_single_response(self, counter):
+        return counter
 
     def post_send_search(self, message_id):
         pass

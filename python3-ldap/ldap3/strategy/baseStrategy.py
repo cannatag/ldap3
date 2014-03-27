@@ -63,11 +63,11 @@ class BaseStrategy(object):
         Open a socket to a server. Choose a server from the server pool if available
         """
         if self.connection.lazy and not self.connection._execute_deferred:
-            print('deferred open')
+            # print('deferred open')
             self.connection._deferred_open = True
             self.connection.closed = False
         else:
-            print('execute open')
+            # print('execute open')
             self.connection._deferred_open = False
             if not self.connection.closed and not self.connection._execute_deferred:  # try to close connection if still open
                 self.close()

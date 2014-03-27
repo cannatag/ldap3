@@ -28,8 +28,10 @@ from os import linesep
 from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
-    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE
+    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE, \
+    STRATEGY_POOL_REUSABLE
 from ldap3.core.pooling import ServerPool
+from ldap3.strategy.Reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
 from ..operation.bind import bind_operation
@@ -75,8 +77,10 @@ class Connection(object):
             self.strategy = LdifProducerStrategy(self)
         elif self.strategy_type == STRATEGY_SYNC_RESTARTABLE:
             self.strategy = SyncWaitRestartableStrategy(self)
+        elif self.strategy_type == STRATEGY_POOL_REUSABLE:
+            self.strategy = ReusableStrategy(self)
         else:
-            self.strategy = None
+            raise LDAPException('unavailable strategy')
 
         self.user = user
         self.password = password
@@ -199,12 +203,12 @@ class Connection(object):
         Bind to ldap with the user defined in Server object
         """
         if self.lazy and not self._execute_deferred:
-            print('deferred bind')
+            #print('deferred bind')
             self._deferred_bind = True
             self._bind_controls = controls
             self.bound = True
         else:
-            print('execute bind')
+            #print('execute bind')
             self._deferred_bind = False
             self._bind_controls = None
             if self.authentication == AUTH_ANONYMOUS:
@@ -435,12 +439,12 @@ class Connection(object):
             self.server.tls = Tls()
 
         if self.lazy and not self._execute_deferred:
-            print('deferred start_tls')
+            #print('deferred start_tls')
             self._deferred_start_tls = True
             self.tls_started = True
             return True
         else:
-            print('execute start_tls')
+            #print('execute start_tls')
             self._deferred_start_tls = False
             if self.server.tls.start_tls(self):
                 self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
@@ -479,7 +483,7 @@ class Connection(object):
 
     def _fire_deferred(self):
         if self.lazy:
-            print('fire deferred')
+            #print('fire all deferred')
             self._execute_deferred = True
             try:
                 if self._deferred_open:

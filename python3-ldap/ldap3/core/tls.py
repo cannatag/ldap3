@@ -174,12 +174,11 @@ def match_hostname_backport(cert, hostname):  # fix for Python2, code from pytho
 
 
 def check_hostname(sock, server_name, additional_names):
-    print('check_hostname')
+
     server_certificate = sock.getpeercert()
     host_names = [server_name] + (additional_names if isinstance(additional_names, list) else [additional_names])
     valid_found = False
     for host_name in host_names:
-        print(host_name)
         if host_names == '*':
             return
         try:
@@ -192,7 +191,6 @@ def check_hostname(sock, server_name, additional_names):
             pass
 
         if valid_found:
-            print('Valid: ', host_name)
             return
 
     raise LDAPException("certificate error, name doesn't match")

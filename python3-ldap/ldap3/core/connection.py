@@ -122,7 +122,7 @@ class Connection(object):
         self._deferred_bind = False
         self._deferred_start_tls = False
         self._bind_controls = None
-        self._execute_deferred = False
+        self._executing_deferred = False
         self.lazy = lazy
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE)
@@ -202,13 +202,11 @@ class Connection(object):
         """
         Bind to ldap with the user defined in Server object
         """
-        if self.lazy and not self._execute_deferred:
-            #print('deferred bind')
+        if self.lazy and not self._executing_deferred:
             self._deferred_bind = True
             self._bind_controls = controls
             self.bound = True
         else:
-            #print('execute bind')
             self._deferred_bind = False
             self._bind_controls = None
             if self.authentication == AUTH_ANONYMOUS:
@@ -245,9 +243,12 @@ class Connection(object):
         Unbinds the connected user
         Unbind implies closing session as per rfc 4511 (4.3)
         """
-        print('F1')
-        self._fire_deferred()
-        if not self.closed:
+        if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # clear deferred status
+            self.strategy.close()
+            self._deferred_open = False
+            self._deferred_bind = False
+            self._deferred_start_tls = False
+        elif not self.closed:
             request = unbind_operation()
             self.send('unbindRequest', request, controls)
             self.strategy.close()
@@ -271,7 +272,6 @@ class Connection(object):
         cookie is an opaque string received in the last paged search and must be used on the next paged search response
         if lazy = True open and bind will be deferred until another LDAP operation is performed
         """
-        print('F2')
         self._fire_deferred()
         if not attributes:
             attributes = [NO_ATTRIBUTES]
@@ -304,7 +304,6 @@ class Connection(object):
         """
         Perform a compare operation
         """
-        print('F3')
         self._fire_deferred()
         request = compare_operation(dn, attribute, value)
         response = self.post_send_single_response(self.send('compareRequest', request, controls))
@@ -317,7 +316,6 @@ class Connection(object):
         add dn to the DIT, object_class is None, a class name or a list of class names,
         attributes is a dictionary in the form 'attr': 'val' or 'attr': ['val1', 'val2', ...] for multivalued attributes
         """
-        print('F4')
         self._fire_deferred()
         attr_object_class = []
         if object_class is None:
@@ -348,7 +346,6 @@ class Connection(object):
         """
         Delete in the dib the entry identified by dn
         """
-        print('F5')
         self._fire_deferred()
         if self.read_only:
             raise LDAPException('Connection is in read-only mode')
@@ -367,7 +364,6 @@ class Connection(object):
         Changes is a dictionary in the form {'attribute1': [(operation, [val1, val2])], 'attribute2': [(operation, [val1, val2])]}
         Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
-        print('F6')
         self._fire_deferred()
         if self.read_only:
             raise LDAPException('Connection is in read-only mode')
@@ -399,7 +395,6 @@ class Connection(object):
         """
         Modify dn of the entry or performs a move of the entry in the DIT
         """
-        print('F7')
         self._fire_deferred()
         if self.read_only:
             raise LDAPException('Connection is in read-only mode')
@@ -419,7 +414,6 @@ class Connection(object):
         """
         Abandon the operation indicated by message_id
         """
-        print('F8')
         self._fire_deferred()
         if self.strategy._outstanding:
             if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
@@ -435,7 +429,6 @@ class Connection(object):
         """
         Performs an extended operation
         """
-        print('F93')
         self._fire_deferred()
         request = extended_operation(request_name, request_value)
         response = self.post_send_single_response(self.send('extendedReq', request, controls))
@@ -447,13 +440,11 @@ class Connection(object):
         if not self.server.tls:
             self.server.tls = Tls()
 
-        if self.lazy and not self._execute_deferred:
-            #print('deferred start_tls')
+        if self.lazy and not self._executing_deferred:
             self._deferred_start_tls = True
             self.tls_started = True
             return True
         else:
-            #print('execute start_tls')
             self._deferred_start_tls = False
             if self.server.tls.start_tls(self):
                 self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
@@ -491,10 +482,8 @@ class Connection(object):
         return search_result_to_ldif
 
     def _fire_deferred(self):
-        print('fire!')
         if self.lazy:
-            #print('fire all deferred')
-            self._execute_deferred = True
+            self._executing_deferred = True
             try:
                 if self._deferred_open:
                     self.open()
@@ -505,4 +494,4 @@ class Connection(object):
             except LDAPException:
                 raise
             finally:
-                self._execute_deferred = False
+                self._executing_deferred = False

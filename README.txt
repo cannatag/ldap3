@@ -54,6 +54,7 @@ CHANGELOG
     - added 'lazy' parameter to open, bind and unbind a connection only when an effective operation is done
     - fixed start_tls in SyncWaitRestartable strategy
     - fixed certificate name checking while opening an ssl connection
+    - fixed syntax error during installation
     - socket operations now raise proper exception, not generic LDAPException (thanks to Joseph)
 
 * 0.9.0 2014.03.20

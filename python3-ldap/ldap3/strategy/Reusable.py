@@ -48,7 +48,6 @@ class ReusableStrategy(BaseStrategy):
 
         def run(self):
             self.active_connection.running = True
-            # print(self, self.active_connection.request_queue)
             terminate = False
             while not terminate:
                 operation = self.active_connection.request_queue.get()
@@ -61,7 +60,6 @@ class ReusableStrategy(BaseStrategy):
                 self.active_connection.busy = False
             self.active_connection.running = False
 
-            # print(self, 'exiting')
 
     class ReusableConnection(object):
         """
@@ -69,8 +67,6 @@ class ReusableStrategy(BaseStrategy):
         """
         def __init__(self, connection, request_queue):
             from ..core.connection import Connection
-            print(type(connection))
-            print(connection)
             self.connection = Connection(server=connection.server,
                                          user=connection.user,
                                          password=connection.password,

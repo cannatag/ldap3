@@ -62,15 +62,11 @@ class BaseStrategy(object):
         """
         Open a socket to a server. Choose a server from the server pool if available
         """
-        print('open', self.connection.lazy, self.connection._execute_deferred)
-        if self.connection.lazy and not self.connection._execute_deferred:
-            print('deferred open')
+        if self.connection.lazy and not self.connection._executing_deferred:
             self.connection._deferred_open = True
             self.connection.closed = False
         else:
-            print('execute open to', self.connection.server)
-            self.connection._deferred_open = False
-            if not self.connection.closed and not self.connection._execute_deferred:  # try to close connection if still open
+            if not self.connection.closed and not self.connection._executing_deferred:  # try to close connection if still open
                 self.close()
 
             self._outstanding = dict()
@@ -85,24 +81,29 @@ class BaseStrategy(object):
                     if self.connection.usage:
                         self.connection.usage.servers_from_pool += 1
 
-            print('call open_socket', self.connection.lazy)
             self._open_socket(self.connection.server.ssl)
+            self.connection._deferred_open = False
             self._start_listen()
 
     def close(self):
         """
         Close connection
         """
-        if not self.connection.closed:
-            self._stop_listen()
-            self._close_socket()
-            self.connection.bound = False
-            self.connection.request = None
-            self.connection.response = None
-            self._outstanding = dict()
-            self._referrals = []
-            if self.connection.usage:
-                self.connection.usage.stop()
+        if self.connection.lazy and not self.connection._executing_deferred and (self.connection._deferred_bind or self.connection._deferred_open):
+            self.connection.listening = False
+            self.connection.closed = True
+        else:
+            if not self.connection.closed:
+                self._stop_listen()
+                self._close_socket()
+
+        self.connection.bound = False
+        self.connection.request = None
+        self.connection.response = None
+        self._outstanding = dict()
+        self._referrals = []
+        if self.connection.usage:
+            self.connection.usage.stop()
 
     def _open_socket(self, use_ssl=False):
         """

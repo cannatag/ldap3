@@ -14,6 +14,11 @@ The following strategies are available:
 
 * STRATEGY_LDIF_PRODUCER: the request is transformed in a *ldif-change* format and an LDIF output is returned
 
+.. sidebar:: Lazy connections
+
+   * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network.
+    This can be helpful when your application opens connections ahead of knowing if an effective operation will be necessary.
+
 Connection parameters are:
 
 * server: the Server object to be contacted. It can be a ServerPool. In this case the ServerPool pooling strategy is followed when opening the connection
@@ -39,6 +44,8 @@ Connection parameters are:
 * collect_usage: binds a ConnectionUsage object to the connection to store metrics of connection usage (see later)
 
 * read_only: inhibit modify, delete, add and modifyDn (move) operations
+
+* lazy: when True connection will defer open and bind until another LDAP operation is requested
 
 With the connection you can perform all the standard LDAP operations:
 

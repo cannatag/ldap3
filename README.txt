@@ -49,7 +49,7 @@ CHANGELOG
 
 * 0.9.1 2014.03.30
     - added laziness to test suite
-    - changed pooling strategies signature
+    - changed ServerPool signature to accept active and exhaust parameters
     - tested against Python 3.4
     - updated setuptools to 3.3
     - removed unneeded start_listen parameter

@@ -50,14 +50,14 @@ CHANGELOG
 * 0.9.1 2014.03.30
     - added laziness to test suite
     - changed ServerPool signature to accept active and exhaust parameters
-    - tested against Python 3.4
-    - updated setuptools to 3.3
     - removed unneeded start_listen parameter
     - added 'lazy' parameter to open, bind and unbind a connection only when an effective operation is done
     - fixed start_tls in SyncWaitRestartable strategy
     - fixed certificate name checking while opening an ssl connection
     - fixed syntax error during installation
     - socket operations now raise proper exception, not generic LDAPException (thanks to Joseph)
+    - tested against Python 3.4, 3.3, 2.7, 2.6
+    - updated setuptools to 3.3
 
 * 0.9.0 2014.03.20
     - PEP8 compliance

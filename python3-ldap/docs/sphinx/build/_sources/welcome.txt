@@ -9,7 +9,7 @@ License
 The python3-ldap project is open source and released under the LGPL v3 license.
 
 PEP8 Compliance
-===============
+---------------
 
 python3-ldap is PEP8 compliance starting from version 0.9.0.
 

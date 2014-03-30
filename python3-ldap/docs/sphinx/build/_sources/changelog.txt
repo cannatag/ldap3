@@ -2,12 +2,24 @@
 CHANGELOG
 #########
 
+* 0.9.1 2014.03.30
+    - added laziness to test suite
+    - changed ServerPool signature to accept active and exhaust parameters
+    - removed unneeded start_listen parameter
+    - added 'lazy' parameter to open, bind and unbind a connection only when an effective operation is done
+    - fixed start_tls in SyncWaitRestartable strategy
+    - fixed certificate name checking while opening an ssl connection
+    - fixed syntax error during installation
+    - socket operations now raise proper exception, not generic LDAPException (thanks to Joseph)
+    - tested against Python 3.4, 3.3, 2.7, 2.6
+    - updated setuptools to 3.3
+
 * 0.9.0 2014.03.20
     - PEP8 compliance
     - added ldap3.compat package with non PEP8-compliant signatures
     - renamed ldap3.abstraction to ldap3.abstract
+    - moved connection.py, server.py and tls.py files to ldap3.core
     - fixed SyncWaitRestartableStrategy (thanks to Christoph)
-    - documented using Sphinx
 
 * 0.8.3 2014.03.08
     - SyncWaitRestartable strategy

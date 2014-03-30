@@ -35,21 +35,17 @@ Server Pool
 
 .. sidebar:: Active strategies
 
-   *ACTIVE* strategies check if the server is listening on the specified port. The strategy tries to open and close a socket on the port. If your LDAP server has problems with the opening and closing of sockets you can use a PASSIVE strategy.
+   *ACTIVE* strategies can check if the server is listening on the specified port. When the 'active' attribute is set to True the strategy tries to open and close a socket on the port. If your LDAP server has problems with the opening and closing of sockets you can set 'active' to False..
 
-Different Server objects can be grouped in a Server pool object. A Server pool object can be specified in the Connection object to obtain an high availability (HA) connection. This is useful for long standing connections (for example an LDAP authenticator module in an application server) or when you have a multi replica LDAP server infrastructure. The pool can have different HA strategies:
+Different Server objects can be grouped in a Server pool object. A Server pool object can be specified in the Connection object to obtain an high availability (HA) connection. This is useful for long standing connections (for example an LDAP authenticator module in an application server) or when you have a multi replica LDAP server infrastructure. If you set the 'active' attribute to True while defining the ServerPool the strategy will check for server availability. With active ServerPool you can set an additional attribute 'exhaust' to raise an exception if no server is active in the pool. If 'exhaust' is set to False the pool may cycle forever and you must have an alternate way to check exhaustion of the pool.
 
-* POOLING_STRATEGY_NONE: no pooling strategy used, the connection use always the first server in the pool
+The pool can have different HA strategies: 
 
-* POOLING_STRATEGY_FIRST_ACTIVE: get the first available and active server in the pool, if no server is active an exception is raised
+* POOLING_STRATEGY_FIRST: gets the first server in the pool, if 'active' is set to True gets the first available server
 
-* POOLING_STRATEGY_ROUND_ROBIN_PASSIVE: each time the connection is open the subsequent server in the pool is used
+* POOLING_STRATEGY_ROUND_ROBIN: each time the connection is open the subsequent server in the pool is used. If active is set to True unavailable servers will be discarded
 
-* POOLING_STRATEGY_ROUND_ROBIN_ACTIVE: each time the connection is open the subsequent active server in the pool is used, if no server is active an exception is raised
-
-* POOLING_STRATEGY_RANDOM_PASSIVE: each time the connection is open a random server is chosen in the pool
-
-* POOLING_STRATEGY_RANDOM_ACTIVE: each time the connection is open an active random server is chosen in the pool, if no server is active an exception is raised
+* POOLING_STRATEGY_RANDOM: each time the connection is open a random server is chosen in the pool. If active is set to True unavailable servers will be discarded
 
 A server pool can be defined in different ways::
 
@@ -59,7 +55,7 @@ A server pool can be defined in different ways::
 
 * explicitly with Server objects in the init::
 
-    server_pool = ServerPool([server1, server2, server3], POOLING_STRATEGY_ROUND_ROBIN_ACTIVE)
+    server_pool = ServerPool([server1, server2, server3], POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
 
 * explicitly with an add operation in the pool object::
 

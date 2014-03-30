@@ -16,8 +16,7 @@ The following strategies are available:
 
 .. sidebar:: Lazy connections
 
-   * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network.
-    This can be helpful when your application opens connections ahead of knowing if an effective operation will be necessary.
+   * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation will be necessary.
 
 Connection parameters are:
 
@@ -102,6 +101,7 @@ With the connection you can perform all the standard LDAP operations:
     * controls: additional controls to be used in the request
 
 .. note::
+
    modify_dn is really a two-flavours operation: you can rename the last part of the dn *or* you move the entry in another container but you cannot perform both operations at the same time.
 
 * Search: performs a search in the LDAP database
@@ -180,23 +180,41 @@ Additional methods defined:
 Connection attributes:
 
 * server: the active Server object used in the connection
+
 * server_pool: the ServerPool object used in the connection if available
+
 * read_only: True if the connection is in read only mode
+
 * version: the LDAP protocol version used
+
 * result: the result of the last operation
+
 * response: the response of the last operation (for example, the entries found in a search)
+
 * last_error: any error occurred in the last operation
+
 * bound: True if bound to server else False
+
 * listening: True if the socket is listening to the server
+
 * closed: True if the socket is not open
-* strategy_type: the strategy used by the connection
-é strategy: the strategy instance used by the connection
-* authentication: the authentication used in the connection
+
+* strategy_type: the strategy type used by the connection
+
+* strategy: the strategy instance used by the connection
+
+* authentication: the authentication type used in the connection
+
 * user: the user name for simple bind
+
 * password: password for simple bind
+
 * auto_bind: True if auto_bind is active else False
+
 * tls_started: True if the Transport Security Layer is active
+
 * usage: metrics of connection usage
+
 * lazy: connection will defer open and bind until another LDAP operation is requested
 
 Simple Paged search

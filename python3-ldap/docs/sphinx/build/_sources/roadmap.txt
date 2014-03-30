@@ -1,12 +1,14 @@
-#######
-Roadmap
-#######
+######################
+Roadmap to version 1.0
+######################
 
-* Add Connection pooling
+* Autoreferral on continuations
 
-* Add ldap3.compat.ldap for compatability with python-ldap
+* Connection pooling
 
-* Add mocking strategy to perform tests with mock LDAP object
+* ldap3.compat.ldap for compatability with python-ldap
+
+* Mocking strategy to perform tests with mock LDAP object
 
 * Write more tests
 

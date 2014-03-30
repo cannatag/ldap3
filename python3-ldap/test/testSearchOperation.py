@@ -26,14 +26,14 @@ import unittest
 
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_name_attr
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_name_attr, test_lazy_connection
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
 
 
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
         self.connection.add(test_dn_builder(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)'})
 
     def tearDown(self):

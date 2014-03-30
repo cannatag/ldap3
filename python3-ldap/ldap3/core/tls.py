@@ -21,7 +21,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ssl import CertificateError
 from ldap3 import LDAPException
 
 try:
@@ -29,6 +28,14 @@ try:
     import ssl
 except ImportError:
     raise LDAPException('ssl not supported in this Python interpreter')
+
+try:
+    # noinspection PyUnresolvedReferences
+    from ssl import CertificateError
+except ImportError:
+    class CertificateError(ValueError):  # fix for Python 2, code from Python 3.3 standard library
+        pass
+
 from os import path
 
 
@@ -117,9 +124,6 @@ class Tls(object):
         connection.tls_started = True
         return True
 
-class CertificateErrorBackport(ValueError):  # fix for Python 2, code from Python 3.3 standard library
-    pass
-
 
 def _dnsname_to_pat_backport(dn):  # fix for Python2, code from python 3.3 standard library
     import re
@@ -166,11 +170,11 @@ def match_hostname_backport(cert, hostname):  # fix for Python2, code from pytho
                         return
                     dnsnames.append(value)
     if len(dnsnames) > 1:
-        raise CertificateErrorBackport("hostname %r doesn't match either of %s" % (hostname, ', '.join(map(repr, dnsnames))))
+        raise CertificateError("hostname %r doesn't match either of %s" % (hostname, ', '.join(map(repr, dnsnames))))
     elif len(dnsnames) == 1:
-        raise CertificateErrorBackport("hostname %r doesn't match %r" % (hostname, dnsnames[0]))
+        raise CertificateError("hostname %r doesn't match %r" % (hostname, dnsnames[0]))
     else:
-        raise CertificateErrorBackport("no appropriate commonName or subjectAltName fields were found")
+        raise CertificateError("no appropriate commonName or subjectAltName fields were found")
 
 
 def check_hostname(sock, server_name, additional_names):

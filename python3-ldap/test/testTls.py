@@ -26,13 +26,13 @@ import unittest
 import ssl
 
 from ldap3 import Server, Connection, Tls, AUTH_SASL
-from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, test_strategy, test_base
+from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, test_strategy, test_base, test_lazy_connection
 
 
 class Test(unittest.TestCase):
     def test_start_tls(self):
         server = Server(host=test_server, port=test_port, tls=Tls())
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
         connection.open()
         connection.start_tls()
         self.assertFalse(connection.closed)

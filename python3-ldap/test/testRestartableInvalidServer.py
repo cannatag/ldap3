@@ -27,9 +27,9 @@ import unittest
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, CompareRequest, AttributeValueAssertion, AssertionValue, ValsAtLeast1
 from ldap3.core.connection import Connection
 from ldap3.core.server import Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_dn_builder, test_base
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_dn_builder, test_base, test_lazy_connection
 
-from ldap3 import Connection, Server, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN_PASSIVE, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE, LDAPException
+from ldap3 import Connection, Server, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, LDAPException
 
 
 class Test(unittest.TestCase):
@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         search_results = []
         servers = [Server(host=host, port=636, use_ssl=True) for host in hosts]
 
-        connection = Connection(ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN_PASSIVE), user=test_user, password=test_password, client_strategy=STRATEGY_SYNC_RESTARTABLE, lazy=True)
+        connection = Connection(ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True), user=test_user, password=test_password, client_strategy=STRATEGY_SYNC_RESTARTABLE, lazy=test_lazy_connection)
 
         with connection as c:
             c.search(search_base='o=test', search_filter='(cn=test*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes='*')

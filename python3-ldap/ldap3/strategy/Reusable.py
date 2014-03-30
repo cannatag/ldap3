@@ -23,8 +23,13 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
 from os import linesep
-from queue import Queue
 from threading import Thread
+
+try:
+    from queue import Queue
+except ImportError:  # Python 2
+    # noinspection PyUnresolvedReferences
+    from Queue import Queue
 
 from .baseStrategy import BaseStrategy
 from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT
@@ -60,7 +65,6 @@ class ReusableStrategy(BaseStrategy):
                 self.active_connection.busy = False
             self.active_connection.running = False
 
-
     class ReusableConnection(object):
         """
         Container for the Restartable connection. it includes a thread and a lock to execute the connection in the pool
@@ -95,6 +99,7 @@ class ReusableStrategy(BaseStrategy):
             return s
 
     def __init__(self, ldap_connection):
+        raise NotImplementedError
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = False
@@ -122,7 +127,7 @@ class ReusableStrategy(BaseStrategy):
         self._lifetime = value
 
     def create_pool(self):
-        self.connections = [ReusableStrategy.ReusableConnection(self.connection, self.request_queue) for _ in range(self.pool_size)]
+        self.connections = [self.ReusableConnection(self.connection, self.request_queue) for _ in range(self.pool_size)]
 
     def open(self, reset_usage=True):
         pass

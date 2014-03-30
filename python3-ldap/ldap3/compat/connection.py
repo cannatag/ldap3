@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..ldap3.core.connection import Connection as newConnection
+from ..core.connection import Connection as newConnection
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS, STRATEGY_SYNC
 
 
@@ -32,8 +32,8 @@ class Connection(newConnection):
     Proxy class 8with camel case parameters) to new Connection class (pep8 compliant)
     """
 
-    def __init__(self, server, user=None, password=None, autoBind=False, version=3, authentication=None, clientStrategy=STRATEGY_SYNC, autoReferrals=True, saslMechanism=None, saslCredentials=None, collectUsage=False, readOnly=False):
-        newConnection.__init__(self, server, user, password, autoBind, version, authentication, clientStrategy, autoReferrals, saslMechanism, saslCredentials, collectUsage, readOnly)
+    def __init__(self, server, user=None, password=None, autoBind=False, version=3, authentication=None, clientStrategy=STRATEGY_SYNC, autoReferrals=True, saslMechanism=None, saslCredentials=None, collectUsage=False, readOnly=False, lazy=False):
+        newConnection.__init__(self, server, user, password, autoBind, version, authentication, clientStrategy, autoReferrals, saslMechanism, saslCredentials, collectUsage, readOnly, lazy)
 
     def search(self, searchBase, searchFilter, searchScope=SEARCH_SCOPE_WHOLE_SUBTREE, dereferenceAliases=SEARCH_DEREFERENCE_ALWAYS, attributes=None, sizeLimit=0, timeLimit=0, typesOnly=False, getOperationalAttributes=False, controls=None,
                pagedSize=None, pagedCriticality=False, pagedCookie=None):

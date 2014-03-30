@@ -28,10 +28,10 @@ from os import linesep
 from pyasn1.codec.ber import encoder
 
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
-    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE, \
+    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     STRATEGY_POOL_REUSABLE
-from ldap3.core.pooling import ServerPool
-from ldap3.strategy.Reusable import ReusableStrategy
+from .pooling import ServerPool
+from ..strategy.Reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
 from ..operation.bind import bind_operation
@@ -69,19 +69,6 @@ class Connection(object):
             raise LDAPException(self.last_error)
 
         self.strategy_type = client_strategy
-        if self.strategy_type == STRATEGY_SYNC:
-            self.strategy = SyncWaitStrategy(self)
-        elif self.strategy_type == STRATEGY_ASYNC_THREADED:
-            self.strategy = AsyncThreadedStrategy(self)
-        elif self.strategy_type == STRATEGY_LDIF_PRODUCER:
-            self.strategy = LdifProducerStrategy(self)
-        elif self.strategy_type == STRATEGY_SYNC_RESTARTABLE:
-            self.strategy = SyncWaitRestartableStrategy(self)
-        elif self.strategy_type == STRATEGY_POOL_REUSABLE:
-            self.strategy = ReusableStrategy(self)
-        else:
-            raise LDAPException('unavailable strategy')
-
         self.user = user
         self.password = password
         if self.user and self.password and not authentication:
@@ -93,15 +80,8 @@ class Connection(object):
         else:
             raise LDAPException('unknown authentication method')
 
+        self.version = version
         self.auto_referrals = True if auto_referrals else False
-
-        # map strategy functions to connection functions
-        self.send = self.strategy.send
-        self.open = self.strategy.open
-        self.get_response = self.strategy.get_response
-        self.post_send_single_response = self.strategy.post_send_single_response
-        self.post_send_search = self.strategy.post_send_search
-
         self.request = None
         self.response = None
         self.result = None
@@ -125,7 +105,7 @@ class Connection(object):
         self._executing_deferred = False
         self.lazy = lazy
         if isinstance(server, list):
-            server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE)
+            server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
 
         if isinstance(server, ServerPool):
             self.server_pool = server
@@ -135,8 +115,27 @@ class Connection(object):
             self.server_pool = None
             self.server = server
 
+        if self.strategy_type == STRATEGY_SYNC:
+            self.strategy = SyncWaitStrategy(self)
+        elif self.strategy_type == STRATEGY_ASYNC_THREADED:
+            self.strategy = AsyncThreadedStrategy(self)
+        elif self.strategy_type == STRATEGY_LDIF_PRODUCER:
+            self.strategy = LdifProducerStrategy(self)
+        elif self.strategy_type == STRATEGY_SYNC_RESTARTABLE:
+            self.strategy = SyncWaitRestartableStrategy(self)
+        elif self.strategy_type == STRATEGY_POOL_REUSABLE:
+            self.strategy = ReusableStrategy(self)
+        else:
+            raise LDAPException('unavailable strategy')
+
+        # map strategy functions to connection functions
+        self.send = self.strategy.send
+        self.open = self.strategy.open
+        self.get_response = self.strategy.get_response
+        self.post_send_single_response = self.strategy.post_send_single_response
+        self.post_send_search = self.strategy.post_send_search
+
         if not self.strategy.no_real_dsa and self.server.is_valid():
-            self.version = version
             if self.auto_bind:
                 self.open()
                 self.bind()
@@ -144,7 +143,6 @@ class Connection(object):
                     raise LDAPException('auto_bind not successful')
         elif self.strategy.no_real_dsa:
             self.server = None
-            self.version = None
         else:
             self.last_error = 'invalid ldap server'
             raise LDAPException(self.last_error)

@@ -38,6 +38,13 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.closed)
         connection.unbind()
 
+    def test_open_ssl_with_defaults(self):
+        server = Server(host=test_server, port=test_port_ssl, use_ssl=True)
+        connection = Connection(server, user=test_user, password=test_password)
+        connection.open()
+        self.assertFalse(connection.closed)
+        connection.unbind()
+
     def test_search_with_tls_before_bind(self):
         server = Server(host=test_server, port=test_port, tls=Tls())
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)

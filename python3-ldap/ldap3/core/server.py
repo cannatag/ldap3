@@ -140,7 +140,7 @@ class Server(object):
         if isinstance(result, bool):  # sync request
             self._dsa_info = DsaInfo(connection.response[0]['attributes']) if result else None
         elif result:  # async request, must check if attributes in response
-            results = connection.get_response(result)
+            results, _ = connection.get_response(result)
             if len(results) == 2 and 'attributes' in results[0]:
                 self._dsa_info = DsaInfo(results[0]['attributes'])
 
@@ -158,7 +158,7 @@ class Server(object):
             if isinstance(result, bool):  # sync request
                 schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
             else:  # async request, must check if subschemaSubentry in attributes
-                results = connection.get_response(result)
+                results, _ = connection.get_response(result)
                 if len(results) == 2 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
                     schema_entry = results[0]['attributes']['subschemaSubentry'][0]
 
@@ -167,7 +167,7 @@ class Server(object):
             if isinstance(result, bool):  # sync request
                 self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes']) if result else None
             else:  # async request, must check if attributes in response
-                results = connection.get_response(result)
+                results, _ = connection.get_response(result)
                 if len(results) == 2 and 'attributes' in results[0]:
                     self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'])
 

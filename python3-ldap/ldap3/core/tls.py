@@ -98,7 +98,7 @@ class Tls(object):
             return False
 
         result = connection.extended('1.3.6.1.4.1.1466.20037')
-        if not isinstance(result, bool):  # async - start_tls must be executed by the strategy
+        if not connection.strategy.sync:  # async - start_tls must be executed by the strategy
             connection.get_response(result)
             return True
         else:

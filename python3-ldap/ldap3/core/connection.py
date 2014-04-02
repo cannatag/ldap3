@@ -31,7 +31,7 @@ from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DEL
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     STRATEGY_POOL_REUSABLE
 from .pooling import ServerPool
-from ..strategy.Reusable import ReusableStrategy
+from ..strategy.reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
 from ..operation.bind import bind_operation
@@ -63,7 +63,7 @@ class Connection(object):
     Mixing controls must be defined in controls specification (as per rfc 4511)
     """
 
-    def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False, lazy=False):
+    def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False, lazy=False, pool_name=None):
         if client_strategy not in CLIENT_STRATEGIES:
             self.last_error = 'unknown client connection strategy'
             raise LDAPException(self.last_error)
@@ -104,6 +104,8 @@ class Connection(object):
         self._bind_controls = None
         self._executing_deferred = False
         self.lazy = lazy
+        self.pool_name = pool_name
+
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
 
@@ -223,13 +225,15 @@ class Connection(object):
                 self.last_error = 'unknown authentication method'
                 raise LDAPException(self.last_error)
 
-            if isinstance(response, int):  # get response if async
-                self.get_response(response)
+            if not self.strategy.sync and self.authentication != AUTH_SASL:  # get response if async except for sasl that return the bind result even for async
+                response, result = self.get_response(response)
+            else:
+                result = self.result
 
             if response is None:
                 self.bound = False
             else:
-                self.bound = True if self.result['result'] == RESULT_SUCCESS else False
+                self.bound = True if result['result'] == RESULT_SUCCESS else False
 
             if self.bound:
                 self.refresh_dsa_info()

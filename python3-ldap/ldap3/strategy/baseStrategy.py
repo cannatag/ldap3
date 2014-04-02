@@ -206,7 +206,7 @@ class BaseStrategy(object):
         self.connection.response = None
         self.connection.result = None
         if self._outstanding and message_id in self._outstanding:
-            while timeout >= 0:  # waiting for completed message to appear in _responses
+            while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     self.close()
@@ -216,13 +216,13 @@ class BaseStrategy(object):
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME
                 else:
-                    timeout = -1
                     if responses:
                         self._outstanding.pop(message_id)
                         self.connection.response = responses[:-2] if len(responses) > 2 else []
                         self.connection.result = responses[-2]
                         response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
-        return response
+                    break
+        return response, self.connection.result
 
     @classmethod
     def compute_ldap_message_size(cls, data):

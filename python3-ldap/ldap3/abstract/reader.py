@@ -349,7 +349,7 @@ class Reader(object):
                                             types_only=self.types_only, get_operational_attributes=self.get_operational_attributes, controls=self.controls, paged_size=self.paged_size, paged_criticality=self.paged_criticality,
                                             paged_cookie=self.paged_cookie)
             if not self.connection.strategy.sync:
-                response = self.connection.get_response(result)
+                response, _ = self.connection.get_response(result)
                 if len(response) > 1:
                     response = response[:-1]
             else:

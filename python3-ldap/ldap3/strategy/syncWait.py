@@ -96,7 +96,7 @@ class SyncWaitStrategy(BaseStrategy):
         Executed after an Operation Request (except Search)
         Returns the result message or None
         """
-        responses = self.get_response(message_id)
+        responses, _ = self.get_response(message_id)
         if responses and len(responses) == 1 and responses[0]['type'] != 'intermediateResponse':
             return responses
         elif not responses:
@@ -118,7 +118,7 @@ class SyncWaitStrategy(BaseStrategy):
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        responses = self.get_response(message_id)
+        responses, _ = self.get_response(message_id)
         if isinstance(responses, list):
             self.connection.response = responses[:-1] if responses[-1]['type'] == 'searchResDone' else responses
             return self.connection.response

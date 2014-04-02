@@ -47,6 +47,10 @@ For any information and suggestions you can contact me at python3ldap@gmail.com 
 CHANGELOG
 =========
 
+* 0.9.2 2014.04.01
+    - changed return value in get_response from response to (response, result) - helpful for multi threaded connections
+    - added ReusableStrategy for pooling connections
+
 * 0.9.1 2014.03.30
     - added laziness to test suite
     - changed ServerPool signature to accept active and exhaust parameters
@@ -189,7 +193,7 @@ CHANGELOG
 	- Add validation to Abandon operation
 	- Added connection.request to hold a dictionary of info about last request
 	- Added info about outstanding operation in connection.strategy._oustanding
-	- Implemented RFC 4515 for search filter coding and decoding
+	- Implemented RFC 4515 foJ6311\\èr search filter coding and decoding
 	- Added a parser to build filter string from LdapMessage
 
 * 0.4.0 - 2013.07.15

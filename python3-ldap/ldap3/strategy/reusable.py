@@ -33,7 +33,7 @@ except ImportError:  # Python 2
     from Queue import Queue
 
 from .baseStrategy import BaseStrategy
-from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, STRATEGY_SYNC, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_COMPLETE, RESPONSE_SLEEPTIME
+from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, STRATEGY_SYNC, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_COMPLETE, RESPONSE_SLEEPTIME, ServerPool
 
 
 class ReusableStrategy(BaseStrategy):
@@ -148,7 +148,12 @@ class ReusableStrategy(BaseStrategy):
         """
         def __init__(self, connection, request_queue, response_queue):
             from ..core.connection import Connection
-            self.connection = Connection(server=connection.server,
+            if isinstance(connection.server, ServerPool):
+                server = connection.server  # get next server from the ServerPool)
+            else:
+                server = connection.server
+
+            self.connection = Connection(server=server,
                                          user=connection.user,
                                          password=connection.password,
                                          version=connection.version,

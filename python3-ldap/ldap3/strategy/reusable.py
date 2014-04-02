@@ -33,7 +33,8 @@ except ImportError:  # Python 2
     from Queue import Queue
 
 from .baseStrategy import BaseStrategy
-from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, STRATEGY_SYNC, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_COMPLETE, RESPONSE_SLEEPTIME, ServerPool
+from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, STRATEGY_SYNC, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_COMPLETE, RESPONSE_SLEEPTIME, POOLING_STRATEGY_RANDOM, \
+    POOLING_STRATEGY_ROUND_ROBIN
 
 
 class ReusableStrategy(BaseStrategy):
@@ -147,12 +148,19 @@ class ReusableStrategy(BaseStrategy):
         Container for the Restartable connection. it includes a thread and a lock to execute the connection in the pool
         """
         def __init__(self, connection, request_queue, response_queue):
-            from ..core.connection import Connection
-            if isinstance(connection.server, ServerPool):
-                server = connection.server  # get next server from the ServerPool)
+            from ldap3 import ServerPool, Connection
+            #if connection.server_pool and connection.server_pool.strategy in [POOLING_STRATEGY_RANDOM, POOLING_STRATEGY_ROUND_ROBIN]:  # only for round_robin and random pooling strategies
+            #    if connection in connection.server_pool.pool_states:
+            #        server = connection.server_pool.servers[connection.server_pool.pool_states[connection].find_active_random_server()]  # get a random server
+            #    else:
+            #        raise LDAPException('connection not in server pool state')
+            #else:
+            #    server = connection.server
+
+            if connection.server_pool:
+                server = connection.server_pool
             else:
                 server = connection.server
-
             self.connection = Connection(server=server,
                                          user=connection.user,
                                          password=connection.password,
@@ -165,6 +173,9 @@ class ReusableStrategy(BaseStrategy):
                                          collect_usage=True if connection.usage else False,
                                          read_only=connection.read_only,
                                          lazy=True)
+            if connection.server_pool:
+                self.connection.server_pool = connection.server_pool
+                self.connection.server_pool.initialize(self.connection)
             self.running = False
             self.busy = False
             self.cannot_terminate = False

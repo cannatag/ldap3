@@ -33,7 +33,7 @@ except ImportError:  # Python 2
     from Queue import Queue
 
 from .baseStrategy import BaseStrategy
-from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_COMPLETE, RESPONSE_SLEEPTIME
+from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, STRATEGY_SYNC, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_COMPLETE, RESPONSE_SLEEPTIME
 
 
 class ReusableStrategy(BaseStrategy):
@@ -68,7 +68,7 @@ class ReusableStrategy(BaseStrategy):
                 self.open_pool = False
                 self.bind_pool = False
                 self._incoming = dict()
-                self.lock = Lock
+                self.lock = Lock()
                 ReusableStrategy.pools[self.name] = self
                 self.started = False
 
@@ -109,26 +109,32 @@ class ReusableStrategy(BaseStrategy):
             terminate = False
             pool = self.original_connection.strategy.pool
             while not terminate:
-                (counter, message_type, request, controls) = pool.request_queue.get()
+                print(self, 'waiting')
+                counter, message_type, request, controls = pool.request_queue.get()
                 print(self, 'got request', message_type)
                 self.active_connection.busy = True
                 if message_type == TERMINATE_REUSABLE and not self.active_connection.cannot_terminate:
                     terminate = True
                 else:
-                    if pool.open_pool and self.active_connection.connection.closed:
-                        print(self, 'opening')
-                        self.active_connection.connection.open()
-                    if pool.bind_pool and not self.active_connection.connection.bound:
-                        print(self, 'binding')
-                        self.active_connection.connection.bind()
-                    print(self, '***')
-                    print(self, self.active_connection)
-                    print(self, '***')
-                    print(self, 'sending', request)
-                    result = self.active_connection.connection.send(message_type, request, controls)
-                    print(self, 'receiving', result)
-                    with pool.lock:
-                        pool._incoming[counter] = result
+                    if message_type not in ['bindRequest', 'unbindRequest']:
+                        if pool.open_pool and self.active_connection.connection.closed:
+                            print(self, 'opening')
+                            self.active_connection.connection.open()
+                        if pool.bind_pool and not self.active_connection.connection.bound:
+                            print(self, 'binding')
+                            self.active_connection.connection.bind()
+                        print(self, '***')
+                        print(self, self.active_connection)
+                        print(self, '***')
+                        print(self, 'sending', request)
+                        self.active_connection.connection._fire_deferred()
+                        if message_type == 'searchRequest':
+                            result = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
+                        else:
+                            result = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
+                        print(self, 'receiving', result)
+                        with pool.lock:
+                            pool._incoming[counter] = result
                 self.active_connection.busy = False
             self.active_connection.running = False
             print(self, 'exiting')
@@ -144,7 +150,7 @@ class ReusableStrategy(BaseStrategy):
                                          password=connection.password,
                                          version=connection.version,
                                          authentication=connection.authentication,
-                                         client_strategy=STRATEGY_SYNC_RESTARTABLE,
+                                         client_strategy=STRATEGY_SYNC,
                                          auto_referrals=connection.auto_referrals,
                                          sasl_mechanism=connection.sasl_mechanism,
                                          sasl_credentials=connection.sasl_credentials,
@@ -182,6 +188,9 @@ class ReusableStrategy(BaseStrategy):
 
     def close(self):
         self.pool.open_pool = False
+        still_active = True
+        while still_active:
+            for
 
     def send(self, message_type, request, controls=None):
         print('sending', message_type)
@@ -206,7 +215,7 @@ class ReusableStrategy(BaseStrategy):
         result = None
         if self.connection.strategy.pool._incoming:
             while timeout >= 0:  # waiting for completed message to appear in _incoming
-                responses = self.connection.strategy.pool._outstanding.pop(counter)
+                responses = self.connection.strategy.pool._incoming.pop(counter)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME

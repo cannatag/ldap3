@@ -57,34 +57,6 @@ class ServerPoolState(object):
     def get_current_server(self):
         return self.servers[self.last_used_server]
 
-    # def get_server_old(self):
-    #     if self.servers:
-    #         if self.server_pool.strategy == POOLING_STRATEGY_NONE:
-    #             self.last_used_server = 0
-    #             return self.servers[0]  # return alvways the first server - no pooling
-    #         elif self.server_pool.strategy == POOLING_STRATEGY_FIRST_ACTIVE:
-    #             return self.find_active_server()  # returns the first active server
-    #         elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_PASSIVE:
-    #             self.last_used_server = self.last_used_server + 1 if (self.last_used_server + 1) < len(self.servers) else 0
-    #             return self.servers[self.last_used_server]  # returns the next server in a circular range
-    #         elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN_ACTIVE:
-    #             return self.find_active_server(self.last_used_server + 1)  # returns the next active server in a circular range
-    #         elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_PASSIVE:
-    #             self.last_used_server = randint(0, len(self.servers))  # returns a random server in the pool
-    #             return self.servers[self.last_used_server]
-    #         elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM_ACTIVE:
-    #             temp_list = self.servers.copy()
-    #             while temp_list:  # pops a random server from a temp list and checks its availability, if not available tries another one
-    #                 server = temp_list.pop(randint(0, len(temp_list)))
-    #                 if server.check_availability():
-    #                     self.last_used_server = self.servers.index(server)
-    #                     return server  # returns a random active server in the pool
-    #             raise LDAPException('no random active server in server pool')
-    #         else:
-    #             raise LDAPException('unknown pool strategy')
-    #     else:
-    #         raise LDAPException('no servers in server pool')
-
     def get_server(self):
         if self.servers:
             if self.server_pool.strategy == POOLING_STRATEGY_FIRST:
@@ -99,18 +71,7 @@ class ServerPoolState(object):
                     self.last_used_server = self.last_used_server + 1 if (self.last_used_server + 1) < len(self.servers) else 0  # # returns the next server in a circular range
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM:
                 if self.server_pool.active:
-                    repeat = True
-                    while repeat:
-                        temp_list = self.servers.copy()
-                        while temp_list:  # pops a random server from a temp list and checks its availability, if not available tries another one
-                            server = temp_list.pop(randint(0, len(temp_list) - 1))
-                            if server.check_availability():
-                                self.last_used_server = self.servers.index(server)  # returns a random active server in the pool
-                                repeat = False
-                                break
-                        else:
-                            if self.server_pool.exhaust:
-                                raise LDAPException('no random active server in server pool')
+                    self.last_used_server = self.find_random_active_server(exhaust=self.server_pool.exhaust)
                 else:
                     self.last_used_server = randint(0, len(self.servers))  # returns a random server in the pool
             else:
@@ -118,6 +79,16 @@ class ServerPoolState(object):
             return self.servers[self.last_used_server]
         else:
             raise LDAPException('no servers in server pool')
+
+    def find_random_active_server(self, exhaust=True):
+        while True:
+            temp_list = self.servers.copy()
+            while temp_list:  # pops a random server from a temp list and checks its availability, if not available tries another one
+                server = temp_list.pop(randint(0, len(temp_list) - 1))
+                if server.check_availability():
+                    return self.servers.index(server)  # returns a random active server in the pool
+            if self.server_pool.exhaust:
+                raise LDAPException('no random active server in server pool')
 
     def find_active_server(self, starting=0, exhaust=True):
         while True:

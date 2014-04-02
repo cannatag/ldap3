@@ -35,7 +35,7 @@ class ServerPoolState(object):
         self.server_pool = server_pool
         self.refresh()
         self.initialize_time = datetime.now()
-        self.last_used_server = -1
+        self.last_used_server = randint(0, len(self.servers)-1)
 
     def __str__(self):
         s = 'servers: '
@@ -53,6 +53,7 @@ class ServerPoolState(object):
         self.servers = []
         for server in self.server_pool.servers:
             self.servers.append(server)
+        self.last_used_server = randint(0, len(self.servers) - 1)
 
     def get_current_server(self):
         return self.servers[self.last_used_server]
@@ -71,7 +72,7 @@ class ServerPoolState(object):
                     self.last_used_server = self.last_used_server + 1 if (self.last_used_server + 1) < len(self.servers) else 0  # # returns the next server in a circular range
             elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM:
                 if self.server_pool.active:
-                    self.last_used_server = self.find_random_active_server(exhaust=self.server_pool.exhaust)
+                    self.last_used_server = self.find_active_random_server(exhaust=self.server_pool.exhaust)
                 else:
                     self.last_used_server = randint(0, len(self.servers))  # returns a random server in the pool
             else:
@@ -80,7 +81,7 @@ class ServerPoolState(object):
         else:
             raise LDAPException('no servers in server pool')
 
-    def find_random_active_server(self, exhaust=True):
+    def find_active_random_server(self, exhaust=True):
         while True:
             temp_list = self.servers.copy()
             while temp_list:  # pops a random server from a temp list and checks its availability, if not available tries another one

@@ -64,7 +64,6 @@ class ReusableStrategy(BaseStrategy):
                 self.lifetime = REUSABLE_CONNECTION_LIFETIME
                 self.request_queue = Queue()
                 self.response_queue = Queue()
-                self.create_pool()
                 self.open_pool = False
                 self.bind_pool = False
                 self._incoming = dict()
@@ -84,18 +83,29 @@ class ReusableStrategy(BaseStrategy):
 
             return s
 
-        def start_pool(self):
-            if not self.started:
-                for connection in self.connections:
-                    connection.thread.start()
-                return True
-            return False
-
         def __repr__(self):
             return self.__str__()
 
+        def start_pool(self):
+            if not self.started:
+                self.create_pool()
+                for connection in self.connections:
+                    connection.thread.start()
+                self.started = True
+                return True
+            return False
+
         def create_pool(self):
             self.connections = [ReusableStrategy.ReusableConnection(self.original_connection, self.request_queue, self.response_queue) for _ in range(self.pool_size)]
+
+        def terminate_pool(self):
+            self.started = False
+            self.request_queue.join()  # wait for all queue pending operations
+
+            for _ in range(len([connection for connection in self.connections if connection.thread.is_alive()])):  # put a TERMINATE signal on the queue for each active thread
+                self.request_queue.put((TERMINATE_REUSABLE, None, None, None))
+
+            self.request_queue.join()  # wait for all queue terminate operations
 
     class PooledConnectionThread(Thread):
         def __init__(self, reusable_connection, original_connection):
@@ -109,35 +119,28 @@ class ReusableStrategy(BaseStrategy):
             terminate = False
             pool = self.original_connection.strategy.pool
             while not terminate:
-                print(self, 'waiting')
                 counter, message_type, request, controls = pool.request_queue.get()
-                print(self, 'got request', message_type)
                 self.active_connection.busy = True
-                if message_type == TERMINATE_REUSABLE and not self.active_connection.cannot_terminate:
+                if counter == TERMINATE_REUSABLE and not self.active_connection.cannot_terminate:
                     terminate = True
+                    if self.active_connection.connection.bound:
+                        self.active_connection.connection.unbind()
                 else:
                     if message_type not in ['bindRequest', 'unbindRequest']:
                         if pool.open_pool and self.active_connection.connection.closed:
-                            print(self, 'opening')
                             self.active_connection.connection.open()
                         if pool.bind_pool and not self.active_connection.connection.bound:
-                            print(self, 'binding')
                             self.active_connection.connection.bind()
-                        print(self, '***')
-                        print(self, self.active_connection)
-                        print(self, '***')
-                        print(self, 'sending', request)
                         self.active_connection.connection._fire_deferred()
                         if message_type == 'searchRequest':
                             result = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
                         else:
                             result = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
-                        print(self, 'receiving', result)
                         with pool.lock:
                             pool._incoming[counter] = result
                 self.active_connection.busy = False
+                pool.request_queue.task_done()
             self.active_connection.running = False
-            print(self, 'exiting')
 
     class ReusableConnection(object):
         """
@@ -150,7 +153,7 @@ class ReusableStrategy(BaseStrategy):
                                          password=connection.password,
                                          version=connection.version,
                                          authentication=connection.authentication,
-                                         client_strategy=STRATEGY_SYNC,
+                                         client_strategy=STRATEGY_SYNC_RESTARTABLE,
                                          auto_referrals=connection.auto_referrals,
                                          sasl_mechanism=connection.sasl_mechanism,
                                          sasl_credentials=connection.sasl_credentials,
@@ -186,48 +189,47 @@ class ReusableStrategy(BaseStrategy):
         self.pool.open_pool = True
         self.pool.start_pool()
 
-    def close(self):
+    def terminate(self):
+        self.pool.terminate_pool()
         self.pool.open_pool = False
-        still_active = True
-        while still_active:
-            for
 
     def send(self, message_type, request, controls=None):
-        print('sending', message_type)
-        if message_type == 'bindRequest':
-            self.pool.bind_pool = True
-            return -1  # -1 stands for bind request
-        elif message_type == 'unbindRequest':
-            self.pool.bind_pool = False
-        else:
-            self.counter += 1
-            if self.counter > LDAP_MAX_INT:
-                self.counter = 1
+        if self.pool.started:
+            if message_type == 'bindRequest':
+                self.pool.bind_pool = True
+                return -1  # -1 stands for bind request
+            elif message_type == 'unbindRequest':
+                self.pool.bind_pool = False
+            else:
+                self.counter += 1
+                if self.counter > LDAP_MAX_INT:
+                    self.counter = 1
 
-            self.pool.request_queue.put((self.counter, message_type, request, controls))
+                self.pool.request_queue.put((self.counter, message_type, request, controls))
 
-        return self.counter
+            return self.counter
+
+        raise LDAPException('connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
         if counter == -1:  # send a bogus bindResponse
             return list(), {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '', 'saslCreds': 'None'}
         response = None
         result = None
-        if self.connection.strategy.pool._incoming:
-            while timeout >= 0:  # waiting for completed message to appear in _incoming
+        while timeout >= 0:  # waiting for completed message to appear in _incoming
+            try:
                 responses = self.connection.strategy.pool._incoming.pop(counter)
-                if not responses:
-                    sleep(RESPONSE_SLEEPTIME)
-                    timeout -= RESPONSE_SLEEPTIME
-                else:
-                    if responses:
-                        result = responses[-2]
-                        response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
-                    break
+            except KeyError:
+                sleep(RESPONSE_SLEEPTIME)
+                timeout -= RESPONSE_SLEEPTIME
+                continue
+
+            result = responses[-2]
+            response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
+            break
         return response, result
 
     def post_send_single_response(self, counter):
-        print('post_send_single_response', counter)
         return counter
 
     def post_send_search(self, counter):

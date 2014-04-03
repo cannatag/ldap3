@@ -73,7 +73,7 @@ class ReusableStrategy(BaseStrategy):
                 self.started = False
 
         def __str__(self):
-            s = self.name
+            s = str(self.name)
             s += ' - pool size: ' + str(self.pool_size)
             s += ' - lifetime: ' + str(self.lifetime)
             s += ' - ' + 'open: ' + str(self.open_pool)
@@ -149,19 +149,8 @@ class ReusableStrategy(BaseStrategy):
         """
         def __init__(self, connection, request_queue, response_queue):
             from ldap3 import ServerPool, Connection
-            #if connection.server_pool and connection.server_pool.strategy in [POOLING_STRATEGY_RANDOM, POOLING_STRATEGY_ROUND_ROBIN]:  # only for round_robin and random pooling strategies
-            #    if connection in connection.server_pool.pool_states:
-            #        server = connection.server_pool.servers[connection.server_pool.pool_states[connection].find_active_random_server()]  # get a random server
-            #    else:
-            #        raise LDAPException('connection not in server pool state')
-            #else:
-            #    server = connection.server
 
-            if connection.server_pool:
-                server = connection.server_pool
-            else:
-                server = connection.server
-            self.connection = Connection(server=server,
+            self.connection = Connection(server=connection.server_pool if connection.server_pool else connection.server,
                                          user=connection.user,
                                          password=connection.password,
                                          version=connection.version,

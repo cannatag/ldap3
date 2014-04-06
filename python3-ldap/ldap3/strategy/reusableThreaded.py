@@ -37,7 +37,7 @@ from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYN
     POOLING_STRATEGY_ROUND_ROBIN
 
 
-class ReusableStrategy(BaseStrategy):
+class ReusableThreadedStrategy(BaseStrategy):
     """
     A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
     The connection using this strategy presents itself as a normal connection, but internally the strategy has a pool of
@@ -51,8 +51,8 @@ class ReusableStrategy(BaseStrategy):
 
     class ConnectionPool(object):
         def __new__(cls, connection):
-            if connection.pool_name in ReusableStrategy.pools:
-                return ReusableStrategy.pools[connection.pool_name]
+            if connection.pool_name in ReusableThreadedStrategy.pools:
+                return ReusableThreadedStrategy.pools[connection.pool_name]
             else:
                 return object.__new__(cls)
 
@@ -64,12 +64,11 @@ class ReusableStrategy(BaseStrategy):
                 self.pool_size = REUSABLE_POOL_SIZE
                 self.lifetime = REUSABLE_CONNECTION_LIFETIME
                 self.request_queue = Queue()
-                self.response_queue = Queue()
                 self.open_pool = False
                 self.bind_pool = False
                 self._incoming = dict()
                 self.lock = Lock()
-                ReusableStrategy.pools[self.name] = self
+                ReusableThreadedStrategy.pools[self.name] = self
                 self.started = False
 
         def __str__(self):
@@ -97,7 +96,7 @@ class ReusableStrategy(BaseStrategy):
             return False
 
         def create_pool(self):
-            self.connections = [ReusableStrategy.ReusableConnection(self.original_connection, self.request_queue, self.response_queue) for _ in range(self.pool_size)]
+            self.connections = [ReusableThreadedStrategy.ReusableConnection(self.original_connection, self.request_queue) for _ in range(self.pool_size)]
 
         def terminate_pool(self):
             self.started = False
@@ -122,6 +121,9 @@ class ReusableStrategy(BaseStrategy):
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
                 self.active_connection.busy = True
+                if datetime.now() - self.active_connection.creation_time > self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
+                    self.active_connection.connection.unbind()
+                    self.active_connection.new_connection()
                 if counter == TERMINATE_REUSABLE and not self.active_connection.cannot_terminate:
                     terminate = True
                     if self.active_connection.connection.bound:
@@ -132,7 +134,7 @@ class ReusableStrategy(BaseStrategy):
                             self.active_connection.connection.open()
                         if pool.bind_pool and not self.active_connection.connection.bound:
                             self.active_connection.connection.bind()
-                        self.active_connection.connection._fire_deferred()
+                        self.active_connection.connection._fire_deferred()  # force deferred operations
                         if message_type == 'searchRequest':
                             result = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
                         else:
@@ -147,29 +149,15 @@ class ReusableStrategy(BaseStrategy):
         """
         Container for the Restartable connection. it includes a thread and a lock to execute the connection in the pool
         """
-        def __init__(self, connection, request_queue, response_queue):
-            from ldap3 import ServerPool, Connection
+        def __init__(self, connection, request_queue):
 
-            self.connection = Connection(server=connection.server_pool if connection.server_pool else connection.server,
-                                         user=connection.user,
-                                         password=connection.password,
-                                         version=connection.version,
-                                         authentication=connection.authentication,
-                                         client_strategy=STRATEGY_SYNC_RESTARTABLE,
-                                         auto_referrals=connection.auto_referrals,
-                                         sasl_mechanism=connection.sasl_mechanism,
-                                         sasl_credentials=connection.sasl_credentials,
-                                         collect_usage=True if connection.usage else False,
-                                         read_only=connection.read_only,
-                                         lazy=True)
-            if connection.server_pool:
-                self.connection.server_pool = connection.server_pool
-                self.connection.server_pool.initialize(self.connection)
+            self.original_connection = connection
+            self.request_queue = request_queue
             self.running = False
             self.busy = False
             self.cannot_terminate = False
-            self.creation_time = datetime.now()
-            self.thread = ReusableStrategy.PooledConnectionThread(self, connection)
+            self.new_connection()
+            self.thread = ReusableThreadedStrategy.PooledConnectionThread(self, connection)
 
         def __str__(self):
             s = str(self.connection) + linesep
@@ -179,12 +167,33 @@ class ReusableStrategy(BaseStrategy):
 
             return s
 
+        def new_connection(self):
+            from ldap3 import ServerPool, Connection
+            self.connection = Connection(server=self.original_connection.server_pool if self.original_connection.server_pool else self.original_connection.server,
+                                         user=self.original_connection.user,
+                                         password=self.original_connection.password,
+                                         version=self.original_connection.version,
+                                         authentication=self.original_connection.authentication,
+                                         client_strategy=STRATEGY_SYNC_RESTARTABLE,
+                                         auto_referrals=self.original_connection.auto_referrals,
+                                         sasl_mechanism=self.original_connection.sasl_mechanism,
+                                         sasl_credentials=self.original_connection.sasl_credentials,
+                                         collect_usage=True if self.original_connection.usage else False,
+                                         read_only=self.original_connection.read_only,
+                                         lazy=True)
+
+            if self.original_connection.server_pool:
+                self.connection.server_pool = self.original_connection.server_pool
+                self.connection.server_pool.initialize(self.connection)
+
+            self.creation_time = datetime.now()
+
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
         self.no_real_dsa = False
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
-            self.pool = ReusableStrategy.ConnectionPool(ldap_connection)
+            self.pool = ReusableThreadedStrategy.ConnectionPool(ldap_connection)
         else:
             raise LDAPException('reusable connection must have a pool_name')
 

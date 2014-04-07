@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..ldap3.core.server import Server as newServer
+from ..core.server import Server as newServer
 
 
 # noinspection PyPep8Naming

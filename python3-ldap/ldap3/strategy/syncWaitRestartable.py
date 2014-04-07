@@ -99,7 +99,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
         try:
             return SyncWaitStrategy.send(self, message_type, request, controls)  # try to send using SyncWait
-        except Exception as e:
+        except Exception:
             pass
         if not self._restarting:  # machinery for restartable connection
             self._restarting = True

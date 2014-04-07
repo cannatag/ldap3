@@ -87,7 +87,7 @@ class ObjectDef(object):
     def __contains__(self, item):
         try:
             self.__getitem__(item)
-        except:
+        except LDAPException:
             return False
 
         return True

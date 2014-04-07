@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from ldap3 import LDAPException
-from ..ldap3.core.tls import Tls as newTls
+from ..core.tls import Tls as newTls
 
 
 try:

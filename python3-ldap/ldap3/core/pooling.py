@@ -88,7 +88,7 @@ class ServerPoolState(object):
                 server = temp_list.pop(randint(0, len(temp_list) - 1))
                 if server.check_availability():
                     return self.servers.index(server)  # returns a random active server in the pool
-            if self.server_pool.exhaust:
+            if exhaust:
                 raise LDAPException('no random active server in server pool')
 
     def find_active_server(self, starting=0, exhaust=True):

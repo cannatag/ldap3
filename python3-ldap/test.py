@@ -1,4 +1,3 @@
-import socket
 from ldap3 import (
     Connection,
     Server,

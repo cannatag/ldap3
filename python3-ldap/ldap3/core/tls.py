@@ -85,7 +85,6 @@ class Tls(object):
 
         return wrapped_socket
 
-
     @staticmethod
     def unwrap_socket(sock):
         """

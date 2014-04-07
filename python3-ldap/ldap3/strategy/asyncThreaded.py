@@ -77,7 +77,7 @@ class AsyncThreadedStrategy(BaseStrategy):
                 elif len(unprocessed) >= length:  # add message to message list
                     if self.connection.usage:
                         self.connection.usage.received_message(length)
-                    ldap_resp = decoder.decode(unprocessed[:length], asn1Spec = LDAPMessage())[0]
+                    ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
                     message_id = int(ldap_resp['messageID'])
                     dict_response = BaseStrategy.decode_response(ldap_resp)
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':

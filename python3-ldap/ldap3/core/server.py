@@ -103,8 +103,8 @@ class Server(object):
         Tries to open, connect and close a socket to specified address and port to check availability
         """
         available = True
+        temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             temp_socket.connect((self.host, self.port))
         except socket.error:
             available = False

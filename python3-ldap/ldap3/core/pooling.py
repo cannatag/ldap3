@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 from os import linesep
 from random import randint
-from ldap3 import LDAPException, POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_CHECKING_TIMEOUT, POOLING_STRATEGIES
+from ldap3 import LDAPException, POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_STRATEGIES
 from .server import Server
 
 

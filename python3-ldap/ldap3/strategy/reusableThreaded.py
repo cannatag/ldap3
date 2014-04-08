@@ -120,7 +120,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
                 self.active_connection.busy = True
-                if datetime.now() - self.active_connection.creation_time > self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
+                if (datetime.now() - self.active_connection.creation_time).seconds > self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
                     self.active_connection.connection.unbind()
                     self.active_connection.new_connection()
                 if counter == TERMINATE_REUSABLE and not self.active_connection.cannot_terminate:

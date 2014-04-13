@@ -25,18 +25,20 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 import ssl
 
-from ldap3 import Server, Connection, Tls, AUTH_SASL
+from ldap3 import Server, Connection, Tls, AUTH_SASL, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, test_strategy, test_base, test_lazy_connection
 
 
 class Test(unittest.TestCase):
     def test_start_tls(self):
         server = Server(host=test_server, port=test_port, tls=Tls())
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
         connection.open()
         connection.start_tls()
         self.assertFalse(connection.closed)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
 
     def test_open_ssl_with_defaults(self):
         server = Server(host=test_server, port=test_port_ssl, use_ssl=True)
@@ -44,31 +46,47 @@ class Test(unittest.TestCase):
         connection.open()
         self.assertFalse(connection.closed)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
 
     def test_search_with_tls_before_bind(self):
         server = Server(host=test_server, port=test_port, tls=Tls())
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
         connection.open()
         connection.start_tls()
         connection.bind()
         result = connection.search(test_base, '(objectClass=*)', attributes='sn')
         if not isinstance(result, bool):
-            connection.get_response(result)
-        self.assertEqual(connection.result['description'], 'success')
-        self.assertTrue(len(connection.response) > 15)
+            response, result = connection.get_response(result)
+        else:
+            response = connection.response
+            result = connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(len(response) > 15)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
+        self.assertFalse(connection.bound)
+
 
     def test_search_with_tls_after_bind(self):
         server = Server(host=test_server, port=test_port, tls=Tls())
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
         connection.open()
         connection.bind()
         connection.start_tls()
         result = connection.search(test_base, '(objectClass=*)', attributes='sn')
         if not isinstance(result, bool):
-            connection.get_response(result)
-        self.assertEqual(connection.result['description'], 'success')
-        self.assertTrue(len(connection.response) > 15)
+            response, result = connection.get_response(result)
+        else:
+            response = connection.response
+            result = connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(len(response) > 15)
+        connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
+        self.assertFalse(connection.bound)
 
     def test_bind_ssl_with_certificate(self):
         tls = Tls(local_private_key_file='c:/admin2524KeyPlain.pem', local_certificate_file='c:/admin2524Cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='c:/idmprofiler2524CA.b64')
@@ -78,6 +96,8 @@ class Test(unittest.TestCase):
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
     def test_sasl_with_external_certificate(self):
@@ -88,6 +108,8 @@ class Test(unittest.TestCase):
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
         #===============================================================================

@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+from ldap3 import STRATEGY_REUSABLE_THREADED
 
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
@@ -32,10 +33,12 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
+        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
 
     def tearDown(self):
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
     def test_search_with_controls(self):
@@ -43,5 +46,8 @@ class Test(unittest.TestCase):
         controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
         result = self.connection.search(test_base, '(objectClass=*)', attributes=['sn, givenName'], size_limit=0, controls=controls)
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success', 'operationsError'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success', 'operationsError'])

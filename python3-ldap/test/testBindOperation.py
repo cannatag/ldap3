@@ -24,43 +24,51 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SASL, Connection, Server
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl
+from ldap3 import AUTH_ANONYMOUS, AUTH_SASL, Connection, Server, STRATEGY_REUSABLE_THREADED
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl, test_lazy_connection
 
 
 class Test(unittest.TestCase):
     def test_bind_clear_text(self):
         server = Server(host=test_server, port=test_port)
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
     def test_bind_ssl(self):
         server = Server(host=test_server, port=test_port_ssl, use_ssl=True)
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, pool_name='pool1')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
     def test_bind_anonymous(self):
         server = Server(host=test_server, port=test_port)
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_ANONYMOUS)
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_ANONYMOUS, lazy=False, pool_name='pool1')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
     def test_bind_sasl_digest_md5(self):
         server = Server(host=test_server, port=test_port)
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(None, 'testSasl.risorse', 'password', None))
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(None, 'testSasl.risorse', 'password', None), pool_name='pool1')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
+        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            connection.strategy.terminate()
         self.assertFalse(connection.bound)

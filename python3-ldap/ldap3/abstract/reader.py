@@ -350,8 +350,6 @@ class Reader(object):
                                             paged_cookie=self.paged_cookie)
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
-                if len(response) > 1:
-                    response = response[:-1]
             else:
                 response = self.connection.response
 

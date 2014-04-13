@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+from ldap3 import STRATEGY_REUSABLE_THREADED
 
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
@@ -33,33 +34,47 @@ from ldap3.core.tls import Tls
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
+        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
 
     def tearDown(self):
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
     def test_get_replica_list_extension(self):
         result = self.connection.extended('2.16.840.1.113719.1.27.100.19', 'cn=server')
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success', 'noSuchObject'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success', 'noSuchObject'])
 
     def test_who_am_i_extension(self):
         result = self.connection.extended('1.3.6.1.4.1.4203.1.11.3')
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success', 'protocolError'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success', 'protocolError'])
 
     def test_get_bind_dn_extension(self):
         result = self.connection.extended('2.16.840.1.113719.1.27.100.31')
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success'])
 
     def test_start_tls_extension(self):
         self.connection.server.tls = Tls()
         result = self.connection.extended('1.3.6.1.4.1.1466.20037')
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success'])

@@ -26,37 +26,48 @@ import unittest
 
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
-from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
+from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection
 
 
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
+        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
         self.connection.add(test_dn_builder(test_base, 'test-add-for-modify'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add-for-modify'})
 
     def tearDown(self):
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
     def test_modify_replace(self):
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace']), 'sn': (MODIFY_REPLACE, ['test-modified-sn-replace'])})
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertEqual(self.connection.result['description'], 'success')
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
 
     def test_modify_add(self):
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success', 'attributeOrValueExists'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success', 'attributeOrValueExists'])
 
     def test_modify_deleted(self):
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added2'])})
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success', 'attributeOrValueExists'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success', 'attributeOrValueExists'])
 
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added3'])})
         if not isinstance(result, bool):

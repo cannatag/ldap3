@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader
-from ldap3 import Server, Connection
+from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection
 
 
@@ -36,6 +36,8 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
     def test_search_filter_with_object_class(self):

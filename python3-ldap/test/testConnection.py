@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+from ldap3 import STRATEGY_REUSABLE_THREADED
 
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
@@ -32,16 +33,20 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
-        self.connection = Connection(server, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
+        self.connection = Connection(server, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
 
     def tearDown(self):
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
     def test_open_connection(self):
         self.connection.open()
         self.assertEquals(self.connection.closed, False)
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertEquals(self.connection.closed, True)
         self.assertEquals(self.connection.bound, False)
 
@@ -51,6 +56,8 @@ class Test(unittest.TestCase):
         self.connection.bind()
         self.assertEquals(self.connection.bound, True)
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertEquals(self.connection.closed, True)
         self.assertEquals(self.connection.bound, False)
 

@@ -188,6 +188,8 @@ class Connection(object):
         context_bound, context_closed = self._context_state.pop()
         if not context_bound and self.bound:  # restore status prior to entering context
             self.unbind()
+            if self.strategy_type == STRATEGY_REUSABLE_THREADED:
+                self.strategy.terminate()
 
         if not context_closed and self.closed:
             self.open()

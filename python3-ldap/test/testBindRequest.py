@@ -25,17 +25,19 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 
 from ldap3.protocol.rfc4511 import BindRequest, LDAPDN, AuthenticationChoice, Simple, Version
-from ldap3 import Connection, Server
+from ldap3 import Connection, Server, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
 
 
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(test_server, test_port)
-        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, pool_name='pool1')
 
     def tearDown(self):
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
 
     def test_bind(self):
         bind_req = BindRequest()

@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-from ldap3 import GET_ALL_INFO
+from ldap3 import GET_ALL_INFO, STRATEGY_REUSABLE_THREADED
 from ldap3.protocol.schema import SchemaInfo, ObjectClassInfo, AttributeTypeInfo
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
@@ -34,10 +34,12 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         self.server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
-        self.connection = Connection(self.server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection)
+        self.connection = Connection(self.server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
 
     def tearDown(self):
         self.connection.unbind()
+        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+            self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
     def test_schema(self):

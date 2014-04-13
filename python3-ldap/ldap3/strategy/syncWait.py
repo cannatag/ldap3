@@ -96,35 +96,34 @@ class SyncWaitStrategy(BaseStrategy):
         Executed after an Operation Request (except Search)
         Returns the result message or None
         """
-        responses, result = self.get_response(message_id)
-        if not responses and result['type'] != 'intermediateResponse':
-            return result
+        responses, _ = self.get_response(message_id)
+        if responses and len(responses) == 1 and responses[0]['type'] != 'intermediateResponse':
+            return responses
         elif not responses:
             return None
         else:
             check_intermediate_response = True
-            for response in responses:
+            for response in responses[:-1]:
                 if response['type'] != 'intermediateResponse':
                     check_intermediate_response = False
                     break
             if not check_intermediate_response:
                 self.connection.last_error = 'multiple messages error'
                 raise LDAPException(self.connection.last_error)
-        return responses.append(result)
+
+        return responses
 
     def post_send_search(self, message_id):
         """
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        responses, result = self.get_response(message_id)
-        if responses:
+        responses, _ = self.get_response(message_id)
+        if isinstance(responses, list):
             self.connection.response = responses[:-1] if responses[-1]['type'] == 'searchResDone' else responses
-        else:
-            self.connection.response = list()
+            return self.connection.response
 
-        self.connection.result = result
-        return self.connection.response
+        raise LDAPException('error receiving response')
 
     def _get_response(self, message_id):
         """

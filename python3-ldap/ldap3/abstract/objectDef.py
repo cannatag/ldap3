@@ -30,9 +30,13 @@ from ldap3 import LDAPException
 
 class ObjectDef(object):
     """
-    AttrDefs are stored in a dictionary, the key is the friendly name defined in AttrDef
+    AttrDefs are stored in a dictionary; the key is the friendly name defined
+    in AttrDef
+
     AttrDefs can be added and removed using the += ad -= operators
-    ObjectDef can be accessed either as a sequence and a dictionary. Wnen accessed the whole AttrDef instance is returned
+
+    ObjectDef can be accessed either as a sequence and a dictionary. Wnen
+    accessed the whole AttrDef instance is returned
     """
 
     def __init__(self, object_class=None):

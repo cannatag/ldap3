@@ -93,15 +93,18 @@ class Tls(object):
         return sock.unwrap()
 
     def start_tls(self, connection):
-        if connection.tls_started or connection.strategy._outstanding or connection.sasl_in_progress:  # as per rfc 4513 (3.1.1)
+        if connection.tls_started or connection.strategy._outstanding or connection.sasl_in_progress:
+            # Per RFC 4513 (3.1.1)
             return False
 
         result = connection.extended('1.3.6.1.4.1.1466.20037')
-        if not connection.strategy.sync:  # async - start_tls must be executed by the strategy
+        if not connection.strategy.sync:
+            # async - start_tls must be executed by the strategy
             connection.get_response(result)
             return True
         else:
-            if connection.result['description'] not in ['success']:  # startTLS failed
+            if connection.result['description'] not in ['success']:
+                # startTLS failed
                 connection.last_error = 'startTLS failed'
                 raise LDAPException(connection.last_error)
             return self._start_tls(connection)
@@ -124,7 +127,10 @@ class Tls(object):
         return True
 
 
-def _dnsname_to_pat_backport(dn):  # fix for Python2, code from python 3.3 standard library
+def _dnsname_to_pat_backport(dn):
+    """
+    Fix for Python2; code from Python 3.3 standard library.
+    """
     import re
 
     pats = []
@@ -140,13 +146,15 @@ def _dnsname_to_pat_backport(dn):  # fix for Python2, code from python 3.3 stand
     return re.compile(r'\A' + r'\.'.join(pats) + r'\Z', re.IGNORECASE)
 
 
-def match_hostname_backport(cert, hostname):  # fix for Python2, code from python 3.3 standard library
-    """Verify that *cert* (in decoded format as returned by
-    SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules
-    are mostly followed, but IP addresses are not accepted for *hostname*.
+def match_hostname_backport(cert, hostname):
+    """
+    Fix for Python2; code from Python 3.3 standard library.
+
+    Verify that *cert* (in decoded format as returned by
+    SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules are
+    mostly followed, but IP addresses are not accepted for *hostname*.
 
     CertificateError is raised on failure. On success, the function
-    returns nothing.
     """
     if not cert:
         raise ValueError("empty or no certificate")
@@ -177,7 +185,6 @@ def match_hostname_backport(cert, hostname):  # fix for Python2, code from pytho
 
 
 def check_hostname(sock, server_name, additional_names):
-
     server_certificate = sock.getpeercert()
     host_names = [server_name] + (additional_names if isinstance(additional_names, list) else [additional_names])
     valid_found = False

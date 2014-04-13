@@ -25,14 +25,16 @@ from os import linesep
 
 from .attribute import Attribute
 
-
 # noinspection PyUnresolvedReferences
 class OperationalAttribute(Attribute):
     """
-    Operational attribute/values object, it includes the search result of an operational attribute in an entry
+    Operational attribute/values object, it includes the search result of an
+    operational attribute in an entry
+
     Attribute object is read only
     'values' contains the processed attribute values
     'raw_values' contains the unprocessed attribute values
+
     It doesn't have any AttrDef
     """
 

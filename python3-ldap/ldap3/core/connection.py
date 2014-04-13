@@ -53,11 +53,17 @@ from .tls import Tls
 
 class Connection(object):
     """
-    Main ldap connection class
-    controls, if used, must be a list of tuples. Each tuple must have 3 elements,
-    the control OID, a boolean meaning if the control is critical, a value
-    If the boolean is set to True the server must honorate the control or refuse the operation
-    Mixing controls must be defined in controls specification (as per rfc 4511)
+    Main ldap connection class.
+
+    Controls, if used, must be a list of tuples. Each tuple must have 3
+    elements, the control OID, a boolean meaning if the control is
+    critical, a value.
+
+    If the boolean is set to True the server must honor the control or
+    refuse the operation
+
+    Mixing controls must be defined in controls specification (as per
+    RFC 4511.)
     """
 
     def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False, lazy=False, pool_name=None):
@@ -263,13 +269,18 @@ class Connection(object):
     def search(self, search_base, search_filter, search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, dereference_aliases=SEARCH_DEREFERENCE_ALWAYS, attributes=None, size_limit=0, time_limit=0, types_only=False, get_operational_attributes=False, controls=None,
                paged_size=None, paged_criticality=False, paged_cookie=None):
         """
-        Perform an ldap search
-        if attributes is empty no attribute is returned
-        if attributes is ALL_ATTRIBUTES all attributes are returned
-        if paged_size is an int greater than 0 a simple paged search is tried as described in RFC2696 with the specified size
-        if paged is 0 and cookie is present the search is abandoned on server
-        cookie is an opaque string received in the last paged search and must be used on the next paged search response
-        if lazy = True open and bind will be deferred until another LDAP operation is performed
+        Perform an ldap search:
+
+        - If attributes is empty no attribute is returned
+        - If attributes is ALL_ATTRIBUTES all attributes are returned
+        - If paged_size is an int greater than 0 a simple paged search
+          is tried as described in RFC2696 with the specified size
+        - If paged is 0 and cookie is present the search is abandoned on
+          server
+        - Cookie is an opaque string received in the last paged search
+          and must be used on the next paged search response
+        - If lazy = True open and bind will be deferred until another
+          LDAP operation is performed
         """
         self._fire_deferred()
         if not attributes:
@@ -312,8 +323,11 @@ class Connection(object):
 
     def add(self, dn, object_class, attributes=None, controls=None):
         """
-        add dn to the DIT, object_class is None, a class name or a list of class names,
-        attributes is a dictionary in the form 'attr': 'val' or 'attr': ['val1', 'val2', ...] for multivalued attributes
+        Add dn to the DIT, object_class is None, a class name or a list
+        of class names.
+
+        Attributes is a dictionary in the form 'attr': 'val' or 'attr':
+        ['val1', 'val2', ...] for multivalued attributes
         """
         self._fire_deferred()
         attr_object_class = []
@@ -343,7 +357,7 @@ class Connection(object):
 
     def delete(self, dn, controls=None):
         """
-        Delete in the dib the entry identified by dn
+        Delete the entry identified by the DN from the DIB.
         """
         self._fire_deferred()
         if self.read_only:
@@ -360,8 +374,12 @@ class Connection(object):
     def modify(self, dn, changes, controls=None):
         """
         Modify attributes of entry
-        Changes is a dictionary in the form {'attribute1': [(operation, [val1, val2])], 'attribute2': [(operation, [val1, val2])]}
-        Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
+
+        - Changes is a dictionary in the form {'attribute1':
+          [(operation, [val1, val2])], 'attribute2': [(operation, [val1,
+          val2])]}
+        - Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2
+          (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
         self._fire_deferred()
         if self.read_only:
@@ -392,7 +410,8 @@ class Connection(object):
 
     def modify_dn(self, dn, relative_dn, delete_old_dn=True, new_superior=None, controls=None):
         """
-        Modify dn of the entry or performs a move of the entry in the DIT
+        Modify DN of the entry or performs a move of the entry in the
+        DIT.
         """
         self._fire_deferred()
         if self.read_only:

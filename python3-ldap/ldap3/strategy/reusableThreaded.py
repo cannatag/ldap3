@@ -135,11 +135,11 @@ class ReusableThreadedStrategy(BaseStrategy):
                             self.active_connection.connection.bind()
                         self.active_connection.connection._fire_deferred()  # force deferred operations
                         if message_type == 'searchRequest':
-                            self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
+                            result = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
                         else:
-                            self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
+                            result = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
                         with pool.lock:
-                            pool._incoming[counter] = (self.active_connection.connection.response, self.active_connection.connection.result)
+                            pool._incoming[counter] = result
                 self.active_connection.busy = False
                 pool.request_queue.task_done()
             self.active_connection.running = False
@@ -203,16 +203,10 @@ class ReusableThreadedStrategy(BaseStrategy):
     def open(self, reset_usage=True):
         self.pool.open_pool = True
         self.pool.start_pool()
-        self.connection.closed = False
-
-    def close(self):
-        pass
 
     def terminate(self):
         self.pool.terminate_pool()
         self.pool.open_pool = False
-        self.connection.bound = False
-        self.connection.closed = True
 
     def send(self, message_type, request, controls=None):
         if self.pool.started:
@@ -221,7 +215,6 @@ class ReusableThreadedStrategy(BaseStrategy):
                 return -1  # -1 stands for bind request
             elif message_type == 'unbindRequest':
                 self.pool.bind_pool = False
-                return -2
             else:
                 self.counter += 1
                 if self.counter > LDAP_MAX_INT:
@@ -236,19 +229,18 @@ class ReusableThreadedStrategy(BaseStrategy):
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
         if counter == -1:  # send a bogus bindResponse
             return list(), {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '', 'saslCreds': 'None'}
-        if counter == -2:  # unbind
-            return None, None
         response = None
         result = None
         while timeout >= 0:  # waiting for completed message to appear in _incoming
             try:
-                response, result = self.connection.strategy.pool._incoming.pop(counter)
+                responses = self.connection.strategy.pool._incoming.pop(counter)
             except KeyError:
                 sleep(RESPONSE_SLEEPTIME)
                 timeout -= RESPONSE_SLEEPTIME
                 continue
 
-            # response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
+            result = responses[-2]
+            response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
             break
         return response, result
 

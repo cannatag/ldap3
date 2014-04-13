@@ -203,7 +203,8 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         """
         response = None
-        result = None
+        self.connection.response = None
+        self.connection.result = None
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
@@ -217,13 +218,11 @@ class BaseStrategy(object):
                 else:
                     if responses:
                         self._outstanding.pop(message_id)
-                        response = responses[:-2] if len(responses) > 2 else []
-                        result = responses[-2]
-                        # response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
+                        self.connection.response = responses[:-2] if len(responses) > 2 else []
+                        self.connection.result = responses[-2]
+                        response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
                     break
-        self.connection.response = response
-        self.connection.result = result
-        return response, result
+        return response, self.connection.result
 
     @classmethod
     def compute_ldap_message_size(cls, data):

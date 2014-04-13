@@ -160,7 +160,7 @@ def send_sasl_negotiation(connection, controls, payload):
 
     request = bind_operation(connection.version, AUTH_SASL, None, None, connection.sasl_mechanism, payload)
     response = connection.post_send_single_response(connection.send('bindRequest', request, controls))
-    result = connection.get_response(response)[1] if isinstance(response, int) else connection.result
+    result = connection.get_response(response)[0][0] if isinstance(response, int) else connection.result
 
     return result
 

@@ -29,7 +29,8 @@ from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS, STRATEG
 # noinspection PyPep8Naming
 class Connection(newConnection):
     """
-    Proxy class 8with camel case parameters) to new Connection class (pep8 compliant)
+    Proxy class (with camel case parameters) to new Connection class (pep8
+    compliant)
     """
 
     def __init__(self, server, user=None, password=None, autoBind=False, version=3, authentication=None, clientStrategy=STRATEGY_SYNC, autoReferrals=True, saslMechanism=None, saslCredentials=None, collectUsage=False, readOnly=False, lazy=False):
@@ -41,27 +42,30 @@ class Connection(newConnection):
 
     def add(self, dn, objectClass, attributes=None, controls=None):
         """
-        add dn to the dib, objectClass is None, a class name or a list of class names,
-        attributes is a dictionary in the form 'attr': 'val'
-        or 'attr': ['val1', 'val2', 'valN'] for multivalued types
+        Add DN to the DIB, objectClass is None, a class name or a list of class
+        names.
+
+        attributes is a dictionary in the form 'attr': 'val' or 'attr':
+        ['val1', 'val2', 'valN'] for multivalued types.
         """
         return newConnection.add(dn, objectClass, attributes, controls)
 
     def modifyDn(self, dn, relativeDn, deleteOldDn=True, newSuperior=None, controls=None):
         """
-        Modify dn of the entry and optionally performs a move of the entry in the dib
+        Modify DN of the entry and optionally performs a move of the entry in
+        the DIB.
         """
         return newConnection.modify_dn(self, dn, relativeDn, deleteOldDn, newSuperior, controls)
 
     def abandon(self, messageId, controls=None):
         """
-        Abandon the operation indicated by messageId
+        Abandon the operation indicated by messageId.
         """
         return newConnection.abandon(self, messageId, controls)
 
     def extended(self, requestName, requestValue=None, controls=None):
         """
-        Perform an extended operation
+        Perform an extended operation.
         """
         return newConnection.extended(self, requestName, requestValue, controls)
 

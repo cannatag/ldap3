@@ -28,11 +28,17 @@ from ldap3 import LDAPException
 
 class Entry(object):
     """
-    The Entry object contains a single entry from the result of an LDAP search
-    Attributes can be accessed either by sequence, by assignment or as dictonary keys. Keys are not case sensitive
-    DN is retrieved by get_entry_dn(), Reader reference is in  get_entry_reader()
-    Raw attributes values are retrieved by the get_raw_attributes() and get_raw_attribute() methods
-    Entry object is read only
+
+    The Entry object contains a single entry from the result of an LDAP
+    search.  Attributes can be accessed either by sequence, by assignment
+    or as dictonary keys. Keys are not case sensitive.
+
+    - The DN is retrieved by get_entry_dn()
+    - The Reader reference is in get_entry_reader()
+    - Raw attributes values are retrieved by the get_raw_attributes() and
+      get_raw_attribute() methods
+
+    The Entry object is read only
     """
 
     def __init__(self, dn, reader):

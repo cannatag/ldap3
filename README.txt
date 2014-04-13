@@ -50,9 +50,10 @@ CHANGELOG
 * 0.9.2 2014.04.01
     - changed return value in get_response from response to (response, result) - helpful for multi threaded connections
     - added ReusableStrategy for pooling connections
+    - refined docstrings (thanks to Will)
 
 * 0.9.1 2014.03.30
-    - added laziness to test suite
+    - added laziness flass to test suite
     - changed ServerPool signature to accept active and exhaust parameters
     - removed unneeded start_listen parameter
     - added 'lazy' parameter to open, bind and unbind a connection only when an effective operation is done

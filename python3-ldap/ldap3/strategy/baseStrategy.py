@@ -198,13 +198,12 @@ class BaseStrategy(object):
         Get response LDAP messages
         Responses are returned by the underlying connection strategy
         Check if message_id LDAP message is still outstanding and wait for timeout to see if it appears in _get_response
-        All response messages are returned
         Result is stored in connection.result
         Responses without result is stored in connection.response
+        A tuple (responses, result) is returned
         """
         response = None
-        self.connection.response = None
-        self.connection.result = None
+        result = None
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
@@ -218,11 +217,15 @@ class BaseStrategy(object):
                 else:
                     if responses:
                         self._outstanding.pop(message_id)
-                        self.connection.response = responses[:-2] if len(responses) > 2 else []
-                        self.connection.result = responses[-2]
-                        response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
+                        result = responses[-2]
+                        response = responses[:-2]
+                        self.connection.result = result
+                        self.connection.response = response
+                        # self.connection.response = responses[:-2] if len(responses) > 2 else []
+                        # self.connection.result = responses[-2]
+                        # response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
                     break
-        return response, self.connection.result
+        return response, result
 
     @classmethod
     def compute_ldap_message_size(cls, data):

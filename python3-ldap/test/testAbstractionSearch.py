@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from pprint import pprint
 import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader
@@ -92,7 +93,7 @@ class Test(unittest.TestCase):
         self.assertEqual(str(ug.surname), 'tost')
 
     def test_search_with_pre_query(self):
-        change = lambda attr, value: 'test-del*'
+        change = lambda attr, value: 'test-search*'
 
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'Common Name', pre_query=change)
@@ -102,7 +103,7 @@ class Test(unittest.TestCase):
         qu = 'Common Name := bug'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 1)
+        self.assertEqual(len(lu), 8)
 
     def test_search_with_default(self):
         ou = ObjectDef('iNetOrgPerson')

@@ -70,7 +70,6 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         l = self.connection.response_to_ldif(response)
-        #print(l)
         self.assertTrue('version: 1' in l)
         self.assertTrue('dn: cn=test-ldif-1,o=test' in l)
         self.assertTrue('objectClass: inetOrgPerson' in l)

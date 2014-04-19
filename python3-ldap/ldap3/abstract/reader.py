@@ -345,13 +345,21 @@ class Reader(object):
 
         self._create_query_filter()
         with self.connection:
-            result = self.connection.search(search_base=self.base, search_filter=self.query_filter, search_scope=query_scope, dereference_aliases=self.dereference_aliases, attributes=self.attributes, size_limit=self.size_limit, time_limit=self.time_limit,
-                                            types_only=self.types_only, get_operational_attributes=self.get_operational_attributes, controls=self.controls, paged_size=self.paged_size, paged_criticality=self.paged_criticality,
+            result = self.connection.search(search_base=self.base,
+                                            search_filter=self.query_filter,
+                                            search_scope=query_scope,
+                                            dereference_aliases=self.dereference_aliases,
+                                            attributes=self.attributes,
+                                            size_limit=self.size_limit,
+                                            time_limit=self.time_limit,
+                                            types_only=self.types_only,
+                                            get_operational_attributes=self.get_operational_attributes,
+                                            controls=self.controls,
+                                            paged_size=self.paged_size,
+                                            paged_criticality=self.paged_criticality,
                                             paged_cookie=self.paged_cookie)
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
-                if len(response) > 1:
-                    response = response[:-1]
             else:
                 response = self.connection.response
 

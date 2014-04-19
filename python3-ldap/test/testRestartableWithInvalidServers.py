@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(search_results) > 15)
 
     def test_restartable_invalid_server2(self):
-        hosts = ['openldap', 'edir']
+        hosts = ['edir', 'edir2', 'edir3', 'localhost']
         search_results = []
         servers = [Server(host=host, port=389, use_ssl=False) for host in hosts]
         server_pool = ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=False, exhaust=False)
@@ -57,7 +57,7 @@ class Test(unittest.TestCase):
         connection.open()
         connection.bind()
         print(connection)
-        connection.search(search_base='', search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_SINGLE_LEVEL)
+        connection.search(search_base='o=test', search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_SINGLE_LEVEL)
         if connection.response:
             for resp in connection.response:
                 if resp['type'] == 'searchResEntry':

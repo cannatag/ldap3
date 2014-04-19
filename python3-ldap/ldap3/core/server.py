@@ -148,12 +148,12 @@ class Server(object):
             self._dsa_info = DsaInfo(connection.response[0]['attributes']) if result else None
         elif result:  # async request, must check if attributes in response
             results, _ = connection.get_response(result)
-            if len(results) == 2 and 'attributes' in results[0]:
+            if len(results) == 1 and 'attributes' in results[0]:
                 self._dsa_info = DsaInfo(results[0]['attributes'])
 
     def _get_schema_info(self, connection, entry=''):
         """
-        Retrieve schema from subschemaSubentry DSE attribute, per RFC 
+        Retrieve schema from subschemaSubentry DSE attribute, per RFC
         4512 (4.4 and 5.1); entry = '' means DSE.
         """
         self._schema_info = None
@@ -166,7 +166,7 @@ class Server(object):
                 schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
             else:  # async request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
-                if len(results) == 2 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
+                if len(results) == 1 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
                     schema_entry = results[0]['attributes']['subschemaSubentry'][0]
 
         if schema_entry:
@@ -175,7 +175,7 @@ class Server(object):
                 self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes']) if result else None
             else:  # async request, must check if attributes in response
                 results, _ = connection.get_response(result)
-                if len(results) == 2 and 'attributes' in results[0]:
+                if len(results) == 1 and 'attributes' in results[0]:
                     self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'])
 
     def get_info_from_server(self, connection):

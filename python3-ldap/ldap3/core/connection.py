@@ -233,7 +233,7 @@ class Connection(object):
             else:
                 result = self.result
 
-            if response is None:
+            if result is None:
                 self.bound = False
             else:
                 self.bound = True if result['result'] == RESULT_SUCCESS else False

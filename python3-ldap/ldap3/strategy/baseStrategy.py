@@ -343,7 +343,7 @@ class BaseStrategy(object):
         for referral in referrals:
             candidate_referral = BaseStrategy.decode_referral(referral)
             if candidate_referral:
-                for ref_host in self.connection.server.allowedReferralHosts:
+                for ref_host in self.connection.server.allowed_referral_hosts:
                     if ref_host[0] == candidate_referral['host'] or ref_host[0] == '*':
                         if candidate_referral['host'] not in self._referrals:
                             candidate_referral['anonymousBindOnly'] = not ref_host[1]
@@ -442,15 +442,26 @@ class BaseStrategy(object):
             preferred_referral_list = [referral for referral in valid_referral_list if referral['ssl'] == self.connection.server.ssl]
             selected_referral = choice(preferred_referral_list) if preferred_referral_list else choice(valid_referral_list)
 
-            referral_server = Server(host=selected_referral['host'], port=selected_referral['port'] or self.connection.server.port, use_ssl=selected_referral['ssl'], allowed_referral_hosts=self.connection.server.allowed_referral_hosts,
-                                     tls=Tls(local_private_key_file=self.connection.server.tls.private_key_file, local_certificate_file=self.connection.server.tls.certificate_file, validate=self.connection.server.tls.validate,
-                                             version=self.connection.server.tls.version, ca_certs_file=self.connection.server.tls.ca_certs_file))
+            referral_server = Server(host=selected_referral['host'],
+                                     port=selected_referral['port'] or self.connection.server.port,
+                                     use_ssl=selected_referral['ssl'],
+                                     allowed_referral_hosts=self.connection.server.allowed_referral_hosts,
+                                     tls=Tls(local_private_key_file=self.connection.server.tls.private_key_file,
+                                             local_certificate_file=self.connection.server.tls.certificate_file,
+                                             validate=self.connection.server.tls.validate,
+                                             version=self.connection.server.tls.version,
+                                             ca_certs_file=self.connection.server.tls.ca_certs_file) if selected_referral['ssl'] else None)
 
             from ldap3.core.connection import Connection
 
-            referral_connection = Connection(server=referral_server, user=self.connection.user if not selected_referral['anonymousBindOnly'] else None, password=self.connection.password if not selected_referral['anonymousBindOnly'] else None,
-                                             version=self.connection.version, authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else AUTH_ANONYMOUS, client_strategy=STRATEGY_SYNC, auto_referrals=True,
-                                             read_only=self.connection.readOnly)
+            referral_connection = Connection(server=referral_server,
+                                             user=self.connection.user if not selected_referral['anonymousBindOnly'] else None,
+                                             password=self.connection.password if not selected_referral['anonymousBindOnly'] else None,
+                                             version=self.connection.version,
+                                             authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else AUTH_ANONYMOUS,
+                                             client_strategy=STRATEGY_SYNC,
+                                             auto_referrals=True,
+                                             read_only=self.connection.read_only)
 
             referral_connection.open()
             referral_connection.strategy._referrals = self._referrals
@@ -458,21 +469,41 @@ class BaseStrategy(object):
                 referral_connection.bind()
 
             if request['type'] == 'searchRequest':
-                referral_connection.search(selected_referral['base'] or request['base'], selected_referral['filter'] or request['filter'], selected_referral['scope'] or request['scope'], request['dereferenceAlias'],
-                                           selected_referral['attributes'] or request['attributes'], request['sizeLimit'], request['timeLimit'], request['typeOnly'], controls=request['controls'])
+                referral_connection.search(selected_referral['base'] or request['base'],
+                                           selected_referral['filter'] or request['filter'],
+                                           selected_referral['scope'] or request['scope'],
+                                           request['dereferenceAlias'],
+                                           selected_referral['attributes'] or request['attributes'],
+                                           request['sizeLimit'],
+                                           request['timeLimit'],
+                                           request['typeOnly'],
+                                           controls=request['controls'])
             elif request['type'] == 'addRequest':
-                referral_connection.add(selected_referral['base'] or request['entry'], None, request['attributes'], controls=request['controls'])
+                referral_connection.add(selected_referral['base'] or request['entry'],
+                                        None,
+                                        request['attributes'],
+                                        controls=request['controls'])
             elif request['type'] == 'compareRequest':
-                referral_connection.compare(selected_referral['base'] or request['entry'], request['attribute'], request['value'], controls=request['controls'])
+                referral_connection.compare(selected_referral['base'] or request['entry'],
+                                            request['attribute'],
+                                            request['value'],
+                                            controls=request['controls'])
             elif request['type'] == 'delRequest':
-                referral_connection.delete(selected_referral['base'] or request['entry'], controls=request['controls'])
+                referral_connection.delete(selected_referral['base'] or request['entry'],
+                                           controls=request['controls'])
             elif request['type'] == 'extendedRequest':
                 # tbd
                 raise NotImplemented()
             elif request['type'] == 'modifyRequest':
-                referral_connection.modify(selected_referral['base'] or request['entry'], prepare_changes_for_request(request['changes']), controls=request['controls'])
+                referral_connection.modify(selected_referral['base'] or request['entry'],
+                                           prepare_changes_for_request(request['changes']),
+                                           controls=request['controls'])
             elif request['type'] == 'modDNRequest':
-                referral_connection.modify_dn(selected_referral['base'] or request['entry'], request['newRdn'], request['deleteOldRdn'], request['newSuperior'], controls=request['controls'])
+                referral_connection.modify_dn(selected_referral['base'] or request['entry'],
+                                              request['newRdn'],
+                                              request['deleteOldRdn'],
+                                              request['newSuperior'],
+                                              controls=request['controls'])
             else:
                 raise LDAPException('referral operation not permitted')
 

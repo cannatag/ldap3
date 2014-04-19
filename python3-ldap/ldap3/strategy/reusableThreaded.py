@@ -207,6 +207,7 @@ class ReusableThreadedStrategy(BaseStrategy):
     def terminate(self):
         self.pool.terminate_pool()
         self.pool.open_pool = False
+        self.connection.bound = False
 
     def send(self, message_type, request, controls=None):
         if self.pool.started:

@@ -234,7 +234,7 @@ class Connection(object):
                 result = self.result
 
             if result is None:
-                self.bound = False
+                self.bound = True if self.strategy_type == STRATEGY_REUSABLE_THREADED else False
             else:
                 self.bound = True if result['result'] == RESULT_SUCCESS else False
 

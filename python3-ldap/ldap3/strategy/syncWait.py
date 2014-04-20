@@ -102,7 +102,9 @@ class SyncWaitStrategy(BaseStrategy):
                 if response['type'] != 'intermediateResponse':
                     self.connection.last_error = 'multiple messages error'
                     raise LDAPException(self.connection.last_error)
-        return responses.append(result)
+
+        responses.append(result)
+        return responses
 
     def post_send_search(self, message_id):
         """
@@ -111,8 +113,9 @@ class SyncWaitStrategy(BaseStrategy):
         """
         responses, result = self.get_response(message_id)
         if isinstance(responses, list):
-            self.connection.response = responses
-            return self.connection.response
+            self.connection.response = responses[:]  # copy search entries without result
+            responses.append(result)
+            return responses
 
         raise LDAPException('error receiving response')
 

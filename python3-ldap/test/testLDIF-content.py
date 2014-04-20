@@ -38,8 +38,8 @@ class Test(unittest.TestCase):
         self.connection.add(test_dn_builder(test_base, 'test-ldif-2'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif-2', test_name_attr: 'test-ldif-2'})
 
     def tearDown(self):
-        self.connection.delete(test_dn_builder(test_base, 'test-ldif-1'))
-        self.connection.delete(test_dn_builder(test_base, 'test-ldif-2'))
+        #self.connection.delete(test_dn_builder(test_base, 'test-ldif-1'))
+        #self.connection.delete(test_dn_builder(test_base, 'test-ldif-2'))
         self.connection.unbind()
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.connection.strategy.terminate()

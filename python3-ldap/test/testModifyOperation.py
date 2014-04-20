@@ -73,10 +73,16 @@ class Test(unittest.TestCase):
 
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added3'])})
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['attributeOrValueExists', 'success'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['attributeOrValueExists', 'success'])
 
         result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
         if not isinstance(result, bool):
-            self.connection.get_response(result)
-        self.assertTrue(self.connection.result['description'] in ['success', 'noSuchAttribute'])
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertTrue(result['description'] in ['success', 'noSuchAttribute'])

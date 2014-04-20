@@ -70,9 +70,12 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-delete'))
         add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req)
-
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         del_req = DelRequest(LDAPDN(test_dn_builder(test_base, 'test-delete')))
 
-        self.connection.send('delRequest', del_req)
+        result = self.connection.post_send_single_response(self.connection.send('delRequest', del_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)

@@ -70,8 +70,9 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
         add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req)
-
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         vals_mod1 = Vals()
         vals_mod1[0] = 'test-modified'
         part_attr1 = PartialAttribute()
@@ -85,7 +86,7 @@ class Test(unittest.TestCase):
         modify_req = ModifyRequest()
         modify_req['object'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
         modify_req['changes'] = changes
-        result = self.connection.send('modifyRequest', modify_req)
-        print(result)
-        self.connection.post_send_single_response(result)
+        result = self.connection.post_send_single_response(self.connection.send('modifyRequest', modify_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)

@@ -69,7 +69,9 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
         add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         ava = AttributeValueAssertion()
         ava['attributeDesc'] = AttributeDescription('givenName')
@@ -78,5 +80,7 @@ class Test(unittest.TestCase):
         compare_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
         compare_req['ava'] = ava
 
-        self.connection.send('compareRequest', compare_req)
+        result = self.connection.post_send_single_response(self.connection.send('compareRequest', compare_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)

@@ -66,6 +66,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.open_pool = False
                 self.bind_pool = False
                 self._incoming = dict()
+                self.counter = 0
                 self.lock = Lock()
                 ReusableThreadedStrategy.pools[self.name] = self
                 self.started = False
@@ -198,8 +199,6 @@ class ReusableThreadedStrategy(BaseStrategy):
         else:
             raise LDAPException('reusable connection must have a pool_name')
 
-        self.counter = 0
-
     def open(self, reset_usage=True):
         self.pool.open_pool = True
         self.pool.start_pool()
@@ -224,29 +223,41 @@ class ReusableThreadedStrategy(BaseStrategy):
         if self.pool.started:
             if message_type == 'bindRequest':
                 self.pool.bind_pool = True
-                return -1  # -1 stands for bind request
+                counter = -1  # -1 stands for bind request
             elif message_type == 'unbindRequest':
                 self.pool.bind_pool = False
+                counter = -2
             else:
-                self.counter += 1
-                if self.counter > LDAP_MAX_INT:
-                    self.counter = 1
+                with self.pool.lock:
+                    self.pool.counter += 1
+                    if self.pool.counter > LDAP_MAX_INT:
+                        self.pool.counter = 1
+                    counter = self.pool.counter
+                    print('adding counter', counter, message_type, request)
 
-                self.pool.request_queue.put((self.counter, message_type, request, controls))
+                self.pool.request_queue.put((counter, message_type, request, controls))
 
-            return self.counter
+            return counter
 
         raise LDAPException('connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
+        print('get_response', counter)
         if counter == -1:  # send a bogus bindResponse
             return list(), {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '', 'saslCreds': 'None'}
+        elif counter == -2:  # bogus unbind
+            return None
         response = None
         result = None
         while timeout >= 0:  # waiting for completed message to appear in _incoming
             try:
-                responses = self.connection.strategy.pool._incoming.pop(counter)
+                with self.connection.strategy.pool.lock:
+                    responses = self.connection.strategy.pool._incoming.pop(counter)
+                    print('pop', counter)
+                    print('incoming', len(self.connection.strategy.pool._incoming))
+                    print(self.connection.strategy.pool._incoming)
             except KeyError:
+                print('trying for ', counter)
                 sleep(RESPONSE_SLEEPTIME)
                 timeout -= RESPONSE_SLEEPTIME
                 continue

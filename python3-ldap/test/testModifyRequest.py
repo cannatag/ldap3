@@ -85,7 +85,7 @@ class Test(unittest.TestCase):
         modify_req = ModifyRequest()
         modify_req['object'] = LDAPDN(test_dn_builder(test_base, 'test-modify'))
         modify_req['changes'] = changes
-
-        self.connection.send('modifyRequest', modify_req)
-
+        result = self.connection.send('modifyRequest', modify_req)
+        print(result)
+        self.connection.post_send_single_response(result)
         self.assertTrue(True)

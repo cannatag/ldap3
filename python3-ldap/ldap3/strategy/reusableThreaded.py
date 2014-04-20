@@ -203,11 +203,22 @@ class ReusableThreadedStrategy(BaseStrategy):
     def open(self, reset_usage=True):
         self.pool.open_pool = True
         self.pool.start_pool()
+        self.connection.closed = False
 
     def terminate(self):
         self.pool.terminate_pool()
         self.pool.open_pool = False
         self.connection.bound = False
+        self.connection.closed = True
+
+    def _close_socket(self):
+        """
+        Don't really close the socket
+        """
+        self.connection.closed = True
+
+        if self.connection.usage:
+            self.connection.usage.closed_sockets += 1
 
     def send(self, message_type, request, controls=None):
         if self.pool.started:
@@ -240,8 +251,8 @@ class ReusableThreadedStrategy(BaseStrategy):
                 timeout -= RESPONSE_SLEEPTIME
                 continue
 
-            result = responses[-2]
-            response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
+            result = responses[-1]
+            response = responses[:-1]
             break
         return response, result
 

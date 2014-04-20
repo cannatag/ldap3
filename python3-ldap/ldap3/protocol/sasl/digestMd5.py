@@ -70,7 +70,10 @@ def sasl_digest_md5(connection, controls):
 
     # step One of rfc 2831
     result = send_sasl_negotiation(connection, controls, None)
-    server_directives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in result['saslCreds'].split(',')])  # convert directives to dict, unquote values
+    if 'saslCreds' in result and result['saslCreds'] != 'None':
+        server_directives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in result['saslCreds'].split(',')])  # convert directives to dict, unquote values
+    else:
+        return None
 
     if 'realm' not in server_directives or 'nonce' not in server_directives or 'algorithm' not in server_directives:  # mandatory directives, as per rfc 2831
         abort_sasl_negotiation(connection, controls)

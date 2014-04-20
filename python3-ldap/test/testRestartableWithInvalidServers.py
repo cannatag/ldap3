@@ -49,10 +49,11 @@ class Test(unittest.TestCase):
         self.assertTrue(len(search_results) > 15)
 
     def test_restartable_invalid_server2(self):
-        hosts = ['edir', 'edir2', 'edir3', 'localhost']
+        #hosts = ['edir', 'edir2', 'edir3', 'localhost']
+        hosts = ['edir']
         search_results = []
         servers = [Server(host=host, port=389, use_ssl=False) for host in hosts]
-        server_pool = ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=False, exhaust=False)
+        server_pool = ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
         connection = Connection(server_pool, user=test_user, password=test_password, client_strategy=STRATEGY_SYNC_RESTARTABLE, lazy=False)
         connection.open()
         connection.bind()

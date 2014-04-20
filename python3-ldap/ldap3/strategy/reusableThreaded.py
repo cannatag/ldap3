@@ -258,6 +258,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                     print(self.connection.strategy.pool._incoming)
             except KeyError:
                 print('trying for ', counter)
+                print('incoming', len(self.connection.strategy.pool._incoming))
                 sleep(RESPONSE_SLEEPTIME)
                 timeout -= RESPONSE_SLEEPTIME
                 continue

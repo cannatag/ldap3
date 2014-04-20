@@ -50,7 +50,11 @@ class Server(object):
     _real_servers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
     # and the value is the messageId counter for all connection to that host)
 
-    def __init__(self, host, port=389, use_ssl=False, allowed_referral_hosts=None, get_info=GET_NO_INFO, tls=None):
+    def __init__(self, host, port=None, use_ssl=False, allowed_referral_hosts=None, get_info=GET_NO_INFO, tls=None):
+        if not use_ssl and not port:
+            port = 389
+        elif use_ssl and not port:
+            port = 636
         try:
             self.address = getaddrinfo(host, port)[0][4][0]
         except gaierror:
@@ -87,7 +91,7 @@ class Server(object):
 
     def __str__(self):
         if self.host:
-            s = self.name + (' - ssl ' if self.ssl else ' - cleartext')
+            s = self.name + (' - ssl' if self.ssl else ' - cleartext')
         else:
             s = object.__str__(self)
         return s

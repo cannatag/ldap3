@@ -108,6 +108,7 @@ class Connection(object):
         self._executing_deferred = False
         self.lazy = lazy
         self.pool_name = pool_name
+        self.starting_tls = False
 
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)

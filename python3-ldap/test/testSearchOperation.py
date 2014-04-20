@@ -114,7 +114,6 @@ class Test(unittest.TestCase):
         else:
             response = self.connection.response
             result = self.connection.result
-        print(len(response))
         self.assertEqual(result['description'], 'success')
         self.assertEqual(response[0]['attributes']['entryDN'][0], test_dn_builder(test_base, 'test-add-operation'))
 

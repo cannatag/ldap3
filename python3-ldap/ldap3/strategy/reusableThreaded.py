@@ -65,6 +65,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.request_queue = Queue()
                 self.open_pool = False
                 self.bind_pool = False
+                self.tls_pool = False
                 self._incoming = dict()
                 self.counter = 0
                 self.lock = Lock()
@@ -77,6 +78,8 @@ class ReusableThreadedStrategy(BaseStrategy):
             s += ' - lifetime: ' + str(self.lifetime)
             s += ' - ' + 'open: ' + str(self.open_pool)
             s += ' - ' + 'bind: ' + str(self.bind_pool)
+            s += ' - ' + 'tls: ' + str(self.tls_pool)
+
             for connection in self.connections:
                 s += linesep
                 s += str(connection)
@@ -134,7 +137,11 @@ class ReusableThreadedStrategy(BaseStrategy):
                             self.active_connection.connection.open()
                         if pool.bind_pool and not self.active_connection.connection.bound:
                             self.active_connection.connection.bind()
+                        if pool.tls_pool and not self.active_connection.connection.tls_started:
+                            print('starting tls')
+                            print(self.active_connection.connection.start_tls())
                         self.active_connection.connection._fire_deferred()  # force deferred operations
+
                         if message_type == 'searchRequest':
                             result = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
                         else:
@@ -203,16 +210,19 @@ class ReusableThreadedStrategy(BaseStrategy):
         self.pool.open_pool = True
         self.pool.start_pool()
         self.connection.closed = False
+        self.connection.refresh_dsa_info()
 
     def terminate(self):
         self.pool.terminate_pool()
         self.pool.open_pool = False
         self.connection.bound = False
         self.connection.closed = True
+        self.pool.bind_pool = False
+        self.pool.tls_pool = False
 
     def _close_socket(self):
         """
-        Don't really close the socket
+        Doesn't really close the socket
         """
         self.connection.closed = True
 
@@ -226,15 +236,17 @@ class ReusableThreadedStrategy(BaseStrategy):
                 counter = -1  # -1 stands for bind request
             elif message_type == 'unbindRequest':
                 self.pool.bind_pool = False
-                counter = -2
+                counter = -2  # -1 stands for unbind request
+            elif message_type == 'extendedReq' and self.connection.starting_tls:
+                print(request)
+                self.pool.tls_pool = True
+                counter = -3  # -1 stands for start_tls extended request
             else:
                 with self.pool.lock:
                     self.pool.counter += 1
                     if self.pool.counter > LDAP_MAX_INT:
                         self.pool.counter = 1
                     counter = self.pool.counter
-                    print('adding counter', counter, message_type, request)
-
                 self.pool.request_queue.put((counter, message_type, request, controls))
 
             return counter
@@ -242,23 +254,19 @@ class ReusableThreadedStrategy(BaseStrategy):
         raise LDAPException('connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
-        print('get_response', counter)
         if counter == -1:  # send a bogus bindResponse
             return list(), {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '', 'saslCreds': 'None'}
         elif counter == -2:  # bogus unbind
             return None
+        elif counter == -3:  # bogus startTls extended request
+            return list(), {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': ''}
         response = None
         result = None
         while timeout >= 0:  # waiting for completed message to appear in _incoming
             try:
                 with self.connection.strategy.pool.lock:
                     responses = self.connection.strategy.pool._incoming.pop(counter)
-                    print('pop', counter, responses)
-                    print('incoming', len(self.connection.strategy.pool._incoming))
-                    print(self.connection.strategy.pool._incoming)
             except KeyError:
-                print('trying for ', counter)
-                print('incoming', len(self.connection.strategy.pool._incoming))
                 sleep(RESPONSE_SLEEPTIME)
                 timeout -= RESPONSE_SLEEPTIME
                 continue

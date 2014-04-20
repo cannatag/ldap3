@@ -74,7 +74,7 @@ RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy bef
 
 # reusable strategy
 TERMINATE_REUSABLE = -1
-REUSABLE_POOL_SIZE = 1
+REUSABLE_POOL_SIZE = 10
 REUSABLE_CONNECTION_LIFETIME = 3600
 
 # LDAP protocol

@@ -33,7 +33,9 @@ class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
-        self.connection.add(test_dn_builder(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-delete,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
+        result = self.connection.add(test_dn_builder(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-delete,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
     def tearDown(self):
         self.connection.unbind()

@@ -34,8 +34,9 @@ class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
-        self.connection.add(test_dn_builder(test_base, 'test-add-for-delete'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add'})
-
+        result = self.connection.add(test_dn_builder(test_base, 'test-add-for-delete'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add'})
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
     def tearDown(self):
         self.connection.unbind()
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:

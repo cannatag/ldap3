@@ -68,7 +68,6 @@ class Test(unittest.TestCase):
             connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
-
     def test_search_with_tls_after_bind(self):
         server = Server(host=test_server, port=test_port, tls=Tls())
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')

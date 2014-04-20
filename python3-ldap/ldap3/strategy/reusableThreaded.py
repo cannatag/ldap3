@@ -253,7 +253,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             try:
                 with self.connection.strategy.pool.lock:
                     responses = self.connection.strategy.pool._incoming.pop(counter)
-                    print('pop', counter)
+                    print('pop', counter, responses)
                     print('incoming', len(self.connection.strategy.pool._incoming))
                     print(self.connection.strategy.pool._incoming)
             except KeyError:

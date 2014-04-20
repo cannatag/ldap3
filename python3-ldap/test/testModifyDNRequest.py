@@ -70,12 +70,16 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify-dn'))
         add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         mod_dn_req = ModifyDNRequest()
         mod_dn_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-modify-dn'))
         mod_dn_req['newrdn'] = RelativeLDAPDN(test_name_attr + '=test-modified-dn')
         mod_dn_req['deleteoldrdn'] = DeleteOldRDN(True)
 
-        self.connection.send('modDNRequest', mod_dn_req)
+        result = self.connection.post_send_single_response(self.connection.send('modDNRequest', mod_dn_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)

@@ -71,7 +71,9 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-1'))
         add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
@@ -95,7 +97,9 @@ class Test(unittest.TestCase):
         search_req['filter'] = search_filter
         search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', search_req)
+        result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)
 
     def test_search_substring(self):
@@ -125,7 +129,9 @@ class Test(unittest.TestCase):
         add_req = AddRequest()
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-2'))
         add_req['attributes'] = attributes
-        self.connection.send('addRequest', add_req)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         substrings = Substrings()
         substring1 = Substring().setComponentByName('initial', Initial('test'))
@@ -159,7 +165,9 @@ class Test(unittest.TestCase):
         search_req['filter'] = search_filter
         search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', search_req)
+        result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)
 
     def test_search_and(self):
@@ -190,7 +198,9 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-3'))
         add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
@@ -228,7 +238,9 @@ class Test(unittest.TestCase):
         search_req['filter'] = search_filter
         search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', search_req)
+        result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)
 
     def test_search_or(self):
@@ -259,7 +271,9 @@ class Test(unittest.TestCase):
         add_req1['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-4'))
         add_req1['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req1)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req1))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         attribute1 = Attribute()
         vals1 = ValsAtLeast1()
@@ -288,7 +302,9 @@ class Test(unittest.TestCase):
         add_req2['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-5'))
         add_req2['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req2)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req2))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
@@ -326,7 +342,9 @@ class Test(unittest.TestCase):
         search_req['filter'] = search_filter
         search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', search_req)
+        result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)
 
     def test_search_not(self):
@@ -357,7 +375,9 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-6'))
         add_req['attributes'] = attributes
 
-        self.connection.send('addRequest', add_req)
+        result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
         assertion1['attributeDesc'] = AttributeDescription('cn')
@@ -384,5 +404,7 @@ class Test(unittest.TestCase):
         search_req['filter'] = Filter().setComponentByName('notFilter', not_filter)
         search_req['attributes'] = attributes
 
-        self.connection.send('searchRequest', search_req)
+        result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
+        if not isinstance(result, bool):
+            self.connection.get_response(result)
         self.assertTrue(True)

@@ -57,6 +57,7 @@ class BaseStrategy(object):
         self._referrals = []
         self.sync = None  # indicates a synchronous connection
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
+        self.pooled = None  # Indicates a connection with a connection pool
 
     def open(self, reset_usage=True):
         """
@@ -70,16 +71,16 @@ class BaseStrategy(object):
                 self.close()
 
             self._outstanding = dict()
-            if self.connection.usage:
-                if reset_usage or not self.connection.usage.initial_connection_start_time:
-                    self.connection.usage.start()
+            if self.connection._usage:
+                if reset_usage or not self.connection._usage.initial_connection_start_time:
+                    self.connection._usage.start()
 
             if self.connection.server_pool:
                 new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
                 if self.connection.server != new_server:
                     self.connection.server = new_server
-                    if self.connection.usage:
-                        self.connection.usage.servers_from_pool += 1
+                    if self.connection._usage:
+                        self.connection._usage.servers_from_pool += 1
 
             self._open_socket(self.connection.server.ssl)
             self.connection._deferred_open = False
@@ -102,8 +103,8 @@ class BaseStrategy(object):
         self.connection.response = None
         self._outstanding = dict()
         self._referrals = []
-        if self.connection.usage:
-            self.connection.usage.stop()
+        if self.connection._usage:
+            self.connection._usage.stop()
 
     def _open_socket(self, use_ssl=False):
         """
@@ -125,14 +126,14 @@ class BaseStrategy(object):
         if use_ssl:
             try:
                 self.connection.socket = self.connection.server.tls.wrap_socket(self.connection, do_handshake=True)
-                if self.connection.usage:
-                    self.connection.usage.wrapped_sockets += 1
+                if self.connection._usage:
+                    self.connection._usage.wrapped_sockets += 1
             except Exception as e:
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 raise
 
-        if self.connection.usage:
-            self.connection.usage.opened_sockets += 1
+        if self.connection._usage:
+            self.connection._usage.opened_sockets += 1
 
         self.connection.closed = False
 
@@ -151,8 +152,8 @@ class BaseStrategy(object):
         self.connection.socket = None
         self.connection.closed = True
 
-        if self.connection.usage:
-            self.connection.usage.closed_sockets += 1
+        if self.connection._usage:
+            self.connection._usage.closed_sockets += 1
 
     def _stop_listen(self):
         self.connection.listening = False
@@ -185,8 +186,8 @@ class BaseStrategy(object):
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
-            if self.connection.usage:
-                self.connection.usage.transmitted_message(self.connection.request, len(encoded_message))
+            if self.connection._usage:
+                self.connection._usage.transmitted_message(self.connection.request, len(encoded_message))
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
             raise LDAPException(self.connection.last_error)
@@ -462,6 +463,9 @@ class BaseStrategy(object):
                                              client_strategy=STRATEGY_SYNC,
                                              auto_referrals=True,
                                              read_only=self.connection.read_only)
+
+            if self.connection._usage:
+                self.connection._usage.referrals_followed += 1
 
             referral_connection.open()
             referral_connection.strategy._referrals = self._referrals

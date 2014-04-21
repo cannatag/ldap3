@@ -41,6 +41,7 @@ class SyncWaitStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = False
+        self.pooled = False
 
     def open(self, reset_usage=True):
         BaseStrategy.open(self, reset_usage)
@@ -130,8 +131,8 @@ class SyncWaitStrategy(BaseStrategy):
             if responses:
                 for response in responses:
                     while len(response) > 0:
-                        if self.connection.usage:
-                            self.connection.usage.received_message(len(response))
+                        if self.connection._usage:
+                            self.connection._usage.received_message(len(response))
                         ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAPMessage())
                         if int(ldap_resp['messageID']) == message_id:
                             dict_response = BaseStrategy.decode_response(ldap_resp)
@@ -154,14 +155,17 @@ class SyncWaitStrategy(BaseStrategy):
 
         ldap_responses.append(RESPONSE_COMPLETE)
 
-        if ldap_responses[-2]['result'] == RESULT_REFERRAL and self.connection.auto_referrals:
-            ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], ldap_responses[-2]['referrals'])
-            if ref_response is not None:
-                ldap_responses = ref_response + [ref_result]
-                ldap_responses.append(RESPONSE_COMPLETE)
-            elif ref_result is not None:
-                ldap_responses = [ref_result, RESPONSE_COMPLETE]
+        if ldap_responses[-2]['result'] == RESULT_REFERRAL:
+            if self.connection._usage:
+                self.connection._usage.referrals_received += 1
+            if self.connection.auto_referrals:
+                ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], ldap_responses[-2]['referrals'])
+                if ref_response is not None:
+                    ldap_responses = ref_response + [ref_result]
+                    ldap_responses.append(RESPONSE_COMPLETE)
+                elif ref_result is not None:
+                    ldap_responses = [ref_result, RESPONSE_COMPLETE]
 
-            self._referrals = []
+                self._referrals = []
 
         return ldap_responses

@@ -85,12 +85,14 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.started = False
 
         def __str__(self):
-            s = str(self.name)
+            s = str(self.name) + ' - ' + ('started' if self.started else 'terminated') + linesep
+            s += 'original connection: ' + str(self.original_connection) + linesep
+            s += 'response pool length: ' + str(len(self._incoming))
             s += ' - pool size: ' + str(self.pool_size)
             s += ' - lifetime: ' + str(self.lifetime)
-            s += ' - ' + 'open: ' + str(self.open_pool)
-            s += ' - ' + 'bind: ' + str(self.bind_pool)
-            s += ' - ' + 'tls: ' + str(self.tls_pool)
+            s += ' - open: ' + str(self.open_pool)
+            s += ' - bind: ' + str(self.bind_pool)
+            s += ' - tls: ' + str(self.tls_pool)
 
             for connection in self.connections:
                 s += linesep
@@ -162,7 +164,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.original_connection.busy = False
                 pool.request_queue.task_done()
             if self.original_connection.usage:
-                pool.terminated_usage += self.active_connection.usage
+                pool.terminated_usage += self.active_connection.connection.usage
             self.active_connection.running = False
 
     class ReusableConnection(object):

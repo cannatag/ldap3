@@ -44,7 +44,14 @@ class Tls(object):
     tls/ssl configuration for Server object
     """
 
-    def __init__(self, local_private_key_file=None, local_certificate_file=None, validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1, ca_certs_file=None, valid_names=None):
+    def __init__(self,
+                 local_private_key_file=None,
+                 local_certificate_file=None,
+                 validate=ssl.CERT_NONE,
+                 version=ssl.PROTOCOL_TLSv1,
+                 ca_certs_file=None,
+                 valid_names=None):
+
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
         elif validate:

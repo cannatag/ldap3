@@ -66,7 +66,23 @@ class Connection(object):
     RFC 4511.)
     """
 
-    def __init__(self, server, user=None, password=None, auto_bind=False, version=3, authentication=None, client_strategy=STRATEGY_SYNC, auto_referrals=True, sasl_mechanism=None, sasl_credentials=None, collect_usage=False, read_only=False, lazy=False, pool_name=None):
+    def __init__(self,
+                 server,
+                 user=None,
+                 password=None,
+                 auto_bind=False,
+                 version=3,
+                 authentication=None,
+                 client_strategy=STRATEGY_SYNC,
+                 auto_referrals=True,
+                 sasl_mechanism=None,
+                 sasl_credentials=None,
+                 collect_usage=False,
+                 read_only=False,
+                 lazy=False,
+                 pool_name=None,
+                 pool_size=None):
+
         if client_strategy not in CLIENT_STRATEGIES:
             self.last_error = 'unknown client connection strategy'
             raise LDAPException(self.last_error)
@@ -108,6 +124,7 @@ class Connection(object):
         self._executing_deferred = False
         self.lazy = lazy
         self.pool_name = pool_name
+        self.pool_size = pool_size
         self.starting_tls = False
 
         if isinstance(server, list):

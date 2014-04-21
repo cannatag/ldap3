@@ -81,7 +81,8 @@ class Connection(object):
                  read_only=False,
                  lazy=False,
                  pool_name=None,
-                 pool_size=None):
+                 pool_size=None,
+                 pool_lifetime=None):
 
         if client_strategy not in CLIENT_STRATEGIES:
             self.last_error = 'unknown client connection strategy'
@@ -125,6 +126,7 @@ class Connection(object):
         self.lazy = lazy
         self.pool_name = pool_name
         self.pool_size = pool_size
+        self.pool_lifetime = pool_lifetime
         self.starting_tls = False
 
         if isinstance(server, list):

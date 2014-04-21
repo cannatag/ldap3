@@ -50,8 +50,12 @@ class ReusableThreadedStrategy(BaseStrategy):
 
     class ConnectionPool(object):
         def __new__(cls, connection):
-            if connection.pool_name in ReusableThreadedStrategy.pools:
-                return ReusableThreadedStrategy.pools[connection.pool_name]
+            if connection.pool_name in ReusableThreadedStrategy.pools:  # returns existing connection pool
+                pool = ReusableThreadedStrategy.pools[connection.pool_name]
+                if pool.pool_size != connection.pool_size:  # if pool size has changed terminate and recreate the connections
+                    pool.terminate_pool()
+                    pool.pool_size = connection.pool_size
+                return pool
             else:
                 return object.__new__(cls)
 
@@ -60,7 +64,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.name = connection.pool_name
                 self.original_connection = connection
                 self.connections = []
-                self.pool_size = REUSABLE_POOL_SIZE
+                self.pool_size = connection.pool_size or REUSABLE_POOL_SIZE
                 self.lifetime = REUSABLE_CONNECTION_LIFETIME
                 self.request_queue = Queue()
                 self.open_pool = False
@@ -90,11 +94,13 @@ class ReusableThreadedStrategy(BaseStrategy):
             return self.__str__()
 
         def start_pool(self):
+            print ('starting')
             if not self.started:
                 self.create_pool()
                 for connection in self.connections:
                     connection.thread.start()
                 self.started = True
+                print ('started')
                 return True
             return False
 
@@ -124,14 +130,14 @@ class ReusableThreadedStrategy(BaseStrategy):
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
                 self.active_connection.busy = True
-                if (datetime.now() - self.active_connection.creation_time).seconds > self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
-                    self.active_connection.connection.unbind()
-                    self.active_connection.new_connection()
-                if counter == TERMINATE_REUSABLE and not self.active_connection.cannot_terminate:
+                if counter == TERMINATE_REUSABLE:
                     terminate = True
                     if self.active_connection.connection.bound:
                         self.active_connection.connection.unbind()
                 else:
+                    if (datetime.now() - self.active_connection.creation_time).seconds > self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
+                        self.active_connection.connection.unbind()
+                        self.active_connection.new_connection()
                     if message_type not in ['bindRequest', 'unbindRequest']:
                         if pool.open_pool and self.active_connection.connection.closed:
                             self.active_connection.connection.open()
@@ -162,7 +168,6 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.request_queue = request_queue
             self.running = False
             self.busy = False
-            self.cannot_terminate = False
             self.connection = None
             self.creation_time = None
             self.new_connection()
@@ -196,6 +201,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.connection.server_pool.initialize(self.connection)
 
             self.creation_time = datetime.now()
+            print('new connection')
 
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)

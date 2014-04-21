@@ -126,7 +126,12 @@ class ServerPoolState(object):
 
 
 class ServerPool(object):
-    def __init__(self, servers=None, pool_strategy=POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=False):
+    def __init__(self,
+                 servers=None,
+                 pool_strategy=POOLING_STRATEGY_ROUND_ROBIN,
+                 active=True,
+                 exhaust=False):
+
         if pool_strategy not in POOLING_STRATEGIES:
             raise LDAPException('unknown pooling strategy')
         if exhaust and not active:

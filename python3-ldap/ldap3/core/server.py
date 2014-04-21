@@ -50,7 +50,14 @@ class Server(object):
     _real_servers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
     # and the value is the messageId counter for all connection to that host)
 
-    def __init__(self, host, port=None, use_ssl=False, allowed_referral_hosts=None, get_info=GET_NO_INFO, tls=None):
+    def __init__(self,
+                 host,
+                 port=None,
+                 use_ssl=False,
+                 allowed_referral_hosts=None,
+                 get_info=GET_NO_INFO,
+                 tls=None):
+
         if not use_ssl and not port:
             port = 389
         elif use_ssl and not port:

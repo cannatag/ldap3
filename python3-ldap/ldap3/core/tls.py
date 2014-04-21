@@ -136,7 +136,7 @@ class Tls(object):
             check_hostname(connection.socket, connection.server.host, self.valid_names)
 
         if connection.usage:
-            connection.usage.wrapped_sockets += 1
+            connection._usage.wrapped_sockets += 1
 
         connection.tls_started = True
         return True

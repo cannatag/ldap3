@@ -33,6 +33,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         SyncWaitStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = False
+        self.pooled = False
         self.restartable_sleep_time = RESTARTABLE_SLEEPTIME
         self.restartable_tries = RESTARTABLE_TRIES
         self._restarting = False
@@ -73,17 +74,17 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
                         if self.connection.server != new_server:
                             self.connection.server = new_server
-                            if self.connection.usage:
-                                self.connection.usage.servers_from_pool += 1
+                            if self.connection._usage:
+                                self.connection._usage.servers_from_pool += 1
                     SyncWaitStrategy._open_socket(self, use_ssl)  # calls super (not restartable) _open_socket()
-                    if self.connection.usage:
-                        self.connection.usage.restartable_successes += 1
+                    if self.connection._usage:
+                        self.connection._usage.restartable_successes += 1
                     self.connection.closed = False
                     self._restarting = False
                     return
                 except Exception:
-                    if self.connection.usage:
-                        self.connection.usage.restartable_failures += 1
+                    if self.connection._usage:
+                        self.connection._usage.restartable_failures += 1
                 if not isinstance(counter, bool):
                     counter -= 1
             self._restarting = False
@@ -124,16 +125,16 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not failure:
                     try:  # reissuing same operation
                         ret_value = self.connection.send(message_type, request, controls)
-                        if self.connection.usage:
-                            self.connection.usage.restartable_successes += 1
+                        if self.connection._usage:
+                            self.connection._usage.restartable_successes += 1
                         self._restarting = False
 
                         return ret_value  # successful send
                     except Exception:
                         failure = True
 
-                if failure and self.connection.usage:
-                    self.connection.usage.restartable_failures += 1
+                if failure and self.connection._usage:
+                    self.connection._usage.restartable_failures += 1
 
                 if not isinstance(counter, bool):
                     counter -= 1

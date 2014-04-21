@@ -25,6 +25,7 @@ from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
 from time import sleep
+from ldap3.core.usage import ConnectionUsage
 
 try:
     from queue import Queue
@@ -52,6 +53,9 @@ class ReusableThreadedStrategy(BaseStrategy):
         def __new__(cls, connection):
             if connection.pool_name in ReusableThreadedStrategy.pools:  # returns existing connection pool
                 pool = ReusableThreadedStrategy.pools[connection.pool_name]
+                if not pool.started:  # if pool is not started remove it from the pools singleton and create a new onw
+                    del ReusableThreadedStrategy.pools[connection.pool_name]
+                    return object.__new__(cls)
                 if connection.pool_lifetime and pool.lifetime != connection.pool_lifetime:  # change lifetime
                     pool.lifetime = connection.pool_lifetime
                 if connection.pool_size and pool.pool_size != connection.pool_size:  # if pool size has changed terminate and recreate the connections
@@ -74,6 +78,8 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.tls_pool = False
                 self._incoming = dict()
                 self.counter = 0
+                self.terminated_usage = ConnectionUsage() if connection._usage else None
+                self.terminated = False
                 self.lock = Lock()
                 ReusableThreadedStrategy.pools[self.name] = self
                 self.started = False
@@ -153,8 +159,10 @@ class ReusableThreadedStrategy(BaseStrategy):
                             result = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
                         with pool.lock:
                             pool._incoming[counter] = result
-                self.active_connection.busy = False
+                self.original_connection.busy = False
                 pool.request_queue.task_done()
+            if self.original_connection.usage:
+                pool.terminated_usage += self.active_connection.usage
             self.active_connection.running = False
 
     class ReusableConnection(object):
@@ -191,7 +199,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                                          auto_referrals=self.original_connection.auto_referrals,
                                          sasl_mechanism=self.original_connection.sasl_mechanism,
                                          sasl_credentials=self.original_connection.sasl_credentials,
-                                         collect_usage=True if self.original_connection.usage else False,
+                                         collect_usage=True if self.original_connection._usage else False,
                                          read_only=self.original_connection.read_only,
                                          lazy=True)
 
@@ -205,6 +213,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
         self.no_real_dsa = False
+        self.pooled = True
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
             self.pool = ReusableThreadedStrategy.ConnectionPool(ldap_connection)
         else:
@@ -214,6 +223,9 @@ class ReusableThreadedStrategy(BaseStrategy):
         self.pool.open_pool = True
         self.pool.start_pool()
         self.connection.closed = False
+        if self.connection._usage:
+            if reset_usage or not self.connection._usage.initial_connection_start_time:
+                self.connection._usage.start()
         self.connection.refresh_dsa_info()
 
     def terminate(self):
@@ -230,8 +242,8 @@ class ReusableThreadedStrategy(BaseStrategy):
         """
         self.connection.closed = True
 
-        if self.connection.usage:
-            self.connection.usage.closed_sockets += 1
+        if self.connection._usage:
+            self.connection._usage.closed_sockets += 1
 
     def send(self, message_type, request, controls=None):
         if self.pool.started:

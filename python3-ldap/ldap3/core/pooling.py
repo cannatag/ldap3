@@ -155,8 +155,8 @@ class ServerPool(object):
             else:
                 s += 'None'
             s += 'Pool strategy: ' + str(self.strategy)
-            s += ' - ' + 'active hosts:' + 'True' if self.active else 'False'
-            s += ' - ' + 'exhaust hosts:' + 'True' if self.exhaust else 'False'
+            s += ' - ' + 'active only: ' + ('True' if self.active else 'False')
+            s += ' - ' + 'exhaust pool: ' + ('True' if self.exhaust else 'False')
             return s
 
     def __repr__(self):

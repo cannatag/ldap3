@@ -26,6 +26,7 @@ from pyasn1.codec.ber import encoder
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     STRATEGY_REUSABLE_THREADED
+from ldap3.strategy import reusableThreaded
 
 from .pooling import ServerPool
 from ..strategy.reusableThreaded import ReusableThreadedStrategy
@@ -112,7 +113,7 @@ class Connection(object):
         self.auto_bind = True if auto_bind else False
         self.sasl_mechanism = sasl_mechanism
         self.sasl_credentials = sasl_credentials
-        self.usage = ConnectionUsage() if collect_usage else None
+        self._usage = ConnectionUsage() if collect_usage else None
         self.socket = None
         self.tls_started = False
         self.sasl_in_progress = False
@@ -199,6 +200,17 @@ class Connection(object):
         r += ')'
 
         return r
+
+    @property
+    def usage(self):
+        if not self._usage:
+            return None
+        if self.strategy.pooled:
+            self._usage.reset()
+            for connection in self.strategy.pool.connections:
+                self._usage += connection.connection.usage
+            self._usage += self.strategy.pool.terminated_usage
+        return self._usage
 
     def __enter__(self):
         self._context_state.append((self.bound, self.closed))  # save status out of context as a tuple in a list

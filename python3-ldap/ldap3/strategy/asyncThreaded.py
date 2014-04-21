@@ -75,8 +75,8 @@ class AsyncThreadedStrategy(BaseStrategy):
                 if length == -1 or len(unprocessed) < length:
                     get_more_data = True
                 elif len(unprocessed) >= length:  # add message to message list
-                    if self.connection.usage:
-                        self.connection.usage.received_message(length)
+                    if self.connection._usage:
+                        self.connection._usage.received_message(length)
                     ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
                     message_id = int(ldap_resp['messageID'])
                     dict_response = BaseStrategy.decode_response(ldap_resp)
@@ -112,6 +112,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
         self.no_real_dsa = False
+        self.pooled = False
         self._responses = None
         self.receiver = None
         self.lock = Lock()
@@ -167,14 +168,17 @@ class AsyncThreadedStrategy(BaseStrategy):
         with self.lock:
             responses = self._responses.pop(message_id) if message_id in self._responses and self._responses[message_id][-1] == RESPONSE_COMPLETE else None
 
-        if responses is not None and responses[-2]['result'] == RESULT_REFERRAL and self.connection.auto_referrals:
-            ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
-            if ref_response is not None:
-                responses = ref_response + [ref_result]
-                responses.append(RESPONSE_COMPLETE)
-            elif ref_result is not None:
-                responses = [ref_result, RESPONSE_COMPLETE]
+        if responses is not None and responses[-2]['result'] == RESULT_REFERRAL:
+            if self.connection._usage:
+                self.connection._usage.referrals_followed += 1
+            if self.connection.auto_referrals:
+                ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
+                if ref_response is not None:
+                    responses = ref_response + [ref_result]
+                    responses.append(RESPONSE_COMPLETE)
+                elif ref_result is not None:
+                    responses = [ref_result, RESPONSE_COMPLETE]
 
-            self._referrals = []
+                self._referrals = []
 
         return responses

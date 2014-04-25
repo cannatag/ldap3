@@ -26,7 +26,6 @@ from pyasn1.codec.ber import encoder
 from ldap3 import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, LDAPException, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     STRATEGY_REUSABLE_THREADED
-from ldap3.strategy import reusableThreaded
 
 from .pooling import ServerPool
 from ..strategy.reusableThreaded import ReusableThreadedStrategy
@@ -336,7 +335,6 @@ class Connection(object):
         response = self.post_send_search(self.send('searchRequest', request, controls))
         if isinstance(response, int):
             return response
-
         if self.result['type'] == 'searchResDone' and len(response) > 0:
             return True
 

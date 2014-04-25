@@ -156,11 +156,12 @@ class ReusableThreadedStrategy(BaseStrategy):
                         self.active_connection.connection._fire_deferred()  # force deferred operations
 
                         if message_type == 'searchRequest':
-                            result = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
+                            response = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
                         else:
-                            result = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
+                            response = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
+                        result = self.active_connection.connection.result
                         with pool.lock:
-                            pool._incoming[counter] = result
+                            pool._incoming[counter] = (response, result)
                 self.original_connection.busy = False
                 pool.request_queue.task_done()
             if self.original_connection.usage:
@@ -282,14 +283,11 @@ class ReusableThreadedStrategy(BaseStrategy):
         while timeout >= 0:  # waiting for completed message to appear in _incoming
             try:
                 with self.connection.strategy.pool.lock:
-                    responses = self.connection.strategy.pool._incoming.pop(counter)
+                    response, result = self.connection.strategy.pool._incoming.pop(counter)
             except KeyError:
                 sleep(RESPONSE_SLEEPTIME)
                 timeout -= RESPONSE_SLEEPTIME
                 continue
-
-            result = responses[-1]
-            response = responses[:-1]
             break
         return response, result
 

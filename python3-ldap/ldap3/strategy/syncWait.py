@@ -98,7 +98,7 @@ class SyncWaitStrategy(BaseStrategy):
         Returns the result message or None
         """
         responses, result = self.get_response(message_id)
-        if result['type'] == 'intermediateResponse':  # checks that all responses are intermediates (there shoulb be only one)
+        if result['type'] == 'intermediateResponse':  # checks that all responses are intermediates (there should be only one)
             for response in responses:
                 if response['type'] != 'intermediateResponse':
                     self.connection.last_error = 'multiple messages error'
@@ -114,8 +114,8 @@ class SyncWaitStrategy(BaseStrategy):
         """
         responses, result = self.get_response(message_id)
         if isinstance(responses, list):
-            self.connection.response = responses[:]  # copy search entries without result
-            responses.append(result)
+            self.connection.response = responses[:]  # copy search result entries without result
+            # responses.append(result)
             return responses
 
         raise LDAPException('error receiving response')

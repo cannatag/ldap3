@@ -97,7 +97,12 @@ class FilterNode():
         return representation
 
 
-def validate_assertion_value(value):
+def validate_assertion_value_old(value):
+    """
+    Checks assertion value, as specified in RFC4515
+    @param value:
+    @return:
+    """
     value = value.strip()
     if r'\2a' in value:
         value = value.replace(r'\2a', '*')
@@ -122,6 +127,29 @@ def validate_assertion_value(value):
     return value
 
 
+def validate_assertion_value(value):
+    value = value.strip()
+    if not '\\' in value:
+        return value.encode('utf-8')
+    validated_value = bytearray()
+    pos = 0
+    while pos < len(value):
+        if value[pos] != '\\':
+            validated_value += value[pos].encode('utf-8')
+            pos += 1
+        elif pos > len(value) - 2:
+            validated_value += value[:-2].encode('utf-8')
+            pos += 2
+        else:
+            try:
+                validated_value.append(int(value[pos + 1: pos + 3], 16))
+                pos += 3
+            except ValueError:
+                validated_value += value[pos].encode('utf-8')
+                pos += 1
+
+    return bytes(validated_value)
+
 def evaluate_match(match):
     match = match.strip()
     if '~=' in match:
@@ -145,10 +173,10 @@ def evaluate_match(match):
         attribute_name = None
         if extended_filter_list[0] == '':  # extensible filter format [:dn]:matchingRule:=assertionValue
             if len(extended_filter_list) == 2 and extended_filter_list[1].lower().strip() != 'dn':
-                matching_rule = validate_assertion_value(extended_filter_list[1])
+                matching_rule = extended_filter_list[1]
             elif len(extended_filter_list) == 3 and extended_filter_list[1].lower().strip() == 'dn':
                 dn_attributes = True
-                matching_rule = validate_assertion_value(extended_filter_list[2])
+                matching_rule = extended_filter_list[2]
             else:
                 raise LDAPException('invalid extensible filter')
         elif len(extended_filter_list) <= 3:  # extensible filter format attr[:dn][:matchingRule]:=assertionValue
@@ -159,11 +187,11 @@ def evaluate_match(match):
                 if extended_filter_list[1].lower().strip() == 'dn':
                     dn_attributes = True
                 else:
-                    matching_rule = validate_assertion_value(extended_filter_list[1])
+                    matching_rule = extended_filter_list[1]
             elif len(extended_filter_list) == 3 and extended_filter_list[1].lower().strip() == 'dn':
                 attribute_name = extended_filter_list[0]
                 dn_attributes = True
-                matching_rule = validate_assertion_value(extended_filter_list[2])
+                matching_rule = extended_filter_list[2]
             else:
                 raise LDAPException('invalid extensible filter')
 
@@ -355,8 +383,7 @@ def search_operation(search_base, search_filter, search_scope, dereference_alias
     request['sizeLimit'] = Integer0ToMax(size_limit)
     request['timeLimit'] = Integer0ToMax(time_limit)
     request['typesOnly'] = TypesOnly(True) if types_only else TypesOnly(False)
-    request['filter'] = compile_filter(parse_filter(search_filter).elements[0])  # parse the searchFilter string and compile it starting from the root node
-
+    request['filter'] = build_filter(search_filter)  # parse the searchFilter string and compile it starting from the root node
     if not isinstance(attributes, list):
         attributes = [NO_ATTRIBUTES]
 

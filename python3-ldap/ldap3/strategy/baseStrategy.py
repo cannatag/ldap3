@@ -221,10 +221,7 @@ class BaseStrategy(object):
                         result = responses[-2]
                         response = responses[:-2]
                         self.connection.result = result
-                        self.connection.response = response
-                        # self.connection.response = responses[:-2] if len(responses) > 2 else []
-                        # self.connection.result = responses[-2]
-                        # response = [responses[0]] if len(responses) == 2 else responses[:-1]  # remove the response complete flag
+                        # self.connection.response = response
                     break
         return response, result
 

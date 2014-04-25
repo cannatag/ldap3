@@ -47,10 +47,13 @@ For any information and suggestions you can contact me at python3ldap@gmail.com 
 CHANGELOG
 =========
 
-* 0.9.2 2014.04.01
+* 0.9.2 2014.04.26
     - changed return value in get_response from response to (response, result) - helpful for multi threaded connections
     - added ReusableStrategy for pooling connections
     - refined docstrings (thanks to Will)
+    - result and response attributes don't overlap anymore. Operation result is only in result attribute.
+    - Fixed search for binary values (thanks to Marcin)
+    - Added convenience function to convert bytes to LDAP binary value string format for search filter
 
 * 0.9.1 2014.03.30
     - added laziness flass to test suite

@@ -32,13 +32,13 @@ class Test(unittest.TestCase):
         f = parse_filter('(cn=admin)')
         self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
-        self.assertEqual(f.elements[0].assertion['value'], 'admin')
+        self.assertEqual(f.elements[0].assertion['value'], b'admin')
 
     def test_parse_search_filter_extensible_syntax_1(self):
         f = parse_filter('(cn:caseExactMatch:=Fred Flintstone)')
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
-        self.assertEqual(f.elements[0].assertion['value'], 'Fred Flintstone')
+        self.assertEqual(f.elements[0].assertion['value'], b'Fred Flintstone')
         self.assertEqual(f.elements[0].assertion['matchingRule'], 'caseExactMatch')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], None)
 
@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
         f = parse_filter('(cn:=Betty Rubble)')
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
-        self.assertEqual(f.elements[0].assertion['value'], 'Betty Rubble')
+        self.assertEqual(f.elements[0].assertion['value'], b'Betty Rubble')
         self.assertEqual(f.elements[0].assertion['matchingRule'], None)
         self.assertEqual(f.elements[0].assertion['dnAttributes'], None)
 
@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
         f = parse_filter('(sn:dn:2.4.6.8.10:=Barney Rubble)')
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'sn')
-        self.assertEqual(f.elements[0].assertion['value'], 'Barney Rubble')
+        self.assertEqual(f.elements[0].assertion['value'], b'Barney Rubble')
         self.assertEqual(f.elements[0].assertion['matchingRule'], '2.4.6.8.10')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
 
@@ -62,7 +62,7 @@ class Test(unittest.TestCase):
         f = parse_filter('(o:dn:=Ace Industry)')
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'o')
-        self.assertEqual(f.elements[0].assertion['value'], 'Ace Industry')
+        self.assertEqual(f.elements[0].assertion['value'], b'Ace Industry')
         self.assertEqual(f.elements[0].assertion['matchingRule'], None)
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
 
@@ -70,7 +70,7 @@ class Test(unittest.TestCase):
         f = parse_filter('(:1.2.3:=Wilma Flintstone)')
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], None)
-        self.assertEqual(f.elements[0].assertion['value'], 'Wilma Flintstone')
+        self.assertEqual(f.elements[0].assertion['value'], b'Wilma Flintstone')
         self.assertEqual(f.elements[0].assertion['matchingRule'], '1.2.3')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], None)
 
@@ -78,6 +78,11 @@ class Test(unittest.TestCase):
         f = parse_filter('(:DN:2.4.6.8.10:=Dino)')
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], None)
-        self.assertEqual(f.elements[0].assertion['value'], 'Dino')
+        self.assertEqual(f.elements[0].assertion['value'], b'Dino')
         self.assertEqual(f.elements[0].assertion['matchingRule'], '2.4.6.8.''10')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
+
+
+    # def test_parse_search_filter_bytes(self):
+    #     bytes_filter = b'(cn=' + bytes([201,202,203,204,205]) + b')'
+    #     f = parse_filter_bytes(bytes_filter)

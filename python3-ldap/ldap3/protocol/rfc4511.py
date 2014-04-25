@@ -131,7 +131,7 @@ class AssertionValue(OctetString):
     """
     AssertionValue ::= OCTET STRING
     """
-    encoding = 'utf-8'
+    # encoding = 'utf-8'
 
 
 class AttributeValueAssertion(Sequence):

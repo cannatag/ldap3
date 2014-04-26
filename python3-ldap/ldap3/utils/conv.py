@@ -24,5 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 def bytes_to_ldap_filter(bytes_value):
-    bytes_filter = '\\'.join([('%02x' % int(b)) for b in bytes_value])
+    if str != bytes:  # python 3
+        bytes_filter = '\\'.join([('%02x' % int(b)) for b in bytes_value])
+    else:  # python 2
+        bytes_filter = '\\'.join([('%02x' % ord(b)) for b in bytes_value])
+
     return ('\\' + bytes_filter) if bytes_filter else None

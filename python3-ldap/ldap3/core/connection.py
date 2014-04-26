@@ -232,7 +232,8 @@ class Connection(object):
         if not exc_type is None:
             return False  # reraise LDAPException
 
-    def bind(self, controls=None):
+    def bind(self,
+             controls=None):
         """
         Bind to ldap with the user defined in Server object
         """
@@ -274,7 +275,8 @@ class Connection(object):
 
         return self.bound
 
-    def unbind(self, controls=None):
+    def unbind(self,
+               controls=None):
         """
         Unbinds the connected user
         Unbind implies closing session as per rfc 4511 (4.3)
@@ -297,8 +299,20 @@ class Connection(object):
         """
         self.unbind()
 
-    def search(self, search_base, search_filter, search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, dereference_aliases=SEARCH_DEREFERENCE_ALWAYS, attributes=None, size_limit=0, time_limit=0, types_only=False, get_operational_attributes=False, controls=None,
-               paged_size=None, paged_criticality=False, paged_cookie=None):
+    def search(self,
+               search_base,
+               search_filter,
+               search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
+               dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
+               attributes=None,
+               size_limit=0,
+               time_limit=0,
+               types_only=False,
+               get_operational_attributes=False,
+               controls=None,
+               paged_size=None,
+               paged_criticality=False,
+               paged_cookie=None):
         """
         Perform an ldap search:
 
@@ -340,7 +354,11 @@ class Connection(object):
 
         return False
 
-    def compare(self, dn, attribute, value, controls=None):
+    def compare(self,
+                dn,
+                attribute,
+                value,
+                controls=None):
         """
         Perform a compare operation
         """
@@ -351,7 +369,11 @@ class Connection(object):
             return response
         return True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
 
-    def add(self, dn, object_class, attributes=None, controls=None):
+    def add(self,
+            dn,
+            object_class,
+            attributes=None,
+            controls=None):
         """
         Add dn to the DIT, object_class is None, a class name or a list
         of class names.
@@ -385,7 +407,9 @@ class Connection(object):
 
         return True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def delete(self, dn, controls=None):
+    def delete(self,
+               dn,
+               controls=None):
         """
         Delete the entry identified by the DN from the DIB.
         """
@@ -401,7 +425,10 @@ class Connection(object):
 
         return True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def modify(self, dn, changes, controls=None):
+    def modify(self,
+               dn,
+               changes,
+               controls=None):
         """
         Modify attributes of entry
 
@@ -419,6 +446,10 @@ class Connection(object):
             self.last_error = 'changes must be a dictionary'
             raise LDAPException(self.last_error)
 
+        if not changes:
+            self.last_error = 'no changes in modify request'
+            raise LDAPException(self.last_error)
+
         for change in changes:
             if len(changes[change]) != 2:
                 self.last_error = 'malformed change'
@@ -426,9 +457,6 @@ class Connection(object):
             elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT]:
                 self.last_error = 'unknown change type'
                 raise LDAPException(self.last_error)
-        if not changes:
-            self.last_error = 'no changes in modify request'
-            raise LDAPException(self.last_error)
 
         request = modify_operation(dn, changes)
         response = self.post_send_single_response(self.send('modifyRequest', request, controls))
@@ -438,7 +466,12 @@ class Connection(object):
 
         return True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def modify_dn(self, dn, relative_dn, delete_old_dn=True, new_superior=None, controls=None):
+    def modify_dn(self,
+                  dn,
+                  relative_dn,
+                  delete_old_dn=True,
+                  new_superior=None,
+                  controls=None):
         """
         Modify DN of the entry or performs a move of the entry in the
         DIT.
@@ -458,7 +491,9 @@ class Connection(object):
 
         return True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-    def abandon(self, message_id, controls=None):
+    def abandon(self,
+                message_id,
+                controls=None):
         """
         Abandon the operation indicated by message_id
         """
@@ -473,7 +508,10 @@ class Connection(object):
 
         return False
 
-    def extended(self, request_name, request_value=None, controls=None):
+    def extended(self,
+                 request_name,
+                 request_value=None,
+                 controls=None):
         """
         Performs an extended operation
         """
@@ -501,7 +539,8 @@ class Connection(object):
 
         return False
 
-    def do_sasl_bind(self, controls):
+    def do_sasl_bind(self,
+                     controls):
         response = None
         if not self.sasl_in_progress:
             self.sasl_in_progress = True
@@ -518,7 +557,9 @@ class Connection(object):
         if not self.closed:
             self.server.get_info_from_server(self)
 
-    def response_to_ldif(self, search_result=None, all_base64=False):
+    def response_to_ldif(self,
+                         search_result=None,
+                         all_base64=False):
         if search_result is None:
             search_result = self.response
 

@@ -31,7 +31,8 @@ from ..protocol.convert import decode_referrals
 #     requestValue     [1] OCTET STRING OPTIONAL }
 
 
-def extended_operation(request_name, request_value=None):
+def extended_operation(request_name,
+                       request_value=None):
     request = ExtendedRequest()
     request['requestName'] = RequestName(request_name)
     if request_value:

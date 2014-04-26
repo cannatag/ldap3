@@ -33,7 +33,12 @@ from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
 #     authentication          AuthenticationChoice }
 
 
-def bind_operation(version, authentication, name='', password=None, sasl_mechanism=None, sasl_credentials=None):
+def bind_operation(version,
+                   authentication,
+                   name='',
+                   password=None,
+                   sasl_mechanism=None,
+                   sasl_credentials=None):
     request = BindRequest()
     request['version'] = Version(version)
     if name is None:

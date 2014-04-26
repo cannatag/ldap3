@@ -26,6 +26,7 @@ import unittest
 
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
+from ldap3.utils.conv import escape_bytes
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_name_attr, test_lazy_connection
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
 
@@ -145,7 +146,10 @@ class Test(unittest.TestCase):
         self.assertTrue(total_entries > 9)
 
     def test_search_exact_match_with_parentheses_in_filter(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + r'=*\29*)', attributes=[test_name_attr, 'sn'])
+        if str == bytes:
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
+        else:
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes([40]) + '*)', attributes = [test_name_attr, 'sn'])
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:

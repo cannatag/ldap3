@@ -52,8 +52,8 @@ CHANGELOG
     - added ReusableStrategy for pooling connections
     - refined docstrings (thanks to Will)
     - result and response attributes don't overlap anymore. Operation result is only in result attribute.
-    - Fixed search for binary values (thanks to Marcin)
-    - Added convenience function to convert bytes to LDAP binary value string format for search filter
+    - fixed search for binary values (thanks to Marcin)
+    - added convenience function to convert bytes to LDAP binary value string format for search filter
 
 * 0.9.1 2014.03.30
     - added laziness flass to test suite

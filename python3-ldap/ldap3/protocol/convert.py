@@ -124,7 +124,7 @@ def validate_assertion_value(value):
     while pos < len(value):
         if value[pos] == '\\':
             byte = value[pos + 1: pos + 3]
-            if len(byte) == 3:
+            if len(byte) == 2:
                 try:
                     validated_value.append(int(value[pos + 1: pos + 3], 16))
                     pos += 3
@@ -134,7 +134,6 @@ def validate_assertion_value(value):
         validated_value += value[pos].encode('utf-8')
         pos += 1
 
-    print(validated_value)
     return bytes(validated_value)
 
 

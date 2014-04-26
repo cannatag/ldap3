@@ -23,10 +23,10 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-def bytes_to_ldap_filter(bytes_value):
+def escape_bytes(bytes_value):
     if str != bytes:  # python 3
-        bytes_filter = '\\'.join([('%02x' % int(b)) for b in bytes_value])
+        escaped = '\\'.join([('%02x' % int(b)) for b in bytes_value])
     else:  # python 2
-        bytes_filter = '\\'.join([('%02x' % ord(b)) for b in bytes_value])
+        escaped = '\\'.join([('%02x' % ord(b)) for b in bytes_value])
 
-    return ('\\' + bytes_filter) if bytes_filter else None
+    return ('\\' + escaped) if escaped else None

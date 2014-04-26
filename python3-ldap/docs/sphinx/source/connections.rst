@@ -18,6 +18,10 @@ The following strategies are available:
 
    * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation will be necessary.
 
+* STRATEGY_REUSABLE_THREADED: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
+
+When using an asynchronous strategy each operation returns immediately an operation_id. You can call the get_response method of the connection object to obtain the response received from the server.
+
 Connection parameters are:
 
 * server: the Server object to be contacted. It can be a ServerPool. In this case the ServerPool pooling strategy is followed when opening the connection
@@ -189,7 +193,7 @@ Connection attributes:
 
 * result: the result of the last operation
 
-* response: the response of the last operation (for example, the entries found in a search)
+* response: the response of the last operation (for example, the entries found in a search), without the result
 
 * last_error: any error occurred in the last operation
 

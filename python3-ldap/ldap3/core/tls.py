@@ -100,18 +100,11 @@ class Tls(object):
         return sock.unwrap()
 
     def start_tls(self, connection):
-        print(connection)
         if (connection.tls_started and not connection._executing_deferred) or connection.strategy._outstanding or connection.sasl_in_progress:
             # Per RFC 4513 (3.1.1)
-            print('def tls', connection._deferred_start_tls)
-            print('ex def', connection._executing_deferred)
-            print('tls_started', connection.tls_started)
-            print('_oust', connection.strategy._outstanding)
-            print('sasl', connection.sasl_in_progress)
             return False
         connection.starting_tls = True
         result = connection.extended('1.3.6.1.4.1.1466.20037')
-        print('xxx', result)
         connection.starting_tls = False
         if not connection.strategy.sync:
             # async - start_tls must be executed by the strategy

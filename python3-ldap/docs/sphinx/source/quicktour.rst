@@ -39,23 +39,24 @@ You can create a connection with::
     print(s.info) # display info from the DSE. OID are decoded when recognized by the library
 
     # request a few objects from the LDAP server
-    result = c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
-    if result:
-        for r in c.response:
-            print(r['dn'], r['attributes']) # return unicode attributes
-            print(r['dn'], r['raw_attributes']) return raw (bytes) attributes
-
+    c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
+    response = c.response
+    result = c.result
+    for r in response:
+        print(r['dn'], r['attributes']) # return unicode attributes
+        print(r['dn'], r['raw_attributes']) return raw (bytes) attributes
+    print(result)
     c.unbind()
 
-To move from synchronous to asynchronous connection you have just to change the 'client_strategy' parameter to 'STRATEGY_ASYNC_THREADED' and add the following line before the 'if result:'::
+To move from synchronous to asynchronous connection you have just to change the 'client_strategy' parameter to 'STRATEGY_ASYNC_THREADED' and substitute the *response* and *result* assignments with::
 
-    c.get_response(result)
+    response, result = c.get_response(result)
 
 That's all you have to do to have an asynchronous threaded LDAP client connection.
 
 To get operational attributes (createStamp, modifiedStamp, ...) for response objects add 'get_operational_attribute = True' in the search request::
 
-    result = c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attribute = True)
+    c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attribute = True)
 
 Connection context manager
 --------------------------
@@ -67,14 +68,14 @@ Connections respond to the context manager protocol, so you can have automatic o
     c = Connection(s, user = 'username', password = 'password')
     with c:
         c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
-    print(c.result)
+    print(c.response)
 
 or, even shorter::
 
     from ldap3 import Server, Connection
     with Connection(Server('servername'), user = 'username', password = 'password') as c
         c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # connection is opened, bound, searched and closed
-    print(c.result)
+    print(c.response)
 
 The Connection object retains its state when entering the context, that is if the connection was closed and unbound it will remain closed and unbound when leaving the context,
 if the connection was open or bound its state will be restored when exiting the context. Connection is always open and bound while in context.
@@ -94,6 +95,16 @@ Search operation is enhanced with a few parameters:
 
 If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515 (section 3):
  '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'
+
+To search for a binary value you must use the RFC4515 escape ASCII sequence for each byte in the search assertion. You can use the function *escape_bytes()* in ldap3.utils.conv for properly escape a bytes object::
+
+    from ldap3.utils.conv import escape_bytes
+    guid = b'\xca@\xf2k\x1d\x86\xcaL\xb7\xa2\xca@\xf2k\x1d\x86'
+    search_filter = '(guid=' + escape_bytes(guid) + ')'
+    c.search('o=test', search_filter, attributes=['guid'])
+
+search_filter will contain *'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'*
+Raw values for the attributes retrieved are stored in the *raw_attributes* dictonary of the search resulty entries in c.response.
 
 Simple Paged search
 -------------------

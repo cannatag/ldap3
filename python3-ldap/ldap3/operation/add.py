@@ -23,14 +23,15 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ValsAtLeast1, ResultCode
-from ..protocol.convert import referrals_to_list, attributes_to_dict
+from ..protocol.convert import referrals_to_list, attributes_to_dict, validate_attribute_value
 
 # AddRequest ::= [APPLICATION 8] SEQUENCE {
 #     entry           LDAPDN,
 #     attributes      AttributeList }
 
 
-def add_operation(dn, attributes):
+def add_operation(dn,
+                  attributes):
     # attributes is a dictionary in the form 'attribute': ['val1', 'val2', 'valN']
     attribute_list = AttributeList()
     for pos, attribute in enumerate(attributes):
@@ -39,9 +40,9 @@ def add_operation(dn, attributes):
         vals = ValsAtLeast1()
         if isinstance(attributes[attribute], list):
             for index, value in enumerate(attributes[attribute]):
-                vals.setComponentByPosition(index, value)
+                vals.setComponentByPosition(index, validate_attribute_value(value))
         else:
-            vals.setComponentByPosition(0, attributes[attribute])
+            vals.setComponentByPosition(0, validate_attribute_value(attributes[attribute]))
 
         attribute_list[pos]['vals'] = vals
 

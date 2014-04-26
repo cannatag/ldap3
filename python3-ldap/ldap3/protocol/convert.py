@@ -113,3 +113,30 @@ def build_controls_list(controls):
             raise LDAPException('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
 
     return built_controls
+
+
+def validate_assertion_value(value):
+    value = value.strip()
+    if not '\\' in value:
+        return value.encode('utf-8')
+    validated_value = bytearray()
+    pos = 0
+    while pos < len(value):
+        if value[pos] == '\\':
+            byte = value[pos + 1: pos + 3]
+            if len(byte) == 3:
+                try:
+                    validated_value.append(int(value[pos + 1: pos + 3], 16))
+                    pos += 3
+                    continue
+                except ValueError:
+                    pass
+        validated_value += value[pos].encode('utf-8')
+        pos += 1
+
+    print(validated_value)
+    return bytes(validated_value)
+
+
+def validate_attribute_value(value):
+    return validate_assertion_value(value)

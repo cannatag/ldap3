@@ -30,7 +30,7 @@ from ldap3 import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SE
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, \
     ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
-from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list
+from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 
 
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
@@ -126,29 +126,6 @@ def validate_assertion_value_old(value):
         value.replace(r'\00', chr(0))
     return value
 
-
-def validate_assertion_value(value):
-    value = value.strip()
-    if not '\\' in value:
-        return value.encode('utf-8')
-    validated_value = bytearray()
-    pos = 0
-    while pos < len(value):
-        if value[pos] != '\\':
-            validated_value += value[pos].encode('utf-8')
-            pos += 1
-        elif pos > len(value) - 2:
-            validated_value += value[:-2].encode('utf-8')
-            pos += 2
-        else:
-            try:
-                validated_value.append(int(value[pos + 1: pos + 3], 16))
-                pos += 3
-            except ValueError:
-                validated_value += value[pos].encode('utf-8')
-                pos += 1
-
-    return bytes(validated_value)
 
 def evaluate_match(match):
     match = match.strip()
@@ -356,7 +333,14 @@ def build_attribute_selection(attribute_list):
     return attribute_selection
 
 
-def search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only):
+def search_operation(search_base,
+                     search_filter,
+                     search_scope,
+                     dereference_aliases,
+                     attributes,
+                     size_limit,
+                     time_limit,
+                     types_only):
     request = SearchRequest()
     request['baseObject'] = LDAPDN(search_base)
 

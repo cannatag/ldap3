@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode
 from ..operation.bind import referrals_to_list
-from ..protocol.convert import changes_to_list
+from ..protocol.convert import changes_to_list, validate_attribute_value
 
 
 # ModifyRequest ::= [APPLICATION 6] SEQUENCE {
@@ -38,7 +38,8 @@ from ..protocol.convert import changes_to_list
 #    modification    PartialAttribute } }
 
 
-def modify_operation(dn, changes):
+def modify_operation(dn,
+                     changes):
     # changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
     # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
     # increment as per rfc 4525
@@ -50,9 +51,9 @@ def modify_operation(dn, changes):
         partial_attribute['vals'] = Vals()
         if isinstance(changes[attribute][1], list):
             for index, value in enumerate(changes[attribute][1]):
-                partial_attribute['vals'].setComponentByPosition(index, value)
+                partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(value))
         else:
-            partial_attribute['vals'].setComponentByPosition(0, changes[attribute][1])
+            partial_attribute['vals'].setComponentByPosition(0, validate_attribute_value(changes[attribute][1]))
 
         change = Change()
         change['operation'] = Operation(changes[attribute][0])

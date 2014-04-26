@@ -21,9 +21,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-
+from ..protocol.convert import validate_attribute_value
 from ..protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, ResultCode
-
 from ..operation.search import ava_to_dict
 from ..operation.bind import referrals_to_list
 
@@ -32,10 +31,12 @@ from ..operation.bind import referrals_to_list
 #     ava             AttributeValueAssertion }
 
 
-def compare_operation(dn, attribute, value):
+def compare_operation(dn,
+                      attribute,
+                      value):
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
-    ava['assertionValue'] = AssertionValue(value)
+    ava['assertionValue'] = AssertionValue(validate_attribute_value(value))
 
     request = CompareRequest()
     request['entry'] = LDAPDN(dn)

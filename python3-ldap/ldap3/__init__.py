@@ -182,6 +182,197 @@ class LDAPException(Exception):
     pass
 
 
+class LDAPOperationsError(LDAPException):
+    pass
+
+
+class LDAPProtocolError(LDAPException):
+    pass
+
+
+class LDAPTimeLimitExceeded(LDAPException):
+    pass
+
+
+class LDAPSizeLimitExceeded(LDAPException):
+    pass
+
+
+class LDAPAuthMethodNotSupported(LDAPException):
+    pass
+
+
+class LDAPStrongerAuthRequired(LDAPException):
+    pass
+
+
+class LDAPReferral(LDAPException):
+    pass
+
+
+class LDAPAdminLimitExceeded(LDAPException):
+    pass
+
+
+class LDAPUnavailableCriticalExtension(LDAPException):
+    pass
+
+
+class LDAPConfidentialityRequired(LDAPException):
+    pass
+
+
+class LDAPSaslBindInProgress(LDAPException):
+    pass
+
+
+class LDAPNoSuchAttribute(LDAPException):
+    pass
+
+
+class LDAPUndefinedAttributeType(LDAPException):
+    pass
+
+
+class LDAPInappropriateMatching(LDAPException):
+    pass
+
+
+class LDAPConstraintViolation(LDAPException):
+    pass
+
+
+class LDAPAttributeOrValueExists(LDAPException):
+    pass
+
+
+class LDAPInvalidAttributeSyntax(LDAPException):
+    pass
+
+
+class LDAPNoSuchObject(LDAPException):
+    pass
+
+
+class LDAPAliasProblem(LDAPException):
+    pass
+
+
+class LDAPInvalidDNSyntax(LDAPException):
+    pass
+
+
+class LDAPAliasDereferencingProblem(LDAPException):
+    pass
+
+
+class InappropriateAuthentication(LDAPException):
+    pass
+
+
+class LDAPInvalidCredentials(LDAPException):
+    pass
+
+
+class LDAPInsufficientAccessRights(LDAPException):
+    pass
+
+
+class LDAPBusy(LDAPException):
+    pass
+
+
+class LDAPUnavailable(LDAPException):
+    pass
+
+
+class LDAPUnwillingToPerform(LDAPException):
+    pass
+
+
+class LDAPLoopDetected(LDAPException):
+    pass
+
+
+class LDAPNamingViolation(LDAPException):
+    pass
+
+
+class LDAPObjectClassViolation(LDAPException):
+    pass
+
+
+class LDAPNotAllowedOnNotLeaf(LDAPException):
+    pass
+
+
+class LDAPNotAllowedOnRDN(LDAPException):
+    pass
+
+
+class LDAPEntryAlreadyExists(LDAPException):
+    pass
+
+
+class LDAPObjectClassModsProhibited(LDAPException):
+    pass
+
+
+class LDAPAffectMultipleDSAS(LDAPException):
+    pass
+
+
+class LDAPOther(LDAPException):
+    pass
+
+
+class LDAPLCUPResourcesExhausted(LDAPException):
+    pass
+
+
+class LDAPLCUPSecurityViolation(LDAPException):
+    pass
+
+
+class LDAPLCUPInvalidData(LDAPException):
+    pass
+
+
+class LDAPLCUPUnsupportedScheme(LDAPException):
+    pass
+
+
+class LDAPLCUPReloadRequired(LDAPException):
+    pass
+
+
+class LDAPCanceled(LDAPException):
+    pass
+
+
+class LDAPNoSuchOperation(LDAPException):
+    pass
+
+
+class LDAPTooLate(LDAPException):
+    pass
+
+
+class LDAPCannotCancel(LDAPException):
+    pass
+
+
+class LDAPAssertionFailed(LDAPException):
+    pass
+
+
+class LDAPAuthorizationDeniedd(LDAPException):
+    pass
+
+
+class LDAPESyncRefreshRequired(LDAPException):
+    pass
+
 from .core.server import Server
 from .core.connection import Connection
 from .core.tls import Tls

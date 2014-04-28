@@ -47,6 +47,9 @@ For any information and suggestions you can contact me at python3ldap@gmail.com 
 CHANGELOG
 =========
 
+* 0.9.2.1 2014.04.28
+    - fixed a bug in 0.9.2 that allowed only string attributes in add, modify and compare operations (thank Mladen)
+
 * 0.9.2 2014.04.26
     - changed return value in get_response from response to (response, result) - helpful for multi threaded connections
     - added ReusableStrategy for pooling connections

@@ -138,4 +138,7 @@ def validate_assertion_value(value):
 
 
 def validate_attribute_value(value):
-    return validate_assertion_value(value)
+    if isinstance(value, str):
+        return validate_assertion_value(value)
+
+    return value

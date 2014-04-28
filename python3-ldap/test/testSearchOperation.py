@@ -35,7 +35,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True))
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
-        result = self.connection.add(test_dn_builder(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)'})
+        result = self.connection.add(test_dn_builder(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)', 'loginGraceLimit': 10})
         if not isinstance(result, bool):
             self.connection.get_response(result)
 
@@ -158,3 +158,33 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['attributes']['cn'][0], 'test-search-(parentheses)')
+
+    def test_search_integer_exact_match(self):
+        result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit=10)', attributes=[test_name_attr, 'loginGraceLimit'])
+        if not isinstance(result, bool):
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+
+    def test_search_integer_less_than(self):
+        result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit<=11)', attributes=[test_name_attr, 'loginGraceLimit'])
+        if not isinstance(result, bool):
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+
+    def test_search_integer_greater_than(self):
+        result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit>=9)', attributes=[test_name_attr, 'loginGraceLimit'])
+        if not isinstance(result, bool):
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)

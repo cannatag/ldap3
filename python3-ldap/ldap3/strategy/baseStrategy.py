@@ -221,7 +221,7 @@ class BaseStrategy(object):
                         result = responses[-2]
                         response = responses[:-2]
                         self.connection.result = result
-                        # self.connection.response = response
+                        self.connection.response = None
                     break
         return response, result
 

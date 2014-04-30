@@ -87,7 +87,7 @@ class Tls(object):
         """
         wrapped_socket = ssl.wrap_socket(connection.socket, keyfile=self.private_key_file, certfile=self.certificate_file, server_side=False, cert_reqs=self.validate, ssl_version=self.version, ca_certs=self.ca_certs_file, do_handshake_on_connect=do_handshake)
 
-        if self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL:
+        if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)
 
         return wrapped_socket
@@ -100,37 +100,32 @@ class Tls(object):
         return sock.unwrap()
 
     def start_tls(self, connection):
+        if connection.server.ssl:  # ssl already established at server level
+            return False
+
         if (connection.tls_started and not connection._executing_deferred) or connection.strategy._outstanding or connection.sasl_in_progress:
             # Per RFC 4513 (3.1.1)
             return False
         connection.starting_tls = True
         result = connection.extended('1.3.6.1.4.1.1466.20037')
-        connection.starting_tls = False
         if not connection.strategy.sync:
-            # async - start_tls must be executed by the strategy
+            # async - _start_tls must be executed by the strategy
             connection.get_response(result)
             return True
         else:
             if connection.result['description'] not in ['success']:
                 # startTLS failed
-                connection.last_error = 'startTLS failed'
+                connection.last_error = 'startTLS failed - ' + str(connection.result['description'])
                 raise LDAPException(connection.last_error)
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
-        connection.socket = self.wrap_socket(connection, False)
-        try:
-            connection.socket.do_handshake()
-        except:
-            connection.last_error = 'Tls handshake error'
-            raise LDAPException(connection.last_error)
-
-        if self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL:
-            check_hostname(connection.socket, connection.server.host, self.valid_names)
+        connection.socket = self.wrap_socket(connection, True)
 
         if connection.usage:
             connection._usage.wrapped_sockets += 1
 
+        connection.starting_tls = False
         connection.tls_started = True
         return True
 
@@ -162,7 +157,7 @@ def match_hostname_backport(cert, hostname):
     SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules are
     mostly followed, but IP addresses are not accepted for *hostname*.
 
-    CertificateError is raised on failure. On success, the function
+    CertificateError is raised on failure. On success, the function returns
     """
     if not cert:
         raise ValueError("empty or no certificate")

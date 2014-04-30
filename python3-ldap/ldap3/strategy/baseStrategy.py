@@ -101,6 +101,7 @@ class BaseStrategy(object):
         self.connection.bound = False
         self.connection.request = None
         self.connection.response = None
+        self.connection.tls_started = False
         self._outstanding = dict()
         self._referrals = []
         if self.connection._usage:

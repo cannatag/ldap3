@@ -63,4 +63,5 @@ class RealSearchControlValue(Sequence):
         cookie          OCTET STRING
     """
 
-    componentType = NamedTypes(NamedType('size', Size()), NamedType('cookie', Cookie()))
+    componentType = NamedTypes(NamedType('size', Size()),
+                               NamedType('cookie', Cookie()))

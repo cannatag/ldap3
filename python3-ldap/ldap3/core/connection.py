@@ -534,7 +534,6 @@ class Connection(object):
             self._deferred_start_tls = False
             if self.server.tls.start_tls(self):
                 self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
-                self.tls_started = True
                 return True
 
         return False

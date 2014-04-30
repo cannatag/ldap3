@@ -31,7 +31,7 @@ from test import test_server, test_port, test_port_ssl, test_user, test_password
 
 class Test(unittest.TestCase):
     def test_start_tls(self):
-        server = Server(host=test_server, port=test_port, tls=Tls())
+        server = Server(host=test_server, port=test_port, tls=Tls(validate=ssl.CERT_NONE))
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
         connection.open()
         connection.start_tls()

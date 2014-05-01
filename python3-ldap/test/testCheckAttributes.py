@@ -1,9 +1,9 @@
 """
-Created on 2013.06.06
+Created on 2014.05.01
 
 @author: Giovanni Cannata
 
-Copyright 2013 Giovanni Cannata
+Copyright 2014 Giovanni Cannata
 
 This file is part of python3-ldap.
 
@@ -21,22 +21,17 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-
 import unittest
+from ldap3 import STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
 
-from ldap3.core.server import Server
-from ldap3.core.connection import Connection
-from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection
+from ldap3 import Server, Connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_name_attr
 
 
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=True)
-        result = self.connection.add(test_dn_builder(test_base, 'test-add-for-modify'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add-for-modify'})
-        if not isinstance(result, bool):
-            self.connection.get_response(result)
 
     def tearDown(self):
         self.connection.unbind()
@@ -44,45 +39,62 @@ class Test(unittest.TestCase):
             self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
-    def test_modify_replace(self):
-        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace']), 'sn': (MODIFY_REPLACE, ['test-modified-sn-replace'])})
+    def test_wrong_assertion(self):
+        result = self.connection.search(search_base=test_base, search_filter='(cn=xxx)', attributes=[test_name_attr])
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
 
-    def test_modify_add(self):
-        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
+    def test_wrong_attribute(self):
+        result = self.connection.search(search_base=test_base, search_filter='(cn=yyy)', attributes=[test_name_attr, 'xxx'])
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['success', 'attributeOrValueExists'])
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
 
-    def test_modify_deleted(self):
-        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added2'])})
+    def test_wrong_object_class_add(self):
+        result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['success', 'attributeOrValueExists'])
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
 
-        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added3'])})
+    def test_valid_assertion(self):
+        result = self.connection.search(search_base=test_base, search_filter='(cn=test*)', attributes=[test_name_attr])
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['attributeOrValueExists', 'success'])
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(len(response) > 1)
 
-        result = self.connection.modify(test_dn_builder(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
+    def test_valid_attribute(self):
+        result = self.connection.search(search_base=test_base, search_filter='(cn=test)', attributes=[test_name_attr, 'givenName'])
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['success', 'noSuchAttribute'])
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(len(response) > 1)
+
+    def test_valid_object_class_add(self):
+        result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'User'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+        if not isinstance(result, bool):
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(len(response) > 1)

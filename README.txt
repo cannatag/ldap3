@@ -47,8 +47,12 @@ For any information and suggestions you can contact me at python3ldap@gmail.com 
 CHANGELOG
 =========
 
+* 0.9.3 2014.05.02
+    - Now th key in server.schema.attribute_type is the attribute name (was the oid)
+    - Added auto_check to Connection definition to have the names of attributes and object class checked against the schema
+
 * 0.9.2.2 2014.04.30
-      - fixed a bug from 0.9.1 that broke start_tls() (thanks Mark)
+    - fixed a bug from 0.9.1 that broke start_tls() (thanks Mark)
 
 * 0.9.2.1 2014.04.28
     - fixed a bug in 0.9.2 that allowed only string attributes in add, modify and compare operations (thank Mladen)

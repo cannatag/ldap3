@@ -115,8 +115,10 @@ def build_controls_list(controls):
     return built_controls
 
 
-def validate_assertion_value(value):
-    value = value.strip()
+def validate_assertion_value(schema, name, value):
+    if schema:
+        pass
+    print('validating assertion:', name, value)
     if not '\\' in value:
         return value.encode('utf-8')
     validated_value = bytearray()
@@ -137,8 +139,9 @@ def validate_assertion_value(value):
     return bytes(validated_value)
 
 
-def validate_attribute_value(value):
+def validate_attribute_value(schema, name, value):
+    print('validating attribute:', name, value)
     if isinstance(value, str):
-        return validate_assertion_value(value)
+        return validate_assertion_value(None, name, value)  # schema already checked, no need to check again
 
     return value

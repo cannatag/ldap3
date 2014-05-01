@@ -363,7 +363,7 @@ class Connection(object):
         Perform a compare operation
         """
         self._fire_deferred()
-        request = compare_operation(dn, attribute, value)
+        request = compare_operation(dn, attribute, value, self.server.schema if self.server else None)
         response = self.post_send_single_response(self.send('compareRequest', request, controls))
         if isinstance(response, int):
             return response
@@ -399,7 +399,7 @@ class Connection(object):
             self.last_error = 'object_class is mandatory'
             raise LDAPException(self.last_error)
 
-        request = add_operation(dn, attributes)
+        request = add_operation(dn, attributes, self.server.schema if self.server else None)
         response = self.post_send_single_response(self.send('addRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):
@@ -458,7 +458,7 @@ class Connection(object):
                 self.last_error = 'unknown change type'
                 raise LDAPException(self.last_error)
 
-        request = modify_operation(dn, changes)
+        request = modify_operation(dn, changes, self.server.schema if self.server else None)
         response = self.post_send_single_response(self.send('modifyRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):

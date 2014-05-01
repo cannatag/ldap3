@@ -75,11 +75,21 @@ def decode_oids(sequence):
     return list()
 
 
+def decode_syntax(syntax):
+    if not syntax:
+        return None
+    syntax = syntax.strip()
+    for pos, c in enumerate(syntax):
+        if not c in '0123456789.':
+            break
+
+    return Oids.get(syntax[:pos], None)
+
 class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
     def __str__(self):
         r = self.oid + ' - '
         if self.name:
-            r += (', '.join(self.name)) if isinstance(self.name, list) else self.name + ' - '
+            r += ((', '.join(self.name)) if isinstance(self.name, list) else self.name) + ' - '
         r += constant_to_oid_kind(self.kind) + ' - ' if self.kind is not None else ''
         r += self.docs + ' - ' if self.docs else ''
 
@@ -375,17 +385,26 @@ Oids = {  # administrative role
           # dit content rules
 
           # extensions
-          '1.2.840.113556.1.4.1781': OidInfo('1.2.840.113556.1.4.1781', OID_EXTENSION, 'Fast concurrent bind', 'MICROSOFT'), '1.2.840.113556.1.4.2212': OidInfo('1.2.840.113556.1.4.2212', OID_EXTENSION, 'Batch request', 'MICROSOFT'),
-          '1.3.6.1.1.8': OidInfo('1.3.6.1.1.8', OID_EXTENSION, 'Cancel Operation', 'RFC3909'), '1.3.6.1.1.21.1': OidInfo('1.3.6.1.1.21.1', OID_EXTENSION, 'Start Transaction Extended Request', 'RFC5805'),
-          '1.3.6.1.1.21.3': OidInfo('1.3.6.1.1.21.3', OID_EXTENSION, 'End Transaction Extended Request', 'RFC5805'), '1.3.6.1.4.1.1466.101.119.1': OidInfo('1.3.6.1.4.1.1466.101.119.1', OID_EXTENSION, 'Dynamic Refresh', 'RFC2589'),
-          '1.3.6.1.4.1.1466.20037': OidInfo('1.3.6.1.4.1.1466.20037', OID_EXTENSION, 'StartTLS', 'RFC4511-RFC4513'), '1.3.6.1.4.1.4203.1.11.1': OidInfo('1.3.6.1.4.1.4203.1.11.1', OID_EXTENSION, 'Modify Password', 'RFC3062'),
-          '1.3.6.1.4.1.4203.1.11.3': OidInfo('1.3.6.1.4.1.4203.1.11.3', OID_EXTENSION, 'Who am I', 'RFC4532'), '1.3.6.1.1.17.1': OidInfo('1.3.6.1.1.17.1', OID_EXTENSION, 'StartLBURPRequest LDAP ExtendedRequest message', 'RFC4373'),
+          '1.2.840.113556.1.4.1781': OidInfo('1.2.840.113556.1.4.1781', OID_EXTENSION, 'Fast concurrent bind', 'MICROSOFT'),
+          '1.2.840.113556.1.4.2212': OidInfo('1.2.840.113556.1.4.2212', OID_EXTENSION, 'Batch request', 'MICROSOFT'),
+          '1.3.6.1.1.8': OidInfo('1.3.6.1.1.8', OID_EXTENSION, 'Cancel Operation', 'RFC3909'),
+          '1.3.6.1.1.21.1': OidInfo('1.3.6.1.1.21.1', OID_EXTENSION, 'Start Transaction Extended Request', 'RFC5805'),
+          '1.3.6.1.1.21.3': OidInfo('1.3.6.1.1.21.3', OID_EXTENSION, 'End Transaction Extended Request', 'RFC5805'),
+          '1.3.6.1.4.1.1466.101.119.1': OidInfo('1.3.6.1.4.1.1466.101.119.1', OID_EXTENSION, 'Dynamic Refresh', 'RFC2589'),
+          '1.3.6.1.4.1.1466.20037': OidInfo('1.3.6.1.4.1.1466.20037', OID_EXTENSION, 'StartTLS', 'RFC4511-RFC4513'),
+          '1.3.6.1.4.1.4203.1.11.1': OidInfo('1.3.6.1.4.1.4203.1.11.1', OID_EXTENSION, 'Modify Password', 'RFC3062'),
+          '1.3.6.1.4.1.4203.1.11.3': OidInfo('1.3.6.1.4.1.4203.1.11.3', OID_EXTENSION, 'Who am I', 'RFC4532'),
+          '1.3.6.1.1.17.1': OidInfo('1.3.6.1.1.17.1', OID_EXTENSION, 'StartLBURPRequest LDAP ExtendedRequest message', 'RFC4373'),
           '1.3.6.1.1.17.2': OidInfo('1.3.6.1.1.17.2', OID_EXTENSION, 'StartLBURPResponse LDAP ExtendedResponse message', 'RFC4373'),
-          '1.3.6.1.1.17.3': OidInfo('1.3.6.1.1.17.3', OID_EXTENSION, 'EndLBURPRequest LDAP ExtendedRequest message', 'RFC4373'), '1.3.6.1.1.17.4': OidInfo('1.3.6.1.1.17.4', OID_EXTENSION, 'EndLBURPResponse LDAP ExtendedResponse message', 'RFC4373'),
+          '1.3.6.1.1.17.3': OidInfo('1.3.6.1.1.17.3', OID_EXTENSION, 'EndLBURPRequest LDAP ExtendedRequest message', 'RFC4373'),
+          '1.3.6.1.1.17.4': OidInfo('1.3.6.1.1.17.4', OID_EXTENSION, 'EndLBURPResponse LDAP ExtendedResponse message', 'RFC4373'),
           '1.3.6.1.1.17.5': OidInfo('1.3.6.1.1.17.5', OID_EXTENSION, 'LBURPUpdateRequest LDAP ExtendedRequest message', 'RFC4373'),
-          '1.3.6.1.1.17.6': OidInfo('1.3.6.1.1.17.6', OID_EXTENSION, 'LBURPUpdateResponse LDAP ExtendedResponse message', 'RFC4373'), '1.3.6.1.1.19': OidInfo('1.3.6.1.1.19', OID_EXTENSION, 'LDAP Turn Operation', 'RFC4531'),
-          '1.3.6.1.4.1.26027.1.6.1': OidInfo('1.3.6.1.4.1.26027.1.6.1', OID_CONTROL, 'Password policy state', 'OpenDS'), '1.3.6.1.4.1.26027.1.6.2': OidInfo('1.3.6.1.4.1.26027.1.6.2', OID_CONTROL, 'Get connection ID', 'OpenDS'),
-          '1.3.6.1.4.1.26027.1.6.3': OidInfo('1.3.6.1.4.1.26027.1.6.3', OID_CONTROL, 'Get symmetric key', 'OpenDS'), '2.16.840.1.113719.1.14.100.1': OidInfo('2.16.840.1.113719.1.14.100.1', OID_EXTENSION, 'getDriverSetRequest', 'NOVELL'),
+          '1.3.6.1.1.17.6': OidInfo('1.3.6.1.1.17.6', OID_EXTENSION, 'LBURPUpdateResponse LDAP ExtendedResponse message', 'RFC4373'),
+          '1.3.6.1.1.19': OidInfo('1.3.6.1.1.19', OID_EXTENSION, 'LDAP Turn Operation', 'RFC4531'),
+          '1.3.6.1.4.1.26027.1.6.1': OidInfo('1.3.6.1.4.1.26027.1.6.1', OID_CONTROL, 'Password policy state', 'OpenDS'),
+          '1.3.6.1.4.1.26027.1.6.2': OidInfo('1.3.6.1.4.1.26027.1.6.2', OID_CONTROL, 'Get connection ID', 'OpenDS'),
+          '1.3.6.1.4.1.26027.1.6.3': OidInfo('1.3.6.1.4.1.26027.1.6.3', OID_CONTROL, 'Get symmetric key', 'OpenDS'),
+          '2.16.840.1.113719.1.14.100.1': OidInfo('2.16.840.1.113719.1.14.100.1', OID_EXTENSION, 'getDriverSetRequest', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.2': OidInfo('2.16.840.1.113719.1.14.100.2', OID_EXTENSION, 'getDriverSetResponse', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.3': OidInfo('2.16.840.1.113719.1.14.100.3', OID_EXTENSION, 'setDriverSetRequest', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.4': OidInfo('2.16.840.1.113719.1.14.100.4', OID_EXTENSION, 'setDriverSetResponse', 'NOVELL'),
@@ -439,8 +458,10 @@ Oids = {  # administrative role
           '2.16.840.1.113719.1.14.100.52': OidInfo('2.16.840.1.113719.1.14.100.52', OID_EXTENSION, 'discoverJobsResponse', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.53': OidInfo('2.16.840.1.113719.1.14.100.53', OID_EXTENSION, 'notifyJobUpdateRequest', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.54': OidInfo('2.16.840.1.113719.1.14.100.54', OID_EXTENSION, 'notifyJobUpdateResponse', 'NOVELL'),
-          '2.16.840.1.113719.1.14.100.55': OidInfo('2.16.840.1.113719.1.14.100.55', OID_EXTENSION, 'startJobRequest', 'NOVELL'), '2.16.840.1.113719.1.14.100.56': OidInfo('2.16.840.1.113719.1.14.100.56', OID_EXTENSION, 'startJobResponse', 'NOVELL'),
-          '2.16.840.1.113719.1.14.100.57': OidInfo('2.16.840.1.113719.1.14.100.57', OID_EXTENSION, 'abortJobRequest', 'NOVELL'), '2.16.840.1.113719.1.14.100.58': OidInfo('2.16.840.1.113719.1.14.100.58', OID_EXTENSION, 'abortJobresponse', 'NOVELL'),
+          '2.16.840.1.113719.1.14.100.55': OidInfo('2.16.840.1.113719.1.14.100.55', OID_EXTENSION, 'startJobRequest', 'NOVELL'),
+          '2.16.840.1.113719.1.14.100.56': OidInfo('2.16.840.1.113719.1.14.100.56', OID_EXTENSION, 'startJobResponse', 'NOVELL'),
+          '2.16.840.1.113719.1.14.100.57': OidInfo('2.16.840.1.113719.1.14.100.57', OID_EXTENSION, 'abortJobRequest', 'NOVELL'),
+          '2.16.840.1.113719.1.14.100.58': OidInfo('2.16.840.1.113719.1.14.100.58', OID_EXTENSION, 'abortJobresponse', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.59': OidInfo('2.16.840.1.113719.1.14.100.59', OID_EXTENSION, 'getJobStateRequest', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.60': OidInfo('2.16.840.1.113719.1.14.100.60', OID_EXTENSION, 'getJobStateResponse', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.61': OidInfo('2.16.840.1.113719.1.14.100.61', OID_EXTENSION, 'checkJobConfigRequest', 'NOVELL'),
@@ -475,12 +496,14 @@ Oids = {  # administrative role
           '2.16.840.1.113719.1.14.100.90': OidInfo('2.16.840.1.113719.1.14.100.90', OID_EXTENSION, 'getDriverGCVResponse', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.91': OidInfo('2.16.840.1.113719.1.14.100.91', OID_EXTENSION, 'getNamedPasswordRequest', 'NOVELL'),
           '2.16.840.1.113719.1.14.100.92': OidInfo('2.16.840.1.113719.1.14.100.92', OID_EXTENSION, 'getNamedPasswordResponse', 'NOVELL'),
-          '2.16.840.1.113719.1.27.100.1': OidInfo('2.16.840.1.113719.1.27.100.1', OID_EXTENSION, 'ndsToLdapResponse', 'NOVELL'), '2.16.840.1.113719.1.27.100.2': OidInfo('2.16.840.1.113719.1.27.100.2', OID_EXTENSION, 'ndsToLdapRequest', 'NOVELL'),
+          '2.16.840.1.113719.1.27.100.1': OidInfo('2.16.840.1.113719.1.27.100.1', OID_EXTENSION, 'ndsToLdapResponse', 'NOVELL'),
+          '2.16.840.1.113719.1.27.100.2': OidInfo('2.16.840.1.113719.1.27.100.2', OID_EXTENSION, 'ndsToLdapRequest', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.3': OidInfo('2.16.840.1.113719.1.27.100.3', OID_EXTENSION, 'splitPartitionRequest', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.4': OidInfo('2.16.840.1.113719.1.27.100.4', OID_EXTENSION, 'splitPartitionResponse', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.5': OidInfo('2.16.840.1.113719.1.27.100.5', OID_EXTENSION, 'mergePartitionRequest', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.6': OidInfo('2.16.840.1.113719.1.27.100.6', OID_EXTENSION, 'mergePartitionResponse', 'NOVELL'),
-          '2.16.840.1.113719.1.27.100.7': OidInfo('2.16.840.1.113719.1.27.100.7', OID_EXTENSION, 'addReplicaRequest', 'NOVELL'), '2.16.840.1.113719.1.27.100.8': OidInfo('2.16.840.1.113719.1.27.100.8', OID_EXTENSION, 'addReplicaResponse', 'NOVELL'),
+          '2.16.840.1.113719.1.27.100.7': OidInfo('2.16.840.1.113719.1.27.100.7', OID_EXTENSION, 'addReplicaRequest', 'NOVELL'),
+          '2.16.840.1.113719.1.27.100.8': OidInfo('2.16.840.1.113719.1.27.100.8', OID_EXTENSION, 'addReplicaResponse', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.9': OidInfo('2.16.840.1.113719.1.27.100.9', OID_EXTENSION, 'refreshLDAPServerRequest', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.10': OidInfo('2.16.840.1.113719.1.27.100.10', OID_EXTENSION, 'refreshLDAPServerResponse', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.11': OidInfo('2.16.840.1.113719.1.27.100.11', OID_EXTENSION, 'removeReplicaRequest', 'NOVELL'),
@@ -503,7 +526,8 @@ Oids = {  # administrative role
           '2.16.840.1.113719.1.27.100.28': OidInfo('2.16.840.1.113719.1.27.100.28', OID_EXTENSION, 'requestSchemaSyncResponse', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.29': OidInfo('2.16.840.1.113719.1.27.100.29', OID_EXTENSION, 'abortPartitionOperationRequest', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.30': OidInfo('2.16.840.1.113719.1.27.100.30', OID_EXTENSION, 'abortPartitionOperationResponse', 'NOVELL'),
-          '2.16.840.1.113719.1.27.100.31': OidInfo('2.16.840.1.113719.1.27.100.31', OID_EXTENSION, 'getBindDNRequest', 'NOVELL'), '2.16.840.1.113719.1.27.100.32': OidInfo('2.16.840.1.113719.1.27.100.32', OID_EXTENSION, 'getBindDNResponse', 'NOVELL'),
+          '2.16.840.1.113719.1.27.100.31': OidInfo('2.16.840.1.113719.1.27.100.31', OID_EXTENSION, 'getBindDNRequest', 'NOVELL'),
+          '2.16.840.1.113719.1.27.100.32': OidInfo('2.16.840.1.113719.1.27.100.32', OID_EXTENSION, 'getBindDNResponse', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.33': OidInfo('2.16.840.1.113719.1.27.100.33', OID_EXTENSION, 'getEffectivePrivilegesRequest', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.34': OidInfo('2.16.840.1.113719.1.27.100.34', OID_EXTENSION, 'getEffectivePrivilegesResponse', 'NOVELL'),
           '2.16.840.1.113719.1.27.100.35': OidInfo('2.16.840.1.113719.1.27.100.35', OID_EXTENSION, 'setReplicationFilterRequest', 'NOVELL'),
@@ -556,7 +580,8 @@ Oids = {  # administrative role
           '2.16.840.1.113719.1.39.42.100.21': OidInfo('2.16.840.1.113719.1.39.42.100.21', OID_EXTENSION, 'NMAS Change Universal Password', 'NOVELL'),
           '2.16.840.1.113719.1.39.42.100.23': OidInfo('2.16.840.1.113719.1.39.42.100.23', OID_EXTENSION, 'NMAS Graded Authentication management', 'NOVELL'),
           '2.16.840.1.113719.1.39.42.100.25': OidInfo('2.16.840.1.113719.1.39.42.100.25', OID_EXTENSION, 'NMAS management (new with NMAS 3.1.0)', 'NOVELL'),
-          '2.16.840.1.113719.1.142.1.4.1': OidInfo('2.16.840.1.113719.1.142.1.4.1', OID_EXTENSION, 'LBURPIncUpdate', 'NOVELL'), '2.16.840.1.113719.1.142.1.4.2': OidInfo('2.16.840.1.113719.1.142.1.4.2', OID_EXTENSION, 'LBURPFullUpdate', 'NOVELL'),
+          '2.16.840.1.113719.1.142.1.4.1': OidInfo('2.16.840.1.113719.1.142.1.4.1', OID_EXTENSION, 'LBURPIncUpdate', 'NOVELL'),
+          '2.16.840.1.113719.1.142.1.4.2': OidInfo('2.16.840.1.113719.1.142.1.4.2', OID_EXTENSION, 'LBURPFullUpdate', 'NOVELL'),
           '2.16.840.1.113719.1.142.100.1': OidInfo('2.16.840.1.113719.1.142.100.1', OID_EXTENSION, 'LBURPStartReplRequest', 'NOVELL'),
           '2.16.840.1.113719.1.142.100.2': OidInfo('2.16.840.1.113719.1.142.100.2', OID_EXTENSION, 'LBURPStartReplResponse', 'NOVELL'),
           '2.16.840.1.113719.1.142.100.4': OidInfo('2.16.840.1.113719.1.142.100.4', OID_EXTENSION, 'LBURPEndReplRequest', 'NOVELL'),

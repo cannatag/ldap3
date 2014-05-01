@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 
 from ldap3 import GET_ALL_INFO, STRATEGY_REUSABLE_THREADED
-from ldap3.protocol.schema import SchemaInfo, ObjectClassInfo, AttributeTypeInfo
+from ldap3.protocol.rfc4512 import SchemaInfo, ObjectClassInfo, AttributeTypeInfo
 from ldap3.core.server import Server
 from ldap3.core.connection import Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
         self.assertTrue(type(self.server.schema), SchemaInfo)
 
     def test_object_classes(self):
-        self.assertTrue(type(self.server.schema.object_classes['2.5.6.6']), ObjectClassInfo)
+        self.assertTrue(type(self.server.schema.object_classes['inetorgperson']), ObjectClassInfo)
 
     def test_attributes_types(self):
-        self.assertTrue(type(self.server.schema.attribute_types['2.5.4.3']), AttributeTypeInfo)
+        self.assertTrue(type(self.server.schema.attribute_types['cn']), AttributeTypeInfo)

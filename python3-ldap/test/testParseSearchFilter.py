@@ -29,13 +29,13 @@ from ldap3.operation.search import parse_filter, MATCH_EQUAL, MATCH_EXTENSIBLE
 
 class Test(unittest.TestCase):
     def test_parse_search_filter_equality(self):
-        f = parse_filter('(cn=admin)')
+        f = parse_filter('(cn=admin)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
         self.assertEqual(f.elements[0].assertion['value'], b'admin')
 
     def test_parse_search_filter_extensible_syntax_1(self):
-        f = parse_filter('(cn:caseExactMatch:=Fred Flintstone)')
+        f = parse_filter('(cn:caseExactMatch:=Fred Flintstone)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
         self.assertEqual(f.elements[0].assertion['value'], b'Fred Flintstone')
@@ -43,7 +43,7 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['dnAttributes'], None)
 
     def test_parse_search_filter_extensible_syntax_2(self):
-        f = parse_filter('(cn:=Betty Rubble)')
+        f = parse_filter('(cn:=Betty Rubble)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
         self.assertEqual(f.elements[0].assertion['value'], b'Betty Rubble')
@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['dnAttributes'], None)
 
     def test_parse_search_filter_extensible_syntax_3(self):
-        f = parse_filter('(sn:dn:2.4.6.8.10:=Barney Rubble)')
+        f = parse_filter('(sn:dn:2.4.6.8.10:=Barney Rubble)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'sn')
         self.assertEqual(f.elements[0].assertion['value'], b'Barney Rubble')
@@ -59,7 +59,7 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
 
     def test_parse_search_filter_extensible_syntax_4(self):
-        f = parse_filter('(o:dn:=Ace Industry)')
+        f = parse_filter('(o:dn:=Ace Industry)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], 'o')
         self.assertEqual(f.elements[0].assertion['value'], b'Ace Industry')
@@ -67,7 +67,7 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
 
     def test_parse_search_filter_extensible_syntax_5(self):
-        f = parse_filter('(:1.2.3:=Wilma Flintstone)')
+        f = parse_filter('(:1.2.3:=Wilma Flintstone)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], None)
         self.assertEqual(f.elements[0].assertion['value'], b'Wilma Flintstone')
@@ -75,7 +75,7 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['dnAttributes'], None)
 
     def test_parse_search_filter_extensible_syntax_6(self):
-        f = parse_filter('(:DN:2.4.6.8.10:=Dino)')
+        f = parse_filter('(:DN:2.4.6.8.10:=Dino)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)
         self.assertEqual(f.elements[0].assertion['attr'], None)
         self.assertEqual(f.elements[0].assertion['value'], b'Dino')

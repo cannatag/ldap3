@@ -31,7 +31,8 @@ from ..protocol.convert import referrals_to_list, attributes_to_dict, validate_a
 
 
 def add_operation(dn,
-                  attributes):
+                  attributes,
+                  schema=None):
     # attributes is a dictionary in the form 'attribute': ['val1', 'val2', 'valN']
     attribute_list = AttributeList()
     for pos, attribute in enumerate(attributes):
@@ -40,9 +41,9 @@ def add_operation(dn,
         vals = ValsAtLeast1()
         if isinstance(attributes[attribute], list):
             for index, value in enumerate(attributes[attribute]):
-                vals.setComponentByPosition(index, validate_attribute_value(value))
+                vals.setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
         else:
-            vals.setComponentByPosition(0, validate_attribute_value(attributes[attribute]))
+            vals.setComponentByPosition(0, validate_attribute_value(schema, attribute, attributes[attribute]))
 
         attribute_list[pos]['vals'] = vals
 

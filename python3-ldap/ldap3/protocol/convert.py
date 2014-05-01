@@ -117,8 +117,11 @@ def build_controls_list(controls):
 
 def validate_assertion_value(schema, name, value):
     if schema:
-        pass
-    print('validating assertion:', name, value)
+        if not name.lower() in schema.attribute_types:
+            raise LDAPException('invalid attribute type in assertion: ' + name)
+        if name.lower() == 'objectclass':
+            if value.lower() not in schema.object_classes:
+                raise LDAPException('invalid class in assertion: ' + value)
     if not '\\' in value:
         return value.encode('utf-8')
     validated_value = bytearray()
@@ -140,7 +143,13 @@ def validate_assertion_value(schema, name, value):
 
 
 def validate_attribute_value(schema, name, value):
-    print('validating attribute:', name, value)
+    if schema:
+        if not name.lower() in schema.attribute_types:
+            raise LDAPException('invalid attribute type in attribute')
+        if name.lower() == 'objectclass':
+            if value.lower() not in schema.object_classes:
+                raise LDAPException('invalid class in attribute: ' + value)
+
     if isinstance(value, str):
         return validate_assertion_value(None, name, value)  # schema already checked, no need to check again
 

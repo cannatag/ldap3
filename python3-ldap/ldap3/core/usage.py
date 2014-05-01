@@ -77,7 +77,7 @@ class ConnectionUsage(object):
         r += '    Transmitted:         ' + str(self.bytes_transmitted) + linesep
         r += '    Received:            ' + str(self.bytes_received) + linesep
         r += '  Messages:              ' + str(self.messages_transmitted + self.messages_received) + linesep
-        r += '    Trasmitted:          ' + str(self.messages_transmitted) + linesep
+        r += '    Transmitted:         ' + str(self.messages_transmitted) + linesep
         r += '    Received:            ' + str(self.messages_received) + linesep
         r += '  Operations:            ' + str(self.operations) + linesep
         r += '    Abandon:             ' + str(self.abandon_operations) + linesep

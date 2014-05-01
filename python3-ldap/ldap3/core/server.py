@@ -152,7 +152,6 @@ class Server(object):
         Retrieve DSE operational attribute as per RFC 4512 (5.1).
         """
         self._dsa_info = None
-
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
         if isinstance(result, bool):  # sync request
             self._dsa_info = DsaInfo(connection.response[0]['attributes']) if result else None

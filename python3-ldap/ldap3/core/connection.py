@@ -77,6 +77,7 @@ class Connection(object):
                  auto_referrals=True,
                  sasl_mechanism=None,
                  sasl_credentials=None,
+                 check_names=False,
                  collect_usage=False,
                  read_only=False,
                  lazy=False,
@@ -128,6 +129,7 @@ class Connection(object):
         self.pool_size = pool_size
         self.pool_lifetime = pool_lifetime
         self.starting_tls = False
+        self.check_names = check_names
 
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
@@ -344,7 +346,7 @@ class Connection(object):
                 controls = []
             controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
 
-        request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only)
+        request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server and self.check_names else None)
 
         response = self.post_send_search(self.send('searchRequest', request, controls))
         if isinstance(response, int):
@@ -363,7 +365,7 @@ class Connection(object):
         Perform a compare operation
         """
         self._fire_deferred()
-        request = compare_operation(dn, attribute, value, self.server.schema if self.server else None)
+        request = compare_operation(dn, attribute, value, self.server.schema if self.server and self.check_names else None)
         response = self.post_send_single_response(self.send('compareRequest', request, controls))
         if isinstance(response, int):
             return response
@@ -399,7 +401,7 @@ class Connection(object):
             self.last_error = 'object_class is mandatory'
             raise LDAPException(self.last_error)
 
-        request = add_operation(dn, attributes, self.server.schema if self.server else None)
+        request = add_operation(dn, attributes, self.server.schema if self.server and self.check_names else None)
         response = self.post_send_single_response(self.send('addRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):
@@ -458,7 +460,7 @@ class Connection(object):
                 self.last_error = 'unknown change type'
                 raise LDAPException(self.last_error)
 
-        request = modify_operation(dn, changes, self.server.schema if self.server else None)
+        request = modify_operation(dn, changes, self.server.schema if self.server and self.check_names else None)
         response = self.post_send_single_response(self.send('modifyRequest', request, controls))
 
         if isinstance(response, int) or isinstance(response, str):

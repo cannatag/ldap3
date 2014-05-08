@@ -60,7 +60,7 @@ not executed on an LDAP server but are converted to an ldif-change format that c
 For example::
 
     from ldap3 import Connection, STRATEGY_LDIF_PRODUCER
-    connection = Connection(server = None, clientStrategy = STRATEGY_LDIF_PRODUCER)  # no need of real LDAP server
+    connection = Connection(server = None, client_strategy = STRATEGY_LDIF_PRODUCER)  # no need of real LDAP server
     connection.add('cn=test-add-operation,o=test'), 'iNetOrgPerson',
                    {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
 

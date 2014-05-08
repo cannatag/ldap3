@@ -49,6 +49,7 @@ CHANGELOG
 * 0.9.3 2014.05.02
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
     - Added auto_check to Connection definition to have the names of attributes and object class checked against the schema
+    - Updated setuptools to 3.6
 
 * 0.9.2.2 2014.04.30
     - fixed a bug from 0.9.1 that broke start_tls() (thanks Mark)

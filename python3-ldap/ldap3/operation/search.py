@@ -96,6 +96,7 @@ class FilterNode():
                 representation += linesep + ' ' * pos + element.__repr__(pos + 2)
         return representation
 
+
 def evaluate_match(match, schema):
     match = match.strip()
     if '~=' in match:

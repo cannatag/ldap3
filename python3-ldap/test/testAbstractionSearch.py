@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=True)
-        result = self.connection.add(test_dn_builder(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-delete,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
+        result = self.connection.add(test_dn_builder(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
         if not isinstance(result, bool):
             self.connection.get_response(result)
 
@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
         r = Reader(self.connection, o, query_text, 'o=test')
 
         results = r.search()
-        self.assertEqual(len(results), 6)
+        self.assertEqual(len(results), 7)
 
     def test_search_with_dereference(self):
         reverse = lambda a, e: e[::-1]
@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
         qu = 'Common Name: test-add*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 6)
+        self.assertEqual(len(lu), 7)
 
         og = ObjectDef('groupOfNames')
         og += AttrDef('member', dereference_dn=ou)
@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
 
         eg = lg[0]
         mg = eg.member
-        self.assertEqual(len(mg), 3)
+        self.assertEqual(len(mg), 4)
         ug = eg.member[0]
         self.assertEqual(str(ug.surname), 'tost')
 
@@ -104,7 +104,7 @@ class Test(unittest.TestCase):
         qu = 'Common Name := bug'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 8)
+        self.assertEqual(len(lu), 7)
 
     def test_search_with_default(self):
         ou = ObjectDef('iNetOrgPerson')

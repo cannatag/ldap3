@@ -4,7 +4,7 @@ Roadmap to version 1.0
 
 * Autoreferral on continuations
 
-* Connection pooling
+* Connection pooling (done)
 
 * ldap3.compat.ldap for compatability with python-ldap
 

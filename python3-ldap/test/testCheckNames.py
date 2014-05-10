@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 import unittest
-from ldap3 import STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
+from ldap3 import STRATEGY_REUSABLE_THREADED, GET_ALL_INFO, LDAPException
 
 from ldap3 import Server, Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_name_attr
@@ -40,34 +40,30 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_wrong_assertion(self):
-        result = self.connection.search(search_base=test_base, search_filter='(cn=xxx)', attributes=[test_name_attr])
-        if not isinstance(result, bool):
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 1)
+        ok = False
+        try:
+            result = self.connection.search(search_base=test_base, search_filter='(objectclass=xxx)', attributes=[test_name_attr])
+        except LDAPException:
+            ok = True
+
+        self.assertTrue(ok)
 
     def test_wrong_attribute(self):
-        result = self.connection.search(search_base=test_base, search_filter='(cn=yyy)', attributes=[test_name_attr, 'xxx'])
-        if not isinstance(result, bool):
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 1)
+        ok = False
+        try:
+            result = self.connection.search(search_base=test_base, search_filter='(cn=yyy)', attributes=[test_name_attr, 'xxx'])
+        except LDAPException:
+            ok = True
+
+        self.assertTrue(ok)
 
     def test_wrong_object_class_add(self):
-        result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
-        if not isinstance(result, bool):
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 1)
+        ok = False
+        try:
+            result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+        except LDAPException:
+            ok = True
+        self.assertTrue(ok)
 
     def test_valid_assertion(self):
         result = self.connection.search(search_base=test_base, search_filter='(cn=test*)', attributes=[test_name_attr])
@@ -80,7 +76,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(response) > 1)
 
     def test_valid_attribute(self):
-        result = self.connection.search(search_base=test_base, search_filter='(cn=test)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(cn=test*)', attributes=[test_name_attr, 'givenName'])
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
@@ -90,11 +86,10 @@ class Test(unittest.TestCase):
         self.assertTrue(len(response) > 1)
 
     def test_valid_object_class_add(self):
-        result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'User'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+        result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-check-names'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'Person'], 'sn': 'test-add', test_name_attr: 'test-add-operation-check-names'})
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertTrue(len(response) > 1)
+        self.assertTrue(result['description'] in ['success', 'entryAlreadyExists'])

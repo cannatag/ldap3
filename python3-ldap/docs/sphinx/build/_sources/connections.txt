@@ -221,6 +221,14 @@ Connection attributes:
 
 * lazy: connection will defer open and bind until another LDAP operation is requested
 
+* check_names: True if you want to check the attribute and object class names against the schema in filters and in add/compare/modify operations (:class: requested by RFC)
+
+* pool_name: an identifier for the Connection pool when using a pooled connection strategy
+
+* pool_size: size of the connection pool used in a pooled connection strategy
+
+* pool_lifetime: number of second before recreating a new connection in a pooled connection strategy
+
 Simple Paged search
 -------------------
 
@@ -232,9 +240,9 @@ Example::
     from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE
     total_entries = 0
     server = Server('test-server')
-    connection = Connection(server, user = 'test-user', password = 'test-password')
-    connection.search(search_base = 'o=test', search_filter = '(objectClass=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
-                      attributes = ['cn', 'givenName'], paged_size = 5)
+    connection = Connection(server, user='test-user', password='test-password', auto_bind=True)
+    connection.search(search_base='o=test', search_filter='(objectClass=inetOrgPerson)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
+                      attributes=['cn', 'givenName'], paged_size=5)
     total_entries += len(connection.response)
     cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:

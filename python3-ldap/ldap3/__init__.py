@@ -178,8 +178,40 @@ POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
 
+# LDAPException hierarchy
+
 class LDAPException(Exception):
-    pass
+    def __new__(cls, result=None, description=None, dn=None, message=None):
+        if cls is LDAPException and result and result in exception_table:
+            #exc = super(LDAPException, exception_table[result]).__new__(exception_table[result], result=result, description=description, dn=dn, message=message)  # create an exception of the required result error
+            exc = super(LDAPException, exception_table[result]).__new__(exception_table[result])  # create an exception of the required result error
+            exc.result = result
+            exc.description = description
+            exc.dn = dn
+            exc.message = message
+        elif cls is LDAPException:
+            exc = super(LDAPException, cls).__new__(cls)
+        return exc
+
+    def __init__(self, result=None, description=None, dn=None, message=None):
+        self.result = result
+        self.description = description
+        self.dn = dn
+        self.message = message
+
+    def __str__(self):
+        s = [
+            self.__class__.__name__,
+            str(self.result) if self.result else None,
+            self.description if self.description else None,
+            self.dn if self.dn else None,
+            self.message if self.message else None
+        ]
+
+        return ' - '.join(filter(None, s))
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class LDAPOperationsError(LDAPException):
@@ -266,7 +298,7 @@ class LDAPAliasDereferencingProblem(LDAPException):
     pass
 
 
-class InappropriateAuthentication(LDAPException):
+class LDAPInappropriateAuthentication(LDAPException):
     pass
 
 
@@ -366,12 +398,64 @@ class LDAPAssertionFailed(LDAPException):
     pass
 
 
-class LDAPAuthorizationDeniedd(LDAPException):
+class LDAPAuthorizationDenied(LDAPException):
     pass
 
 
 class LDAPESyncRefreshRequired(LDAPException):
     pass
+
+
+exception_table = {
+    RESULT_OPERATIONS_ERROR: LDAPOperationsError,
+    RESULT_PROTOCOL_ERROR: LDAPProtocolError,
+    RESULT_TIME_LIMIT_EXCEEDED: LDAPTimeLimitExceeded,
+    RESULT_SIZE_LIMIT_EXCEEDED: LDAPSizeLimitExceeded,
+    RESULT_AUTH_METHOD_NOT_SUPPORTED: LDAPAuthMethodNotSupported,
+    RESULT_STRONGER_AUTH_REQUIRED: LDAPStrongerAuthRequired,
+    RESULT_REFERRAL: LDAPReferral,
+    RESULT_ADMIN_LIMIT_EXCEEDED: LDAPAdminLimitExceeded,
+    RESULT_UNAVAILABLE_CRITICAL_EXTENSION: LDAPUnavailableCriticalExtension,
+    RESULT_CONFIDENTIALITY_REQUIRED: LDAPConfidentialityRequired,
+    RESULT_SASL_BIND_IN_PROGRESS: LDAPSaslBindInProgress,
+    RESULT_NO_SUCH_ATTRIBUTE: LDAPNoSuchAttribute,
+    RESULT_UNDEFINED_ATTRIBUTE_TYPE: LDAPUndefinedAttributeType,
+    RESULT_INAPPROPRIATE_MATCHING: LDAPInappropriateMatching,
+    RESULT_CONSTRAINT_VIOLATION: LDAPConstraintViolation,
+    RESULT_ATTRIBUTE_OR_VALUE_EXISTS: LDAPAttributeOrValueExists,
+    RESULT_INVALID_ATTRIBUTE_SYNTAX: LDAPInvalidAttributeSyntax,
+    RESULT_NO_SUCH_OBJECT: LDAPNoSuchObject,
+    RESULT_ALIAS_PROBLEM: LDAPAliasProblem,
+    RESULT_INVALID_DN_SYNTAX: LDAPInvalidDNSyntax,
+    RESULT_ALIAS_DEREFERENCING_PROBLEM: LDAPAliasDereferencingProblem,
+    RESULT_INAPPROPRIATE_AUTHENTICATION: LDAPInappropriateAuthentication,
+    RESULT_INVALID_CREDENTIALS: LDAPInvalidCredentials,
+    RESULT_INSUFFICIENT_ACCESS_RIGHTS: LDAPInsufficientAccessRights,
+    RESULT_BUSY: LDAPBusy,
+    RESULT_UNAVAILABLE: LDAPUnavailable,
+    RESULT_UNWILLING_TO_PERFORM: LDAPUnwillingToPerform,
+    RESULT_LOOP_DETECTED: LDAPLoopDetected,
+    RESULT_NAMING_VIOLATION: LDAPNamingViolation,
+    RESULT_OBJECT_CLASS_VIOLATION: LDAPObjectClassViolation,
+    RESULT_NOT_ALLOWED_ON_NON_LEAF: LDAPNotAllowedOnNotLeaf,
+    RESULT_NOT_ALLOWED_ON_RDN: LDAPNotAllowedOnRDN,
+    RESULT_ENTRY_ALREADY_EXISTS: LDAPEntryAlreadyExists,
+    RESULT_OBJECT_CLASS_MODS_PROHIBITED: LDAPObjectClassModsProhibited,
+    RESULT_AFFECT_MULTIPLE_DSAS: LDAPAffectMultipleDSAS,
+    RESULT_OTHER: LDAPOther,
+    RESULT_LCUP_RESOURCES_EXHAUSTED: LDAPLCUPResourcesExhausted,
+    RESULT_LCUP_SECURITY_VIOLATION: LDAPLCUPSecurityViolation,
+    RESULT_LCUP_INVALID_DATA: LDAPLCUPInvalidData,
+    RESULT_LCUP_UNSUPPORTED_SCHEME: LDAPLCUPUnsupportedScheme,
+    RESULT_LCUP_RELOAD_REQUIRED: LDAPLCUPReloadRequired,
+    RESULT_CANCELED: LDAPCanceled,
+    RESULT_NO_SUCH_OPERATION: LDAPNoSuchOperation,
+    RESULT_TOO_LATE: LDAPTooLate,
+    RESULT_CANNOT_CANCEL: LDAPCannotCancel,
+    RESULT_ASSERTION_FAILED: LDAPAssertionFailed,
+    RESULT_AUTHORIZATION_DENIED: LDAPAuthorizationDenied,
+    RESULT_E_SYNC_REFRESH_REQUIRED: LDAPESyncRefreshRequired
+}
 
 from .core.server import Server
 from .core.connection import Connection

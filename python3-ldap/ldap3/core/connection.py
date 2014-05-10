@@ -83,7 +83,8 @@ class Connection(object):
                  lazy=False,
                  pool_name=None,
                  pool_size=None,
-                 pool_lifetime=None):
+                 pool_lifetime=None,
+                 raise_exceptions=False):
 
         if client_strategy not in CLIENT_STRATEGIES:
             self.last_error = 'unknown client connection strategy'
@@ -125,11 +126,12 @@ class Connection(object):
         self._bind_controls = None
         self._executing_deferred = False
         self.lazy = lazy
-        self.pool_name = pool_name
+        self.pool_name = pool_name if pool_name else 'ldap3pool'
         self.pool_size = pool_size
         self.pool_lifetime = pool_lifetime
         self.starting_tls = False
         self.check_names = check_names
+        self.raise_exceptions = raise_exceptions
 
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
@@ -174,15 +176,16 @@ class Connection(object):
             self.last_error = 'invalid ldap server'
             raise LDAPException(self.last_error)
 
-    # noinspection PyListCreation
     def __str__(self):
-        s = [str(self.server) if self.server.is_valid else 'None']
-        s.append('user: ' + str(self.user))
-        s.append('unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'))
-        s.append('closed' if self.closed else ('deferred open' if self._deferred_open else 'open'))
-        s.append('tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'))
-        s.append('listening' if self.listening else 'not listening')
-        s.append(self.strategy.__class__.__name__)
+        s = [
+            str(self.server) if self.server.is_valid else 'None',
+            'user: ' + str(self.user),
+            'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
+            'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
+            'tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'),
+            'listening' if self.listening else 'not listening',
+            self.strategy.__class__.__name__
+        ]
 
         return ' - '.join(s)
 

@@ -181,7 +181,7 @@ POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOL
 # LDAPException hierarchy
 
 class LDAPException(Exception):
-    def __new__(cls, result=None, description=None, dn=None, message=None):
+    def __new__(cls, result=None, description=None, dn=None, message=None, type=None, response=None):
         if cls is LDAPException and result and result in exception_table:
             #exc = super(LDAPException, exception_table[result]).__new__(exception_table[result], result=result, description=description, dn=dn, message=message)  # create an exception of the required result error
             exc = super(LDAPException, exception_table[result]).__new__(exception_table[result])  # create an exception of the required result error
@@ -189,15 +189,19 @@ class LDAPException(Exception):
             exc.description = description
             exc.dn = dn
             exc.message = message
+            exc.type = type
+            exc.response = response
         elif cls is LDAPException:
             exc = super(LDAPException, cls).__new__(cls)
         return exc
 
-    def __init__(self, result=None, description=None, dn=None, message=None):
+    def __init__(self, result=None, description=None, dn=None, message=None, type=None, response=None):
         self.result = result
         self.description = description
         self.dn = dn
         self.message = message
+        self.type = type
+        self.response = response
 
     def __str__(self):
         s = [
@@ -205,7 +209,9 @@ class LDAPException(Exception):
             str(self.result) if self.result else None,
             self.description if self.description else None,
             self.dn if self.dn else None,
-            self.message if self.message else None
+            self.message if self.message else None,
+            self.type if self.type else None,
+            self.response if self.response else None
         ]
 
         return ' - '.join(filter(None, s))

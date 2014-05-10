@@ -115,9 +115,6 @@ class SyncWaitStrategy(BaseStrategy):
         responses, result = self.get_response(message_id)
         if isinstance(responses, list):
             self.connection.response = responses[:]  # copy search result entries without result
-            if self.connection.raise_exceptions and result:
-                if result['result'] not in [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL]:
-                    raise
             return responses
 
         raise LDAPException('error receiving response')

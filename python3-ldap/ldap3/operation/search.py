@@ -68,9 +68,6 @@ SEARCH_OPEN_OR_CLOSE = 21
 SEARCH_MATCH_OR_CLOSE = 22
 SEARCH_MATCH_OR_CONTROL = 23
 
-# simple cache for searchFilters
-__memoized_Filters = dict()
-
 
 class FilterNode():
     def __init__(self, tag=None, assertion=None):

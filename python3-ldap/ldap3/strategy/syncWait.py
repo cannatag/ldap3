@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.codec.ber import decoder
 
-from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAPException
+from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAPException, RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
@@ -115,7 +115,9 @@ class SyncWaitStrategy(BaseStrategy):
         responses, result = self.get_response(message_id)
         if isinstance(responses, list):
             self.connection.response = responses[:]  # copy search result entries without result
-            # responses.append(result)
+            if self.connection.raise_exceptions and result:
+                if result['result'] not in [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL]:
+                    raise
             return responses
 
         raise LDAPException('error receiving response')
@@ -139,9 +141,9 @@ class SyncWaitStrategy(BaseStrategy):
                             ldap_responses.append(dict_response)
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 response_complete = True
-                        elif int(ldap_resp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per rfc 4511 (paragraph 4.4)
+                        elif int(ldap_resp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
                             dict_response = BaseStrategy.decode_response(ldap_resp)
-                            if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per rfc 4511 (paragraph 4.4.1)
+                            if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
                         else:
                             self.connection.last_error = 'invalid messageID received'

@@ -224,6 +224,7 @@ class BaseStrategy(object):
                         self.connection.result = result
                         self.connection.response = None
                     break
+
         return response, result
 
     @classmethod

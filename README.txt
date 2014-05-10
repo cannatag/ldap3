@@ -6,7 +6,7 @@ The python3-ldap project is open source and released under the LGPL v3 license.
 PEP8 Compliance
 ---------------
 
-python3-ldap is PEP8 compliance starting from version 0.9.0.
+python3-ldap is PEP8 compliant starting from version 0.9.0.
 
 Mailing List
 ------------
@@ -48,8 +48,9 @@ CHANGELOG
 
 * 0.9.3 2014.05.02
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
-    - Added auto_check to Connection definition to have the names of attributes and object class checked against the schema
+    - Added check_names to Connection definition to have the names of attributes and object class checked against the schema
     - Updated setuptools to 3.6
+    - Added wheel installation format
 
 * 0.9.2.2 2014.04.30
     - fixed a bug from 0.9.1 that broke start_tls() (thanks Mark)

@@ -29,7 +29,7 @@ from random import choice
 from pyasn1.codec.ber import encoder, decoder
 
 from ldap3 import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, LDAPException, RESULT_SUCCESS, \
-    RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL
+    RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL, LDAPOperationResult
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
@@ -226,7 +226,7 @@ class BaseStrategy(object):
                         self.connection.response = None
                     break
             if self.connection.raise_exceptions and result and result['result'] not in [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL]:
-                raise LDAPException(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], type=result['type'], response=response)
+                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 
         return response, result
 

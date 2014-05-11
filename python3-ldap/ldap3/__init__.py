@@ -76,6 +76,7 @@ RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy bef
 TERMINATE_REUSABLE = -1
 REUSABLE_POOL_SIZE = 10
 REUSABLE_CONNECTION_LIFETIME = 3600
+DEFAULT_POOL_NAME = 'ldap3pool'
 
 # LDAP protocol
 LDAP_MAX_INT = 2147483647
@@ -171,36 +172,38 @@ ATTRIBUTE_DSA_OPERATION = 3
 # abstraction layer
 ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OP_'
 
-# pooling
+# server pooling
 POOLING_STRATEGY_FIRST = 0
 POOLING_STRATEGY_ROUND_ROBIN = 1
 POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
 
-# LDAPException hierarchy
-
+# LDAPOperationResult hierarchy
 class LDAPException(Exception):
-    def __new__(cls, result=None, description=None, dn=None, message=None, type=None, response=None):
-        if cls is LDAPException and result and result in exception_table:
-            #exc = super(LDAPException, exception_table[result]).__new__(exception_table[result], result=result, description=description, dn=dn, message=message)  # create an exception of the required result error
-            exc = super(LDAPException, exception_table[result]).__new__(exception_table[result])  # create an exception of the required result error
+    pass
+
+
+class LDAPOperationResult(LDAPException):
+    def __new__(cls, result=None, description=None, dn=None, message=None, response_type=None, response=None):
+        if cls is LDAPOperationResult and result and result in exception_table:
+            exc = super(LDAPOperationResult, exception_table[result]).__new__(exception_table[result])  # create an exception of the required result error
             exc.result = result
             exc.description = description
             exc.dn = dn
             exc.message = message
-            exc.type = type
+            exc.type = response_type
             exc.response = response
-        elif cls is LDAPException:
-            exc = super(LDAPException, cls).__new__(cls)
+        elif cls is LDAPOperationResult:
+            exc = super(LDAPOperationResult, cls).__new__(cls)
         return exc
 
-    def __init__(self, result=None, description=None, dn=None, message=None, type=None, response=None):
+    def __init__(self, result=None, description=None, dn=None, message=None, response_type=None, response=None):
         self.result = result
         self.description = description
         self.dn = dn
         self.message = message
-        self.type = type
+        self.type = response_type
         self.response = response
 
     def __str__(self):
@@ -220,195 +223,195 @@ class LDAPException(Exception):
         return self.__str__()
 
 
-class LDAPOperationsError(LDAPException):
+class LDAPOperationsError(LDAPOperationResult):
     pass
 
 
-class LDAPProtocolError(LDAPException):
+class LDAPProtocolError(LDAPOperationResult):
     pass
 
 
-class LDAPTimeLimitExceeded(LDAPException):
+class LDAPTimeLimitExceeded(LDAPOperationResult):
     pass
 
 
-class LDAPSizeLimitExceeded(LDAPException):
+class LDAPSizeLimitExceeded(LDAPOperationResult):
     pass
 
 
-class LDAPAuthMethodNotSupported(LDAPException):
+class LDAPAuthMethodNotSupported(LDAPOperationResult):
     pass
 
 
-class LDAPStrongerAuthRequired(LDAPException):
+class LDAPStrongerAuthRequired(LDAPOperationResult):
     pass
 
 
-class LDAPReferral(LDAPException):
+class LDAPReferral(LDAPOperationResult):
     pass
 
 
-class LDAPAdminLimitExceeded(LDAPException):
+class LDAPAdminLimitExceeded(LDAPOperationResult):
     pass
 
 
-class LDAPUnavailableCriticalExtension(LDAPException):
+class LDAPUnavailableCriticalExtension(LDAPOperationResult):
     pass
 
 
-class LDAPConfidentialityRequired(LDAPException):
+class LDAPConfidentialityRequired(LDAPOperationResult):
     pass
 
 
-class LDAPSaslBindInProgress(LDAPException):
+class LDAPSaslBindInProgress(LDAPOperationResult):
     pass
 
 
-class LDAPNoSuchAttribute(LDAPException):
+class LDAPNoSuchAttribute(LDAPOperationResult):
     pass
 
 
-class LDAPUndefinedAttributeType(LDAPException):
+class LDAPUndefinedAttributeType(LDAPOperationResult):
     pass
 
 
-class LDAPInappropriateMatching(LDAPException):
+class LDAPInappropriateMatching(LDAPOperationResult):
     pass
 
 
-class LDAPConstraintViolation(LDAPException):
+class LDAPConstraintViolation(LDAPOperationResult):
     pass
 
 
-class LDAPAttributeOrValueExists(LDAPException):
+class LDAPAttributeOrValueExists(LDAPOperationResult):
     pass
 
 
-class LDAPInvalidAttributeSyntax(LDAPException):
+class LDAPInvalidAttributeSyntax(LDAPOperationResult):
     pass
 
 
-class LDAPNoSuchObject(LDAPException):
+class LDAPNoSuchObject(LDAPOperationResult):
     pass
 
 
-class LDAPAliasProblem(LDAPException):
+class LDAPAliasProblem(LDAPOperationResult):
     pass
 
 
-class LDAPInvalidDNSyntax(LDAPException):
+class LDAPInvalidDNSyntax(LDAPOperationResult):
     pass
 
 
-class LDAPAliasDereferencingProblem(LDAPException):
+class LDAPAliasDereferencingProblem(LDAPOperationResult):
     pass
 
 
-class LDAPInappropriateAuthentication(LDAPException):
+class LDAPInappropriateAuthentication(LDAPOperationResult):
     pass
 
 
-class LDAPInvalidCredentials(LDAPException):
+class LDAPInvalidCredentials(LDAPOperationResult):
     pass
 
 
-class LDAPInsufficientAccessRights(LDAPException):
+class LDAPInsufficientAccessRights(LDAPOperationResult):
     pass
 
 
-class LDAPBusy(LDAPException):
+class LDAPBusy(LDAPOperationResult):
     pass
 
 
-class LDAPUnavailable(LDAPException):
+class LDAPUnavailable(LDAPOperationResult):
     pass
 
 
-class LDAPUnwillingToPerform(LDAPException):
+class LDAPUnwillingToPerform(LDAPOperationResult):
     pass
 
 
-class LDAPLoopDetected(LDAPException):
+class LDAPLoopDetected(LDAPOperationResult):
     pass
 
 
-class LDAPNamingViolation(LDAPException):
+class LDAPNamingViolation(LDAPOperationResult):
     pass
 
 
-class LDAPObjectClassViolation(LDAPException):
+class LDAPObjectClassViolation(LDAPOperationResult):
     pass
 
 
-class LDAPNotAllowedOnNotLeaf(LDAPException):
+class LDAPNotAllowedOnNotLeaf(LDAPOperationResult):
     pass
 
 
-class LDAPNotAllowedOnRDN(LDAPException):
+class LDAPNotAllowedOnRDN(LDAPOperationResult):
     pass
 
 
-class LDAPEntryAlreadyExists(LDAPException):
+class LDAPEntryAlreadyExists(LDAPOperationResult):
     pass
 
 
-class LDAPObjectClassModsProhibited(LDAPException):
+class LDAPObjectClassModsProhibited(LDAPOperationResult):
     pass
 
 
-class LDAPAffectMultipleDSAS(LDAPException):
+class LDAPAffectMultipleDSAS(LDAPOperationResult):
     pass
 
 
-class LDAPOther(LDAPException):
+class LDAPOther(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPResourcesExhausted(LDAPException):
+class LDAPLCUPResourcesExhausted(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPSecurityViolation(LDAPException):
+class LDAPLCUPSecurityViolation(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPInvalidData(LDAPException):
+class LDAPLCUPInvalidData(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPUnsupportedScheme(LDAPException):
+class LDAPLCUPUnsupportedScheme(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPReloadRequired(LDAPException):
+class LDAPLCUPReloadRequired(LDAPOperationResult):
     pass
 
 
-class LDAPCanceled(LDAPException):
+class LDAPCanceled(LDAPOperationResult):
     pass
 
 
-class LDAPNoSuchOperation(LDAPException):
+class LDAPNoSuchOperation(LDAPOperationResult):
     pass
 
 
-class LDAPTooLate(LDAPException):
+class LDAPTooLate(LDAPOperationResult):
     pass
 
 
-class LDAPCannotCancel(LDAPException):
+class LDAPCannotCancel(LDAPOperationResult):
     pass
 
 
-class LDAPAssertionFailed(LDAPException):
+class LDAPAssertionFailed(LDAPOperationResult):
     pass
 
 
-class LDAPAuthorizationDenied(LDAPException):
+class LDAPAuthorizationDenied(LDAPOperationResult):
     pass
 
 
-class LDAPESyncRefreshRequired(LDAPException):
+class LDAPESyncRefreshRequired(LDAPOperationResult):
     pass
 
 

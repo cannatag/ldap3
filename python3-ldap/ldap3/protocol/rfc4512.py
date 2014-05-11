@@ -98,10 +98,10 @@ def list_to_string(list_object):
     return r[:-2] if r else ''
 
 
-class DsaInfo():
+class DsaInfo(object):
     """
     This class contains info about the ldap server (DSA) read from DSE
-    as defined in rfc 4512 and rfc 3045. Unkwnown attributes are stored in the "other" dict
+    as defined in RFC4512 and RFC3045. Unkwnown attributes are stored in the "other" dict
     """
 
     def __init__(self, attributes):

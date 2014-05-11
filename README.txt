@@ -48,6 +48,7 @@ CHANGELOG
 
 * 0.9.3 2014.05.02
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
+    - Now the key in server.schema.object_classes is the class name (was the oid)
     - Added check_names to Connection definition to have the names of attributes and object class checked against the schema
     - Updated setuptools to 3.6
     - Added wheel installation format

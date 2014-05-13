@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 from os import linesep
 
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, LDAPException
+from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, LDAPException
 from .attribute import Attribute
 from .entry import Entry
 from .operationalAttribute import OperationalAttribute

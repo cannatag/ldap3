@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from base64 import b64encode
 from os import linesep
 
-from ldap3 import LDIF_LINE_LENGTH, LDAPException
+from .. import LDIF_LINE_LENGTH, LDAPException
 
 
 # LDIF converter RFC 2849 compliant

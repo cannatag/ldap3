@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import random
 
-from ldap3 import LDAP_MAX_INT, LDAPException
+from .. import LDAP_MAX_INT, LDAPException
 from ..protocol.convert import build_controls_list
 from ..protocol.rfc2849 import to_ldif
 from ..strategy.baseStrategy import BaseStrategy

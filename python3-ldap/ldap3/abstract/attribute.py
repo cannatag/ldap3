@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
 
-from ldap3 import LDAPException
+from .. import LDAPException
 
 
 # noinspection PyUnresolvedReferences

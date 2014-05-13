@@ -29,8 +29,6 @@ from binascii import hexlify
 
 from ldap3 import AUTH_SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED, LDAPException
 
-# from ...protocol.rfc4511 import SaslCredentials, AuthenticationChoice
-
 
 def sasl_prep(data):
     """

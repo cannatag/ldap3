@@ -26,7 +26,7 @@ from threading import Thread, Lock
 
 from pyasn1.codec.ber import decoder
 
-from ldap3 import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAPException
+from .. import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAPException
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 

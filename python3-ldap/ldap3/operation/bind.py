@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3 import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL, LDAPException
+from .. import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL, LDAPException
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list

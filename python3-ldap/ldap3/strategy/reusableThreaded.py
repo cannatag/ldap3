@@ -25,7 +25,7 @@ from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
 from time import sleep
-from ldap3.core.usage import ConnectionUsage
+from ..core.usage import ConnectionUsage
 
 try:
     from queue import Queue

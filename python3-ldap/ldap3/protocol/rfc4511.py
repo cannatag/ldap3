@@ -42,7 +42,7 @@ from pyasn1.type.constraint import ValueRangeConstraint, SingleValueConstraint, 
 from pyasn1.type.namedval import NamedValues
 from pyasn1.type.tag import tagClassApplication, tagFormatConstructed, Tag, tagClassContext, tagFormatSimple
 
-from ldap3 import LDAP_MAX_INT
+from .. import LDAP_MAX_INT
 
 
 # constants

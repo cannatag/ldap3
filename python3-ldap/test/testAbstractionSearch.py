@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         o += AttrDef('sn', 'Surname')
         o += AttrDef('givenName', 'Given Name', post_query=reverse)
 
-        query_text = 'Common Name:=test-add*'
+        query_text = 'Common Name:=test-search*'
         r = Reader(self.connection, o, query_text, 'o=test')
 
         results = r.search()
@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
         ou += AttrDef('sn', 'Surname')
         ou += AttrDef('givenName', 'Given Name', post_query=raise_parentheses_rank)
         ou += AttrDef('ACL')
-        qu = 'Common Name: test-add*'
+        qu = 'Common Name: test-search*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
         self.assertEqual(len(lu), 7)
@@ -82,7 +82,7 @@ class Test(unittest.TestCase):
         og = ObjectDef('groupOfNames')
         og += AttrDef('member', dereference_dn=ou)
         og += 'cn'
-        qg = 'cn := test*'
+        qg = 'cn := test-group'
         rg = Reader(self.connection, og, qg, test_base)
         lg = rg.search()
         self.assertEqual(len(lg), 1)

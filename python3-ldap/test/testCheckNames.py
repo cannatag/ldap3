@@ -42,7 +42,7 @@ class Test(unittest.TestCase):
     def test_wrong_assertion(self):
         ok = False
         try:
-            result = self.connection.search(search_base=test_base, search_filter='(objectclass=xxx)', attributes=[test_name_attr])
+            result = self.connection.search(search_base=test_base, search_filter='(xxx=yyy)', attributes=[test_name_attr])
         except LDAPException:
             ok = True
 

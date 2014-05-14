@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3 import LDAPException, LDAPOperationsError
+from ldap3 import LDAPException, LDAPOperationsError, LDAPOperationResult
 
 
 class Test(unittest.TestCase):
@@ -32,5 +32,5 @@ class Test(unittest.TestCase):
         self.assertTrue(isinstance(e, LDAPException))
 
     def test_subclassing_exception(self):
-        e = LDAPException(1)
+        e = LDAPOperationResult(1)
         self.assertTrue(isinstance(e, LDAPOperationsError))

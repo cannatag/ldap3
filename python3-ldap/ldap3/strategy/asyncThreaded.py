@@ -26,7 +26,8 @@ from threading import Thread, Lock
 
 from pyasn1.codec.ber import decoder
 
-from .. import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAPException
+from .. import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
+from core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
@@ -86,10 +87,10 @@ class AsyncThreadedStrategy(BaseStrategy):
                                 self.connection.server.tls._start_tls(self.connection)
                             else:
                                 self.connection.last_error = 'no Tls object defined in server'
-                                raise LDAPException(self.connection.last_error)
+                                raise LDAPSSLConfigurationError(self.connection.last_error)
                         else:
-                            self.connection.last_error = 'Asynchronous StartTls failed'
-                            raise LDAPException(self.connection.last_error)
+                            self.connection.last_error = 'asynchronous StartTls failed'
+                            raise LDAPStartTLSError(self.connection.last_error)
                     if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
 
                         with self.connection.strategy.lock:

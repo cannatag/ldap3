@@ -25,9 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 import re
 
-from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, LDAPException
-from ..protocol.oid import Oids, decode_oids, decode_syntax
-
+from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION,
+from .oid import Oids, decode_oids, decode_syntax
+from ..core.exceptions import LDAPSchemaError
 
 def constant_to_class_kind(value):
     if value == CLASS_STRUCTURAL:
@@ -253,7 +253,7 @@ class BaseObjectInfo(object):
                 elif cls is NameFormInfo:
                     pattern = '| OC | MUST | MAY  '
                 else:
-                    raise LDAPException('unknown schema definition class')
+                    raise LDAPSchemaError('unknown schema definition class')
 
                 splitted = re.split('( NAME | DESC | OBSOLETE| X-| E-' + pattern + ')', object_definition[1:-1])
                 values = splitted[::2]
@@ -319,7 +319,7 @@ class BaseObjectInfo(object):
                             object_def.experimental = []
                         object_def.experimental.append(extension_to_tuple('E-' + value))
                     else:
-                        raise LDAPException('malformed schema definition key:' + key)
+                        raise LDAPSchemaError('malformed schema definition key:' + key)
                 object_def.raw_definition = object_definition
                 if hasattr(object_def, 'syntax') and len(object_def.syntax) == 1:
                     object_def.syntax = object_def.syntax[0]
@@ -329,7 +329,7 @@ class BaseObjectInfo(object):
                 else:
                     ret_dict[object_def.oid] = object_def
             else:
-                raise LDAPException('malformed schema definition')
+                raise LDAPSchemaError('malformed schema definition')
         return ret_dict
 
 

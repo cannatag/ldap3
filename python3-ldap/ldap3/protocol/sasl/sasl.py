@@ -27,7 +27,8 @@ from unicodedata import ucd_3_2_0 as unicode32
 from os import urandom
 from binascii import hexlify
 
-from ldap3 import AUTH_SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED, LDAPException
+from ... import AUTH_SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED
+from ...core.exceptions import LDAPSASLPrepError, LDAPPasswordIsMandatoryError
 
 
 def sasl_prep(data):
@@ -63,40 +64,40 @@ def sasl_prep(data):
     prepared_data = unicode32.normalize('NFKC', prepared_data)
 
     if not prepared_data:
-        raise LDAPException('SASLprep error: unable to normalize string')
+        raise LDAPSASLPrepError('SASLprep error: unable to normalize string')
 
     # prohibit
     for c in prepared_data:
         if stringprep.in_table_c12(c):
             # Non-ASCII space characters [StringPrep, C.1.2]
-            raise LDAPException('SASLprep error: non-ASCII space character present')
+            raise LDAPSASLPrepError('SASLprep error: non-ASCII space character present')
         elif stringprep.in_table_c21(c):
             # ASCII control characters [StringPrep, C.2.1]
-            raise LDAPException('SASLprep error: ASCII control character present')
+            raise LDAPSASLPrepError('SASLprep error: ASCII control character present')
         elif stringprep.in_table_c22(c):
             # Non-ASCII control characters [StringPrep, C.2.2]
-            raise LDAPException('SASLprep error: non-ASCII control character present')
+            raise LDAPSASLPrepError('SASLprep error: non-ASCII control character present')
         elif stringprep.in_table_c3(c):
             # Private Use characters [StringPrep, C.3]
-            raise LDAPException('SASLprep error: private character present')
+            raise LDAPSASLPrepError('SASLprep error: private character present')
         elif stringprep.in_table_c4(c):
             # Non-character code points [StringPrep, C.4]
-            raise LDAPException('SASLprep error: non-character code point present')
+            raise LDAPSASLPrepError('SASLprep error: non-character code point present')
         elif stringprep.in_table_c5(c):
             # Surrogate code points [StringPrep, C.5]
-            raise LDAPException('SASLprep error: surrogate code point present')
+            raise LDAPSASLPrepError('SASLprep error: surrogate code point present')
         elif stringprep.in_table_c6(c):
             # Inappropriate for plain text characters [StringPrep, C.6]
-            raise LDAPException('SASLprep error: inappropriate for plain text character present')
+            raise LDAPSASLPrepError('SASLprep error: inappropriate for plain text character present')
         elif stringprep.in_table_c7(c):
             # Inappropriate for canonical representation characters [StringPrep, C.7]
-            raise LDAPException('SASLprep error: inappropriate for canonical representation character present')
+            raise LDAPSASLPrepError('SASLprep error: inappropriate for canonical representation character present')
         elif stringprep.in_table_c8(c):
             # Change display properties or deprecated characters [StringPrep, C.8]
-            raise LDAPException('SASLprep error: change display property or deprecated character present')
+            raise LDAPSASLPrepError('SASLprep error: change display property or deprecated character present')
         elif stringprep.in_table_c9(c):
             # Tagging characters [StringPrep, C.9]
-            raise LDAPException('SASLprep error: tagging character present')
+            raise LDAPSASLPrepError('SASLprep error: tagging character present')
 
     # check bidi
     # if a string contains any r_and_al_cat character, the string MUST NOT contain any l_cat character.
@@ -109,12 +110,12 @@ def sasl_prep(data):
             flag_l_cat = True
 
         if flag_r_and_al_cat and flag_l_cat:
-            raise LDAPException('SASLprep error: string cannot contain (R or AL) and L bidirectional chars')
+            raise LDAPSASLPrepError('SASLprep error: string cannot contain (R or AL) and L bidirectional chars')
 
     # If a string contains any r_and_al_cat character, a r_and_al_cat character MUST be the first character of the string
     # and a r_and_al_cat character MUST be the last character of the string.
     if flag_r_and_al_cat and not stringprep.in_table_d1(prepared_data[0]) and not stringprep.in_table_d2(prepared_data[-1]):
-        raise LDAPException('r_and_al_cat character present, must be first and last character of the string')
+        raise LDAPSASLPrepError('r_and_al_cat character present, must be first and last character of the string')
 
     return prepared_data
 
@@ -125,7 +126,7 @@ def validate_simple_password(password):
     """
 
     if password == '' or password is None:
-        raise LDAPException("simple password can't be empty")
+        raise LDAPPasswordIsMandatoryError("simple password can't be empty")
 
     if not isinstance(password, bytes):  # bytes are returned raw, as per rfc (4.2)
         password = sasl_prep(password)
@@ -144,7 +145,7 @@ def validate_simple_password(password):
 
 
 def abort_sasl_negotiation(connection, controls):
-    from ldap3.operation.bind import bind_operation
+    from ...operation.bind import bind_operation
 
     request = bind_operation(connection.version, AUTH_SASL, None, None, '', None)
     response = connection.post_send_single_response(connection.send('bindRequest', request, controls))
@@ -154,7 +155,7 @@ def abort_sasl_negotiation(connection, controls):
 
 
 def send_sasl_negotiation(connection, controls, payload):
-    from ldap3.operation.bind import bind_operation
+    from ...operation.bind import bind_operation
 
     request = bind_operation(connection.version, AUTH_SASL, None, None, connection.sasl_mechanism, payload)
     response = connection.post_send_single_response(connection.send('bindRequest', request, controls))

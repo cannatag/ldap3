@@ -34,7 +34,7 @@ except ImportError:  # Python 2
     from Queue import Queue
 
 from .baseStrategy import BaseStrategy
-from ldap3 import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_SLEEPTIME
+from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, LDAPException, RESPONSE_SLEEPTIME
 
 
 class ReusableThreadedStrategy(BaseStrategy):
@@ -192,7 +192,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             return s
 
         def new_connection(self):
-            from ldap3 import Connection
+            from ..core.connection import Connection
             self.connection = Connection(server=self.original_connection.server_pool if self.original_connection.server_pool else self.original_connection.server,
                                          user=self.original_connection.user,
                                          password=self.original_connection.password,

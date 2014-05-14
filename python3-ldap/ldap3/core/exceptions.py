@@ -66,246 +66,246 @@ class LDAPOperationResult(LDAPException):
         return self.__str__()
 
 
-class LDAPOperationsError(LDAPOperationResult):
+class LDAPOperationsErrorResult(LDAPOperationResult):
     pass
 
 
-class LDAPProtocolError(LDAPOperationResult):
+class LDAPProtocolErrorResult(LDAPOperationResult):
     pass
 
 
-class LDAPTimeLimitExceeded(LDAPOperationResult):
+class LDAPTimeLimitExceededResult(LDAPOperationResult):
     pass
 
 
-class LDAPSizeLimitExceeded(LDAPOperationResult):
+class LDAPSizeLimitExceededResult(LDAPOperationResult):
     pass
 
 
-class LDAPAuthMethodNotSupported(LDAPOperationResult):
+class LDAPAuthMethodNotSupportedResult(LDAPOperationResult):
     pass
 
 
-class LDAPStrongerAuthRequired(LDAPOperationResult):
+class LDAPStrongerAuthRequiredResult(LDAPOperationResult):
     pass
 
 
-class LDAPReferral(LDAPOperationResult):
+class LDAPReferralResult(LDAPOperationResult):
     pass
 
 
-class LDAPAdminLimitExceeded(LDAPOperationResult):
+class LDAPAdminLimitExceededResult(LDAPOperationResult):
     pass
 
 
-class LDAPUnavailableCriticalExtension(LDAPOperationResult):
+class LDAPUnavailableCriticalExtensionResult(LDAPOperationResult):
     pass
 
 
-class LDAPConfidentialityRequired(LDAPOperationResult):
+class LDAPConfidentialityRequiredResult(LDAPOperationResult):
     pass
 
 
-class LDAPSASLBindInProgress(LDAPOperationResult):
+class LDAPSASLBindInProgressResult(LDAPOperationResult):
     pass
 
 
-class LDAPNoSuchAttribute(LDAPOperationResult):
+class LDAPNoSuchAttributeResult(LDAPOperationResult):
     pass
 
 
-class LDAPUndefinedAttributeType(LDAPOperationResult):
+class LDAPUndefinedAttributeTypeResult(LDAPOperationResult):
     pass
 
 
-class LDAPInappropriateMatching(LDAPOperationResult):
+class LDAPInappropriateMatchingResult(LDAPOperationResult):
     pass
 
 
-class LDAPConstraintViolation(LDAPOperationResult):
+class LDAPConstraintViolationResult(LDAPOperationResult):
     pass
 
 
-class LDAPAttributeOrValueExists(LDAPOperationResult):
+class LDAPAttributeOrValueExistsResult(LDAPOperationResult):
     pass
 
 
-class LDAPInvalidAttributeSyntax(LDAPOperationResult):
+class LDAPInvalidAttributeSyntaxResult(LDAPOperationResult):
     pass
 
 
-class LDAPNoSuchObject(LDAPOperationResult):
+class LDAPNoSuchObjectResult(LDAPOperationResult):
     pass
 
 
-class LDAPAliasProblem(LDAPOperationResult):
+class LDAPAliasProblemResult(LDAPOperationResult):
     pass
 
 
-class LDAPInvalidDNSyntax(LDAPOperationResult):
+class LDAPInvalidDNSyntaxResult(LDAPOperationResult):
     pass
 
 
-class LDAPAliasDereferencingProblem(LDAPOperationResult):
+class LDAPAliasDereferencingProblemResult(LDAPOperationResult):
     pass
 
 
-class LDAPInappropriateAuthentication(LDAPOperationResult):
+class LDAPInappropriateAuthenticationResult(LDAPOperationResult):
     pass
 
 
-class LDAPInvalidCredentials(LDAPOperationResult):
+class LDAPInvalidCredentialsResult(LDAPOperationResult):
     pass
 
 
-class LDAPInsufficientAccessRights(LDAPOperationResult):
+class LDAPInsufficientAccessRightsResult(LDAPOperationResult):
     pass
 
 
-class LDAPBusy(LDAPOperationResult):
+class LDAPBusyResult(LDAPOperationResult):
     pass
 
 
-class LDAPUnavailable(LDAPOperationResult):
+class LDAPUnavailableResult(LDAPOperationResult):
     pass
 
 
-class LDAPUnwillingToPerform(LDAPOperationResult):
+class LDAPUnwillingToPerformResult(LDAPOperationResult):
     pass
 
 
-class LDAPLoopDetected(LDAPOperationResult):
+class LDAPLoopDetectedResult(LDAPOperationResult):
     pass
 
 
-class LDAPNamingViolation(LDAPOperationResult):
+class LDAPNamingViolationResult(LDAPOperationResult):
     pass
 
 
-class LDAPObjectClassViolation(LDAPOperationResult):
+class LDAPObjectClassViolationResult(LDAPOperationResult):
     pass
 
 
-class LDAPNotAllowedOnNotLeaf(LDAPOperationResult):
+class LDAPNotAllowedOnNotLeafResult(LDAPOperationResult):
     pass
 
 
-class LDAPNotAllowedOnRDN(LDAPOperationResult):
+class LDAPNotAllowedOnRDNResult(LDAPOperationResult):
     pass
 
 
-class LDAPEntryAlreadyExists(LDAPOperationResult):
+class LDAPEntryAlreadyExistsResult(LDAPOperationResult):
     pass
 
 
-class LDAPObjectClassModsProhibited(LDAPOperationResult):
+class LDAPObjectClassModsProhibitedResult(LDAPOperationResult):
     pass
 
 
-class LDAPAffectMultipleDSAS(LDAPOperationResult):
+class LDAPAffectMultipleDSASResult(LDAPOperationResult):
     pass
 
 
-class LDAPOther(LDAPOperationResult):
+class LDAPOtherResult(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPResourcesExhausted(LDAPOperationResult):
+class LDAPLCUPResourcesExhaustedResult(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPSecurityViolation(LDAPOperationResult):
+class LDAPLCUPSecurityViolationResult(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPInvalidData(LDAPOperationResult):
+class LDAPLCUPInvalidDataResult(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPUnsupportedScheme(LDAPOperationResult):
+class LDAPLCUPUnsupportedSchemeResult(LDAPOperationResult):
     pass
 
 
-class LDAPLCUPReloadRequired(LDAPOperationResult):
+class LDAPLCUPReloadRequiredResult(LDAPOperationResult):
     pass
 
 
-class LDAPCanceled(LDAPOperationResult):
+class LDAPCanceledResult(LDAPOperationResult):
     pass
 
 
-class LDAPNoSuchOperation(LDAPOperationResult):
+class LDAPNoSuchOperationResult(LDAPOperationResult):
     pass
 
 
-class LDAPTooLate(LDAPOperationResult):
+class LDAPTooLateResult(LDAPOperationResult):
     pass
 
 
-class LDAPCannotCancel(LDAPOperationResult):
+class LDAPCannotCancelResult(LDAPOperationResult):
     pass
 
 
-class LDAPAssertionFailed(LDAPOperationResult):
+class LDAPAssertionFailedResult(LDAPOperationResult):
     pass
 
 
-class LDAPAuthorizationDenied(LDAPOperationResult):
+class LDAPAuthorizationDeniedResult(LDAPOperationResult):
     pass
 
 
-class LDAPESyncRefreshRequired(LDAPOperationResult):
+class LDAPESyncRefreshRequiredResult(LDAPOperationResult):
     pass
 
 
-exception_table = {RESULT_OPERATIONS_ERROR: LDAPOperationsError,
-                   RESULT_PROTOCOL_ERROR: LDAPProtocolError,
-                   RESULT_TIME_LIMIT_EXCEEDED: LDAPTimeLimitExceeded,
-                   RESULT_SIZE_LIMIT_EXCEEDED: LDAPSizeLimitExceeded,
-                   RESULT_AUTH_METHOD_NOT_SUPPORTED: LDAPAuthMethodNotSupported,
-                   RESULT_STRONGER_AUTH_REQUIRED: LDAPStrongerAuthRequired,
-                   RESULT_REFERRAL: LDAPReferral,
-                   RESULT_ADMIN_LIMIT_EXCEEDED: LDAPAdminLimitExceeded,
-                   RESULT_UNAVAILABLE_CRITICAL_EXTENSION: LDAPUnavailableCriticalExtension,
-                   RESULT_CONFIDENTIALITY_REQUIRED: LDAPConfidentialityRequired,
-                   RESULT_SASL_BIND_IN_PROGRESS: LDAPSASLBindInProgress,
-                   RESULT_NO_SUCH_ATTRIBUTE: LDAPNoSuchAttribute,
-                   RESULT_UNDEFINED_ATTRIBUTE_TYPE: LDAPUndefinedAttributeType,
-                   RESULT_INAPPROPRIATE_MATCHING: LDAPInappropriateMatching,
-                   RESULT_CONSTRAINT_VIOLATION: LDAPConstraintViolation,
-                   RESULT_ATTRIBUTE_OR_VALUE_EXISTS: LDAPAttributeOrValueExists,
-                   RESULT_INVALID_ATTRIBUTE_SYNTAX: LDAPInvalidAttributeSyntax,
-                   RESULT_NO_SUCH_OBJECT: LDAPNoSuchObject,
-                   RESULT_ALIAS_PROBLEM: LDAPAliasProblem,
-                   RESULT_INVALID_DN_SYNTAX: LDAPInvalidDNSyntax,
-                   RESULT_ALIAS_DEREFERENCING_PROBLEM: LDAPAliasDereferencingProblem,
-                   RESULT_INAPPROPRIATE_AUTHENTICATION: LDAPInappropriateAuthentication,
-                   RESULT_INVALID_CREDENTIALS: LDAPInvalidCredentials,
-                   RESULT_INSUFFICIENT_ACCESS_RIGHTS: LDAPInsufficientAccessRights,
-                   RESULT_BUSY: LDAPBusy,
-                   RESULT_UNAVAILABLE: LDAPUnavailable,
-                   RESULT_UNWILLING_TO_PERFORM: LDAPUnwillingToPerform,
-                   RESULT_LOOP_DETECTED: LDAPLoopDetected,
-                   RESULT_NAMING_VIOLATION: LDAPNamingViolation,
-                   RESULT_OBJECT_CLASS_VIOLATION: LDAPObjectClassViolation,
-                   RESULT_NOT_ALLOWED_ON_NON_LEAF: LDAPNotAllowedOnNotLeaf,
-                   RESULT_NOT_ALLOWED_ON_RDN: LDAPNotAllowedOnRDN,
-                   RESULT_ENTRY_ALREADY_EXISTS: LDAPEntryAlreadyExists,
-                   RESULT_OBJECT_CLASS_MODS_PROHIBITED: LDAPObjectClassModsProhibited,
-                   RESULT_AFFECT_MULTIPLE_DSAS: LDAPAffectMultipleDSAS,
-                   RESULT_OTHER: LDAPOther,
-                   RESULT_LCUP_RESOURCES_EXHAUSTED: LDAPLCUPResourcesExhausted,
-                   RESULT_LCUP_SECURITY_VIOLATION: LDAPLCUPSecurityViolation,
-                   RESULT_LCUP_INVALID_DATA: LDAPLCUPInvalidData,
-                   RESULT_LCUP_UNSUPPORTED_SCHEME: LDAPLCUPUnsupportedScheme,
-                   RESULT_LCUP_RELOAD_REQUIRED: LDAPLCUPReloadRequired,
-                   RESULT_CANCELED: LDAPCanceled,
-                   RESULT_NO_SUCH_OPERATION: LDAPNoSuchOperation,
-                   RESULT_TOO_LATE: LDAPTooLate,
-                   RESULT_CANNOT_CANCEL: LDAPCannotCancel,
-                   RESULT_ASSERTION_FAILED: LDAPAssertionFailed,
-                   RESULT_AUTHORIZATION_DENIED: LDAPAuthorizationDenied,
-                   RESULT_E_SYNC_REFRESH_REQUIRED: LDAPESyncRefreshRequired
+exception_table = {RESULT_OPERATIONS_ERROR: LDAPOperationsErrorResult,
+                   RESULT_PROTOCOL_ERROR: LDAPProtocolErrorResult,
+                   RESULT_TIME_LIMIT_EXCEEDED: LDAPTimeLimitExceededResult,
+                   RESULT_SIZE_LIMIT_EXCEEDED: LDAPSizeLimitExceededResult,
+                   RESULT_AUTH_METHOD_NOT_SUPPORTED: LDAPAuthMethodNotSupportedResult,
+                   RESULT_STRONGER_AUTH_REQUIRED: LDAPStrongerAuthRequiredResult,
+                   RESULT_REFERRAL: LDAPReferralResult,
+                   RESULT_ADMIN_LIMIT_EXCEEDED: LDAPAdminLimitExceededResult,
+                   RESULT_UNAVAILABLE_CRITICAL_EXTENSION: LDAPUnavailableCriticalExtensionResult,
+                   RESULT_CONFIDENTIALITY_REQUIRED: LDAPConfidentialityRequiredResult,
+                   RESULT_SASL_BIND_IN_PROGRESS: LDAPSASLBindInProgressResult,
+                   RESULT_NO_SUCH_ATTRIBUTE: LDAPNoSuchAttributeResult,
+                   RESULT_UNDEFINED_ATTRIBUTE_TYPE: LDAPUndefinedAttributeTypeResult,
+                   RESULT_INAPPROPRIATE_MATCHING: LDAPInappropriateMatchingResult,
+                   RESULT_CONSTRAINT_VIOLATION: LDAPConstraintViolationResult,
+                   RESULT_ATTRIBUTE_OR_VALUE_EXISTS: LDAPAttributeOrValueExistsResult,
+                   RESULT_INVALID_ATTRIBUTE_SYNTAX: LDAPInvalidAttributeSyntaxResult,
+                   RESULT_NO_SUCH_OBJECT: LDAPNoSuchObjectResult,
+                   RESULT_ALIAS_PROBLEM: LDAPAliasProblemResult,
+                   RESULT_INVALID_DN_SYNTAX: LDAPInvalidDNSyntaxResult,
+                   RESULT_ALIAS_DEREFERENCING_PROBLEM: LDAPAliasDereferencingProblemResult,
+                   RESULT_INAPPROPRIATE_AUTHENTICATION: LDAPInappropriateAuthenticationResult,
+                   RESULT_INVALID_CREDENTIALS: LDAPInvalidCredentialsResult,
+                   RESULT_INSUFFICIENT_ACCESS_RIGHTS: LDAPInsufficientAccessRightsResult,
+                   RESULT_BUSY: LDAPBusyResult,
+                   RESULT_UNAVAILABLE: LDAPUnavailableResult,
+                   RESULT_UNWILLING_TO_PERFORM: LDAPUnwillingToPerformResult,
+                   RESULT_LOOP_DETECTED: LDAPLoopDetectedResult,
+                   RESULT_NAMING_VIOLATION: LDAPNamingViolationResult,
+                   RESULT_OBJECT_CLASS_VIOLATION: LDAPObjectClassViolationResult,
+                   RESULT_NOT_ALLOWED_ON_NON_LEAF: LDAPNotAllowedOnNotLeafResult,
+                   RESULT_NOT_ALLOWED_ON_RDN: LDAPNotAllowedOnRDNResult,
+                   RESULT_ENTRY_ALREADY_EXISTS: LDAPEntryAlreadyExistsResult,
+                   RESULT_OBJECT_CLASS_MODS_PROHIBITED: LDAPObjectClassModsProhibitedResult,
+                   RESULT_AFFECT_MULTIPLE_DSAS: LDAPAffectMultipleDSASResult,
+                   RESULT_OTHER: LDAPOtherResult,
+                   RESULT_LCUP_RESOURCES_EXHAUSTED: LDAPLCUPResourcesExhaustedResult,
+                   RESULT_LCUP_SECURITY_VIOLATION: LDAPLCUPSecurityViolationResult,
+                   RESULT_LCUP_INVALID_DATA: LDAPLCUPInvalidDataResult,
+                   RESULT_LCUP_UNSUPPORTED_SCHEME: LDAPLCUPUnsupportedSchemeResult,
+                   RESULT_LCUP_RELOAD_REQUIRED: LDAPLCUPReloadRequiredResult,
+                   RESULT_CANCELED: LDAPCanceledResult,
+                   RESULT_NO_SUCH_OPERATION: LDAPNoSuchOperationResult,
+                   RESULT_TOO_LATE: LDAPTooLateResult,
+                   RESULT_CANNOT_CANCEL: LDAPCannotCancelResult,
+                   RESULT_ASSERTION_FAILED: LDAPAssertionFaileResult,
+                   RESULT_AUTHORIZATION_DENIED: LDAPAuthorizationDeniedResult,
+                   RESULT_E_SYNC_REFRESH_REQUIRED: LDAPESyncRefreshRequiredResult
                    }
 
 
@@ -413,4 +413,20 @@ class LDAPInvalidScopeError(LDAPExceptionError, ValueError):
 
 
 class LDAPInvalidDereferenceAliasesError(LDAPExceptionError, ValueError):
+    pass
+
+
+class LDAPInvalidControlsError(LDAPExceptionError, ValueError):
+    pass
+
+
+class LDAPLDIFError(LDAPExceptionError):
+    pass
+
+
+class LDAPSchemaError(LDAPExceptionError):
+    pass
+
+
+class LDAPSASLPrepError(LDAPExceptionError):
     pass

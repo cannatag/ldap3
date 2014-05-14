@@ -455,7 +455,7 @@ class BaseStrategy(object):
                                              version=self.connection.server.tls.version,
                                              ca_certs_file=self.connection.server.tls.ca_certs_file) if selected_referral['ssl'] else None)
 
-            from ldap3.core.connection import Connection
+            from ..core.connection import Connection
 
             referral_connection = Connection(server=referral_server,
                                              user=self.connection.user if not selected_referral['anonymousBindOnly'] else None,

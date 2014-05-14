@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
 
-from .. import LDAPException
+from ..core.exceptions import LDAPAttributeError
 
 
 # noinspection PyUnresolvedReferences
@@ -71,7 +71,7 @@ class Attribute(object):
         return self.values[item]
 
     def __setattr__(self, item, value):
-        raise LDAPException('attribute is read only')
+        raise LDAPAttributeError('attribute is read only')
 
     @property
     def value(self):

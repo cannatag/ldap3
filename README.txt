@@ -38,6 +38,14 @@ Support
 
 You can submit support tickets on https://www.assembla.com/spaces/python3-ldap/support/tickets
 
+Acknowledgements
+----------------
+
+* I wish to thank **Ilya Etingof**, the author of the *pyasn1* package for his excellent work and support.
+* I wish to thank **Mark Lutz** for his *Learning Python* and *Programming Python* excellent books series and **John Goerzen** and **Brandon Rhodes** for their book *Foundations of Python Network Programming*. These books are wonderful tools for learning Python and this project owes a lot to them.
+* I wish to thank **JetBrains** for donating to this project the Open Source license of *PyCharm 3 Professional*.
+* I wish to thank **Assembla** for providing the *free source repository space and the agile tools* I use to develop this project.
+
 Contact me
 ----------
 
@@ -174,42 +182,42 @@ CHANGELOG
     - Fixed RFC4511 asn1 definitions
 
 * 0.5.1 - 2013.08.17
-	- Refactored package structure
-	- Project description reformatted with reStructuredText
-	- Added Windows graphical installation
+    - Refactored package structure
+    - Project description reformatted with reStructuredText
+    - Added Windows graphical installation
 
 * 0.5.0 - 2013.08.15
-	- Added reference to LGPL v3 license
-	- Added Tls object to hold ssl/tls configuration
-	- Added StartTLS feature
-	- Added SASL feature
-	- Added SASL EXTERNAL mechanism
-	- Fixed Unbind
-	- connection.close in now an alias for connection.unbind
+    - Added reference to LGPL v3 license
+    - Added Tls object to hold ssl/tls configuration
+    - Added StartTLS feature
+    - Added SASL feature
+    - Added SASL EXTERNAL mechanism
+    - Fixed Unbind
+    - connection.close in now an alias for connection.unbind
 
 * 0.4.4 - 2013.08.01
-	- Added 'Controls' to all LDAP Requests
-	- Added Extended Request feature
-	- Added Intermediate Response feature
-	- Added namespace 'ldap3'
+    - Added 'Controls' to all LDAP Requests
+    - Added Extended Request feature
+    - Added Intermediate Response feature
+    - Added namespace 'ldap3'
 
 * 0.4.3 - 2013.07.31
-	- Test suite refactored
-	- Fixed single object search response error
-	- Changed attributes returned in search from tuple to dict
-	- Added 'raw_attributes' key in search response to hold undecoded (binary) attribute values read from ldap
-	- Added __repr__ for Server and Connection objects to re-create the object instance
+    - Test suite refactored
+    - Fixed single object search response error
+    - Changed attributes returned in search from tuple to dict
+    - Added 'raw_attributes' key in search response to hold undecoded (binary) attribute values read from ldap
+    - Added __repr__ for Server and Connection objects to re-create the object instance
 
 * 0.4.2 - 2013.07.29
-	- Added autoReferral feature as per RFC4511 (4.1.10)
-	- Added allowedReferralHosts to conform to Security considerations of RFC4516
+    - Added autoReferral feature as per RFC4511 (4.1.10)
+    - Added allowedReferralHosts to conform to Security considerations of RFC4516
 
 * 0.4.1 - 2013.07.20
-	- Add validation to Abandon operation
-	- Added connection.request to hold a dictionary of infos about last request
-	- Added info about outstanding operation in connection.strategy._oustanding
-	- Implemented RFC4515 for search filter coding and decoding
-	- Added a parser to build filter string from LdapMessage
+    - Add validation to Abandon operation
+    - Added connection.request to hold a dictionary of infos about last request
+    - Added info about outstanding operation in connection.strategy._oustanding
+    - Implemented RFC4515 for search filter coding and decoding
+    - Added a parser to build filter string from LdapMessage
 
 * 0.4.0 - 2013.07.15
     - Refactoring of the connection and strategy classes

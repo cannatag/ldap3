@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from .. import LDAPException
+from ..core.exceptions import LDAPKeyError
 
 
 class AttrDef(object):
@@ -81,6 +81,6 @@ class AttrDef(object):
 
     def __setattr__(self, key, value):
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is being used for __hash__
-            raise LDAPException('key already set')
+            raise LDAPKeyError('key already set')
         else:
             object.__setattr__(self, key, value)

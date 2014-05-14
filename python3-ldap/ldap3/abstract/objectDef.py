@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 
 from .attrDef import AttrDef
-from .. import LDAPException
+from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError
 
 
 class ObjectDef(object):
@@ -62,12 +62,12 @@ class ObjectDef(object):
             if item == attr.lower():
                 break
         else:
-            raise LDAPException('key not present')
+            raise LDAPKeyError('key not present')
 
         return self._attributes[attr]
 
     def __setattr__(self, key, value):
-        raise LDAPException('object is read only')
+        raise LDAPObjectError('object is read only')
 
     def __iadd__(self, other):
         self.add(other)
@@ -91,7 +91,7 @@ class ObjectDef(object):
     def __contains__(self, item):
         try:
             self.__getitem__(item)
-        except LDAPException:
+        except KeyError:
             return False
 
         return True
@@ -104,14 +104,14 @@ class ObjectDef(object):
             key = definition.key
             for attr in self._attributes:
                 if key.lower() == attr.lower():
-                    raise LDAPException('attribute already present')
+                    raise LDAPAttributeError('attribute already present')
             self._attributes[key] = definition
             self.__dict__[key] = definition
         elif isinstance(definition, list):
             for element in definition:
                 self.add(element)
         else:
-            raise LDAPException('unable to add element to object definition')
+            raise LDAPObjectError('unable to add element to object definition')
 
     def remove(self, item):
         key = None
@@ -126,9 +126,9 @@ class ObjectDef(object):
                     del self._attributes[attr]
                     break
             else:
-                raise LDAPException('key not present')
+                raise LDAPKeyError('key ' + str(key) + 'not present')
         else:
-            raise LDAPException('key must be str or AttrDef')
+            raise LDAPTypeError('key must be str or AttrDef not ' + str(type(key)))
 
     def clear(self):
         self.__dict__['object_class'] = None

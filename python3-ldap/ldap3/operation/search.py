@@ -25,8 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 from string import whitespace
 from os import linesep
 
-from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, \
-    LDAPException
+from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES
+from ..core.exceptions import LDAPInvalidFilterError
+from ldap3.core.exceptions import LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, \
     ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
@@ -130,7 +131,7 @@ def evaluate_match(match, schema):
                 dn_attributes = True
                 matching_rule = extended_filter_list[2]
             else:
-                raise LDAPException('invalid extensible filter')
+                raise LDAPInvalidFilterError('invalid extensible filter')
         elif len(extended_filter_list) <= 3:  # extensible filter format attr[:dn][:matchingRule]:=assertionValue
             if len(extended_filter_list) == 1:
                 attribute_name = extended_filter_list[0]
@@ -145,10 +146,10 @@ def evaluate_match(match, schema):
                 dn_attributes = True
                 matching_rule = extended_filter_list[2]
             else:
-                raise LDAPException('invalid extensible filter')
+                raise LDAPInvalidFilterError('invalid extensible filter')
 
         if not attribute_name and not matching_rule:
-            raise LDAPException('invalid extensible filter')
+            raise LDAPInvalidFilterError('invalid extensible filter')
         attribute_name = attribute_name.strip() if attribute_name else None
         matching_rule = matching_rule.strip() if matching_rule else None
         assertion = {'attr': attribute_name, 'value': validate_assertion_value(schema, attribute_name, right_part), 'matchingRule': matching_rule, 'dnAttributes': dn_attributes}
@@ -172,7 +173,7 @@ def evaluate_match(match, schema):
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
     else:
-        raise LDAPException('invalid matching assertion')
+        raise LDAPInvalidFilterError('invalid matching assertion')
 
     return FilterNode(tag, assertion)
 
@@ -209,7 +210,7 @@ def parse_filter(search_filter, schema):
                     end_pos = pos
                     if start_pos:
                         if current_node.tag == NOT and len(current_node.elements) > 0:
-                            raise LDAPException('Not clause in filter cannot be multiple')
+                            raise LDAPInvalidFilterError('Not clause in filter cannot be multiple')
                         current_node.append(evaluate_match(search_filter[start_pos:end_pos], schema))
                 start_pos = None
                 state = SEARCH_OPEN_OR_CLOSE
@@ -219,12 +220,12 @@ def parse_filter(search_filter, schema):
                     start_pos = pos
                 state = SEARCH_MATCH_OR_CLOSE
             else:
-                raise LDAPException('malformed filter')
+                raise LDAPInvalidFilterError('malformed filter')
         if len(root.elements) != 1:
-            raise LDAPException('missing boolean operator in filter')
+            raise LDAPInvalidFilterError('missing boolean operator in filter')
         return root
     else:
-        raise LDAPException('invalid filter')
+        raise LDAPInvalidFilterError('invalid filter')
 
 
 def compile_filter(filter_node):
@@ -296,7 +297,7 @@ def compile_filter(filter_node):
         matching_filter['assertionValue'] = AssertionValue(filter_node.assertion['value'])
         compiled_filter.setComponentByName('equalityMatch', matching_filter)
     else:
-        raise LDAPException('unknown filter')
+        raise LDAPInvalidFilterError('unknown filter node tag')
 
     return compiled_filter
 
@@ -310,7 +311,7 @@ def build_attribute_selection(attribute_list, schema):
     for index, attribute in enumerate(attribute_list):
         if schema:
             if not attribute.lower() in schema.attribute_types and attribute not in '+*1.1':
-                raise LDAPException('invalid attribute type in attribute list: ' + attribute)
+                raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
         attribute_selection[index] = Selector(attribute)
 
     return attribute_selection
@@ -335,7 +336,7 @@ def search_operation(search_base,
     elif search_scope == SEARCH_SCOPE_WHOLE_SUBTREE:
         request['scope'] = Scope('wholeSubtree')
     else:
-        raise LDAPException('invalid scope type')
+        raise LDAPInvalidScopeError('invalid scope type')
 
     if dereference_aliases == SEARCH_NEVER_DEREFERENCE_ALIASES:
         request['derefAliases'] = DerefAliases('neverDerefAliases')
@@ -346,7 +347,7 @@ def search_operation(search_base,
     elif dereference_aliases == SEARCH_DEREFERENCE_ALWAYS:
         request['derefAliases'] = DerefAliases('derefAlways')
     else:
-        raise LDAPException('invalid dereference aliases type')
+        raise LDAPInvalidDereferenceAliasesError('invalid dereference aliases type')
 
     request['sizeLimit'] = Integer0ToMax(size_limit)
     request['timeLimit'] = Integer0ToMax(time_limit)
@@ -432,7 +433,7 @@ def filter_to_string(filter_object):
     elif filter_type == 'extensibleMatch':
         filter_string += matching_rule_assertion_to_string(filter_object['extensibleMatch'])
     else:
-        raise LDAPException('error converting filter to string')
+        raise LDAPInvalidFilterError('error converting filter to string')
 
     filter_string += ')'
     return filter_string

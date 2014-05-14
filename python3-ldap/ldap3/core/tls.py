@@ -21,13 +21,15 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from .. import LDAPException
+from .exceptions import LDAPSSLNotSupportedError
+from ldap3.core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError
+
 
 try:
     # noinspection PyUnresolvedReferences
     import ssl
 except ImportError:
-    raise LDAPException('ssl not supported in this Python interpreter')
+    raise LDAPSSLNotSupportedError('ssl not supported in this Python interpreter')
 
 try:
     # noinspection PyUnresolvedReferences
@@ -55,12 +57,12 @@ class Tls(object):
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
         elif validate:
-            raise LDAPException('invalid validate parameter')
+            raise LDAPSSLConfigurationError('invalid validate parameter')
 
         if ca_certs_file and path.exists(ca_certs_file):
             self.ca_certs_file = ca_certs_file
         elif ca_certs_file:
-            raise LDAPException('invalid CA public key parameter')
+            raise LDAPSSLConfigurationError('invalid CA public key parameter')
         else:
             self.ca_certs_file = None
 
@@ -116,7 +118,7 @@ class Tls(object):
             if connection.result['description'] not in ['success']:
                 # startTLS failed
                 connection.last_error = 'startTLS failed - ' + str(connection.result['description'])
-                raise LDAPException(connection.last_error)
+                raise LDAPStartTLSError(connection.last_error)
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
@@ -206,4 +208,4 @@ def check_hostname(sock, server_name, additional_names):
         if valid_found:
             return
 
-    raise LDAPException("certificate error, name doesn't match")
+    raise LDAPCertificateError("certificate error, name doesn't match")

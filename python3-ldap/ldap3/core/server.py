@@ -24,7 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from socket import getaddrinfo, gaierror
 
-from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAPException, LDAP_MAX_INT
+from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT
+from .exceptions import LDAPPortMustBeAnInteger
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 import socket
@@ -75,7 +76,7 @@ class Server(object):
         if isinstance(port, int):
             self.port = port
         else:
-            raise LDAPException('port must be an integer')
+            raise LDAPPortMustBeAnInteger('port must be an integer')
         if isinstance(allowed_referral_hosts, list):
             self.allowed_referral_hosts = []
             for refServer in allowed_referral_hosts:

@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from .. import LDAPException
+from ..core.exceptions import LDAPSSLNotSupportedError
 from ..core.tls import Tls as newTls
 
 
@@ -29,7 +29,7 @@ try:
     # noinspection PyUnresolvedReferences
     import ssl
 except ImportError:
-    raise LDAPException('ssl not supported in this Python interpreter')
+    raise LDAPSSLNotSupportedError('ssl not supported in this Python interpreter')
 
 
 # noinspection PyPep8Naming

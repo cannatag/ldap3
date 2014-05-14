@@ -24,9 +24,10 @@ If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 from os import linesep
 
-from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, LDAPException
+from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX
 from .attribute import Attribute
 from .entry import Entry
+from ..core.exceptions import LDAPReaderError
 from .operationalAttribute import OperationalAttribute
 
 
@@ -202,7 +203,7 @@ class Reader(object):
 
                     if self._definition[attr].validate:
                         if not self._definition[attr].validate(self._definition[attr].key, value):
-                            raise LDAPException('validation failed for attribute %s and value %s' % (d, val))
+                            raise LDAPReaderError('validation failed for attribute %s and value %s' % (d, val))
 
                     if val_not:
                         query += '!' + val_search_operator + value
@@ -235,7 +236,7 @@ class Reader(object):
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
-                raise LDAPException('object_class must be a string or a list')
+                raise LDAPReaderError('object_class must be a string or a list')
 
         if not self.components_in_and:
             self.query_filter += '(|'
@@ -341,7 +342,7 @@ class Reader(object):
 
     def _execute_query(self, query_scope):
         if not self.connection:
-            raise LDAPException('No connection available')
+            raise LDAPReaderError('No connection available')
 
         self._create_query_filter()
         with self.connection:

@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from os import linesep
 
-from .. import LDAPException
+from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 
 
 class Entry(object):
@@ -75,16 +75,16 @@ class Entry(object):
                 if item == attr.lower():
                     break
             else:
-                raise LDAPException('key not found')
+                raise LDAPKeyError('key not found')
             return self._attributes[attr]
 
-        raise LDAPException('key must be a string')
+        raise LDAPKeyError('key must be a string')
 
     def __setattr__(self, item, value):
         if item in self._attributes:
-            raise LDAPException('attribute is read only')
+            raise LDAPAttributeError('attribute is read only')
         else:
-            raise LDAPException('entry is read only')
+            raise LDAPEntryError('entry is read only')
 
     def __getitem__(self, item):
         return self.__getattr__(item)

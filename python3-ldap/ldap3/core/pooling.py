@@ -24,7 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 from os import linesep
 from random import randint
-from .. import LDAPException, POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_STRATEGIES
+from .. import POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_STRATEGIES
+from ldap3.core.exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError, LDAPObjectError
 from .server import Server
 
 
@@ -81,10 +82,10 @@ class ServerPoolState(object):
                     # returns a random server in the pool
                     self.last_used_server = randint(0, len(self.servers))
             else:
-                raise LDAPException('unknown pool strategy')
+                raise LDAPUnknownStrategyError('unknown server pooling strategy')
             return self.servers[self.last_used_server]
         else:
-            raise LDAPException('no servers in server pool')
+            raise LDAPServerPoolError('no servers in server pool')
 
     def find_active_random_server(self, exhaust=True):
         while True:
@@ -97,7 +98,7 @@ class ServerPoolState(object):
                     # returns a random active server in the pool
                     return self.servers.index(server)
             if exhaust:
-                raise LDAPException('no random active server in server pool')
+                raise LDAPServerPoolExhaustedError('no random active server in server pool')
 
     def find_active_server(self, starting=0, exhaust=True):
         while True:
@@ -116,7 +117,7 @@ class ServerPoolState(object):
                     index += 1
                 else:
                     if exhaust:
-                        raise LDAPException('no active server available in server pool')
+                        raise LDAPServerPoolExhaustedError('no active server available in server pool')
                     else:
                         continue
             return index
@@ -133,9 +134,9 @@ class ServerPool(object):
                  exhaust=False):
 
         if pool_strategy not in POOLING_STRATEGIES:
-            raise LDAPException('unknown pooling strategy')
+            raise LDAPUnknownStrategyError('unknown pooling strategy')
         if exhaust and not active:
-            raise LDAPException('pool can be exhausted only when checking for active servers')
+            raise LDAPServerPoolError('pools can be exhausted only when checking for active servers')
         self.servers = []
         self.pool_states = dict()
         self.active = active
@@ -193,9 +194,9 @@ class ServerPool(object):
                 if isinstance(server, Server):
                     self.servers.append(server)
                 else:
-                    raise LDAPException('pooled server in list must be a Server object')
+                    raise LDAPObjectError('pooled server in list must be a Server object')
         else:
-            raise LDAPException('pooled server must be a Server object or a list of Server objects')
+            raise LDAPObjectError('pooled server must be a Server object or a list of Server objects')
 
         for connection in self.pool_states:
             # notifies connections using this pool to refresh
@@ -205,7 +206,7 @@ class ServerPool(object):
         if server in self.servers:
             self.servers.remove(server)
         else:
-            raise LDAPException('server not in server pool')
+            raise LDAPServerPoolError('server not in server pool')
 
         for connection in self.pool_states:
             # notifies connections using this pool to refresh
@@ -220,10 +221,10 @@ class ServerPool(object):
         if connection in self.pool_states:
             return self.pool_states[connection].get_server()
         else:
-            raise LDAPException('connection not in server pool state')
+            raise LDAPServerPoolError('connection not in server pool state')
 
     def get_current_server(self, connection):
         if connection in self.pool_states:
             return self.pool_states[connection].get_current_server()
         else:
-            raise LDAPException('connection not in server pool state')
+            raise LDAPServerPoolError('connection not in server pool state')

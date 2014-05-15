@@ -303,7 +303,7 @@ exception_table = {RESULT_OPERATIONS_ERROR: LDAPOperationsErrorResult,
                    RESULT_NO_SUCH_OPERATION: LDAPNoSuchOperationResult,
                    RESULT_TOO_LATE: LDAPTooLateResult,
                    RESULT_CANNOT_CANCEL: LDAPCannotCancelResult,
-                   RESULT_ASSERTION_FAILED: LDAPAssertionFaileResult,
+                   RESULT_ASSERTION_FAILED: LDAPAssertionFailedResult,
                    RESULT_AUTHORIZATION_DENIED: LDAPAuthorizationDeniedResult,
                    RESULT_E_SYNC_REFRESH_REQUIRED: LDAPESyncRefreshRequiredResult
                    }

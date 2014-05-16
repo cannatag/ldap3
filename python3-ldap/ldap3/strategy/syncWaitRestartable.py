@@ -24,8 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from time import sleep
 
-from .. import LDAPException, RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
+from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .syncWait import SyncWaitStrategy
+from ..core.exceptions import LDAPException
 
 
 class SyncWaitRestartableStrategy(SyncWaitStrategy):

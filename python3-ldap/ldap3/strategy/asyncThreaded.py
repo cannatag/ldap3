@@ -27,7 +27,7 @@ from threading import Thread, Lock
 from pyasn1.codec.ber import decoder
 
 from .. import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
-from core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError
+from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 

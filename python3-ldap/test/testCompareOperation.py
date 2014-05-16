@@ -37,6 +37,7 @@ class Test(unittest.TestCase):
         result = self.connection.add(test_dn_builder(test_base, 'test-add-for-compare'), None, {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'compare'})
         if not isinstance(result, bool):
             self.connection.get_response(result)
+
     def tearDown(self):
         self.connection.unbind()
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:

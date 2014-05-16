@@ -24,9 +24,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.codec.ber import decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, LDAPException, RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
+from ..core.exceptions import LDAPException
 
 
 class SyncWaitStrategy(BaseStrategy):

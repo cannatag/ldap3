@@ -25,9 +25,10 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 import re
 
-from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION,
+from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError
+
 
 def constant_to_class_kind(value):
     if value == CLASS_STRUCTURAL:
@@ -72,6 +73,7 @@ def quoted_string_to_list(quoted_string):
         string = string[1:-1]
     elements = string.split("'")
     return [element.strip("'").strip() for element in elements if element.strip()]
+
 
 def oids_string_to_list(oid_string):
     string = oid_string.strip()

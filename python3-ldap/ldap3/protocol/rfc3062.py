@@ -23,22 +23,17 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from pyasn1.type.univ import OctetString, Sequence
-from pyasn1.type.namedtype import NamedTypes, NamedType, OptionalNamedType
+from pyasn1.type.namedtype import NamedTypes, OptionalNamedType
 
-
-"""
-Modify password extended operation
-
-passwdModifyOID OBJECT IDENTIFIER ::= 1.3.6.1.4.1.4203.1.11.1
-
-PasswdModifyRequestValue ::= SEQUENCE {
-    userIdentity [0] OCTET STRING OPTIONAL
-    oldPasswd [1] OCTET STRING OPTIONAL
-    newPasswd [2] OCTET STRING OPTIONAL }
-
-PasswdModifyResponseValue ::= SEQUENCE {
-    genPasswd [0] OCTET STRING OPTIONAL }
-"""
+#Modify password extended operation
+#passwdModifyOID OBJECT IDENTIFIER ::= 1.3.6.1.4.1.4203.1.11.1
+#PasswdModifyRequestValue ::= SEQUENCE {
+#    userIdentity [0] OCTET STRING OPTIONAL
+#     oldPasswd [1] OCTET STRING OPTIONAL
+#     newPasswd [2] OCTET STRING OPTIONAL }
+#
+# PasswdModifyResponseValue ::= SEQUENCE {
+#     genPasswd [0] OCTET STRING OPTIONAL }
 
 
 class PasswdModifyRequestValue(Sequence):

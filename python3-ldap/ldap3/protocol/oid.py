@@ -79,11 +79,13 @@ def decode_syntax(syntax):
     if not syntax:
         return None
     syntax = syntax.strip()
+    pos = 0
     for pos, c in enumerate(syntax):
         if not c in '0123456789.':
             break
 
     return Oids.get(syntax[:pos], None)
+
 
 class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
     def __str__(self):

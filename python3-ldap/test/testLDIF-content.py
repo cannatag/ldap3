@@ -40,6 +40,7 @@ class Test(unittest.TestCase):
         result = self.connection.add(test_dn_builder(test_base, 'test-ldif-2'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-ldif-2', test_name_attr: 'test-ldif-2'})
         if not isinstance(result, bool):
             self.connection.get_response(result)
+
     def tearDown(self):
         #self.connection.delete(test_dn_builder(test_base, 'test-ldif-1'))
         #self.connection.delete(test_dn_builder(test_base, 'test-ldif-2'))

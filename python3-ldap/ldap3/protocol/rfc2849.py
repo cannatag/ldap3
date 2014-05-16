@@ -25,10 +25,9 @@ from base64 import b64encode
 from os import linesep
 
 from .. import LDIF_LINE_LENGTH
-from .core.exceptions import LDAPLDIFError
+from ..core.exceptions import LDAPLDIFError
 
 # LDIF converter RFC 2849 compliant
-
 
 
 def safe_ldif_string(bytes_value):

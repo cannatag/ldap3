@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .. import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL
-from ..core.exceptions import LDAPConnectionIsReadOnlyError, LDAPPasswordIsMandatoryError
+from ..core.exceptions import LDAPPasswordIsMandatoryError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list

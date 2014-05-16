@@ -89,7 +89,7 @@ class ServerPoolState(object):
 
     def find_active_random_server(self, exhaust=True):
         while True:
-            temp_list = self.servers.copy()
+            temp_list = self.servers[:]  # copy
             while temp_list:
                 # pops a random server from a temp list and checks its
                 # availability, if not available tries another one

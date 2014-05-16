@@ -25,9 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 from pyasn1.codec.ber import decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
+from ..core.exceptions import LDAPSocketReceiveError
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-from ..core.exceptions import LDAPException
 
 
 class SyncWaitStrategy(BaseStrategy):
@@ -70,10 +70,10 @@ class SyncWaitStrategy(BaseStrategy):
                     # if e.winerror == 10004:  # window error for socket not open
                     self.close()
                     self.connection.last_error = 'Error receiving data: ' + str(e)
-                    raise LDAPException(self.connection.last_error)
+                    raise LDAPSocketReceiveError(self.connection.last_error)
                 except AttributeError as e:
                     self.connection.last_error = 'Error receiving data: ' + str(e)
-                    raise LDAPException(self.connection.last_error)
+                    raise LDAPSocketReceiveError(self.connection.last_error)
                 unprocessed += data
             if len(data) > 0:
                 length = BaseStrategy.compute_ldap_message_size(unprocessed)
@@ -103,7 +103,7 @@ class SyncWaitStrategy(BaseStrategy):
             for response in responses:
                 if response['type'] != 'intermediateResponse':
                     self.connection.last_error = 'multiple messages error'
-                    raise LDAPException(self.connection.last_error)
+                    raise LDAPSocketReceiveError(self.connection.last_error)
 
         responses.append(result)
         return responses
@@ -118,7 +118,8 @@ class SyncWaitStrategy(BaseStrategy):
             self.connection.response = responses[:]  # copy search result entries without result
             return responses
 
-        raise LDAPException('error receiving response')
+        self.connection.last_error = 'error receiving response'
+        raise LDAPSocketReceiveError(self.connection.last_error)
 
     def _get_response(self, message_id):
         """
@@ -145,11 +146,11 @@ class SyncWaitStrategy(BaseStrategy):
                                 return SESSION_TERMINATED_BY_SERVER
                         else:
                             self.connection.last_error = 'invalid messageID received'
-                            raise LDAPException(self.connection.last_error)
+                            raise LDAPSocketReceiveError(self.connection.last_error)
                         response = unprocessed
                         if response:  # if this statement is removed unprocessed data will be processed as another message
                             self.connection.last_error = 'unprocessed substrate error'
-                            raise LDAPException(self.connection.last_error)
+                            raise LDAPSocketReceiveError(self.connection.last_error)
             else:
                 return SESSION_TERMINATED_BY_SERVER
 

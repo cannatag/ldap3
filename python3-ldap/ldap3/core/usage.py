@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime, timedelta
 from os import linesep
-from .exceptions import LDAPObjectError
+from .exceptions import LDAPMetricsError
 
 
 class ConnectionUsage(object):
@@ -102,7 +102,7 @@ class ConnectionUsage(object):
 
     def __iadd__(self, other):
         if not isinstance(other, ConnectionUsage):
-            raise LDAPObjectError('unable to add to ConnectionUsage')
+            raise LDAPMetricsError('unable to add to ConnectionUsage')
 
         self.opened_sockets += other.opened_sockets
         self.closed_sockets += other.closed_sockets
@@ -154,7 +154,7 @@ class ConnectionUsage(object):
         elif message['type'] == 'unbindRequest':
             self.unbind_operations += 1
         else:
-            raise LDAPObjectError('unable to collect usage for unknown message type')
+            raise LDAPMetricsError('unable to collect usage for unknown message type')
 
     def received_message(self, length):
         self.bytes_received += length

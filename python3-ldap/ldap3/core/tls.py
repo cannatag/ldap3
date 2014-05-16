@@ -161,7 +161,7 @@ def match_hostname_backport(cert, hostname):
     CertificateError is raised on failure. On success, the function returns
     """
     if not cert:
-        raise ValueError("empty or no certificate")
+        raise CertificateError("empty or no certificate")
     dnsnames = []
     san = cert.get('subjectAltName', ())
     for key, value in san:

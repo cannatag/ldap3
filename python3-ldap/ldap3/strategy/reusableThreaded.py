@@ -25,16 +25,16 @@ from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
 from time import sleep
+from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
+from ..core.exceptions import LDAPConnectionPoolNameAbsentError, LDAPConnectionPoolNotStartedError
 
 try:
     from queue import Queue
 except ImportError:  # Python 2
     # noinspection PyUnresolvedReferences
     from Queue import Queue
-
-from .baseStrategy import BaseStrategy
-from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 
 
 class ReusableThreadedStrategy(BaseStrategy):
@@ -220,7 +220,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
             self.pool = ReusableThreadedStrategy.ConnectionPool(ldap_connection)
         else:
-            raise LDAPException('reusable connection must have a pool_name')
+            raise LDAPConnectionPoolNameAbsentError('reusable connection must have a pool_name')
 
     def open(self, reset_usage=True):
         self.pool.open_pool = True
@@ -269,7 +269,7 @@ class ReusableThreadedStrategy(BaseStrategy):
 
             return counter
 
-        raise LDAPException('connection pool not started')
+        raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
         if counter == -1:  # send a bogus bindResponse

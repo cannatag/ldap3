@@ -249,7 +249,7 @@ class Connection(object):
             self.open()
 
         if not exc_type is None:
-            return False  # reraise LDAPException
+            return False  # reraise LDAPExceptionError
 
     def bind(self,
              controls=None):
@@ -500,10 +500,11 @@ class Connection(object):
         self._fire_deferred()
         if self.read_only:
             self.last_error = 'Connection is in read-only mode'
-            raise LDAPConnectionIsReadOnlyError()
+            raise LDAPConnectionIsReadOnlyError(self.last_error)
 
         if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
-            raise LDAPInvalidChangesError('dn cannot change while moving object')
+            self.last_error = 'dn cannot change while moving object'
+            raise LDAPInvalidChangesError(self.last_error)
 
         request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
         response = self.post_send_single_response(self.send('modDNRequest', request, controls))
@@ -602,6 +603,6 @@ class Connection(object):
                 if self._deferred_start_tls:
                     self.start_tls()
             except LDAPExceptionError:
-                raise
+                raise  # re-raise LDAPExceptionError
             finally:
                 self._executing_deferred = False

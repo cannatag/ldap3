@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ..core.exceptions import LDAPInvalidControlsError, LDAPAttributeError, LDAPObjectError
+from ..core.exceptions import LDAPInvalidControlsError, LDAPAttributeError, LDAPInvalidObjectClassError
 
 from .rfc4511 import Controls, Control
 
@@ -145,7 +145,7 @@ def validate_attribute_value(schema, name, value):
             raise LDAPAttributeError('invalid attribute type in attribute')
         if name.lower() == 'objectclass':
             if value.lower() not in schema.object_classes:
-                raise LDAPObjectError('invalid class in ObjectClass attribute: ' + value)
+                raise LDAPInvalidObjectClassError('invalid class in ObjectClass attribute: ' + value)
 
     if isinstance(value, str):
         return validate_assertion_value(None, name, value)  # schema already checked, no need to check again

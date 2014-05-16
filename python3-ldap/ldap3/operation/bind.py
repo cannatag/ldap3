@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from .. import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL
 from ..core.exceptions import LDAPPasswordIsMandatoryError
+from ldap3.core.exceptions import LDAPUnknownAuthenticationMethodError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
@@ -60,7 +61,7 @@ def bind_operation(version,
         request['name'] = ''
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
     else:
-        raise (Exception('Invalid authentication method'))
+        raise LDAPUnknownAuthenticationMethodError('Unknown authentication method')
 
     return request
 

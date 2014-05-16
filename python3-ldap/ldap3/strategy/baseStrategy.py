@@ -28,7 +28,8 @@ from random import choice
 
 from pyasn1.codec.ber import encoder, decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, DO_NOT_RAISE_EXCEPTIONS
+from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketNotOpenError, LDAPSessionTerminatedByServer, LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
@@ -44,7 +45,6 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-from ..core.exceptions import LDAPOperationResult
 
 class BaseStrategy(object):
     """
@@ -110,7 +110,7 @@ class BaseStrategy(object):
     def _open_socket(self, use_ssl=False):
         """
         Tries to open and connect a socket to a Server
-        raise LDAPException if unable to open or connect socket
+        raise LDAPExceptionError if unable to open or connect socket
         """
         try:
             self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -141,7 +141,7 @@ class BaseStrategy(object):
     def _close_socket(self):
         """
         Try to close a socket
-        raise LDAPException if unable to close socket
+        raise LDAPExceptionError if unable to close socket
         """
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)
@@ -168,7 +168,7 @@ class BaseStrategy(object):
         if self.connection.listening:
             if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
                 self.connection.last_error = 'cannot send operation requests while SASL bind is in progress'
-                raise LDAPException(self.connection.last_error)
+                raise LDAPSASLBindInProgressError(self.connection.last_error)
             message_id = self.connection.server.next_message_id()
             ldap_message = LDAPMessage()
             ldap_message['messageID'] = MessageID(message_id)
@@ -191,7 +191,7 @@ class BaseStrategy(object):
                 self.connection._usage.transmitted_message(self.connection.request, len(encoded_message))
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
-            raise LDAPException(self.connection.last_error)
+            raise LDAPSocketNotOpenError(self.connection.last_error)
 
         return message_id
 
@@ -212,7 +212,7 @@ class BaseStrategy(object):
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     self.close()
                     self.connection.last_error = 'session terminated by server'
-                    raise LDAPException(self.connection.last_error)
+                    raise LDAPSessionTerminatedByServer(self.connection.last_error)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME
@@ -224,7 +224,7 @@ class BaseStrategy(object):
                         self.connection.result = result
                         self.connection.response = None
                     break
-            if self.connection.raise_exceptions and result and result['result'] not in [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL]:
+            if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 
         return response, result
@@ -285,7 +285,7 @@ class BaseStrategy(object):
         elif message_type == 'intermediateResponse':
             result = intermediate_response_to_dict(component)
         else:
-            raise LDAPException('unknown response')
+            raise LDAPUnknownResponseError('unknown response')
         result['type'] = message_type
         if controls:
             result['controls'] = dict()
@@ -336,7 +336,7 @@ class BaseStrategy(object):
         elif message_type == 'abandonRequest':
             result = abandon_request_to_dict(component)
         else:
-            raise LDAPException('unknown request')
+            raise LDAPUnknownRequestError('unknown request')
         result['type'] = message_type
         return result
 
@@ -510,7 +510,8 @@ class BaseStrategy(object):
                                               request['newSuperior'],
                                               controls=request['controls'])
             else:
-                raise LDAPException('referral operation not permitted')
+                self.connection.last_error = 'referral operation not permitted'
+                raise LDAPReferralError(self.connection.last_error)
 
             response = referral_connection.response
             result = referral_connection.result

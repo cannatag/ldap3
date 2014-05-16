@@ -26,7 +26,7 @@ from time import sleep
 
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .syncWait import SyncWaitStrategy
-from ..core.exceptions import LDAPException
+from ..core.exceptions import LDAPSocketNotOpenError, LDAPSocketSendError
 
 
 class SyncWaitRestartableStrategy(SyncWaitStrategy):
@@ -50,7 +50,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
     def _open_socket(self, use_ssl=False):
         """
         Try to open and connect a socket to a Server
-        raise LDAPException if unable to open or connect socket
+        raise LDAPExceptionError if unable to open or connect socket
         if connection is restartable tries for the number of restarting requested or forever
         """
         try:
@@ -89,7 +89,8 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not isinstance(counter, bool):
                     counter -= 1
             self._restarting = False
-        raise LDAPException('restartable connection strategy failed in _open_socket')
+        self.connection.last_error = 'restartable connection strategy failed in _open_socket'
+        raise LDAPSocketNotOpenError(self.connection.last_error)
 
     def send(self, message_type, request, controls=None):
         self._current_message_type = message_type
@@ -142,7 +143,8 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
             self._restarting = False
 
-        raise LDAPException('restartable connection strategy failed in send')
+        self.connection.last_error = 'restartable connection failed to send'
+        raise LDAPSocketSendError(self.connection.last_error)
 
     def post_send_single_response(self, message_id):
         try:
@@ -150,13 +152,14 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         except Exception:
             pass
 
-        # if an LDAPException is raised then resend the request
+        # if an LDAPExceptionError is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
         except Exception:
             pass
 
-        raise LDAPException('restartable connection strategy failed in post_send_single_response')
+        self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
+        raise LDAPSocketSendError(self.connection.last_error)
 
     def post_send_search(self, message_id):
         try:
@@ -164,10 +167,10 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         except Exception:
             pass
 
-        # if an LDAPException is raised then resend the request
+        # if an LDAPExceptionError is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
         except Exception:
             pass
 
-        raise LDAPException('restartable connection strategy failed in post_send_search')
+        raise LDAPSocketSendError('restartable connection strategy failed in post_send_search')

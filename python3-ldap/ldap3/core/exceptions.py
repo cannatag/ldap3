@@ -430,3 +430,51 @@ class LDAPSchemaError(LDAPExceptionError):
 
 class LDAPSASLPrepError(LDAPExceptionError):
     pass
+
+
+class LDAPSASLBindInProgressError(LDAPExceptionError):
+    pass
+
+
+class LDAPSocketNotOpenError(LDAPExceptionError):
+    pass
+
+
+class LDAPSocketReceiveError(LDAPExceptionError):
+    pass
+
+
+class LDAPSocketSendError(LDAPExceptionError):
+    pass
+
+
+class LDAPSessionTerminatedByServer(LDAPExceptionError):
+    pass
+
+
+class LDAPUnknownResponseError(LDAPExceptionError):
+    pass
+
+
+class LDAPUnknownRequestError(LDAPExceptionError):
+    pass
+
+
+class LDAPReferralError(LDAPExceptionError):
+    pass
+
+
+class LDAPConnectionPoolNameAbsentError(LDAPExceptionError):
+    pass
+
+
+class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
+    pass
+
+
+class LDAPMetricsError(LDAPExceptionError):
+    pass
+
+
+class LDAPInvalidObjectClassError(LDAPExceptionError):
+    pass

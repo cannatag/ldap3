@@ -209,7 +209,7 @@ def parse_filter(search_filter, schema):
                     end_pos = pos
                     if start_pos:
                         if current_node.tag == NOT and len(current_node.elements) > 0:
-                            raise LDAPInvalidFilterError('Not clause in filter cannot be multiple')
+                            raise LDAPInvalidFilterError('not clause in filter cannot be multiple')
                         current_node.append(evaluate_match(search_filter[start_pos:end_pos], schema))
                 start_pos = None
                 state = SEARCH_OPEN_OR_CLOSE

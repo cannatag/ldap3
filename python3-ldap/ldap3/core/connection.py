@@ -49,7 +49,7 @@ from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
-from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassIsMandatoryError, LDAPConnectionIsReadOnlyError, LDAPInvalidChangesError, LDAPExceptionError
+from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError
 
 
 class Connection(object):
@@ -157,7 +157,7 @@ class Connection(object):
         elif self.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.strategy = ReusableThreadedStrategy(self)
         else:
-            self.last_error = 'unavailable strategy'
+            self.last_error = 'unknown strategy'
             raise LDAPUnknownStrategyError(self.last_error)
 
         # map strategy functions to connection functions
@@ -172,12 +172,12 @@ class Connection(object):
                 self.open()
                 self.bind()
                 if not self.bound:
-                    self.last_error = 'auto_bind not successful'
+                    self.last_error = 'automatic bind not successful'
                     raise LDAPBindError(self.last_error)
         elif self.strategy.no_real_dsa:
             self.server = None
         else:
-            self.last_error = 'invalid ldap server'
+            self.last_error = 'invalid LDAP server'
             raise LDAPInvalidServerError(self.last_error)
 
     def __str__(self):
@@ -273,7 +273,7 @@ class Connection(object):
                 if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
                     response = self.do_sasl_bind(controls)
                 else:
-                    self.last_error = 'requested sasl mechanism not supported'
+                    self.last_error = 'requested SASL mechanism not supported'
                     raise LDAPSASLMechanismNotSupportedError(self.last_error)
             else:
                 self.last_error = 'unknown authentication method'
@@ -416,7 +416,7 @@ class Connection(object):
         attributes['objectClass'] = list(set([object_class.lower() for object_class in parm_object_class + attr_object_class]))  # remove duplicate object_class
         if not attributes['objectClass']:
             self.last_error = 'object_class is mandatory'
-            raise LDAPObjectClassIsMandatoryError(self.last_error)
+            raise LDAPObjectClassError(self.last_error)
 
         request = add_operation(dn, attributes, self.server.schema if self.server and self.check_names else None)
         response = self.post_send_single_response(self.send('addRequest', request, controls))
@@ -434,7 +434,7 @@ class Connection(object):
         """
         self._fire_deferred()
         if self.read_only:
-            self.last_error = 'Connection is in read-only mode'
+            self.last_error = 'connection is read-only'
             raise LDAPConnectionIsReadOnlyError(self.last_error)
 
         request = delete_operation(dn)
@@ -460,24 +460,24 @@ class Connection(object):
         """
         self._fire_deferred()
         if self.read_only:
-            self.last_error = 'Connection is in read-only mode'
+            self.last_error = 'connection is read-only'
             raise LDAPConnectionIsReadOnlyError(self.last_error)
 
         if not isinstance(changes, dict):
             self.last_error = 'changes must be a dictionary'
-            raise LDAPInvalidChangesError(self.last_error)
+            raise LDAPChangesError(self.last_error)
 
         if not changes:
             self.last_error = 'no changes in modify request'
-            raise LDAPInvalidChangesError(self.last_error)
+            raise LDAPChangesError(self.last_error)
 
         for change in changes:
             if len(changes[change]) != 2:
                 self.last_error = 'malformed change'
-                raise LDAPInvalidChangesError(self.last_error)
+                raise LDAPChangesError(self.last_error)
             elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT]:
                 self.last_error = 'unknown change type'
-                raise LDAPInvalidChangesError(self.last_error)
+                raise LDAPChangesError(self.last_error)
 
         request = modify_operation(dn, changes, self.server.schema if self.server and self.check_names else None)
         response = self.post_send_single_response(self.send('modifyRequest', request, controls))
@@ -499,12 +499,12 @@ class Connection(object):
         """
         self._fire_deferred()
         if self.read_only:
-            self.last_error = 'Connection is in read-only mode'
+            self.last_error = 'connection is read-only'
             raise LDAPConnectionIsReadOnlyError(self.last_error)
 
         if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
-            self.last_error = 'dn cannot change while moving object'
-            raise LDAPInvalidChangesError(self.last_error)
+            self.last_error = 'DN cannot change while moving'
+            raise LDAPChangesError(self.last_error)
 
         request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
         response = self.post_send_single_response(self.send('modDNRequest', request, controls))

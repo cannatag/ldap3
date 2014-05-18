@@ -89,7 +89,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not isinstance(counter, bool):
                     counter -= 1
             self._restarting = False
-        self.connection.last_error = 'restartable connection strategy failed in _open_socket'
+        self.connection.last_error = 'restartable connection strategy failed while opening socket'
         raise LDAPSocketNotOpenError(self.connection.last_error)
 
     def send(self, message_type, request, controls=None):

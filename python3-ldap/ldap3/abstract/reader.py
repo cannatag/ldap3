@@ -342,7 +342,7 @@ class Reader(object):
 
     def _execute_query(self, query_scope):
         if not self.connection:
-            raise LDAPReaderError('No connection available')
+            raise LDAPReaderError('no connection established')
 
         self._create_query_filter()
         with self.connection:

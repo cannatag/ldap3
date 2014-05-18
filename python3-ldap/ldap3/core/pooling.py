@@ -194,9 +194,9 @@ class ServerPool(object):
                 if isinstance(server, Server):
                     self.servers.append(server)
                 else:
-                    raise LDAPObjectError('pooled server in list must be a Server object')
+                    raise LDAPServerPoolError('server in ServerPool must be a Server')
         else:
-            raise LDAPObjectError('pooled server must be a Server object or a list of Server objects')
+            raise LDAPServerPoolError('server must be a Server or a list of Server')
 
         for connection in self.pool_states:
             # notifies connections using this pool to refresh
@@ -221,10 +221,10 @@ class ServerPool(object):
         if connection in self.pool_states:
             return self.pool_states[connection].get_server()
         else:
-            raise LDAPServerPoolError('connection not in server pool state')
+            raise LDAPServerPoolError('connection not in ServerPoolState')
 
     def get_current_server(self, connection):
         if connection in self.pool_states:
             return self.pool_states[connection].get_current_server()
         else:
-            raise LDAPServerPoolError('connection not in server pool state')
+            raise LDAPServerPoolError('connection not in ServerPoolState')

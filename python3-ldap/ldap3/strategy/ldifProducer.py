@@ -85,7 +85,7 @@ class LdifProducerStrategy(BaseStrategy):
         return False
 
     def post_send_search(self, message_id):
-        raise LDAPLDIFError('This strategy cannot produce ldif-content for Search Operations')
+        raise LDAPLDIFError('this strategy cannot produce ldif-content for Search Operations')
 
     def _get_response(self, message_id):
         pass

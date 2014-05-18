@@ -69,10 +69,10 @@ class SyncWaitStrategy(BaseStrategy):
                 except OSError as e:
                     # if e.winerror == 10004:  # window error for socket not open
                     self.close()
-                    self.connection.last_error = 'Error receiving data: ' + str(e)
+                    self.connection.last_error = 'error receiving data: ' + str(e)
                     raise LDAPSocketReceiveError(self.connection.last_error)
                 except AttributeError as e:
-                    self.connection.last_error = 'Error receiving data: ' + str(e)
+                    self.connection.last_error = 'error receiving data: ' + str(e)
                     raise LDAPSocketReceiveError(self.connection.last_error)
                 unprocessed += data
             if len(data) > 0:
@@ -145,7 +145,7 @@ class SyncWaitStrategy(BaseStrategy):
                             if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
                         else:
-                            self.connection.last_error = 'invalid messageID received'
+                            self.connection.last_error = 'invalid messageId received'
                             raise LDAPSocketReceiveError(self.connection.last_error)
                         response = unprocessed
                         if response:  # if this statement is removed unprocessed data will be processed as another message

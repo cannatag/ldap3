@@ -28,7 +28,7 @@ from time import sleep
 from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
-from ..core.exceptions import LDAPConnectionPoolNameAbsentError, LDAPConnectionPoolNotStartedError
+from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError
 
 try:
     from queue import Queue
@@ -220,7 +220,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
             self.pool = ReusableThreadedStrategy.ConnectionPool(ldap_connection)
         else:
-            raise LDAPConnectionPoolNameAbsentError('reusable connection must have a pool_name')
+            raise LDAPConnectionPoolNameIsMandatoryError('reusable connection must have a pool_name')
 
     def open(self, reset_usage=True):
         self.pool.open_pool = True

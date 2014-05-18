@@ -61,7 +61,7 @@ def bind_operation(version,
         request['name'] = ''
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
     else:
-        raise LDAPUnknownAuthenticationMethodError('Unknown authentication method')
+        raise LDAPUnknownAuthenticationMethodError('unknown authentication method')
 
     return request
 

@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ..core.exceptions import LDAPInvalidControlsError, LDAPAttributeError, LDAPInvalidObjectClassError
+from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
 
 from .rfc4511 import Controls, Control
 
@@ -99,7 +99,7 @@ def build_controls_list(controls):
         return None
 
     if not isinstance(controls, list):
-        raise LDAPInvalidControlsError('controls must be a list')
+        raise LDAPControlsError('controls must be a list')
 
     built_controls = Controls()
     for idx, control in enumerate(controls):
@@ -110,7 +110,7 @@ def build_controls_list(controls):
             built_control['controlValue'] = control[2]
             built_controls.setComponentByPosition(idx, built_control)
         else:
-            raise LDAPInvalidControlsError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
+            raise LDAPControlsError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
 
     return built_controls
 
@@ -118,7 +118,7 @@ def build_controls_list(controls):
 def validate_assertion_value(schema, name, value):
     if schema:
         if not name.lower() in schema.attribute_types:
-            raise LDAPInvalidControlsError('invalid attribute type in assertion: ' + name)
+            raise LDAPAttributeError('invalid attribute type in assertion: ' + name)
     if not '\\' in value:
         return value.encode('utf-8')
     validated_value = bytearray()
@@ -145,7 +145,7 @@ def validate_attribute_value(schema, name, value):
             raise LDAPAttributeError('invalid attribute type in attribute')
         if name.lower() == 'objectclass':
             if value.lower() not in schema.object_classes:
-                raise LDAPInvalidObjectClassError('invalid class in ObjectClass attribute: ' + value)
+                raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
 
     if isinstance(value, str):
         return validate_assertion_value(None, name, value)  # schema already checked, no need to check again

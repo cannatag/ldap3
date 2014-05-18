@@ -490,27 +490,11 @@ class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
 
 
 # exception factories
-def socket_open_exception_factory(msg, exc):
-    class _LDAPSocketOpenError(LDAPSocketOpenError, type(exc)):
-        pass
-    return _LDAPSocketOpenError(msg)
-
-
-def socket_close_exception_factory(msg, exc):
-    class _LDAPSocketCloseError(LDAPSocketCloseError, type(exc)):
-        pass
-    return _LDAPSocketCloseError(msg)
-
-
-def socket_send_exception_factory(msg, exc):
-    class _LDAPSocketSendError(LDAPSocketSendError, type(exc)):
-        pass
-
-    return _LDAPSocketSendError(msg)
-
-
-def socket_receive_exception_factory(msg, exc):
-    class _LDAPSocketReceiveError(LDAPSocketReceiveError, type(exc)):
-        pass
-
-    return _LDAPSocketReceiveError(msg)
+def communication_exception_factory(exc_to_raise, exc):
+    """
+    Generates a new exception class of the requested type (subclass of LDAPCommunication) merged with the exception raised by the interpreter
+    """
+    if exc_to_raise.__name__ in [cls.__name__ for cls in LDAPCommunicationError.__subclasses__()]:
+        return type(exc_to_raise.__name__, (LDAPCommunicationError, type(exc)), dict())
+    else:
+        raise LDAPExceptionError('unable to generate exception type ' + str(exc_to_raise))

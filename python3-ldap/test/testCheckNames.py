@@ -22,7 +22,8 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 import unittest
-from ldap3 import STRATEGY_REUSABLE_THREADED, GET_ALL_INFO, LDAPException
+from ldap3 import STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
+from ldap3.core.exceptions import  LDAPException
 
 from ldap3 import Server, Connection
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_name_attr

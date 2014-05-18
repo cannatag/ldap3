@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3 import LDAPException, LDAPOperationsError, LDAPOperationResult
+from ldap3.core.exceptions import LDAPException, LDAPOperationsErrorResult, LDAPOperationResult
 
 
 class Test(unittest.TestCase):

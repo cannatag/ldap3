@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
-from ldap3.core.exceptions import socket_send_exception_factory
+from ..core.exceptions import communication_exception_factory
 from .syncWait import SyncWaitStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPSocketSendError
 
@@ -158,7 +158,8 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             return SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
         except Exception as e:
             self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
-            raise socket_send_exception_factory(self.connection.last_error, e)
+            raise communication_exception_factory(LDAPSocketSendError, e)(self.connection.last_error)
+
 
     def post_send_search(self, message_id):
         try:
@@ -170,4 +171,4 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         try:
             return SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
         except Exception as e:
-            raise socket_send_exception_factory('restartable connection strategy failed in post_send_search', e)
+            raise communication_exception_factory(LDAPSocketSendError, e)('restartable connection strategy failed in post_send_search')

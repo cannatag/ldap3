@@ -29,8 +29,8 @@ from random import choice
 from pyasn1.codec.ber import encoder, decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, DO_NOT_RAISE_EXCEPTIONS
-from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer, LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError,\
-    socket_open_exception_factory, socket_close_exception_factory, socket_send_exception_factory, socket_receive_exception_factory
+from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer, LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPSocketCloseError, \
+    LDAPSocketSendError
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
@@ -117,13 +117,13 @@ class BaseStrategy(object):
             self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except Exception as e:
             self.connection.last_error = 'socket creation error: ' + str(e)
-            raise socket_open_exception_factory(self.connection.last_error, e)
+            raise communication_exception_factory(LDAPSocketOpenError, e)(self.connection.last_error)
 
         try:
             self.connection.socket.connect((self.connection.server.host, self.connection.server.port))
         except socket.error as e:
             self.connection.last_error = 'socket connection error: ' + str(e)
-            raise socket_open_exception_factory(self.connection.last_error, e)
+            raise communication_exception_factory(LDAPSocketOpenError, e)(self.connection.last_error)
 
         if use_ssl:
             try:
@@ -132,7 +132,7 @@ class BaseStrategy(object):
                     self.connection._usage.wrapped_sockets += 1
             except Exception as e:
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
-                raise socket_open_exception_factory(self.connection.last_error, e)
+                raise communication_exception_factory(LDAPSocketOpenError, e)(self.connection.last_error)
 
         if self.connection._usage:
             self.connection._usage.opened_sockets += 1
@@ -149,7 +149,7 @@ class BaseStrategy(object):
             self.connection.socket.close()
         except Exception as e:
             self.connection.last_error = 'socket closing error' + str(e)
-            raise socket_close_exception_factory(self.connection.last_error, e)
+            raise communication_exception_factory(LDAPSocketCloseError, e)(self.connection.last_error)
 
         self.connection.socket = None
         self.connection.closed = True
@@ -183,7 +183,7 @@ class BaseStrategy(object):
                 self.connection.socket.sendall(encoded_message)
             except socket.error as e:
                 self.connection.last_error = 'socket sending error' + str(e)
-                raise socket_send_exception_factory(self.connection.last_error, e)
+                raise communication_exception_factory(LDAPSocketSendError, e)(self.connection.last_error)
 
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls

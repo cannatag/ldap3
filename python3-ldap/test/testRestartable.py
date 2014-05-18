@@ -30,7 +30,8 @@ from ldap3.core.connection import Connection
 from ldap3.core.server import Server
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_dn_builder, test_base, test_lazy_connection
 
-from ldap3 import Connection, Server, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, LDAPException, SEARCH_SCOPE_SINGLE_LEVEL, ALL_ATTRIBUTES
+from ldap3 import Connection, Server, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN,  SEARCH_SCOPE_SINGLE_LEVEL, ALL_ATTRIBUTES
+from ldap3.core.exceptions import LDAPException
 
 
 class Test(unittest.TestCase):

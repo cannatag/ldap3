@@ -29,7 +29,7 @@ try:
     # noinspection PyUnresolvedReferences
     import ssl
 except ImportError:
-    raise LDAPSSLNotSupportedError('ssl not supported in this Python interpreter')
+    raise LDAPSSLNotSupportedError('SSL not supported in this Python interpreter')
 
 
 # noinspection PyPep8Naming

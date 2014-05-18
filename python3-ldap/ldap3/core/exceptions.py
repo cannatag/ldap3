@@ -364,15 +364,11 @@ class LDAPSASLMechanismNotSupportedError(LDAPExceptionError):
     pass
 
 
-class LDAPObjectClassIsMandatoryError(LDAPExceptionError):
-    pass
-
-
 class LDAPConnectionIsReadOnlyError(LDAPExceptionError):
     pass
 
 
-class LDAPInvalidChangesError(LDAPExceptionError, ValueError):
+class LDAPChangesError(LDAPExceptionError, ValueError):
     pass
 
 
@@ -384,7 +380,7 @@ class LDAPServerPoolExhaustedError(LDAPExceptionError):
     pass
 
 
-class LDAPPortMustBeAnInteger(LDAPExceptionError):
+class LDAPInvalidPort(LDAPExceptionError):
     pass
 
 
@@ -416,7 +412,7 @@ class LDAPInvalidDereferenceAliasesError(LDAPExceptionError, ValueError):
     pass
 
 
-class LDAPInvalidControlsError(LDAPExceptionError, ValueError):
+class LDAPControlsError(LDAPExceptionError, ValueError):
     pass
 
 
@@ -464,7 +460,7 @@ class LDAPReferralError(LDAPExceptionError):
     pass
 
 
-class LDAPConnectionPoolNameAbsentError(LDAPExceptionError):
+class LDAPConnectionPoolNameIsMandatoryError(LDAPExceptionError):
     pass
 
 
@@ -476,5 +472,5 @@ class LDAPMetricsError(LDAPExceptionError):
     pass
 
 
-class LDAPInvalidObjectClassError(LDAPExceptionError):
+class LDAPObjectClassError(LDAPExceptionError):
     pass

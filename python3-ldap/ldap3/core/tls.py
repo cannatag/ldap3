@@ -28,7 +28,7 @@ try:
     # noinspection PyUnresolvedReferences
     import ssl
 except ImportError:
-    raise LDAPSSLNotSupportedError('ssl not supported in this Python interpreter')
+    raise LDAPSSLNotSupportedError('SSL not supported in this Python interpreter')
 
 try:
     # noinspection PyUnresolvedReferences
@@ -185,7 +185,7 @@ def match_hostname_backport(cert, hostname):
     elif len(dnsnames) == 1:
         raise CertificateError("hostname %r doesn't match %r" % (hostname, dnsnames[0]))
     else:
-        raise CertificateError("no appropriate commonName or subjectAltName fields were found")
+        raise CertificateError("no appropriate commonName or subjectAltName fields found")
 
 
 def check_hostname(sock, server_name, additional_names):
@@ -207,4 +207,4 @@ def check_hostname(sock, server_name, additional_names):
         if valid_found:
             return
 
-    raise LDAPCertificateError("certificate error, name doesn't match")
+    raise LDAPCertificateError("hostname doesn't match")

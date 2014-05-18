@@ -86,7 +86,7 @@ class AsyncThreadedStrategy(BaseStrategy):
                             if self.connection.server.tls:
                                 self.connection.server.tls._start_tls(self.connection)
                             else:
-                                self.connection.last_error = 'no Tls object defined in server'
+                                self.connection.last_error = 'no Tls defined in Server'
                                 raise LDAPSSLConfigurationError(self.connection.last_error)
                         else:
                             self.connection.last_error = 'asynchronous StartTls failed'

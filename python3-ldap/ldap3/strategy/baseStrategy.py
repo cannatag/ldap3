@@ -130,7 +130,7 @@ class BaseStrategy(object):
                 if self.connection._usage:
                     self.connection._usage.wrapped_sockets += 1
             except Exception as e:
-                self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
+                self.connection.last_error = 'socket SSL wrapping error: ' + str(e)
                 raise
 
         if self.connection._usage:
@@ -498,7 +498,7 @@ class BaseStrategy(object):
                                            controls=request['controls'])
             elif request['type'] == 'extendedRequest':
                 # tbd
-                raise NotImplemented()
+                raise NotImplementedError()
             elif request['type'] == 'modifyRequest':
                 referral_connection.modify(selected_referral['base'] or request['entry'],
                                            prepare_changes_for_request(request['changes']),

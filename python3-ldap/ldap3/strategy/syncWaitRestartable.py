@@ -25,8 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
+from ldap3.core.exceptions import socket_send_exception_factory
 from .syncWait import SyncWaitStrategy
-from ..core.exceptions import LDAPSocketNotOpenError, LDAPSocketSendError
+from ..core.exceptions import LDAPSocketOpenError, LDAPSocketSendError
 
 
 class SyncWaitRestartableStrategy(SyncWaitStrategy):
@@ -90,7 +91,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                     counter -= 1
             self._restarting = False
         self.connection.last_error = 'restartable connection strategy failed while opening socket'
-        raise LDAPSocketNotOpenError(self.connection.last_error)
+        raise LDAPSocketOpenError(self.connection.last_error)
 
     def send(self, message_type, request, controls=None):
         self._current_message_type = message_type
@@ -155,11 +156,9 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         # if an LDAPExceptionError is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
-        except Exception:
-            pass
-
-        self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
-        raise LDAPSocketSendError(self.connection.last_error)
+        except Exception as e:
+            self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
+            raise socket_send_exception_factory(self.connection.last_error, e)
 
     def post_send_search(self, message_id):
         try:
@@ -170,7 +169,5 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         # if an LDAPExceptionError is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
-        except Exception:
-            pass
-
-        raise LDAPSocketSendError('restartable connection strategy failed in post_send_search')
+        except Exception as e:
+            raise socket_send_exception_factory('restartable connection strategy failed in post_send_search', e)

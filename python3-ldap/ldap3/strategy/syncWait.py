@@ -26,6 +26,7 @@ from pyasn1.codec.ber import decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
 from ..core.exceptions import LDAPSocketReceiveError
+from ldap3.core.exceptions import socket_receive_exception_factory
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
@@ -70,10 +71,10 @@ class SyncWaitStrategy(BaseStrategy):
                     # if e.winerror == 10004:  # window error for socket not open
                     self.close()
                     self.connection.last_error = 'error receiving data: ' + str(e)
-                    raise LDAPSocketReceiveError(self.connection.last_error)
+                    raise socket_receive_exception_factory(self.connection.last_error, e)
                 except AttributeError as e:
                     self.connection.last_error = 'error receiving data: ' + str(e)
-                    raise LDAPSocketReceiveError(self.connection.last_error)
+                    raise socket_receive_exception_factory(self.connection.last_error, e)
                 unprocessed += data
             if len(data) > 0:
                 length = BaseStrategy.compute_ldap_message_size(unprocessed)

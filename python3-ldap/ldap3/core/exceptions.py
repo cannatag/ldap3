@@ -31,6 +31,9 @@ from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT
 
 
 # LDAPException hierarchy
+import socket
+
+
 class LDAPException(Exception):
     pass
 
@@ -432,34 +435,52 @@ class LDAPSASLBindInProgressError(LDAPExceptionError):
     pass
 
 
-class LDAPSocketNotOpenError(LDAPExceptionError):
+class LDAPMetricsError(LDAPExceptionError):
     pass
 
 
-class LDAPSocketReceiveError(LDAPExceptionError):
+class LDAPObjectClassError(LDAPExceptionError):
     pass
 
 
-class LDAPSocketSendError(LDAPExceptionError):
+# communication exceptions
+class LDAPCommunicationError(LDAPExceptionError):
     pass
 
 
-class LDAPSessionTerminatedByServer(LDAPExceptionError):
+class LDAPSocketOpenError(LDAPCommunicationError):
     pass
 
 
-class LDAPUnknownResponseError(LDAPExceptionError):
+class LDAPSocketCloseError(LDAPCommunicationError):
     pass
 
 
-class LDAPUnknownRequestError(LDAPExceptionError):
+class LDAPSocketReceiveError(LDAPCommunicationError, socket.error):
     pass
 
 
-class LDAPReferralError(LDAPExceptionError):
+class LDAPSocketSendError(LDAPCommunicationError, socket.error):
     pass
 
 
+class LDAPSessionTerminatedByServer(LDAPCommunicationError):
+    pass
+
+
+class LDAPUnknownResponseError(LDAPCommunicationError):
+    pass
+
+
+class LDAPUnknownRequestError(LDAPCommunicationError):
+    pass
+
+
+class LDAPReferralError(LDAPCommunicationError):
+    pass
+
+
+# pooling exceptions
 class LDAPConnectionPoolNameIsMandatoryError(LDAPExceptionError):
     pass
 
@@ -468,9 +489,28 @@ class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
     pass
 
 
-class LDAPMetricsError(LDAPExceptionError):
-    pass
+# exception factories
+def socket_open_exception_factory(msg, exc):
+    class _LDAPSocketOpenError(LDAPSocketOpenError, type(exc)):
+        pass
+    return _LDAPSocketOpenError(msg)
 
 
-class LDAPObjectClassError(LDAPExceptionError):
-    pass
+def socket_close_exception_factory(msg, exc):
+    class _LDAPSocketCloseError(LDAPSocketCloseError, type(exc)):
+        pass
+    return _LDAPSocketCloseError(msg)
+
+
+def socket_send_exception_factory(msg, exc):
+    class _LDAPSocketSendError(LDAPSocketSendError, type(exc)):
+        pass
+
+    return _LDAPSocketSendError(msg)
+
+
+def socket_receive_exception_factory(msg, exc):
+    class _LDAPSocketReceiveError(LDAPSocketReceiveError, type(exc)):
+        pass
+
+    return _LDAPSocketReceiveError(msg)

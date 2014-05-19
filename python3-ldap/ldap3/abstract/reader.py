@@ -37,7 +37,7 @@ def _ret_search_value(value):
 
 def _create_query_dict(query_text):
     """
-    Create a dictonary with query key:value definitions
+    Create a dictionary with query key:value definitions
     query_text is a comma delimited key:value sequence
     """
     query_dict = dict()
@@ -218,9 +218,9 @@ class Reader(object):
 
     def _create_query_filter(self):
         """
-        Converts the query dictonary in the filter text
+        Converts the query dictionary in the filter text
         """
-        if self._query and self._query.startswith('(') and self._query.stopswith(')'):  # query is alread an LDAP filter
+        if self._query and self._query.startswith('(') and self._query.stopswith(')'):  # query is already an LDAP filter
             self.query_filter = self._query
             return
 

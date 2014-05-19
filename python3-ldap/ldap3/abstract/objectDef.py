@@ -35,7 +35,7 @@ class ObjectDef(object):
 
     AttrDefs can be added and removed using the += ad -= operators
 
-    ObjectDef can be accessed either as a sequence and a dictionary. Wnen
+    ObjectDef can be accessed either as a sequence and a dictionary. When
     accessed the whole AttrDef instance is returned
     """
 

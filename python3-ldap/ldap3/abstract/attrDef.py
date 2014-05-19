@@ -27,7 +27,7 @@ from ..core.exceptions import LDAPKeyError
 class AttrDef(object):
     """
     Attribute definition for abstract layer:
-    'name' is the real attribut name
+    'name' is the real attribute name
     'key' is the friendly name to use in query and while accessing the attribute, if not set is the same of name
     'default' is the value returned if the attribute is not present
     'validate' is an optional callable, called to check if the value in the query is valid, the callable is called with the value parameter
@@ -77,7 +77,7 @@ class AttrDef(object):
         if self.key:
             return hash(self.key)
         else:
-            return id(self)  # unique for each istance
+            return id(self)  # unique for each instance
 
     def __setattr__(self, key, value):
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is being used for __hash__

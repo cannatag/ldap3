@@ -66,7 +66,7 @@ class ServerPoolState(object):
                     # returns the first active server
                     self.last_used_server = self.find_active_server(starting=0, exhaust=self.server_pool.exhaust)
                 else:
-                    # returns alvways the first server - no pooling
+                    # returns always the first server - no pooling
                     self.last_used_server = 0
             elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN:
                 if self.server_pool.active:

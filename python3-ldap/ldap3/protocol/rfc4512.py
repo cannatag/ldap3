@@ -103,7 +103,7 @@ def list_to_string(list_object):
 class DsaInfo(object):
     """
     This class contains info about the ldap server (DSA) read from DSE
-    as defined in RFC4512 and RFC3045. Unkwnown attributes are stored in the "other" dict
+    as defined in RFC4512 and RFC3045. Unknown attributes are stored in the "other" dict
     """
 
     def __init__(self, attributes):
@@ -145,7 +145,7 @@ class DsaInfo(object):
 class SchemaInfo(object):
     """
     This class contains info about the ldap server schema read from an entry (default entry is DSE)
-    as defined in rfc 4512. Unkwnown attributes are stored in the "other" dict
+    as defined in rfc 4512. Unknown attributes are stored in the "other" dict
     """
 
     def __init__(self, schema_entry, attributes):

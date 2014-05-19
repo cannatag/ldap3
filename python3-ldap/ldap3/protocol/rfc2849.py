@@ -77,7 +77,7 @@ def convert_to_ldif(descriptor, value, base64):
             value = value.decode('ascii')
         line = descriptor + ': ' + value
 
-    # check max line lenght and split as per note 2 of RFC 2849
+    # check max line length and split as per note 2 of RFC 2849
     lines = [' ' + line[i: i + LDIF_LINE_LENGTH - 1] for i in range(LDIF_LINE_LENGTH, len(line), LDIF_LINE_LENGTH - 1)] if len(line) > LDIF_LINE_LENGTH else []
 
     return [line[0:LDIF_LINE_LENGTH]] + lines
@@ -106,7 +106,7 @@ def add_attributes(attributes, all_base64):
             oc_attr = attr
             break
 
-    # remaing attributes
+    # remaining attributes
     for attr in attributes:
         if attr != oc_attr:
             for val in attributes[attr]:

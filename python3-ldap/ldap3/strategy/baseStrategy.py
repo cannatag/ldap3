@@ -47,6 +47,7 @@ from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 
+
 class BaseStrategy(object):
     """
     Base class for connection strategy
@@ -358,7 +359,7 @@ class BaseStrategy(object):
     @classmethod
     def decode_referral(cls, uri):
         """
-        Decoce referral URI as specified in RFC 4516 relaxing specifications
+        Decode referral URI as specified in RFC 4516 relaxing specifications
         permitting 'ldaps' as scheme meaning ssl-ldap
 
         ldapurl     = scheme COLON SLASH SLASH [host [COLON port]]

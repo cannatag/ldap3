@@ -249,7 +249,7 @@ class Connection(object):
             self.open()
 
         if not exc_type is None:
-            return False  # reraise LDAPExceptionError
+            return False  # re-raise LDAPExceptionError
 
     def bind(self,
              controls=None):

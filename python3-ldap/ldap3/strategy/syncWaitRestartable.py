@@ -160,7 +160,6 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
             raise communication_exception_factory(LDAPSocketSendError, e)(self.connection.last_error)
 
-
     def post_send_search(self, message_id):
         try:
             return SyncWaitStrategy.post_send_search(self, message_id)

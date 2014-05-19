@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from multiprocessing import Lock
 
 from socket import getaddrinfo, gaierror
 
@@ -95,6 +96,7 @@ class Server(object):
         self.get_info = get_info
         self._dsa_info = None
         self._schema_info = None
+        self.lock = Lock()
 
     def __str__(self):
         if self.host:
@@ -139,12 +141,13 @@ class Server(object):
         """
         messageId is unique in all connections to the server.
         """
-        if self.address and self.address in Server._real_servers:
-            Server._real_servers[self.address] += 1
-            if Server._real_servers[self.address] >= LDAP_MAX_INT:  # wrap as per MAXINT (2147483647) in rfc4511 specification
-                Server._real_servers[self.address] = 1  # 0 is reserved for Unsolicited messages
-        else:
-            Server._real_servers[self.address] = 1
+        with self.lock:
+            if self.address and self.address in Server._real_servers:
+                Server._real_servers[self.address] += 1
+                if Server._real_servers[self.address] >= LDAP_MAX_INT:  # wrap as per MAXINT (2147483647) in rfc4511 specification
+                    Server._real_servers[self.address] = 1  # 0 is reserved for Unsolicited messages
+            else:
+                Server._real_servers[self.address] = 1
 
         return Server._real_servers[self.address]
 
@@ -152,21 +155,22 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC 4512 (5.1).
         """
-        self._dsa_info = None
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
+        self._dsa_info = None
         if isinstance(result, bool):  # sync request
-            self._dsa_info = DsaInfo(connection.response[0]['attributes']) if result else None
+            with self.lock:
+                self._dsa_info = DsaInfo(connection.response[0]['attributes']) if result else None
         elif result:  # async request, must check if attributes in response
             results, _ = connection.get_response(result)
             if len(results) == 1 and 'attributes' in results[0]:
-                self._dsa_info = DsaInfo(results[0]['attributes'])
+                with self.lock:
+                    self._dsa_info = DsaInfo(results[0]['attributes'])
 
     def _get_schema_info(self, connection, entry=''):
         """
         Retrieve schema from subschemaSubentry DSE attribute, per RFC
         4512 (4.4 and 5.1); entry = '' means DSE.
         """
-        self._schema_info = None
         schema_entry = None
         if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
             schema_entry = self._dsa_info.schema_entry[0] if self._dsa_info.schema_entry else None
@@ -181,12 +185,16 @@ class Server(object):
 
         if schema_entry:
             result = connection.search(schema_entry, search_filter='(objectClass=subschema)', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
-            if isinstance(result, bool):  # sync request
-                self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes']) if result else None
-            else:  # async request, must check if attributes in response
-                results, _ = connection.get_response(result)
-                if len(results) == 1 and 'attributes' in results[0]:
-                    self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'])
+
+        with self.lock:
+            self._schema_info = None
+            if result:
+                if isinstance(result, bool):  # sync request
+                    self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes']) if result else None
+                else:  # async request, must check if attributes in response
+                    results, _ = connection.get_response(result)
+                    if len(results) == 1 and 'attributes' in results[0]:
+                        self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'])
 
     def get_info_from_server(self, connection):
         """

@@ -54,7 +54,7 @@ For any information and suggestions you can contact me at python3ldap@gmail.com 
 CHANGELOG
 =========
 
-* 0.9.3 2014.05.16
+* 0.9.3 2014.05.19
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
     - Now the key in server.schema.object_classes is the class name (was the oid)
     - Added check_names to Connection definition to have the names of attributes and object class checked against the schema
@@ -62,6 +62,7 @@ CHANGELOG
     - Added wheel installation format
     - Added raise_exception mode for connection
     - Exception hierarchy reworked
+    - Added locking to Server object (for multithreading)
 
 * 0.9.2.2 2014.04.30
     - fixed a bug from 0.9.1 that broke start_tls() (thanks Mark)

@@ -112,7 +112,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
         #===============================================================================
-        # removal os TLS layer is defined as MAY in rfc4511. It can't be implemented againsta a generic LDAP server
+        # removal os TLS layer is defined as MAY in rfc4511. It can't be implemented against a generic LDAP server
         #     def test_stop_tls(self):
         #         server = Server(host = test_server, port = test_port, tls = Tls())
         #         connection = Connection(server, auto_bind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)

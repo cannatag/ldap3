@@ -12,7 +12,7 @@ from ldap3 import (
 )
 
 
-# For Active Directory, quering the domain will return all all name servers.
+# For Active Directory, querying the domain will return all all name servers.
 # Yeah, that doesn't mean DC, but I was lazy to quickly post code.
 # _, _, hosts = socket.gethostbyname_ex('xxx.xxx.xxx')
 hosts = ['127.0.0.1', 'edir', 'edir2']

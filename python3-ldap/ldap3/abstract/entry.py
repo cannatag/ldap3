@@ -31,7 +31,7 @@ class Entry(object):
 
     The Entry object contains a single entry from the result of an LDAP
     search.  Attributes can be accessed either by sequence, by assignment
-    or as dictonary keys. Keys are not case sensitive.
+    or as dictionary keys. Keys are not case sensitive.
 
     - The DN is retrieved by get_entry_dn()
     - The Reader reference is in get_entry_reader()

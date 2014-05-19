@@ -33,4 +33,4 @@ class Test(unittest.TestCase):
 
     def test_subclassing_exception(self):
         e = LDAPOperationResult(1)
-        self.assertTrue(isinstance(e, LDAPOperationsError))
+        self.assertTrue(isinstance(e, LDAPOperationsErrorResult))

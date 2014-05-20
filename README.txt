@@ -6,7 +6,7 @@ The python3-ldap project is open source and released under the LGPL v3 license.
 PEP8 Compliance
 ---------------
 
-python3-ldap is PEP8 compliant starting from version 0.9.0.
+python3-ldap is PEP8 compliance (except for line length) starting from version 0.9.0.
 
 Mailing List
 ------------
@@ -49,7 +49,7 @@ Acknowledgements
 Contact me
 ----------
 
-For any information and suggestions you can contact me at python3ldap@gmail.com or you can join the python3-ldap mailing list at http://mail.python.org/mailman/listinfo/python3-ldap. You can also open a support ticket on https://www.assembla.com/spaces/python3-ldap/support/tickets
+For information and suggestions you can contact me at python3ldap@gmail.com or you can join the python3-ldap mailing list at http://mail.python.org/mailman/listinfo/python3-ldap. You can also open a support ticket on https://www.assembla.com/spaces/python3-ldap/support/tickets
 
 CHANGELOG
 =========

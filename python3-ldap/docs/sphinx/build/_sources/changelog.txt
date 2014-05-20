@@ -1,10 +1,15 @@
 CHANGELOG
 =========
 
-* 0.9.3 2014.05.02
+* 0.9.3 2014.05.20
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
-    - Added auto_check to Connection definition to have the names of attributes and object class checked against the schema
+    - Now the key in server.schema.object_classes is the class name (was the oid)
+    - Added check_names to Connection definition to have the names of attributes and object class checked against the schema
     - Updated setuptools to 3.6
+    - Added wheel installation format
+    - Added raise_exceptions mode for connection
+    - Exception hierarchy reworked
+    - Added locking to Server object (for multithreading)
 
 * 0.9.2.2 2014.04.30
     - fixed a bug from 0.9.1 that broke start_tls() (thanks Mark)
@@ -127,42 +132,42 @@ CHANGELOG
     - Fixed RFC4511 asn1 definitions
 
 * 0.5.1 - 2013.08.17
-	- Refactored package structure
-	- Project description reformatted with reStructuredText
-	- Added Windows graphical installation
+    - Refactored package structure
+    - Project description reformatted with reStructuredText
+    - Added Windows graphical installation
 
 * 0.5.0 - 2013.08.15
-	- Added reference to LGPL v3 license
-	- Added Tls object to hold ssl/tls configuration
-	- Added StartTLS feature
-	- Added SASL feature
-	- Added SASL EXTERNAL mechanism
-	- Fixed Unbind
-	- connection.close in now an alias for connection.unbind
+    - Added reference to LGPL v3 license
+    - Added Tls object to hold ssl/tls configuration
+    - Added StartTLS feature
+    - Added SASL feature
+    - Added SASL EXTERNAL mechanism
+    - Fixed Unbind
+    - connection.close in now an alias for connection.unbind
 
 * 0.4.4 - 2013.08.01
-	- Added 'Controls' to all LDAP Requests
-	- Added Extended Request feature
-	- Added Intermediate Response feature
-	- Added namespace 'ldap3'
+    - Added 'Controls' to all LDAP Requests
+    - Added Extended Request feature
+    - Added Intermediate Response feature
+    - Added namespace 'ldap3'
 
 * 0.4.3 - 2013.07.31
-	- Test suite refactored
-	- Fixed single object search response error
-	- Changed attributes returned in search from tuple to dict
-	- Added 'raw_attributes' key in search response to hold undecoded (binary) attribute values read from ldap
-	- Added __repr__ for Server and Connection objects to re-create the object instance
+    - Test suite refactored
+    - Fixed single object search response error
+    - Changed attributes returned in search from tuple to dict
+    - Added 'raw_attributes' key in search response to hold undecoded (binary) attribute values read from ldap
+    - Added __repr__ for Server and Connection objects to re-create the object instance
 
 * 0.4.2 - 2013.07.29
-	- Added autoReferral feature as per RFC4511 (4.1.10)
-	- Added allowedReferralHosts to conform to Security considerations of RFC4516
+    - Added autoReferral feature as per RFC4511 (4.1.10)
+    - Added allowedReferralHosts to conform to Security considerations of RFC4516
 
 * 0.4.1 - 2013.07.20
-	- Add validation to Abandon operation
-	- Added connection.request to hold a dictionary of infos about last request
-	- Added info about outstanding operation in connection.strategy._oustanding
-	- Implemented RFC4515 for search filter coding and decoding
-	- Added a parser to build filter string from LdapMessage
+    - Add validation to Abandon operation
+    - Added connection.request to hold a dictionary of infos about last request
+    - Added info about outstanding operation in connection.strategy._oustanding
+    - Implemented RFC4515 for search filter coding and decoding
+    - Added a parser to build filter string from LdapMessage
 
 * 0.4.0 - 2013.07.15
     - Refactoring of the connection and strategy classes

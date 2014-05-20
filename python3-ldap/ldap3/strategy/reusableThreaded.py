@@ -41,11 +41,11 @@ class ReusableThreadedStrategy(BaseStrategy):
     """
     A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
     The connection using this strategy presents itself as a normal connection, but internally the strategy has a pool of
-    connections that can be used as needed. Each connection lives in its own thread and has a busy/available status. The strategy performs the requested
-    operation on the first available connection.
+    connections that can be used as needed. Each connection lives in its own thread and has a busy/available status.
+    The strategy performs the requested operation on the first available connection.
     The pool of connections is instantiated at strategy initialization.
-    Strategy has two settable properties, the total number of connection present in the pool and the lifetime of each connection.
-    When lifetime is expired the connection is closed and will be opened again when needed
+    Strategy has two customizable properties, the total number of connections in the pool and the lifetime of each connection.
+    When lifetime is expired the connection is closed and will be opened again when needed.
     """
     pools = dict()
 
@@ -204,6 +204,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                                          sasl_credentials=self.original_connection.sasl_credentials,
                                          collect_usage=True if self.original_connection._usage else False,
                                          read_only=self.original_connection.read_only,
+                                         auto_bind=self.original_connection.auto_bind,
                                          lazy=True)
 
             if self.original_connection.server_pool:
@@ -229,7 +230,6 @@ class ReusableThreadedStrategy(BaseStrategy):
         if self.connection._usage:
             if reset_usage or not self.connection._usage.initial_connection_start_time:
                 self.connection._usage.start()
-        self.connection.refresh_dsa_info()
 
     def terminate(self):
         self.pool.terminate_pool()

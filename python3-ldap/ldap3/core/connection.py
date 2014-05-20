@@ -289,7 +289,7 @@ class Connection(object):
             else:
                 self.bound = True if result['result'] == RESULT_SUCCESS else False
 
-            if self.bound:
+            if self.bound and not self.strategy.pooled:
                 self.refresh_dsa_info()
 
         return self.bound
@@ -298,7 +298,7 @@ class Connection(object):
                controls=None):
         """
         Unbinds the connected user
-        Unbind implies closing session as per rfc 4511 (4.3)
+        Unbind implies closing session as per RFC4511 (4.3)
         """
         if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # clear deferred status
             self.strategy.close()
@@ -556,7 +556,7 @@ class Connection(object):
         else:
             self._deferred_start_tls = False
             if self.server.tls.start_tls(self):
-                self.refresh_dsa_info()  # refresh server info as per rfc 4515 (3.1.5)
+                self.refresh_dsa_info()  # refresh server info as per RFC4515 (3.1.5)
                 return True
 
         return False

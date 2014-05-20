@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 # ldap ASN.1 Definition
 # from RFC4511 - Appendix B
 # extended with result codes from IANA ldap-parameters as of 2013.08.21
-# extended with modify_increment from rfc 4525
+# extended with modify_increment from RFC4525
 
 
 # Lightweight-Directory-Access-Protocol-V3 {1 3 6 1 1 18}

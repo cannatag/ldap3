@@ -23,11 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3 import STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
+from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
 
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, ValsAtLeast1
-from ldap3.core.connection import Connection
-from ldap3.core.server import Server
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_dn_builder, test_base, test_lazy_connection
 
 

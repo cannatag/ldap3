@@ -168,7 +168,7 @@ class BaseStrategy(object):
         """
         self.connection.request = None
         if self.connection.listening:
-            if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per rfc 4511 (4.2.1)
+            if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per RFC4511 (4.2.1)
                 self.connection.last_error = 'cannot send operation requests while SASL bind is in progress'
                 raise LDAPSASLBindInProgressError(self.connection.last_error)
             message_id = self.connection.server.next_message_id()
@@ -305,7 +305,7 @@ class BaseStrategy(object):
         control_type = str(control['controlType'])
         criticality = bool(control['criticality'])
         control_value = bytes(control['controlValue'])
-        if control_type == '1.2.840.113556.1.4.319':  # simple paged search as per rfc 2696
+        if control_type == '1.2.840.113556.1.4.319':  # simple paged search as per RFC2696
             control_resp, unprocessed = decoder.decode(control_value, asn1Spec=RealSearchControlValue())
             control_value = dict()
             control_value['size'] = int(control_resp['size'])

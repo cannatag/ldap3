@@ -68,18 +68,18 @@ def sasl_digest_md5(connection, controls):
     if not isinstance(connection.sasl_credentials, tuple) or not len(connection.sasl_credentials) == 4:
         return None
 
-    # step One of rfc 2831
+    # step One of RFC2831
     result = send_sasl_negotiation(connection, controls, None)
     if 'saslCreds' in result and result['saslCreds'] != 'None':
         server_directives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in result['saslCreds'].split(',')])  # convert directives to dict, unquote values
     else:
         return None
 
-    if 'realm' not in server_directives or 'nonce' not in server_directives or 'algorithm' not in server_directives:  # mandatory directives, as per rfc 2831
+    if 'realm' not in server_directives or 'nonce' not in server_directives or 'algorithm' not in server_directives:  # mandatory directives, as per RFC2831
         abort_sasl_negotiation(connection, controls)
         return None
 
-    # step Two of rfc 2831
+    # step Two of RFC2831
     charset = server_directives['charset'] if 'charset' in server_directives and server_directives['charset'].lower() == 'utf-8' else 'iso8859-1'
     user = connection.sasl_credentials[1].encode(charset)
     realm = (connection.sasl_credentials[0] if connection.sasl_credentials[0] else (server_directives['realm'] if 'realm' in server_directives else '')).encode(charset)

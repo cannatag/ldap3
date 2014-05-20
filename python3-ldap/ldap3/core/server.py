@@ -97,6 +97,7 @@ class Server(object):
         self._dsa_info = None
         self._schema_info = None
         self.lock = Lock()
+        self.message_id_lock = Lock()
 
     def __str__(self):
         if self.host:
@@ -141,29 +142,27 @@ class Server(object):
         """
         messageId is unique in all connections to the server.
         """
-        with self.lock:
+        with self.message_id_lock:
             if self.address and self.address in Server._real_servers:
                 Server._real_servers[self.address] += 1
-                if Server._real_servers[self.address] >= LDAP_MAX_INT:  # wrap as per MAXINT (2147483647) in rfc4511 specification
+                if Server._real_servers[self.address] >= LDAP_MAX_INT:  # wrap as per MAXINT (2147483647) in RFC4511 specification
                     Server._real_servers[self.address] = 1  # 0 is reserved for Unsolicited messages
             else:
                 Server._real_servers[self.address] = 1
-
-        return Server._real_servers[self.address]
+            return Server._real_servers[self.address]
 
     def _get_dsa_info(self, connection):
         """
-        Retrieve DSE operational attribute as per RFC 4512 (5.1).
+        Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
         self._dsa_info = None
-        if isinstance(result, bool):  # sync request
-            with self.lock:
+        with self.lock:
+            if isinstance(result, bool):  # sync request
                 self._dsa_info = DsaInfo(connection.response[0]['attributes']) if result else None
-        elif result:  # async request, must check if attributes in response
-            results, _ = connection.get_response(result)
-            if len(results) == 1 and 'attributes' in results[0]:
-                with self.lock:
+            elif result:  # async request, must check if attributes in response
+                results, _ = connection.get_response(result)
+                if len(results) == 1 and 'attributes' in results[0]:
                     self._dsa_info = DsaInfo(results[0]['attributes'])
 
     def _get_schema_info(self, connection, entry=''):
@@ -206,6 +205,9 @@ class Server(object):
 
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
                 self._get_schema_info(connection)
+
+            connection.response = None
+            connection.result = None
 
     @property
     def info(self):

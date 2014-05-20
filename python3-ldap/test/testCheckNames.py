@@ -22,14 +22,14 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 import unittest
-from ldap3.core.exceptions import  LDAPException
-from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_name_attr
+from ldap3.core.exceptions import LDAPException
+from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_name_attr, test_get_info, test_check_names
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
+        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=3)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=True)
 
     def tearDown(self):

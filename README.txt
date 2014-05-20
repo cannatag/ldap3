@@ -1,5 +1,5 @@
 License
-=======
+-------
 
 The python3-ldap project is open source and released under the LGPL v3 license.
 
@@ -54,13 +54,13 @@ For any information and suggestions you can contact me at python3ldap@gmail.com 
 CHANGELOG
 =========
 
-* 0.9.3 2014.05.19
+* 0.9.3 2014.05.20
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
     - Now the key in server.schema.object_classes is the class name (was the oid)
     - Added check_names to Connection definition to have the names of attributes and object class checked against the schema
     - Updated setuptools to 3.6
     - Added wheel installation format
-    - Added raise_exception mode for connection
+    - Added raise_exceptions mode for connection
     - Exception hierarchy reworked
     - Added locking to Server object (for multithreading)
 

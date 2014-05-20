@@ -29,6 +29,7 @@ from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_R
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError
+from ldap3.core.exceptions import LDAPOperationResult
 
 try:
     from queue import Queue
@@ -155,13 +156,22 @@ class ReusableThreadedStrategy(BaseStrategy):
                             self.active_connection.connection.start_tls()
                         self.active_connection.connection._fire_deferred()  # force deferred operations
 
-                        if message_type == 'searchRequest':
-                            response = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
-                        else:
-                            response = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
-                        result = self.active_connection.connection.result
+                        exc = None
+                        try:
+                            if message_type == 'searchRequest':
+                                response = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
+                            else:
+                                response = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
+                            result = self.active_connection.connection.result
+                        except LDAPOperationResult as e:  # raise_exceptions has raise an exception. It must be redirected to the original connection thread
+                            exc = e
+
                         with pool.lock:
-                            pool._incoming[counter] = (response, result)
+                            if exc:
+                                pool._incoming[counter] = (exc, None)
+                            else:
+                                pool._incoming[counter] = (response, result)
+
                 self.original_connection.busy = False
                 pool.request_queue.task_done()
             if self.original_connection.usage:
@@ -199,6 +209,8 @@ class ReusableThreadedStrategy(BaseStrategy):
                                          version=self.original_connection.version,
                                          authentication=self.original_connection.authentication,
                                          client_strategy=STRATEGY_SYNC_RESTARTABLE,
+                                         raise_exceptions=self.original_connection.raise_exceptions,
+                                         check_names=self.original_connection.check_names,
                                          auto_referrals=self.original_connection.auto_referrals,
                                          sasl_mechanism=self.original_connection.sasl_mechanism,
                                          sasl_credentials=self.original_connection.sasl_credentials,
@@ -289,6 +301,10 @@ class ReusableThreadedStrategy(BaseStrategy):
                 timeout -= RESPONSE_SLEEPTIME
                 continue
             break
+
+        if isinstance(response, LDAPOperationResult):
+            raise response  # an exception has been raised with raise_connections
+
         return response, result
 
     def post_send_single_response(self, counter):

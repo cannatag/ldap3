@@ -60,7 +60,29 @@ class ConnectionUsage(object):
         self.initial_connection_start_time = None
         self.open_socket_start_time = None
         self.connection_stop_time = None
-        self.reset()
+        self.opened_sockets = 0
+        self.closed_sockets = 0
+        self.wrapped_sockets = 0
+        self.bytes_transmitted = 0
+        self.bytes_received = 0
+        self.messages_transmitted = 0
+        self.messages_received = 0
+        self.operations = 0
+        self.abandon_operations = 0
+        self.add_operations = 0
+        self.bind_operations = 0
+        self.compare_operations = 0
+        self.delete_operations = 0
+        self.extended_operations = 0
+        self.modify_operations = 0
+        self.modify_dn_operations = 0
+        self.search_operations = 0
+        self.unbind_operations = 0
+        self.referrals_received = 0
+        self.referrals_followed = 0
+        self.restartable_failures = 0
+        self.restartable_successes = 0
+        self.servers_from_pool = 0
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep

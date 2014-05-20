@@ -182,6 +182,7 @@ class Server(object):
                 if len(results) == 1 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
                     schema_entry = results[0]['attributes']['subschemaSubentry'][0]
 
+        result = None
         if schema_entry:
             result = connection.search(schema_entry, search_filter='(objectClass=subschema)', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
 

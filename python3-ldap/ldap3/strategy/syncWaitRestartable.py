@@ -26,10 +26,12 @@ from time import sleep
 
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from ..core.exceptions import communication_exception_factory
+from ldap3.core.exceptions import LDAPOperationResult
 from .syncWait import SyncWaitStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPSocketSendError
 
 
+# noinspection PyBroadException
 class SyncWaitRestartableStrategy(SyncWaitStrategy):
     def __init__(self, ldap_connection):
         SyncWaitStrategy.__init__(self, ldap_connection)
@@ -154,11 +156,18 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             pass
 
         # if an LDAPExceptionError is raised then resend the request
+        exc = None
         try:
             return SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
         except Exception as e:
-            self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
-            raise communication_exception_factory(LDAPSocketSendError, e)(self.connection.last_error)
+            exc = e
+
+        if exc:
+            if isinstance(exc, LDAPOperationResult):
+                raise exc
+            else:
+                self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
+                raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)
 
     def post_send_search(self, message_id):
         try:
@@ -166,8 +175,16 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         except Exception:
             pass
 
+        exc = None
         # if an LDAPExceptionError is raised then resend the request
         try:
             return SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
         except Exception as e:
-            raise communication_exception_factory(LDAPSocketSendError, e)('restartable connection strategy failed in post_send_search')
+            exc = e
+
+        if exc:
+            if isinstance(exc, LDAPOperationResult):
+                raise exc
+            else:
+                self.connection.last_error = 'restartable connection strategy failed in post_send_search'
+                raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)

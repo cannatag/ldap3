@@ -24,8 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-from ldap3 import STRATEGY_LDIF_PRODUCER, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
-from ldap3.core.connection import Connection
+from ldap3 import Connection, STRATEGY_LDIF_PRODUCER, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 from test import test_base, test_dn_builder, test_name_attr, test_moved
 
 

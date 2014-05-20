@@ -145,7 +145,7 @@ class DsaInfo(object):
 class SchemaInfo(object):
     """
     This class contains info about the ldap server schema read from an entry (default entry is DSE)
-    as defined in rfc 4512. Unknown attributes are stored in the "other" dict
+    as defined in RFC4512. Unknown attributes are stored in the "other" dict
     """
 
     def __init__(self, schema_entry, attributes):
@@ -185,7 +185,7 @@ class SchemaInfo(object):
 
 class BaseObjectInfo(object):
     """
-    Base class for objects defined in the schema as per rfc4512
+    Base class for objects defined in the schema as per RFC4512
     """
 
     def __init__(self,

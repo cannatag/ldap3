@@ -24,11 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-from ldap3.core.server import Server
-from ldap3.core.connection import Connection
 from ldap3.utils.conv import escape_bytes
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_name_attr, test_lazy_connection
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
+from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
 
 
 class Test(unittest.TestCase):

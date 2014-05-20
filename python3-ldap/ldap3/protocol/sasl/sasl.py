@@ -128,7 +128,7 @@ def validate_simple_password(password):
     if password == '' or password is None:
         raise LDAPPasswordIsMandatoryError("simple password can't be empty")
 
-    if not isinstance(password, bytes):  # bytes are returned raw, as per rfc (4.2)
+    if not isinstance(password, bytes):  # bytes are returned raw, as per RFC (4.2)
         password = sasl_prep(password)
 
     return password

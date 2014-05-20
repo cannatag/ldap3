@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SASL, Connection, Server, STRATEGY_REUSABLE_THREADED
+from ldap3 import Server, Connection, AUTH_ANONYMOUS, AUTH_SASL, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl, test_lazy_connection
 
 

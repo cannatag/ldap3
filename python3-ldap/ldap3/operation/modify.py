@@ -43,7 +43,7 @@ def modify_operation(dn,
                      schema=None):
     # changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
     # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
-    # increment as per rfc 4525
+    # increment as per RFC4525
 
     change_list = Changes()
     for pos, attribute in enumerate(changes):

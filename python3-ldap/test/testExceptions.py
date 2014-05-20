@@ -23,7 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3.core.exceptions import LDAPException, LDAPOperationsErrorResult, LDAPOperationResult
+from ldap3 import Server, Connection, GET_ALL_INFO
+from ldap3.core.exceptions import LDAPException, LDAPOperationsErrorResult, LDAPOperationResult, LDAPNoSuchObjectResult
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_name_attr
 
 
 class Test(unittest.TestCase):
@@ -34,3 +36,14 @@ class Test(unittest.TestCase):
     def test_subclassing_exception(self):
         e = LDAPOperationResult(1)
         self.assertTrue(isinstance(e, LDAPOperationsErrorResult))
+
+    def test_raise_exceptions(self):
+        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
+        connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=True, raise_exceptions=True)
+        ok = False
+        try:
+            connection.search('xxx=xxx', '(cn=*)')
+        except LDAPNoSuchObjectResult:
+            ok = True
+
+        self.assertTrue(ok)

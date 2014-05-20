@@ -50,6 +50,10 @@ Connection parameters are:
 
 * lazy: when True connection will defer open and bind until another LDAP operation is requested
 
+* check_names: when True attribute names in assertion and in filter will be checked against the schema (Server must have schema infos loaded with the get_info parameter)
+
+* raise_exceptions: when True LDAP operations will raise exceptions (subclasses of LDAPOperationResult) when the result is not one of the following: RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL.
+
 With the connection you can perform all the standard LDAP operations:
 
 * bind: performs a bind to the LDAP Server with the authentication type and credential specified in the connection

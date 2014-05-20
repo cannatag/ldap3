@@ -26,13 +26,13 @@ import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
 
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, ValsAtLeast1
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_dn_builder, test_base, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_dn_builder, test_base, test_get_info, test_check_names
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(test_server, test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
-        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=False, pool_name='pool1', check_names=True)
+        server = Server(test_server, test_port, allowed_referral_hosts=('*', True), get_info=test_get_info)
+        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=False, pool_name='pool1', check_names=test_check_names)
 
     def tearDown(self):
         self.connection.unbind()

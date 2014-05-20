@@ -67,7 +67,7 @@ def convert_to_ldif(descriptor, value, base64):
         except TypeError:
             encoded = b64encode(str(value))  # patch for python2.6
         if not isinstance(encoded, str):  # in python3 b64encode returns bytes in python2 returns str
-            encoded = str(encoded, encoding='ascii')
+            encoded = str(encoded, encoding='ascii')  # python3
         line = descriptor + ':: ' + encoded
     else:
         if not isinstance(value, bytearray):  # python3

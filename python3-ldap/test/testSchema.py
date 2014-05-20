@@ -26,12 +26,12 @@ import unittest
 
 from ldap3 import Server, Connection, GET_ALL_INFO, STRATEGY_REUSABLE_THREADED
 from ldap3.protocol.rfc4512 import SchemaInfo, ObjectClassInfo, AttributeTypeInfo
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection, test_get_info
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
+        self.server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=3)
         self.connection = Connection(self.server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
 
     def tearDown(self):

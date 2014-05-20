@@ -25,6 +25,7 @@ python3-ldap can be used on Python 3 and Python 2 (starting from 2.6).
    metrics
    abstraction
    ldif
+   exceptions
    testing
    changelog
    roadmap

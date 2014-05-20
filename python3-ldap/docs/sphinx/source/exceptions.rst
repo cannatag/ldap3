@@ -1,20 +1,16 @@
-###################
-Exception Hierarchy
-###################
-
 LDAPException
 
 --LDAPExceptionError
 
-----LDAPAttributeError
+----LDAPAttributeError (inherits also from AttributeError)
 
 ----LDAPBindError
 
 ----LDAPCertificateError
 
-----LDAPChangesError
+----LDAPChangesError (inherits also from ValueError)
 
-----LDAPCommunicationError
+----LDAPCommunicationError (all may inherit from socket.error)
 
 ------LDAPReferralError
 
@@ -38,27 +34,27 @@ LDAPException
 
 ----LDAPConnectionPoolNotStartedError
 
-----LDAPControlsError
+----LDAPControlsError (inherits also from ValueError)
 
 ----LDAPEntryError
 
-----LDAPInvalidDereferenceAliasesError
+----LDAPInvalidDereferenceAliasesError (inherits also from ValueError)
 
 ----LDAPInvalidFilterError
 
 ----LDAPInvalidPort
 
-----LDAPInvalidScopeError
+----LDAPInvalidScopeError (inherits also from ValueError)
 
 ----LDAPInvalidServerError
 
-----LDAPKeyError
+----LDAPKeyError (inherits also from KeyError)
 
 ----LDAPLDIFError
 
 ----LDAPMetricsError
 
-----LDAPObjectClassError
+----LDAPObjectClassError (inherits also from ValueError)
 
 ----LDAPObjectError
 
@@ -80,7 +76,7 @@ LDAPException
 
 ----LDAPSSLConfigurationError
 
-----LDAPSSLNotSupportedError
+----LDAPSSLNotSupportedError (inherits also from ImportError)
 
 ----LDAPStartTLSError
 
@@ -101,7 +97,6 @@ LDAPException
 ----LDAPAliasProblemResult
 
 ----LDAPAssertionFailedResult
-
 
 ----LDAPAttributeOrValueExistsResult
 

@@ -172,7 +172,7 @@ class Connection(object):
                 self.open()
                 self.bind()
                 if not self.bound:
-                    self.last_error = 'automatic bind not successful'
+                    self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                     raise LDAPBindError(self.last_error)
         elif self.strategy.no_real_dsa:
             self.server = None
@@ -288,6 +288,9 @@ class Connection(object):
                 self.bound = True if self.strategy_type == STRATEGY_REUSABLE_THREADED else False
             else:
                 self.bound = True if result['result'] == RESULT_SUCCESS else False
+
+            if not self.bound and result and result['description']:
+                self.last_error = result['description']
 
             if self.bound and not self.strategy.pooled:
                 self.refresh_dsa_info()

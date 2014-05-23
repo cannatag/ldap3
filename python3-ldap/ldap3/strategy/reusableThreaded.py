@@ -230,6 +230,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         self.sync = False
         self.no_real_dsa = False
         self.pooled = True
+        self.streamed = False
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
             self.pool = ReusableThreadedStrategy.ConnectionPool(ldap_connection)
         else:

@@ -83,6 +83,7 @@ class Connection(object):
                  read_only=False,
                  lazy=False,
                  raise_exceptions=False,
+                 stream_responses=False,
                  pool_name=None,
                  pool_size=None,
                  pool_lifetime=None):
@@ -134,6 +135,7 @@ class Connection(object):
         self.starting_tls = False
         self.check_names = check_names
         self.raise_exceptions = raise_exceptions
+        self.stream_responses = stream_responses
 
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
@@ -218,6 +220,10 @@ class Connection(object):
         r += ')'
 
         return r
+
+    @property
+    def stream(self):
+        return self.strategy.get_stream() if self.strategy.streamed else None
 
     @property
     def usage(self):

@@ -60,6 +60,7 @@ class BaseStrategy(object):
         self.sync = None  # indicates a synchronous connection
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
         self.pooled = None  # Indicates a connection with a connection pool
+        self.streamed = False  # indicate if a strategy keep a stream of responses (i.e. LDIFProducer can accumulate responses with a single header)
 
     def open(self, reset_usage=True):
         """

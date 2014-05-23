@@ -38,6 +38,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         self.sync = True
         self.no_real_dsa = False
         self.pooled = False
+        self.streamed = False
         self.restartable_sleep_time = RESTARTABLE_SLEEPTIME
         self.restartable_tries = RESTARTABLE_TRIES
         self._restarting = False

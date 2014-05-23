@@ -46,7 +46,9 @@ class LdifProducerStrategy(BaseStrategy):
         self.sync = True
         self.no_real_dsa = True
         self.pooled = False
+        self.streamed = True
         random.seed()
+        self.stream = ''
 
     def open(self, reset_usage=True):
         pass
@@ -89,3 +91,12 @@ class LdifProducerStrategy(BaseStrategy):
 
     def _get_response(self, message_id):
         pass
+
+    def accumulate_stream(self, fragment):
+        self.stream += fragment
+
+    def get_stream(self):
+        return self.stream
+
+    def reset_stream(self):
+        self.stream = ''

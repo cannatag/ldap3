@@ -22,7 +22,6 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from base64 import b64encode
-from os import linesep
 
 from .. import LDIF_LINE_LENGTH
 from ..core.exceptions import LDAPLDIFError
@@ -189,7 +188,7 @@ def modify_dn_request_to_ldif(entry, all_base64):
     return lines
 
 
-def to_ldif(operation_type, entries, all_base64):
+def operation_to_ldif(operation_type, entries, all_base64=False):
     if operation_type == 'searchResponse':
         lines = search_response_to_ldif(entries, all_base64)
     elif operation_type == 'addRequest':
@@ -203,8 +202,11 @@ def to_ldif(operation_type, entries, all_base64):
     else:
         lines = []
 
-    if lines:
-        lines.insert(0, 'version: 1')
-        return linesep.join(lines)
-    else:
-        return None
+    return lines
+
+
+def add_ldif_header(ldif_lines):
+    if ldif_lines:
+        ldif_lines.insert(0, 'version: 1')
+
+    return ldif_lines

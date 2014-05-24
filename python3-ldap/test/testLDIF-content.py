@@ -39,8 +39,6 @@ class Test(unittest.TestCase):
             self.connection.get_response(result)
 
     def tearDown(self):
-        #self.connection.delete(test_dn_builder(test_base, 'test-ldif-1'))
-        #self.connection.delete(test_dn_builder(test_base, 'test-ldif-2'))
         self.connection.unbind()
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.connection.strategy.terminate()

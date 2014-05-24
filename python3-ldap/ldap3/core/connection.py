@@ -21,11 +21,13 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from os import linesep
 from pyasn1.codec.ber import encoder
 
 from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     STRATEGY_REUSABLE_THREADED, DEFAULT_POOL_NAME
+from ldap3.protocol.rfc2849 import add_ldif_header
 
 from .pooling import ServerPool
 from ..strategy.reusableThreaded import ReusableThreadedStrategy
@@ -38,7 +40,7 @@ from ..operation.extended import extended_operation
 from ..operation.modify import modify_operation
 from ..operation.modifyDn import modify_dn_operation
 from ..operation.search import search_operation
-from ..protocol.rfc2849 import to_ldif
+from ..protocol.rfc2849 import operation_to_ldif
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
 from ..strategy.asyncThreaded import AsyncThreadedStrategy
@@ -83,7 +85,6 @@ class Connection(object):
                  read_only=False,
                  lazy=False,
                  raise_exceptions=False,
-                 stream_responses=False,
                  pool_name=None,
                  pool_size=None,
                  pool_lifetime=None):
@@ -135,7 +136,6 @@ class Connection(object):
         self.starting_tls = False
         self.check_names = check_names
         self.raise_exceptions = raise_exceptions
-        self.stream_responses = stream_responses
 
         if isinstance(server, list):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
@@ -184,7 +184,7 @@ class Connection(object):
 
     def __str__(self):
         s = [
-            str(self.server) if self.server.is_valid else 'None',
+            str(self.server) if self.server and self.server.is_valid else 'None',
             'user: ' + str(self.user),
             'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
             'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
@@ -223,7 +223,15 @@ class Connection(object):
 
     @property
     def stream(self):
+        """
+        returns a reference to the response stream if defined in the strategy.
+        Used in the LDIFProducer to accumulate the ldif-change operations with a single LDIF header
+        """
         return self.strategy.get_stream() if self.strategy.streamed else None
+
+    @stream.setter
+    def stream(self, value):
+        self.strategy.set_stream(value)
 
     @property
     def usage(self):
@@ -590,16 +598,19 @@ class Connection(object):
 
     def response_to_ldif(self,
                          search_result=None,
-                         all_base64=False):
+                         all_base64=False,
+                         line_separator=None):
         if search_result is None:
             search_result = self.response
 
         if isinstance(search_result, list):
-            search_result_to_ldif = to_ldif('searchResponse', search_result, all_base64)
+            ldif_lines = operation_to_ldif('searchResponse', search_result, all_base64)
+            ldif_lines = add_ldif_header(ldif_lines)
+            line_separator = line_separator or linesep
+            return line_separator.join(ldif_lines)
         else:
-            search_result_to_ldif = None
+            return None
 
-        return search_result_to_ldif
 
     def _fire_deferred(self):
         if self.lazy:

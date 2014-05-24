@@ -21,14 +21,16 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from io import StringIO
+from os import linesep
 import random
 
 from .. import LDAP_MAX_INT
 from ..core.exceptions import LDAPLDIFError
-from ..protocol.convert import build_controls_list
-from ..protocol.rfc2849 import to_ldif
-from .baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
+from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
+from ..protocol.convert import build_controls_list
+from .baseStrategy import BaseStrategy
 
 
 class LdifProducerStrategy(BaseStrategy):
@@ -47,14 +49,23 @@ class LdifProducerStrategy(BaseStrategy):
         self.no_real_dsa = True
         self.pooled = False
         self.streamed = True
+        self.line_separator = linesep
+        self.stream = None
         random.seed()
-        self.stream = ''
-
-    def open(self, reset_usage=True):
-        pass
 
     def _start_listen(self):
-        pass
+        self.connection.listening = True
+        self.connection.closed = False
+        header = add_ldif_header(['-'])[0]
+        if not self.stream or (isinstance(self.stream, StringIO) and self.stream.closed):
+            self.set_stream(StringIO())
+        self.stream.write(header + self.line_separator + self.line_separator)
+
+    def _stop_listen(self):
+        print('closed')
+        self.stream.close()
+        self.connection.listening = False
+        self.connection.closed = True
 
     def receiving(self):
         return None
@@ -81,10 +92,14 @@ class LdifProducerStrategy(BaseStrategy):
         self.connection.result = None
         if self._outstanding and message_id in self._outstanding:
             request = self._outstanding.pop(message_id)
-            self.connection.response = to_ldif(self.connection.request['type'], request, False)
-            return True
+            ldif_lines = operation_to_ldif(self.connection.request['type'], request)
+            if self.stream and ldif_lines and not self.connection.closed:
+                self.accumulate_stream(self.line_separator.join(ldif_lines))
+            ldif_lines = add_ldif_header(ldif_lines)
+            self.connection.response = self.line_separator.join(ldif_lines)
+            return self.connection.response
 
-        return False
+        return None
 
     def post_send_search(self, message_id):
         raise LDAPLDIFError('LDIF-CONTENT cannot be produced for Search Operations')
@@ -93,10 +108,20 @@ class LdifProducerStrategy(BaseStrategy):
         pass
 
     def accumulate_stream(self, fragment):
-        self.stream += fragment
+        self.stream.write(fragment + self.line_separator + self.line_separator)
 
     def get_stream(self):
         return self.stream
 
-    def reset_stream(self):
-        self.stream = ''
+    def set_stream(self, value):
+        error = False
+        try:
+            if not value.writable():
+                error = True
+        except (ValueError, AttributeError):
+            error = True
+
+        if error:
+            raise LDAPLDIFError('stream must be writable')
+
+        self.stream = value

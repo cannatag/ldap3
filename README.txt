@@ -54,6 +54,9 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 CHANGELOG
 =========
 
+* 0.9.3.1 2014.05.24
+    - Added stream capability to LDIFProducer strategy
+
 * 0.9.3 2014.05.20
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
     - Now the key in server.schema.object_classes is the class name (was the oid)

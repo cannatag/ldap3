@@ -32,8 +32,10 @@ class Test(unittest.TestCase):
     def setUp(self):
         # server = Server(host = test_server, port = test_port, allowed_referral_hosts = ('*', True))
         self.connection = Connection(server=None, client_strategy=STRATEGY_LDIF_PRODUCER)
+        self.connection.open()
 
     def tearDown(self):
+        self.connection.close()
         self.assertFalse(self.connection.bound)
 
     def test_add_request_to_ldif(self):

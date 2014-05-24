@@ -85,7 +85,9 @@ class BaseStrategy(object):
                     if self.connection._usage:
                         self.connection._usage.servers_from_pool += 1
 
-            self._open_socket(self.connection.server.ssl)
+            if not self.no_real_dsa:
+                self._open_socket(self.connection.server.ssl)
+
             self.connection._deferred_open = False
             self._start_listen()
 
@@ -99,7 +101,8 @@ class BaseStrategy(object):
         else:
             if not self.connection.closed:
                 self._stop_listen()
-                self._close_socket()
+                if not self. no_real_dsa:
+                    self._close_socket()
 
         self.connection.bound = False
         self.connection.request = None

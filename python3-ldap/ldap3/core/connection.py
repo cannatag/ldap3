@@ -407,7 +407,7 @@ class Connection(object):
 
     def add(self,
             dn,
-            object_class,
+            object_class=None,
             attributes=None,
             controls=None):
         """
@@ -424,15 +424,21 @@ class Connection(object):
         else:
             parm_object_class = object_class if isinstance(object_class, list) else [object_class]
 
+        object_class_attr_name = ''
         if attributes:
-            if 'objectClass' in attributes:
-                attr_object_class = attributes['objectClass'] if isinstance(attributes['objectClass'], list) else [attributes['objectClass']]
+            for attr in attributes:
+                if attr.lower() == 'objectclass':
+                    object_class_attr_name = attr
+                    attr_object_class = attributes[object_class_attr_name] if isinstance(attributes[object_class_attr_name], list) else [attributes[object_class_attr_name]]
         else:
             attributes = dict()
 
-        attributes['objectClass'] = list(set([object_class.lower() for object_class in parm_object_class + attr_object_class]))  # remove duplicate object_class
-        if not attributes['objectClass']:
-            self.last_error = 'object_class is mandatory'
+        if not object_class_attr_name:
+            object_class_attr_name = 'objectClass'
+
+        attributes[object_class_attr_name] = list(set([object_class.lower() for object_class in parm_object_class + attr_object_class]))  # remove duplicate ObjectClasses
+        if not attributes[object_class_attr_name]:
+            self.last_error = 'ObjectClass attribute is mandatory'
             raise LDAPObjectClassError(self.last_error)
 
         request = add_operation(dn, attributes, self.server.schema if self.server and self.check_names else None)
@@ -599,7 +605,8 @@ class Connection(object):
     def response_to_ldif(self,
                          search_result=None,
                          all_base64=False,
-                         line_separator=None):
+                         line_separator=None,
+                         stream=None):
         if search_result is None:
             search_result = self.response
 
@@ -607,10 +614,14 @@ class Connection(object):
             ldif_lines = operation_to_ldif('searchResponse', search_result, all_base64)
             ldif_lines = add_ldif_header(ldif_lines)
             line_separator = line_separator or linesep
-            return line_separator.join(ldif_lines)
-        else:
-            return None
+            ldif_output = line_separator.join(ldif_lines)
+            if stream:
+                if stream.tell() == 0:
+                    stream.write('version: 1' + line_separator + line_separator)
+                stream.write(ldif_output + line_separator + line_separator)
+            return ldif_output
 
+        return None
 
     def _fire_deferred(self):
         if self.lazy:

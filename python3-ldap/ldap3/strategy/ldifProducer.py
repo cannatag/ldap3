@@ -62,7 +62,6 @@ class LdifProducerStrategy(BaseStrategy):
         self.stream.write(header + self.line_separator + self.line_separator)
 
     def _stop_listen(self):
-        print('closed')
         self.stream.close()
         self.connection.listening = False
         self.connection.closed = True

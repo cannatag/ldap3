@@ -605,12 +605,13 @@ class Connection(object):
                          search_result=None,
                          all_base64=False,
                          line_separator=None,
+                         sort_order=None,
                          stream=None):
         if search_result is None:
             search_result = self.response
 
         if isinstance(search_result, list):
-            ldif_lines = operation_to_ldif('searchResponse', search_result, all_base64)
+            ldif_lines = operation_to_ldif('searchResponse', search_result, all_base64, sort_order=sort_order)
             ldif_lines = add_ldif_header(ldif_lines)
             line_separator = line_separator or linesep
             ldif_output = line_separator.join(ldif_lines)

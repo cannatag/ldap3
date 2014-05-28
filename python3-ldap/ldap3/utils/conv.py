@@ -24,9 +24,16 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 def escape_bytes(bytes_value):
-    if str != bytes:  # python 3
+    if str != bytes:  # Python 3
         escaped = '\\'.join([('%02x' % int(b)) for b in bytes_value])
-    else:  # python 2
+    else:  # Python 2
         escaped = '\\'.join([('%02x' % ord(b)) for b in bytes_value])
 
     return ('\\' + escaped) if escaped else None
+
+
+def prepare_for_stream(value):
+    if str != bytes:  # Python 3
+        return value
+    else:  # Python 2
+        return value.decode()

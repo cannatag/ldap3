@@ -241,8 +241,8 @@ class BaseStrategy(object):
         Compute LDAP Message size according to BER definite length rules
         Returns -1 if too few data to compute message length
         """
-        if isinstance(data, str):  # fix for python2, data is string not bytes
-            data = bytearray(data)  # python2 bytearray is equivalent to python3 bytes
+        if isinstance(data, str):  # fix for Python 2, data is string not bytes
+            data = bytearray(data)  # Python 2 bytearray is equivalent to Python 3 bytes
 
         ret_value = -1
         if len(data) > 2:

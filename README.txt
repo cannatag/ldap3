@@ -57,6 +57,7 @@ CHANGELOG
 * 0.9.3.1 2014.05.24
     - Added stream capability to LDIFProducer strategy
     - Customizable line separator for ldif output
+    - Customizable sorting order in ldif output
     - object_class parameter is now optional in connection.add()
     - Fixed objectClass attribute case sensitive dependency in add operation
     - Added stream capability to response_to_ldif() while searching

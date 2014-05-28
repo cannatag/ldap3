@@ -27,6 +27,7 @@ import random
 
 from .. import LDAP_MAX_INT
 from ..core.exceptions import LDAPLDIFError
+from ..utils.conv import prepare_for_stream
 from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.convert import build_controls_list
@@ -59,7 +60,7 @@ class LdifProducerStrategy(BaseStrategy):
         header = add_ldif_header(['-'])[0]
         if not self.stream or (isinstance(self.stream, StringIO) and self.stream.closed):
             self.set_stream(StringIO())
-        self.stream.write(header + self.line_separator + self.line_separator)
+        self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
 
     def _stop_listen(self):
         self.stream.close()
@@ -107,7 +108,7 @@ class LdifProducerStrategy(BaseStrategy):
         pass
 
     def accumulate_stream(self, fragment):
-        self.stream.write(fragment + self.line_separator + self.line_separator)
+        self.stream.write(prepare_for_stream(fragment + self.line_separator + self.line_separator))
 
     def get_stream(self):
         return self.stream

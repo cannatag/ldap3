@@ -27,7 +27,6 @@ from pyasn1.codec.ber import encoder
 from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     STRATEGY_REUSABLE_THREADED, DEFAULT_POOL_NAME
-from ldap3.protocol.rfc2849 import add_ldif_header
 
 from .pooling import ServerPool
 from ..strategy.reusableThreaded import ReusableThreadedStrategy
@@ -40,7 +39,7 @@ from ..operation.extended import extended_operation
 from ..operation.modify import modify_operation
 from ..operation.modifyDn import modify_dn_operation
 from ..operation.search import search_operation
-from ..protocol.rfc2849 import operation_to_ldif
+from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
 from ..strategy.asyncThreaded import AsyncThreadedStrategy
@@ -52,7 +51,7 @@ from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError
-
+from ..utils.conv import prepare_for_stream
 
 class Connection(object):
     """
@@ -617,8 +616,8 @@ class Connection(object):
             ldif_output = line_separator.join(ldif_lines)
             if stream:
                 if stream.tell() == 0:
-                    stream.write('version: 1' + line_separator + line_separator)
-                stream.write(ldif_output + line_separator + line_separator)
+                    stream.write(prepare_for_stream('version: 1' + line_separator + line_separator))
+                stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
             return ldif_output
 
         return None

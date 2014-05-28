@@ -165,4 +165,4 @@ def send_sasl_negotiation(connection, controls, payload):
 
 
 def random_hex_string(size):
-    return str(hexlify(urandom(size)).decode('ascii'))  # str fix for python 2
+    return str(hexlify(urandom(size)).decode('ascii'))  # str fix for Python 2

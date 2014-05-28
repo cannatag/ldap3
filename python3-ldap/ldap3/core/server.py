@@ -63,10 +63,6 @@ class Server(object):
             port = 389
         elif use_ssl and not port:
             port = 636
-        try:
-            self.address = getaddrinfo(host, port)[0][4][0]
-        except gaierror:
-            self.address = host
 
         if host.startswith('ldap://'):
             self.host = host[7:]
@@ -74,6 +70,12 @@ class Server(object):
             self.host = host[8:]
         else:
             self.host = host
+
+        try:
+            self.address = getaddrinfo(self.host, port)[0][4][0]
+        except gaierror:
+            self.address = self.host
+
         if isinstance(port, int):
             self.port = port
         else:

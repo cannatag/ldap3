@@ -51,7 +51,9 @@ class LdifProducerStrategy(BaseStrategy):
         self.pooled = False
         self.streamed = True
         self.line_separator = linesep
+        self.all_base64 = False
         self.stream = None
+        self.order = dict()
         random.seed()
 
     def _start_listen(self):
@@ -92,7 +94,7 @@ class LdifProducerStrategy(BaseStrategy):
         self.connection.result = None
         if self._outstanding and message_id in self._outstanding:
             request = self._outstanding.pop(message_id)
-            ldif_lines = operation_to_ldif(self.connection.request['type'], request)
+            ldif_lines = operation_to_ldif(self.connection.request['type'], request, self.all_base64, self.order.get(self.connection.request['type']))
             if self.stream and ldif_lines and not self.connection.closed:
                 self.accumulate_stream(self.line_separator.join(ldif_lines))
             ldif_lines = add_ldif_header(ldif_lines)

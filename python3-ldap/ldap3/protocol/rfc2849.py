@@ -68,7 +68,7 @@ def convert_to_ldif(descriptor, value, base64):
             encoded = str(encoded, encoding='ascii')  # Python 3
         line = descriptor + ':: ' + encoded
     else:
-        if not isinstance(value, bytearray):  # Python 3
+        if not str == bytes:  # Python 3
             value = str(value, encoding='ascii')
         else:  # Python 2
             value = str(value)
@@ -183,7 +183,7 @@ def modify_dn_request_to_ldif(entry, all_base64):
     return lines
 
 
-def operation_to_ldif(operation_type, entries, all_base64=False, sort_order=[]):
+def operation_to_ldif(operation_type, entries, all_base64=False, sort_order=None):
     if operation_type == 'searchResponse':
         lines = search_response_to_ldif(entries, all_base64)
     elif operation_type == 'addRequest':
@@ -197,11 +197,10 @@ def operation_to_ldif(operation_type, entries, all_base64=False, sort_order=[]):
     else:
         lines = []
 
-
-
     # sort lines as per custom sort_order
     # sort order is a list of descriptors, lines will be sorted following the same sequence
-    lines = sorted(lines, key=lambda x: x)
+    if sort_order:
+        lines = sorted(lines, key=lambda x: ldif_sort(x, sort_order))
 
     ldif_record = []
     # check max line length and split as per note 2 of RFC 2849
@@ -218,3 +217,12 @@ def add_ldif_header(ldif_lines):
         ldif_lines.insert(0, 'version: 1')
 
     return ldif_lines
+
+
+def ldif_sort(line, sort_order):
+    for i, descriptor in enumerate(sort_order):
+
+        if line and line.startswith(descriptor):
+            return i
+
+    return len(sort_order) + 1

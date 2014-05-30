@@ -54,6 +54,10 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 CHANGELOG
 =========
 
+* 0.9.3.2 2014.05.30
+    - Fixed a bug while reading schema
+    - Add an implicit open() when trying binding on a closed connection
+
 * 0.9.3.1 2014.05.28
     - Added stream capability to LDIFProducer strategy
     - Customizable line separator for ldif output

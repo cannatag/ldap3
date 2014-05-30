@@ -294,8 +294,6 @@ class BaseObjectInfo(object):
                         object_def.ordering = oids_string_to_list(value)
                     elif key == 'SUBSTR':
                         object_def.substr = oids_string_to_list(value)
-                    elif key == 'SYNTAX':
-                        object_def.syntax = oids_string_to_list(value)
                     elif key == 'SINGLE-VALUE':
                         object_def.single_value = True
                     elif key == 'COLLECTIVE':
@@ -323,9 +321,9 @@ class BaseObjectInfo(object):
                     else:
                         raise LDAPSchemaError('malformed schema definition key:' + key)
                 object_def.raw_definition = object_definition
-                if hasattr(object_def, 'syntax') and len(object_def.syntax) == 1:
+                if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
                     object_def.syntax = object_def.syntax[0]
-                if object_def.name:
+                if hasattr(object_def, 'name') and object_def.name:
                     for name in object_def.name:
                         ret_dict[name.lower()] = object_def
                 else:

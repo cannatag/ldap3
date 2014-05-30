@@ -54,7 +54,7 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 CHANGELOG
 =========
 
-* 0.9.3.1 2014.05.24
+* 0.9.3.1 2014.05.28
     - Added stream capability to LDIFProducer strategy
     - Customizable line separator for ldif output
     - Customizable sorting order in ldif output

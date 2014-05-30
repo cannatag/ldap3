@@ -1,8 +1,13 @@
 CHANGELOG
 =========
 
-* 0.9.3.1 2014.05.24
+* 0.9.3.1 2014.05.28
     - Added stream capability to LDIFProducer strategy
+    - Customizable line separator for ldif output
+    - Customizable sorting order in ldif output
+    - object_class parameter is now optional in connection.add()
+    - Fixed objectClass attribute case sensitive dependency in add operation
+    - Added stream capability to response_to_ldif() while searching
 
 * 0.9.3 2014.05.20
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)

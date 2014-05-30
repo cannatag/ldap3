@@ -276,6 +276,8 @@ class Connection(object):
         else:
             self._deferred_bind = False
             self._bind_controls = None
+            if self.closed:  # try to open connection if closed
+                self.open()
             if self.authentication == AUTH_ANONYMOUS:
                 request = bind_operation(self.version, self.authentication, '', '')
                 response = self.post_send_single_response(self.send('bindRequest', request, controls))

@@ -54,6 +54,11 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 CHANGELOG
 =========
 
+* 0.9.3.3 2014.06.01
+    - Fixed a bug in LDIFProducer when using context manager for connection
+    - LDIF header in stream is added only whene there are actua data in the stream
+    - Now LDIF stream can be added to an existing file - version header will not be written if stream is not empty
+
 * 0.9.3.2 2014.05.30
     - Fixed a bug while reading schema
     - Add an implicit open() when trying binding on a closed connection

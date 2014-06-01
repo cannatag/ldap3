@@ -53,6 +53,7 @@ from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError
 from ..utils.conv import prepare_for_stream
 
+
 class Connection(object):
     """
     Main ldap connection class.
@@ -226,11 +227,12 @@ class Connection(object):
         returns a reference to the response stream if defined in the strategy.
         Used in the LDIFProducer to accumulate the ldif-change operations with a single LDIF header
         """
-        return self.strategy.get_stream() if self.strategy.streamed else None
+        return self.strategy.get_stream() if self.strategy.can_stream else None
 
     @stream.setter
     def stream(self, value):
-        self.strategy.set_stream(value)
+        if self.strategy.can_stream:
+            self.strategy.set_stream(value)
 
     @property
     def usage(self):
@@ -255,7 +257,7 @@ class Connection(object):
     # noinspection PyUnusedLocal
     def __exit__(self, exc_type, exc_val, exc_tb):
         context_bound, context_closed = self._context_state.pop()
-        if not context_bound and self.bound:  # restore status prior to entering context
+        if (not context_bound and self.bound) or self.stream:  # restore status prior to entering context
             self.unbind()
 
         if not context_closed and self.closed:
@@ -619,7 +621,8 @@ class Connection(object):
             ldif_output = line_separator.join(ldif_lines)
             if stream:
                 if stream.tell() == 0:
-                    stream.write(prepare_for_stream('version: 1' + line_separator + line_separator))
+                    header = add_ldif_header(['-'])[0]
+                    self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
                 stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
             return ldif_output
 

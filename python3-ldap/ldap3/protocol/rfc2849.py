@@ -55,7 +55,6 @@ def safe_ldif_string(bytes_value):
 def convert_to_ldif(descriptor, value, base64):
     if not value:
         value = ''
-    line = ''
     if isinstance(value, str):
         value = bytearray(value, encoding='utf-8')
 

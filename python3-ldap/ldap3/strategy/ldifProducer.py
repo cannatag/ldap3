@@ -49,20 +49,20 @@ class LdifProducerStrategy(BaseStrategy):
         self.sync = True
         self.no_real_dsa = True
         self.pooled = False
-        self.streamed = True
+        self.can_stream = True
         self.line_separator = linesep
         self.all_base64 = False
         self.stream = None
         self.order = dict()
+        self._header_added = False
         random.seed()
 
     def _start_listen(self):
         self.connection.listening = True
         self.connection.closed = False
-        header = add_ldif_header(['-'])[0]
+        self._header_added = False
         if not self.stream or (isinstance(self.stream, StringIO) and self.stream.closed):
             self.set_stream(StringIO())
-        self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
 
     def _stop_listen(self):
         self.stream.close()
@@ -110,6 +110,10 @@ class LdifProducerStrategy(BaseStrategy):
         pass
 
     def accumulate_stream(self, fragment):
+        if not self._header_added and self.stream.tell() == 0:
+            self._header_added = True
+            header = add_ldif_header(['-'])[0]
+            self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
         self.stream.write(prepare_for_stream(fragment + self.line_separator + self.line_separator))
 
     def get_stream(self):

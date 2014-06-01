@@ -40,7 +40,7 @@ class Connection(newConnection):
                pagedSize=None, pagedCriticality=False, pagedCookie=None):
         return newConnection.search(self, searchBase, searchFilter, searchScope, dereferenceAliases, attributes, sizeLimit, timeLimit, typesOnly, getOperationalAttributes, controls, pagedSize, pagedCriticality, pagedCookie)
 
-    def add(self, dn, objectClass, attributes=None, controls=None):
+    def add(self, dn, objectClass=None, attributes=None, controls=None):
         """
         Add DN to the DIB, objectClass is None, a class name or a list of class
         names.

@@ -26,7 +26,7 @@ from os import linesep
 from .attribute import Attribute
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyMissingConstructor
 class OperationalAttribute(Attribute):
     """
     Operational attribute/values object, it includes the search result of an

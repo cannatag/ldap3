@@ -43,7 +43,7 @@ class SyncWaitStrategy(BaseStrategy):
         self.sync = True
         self.no_real_dsa = False
         self.pooled = False
-        self.streamed = False
+        self.can_stream = False
 
     def open(self, reset_usage=True):
         BaseStrategy.open(self, reset_usage)

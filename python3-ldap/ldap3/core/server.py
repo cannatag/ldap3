@@ -21,11 +21,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from multiprocessing import Lock
 
 from socket import getaddrinfo, gaierror
 
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT
+from threading import Lock
 from .exceptions import LDAPInvalidPort
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls

@@ -157,6 +157,8 @@ class ReusableThreadedStrategy(BaseStrategy):
                         self.active_connection.connection._fire_deferred()  # force deferred operations
 
                         exc = None
+                        response = None
+                        result = None
                         try:
                             if message_type == 'searchRequest':
                                 response = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
@@ -230,7 +232,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         self.sync = False
         self.no_real_dsa = False
         self.pooled = True
-        self.streamed = False
+        self.can_stream = False
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
             self.pool = ReusableThreadedStrategy.ConnectionPool(ldap_connection)
         else:

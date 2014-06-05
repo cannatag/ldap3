@@ -54,6 +54,9 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 CHANGELOG
 =========
 
+* 0.9.3.4 2014.06.05
+    - Exception can now be imported from ldap3 package
+
 * 0.9.3.3 2014.06.01
     - Fixed a bug in LDIFProducer when using context manager for connection
     - LDIF header in stream is added only whene there are actua data in the stream

@@ -41,7 +41,7 @@ from ..protocol.convert import changes_to_list, validate_attribute_value
 def modify_operation(dn,
                      changes,
                      schema=None):
-    # changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
+    # changes is a dictionary in the form {'attribute1': (operation, [val1, val2, ...]], 'attribute2': (operation, [val1, val2, ...]), ...}
     # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
     # increment as per RFC4525
 

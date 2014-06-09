@@ -134,7 +134,7 @@ rdn                      = SAFE-STRING
                            ; a relative distinguished name, defined as
                            ; <name-component> in [3]
 
-base64-rdn               = BASE64-UTF8-STRING
+base64-rdn               = BASE64-UTF8-STRINGe
                            ; an rdn which has been base64 encoded (see
                            ; note 10, below)
 

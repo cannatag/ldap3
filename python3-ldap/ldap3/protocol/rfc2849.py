@@ -173,7 +173,7 @@ def modify_dn_request_to_ldif(entry, all_base64):
         lines.extend(add_controls(entry['controls'], all_base64))
         lines.append('changetype: modrdn') if 'newSuperior' in entry and entry['newSuperior'] else lines.append('changetype: moddn')
         lines.append(convert_to_ldif('newrdn', entry['newRdn'], all_base64))
-        lines.append('deleteoldrdn: ' + ('0' if entry['deleteOldRdn'] else '1'))
+        lines.append('deleteoldrdn: ' + ('1' if entry['deleteOldRdn'] else '0'))
         if 'newSuperior' in entry and entry['newSuperior']:
             lines.append(convert_to_ldif('newsuperior', entry['newSuperior'], all_base64))
     else:

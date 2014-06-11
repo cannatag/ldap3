@@ -121,6 +121,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 failure = False
                 try:  # reopening connection
                     self.connection.open(reset_usage=False)
+                    #print(self.connection._restart_tls)
                     if self._restart_tls:  # restart tls if start_tls was previously used
                         self.connection.start_tls()
                     if message_type != 'bindRequest':
@@ -187,5 +188,6 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             if isinstance(exc, LDAPOperationResult):
                 raise exc
             else:
-                self.connection.last_error = 'restartable connection strategy failed in post_send_search'
+                #self.connection.last_error = 'restartable connection strategy failed in post_send_search'
+                self.connection.last_error = exc.args
                 raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)

@@ -29,7 +29,7 @@ def escape_bytes(bytes_value):
     else:  # Python 2
         escaped = '\\'.join([('%02x' % ord(b)) for b in bytes_value])
 
-    return ('\\' + escaped) if escaped else None
+    return ('\\' + escaped) if escaped else ''
 
 
 def prepare_for_stream(value):

@@ -102,6 +102,8 @@ LDAPException
 
 ----LDAPReaderError
 
+----LDAPMaximumRetriesError
+
 ----LDAPSASLBindInProgressError
 
 ----LDAPSASLMechanismNotSupportedError

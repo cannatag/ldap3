@@ -486,6 +486,9 @@ class LDAPConnectionPoolNameIsMandatoryError(LDAPExceptionError):
 class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
     pass
 
+# restartable strategy
+class LDAPRestartableTriesReachedError(LDAPExceptionError):
+    pass
 
 # exception factories
 def communication_exception_factory(exc_to_raise, exc):

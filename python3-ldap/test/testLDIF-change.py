@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
         self.assertTrue('dn: cn=test-modify-dn-operation,o=test' in response)
         self.assertTrue('changetype: moddn' in response)
         self.assertTrue('newrdn: cn=test-modified-dn-operation' in response)
-        self.assertTrue('deleteoldrdn: 0' in response)
+        self.assertTrue('deleteoldrdn: 1' in response)
 
     def test_move_dn_request_to_ldif(self):
         result = self.connection.modify_dn(test_dn_builder(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', delete_old_dn=False, new_superior=test_moved)
@@ -85,7 +85,7 @@ class Test(unittest.TestCase):
         self.assertTrue('dn: cn=test-move-dn-operation,o=test' in response)
         self.assertTrue('changetype: modrdn' in response)
         self.assertTrue('newrdn: cn=test-move-dn-operation' in response)
-        self.assertTrue('deleteoldrdn: 1' in response)
+        self.assertTrue('deleteoldrdn: 0' in response)
         self.assertTrue('newsuperior: ou=moved,o=test' in response)
 
     def test_modify_add_to_ldif(self):

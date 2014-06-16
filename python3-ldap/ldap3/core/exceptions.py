@@ -487,7 +487,7 @@ class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
     pass
 
 # restartable strategy
-class LDAPRestartableTriesReachedError(LDAPExceptionError):
+class LDAPMaximumRetriesError(LDAPExceptionError):
     pass
 
 # exception factories

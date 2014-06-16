@@ -54,8 +54,13 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 CHANGELOG
 =========
 
-* 0.9.3.4 2014.06.05
+* 0.9.3.4 2014.06.16
     - Exception can now be imported from ldap3 package
+    - Escape_bytes return '' for empty string instead of None (thanks Brian)
+    - Added exception history to restartable connection (except than for infinite retries)
+    - Fixed start_tls retrying in restartable connection (thanks Brian)
+    - New exception LDAPMaximumRetriesError for signaling when the SyncRestartable Strategy has reached the maximum number of retries while performing an operation
+    - Inverted deleteoldrdn value in LDIF output (thanks Joseph)
 
 * 0.9.3.3 2014.06.01
     - Fixed a bug in LDIFProducer when using context manager for connection

@@ -118,17 +118,24 @@ class BaseStrategy(object):
         Tries to open and connect a socket to a Server
         raise LDAPExceptionError if unable to open or connect socket
         """
+        exc = None
         try:
             self.connection.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except Exception as e:
             self.connection.last_error = 'socket creation error: ' + str(e)
-            raise communication_exception_factory(LDAPSocketOpenError, e)(self.connection.last_error)
+            exc = e
+
+        if exc:
+            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         try:
             self.connection.socket.connect((self.connection.server.host, self.connection.server.port))
         except socket.error as e:
             self.connection.last_error = 'socket connection error: ' + str(e)
-            raise communication_exception_factory(LDAPSocketOpenError, e)(self.connection.last_error)
+            exc = e
+
+        if exc:
+            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         if use_ssl:
             try:
@@ -137,7 +144,10 @@ class BaseStrategy(object):
                     self.connection._usage.wrapped_sockets += 1
             except Exception as e:
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
-                raise communication_exception_factory(LDAPSocketOpenError, e)(self.connection.last_error)
+                exc = e
+
+            if exc:
+                raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         if self.connection._usage:
             self.connection._usage.opened_sockets += 1
@@ -149,12 +159,17 @@ class BaseStrategy(object):
         Try to close a socket
         raise LDAPExceptionError if unable to close socket
         """
+        exc = None
+
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)
             self.connection.socket.close()
         except Exception as e:
             self.connection.last_error = 'socket closing error' + str(e)
-            raise communication_exception_factory(LDAPSocketCloseError, e)(self.connection.last_error)
+            exc = e
+
+        if exc:
+            raise communication_exception_factory(LDAPSocketCloseError, exc)(self.connection.last_error)
 
         self.connection.socket = None
         self.connection.closed = True
@@ -170,6 +185,7 @@ class BaseStrategy(object):
         Send an LDAP message
         Returns the message_id
         """
+        exc = None
         self.connection.request = None
         if self.connection.listening:
             if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per RFC4511 (4.2.1)
@@ -188,7 +204,10 @@ class BaseStrategy(object):
                 self.connection.socket.sendall(encoded_message)
             except socket.error as e:
                 self.connection.last_error = 'socket sending error' + str(e)
-                raise communication_exception_factory(LDAPSocketSendError, e)(self.connection.last_error)
+                exc = e
+
+            if exc:
+                raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)
 
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls

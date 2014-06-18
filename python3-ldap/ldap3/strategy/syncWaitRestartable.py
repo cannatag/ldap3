@@ -176,11 +176,9 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             exc = e
 
         if exc:
-            if isinstance(exc, LDAPOperationResult):
-                raise exc
-            else:
+            if not isinstance(exc, LDAPOperationResult):
                 self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
-                raise exc
+            raise exc
 
     def post_send_search(self, message_id):
         try:
@@ -201,12 +199,9 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             exc = e
 
         if exc:
-            if isinstance(exc, LDAPOperationResult):
-                raise exc
-            else:
-                #self.connection.last_error = 'restartable connection strategy failed in post_send_search'
+            if not isinstance(exc, LDAPOperationResult):
                 self.connection.last_error = exc.args
-                raise exc
+            raise exc
 
     def _add_exception_to_history(self):
         if not isinstance(self.restartable_tries, bool):  # doens't accumulate when restarting forever

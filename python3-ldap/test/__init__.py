@@ -22,9 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED
 
-test_server = 'server'  # the ldap server where tests executed
-test_user = 'user'  # the user that performs the tests
-test_password = 'password'  # user's password
+test_server = 'sl10.intra.camera.it'  # the ldap server where tests executed
+test_user = 'cn=admin,o=services'  # the user that performs the tests
+test_password = 'camera'  # user's password
 
 test_base = 'o=test'  # base context where test objects are created
 test_moved = 'ou=moved,o=test'  # base context where  objects are moved in ModifyDN operations
@@ -35,7 +35,7 @@ test_port_ssl = 636  # ldap secure port
 test_authentication = AUTH_SIMPLE  # authentication type
 test_check_names = False  # check attribute names in operations
 test_get_info = False  # get info from DSA
-test_lazy_connection = True  # connection lazy
+test_lazy_connection = False  # connection lazy
 test_strategy = STRATEGY_SYNC  # strategy for executing tests
 test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
 test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy

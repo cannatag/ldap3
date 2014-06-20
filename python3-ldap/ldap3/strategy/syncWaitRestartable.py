@@ -28,7 +28,7 @@ from time import sleep
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .syncWait import SyncWaitStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPSocketSendError, LDAPOperationResult, LDAPMaximumRetriesError
-
+import socket
 
 # noinspection PyBroadException
 class SyncWaitRestartableStrategy(SyncWaitStrategy):
@@ -72,6 +72,8 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not self.connection.closed:
                     try:  # resetting connection
                         self.connection.close()
+                    except (socket.error, LDAPSocketOpenError):  # don't trace catch socket errors because socket could already be closed
+                        pass
                     except Exception:
                         self._add_exception_to_history()
                 try:  # reissuing same operation
@@ -121,6 +123,8 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not self.connection.closed:
                     try:  # resetting connection
                         self.connection.close()
+                    except (socket.error, LDAPSocketOpenError):  # don't trace socket errrors because socket could already be closed
+                        pass
                     except Exception:
                         self._add_exception_to_history()
                 failure = False

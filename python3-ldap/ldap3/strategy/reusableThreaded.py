@@ -29,7 +29,7 @@ from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_R
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError
-from ldap3.core.exceptions import LDAPOperationResult
+from ..core.exceptions import LDAPOperationResult
 
 try:
     from queue import Queue
@@ -38,6 +38,7 @@ except ImportError:  # Python 2
     from Queue import Queue
 
 
+# noinspection PyProtectedMember
 class ReusableThreadedStrategy(BaseStrategy):
     """
     A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
@@ -50,6 +51,7 @@ class ReusableThreadedStrategy(BaseStrategy):
     """
     pools = dict()
 
+    # noinspection PyProtectedMember
     class ConnectionPool(object):
         def __new__(cls, connection):
             if connection.pool_name in ReusableThreadedStrategy.pools:  # returns existing connection pool

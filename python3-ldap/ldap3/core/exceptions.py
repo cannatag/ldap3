@@ -22,12 +22,21 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT_EXCEEDED, RESULT_SIZE_LIMIT_EXCEEDED, RESULT_STRONGER_AUTH_REQUIRED, RESULT_REFERRAL, RESULT_ADMIN_LIMIT_EXCEEDED, RESULT_UNAVAILABLE_CRITICAL_EXTENSION, \
-    RESULT_AUTH_METHOD_NOT_SUPPORTED, RESULT_UNDEFINED_ATTRIBUTE_TYPE, RESULT_NO_SUCH_ATTRIBUTE, RESULT_SASL_BIND_IN_PROGRESS, RESULT_CONFIDENTIALITY_REQUIRED, RESULT_INAPPROPRIATE_MATCHING, RESULT_CONSTRAINT_VIOLATION, \
-    RESULT_ATTRIBUTE_OR_VALUE_EXISTS, RESULT_INVALID_ATTRIBUTE_SYNTAX, RESULT_NO_SUCH_OBJECT, RESULT_ALIAS_PROBLEM, RESULT_INVALID_DN_SYNTAX, RESULT_ALIAS_DEREFERENCING_PROBLEM, RESULT_INVALID_CREDENTIALS, RESULT_LOOP_DETECTED, \
-    RESULT_ENTRY_ALREADY_EXISTS, RESULT_LCUP_SECURITY_VIOLATION, RESULT_CANCELED, RESULT_E_SYNC_REFRESH_REQUIRED, RESULT_NO_SUCH_OPERATION, RESULT_LCUP_INVALID_DATA, RESULT_OBJECT_CLASS_MODS_PROHIBITED, RESULT_NAMING_VIOLATION, \
-    RESULT_INSUFFICIENT_ACCESS_RIGHTS, RESULT_OBJECT_CLASS_VIOLATION, RESULT_TOO_LATE, RESULT_CANNOT_CANCEL, RESULT_LCUP_UNSUPPORTED_SCHEME, RESULT_BUSY, RESULT_AFFECT_MULTIPLE_DSAS, RESULT_UNAVAILABLE, RESULT_NOT_ALLOWED_ON_NON_LEAF, \
-    RESULT_UNWILLING_TO_PERFORM, RESULT_OTHER, RESULT_LCUP_RELOAD_REQUIRED, RESULT_ASSERTION_FAILED, RESULT_AUTHORIZATION_DENIED, RESULT_LCUP_RESOURCES_EXHAUSTED, RESULT_NOT_ALLOWED_ON_RDN, RESULT_INAPPROPRIATE_AUTHENTICATION
+from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT_EXCEEDED, RESULT_SIZE_LIMIT_EXCEEDED, \
+    RESULT_STRONGER_AUTH_REQUIRED, RESULT_REFERRAL, RESULT_ADMIN_LIMIT_EXCEEDED, RESULT_UNAVAILABLE_CRITICAL_EXTENSION, \
+    RESULT_AUTH_METHOD_NOT_SUPPORTED, RESULT_UNDEFINED_ATTRIBUTE_TYPE, RESULT_NO_SUCH_ATTRIBUTE, \
+    RESULT_SASL_BIND_IN_PROGRESS, RESULT_CONFIDENTIALITY_REQUIRED, RESULT_INAPPROPRIATE_MATCHING, \
+    RESULT_CONSTRAINT_VIOLATION, \
+    RESULT_ATTRIBUTE_OR_VALUE_EXISTS, RESULT_INVALID_ATTRIBUTE_SYNTAX, RESULT_NO_SUCH_OBJECT, RESULT_ALIAS_PROBLEM, \
+    RESULT_INVALID_DN_SYNTAX, RESULT_ALIAS_DEREFERENCING_PROBLEM, RESULT_INVALID_CREDENTIALS, RESULT_LOOP_DETECTED, \
+    RESULT_ENTRY_ALREADY_EXISTS, RESULT_LCUP_SECURITY_VIOLATION, RESULT_CANCELED, RESULT_E_SYNC_REFRESH_REQUIRED, \
+    RESULT_NO_SUCH_OPERATION, RESULT_LCUP_INVALID_DATA, RESULT_OBJECT_CLASS_MODS_PROHIBITED, RESULT_NAMING_VIOLATION, \
+    RESULT_INSUFFICIENT_ACCESS_RIGHTS, RESULT_OBJECT_CLASS_VIOLATION, RESULT_TOO_LATE, RESULT_CANNOT_CANCEL, \
+    RESULT_LCUP_UNSUPPORTED_SCHEME, RESULT_BUSY, RESULT_AFFECT_MULTIPLE_DSAS, RESULT_UNAVAILABLE, \
+    RESULT_NOT_ALLOWED_ON_NON_LEAF, \
+    RESULT_UNWILLING_TO_PERFORM, RESULT_OTHER, RESULT_LCUP_RELOAD_REQUIRED, RESULT_ASSERTION_FAILED, \
+    RESULT_AUTHORIZATION_DENIED, RESULT_LCUP_RESOURCES_EXHAUSTED, RESULT_NOT_ALLOWED_ON_RDN, \
+    RESULT_INAPPROPRIATE_AUTHENTICATION
 import socket
 
 
@@ -39,7 +48,8 @@ class LDAPException(Exception):
 class LDAPOperationResult(LDAPException):
     def __new__(cls, result=None, description=None, dn=None, message=None, response_type=None, response=None):
         if cls is LDAPOperationResult and result and result in exception_table:
-            exc = super(LDAPOperationResult, exception_table[result]).__new__(exception_table[result])  # create an exception of the required result error
+            exc = super(LDAPOperationResult, exception_table[result]).__new__(
+                exception_table[result])  # create an exception of the required result error
             exc.result = result
             exc.description = description
             exc.dn = dn
@@ -59,7 +69,13 @@ class LDAPOperationResult(LDAPException):
         self.response = response
 
     def __str__(self):
-        s = [self.__class__.__name__, str(self.result) if self.result else None, self.description if self.description else None, self.dn if self.dn else None, self.message if self.message else None, self.type if self.type else None, self.response if self.response else None]
+        s = [self.__class__.__name__,
+             str(self.result) if self.result else None,
+             self.description if self.description else None,
+             self.dn if self.dn else None,
+             self.message if self.message else None,
+             self.type if self.type else None,
+             self.response if self.response else None]
 
         return ' - '.join(filter(None, s))
 
@@ -306,8 +322,7 @@ exception_table = {RESULT_OPERATIONS_ERROR: LDAPOperationsErrorResult,
                    RESULT_CANNOT_CANCEL: LDAPCannotCancelResult,
                    RESULT_ASSERTION_FAILED: LDAPAssertionFailedResult,
                    RESULT_AUTHORIZATION_DENIED: LDAPAuthorizationDeniedResult,
-                   RESULT_E_SYNC_REFRESH_REQUIRED: LDAPESyncRefreshRequiredResult
-                   }
+                   RESULT_E_SYNC_REFRESH_REQUIRED: LDAPESyncRefreshRequiredResult}
 
 
 class LDAPExceptionError(LDAPException):
@@ -339,7 +354,7 @@ class LDAPReaderError(LDAPExceptionError):
     pass
 
 
-#tls exceptions
+# tls exceptions
 class LDAPSSLNotSupportedError(LDAPExceptionError, ImportError):
     pass
 
@@ -486,9 +501,11 @@ class LDAPConnectionPoolNameIsMandatoryError(LDAPExceptionError):
 class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
     pass
 
+
 # restartable strategy
 class LDAPMaximumRetriesError(LDAPExceptionError):
     pass
+
 
 # exception factories
 def communication_exception_factory(exc_to_raise, exc):
@@ -496,6 +513,6 @@ def communication_exception_factory(exc_to_raise, exc):
     Generates a new exception class of the requested type (subclass of LDAPCommunication) merged with the exception raised by the interpreter
     """
     if exc_to_raise.__name__ in [cls.__name__ for cls in LDAPCommunicationError.__subclasses__()]:
-        return type(exc_to_raise.__name__, ( type(exc), LDAPCommunicationError), dict())
+        return type(exc_to_raise.__name__, (type(exc), LDAPCommunicationError), dict())
     else:
         raise LDAPExceptionError('unable to generate exception type ' + str(exc_to_raise))

@@ -54,6 +54,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
 from ..utils.conv import prepare_for_stream
 
 
+# noinspection PyProtectedMember
 class Connection(object):
     """
     Main ldap connection class.

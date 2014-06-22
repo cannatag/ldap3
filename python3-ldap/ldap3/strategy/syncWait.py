@@ -30,6 +30,7 @@ from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
 
+# noinspection PyProtectedMember
 class SyncWaitStrategy(BaseStrategy):
     """
     This strategy is synchronous. You send the request and get the response
@@ -77,7 +78,7 @@ class SyncWaitStrategy(BaseStrategy):
                         self.close()
                     except (socket.error, LDAPExceptionError):
                         pass
-                    raise communication_exception_factory(LDAPSocketReceiveError, e)(self.connection.last_error)
+                    raise communication_exception_factory(LDAPSocketReceiveError, exc)(self.connection.last_error)
 
                 unprocessed += data
             if len(data) > 0:

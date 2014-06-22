@@ -22,13 +22,13 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from sys import exc_info
-
 from time import sleep
+import socket
+from datetime import datetime
 
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .syncWait import SyncWaitStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPSocketSendError, LDAPOperationResult, LDAPMaximumRetriesError
-import socket
 
 
 # noinspection PyBroadException,PyProtectedMember
@@ -99,7 +99,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                     counter -= 1
             self._restarting = False
         self.connection.last_error = 'restartable connection strategy failed while opening socket'
-        raise LDAPMaximumRetriesError(self.connection.last_error)
+        raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def send(self, message_type, request, controls=None):
         self._current_message_type = message_type
@@ -160,7 +160,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             self._restarting = False
 
         self.connection.last_error = 'restartable connection failed to send'
-        raise LDAPMaximumRetriesError(self.connection.last_error)
+        raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def post_send_single_response(self, message_id):
         try:
@@ -207,8 +207,9 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             raise exc
 
     def _add_exception_to_history(self):
-        if not isinstance(self.restartable_tries, bool):  # doens't accumulate when restarting forever
-            self.exception_history.append(exc_info()[:2])
+        if not isinstance(self.restartable_tries, bool):  # doesn't accumulate when restarting forever
+            if not isinstance(exc_info()[1], LDAPMaximumRetriesError):  #doesn't add the LDAPMaximumRetriesError exception
+                self.exception_history.append((datetime.now(), exc_info()[0], exc_info()[1]))
 
     def _reset_exception_history(self):
         if self.exception_history:

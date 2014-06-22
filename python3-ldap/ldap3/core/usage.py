@@ -199,4 +199,5 @@ class ConnectionUsage(object):
         if self.connection_stop_time:
             return self.connection_stop_time - self.open_socket_start_time
         else:
+            # noinspection PyTypeChecker
             return (datetime.now() - self.open_socket_start_time) if self.open_socket_start_time else timedelta(0)

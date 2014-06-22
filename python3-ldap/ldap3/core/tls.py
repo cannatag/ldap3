@@ -40,6 +40,7 @@ except ImportError:
 from os import path
 
 
+# noinspection PyProtectedMember
 class Tls(object):
     """
     tls/ssl configuration for Server object

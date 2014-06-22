@@ -30,8 +30,7 @@ from pyasn1.codec.ber import encoder, decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, DO_NOT_RAISE_EXCEPTIONS
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer, LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPSocketCloseError, \
-    LDAPSocketSendError
-from ldap3.core.exceptions import LDAPExceptionError
+    LDAPSocketSendError, LDAPExceptionError
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
@@ -49,6 +48,7 @@ from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 
 
+# noinspection PyProtectedMember
 class BaseStrategy(object):
     """
     Base class for connection strategy
@@ -62,6 +62,7 @@ class BaseStrategy(object):
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
         self.pooled = None  # Indicates a connection with a connection pool
         self.can_stream = False  # indicate if a strategy keep a stream of responses (i.e. LDIFProducer can accumulate responses with a single header). Stream must be initilized and closed in _start_listen() and _stop_listen()
+
     def open(self, reset_usage=True):
         """
         Open a socket to a server. Choose a server from the server pool if available
@@ -204,6 +205,7 @@ class BaseStrategy(object):
                 self.connection.socket.sendall(encoded_message)
             except socket.error as e:
                 self.connection.last_error = 'socket sending error' + str(e)
+                encoded_message = None
                 exc = e
 
             if exc:

@@ -30,7 +30,8 @@ from .syncWait import SyncWaitStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPSocketSendError, LDAPOperationResult, LDAPMaximumRetriesError
 import socket
 
-# noinspection PyBroadException
+
+# noinspection PyBroadException,PyProtectedMember
 class SyncWaitRestartableStrategy(SyncWaitStrategy):
     def __init__(self, ldap_connection):
         SyncWaitStrategy.__init__(self, ldap_connection)
@@ -170,7 +171,6 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             self._add_exception_to_history()
 
         # if an LDAPExceptionError is raised then resend the request
-        exc = None
         try:
             ret_value = SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
             self._reset_exception_history()
@@ -192,7 +192,6 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         except Exception:
             self._add_exception_to_history()
 
-        exc = None
         # if an LDAPExceptionError is raised then resend the request
         try:
             ret_value = SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))

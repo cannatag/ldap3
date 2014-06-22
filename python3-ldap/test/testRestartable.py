@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(search_results) > 15)
 
     def test_restartable_invalid_server2(self):
-        hosts = ['sl08.intra.camera.it', 'sl09.intra.camera.it', 'sl10.intra.camera.it', 'idmprofiler',  'localhost', 'edir', 'edir2', 'edir3']
+        hosts = ['sl08.intra.camera.it', 'sl09.intra.camera.it', 'sl10.intra.camera.it', 'idmprofiler',  'localhost', 'edir1', 'edir2', 'edir3']
         #hosts = ['edir']
         search_results = []
         servers = [Server(host=host, port=389, use_ssl=False) for host in hosts]

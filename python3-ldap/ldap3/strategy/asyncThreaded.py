@@ -32,6 +32,7 @@ from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
 
+# noinspection PyProtectedMember
 class AsyncThreadedStrategy(BaseStrategy):
     """
     This strategy is asynchronous. You send the request and get the messageId of the request sent
@@ -43,6 +44,7 @@ class AsyncThreadedStrategy(BaseStrategy):
     Response appear in strategy._responses dictionary
     """
 
+    # noinspection PyProtectedMember
     class ReceiverSocketThread(Thread):
         """
         The thread that actually manage the receiver socket

@@ -38,7 +38,7 @@ from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT
     RESULT_AUTHORIZATION_DENIED, RESULT_LCUP_RESOURCES_EXHAUSTED, RESULT_NOT_ALLOWED_ON_RDN, \
     RESULT_INAPPROPRIATE_AUTHENTICATION
 import socket
-
+from pprint import pprint
 
 # LDAPException hierarchy
 class LDAPException(Exception):
@@ -504,9 +504,18 @@ class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
 
 # restartable strategy
 class LDAPMaximumRetriesError(LDAPExceptionError):
-    pass
+    def __str__(self):
 
-
+        if self.args:
+            if isinstance(self.args, tuple):
+                if len(self.args) > 0:
+                    print('Error: ' + self.args[0])
+                if len(self.args) > 1:
+                    print('Exceptions history:')
+                    for i, exc in enumerate(self.args[1]):  # args[1] contains exception history
+                        print(str(i).rjust(5), str(exc[0]), ':', exc[1], '-', exc[2])
+                if len(self.args) > 2:
+                    print('Maximum number of retries reached: ' + str(self.args[2]))
 # exception factories
 def communication_exception_factory(exc_to_raise, exc):
     """

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+* 0.9.3.5 2014.06.22
+    - Exception history in restartable strategy is printed when reached the maximum number of retries
+    - Fixed conditions on terminated_by_server unsolicited message
+    - Added python2.6 egg installation package
+
 * 0.9.3.4 2014.06.16
     - Exception can now be imported from ldap3 package
     - Escape_bytes return '' for empty string instead of None (thanks Brian)

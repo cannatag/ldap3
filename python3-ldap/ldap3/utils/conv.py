@@ -25,6 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 def escape_bytes(bytes_value):
     if str != bytes:  # Python 3
+        if isinstance(bytes_value, str):
+            bytes_value = bytearray(bytes_value, encoding='utf-8')
         escaped = '\\'.join([('%02x' % int(b)) for b in bytes_value])
     else:  # Python 2
         escaped = '\\'.join([('%02x' % ord(b)) for b in bytes_value])

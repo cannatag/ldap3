@@ -111,26 +111,12 @@ class Test(unittest.TestCase):
             connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
-        #===============================================================================
-        # removal os TLS layer is defined as MAY in rfc4511. It can't be implemented against a generic LDAP server
-        #     def test_stop_tls(self):
-        #         server = Server(host = test_server, port = test_port, tls = Tls())
-        #         connection = Connection(server, auto_bind = False, version = 3, clientStrategy = test_strategy, user = test_user, password = test_password, authentication = test_authentication)
-        #         connection.open()
-        #         connection.start_tls()
-        #         self.assertFalse(connection.closed)
-        #         connection.stopTls()
-        #         connection.unbind()
-        #===============================================================================
-
-        #===========================================================================
-        # def test_sasl_with_digest_md5(self):
-        #     # tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, ca_certs_file = 'c:/idmprofiler2524CA.b64')
-        #     server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = Tls())
-        #     connection = Connection(server, auto_bind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, user = test_user, sasl_mechanism = 'DIGEST-MD5', sasl_credentials = test_password)
-        #     connection.open()
-        #     connection.bind()
-        #     self.assertTrue(connection.bound)
-        #     connection.unbind()
-        #     self.assertFalse(connection.bound)
-        #===========================================================================
+    def test_sasl_with_digest_md5(self):
+         # tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, ca_certs_file = 'c:/idmprofiler2524CA.b64')
+         server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = Tls())
+         connection = Connection(server, auto_bind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, user = test_user, sasl_mechanism = 'DIGEST-MD5', sasl_credentials = test_password)
+         connection.open()
+         connection.bind()
+         self.assertTrue(connection.bound)
+         connection.unbind()
+         self.assertFalse(connection.bound)

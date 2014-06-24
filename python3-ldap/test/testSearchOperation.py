@@ -144,10 +144,7 @@ class Test(unittest.TestCase):
         self.assertTrue(total_entries > 9)
 
     def test_search_exact_match_with_parentheses_in_filter(self):
-        if str == bytes:
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
-        else:
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes([40]) + '*)', attributes=[test_name_attr, 'sn'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:

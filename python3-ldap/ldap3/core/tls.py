@@ -37,6 +37,12 @@ except ImportError:
     class CertificateError(ValueError):  # fix for Python 2, code from Python 3.3 standard library
         pass
 
+try:
+    from ssl import create_default_context, Purpose  # defined in Python 3.4
+    use_ssl_context = True
+except ImportError:
+    use_ssl_context = False
+
 from os import path
 
 
@@ -44,15 +50,23 @@ from os import path
 class Tls(object):
     """
     tls/ssl configuration for Server object
+    Starting from python 3-4 it uses the SSLContext object
+    that tries to read the CAs defined at system level
+    ca_certs_path and ca_certs_data are valid only when using SSLContext
+    local_private_key_password is valid only when using SSLContext
     """
 
     def __init__(self,
                  local_private_key_file=None,
                  local_certificate_file=None,
                  validate=ssl.CERT_NONE,
-                 version=ssl.PROTOCOL_TLSv1,
+                 version=None,
                  ca_certs_file=None,
-                 valid_names=None):
+                 valid_names=None,
+                 ca_certs_path=None,
+                 ca_certs_data=None,
+                 local_private_key_password=None
+                 ):
 
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
@@ -62,9 +76,32 @@ class Tls(object):
         if ca_certs_file and path.exists(ca_certs_file):
             self.ca_certs_file = ca_certs_file
         elif ca_certs_file:
-            raise LDAPSSLConfigurationError('invalid CA public key parameter')
+            raise LDAPSSLConfigurationError('invalid CA public key file')
         else:
             self.ca_certs_file = None
+
+        if ca_certs_path and use_ssl_context and path.exists(ca_certs_path):
+            self.ca_certs_path = ca_certs_path
+        elif ca_certs_path and not use_ssl_context:
+            raise LDAPSSLNotSupportedError('cannot use CA public keys path, SSLContext not available')
+        elif ca_certs_path:
+            raise LDAPSSLConfigurationError('invalid CA public keys path')
+        else:
+            self.ca_certs_path = None
+
+        if ca_certs_data and use_ssl_context:
+            self.ca_certs_data = ca_certs_data
+        elif ca_certs_data:
+            raise LDAPSSLNotSupportedError('cannot use CA data, SSLContext not available')
+        else:
+            self.ca_certs_data = None
+
+        if local_private_key_password and use_ssl_context:
+            self.private_key_password = local_private_key_password
+        elif local_private_key_password:
+            raise LDAPSSLNotSupportedError('cannot use local private key password, SSLContext is not available')
+        else:
+            self.private_key_password = None
 
         self.version = version
         self.private_key_file = local_private_key_file
@@ -80,6 +117,8 @@ class Tls(object):
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.ca_certs_file is None else ', ca_certs_file={0.ca_certs_file!r}'.format(self)
+        r += '' if self.ca_certs_path is None else ', ca_certs_path={0.ca_certs_path!r}'.format(self)
+        r += '' if self.ca_certs_data is None else ', ca_certs_data={0.ca_certs_data!r}'.format(self)
         r = 'Tls(' + r[2:] + ')'
         return r
 
@@ -87,19 +126,23 @@ class Tls(object):
         """
         Adds TLS to a plain socket and returns the SSL socket
         """
-        wrapped_socket = ssl.wrap_socket(connection.socket, keyfile=self.private_key_file, certfile=self.certificate_file, server_side=False, cert_reqs=self.validate, ssl_version=self.version, ca_certs=self.ca_certs_file, do_handshake_on_connect=do_handshake)
+
+        if use_ssl_context:
+            ssl_context = create_default_context(purpose=Purpose.SERVER_AUTH, cafile=self.ca_certs_file, capath=self.ca_certs_path, cadata=self.ca_certs_data)
+            if self.private_key_file:
+                ssl_context.load_cert_chain(self.certificate_file, keyfile=self.private_key_file, password=self.private_key_password)
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = self.validate
+            if self.version:  # if version is not present keep the default context version
+                ssl_context.protocol = self.version
+            wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
+        else:
+            wrapped_socket = ssl.wrap_socket(connection.socket, keyfile=self.private_key_file, certfile=self.certificate_file, server_side=False, cert_reqs=self.validate, ssl_version=self.version, ca_certs=self.ca_certs_file, do_handshake_on_connect=do_handshake)
 
         if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)
 
         return wrapped_socket
-
-    @staticmethod
-    def unwrap_socket(sock):
-        """
-        Removes TLS from an SSL socket and returns the plain socket
-        """
-        return sock.unwrap()
 
     def start_tls(self, connection):
         if connection.server.ssl:  # ssl already established at server level
@@ -122,7 +165,7 @@ class Tls(object):
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
-        connection.socket = self.wrap_socket(connection, True)
+        connection.socket = self.wrap_socket(connection, do_handshake=True)
 
         if connection.usage:
             connection._usage.wrapped_sockets += 1
@@ -132,42 +175,78 @@ class Tls(object):
         return True
 
 
-def _dnsname_to_pat_backport(dn):
-    """
-    Fix for Python2; code from Python 3.3 standard library.
-    """
-    import re
+def _dnsname_match_backport(dn, hostname, max_wildcards=1):
+    """Matching according to RFC 6125, section 6.4.3
 
+    http://tools.ietf.org/html/rfc6125#section-6.4.3
+    """
     pats = []
-    for frag in dn.split(r'.'):
-        if frag == '*':
-            # When '*' is a fragment by itself, it matches a non-empty dotless
-            # fragment.
-            pats.append('[^.]+')
-        else:
-            # Otherwise, '*' matches any dotless fragment.
-            frag = re.escape(frag)
-            pats.append(frag.replace(r'\*', '[^.]*'))
-    return re.compile(r'\A' + r'\.'.join(pats) + r'\Z', re.IGNORECASE)
+    if not dn:
+        return False
+
+    dn_array = dn.split(r'.')
+
+    leftmost = dn_array[0]
+    remainder = dn_array[1:]
+
+    wildcards = leftmost.count('*')
+    if wildcards > max_wildcards:
+        # Issue #17980: avoid denials of service by refusing more
+        # than one wildcard per fragment.  A survery of established
+        # policy among SSL implementations showed it to be a
+        # reasonable choice.
+        raise CertificateError(
+            "too many wildcards in certificate DNS name: " + repr(dn))
+
+    # speed up common case w/o wildcards
+    if not wildcards:
+        return dn.lower() == hostname.lower()
+
+    # RFC 6125, section 6.4.3, subitem 1.
+    # The client SHOULD NOT attempt to match a presented identifier in which
+    # the wildcard character comprises a label other than the left-most label.
+    if leftmost == '*':
+        # When '*' is a fragment by itself, it matches a non-empty dotless
+        # fragment.
+        pats.append('[^.]+')
+    elif leftmost.startswith('xn--') or hostname.startswith('xn--'):
+        # RFC 6125, section 6.4.3, subitem 3.
+        # The client SHOULD NOT attempt to match a presented identifier
+        # where the wildcard character is embedded within an A-label or
+        # U-label of an internationalized domain name.
+        pats.append(re.escape(leftmost))
+    else:
+        # Otherwise, '*' matches any dotless string, e.g. www*
+        pats.append(re.escape(leftmost).replace(r'\*', '[^.]*'))
+
+    # add the remaining fragments, ignore any wildcards
+    for frag in remainder:
+        pats.append(re.escape(frag))
+
+    pat = re.compile(r'\A' + r'\.'.join(pats) + r'\Z', re.IGNORECASE)
+    return pat.match(hostname)
 
 
 def match_hostname_backport(cert, hostname):
     """
-    Fix for Python2; code from Python 3.3 standard library.
+    Fix for Python2; code from Python 3.4.1 standard library.
 
     Verify that *cert* (in decoded format as returned by
-    SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules are
-    mostly followed, but IP addresses are not accepted for *hostname*.
+    SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 and RFC 6125
+    rules are followed, but IP addresses are not accepted for *hostname*.
 
-    CertificateError is raised on failure. On success, the function returns
+    CertificateError is raised on failure. On success, the function
+    returns nothing.
     """
     if not cert:
-        raise CertificateError("empty or no certificate")
+        raise ValueError("empty or no certificate, match_hostname needs a "
+                         "SSL socket or SSL context with either "
+                         "CERT_OPTIONAL or CERT_REQUIRED")
     dnsnames = []
     san = cert.get('subjectAltName', ())
     for key, value in san:
         if key == 'DNS':
-            if _dnsname_to_pat_backport(value).match(hostname):
+            if _dnsname_match_backport(value, hostname):
                 return
             dnsnames.append(value)
     if not dnsnames:
@@ -175,10 +254,10 @@ def match_hostname_backport(cert, hostname):
         # in subjectAltName
         for sub in cert.get('subject', ()):
             for key, value in sub:
-                #  according to RFC 2818, the most specific Common Name
+                # XXX according to RFC 2818, the most specific Common Name
                 # must be used.
                 if key == 'commonName':
-                    if _dnsname_to_pat_backport(value).match(hostname):
+                    if _dnsname_match(value, hostname):
                         return
                     dnsnames.append(value)
     if len(dnsnames) > 1:
@@ -186,26 +265,22 @@ def match_hostname_backport(cert, hostname):
     elif len(dnsnames) == 1:
         raise CertificateError("hostname %r doesn't match %r" % (hostname, dnsnames[0]))
     else:
-        raise CertificateError("no appropriate commonName or subjectAltName fields found")
+        raise CertificateError("no appropriate commonName or subjectAltName fields were found")
 
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()
     host_names = [server_name] + (additional_names if isinstance(additional_names, list) else [additional_names])
-    valid_found = False
     for host_name in host_names:
-        if host_names == '*':
+        if host_name == '*':
             return
         try:
             ssl.match_hostname(server_certificate, host_name)  # raise CertificateError if certificate doesn't match server name
-            valid_found = True
+            return
         except AttributeError:
             match_hostname_backport(server_certificate, host_name)
-            valid_found = True
+            return
         except CertificateError:
             pass
-
-        if valid_found:
-            return
 
     raise LDAPCertificateError("hostname doesn't match")

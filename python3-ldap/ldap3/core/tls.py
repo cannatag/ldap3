@@ -284,7 +284,6 @@ def match_hostname_backport(cert, hostname):
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()
-    print(server_certificate)
     host_names = [server_name] + (additional_names if isinstance(additional_names, list) else [additional_names])
     for host_name in host_names:
         if host_name is None:

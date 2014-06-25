@@ -109,11 +109,22 @@ class Tls(object):
         self.valid_names = valid_names
 
     def __str__(self):
-        return 'version: ' + self.version + ' - local private key: ' + str(self.private_key_file) + ' - local public key:' + str(self.certificate_file) + ' - validate remote public key:' + self.validate + 'CA public key: ' + str(self.ca_certs_file)
+        s = [
+            'protocol: ' + str(self.version),
+            'client private key: ' + ('present ' if self.private_key_file else 'not present'),
+            'client certificate: ' + ('present ' if self.certificate_file else 'not present'),
+            'private key password: ' + ('present ' if self.private_key_password else 'not present'),
+            'CA certificates file: ' + ('present ' if self.ca_certs_file else 'not present'),
+            'CA certificates path: ' + ('present ' if self.ca_certs_path else 'not present'),
+            'CA certificates data: ' + ('present ' if self.ca_certs_data else 'not present'),
+            'verify mode: ' + str(self.validate),
+            'valid names: ' + str(self.valid_names)
+        ]
+        return ' - '.join(s)
 
     def __repr__(self):
-        r = '' if self.private_key_file is None else ', localPrivateKeyFile={0.private_key_file!r}'.format(self)
-        r += '' if self.certificate_file is None else ', localCertificateFile={0.certificate_file!r}'.format(self)
+        r = '' if self.private_key_file is None else ', local_private_key_file={0.private_key_file!r}'.format(self)
+        r += '' if self.certificate_file is None else ', local_certificate_file={0.certificate_file!r}'.format(self)
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.ca_certs_file is None else ', ca_certs_file={0.ca_certs_file!r}'.format(self)
@@ -124,7 +135,7 @@ class Tls(object):
 
     def wrap_socket(self, connection, do_handshake=False):
         """
-        Adds TLS to a plain socket and returns the SSL socket
+        Adds TLS to the connection socket
         """
 
         if use_ssl_context:
@@ -133,16 +144,19 @@ class Tls(object):
                 ssl_context.load_cert_chain(self.certificate_file, keyfile=self.private_key_file, password=self.private_key_password)
             ssl_context.check_hostname = False
             ssl_context.verify_mode = self.validate
-            if self.version:  # if version is not present keep the default context version
+            if not self.version is None:  # if version is present overrides the default context version
                 ssl_context.protocol = self.version
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
         else:
+            if self.version is None:
+                self.version = ssl.PROTOCOL_SSLv23
             wrapped_socket = ssl.wrap_socket(connection.socket, keyfile=self.private_key_file, certfile=self.certificate_file, server_side=False, cert_reqs=self.validate, ssl_version=self.version, ca_certs=self.ca_certs_file, do_handshake_on_connect=do_handshake)
 
         if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)
 
-        return wrapped_socket
+        connection.socket = wrapped_socket
+        return
 
     def start_tls(self, connection):
         if connection.server.ssl:  # ssl already established at server level
@@ -165,7 +179,7 @@ class Tls(object):
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
-        connection.socket = self.wrap_socket(connection, do_handshake=True)
+        self.wrap_socket(connection, do_handshake=True)
 
         if connection.usage:
             connection._usage.wrapped_sockets += 1
@@ -257,7 +271,7 @@ def match_hostname_backport(cert, hostname):
                 # XXX according to RFC 2818, the most specific Common Name
                 # must be used.
                 if key == 'commonName':
-                    if _dnsname_match(value, hostname):
+                    if _dnsname_match_backport(value, hostname):
                         return
                     dnsnames.append(value)
     if len(dnsnames) > 1:
@@ -270,9 +284,12 @@ def match_hostname_backport(cert, hostname):
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()
+    print(server_certificate)
     host_names = [server_name] + (additional_names if isinstance(additional_names, list) else [additional_names])
     for host_name in host_names:
-        if host_name == '*':
+        if host_name is None:
+            continue
+        elif host_name == '*':
             return
         try:
             ssl.match_hostname(server_certificate, host_name)  # raise CertificateError if certificate doesn't match server name

@@ -113,7 +113,7 @@ class Test(unittest.TestCase):
 
     def test_sasl_with_digest_md5(self):
          # tls = Tls(localPrivateKeyFile = 'c:/admin2524KeyPlain.pem', localCertificateFile = 'c:/admin2524Cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1, ca_certs_file = 'c:/idmprofiler2524CA.b64')
-         server = Server(host = test_server, port = test_port_ssl, useSsl = True, tls = Tls())
+         server = Server(host = test_server, port = test_port_ssl, use_ssl = True, tls = Tls())
          connection = Connection(server, auto_bind = False, version = 3, clientStrategy = test_strategy, authentication = AUTH_SASL, user = test_user, sasl_mechanism = 'DIGEST-MD5', sasl_credentials = test_password)
          connection.open()
          connection.bind()

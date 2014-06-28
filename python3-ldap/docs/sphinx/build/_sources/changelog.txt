@@ -1,6 +1,19 @@
 CHANGELOG
 =========
 
+* 0.9.3.5 2014.06.22
+    - Exception history in restartable strategy is printed when reached the maximum number of retries
+    - Fixed conditions on terminated_by_server unsolicited message
+    - Added python2.6 egg installation package
+
+* 0.9.3.4 2014.06.16
+    - Exception can now be imported from ldap3 package
+    - Escape_bytes return '' for empty string instead of None (thanks Brian)
+    - Added exception history to restartable connection (except than for infinite retries)
+    - Fixed start_tls retrying in restartable connection (thanks Brian)
+    - New exception LDAPMaximumRetriesError for signaling when the SyncRestartable Strategy has reached the maximum number of retries while performing an operation
+    - Inverted deleteoldrdn value in LDIF output (thanks Joseph)
+
 * 0.9.3.3 2014.06.01
     - Fixed a bug in LDIFProducer when using context manager for connection
     - LDIF header in stream is added only whene there are actua data in the stream
@@ -17,6 +30,7 @@ CHANGELOG
     - object_class parameter is now optional in connection.add()
     - Fixed objectClass attribute case sensitive dependency in add operation
     - Added stream capability to response_to_ldif() while searching
+
 
 * 0.9.3 2014.05.20
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)

@@ -113,6 +113,7 @@ class Entry(object):
     def get_raw_attribute(self, name):
         return self._raw_attributes[name] if name in self._raw_attributes else None
 
+    # noinspection PyProtectedMember
     def refresh(self):
         temp_entry = self.get_entry_reader().search_object(self.get_entry_dn())
         self.__dict__['_attributes'] = temp_entry._attributes

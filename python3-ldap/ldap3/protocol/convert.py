@@ -98,7 +98,7 @@ def build_controls_list(controls):
     if not controls:
         return None
 
-    if not isinstance(controls, list):
+    if not isinstance(controls, (list, tuple)):
         raise LDAPControlsError('controls must be a list')
 
     built_controls = Controls()

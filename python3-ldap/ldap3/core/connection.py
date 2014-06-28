@@ -81,7 +81,7 @@ class Connection(object):
                  auto_referrals=True,
                  sasl_mechanism=None,
                  sasl_credentials=None,
-                 check_names=False,
+                 check_names=True,
                  collect_usage=False,
                  read_only=False,
                  lazy=False,
@@ -138,7 +138,7 @@ class Connection(object):
         self.check_names = check_names
         self.raise_exceptions = raise_exceptions
 
-        if isinstance(server, list):
+        if isinstance(server, (list, tuple)):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
 
         if isinstance(server, ServerPool):
@@ -426,14 +426,14 @@ class Connection(object):
         if object_class is None:
             parm_object_class = []
         else:
-            parm_object_class = object_class if isinstance(object_class, list) else [object_class]
+            parm_object_class = object_class if isinstance(object_class, (list, tuple)) else [object_class]
 
         object_class_attr_name = ''
         if attributes:
             for attr in attributes:
                 if attr.lower() == 'objectclass':
                     object_class_attr_name = attr
-                    attr_object_class = attributes[object_class_attr_name] if isinstance(attributes[object_class_attr_name], list) else [attributes[object_class_attr_name]]
+                    attr_object_class = attributes[object_class_attr_name] if isinstance(attributes[object_class_attr_name], (list, tuple)) else [attributes[object_class_attr_name]]
         else:
             attributes = dict()
 
@@ -448,7 +448,7 @@ class Connection(object):
         request = add_operation(dn, attributes, self.server.schema if self.server and self.check_names else None)
         response = self.post_send_single_response(self.send('addRequest', request, controls))
 
-        if isinstance(response, int) or isinstance(response, str):
+        if isinstance(response, (int, str)):
             return response
 
         return True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -467,7 +467,7 @@ class Connection(object):
         request = delete_operation(dn)
         response = self.post_send_single_response(self.send('delRequest', request, controls))
 
-        if isinstance(response, int) or isinstance(response, str):
+        if isinstance(response, (int, str)):
             return response
 
         return True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -507,7 +507,7 @@ class Connection(object):
         request = modify_operation(dn, changes, self.server.schema if self.server and self.check_names else None)
         response = self.post_send_single_response(self.send('modifyRequest', request, controls))
 
-        if isinstance(response, int) or isinstance(response, str):
+        if isinstance(response, (int, str)):
             return response
 
         return True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -534,7 +534,7 @@ class Connection(object):
         request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
         response = self.post_send_single_response(self.send('modDNRequest', request, controls))
 
-        if isinstance(response, int) or isinstance(response, str):
+        if isinstance(response, (int, str)):
             return response
 
         return True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -613,7 +613,7 @@ class Connection(object):
         if search_result is None:
             search_result = self.response
 
-        if isinstance(search_result, list):
+        if isinstance(search_result, (list, tuple)):
             ldif_lines = operation_to_ldif('searchResponse', search_result, all_base64, sort_order=sort_order)
             ldif_lines = add_ldif_header(ldif_lines)
             line_separator = line_separator or linesep

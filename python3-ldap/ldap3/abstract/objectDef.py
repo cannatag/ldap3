@@ -107,7 +107,7 @@ class ObjectDef(object):
                     raise LDAPAttributeError('attribute already present')
             self._attributes[key] = definition
             self.__dict__[key] = definition
-        elif isinstance(definition, list):
+        elif isinstance(definition, (list, tuple)):
             for element in definition:
                 self.add(element)
         else:

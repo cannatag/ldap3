@@ -141,7 +141,7 @@ class ServerPool(object):
         self.pool_states = dict()
         self.active = active
         self.exhaust = exhaust
-        if isinstance(servers, list):
+        if isinstance(servers, (list, tuple)):
             for server in servers:
                 self.add(server)
         elif isinstance(servers, Server):
@@ -189,7 +189,7 @@ class ServerPool(object):
         if isinstance(servers, Server):
             if servers not in self.servers:
                 self.servers.append(servers)
-        elif isinstance(servers, list):
+        elif isinstance(servers, (list, tuple)):
             for server in servers:
                 if isinstance(server, Server):
                     self.servers.append(server)

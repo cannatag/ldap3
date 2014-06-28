@@ -90,12 +90,12 @@ def extension_to_tuple(extension_string):
 
 
 def list_to_string(list_object):
-    if not isinstance(list_object, list):
+    if not isinstance(list_object, (list, tuple)):
         return list_object
 
     r = ''
     for element in list_object:
-        r += (list_to_string(element) if isinstance(element, list) else str(element)) + ', '
+        r += (list_to_string(element) if isinstance(element, (list, tuple)) else str(element)) + ', '
 
     return r[:-2] if r else ''
 
@@ -135,7 +135,7 @@ class DsaInfo(object):
         r += 'Other:' + linesep
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep
-            if isinstance(v, list):
+            if isinstance(v, (list, tuple)):
                 r += linesep.join(['    ' + str(s) for s in v]) + linesep
             else:
                 r += v + linesep
@@ -179,7 +179,7 @@ class SchemaInfo(object):
 
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep
-            r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, list) else v + linesep
+            r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else v + linesep
         return r
 
 

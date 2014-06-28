@@ -39,7 +39,7 @@ def add_operation(dn,
         attribute_list[pos] = Attribute()
         attribute_list[pos]['type'] = AttributeDescription(attribute)
         vals = ValsAtLeast1()
-        if isinstance(attributes[attribute], list):
+        if isinstance(attributes[attribute], (list, tuple)):
             for index, value in enumerate(attributes[attribute]):
                 vals.setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
         else:

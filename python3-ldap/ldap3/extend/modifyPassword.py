@@ -21,7 +21,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ..protocol.rfc3062 import PasswdModifyRequestValue
+from ..protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
+from pyasn1.codec.ber import encoder, decoder
 
 
 def modify_password(connection, user, old_password, new_password):
@@ -37,4 +38,23 @@ def modify_password(connection, user, old_password, new_password):
         response = connection.response
         result = connection.result
 
-    return response, result
+    return modify_password_decode_response_value(response), result
+
+
+def modify_password_request_to_dict(request):
+    return {'userIdentity': str(request['userIdentity']),
+            'oldPasswd': str(request['oldPasswd']),
+            'newPasswd': str(request['newPasswd'])}
+
+
+def modify_password_response_value_to_dict(value):
+    return {'genPasswd': str(value['genPasswd'])}
+
+
+def modify_password_decode_response_value(response):
+    if response['value']:
+        decoded, unprocessed = decoder.decode(response['value'], asn1Spec=PasswdModifyResponseValue())
+        if unprocessed:
+            raise LDAPException('error decoding extended response value')
+
+        response['value'] = modify_password_response_value_to_dict(decoded)

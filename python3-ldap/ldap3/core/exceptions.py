@@ -40,6 +40,7 @@ from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT
 import socket
 from pprint import pprint
 
+
 # LDAPException hierarchy
 class LDAPException(Exception):
     pass
@@ -516,6 +517,8 @@ class LDAPMaximumRetriesError(LDAPExceptionError):
                         print(str(i).rjust(5), str(exc[0]), ':', exc[1], '-', exc[2])
                 if len(self.args) > 2:
                     print('Maximum number of retries reached: ' + str(self.args[2]))
+
+
 # exception factories
 def communication_exception_factory(exc_to_raise, exc):
     """

@@ -208,7 +208,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
     def _add_exception_to_history(self):
         if not isinstance(self.restartable_tries, bool):  # doesn't accumulate when restarting forever
-            if not isinstance(exc_info()[1], LDAPMaximumRetriesError):  #doesn't add the LDAPMaximumRetriesError exception
+            if not isinstance(exc_info()[1], LDAPMaximumRetriesError):  # doesn't add the LDAPMaximumRetriesError exception
                 self.exception_history.append((datetime.now(), exc_info()[0], exc_info()[1]))
 
     def _reset_exception_history(self):

@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
+from ldap3.extend.getBindDn import get_bind_dn
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
 from ldap3.core.tls import Tls
 
@@ -74,4 +75,9 @@ class Test(unittest.TestCase):
         else:
             response = self.connection.response
             result = self.connection.result
+        self.assertTrue(result['description'] in ['success'])
+
+    def test_get_bind_dn_extend_operation(self):
+        response, result = get_bind_dn(self.connection)
+        self.assertEqual(response, 'cn=admin,o=services')
         self.assertTrue(result['description'] in ['success'])

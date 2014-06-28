@@ -150,7 +150,14 @@ class Tls(object):
         else:
             if self.version is None:
                 self.version = ssl.PROTOCOL_SSLv23
-            wrapped_socket = ssl.wrap_socket(connection.socket, keyfile=self.private_key_file, certfile=self.certificate_file, server_side=False, cert_reqs=self.validate, ssl_version=self.version, ca_certs=self.ca_certs_file, do_handshake_on_connect=do_handshake)
+            wrapped_socket = ssl.wrap_socket(connection.socket,
+                                             keyfile=self.private_key_file,
+                                             certfile=self.certificate_file,
+                                             server_side=False,
+                                             cert_reqs=self.validate,
+                                             ssl_version=self.version,
+                                             ca_certs=self.ca_certs_file,
+                                             do_handshake_on_connect=do_handshake)
 
         if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)
@@ -284,7 +291,7 @@ def match_hostname_backport(cert, hostname):
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()
-    host_names = [server_name] + (additional_names if isinstance(additional_names, list) else [additional_names])
+    host_names = [server_name] + (additional_names if isinstance(additional_names, (list, tuple)) else [additional_names])
     for host_name in host_names:
         if host_name is None:
             continue

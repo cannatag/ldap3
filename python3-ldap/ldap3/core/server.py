@@ -80,7 +80,7 @@ class Server(object):
             self.port = port
         else:
             raise LDAPInvalidPort('port must be an integer')
-        if isinstance(allowed_referral_hosts, list):
+        if isinstance(allowed_referral_hosts, (list, tuple)):
             self.allowed_referral_hosts = []
             for refServer in allowed_referral_hosts:
                 if isinstance(refServer, tuple):

@@ -50,7 +50,7 @@ def modify_operation(dn,
         partial_attribute = PartialAttribute()
         partial_attribute['type'] = AttributeDescription(attribute)
         partial_attribute['vals'] = Vals()
-        if isinstance(changes[attribute][1], list):
+        if isinstance(changes[attribute][1], (list, tuple)):
             for index, value in enumerate(changes[attribute][1]):
                 partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
         else:

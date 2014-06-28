@@ -134,6 +134,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.active_connection = reusable_connection
             self.original_connection = original_connection
 
+        # noinspection PyProtectedMember
         def run(self):
             self.active_connection.running = True
             terminate = False
@@ -156,6 +157,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                             self.active_connection.connection.bind()
                         if pool.tls_pool and not self.active_connection.connection.tls_started:
                             self.active_connection.connection.start_tls()
+                        # noinspection PyProtectedMember
                         self.active_connection.connection._fire_deferred()  # force deferred operations
 
                         exc = None
@@ -207,6 +209,7 @@ class ReusableThreadedStrategy(BaseStrategy):
 
         def new_connection(self):
             from ..core.connection import Connection
+            # noinspection PyProtectedMember
             self.connection = Connection(server=self.original_connection.server_pool if self.original_connection.server_pool else self.original_connection.server,
                                          user=self.original_connection.user,
                                          password=self.original_connection.password,

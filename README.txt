@@ -55,11 +55,14 @@ CHANGELOG
 =========
 
 * 0.9.4 2014.06.25
-    - If running in python 3.4 or newer now Tls uses SSLContext object with default secure setting
+    - when running in python 3.4 or newer now Tls class uses SSLContext object with default secure setting
     - added parameters ca_certs_path, ca_certs_data, local_private_key_password to Tls object creation, valid when using SSLContext
+    - in python 3.4 or newer the system CA certificates configuration can be used (just leave ca_cert_file, ca_certs_path and ca_certs_data set to None)
     - removed TLSv1 as default for Tls connection
     - upgraded backported ssl function from python 3.4.1 when using with python 2
     - fixed bug in escape_bytes
+    - attributes parameter in search can be a tuple
+    - check_names parameter in connection now defaults to True (so if schema info is available attribute and class name will be checked when performing LDAP operations)
 
 * 0.9.3.5 2014.06.22
     - Exception history in restartable strategy is printed when reached the maximum number of retries

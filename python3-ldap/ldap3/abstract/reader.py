@@ -230,7 +230,7 @@ class Reader(object):
             self.query_filter += '(&'
             if isinstance(self._definition.object_class, str):
                 self.query_filter += '(objectClass=' + self._definition.object_class + ')'
-            elif isinstance(self._definition.object_class, list):
+            elif isinstance(self._definition.object_class, (list, tuple)):
                 self.query_filter += '(&'
                 for object_class in self._definition.object_class:
                     self.query_filter += '(objectClass=' + object_class + ')'
@@ -300,7 +300,7 @@ class Reader(object):
                 if attr_def.post_query and attr_def.name in result['attributes']:
                     attribute.__dict__['values'] = attr_def.post_query(attr_def.key, result['attributes'][name])
                 else:
-                    attribute.__dict__['values'] = result['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, list) else [attr_def.default])
+                    attribute.__dict__['values'] = result['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, (list, tuple)) else [attr_def.default])
                 if attr_def.dereference_dn:  # try to get object referenced in value
                     # noinspection PyUnresolvedReferences
                     if attribute.values:

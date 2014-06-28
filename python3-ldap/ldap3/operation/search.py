@@ -352,7 +352,7 @@ def search_operation(search_base,
     request['timeLimit'] = Integer0ToMax(time_limit)
     request['typesOnly'] = TypesOnly(True) if types_only else TypesOnly(False)
     request['filter'] = build_filter(search_filter, schema)  # parse the searchFilter string and compile it starting from the root node
-    if not isinstance(attributes, list):
+    if not isinstance(attributes, (list, tuple)):
         attributes = [NO_ATTRIBUTES]
 
     request['attributes'] = build_attribute_selection(attributes, schema)

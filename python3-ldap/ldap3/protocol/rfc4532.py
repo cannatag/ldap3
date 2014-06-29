@@ -1,5 +1,5 @@
 """
-Created on 2014.04.30
+Created on 2014.06.30
 
 @author: Giovanni Cannata
 
@@ -21,32 +21,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-
-# implements rfc4532
-
-from ..protocol.rfc4532 import AuthzId
-from pyasn1.codec.ber import decoder
+from pyasn1.type.univ import OctetString, Sequence
+from pyasn1.type.namedtype import NamedTypes, NamedType
+from pyasn1.type.tag import tagClassUniversal, Tag, tagFormatSimple, tagClassContext
 
 
-def who_am_i(connection):
-    resp = connection.extended('1.3.6.1.4.1.4203.1.11.3', None)
-    if not connection.strategy.sync:
-        _, result = connection.get_response(resp)
-    else:
-        result = connection.result
-
-    connection.response = decode_response(result)
-    populate_result_dict(result, connection.response)
-    return connection.response
-
-
-def populate_result_dict(result, value):
-    result['AuthzId'] = value
-
-
-def decode_response(result):
-    if result['responseValue']:
-        decoded = result['responseValue'].decode('utf-8')
-        return decoded
-
-    return str(result) if result else ''
+class AuthzId(OctetString):
+    tagSet = OctetString.tagSet.tagExplicitly(Tag(tagClassContext, tagFormatSimple, 4))
+    encoding = 'utf-8'

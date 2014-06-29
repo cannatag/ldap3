@@ -21,7 +21,10 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ..protocol.novell import GetBindDnResponseValue, Identity
+
+    from ..protocol.novell import Identity
+
+
 from pyasn1.codec.ber import decoder
 
 
@@ -32,20 +35,21 @@ def get_bind_dn(connection):
     else:
         result = connection.result
 
-    response = decode_response_value(result)
-    add_response_value_to_dict(result, response)
-    return response, result
+    connection.response = decode_response(result)
+    populate_result_dict(result, connection.response)
+
+    return connection.response
 
 
-def add_response_value_to_dict(result, value):
+def populate_result_dict(result, value):
     result['identity'] = value
 
 
-def decode_response_value(result):
+def decode_response(result):
     if result['responseValue']:
         decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=Identity())
         if unprocessed:
             raise LDAPException('error decoding extended response value')
         return str(decoded)
 
-    return str(result)
+    return str(result) if result else ''

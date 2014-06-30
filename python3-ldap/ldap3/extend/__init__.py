@@ -21,3 +21,30 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from ..extend.whoAmI import who_am_i
+from ..extend.getBindDn import get_bind_dn
+from ..extend.modifyPassword import modify_password
+
+
+class ExtendedOperationsContainer(object):
+    class StandardExtendedOperations(object):
+        def __init__(self, container):
+            self.container = container
+        
+        def who_am_i(self):
+            return who_am_i(self.container.connection)
+
+        def modify_password(self, old_password, new_password):
+            return modify_password(self.container.connection, old_password, new_password)
+
+    class NovellExtendedOperations(object):
+        def __init__(self, container):
+            self.container = container
+            
+        def get_bind_dn(self):
+            return get_bind_dn(self.container.connection)
+
+    def __init__(self, connection):
+        self.connection = connection
+        self.novell = self.NovellExtendedOperations(self)
+        self.standard = self.StandardExtendedOperations(self)

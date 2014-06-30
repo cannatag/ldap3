@@ -22,9 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-    from ..protocol.novell import Identity
-
-
+from ..protocol.novell import Identity
 from pyasn1.codec.ber import decoder
 
 

@@ -29,20 +29,20 @@ from ..extend.modifyPassword import modify_password
 class ExtendedOperationsContainer(object):
     class StandardExtendedOperations(object):
         def __init__(self, container):
-            self.container = container
+            self._container = container
         
         def who_am_i(self):
-            return who_am_i(self.container.connection)
+            return who_am_i(self._container.connection)
 
-        def modify_password(self, old_password, new_password):
-            return modify_password(self.container.connection, old_password, new_password)
+        def modify_password(self, user=None, old_password=None, new_password=None):
+            return modify_password(self._container.connection, user, old_password, new_password)
 
     class NovellExtendedOperations(object):
         def __init__(self, container):
-            self.container = container
+            self._container = container
             
         def get_bind_dn(self):
-            return get_bind_dn(self.container.connection)
+            return get_bind_dn(self._container.connection)
 
     def __init__(self, connection):
         self.connection = connection

@@ -25,7 +25,7 @@ from ..protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseVal
 from pyasn1.codec.ber import encoder, decoder
 
 
-def modify_password(connection, user, old_password, new_password):
+def modify_password(connection, user=None, old_password=None, new_password=None):
     request = PasswdModifyRequestValue()
     request['userIdentity'] = user
     request['oldPasswd'] = old_password
@@ -33,12 +33,18 @@ def modify_password(connection, user, old_password, new_password):
 
     resp = connection.extended('1.3.6.1.4.1.4203.1.11.1', request)
     if not connection.strategy.sync:
-        response, result = connection.get_response(resp)
+        _, result = connection.get_response(resp)
     else:
-        response = connection.response
         result = connection.result
 
-    return modify_password_decode_response_value(response), result
+    connection.response = decode_response(result)
+    populate_result_dict(result, connection.response)
+
+    return connection.response
+
+
+def populate_result_dict(result, value):
+    result['genPasswd'] = value
 
 
 def modify_password_request_to_dict(request):
@@ -47,14 +53,11 @@ def modify_password_request_to_dict(request):
             'newPasswd': str(request['newPasswd'])}
 
 
-def modify_password_response_value_to_dict(value):
-    return {'genPasswd': str(value['genPasswd'])}
-
-
-def modify_password_decode_response_value(response):
-    if response['value']:
-        decoded, unprocessed = decoder.decode(response['value'], asn1Spec=PasswdModifyResponseValue())
+def decode_response(result):
+    if result['responseValue']:
+        decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=PasswdModifyResponseValue())
         if unprocessed:
             raise LDAPException('error decoding extended response value')
+        return str(decoded)
 
-        response['value'] = modify_password_response_value_to_dict(decoded)
+    return None

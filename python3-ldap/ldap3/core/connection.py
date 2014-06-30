@@ -29,6 +29,7 @@ from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE
     STRATEGY_REUSABLE_THREADED, DEFAULT_POOL_NAME
 from ..extend import ExtendedOperationsContainer
 from .pooling import ServerPool
+from .server import Server
 from ..strategy.reusableThreaded import ReusableThreadedStrategy
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
@@ -139,6 +140,8 @@ class Connection(object):
         self.raise_exceptions = raise_exceptions
         self.extend = ExtendedOperationsContainer(self)
 
+        if isinstance(server, str):
+            server = Server(server)
         if isinstance(server, (list, tuple)):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
 

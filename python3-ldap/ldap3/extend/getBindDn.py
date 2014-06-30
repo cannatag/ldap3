@@ -50,4 +50,4 @@ def decode_response(result):
             raise LDAPException('error decoding extended response value')
         return str(decoded)
 
-    return str(result) if result else ''
+    return None

@@ -49,4 +49,4 @@ def decode_response(result):
         decoded = result['responseValue'].decode('utf-8')
         return decoded
 
-    return str(result) if result else ''
+    return None

@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
         self.assertTrue('cn: test-add-operation' in response)
 
     def test_delete_request_to_ldif(self):
-        self.connection.strategy.order = dict(delRequest = ['dn:','changetype','vers'])
+        self.connection.strategy.order = dict(delRequest=['dn:', 'changetype', 'vers'])
         self.connection.delete(test_dn_builder(test_base, 'test-del-operation'))
         response = self.connection.response
         self.assertTrue('version: 1' in response)

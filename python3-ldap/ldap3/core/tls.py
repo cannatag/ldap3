@@ -65,8 +65,7 @@ class Tls(object):
                  valid_names=None,
                  ca_certs_path=None,
                  ca_certs_data=None,
-                 local_private_key_password=None
-                 ):
+                 local_private_key_password=None):
 
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate

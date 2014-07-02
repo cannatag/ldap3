@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from setuptools import setup
 
 setup(name='python3-ldap',
-      version='0.9.4',
+      version='0.9.4.1',
       packages=['ldap3',
                 'ldap3.core',
                 'ldap3.abstract',
@@ -34,7 +34,9 @@ setup(name='python3-ldap',
                 'ldap3.protocol.sasl',
                 'ldap3.strategy',
                 'ldap3.compat',
-                'ldap3.utils'],
+                'ldap3.utils',
+                'ldap3.extend'
+      ],
       package_dir={'': 'python3-ldap'},
       install_requires=['pyasn1 == 0.1.7'],
       license='LGPL v3',

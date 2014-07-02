@@ -19,7 +19,9 @@ deps = {'A': 'Accounting', 'F': 'Finance', 'E': 'Engineering'}
 validDepartment = lambda attr, value: True if value in deps.values() else False
 #person += AttrDef('employeeStatus', key = 'Department', validate = validDepartment)
 # transform value to be search
-def getDepartmentCode(attr, value):
+
+
+def get_department_code(attr, value):
     for dep in deps.items():
         if dep[1] == value:
             return dep[0]
@@ -27,7 +29,7 @@ def getDepartmentCode(attr, value):
 
 #person += AttrDef('employeeStatus', key = 'Department', preQuery = getDepartmentCode)
 getDepartmentName = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
-person += AttrDef('employeeStatus', key='Department', validate=validDepartment, pre_query=getDepartmentCode, post_query=getDepartmentName)
+person += AttrDef('employeeStatus', key='Department', validate=validDepartment, pre_query=get_department_code, post_query=getDepartmentName)
 department = ObjectDef('groupOfNames')
 department += 'cn'
 department += AttrDef('member', key='employeer', dereference_dn=person)  # values of 'employeer' will be the 'Person' entries members of the found department

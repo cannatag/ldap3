@@ -132,3 +132,4 @@ Example::
         cookie = self.c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     print('Total entries retrieved:', total_entries)
     c.unbind()
+

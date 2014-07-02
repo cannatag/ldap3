@@ -29,7 +29,7 @@ Download
 Package download is available at https://pypi.python.org/pypi/python3-ldap or via pip
 
 Mercurial (hg) repository
---------------
+-------------------------
 
 You can download the latest source at https://bitbucket.org/python3ldap/python3-ldap
 

@@ -622,7 +622,7 @@ class Connection(object):
             if stream:
                 if stream.tell() == 0:
                     header = add_ldif_header(['-'])[0]
-                    self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
+                    stream.write(prepare_for_stream(header + line_separator + line_separator))
                 stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
             return ldif_output
 

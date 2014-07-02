@@ -14,4 +14,3 @@ To be done
    modify_dn
    search
    abandon
-   extended

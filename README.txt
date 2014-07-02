@@ -55,6 +55,8 @@ CHANGELOG
 =========
 * 0.9.4.2 2014.07.03
     - Moved to Bitbucket + Mercurial
+    - Fixed import in core.tls package
+    - Removed unneeded imports
 
 * 0.9.4.1 2014.07.02
     - included missing extend package (thanks to debnet)

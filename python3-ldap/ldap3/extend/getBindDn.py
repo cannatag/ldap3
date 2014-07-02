@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-
+from ..core.exceptions import LDAPExtensionError
 from ..protocol.novell import Identity
 from pyasn1.codec.ber import decoder
 
@@ -47,7 +47,7 @@ def decode_response(result):
     if result['responseValue']:
         decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=Identity())
         if unprocessed:
-            raise LDAPException('error decoding extended response value')
+            raise LDAPExtensionError('error decoding extended response value')
         return str(decoded)
 
     return None

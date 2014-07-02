@@ -24,9 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 # implements rfc4532
 
-from ..protocol.rfc4532 import AuthzId
-from pyasn1.codec.ber import decoder
-
 
 def who_am_i(connection):
     resp = connection.extended('1.3.6.1.4.1.4203.1.11.3', None)

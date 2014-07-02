@@ -28,7 +28,7 @@ from datetime import datetime
 
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .syncWait import SyncWaitStrategy
-from ..core.exceptions import LDAPSocketOpenError, LDAPSocketSendError, LDAPOperationResult, LDAPMaximumRetriesError
+from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
 
 
 # noinspection PyBroadException,PyProtectedMember

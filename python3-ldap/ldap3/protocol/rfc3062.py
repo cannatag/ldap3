@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.type.univ import OctetString, Sequence
 from pyasn1.type.namedtype import NamedTypes, OptionalNamedType
-from pyasn1.type.tag import tagClassApplication, tagFormatConstructed, Tag, tagClassContext, tagFormatSimple
+from pyasn1.type.tag import Tag, tagClassContext, tagFormatSimple
 
 #Modify password extended operation
 #passwdModifyOID OBJECT IDENTIFIER ::= 1.3.6.1.4.1.4203.1.11.1

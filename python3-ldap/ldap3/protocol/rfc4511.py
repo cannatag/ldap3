@@ -722,7 +722,6 @@ class Filter(Choice):
 And.componentType = Filter()
 Or.componentType = Filter()
 Not.componentType = NamedTypes(NamedType('innerNotFilter', Filter()))
-
 Not.tagSet = Filter.tagSet.tagExplicitly(Tag(tagClassContext, tagFormatConstructed, 2))  # as per RFC4511 page 23
 
 
@@ -791,7 +790,7 @@ class RequestValue(OctetString):
     """
     requestValue     [1] OCTET STRING
     """
-    tagSet = OctetString.tagSet.tagExplicitly(Tag(tagClassContext, tagFormatSimple, 1))
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 1))
     encoding = 'utf-8'
 
 

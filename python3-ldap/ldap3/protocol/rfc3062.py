@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.type.univ import OctetString, Sequence
 from pyasn1.type.namedtype import NamedTypes, OptionalNamedType
+from pyasn1.type.tag import tagClassApplication, tagFormatConstructed, Tag, tagClassContext, tagFormatSimple
 
 #Modify password extended operation
 #passwdModifyOID OBJECT IDENTIFIER ::= 1.3.6.1.4.1.4203.1.11.1
@@ -36,6 +37,38 @@ from pyasn1.type.namedtype import NamedTypes, OptionalNamedType
 #     genPasswd [0] OCTET STRING OPTIONAL }
 
 
+class UserIdentity(OctetString):
+    """
+    userIdentity [0] OCTET STRING OPTIONAL
+    """
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 0))
+    encoding = 'utf-8'
+
+
+class OldPasswd(OctetString):
+    """
+    oldPasswd [1] OCTET STRING OPTIONAL
+    """
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 1))
+    encoding = 'utf-8'
+
+
+class NewPasswd(OctetString):
+    """
+    newPasswd [2] OCTET STRING OPTIONAL
+    """
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 2))
+    encoding = 'utf-8'
+
+
+class GenPasswd(OctetString):
+    """
+    newPasswd [2] OCTET STRING OPTIONAL
+    """
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 0))
+    encoding = 'utf-8'
+
+
 class PasswdModifyRequestValue(Sequence):
     """
     PasswdModifyRequestValue ::= SEQUENCE {
@@ -43,10 +76,9 @@ class PasswdModifyRequestValue(Sequence):
         oldPasswd [1] OCTET STRING OPTIONAL
         newPasswd [2] OCTET STRING OPTIONAL }
     """
-
-    componentType = NamedTypes(OptionalNamedType('userIdentity', OctetString()),
-                               OptionalNamedType('oldPasswd', OctetString()),
-                               OptionalNamedType('newPasswd', OctetString()))
+    componentType = NamedTypes(OptionalNamedType('userIdentity', UserIdentity()),
+                               OptionalNamedType('oldPasswd', OldPasswd()),
+                               OptionalNamedType('newPasswd', NewPasswd()))
 
 
 class PasswdModifyResponseValue(Sequence):
@@ -55,4 +87,4 @@ class PasswdModifyResponseValue(Sequence):
        genPasswd [0] OCTET STRING OPTIONAL }
     """
 
-    componentType = NamedTypes(OptionalNamedType('genPasswd', OctetString()))
+    componentType = NamedTypes(OptionalNamedType('genPasswd', GenPasswd()))

@@ -263,7 +263,10 @@ class Connection(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         context_bound, context_closed = self._context_state.pop()
         if (not context_bound and self.bound) or self.stream:  # restore status prior to entering context
-            self.unbind()
+            try:
+                self.unbind()
+            except LDAPExceptionError:
+                pass
 
         if not context_closed and self.closed:
             self.open()
@@ -336,12 +339,6 @@ class Connection(object):
             self.strategy.close()
 
         return True
-
-    def close(self):
-        """
-        Alias for unbind operation
-        """
-        self.unbind()
 
     def search(self,
                search_base,

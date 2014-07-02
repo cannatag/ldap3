@@ -30,6 +30,7 @@ from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError
 from ..core.exceptions import LDAPOperationResult
+from ldap3.core.exceptions import LDAPExceptionError
 
 try:
     from queue import Queue
@@ -148,7 +149,10 @@ class ReusableThreadedStrategy(BaseStrategy):
                         self.active_connection.connection.unbind()
                 else:
                     if (datetime.now() - self.active_connection.creation_time).seconds >= self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
-                        self.active_connection.connection.unbind()
+                        try:
+                            self.active_connection.connection.unbind()
+                        except LDAPExceptionError:
+                            pass
                         self.active_connection.new_connection()
                     if message_type not in ['bindRequest', 'unbindRequest']:
                         if pool.open_pool and self.active_connection.connection.closed:

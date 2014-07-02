@@ -78,6 +78,8 @@ LDAPException
 
 ----LDAPEntryError
 
+----LDAPExtensionError
+
 ----LDAPInvalidDereferenceAliasesError (inherits also from ValueError)
 
 ----LDAPInvalidFilterError
@@ -91,6 +93,8 @@ LDAPException
 ----LDAPKeyError (inherits also from KeyError)
 
 ----LDAPLDIFError
+
+----LDAPMaximumRetriesError
 
 ----LDAPMetricsError
 

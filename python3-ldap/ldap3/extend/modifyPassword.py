@@ -27,10 +27,12 @@ from pyasn1.codec.ber import encoder, decoder
 
 def modify_password(connection, user=None, old_password=None, new_password=None):
     request = PasswdModifyRequestValue()
-    request['userIdentity'] = user
-    request['oldPasswd'] = old_password
-    request['newPasswd'] = new_password
-
+    if user:
+        request['userIdentity'] = user
+    if old_password:
+        request['oldPasswd'] = old_password
+    if new_password:
+        request['newPasswd'] = new_password
     resp = connection.extended('1.3.6.1.4.1.4203.1.11.1', request)
     if not connection.strategy.sync:
         _, result = connection.get_response(resp)
@@ -58,6 +60,6 @@ def decode_response(result):
         decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=PasswdModifyResponseValue())
         if unprocessed:
             raise LDAPException('error decoding extended response value')
-        return str(decoded)
+        return str(decoded['genPasswd'])
 
     return None

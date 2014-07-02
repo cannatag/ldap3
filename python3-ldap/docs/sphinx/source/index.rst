@@ -24,17 +24,6 @@ python3-ldap can be used on Python 3 and Python 2 (starting from python 2.6).
    ssltls
    metrics
    operations
-   bind
-   unbind
-   start_tls
-   compare
-   add
-   delete
-   modify
-   modify_dn
-   search
-   abandon
-   extended
    abstraction
    ldif
    exceptions

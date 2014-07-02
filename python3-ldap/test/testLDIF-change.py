@@ -35,7 +35,7 @@ class Test(unittest.TestCase):
         self.connection.open()
 
     def tearDown(self):
-        self.connection.close()
+        self.connection.unbind()
         self.assertFalse(self.connection.bound)
 
     def test_add_request_to_ldif(self):

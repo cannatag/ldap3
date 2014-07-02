@@ -78,6 +78,6 @@ class Test(unittest.TestCase):
         self.assertTrue(result['description'] in ['success'])
 
     def test_get_bind_dn_extend_operation(self):
-        response, result = get_bind_dn(self.connection)
+        response = get_bind_dn(self.connection)
         self.assertEqual(response, 'cn=admin,o=services')
-        self.assertTrue(result['description'] in ['success'])
+        self.assertTrue(self.connection.result['description'] in ['success'])

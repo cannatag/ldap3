@@ -38,7 +38,6 @@ from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT
     RESULT_AUTHORIZATION_DENIED, RESULT_LCUP_RESOURCES_EXHAUSTED, RESULT_NOT_ALLOWED_ON_RDN, \
     RESULT_INAPPROPRIATE_AUTHENTICATION
 import socket
-from pprint import pprint
 
 
 # LDAPException hierarchy
@@ -430,6 +429,10 @@ class LDAPInvalidDereferenceAliasesError(LDAPExceptionError, ValueError):
 
 
 class LDAPControlsError(LDAPExceptionError, ValueError):
+    pass
+
+
+class LDAPExtensionError(LDAPExceptionError, ValueError):
     pass
 
 

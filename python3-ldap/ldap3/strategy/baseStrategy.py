@@ -545,7 +545,7 @@ class BaseStrategy(object):
 
             response = referral_connection.response
             result = referral_connection.result
-            referral_connection.close()
+            referral_connection.unbind()
         else:
             response = None
             result = None
@@ -554,20 +554,26 @@ class BaseStrategy(object):
 
     def _start_listen(self):
         #overridden on strategy class
-        pass
+        raise NotImplementedError
 
     def _get_response(self, message_id):
         # overridden in strategy class
-        pass
+        raise NotImplementedError
 
     def receiving(self):
         # overridden in strategy class
-        pass
+        raise NotImplementedError
 
     def post_send_single_response(self, message_id):
         # overridden in strategy class
-        pass
+        raise NotImplementedError
 
     def post_send_search(self, message_id):
         # overridden in strategy class
-        pass
+        raise NotImplementedError
+
+    def get_stream(self):
+        raise NotImplementedError
+
+    def set_stream(self, value):
+        raise NotImplementedError

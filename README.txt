@@ -53,6 +53,8 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.4.1 2014.07.02
+    - included missing extend package (thanks to debnet)
 
 * 0.9.4 2014.07.02
     - when running in python 3.4 or newer now Tls class uses SSLContext object with default secure setting
@@ -61,7 +63,7 @@ CHANGELOG
     - removed TLSv1 as default for Tls connection
     - upgraded backported ssl function from python 3.4.1 when using with python 2
     - when creating a connection server can now be a string, the name of the server to connect in cleartext on default port 389
-    - fixed bug in escape_bytes
+    - fixed bug in ldap3.util.conv.escape_bytes()
     - attributes parameter in search can be a tuple
     - check_names parameter in connection now defaults to True (so if schema info is available attribute and class name will be checked when performing LDAP operations)
     - remove the connection.close() method - you must use connection.unbind()

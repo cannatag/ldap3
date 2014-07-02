@@ -1,5 +1,7 @@
 CHANGELOG
 =========
+ 0.9.4.1 2014.07.02
+    - included missing extend package (thanks to debnet)
 
 * 0.9.4 2014.07.02
     - when running in python 3.4 or newer now Tls class uses SSLContext object with default secure setting

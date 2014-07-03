@@ -21,13 +21,20 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ..core.exceptions import LDAPExtensionError
-from ..protocol.novell import Identity
+from ...core.exceptions import LDAPExtensionError
+from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
 from pyasn1.codec.ber import decoder
 
 
-def get_bind_dn(connection):
-    resp = connection.extended('2.16.840.1.113719.1.27.100.31', None)
+def modify_password(connection, user=None, old_password=None, new_password=None):
+    requestValue = PasswdModifyRequestValue()
+    if user:
+        requestValue['userIdentity'] = user
+    if old_password:
+        requestValue['oldPasswd'] = old_password
+    if new_password:
+        requestValue['newPasswd'] = new_password
+    resp = connection.extended('1.3.6.1.4.1.4203.1.11.1', requestValue)
     if not connection.strategy.sync:
         _, result = connection.get_response(resp)
     else:
@@ -40,14 +47,20 @@ def get_bind_dn(connection):
 
 
 def populate_result_dict(result, value):
-    result['identity'] = value
+    result['genPasswd'] = value
+
+
+def modify_password_request_to_dict(request):
+    return {'userIdentity': str(request['userIdentity']),
+            'oldPasswd': str(request['oldPasswd']),
+            'newPasswd': str(request['newPasswd'])}
 
 
 def decode_response(result):
     if result['responseValue']:
-        decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=Identity())
+        decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=PasswdModifyResponseValue())
         if unprocessed:
             raise LDAPExtensionError('error decoding extended response value')
-        return str(decoded)
+        return str(decoded['genPasswd'])
 
     return None

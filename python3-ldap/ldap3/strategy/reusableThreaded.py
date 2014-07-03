@@ -146,7 +146,10 @@ class ReusableThreadedStrategy(BaseStrategy):
                 if counter == TERMINATE_REUSABLE:
                     terminate = True
                     if self.active_connection.connection.bound:
-                        self.active_connection.connection.unbind()
+                        try:
+                            self.active_connection.connection.unbind()
+                        except LDAPExceptionError:
+                            pass
                 else:
                     if (datetime.now() - self.active_connection.creation_time).seconds >= self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
                         try:

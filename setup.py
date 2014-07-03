@@ -35,7 +35,10 @@ setup(name='python3-ldap',
                 'ldap3.strategy',
                 'ldap3.compat',
                 'ldap3.utils',
-                'ldap3.extend'
+                'ldap3.extend',
+                'ldap3.extend.novell',
+                'ldap3.extend.microsoft',
+                'ldap3.extend.standard'
       ],
       package_dir={'': 'python3-ldap'},
       install_requires=['pyasn1 == 0.1.7'],

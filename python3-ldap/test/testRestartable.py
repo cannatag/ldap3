@@ -49,8 +49,8 @@ class Test(unittest.TestCase):
         self.assertTrue(len(search_results) > 15)
 
     def test_restartable_invalid_server2(self):
-        hosts = ['sl08.intra.camera.it', 'sl09.intra.camera.it', 'sl10.intra.camera.it', 'idmprofiler', 'openldap', 'localhost', 'edir1', 'edir2', 'edir3']
-        #hosts = ['edir']
+        #hosts = ['sl08.intra.camera.it', 'sl09.intra.camera.it', 'sl10.intra.camera.it', 'idmprofiler', 'openldap', 'localhost', 'edir1', 'edir2', 'edir3']
+        hosts = ['localhost', 'edir1']  # faster
         search_results = []
         servers = [Server(host=host, port=389, use_ssl=False) for host in hosts]
         server_pool = ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)

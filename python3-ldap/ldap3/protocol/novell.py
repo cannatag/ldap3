@@ -21,8 +21,37 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from pyasn1.type.univ import OctetString
+from pyasn1.type.univ import OctetString, Integer, Sequence
+from pyasn1.type.namedtype import NamedType, NamedTypes
+from pyasn1.type.tag import Tag, tagClassContext, tagFormatSimple, tagClassUniversal
+
+NMAS_LDAP_EXT_VERSION = 1
 
 
 class Identity(OctetString):
     encoding = 'utf-8'
+
+
+class Password(OctetString):
+    tagSet = Integer.tagSet.tagImplicitly(Tag(tagClassUniversal, tagFormatSimple, 4))
+    encoding = 'utf-8'
+
+
+class NmasVer(Integer):
+    tagSet = Integer.tagSet.tagImplicitly(Tag(tagClassUniversal, tagFormatSimple, 2))
+
+
+class Error(Integer):
+    tagSet = Integer.tagSet.tagImplicitly(Tag(tagClassUniversal, tagFormatSimple, 2))
+
+
+class NmasGetUniversalPasswordRequestValue(Sequence):
+    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
+                               NamedType('reqdn', Identity()))
+
+
+class NmasGetUniversalPasswordResponseValue(Sequence):
+    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
+                               NamedType('err', Error()),
+                               NamedType('passwd', Password()))
+

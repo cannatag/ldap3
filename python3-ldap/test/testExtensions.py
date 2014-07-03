@@ -23,8 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
-from ldap3.extend.getBindDn import get_bind_dn
+from ldap3.extend.novell.getBindDn import get_bind_dn
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
 from ldap3.core.tls import Tls
 

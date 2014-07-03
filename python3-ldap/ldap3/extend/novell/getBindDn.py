@@ -21,29 +21,39 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from ...core.exceptions import LDAPExtensionError
+from ...protocol.novell import Identity
+from pyasn1.codec.ber import decoder
 
-# implements rfc4532
+REQUEST_NAME = '2.16.840.1.113719.1.27.100.31'
+RESPONSE_NAME = '2.16.840.1.113719.1.27.100.32'
 
 
-def who_am_i(connection):
-    resp = connection.extended('1.3.6.1.4.1.4203.1.11.3', None)
+def get_bind_dn(connection):
+    resp = connection.extended(REQUEST_NAME, None)
     if not connection.strategy.sync:
         _, result = connection.get_response(resp)
     else:
         result = connection.result
 
-    connection.response = decode_response(result)
-    populate_result_dict(result, connection.response)
+    decoded_response = decode_response(result)
+    populate_result_dict(result, decoded_response)
+    connection.response = connection.result['identity'] if 'identity' in connection.result else ''
     return connection.response
 
 
 def populate_result_dict(result, value):
-    result['AuthzId'] = value
+    result['identity'] = str(value)
 
 
 def decode_response(result):
-    if result['responseValue']:
-        decoded = result['responseValue'].decode('utf-8')
-        return decoded
-
-    return None
+    if not RESPONSE_NAME or result['responseName'] == RESPONSE_NAME:
+        if result['responseValue']:
+            decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=Identity())
+            if unprocessed:
+                raise LDAPExtensionError('error decoding extended response value')
+            return decoded
+        else:
+            return None
+    else:
+        raise LDAPExtensionError('invalid response name received')

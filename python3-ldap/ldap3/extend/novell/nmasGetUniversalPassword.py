@@ -21,47 +21,24 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ...core.exceptions import LDAPExtensionError
-from ldap3 import RESULT_SUCCESS
+from ..operation import ExtendedOperation
 from ...protocol.novell import NmasGetUniversalPasswordRequestValue, NmasGetUniversalPasswordResponseValue, NMAS_LDAP_EXT_VERSION
-from pyasn1.codec.ber import decoder
-
-REQUEST_NAME = '2.16.840.1.113719.1.39.42.100.13'
-RESPONSE_NAME = '2.16.840.1.113719.1.39.42.100.14'
 
 
-def nmas_get_universal_password(connection, user_dn):
-    request_value = NmasGetUniversalPasswordRequestValue()
-    request_value['nmasver'] = NMAS_LDAP_EXT_VERSION
-    request_value['reqdn'] = user_dn
-    resp = connection.extended(REQUEST_NAME, request_value)
-    if not connection.strategy.sync:
-        _, result = connection.get_response(resp)
-    else:
-        result = connection.result
+class NmasGetUniversalPassword(ExtendedOperation):
+    def config(self):
+        self.request_name = '2.16.840.1.113719.1.39.42.100.13'
+        self.response_name = '2.16.840.1.113719.1.39.42.100.14'
+        self.request_value = NmasGetUniversalPasswordRequestValue()
+        self.asn1_spec = NmasGetUniversalPasswordResponseValue()
+        self.response_attribute = 'password'
 
-    decoded_response = decode_response(result)
-    populate_result_dict(result, decoded_response)
-    connection.response = connection.result['password'] if 'password' in connection.result else ''
-    return connection.response
+    def __init__(self, connection, user):
+        ExtendedOperation.__init__(self, connection)  # calls super __init__()
+        self.request_value['nmasver'] = NMAS_LDAP_EXT_VERSION
+        self.request_value['reqdn'] = user
 
-
-def populate_result_dict(result, value):
-    result['nmasver'] = int(value['nmasver'])
-    result['error'] = int(value['err'])
-    result['password'] = str(value['passwd'])
-
-
-def decode_response(result):
-    if result['result'] not in [RESULT_SUCCESS]:
-        raise LDAPExtensionError('extended operation error: ' + result['description'])
-    if not RESPONSE_NAME or result['responseName'] == RESPONSE_NAME:
-        if result['responseValue']:
-            decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=NmasGetUniversalPasswordResponseValue())
-            if unprocessed:
-                raise LDAPExtensionError('error decoding extended response value')
-            return decoded
-        else:
-            return None
-    else:
-        raise LDAPExtensionError('invalid response name received')
+    def populate_result(self):
+        self.result['nmasver'] = int(self.decoded_response['nmasver'])
+        self.result['error'] = int(self.decoded_response['err'])
+        self.result['password'] = str(self.decoded_response['passwd'])

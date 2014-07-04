@@ -52,7 +52,7 @@ def extended_request_to_dict(request):
 
 def extended_response_to_dict(response):
     return {'result': int(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'description': ResultCode().getNamedValues().getName(response[0]), 'referrals': decode_referrals(response['referral']),
-            'responseName': str(response['responseName']), 'responseValue': bytes(response['responseValue']) if response['responseValue'] else bytes()}
+            'responseName': str(response['responseName']) if response['responseName'] else None, 'responseValue': bytes(response['responseValue']) if response['responseValue'] else bytes()}
 
 
 def intermediate_response_to_dict(response):

@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from ...core.exceptions import LDAPExtensionError
+from ldap3 import RESULT_SUCCESS
 from ...protocol.novell import Identity
 from pyasn1.codec.ber import decoder
 
@@ -47,6 +48,8 @@ def populate_result_dict(result, value):
 
 
 def decode_response(result):
+    if result['result'] not in [RESULT_SUCCESS]:
+        raise LDAPExtensionError('extended operation error: ' + result['description'])
     if not RESPONSE_NAME or result['responseName'] == RESPONSE_NAME:
         if result['responseValue']:
             decoded, unprocessed = decoder.decode(result['responseValue'], asn1Spec=Identity())

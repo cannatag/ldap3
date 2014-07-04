@@ -28,9 +28,7 @@ from time import sleep
 from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
-from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError
-from ..core.exceptions import LDAPOperationResult
-from ldap3.core.exceptions import LDAPExceptionError
+from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult,  LDAPExceptionError
 
 try:
     from queue import Queue

@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from pyasn1.type.univ import OctetString, Integer, Sequence
 from pyasn1.type.namedtype import NamedType, NamedTypes
-from pyasn1.type.tag import Tag, tagClassContext, tagFormatSimple, tagClassUniversal
+from pyasn1.type.tag import Tag, tagFormatSimple, tagClassUniversal
 
 NMAS_LDAP_EXT_VERSION = 1
 

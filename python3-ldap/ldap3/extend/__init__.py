@@ -21,32 +21,32 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from .standard.whoAmI import who_am_i
-from .novell.getBindDn import get_bind_dn
-from .novell.nmasGetUniversalPassword import nmas_get_universal_password
-from .standard.modifyPassword import modify_password
+from .novell.getBindDn import GetBindDn
+from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
+from .standard.whoAmI import WhoAmI
+from .standard.modifyPassword import ModifyPassword
 
 
 class ExtendedOperationsContainer(object):
     class StandardExtendedOperations(object):
         def __init__(self, container):
             self._container = container
-        
+
         def who_am_i(self):
-            return who_am_i(self._container.connection)
+            return WhoAmI(self._container.connection).send()
 
         def modify_password(self, user=None, old_password=None, new_password=None):
-            return modify_password(self._container.connection, user, old_password, new_password)
+            return ModifyPassword(self._container.connection, user, old_password, new_password).send()
 
     class NovellExtendedOperations(object):
         def __init__(self, container):
             self._container = container
-            
-        def get_bind_dn(self):
-            return get_bind_dn(self._container.connection)
 
-        def nmas_get_universal_password(self, user_dn):
-            return nmas_get_universal_password(self._container.connection, user_dn)
+        def get_bind_dn(self):
+            return GetBindDn(self._container.connection).send()
+
+        def nmas_get_universal_password(self, user):
+            return NmasGetUniversalPassword(self._container.connection, user).send()
 
     def __init__(self, connection):
         self.connection = connection

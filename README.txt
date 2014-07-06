@@ -53,6 +53,12 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.4.3 2014.07.06
+    - auto_bind can be used even for establishing tls, possible values (defined in ldap3) are: AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND
+    - refactored extend package to use classes
+    - new extended operation: get_universal_password (Novell)
+    - new extended operation: set_universal_password (Novell)
+
 * 0.9.4.2 2014.07.03
     - Moved to Bitbucket + Mercurial
     - Fixed import in core.tls package

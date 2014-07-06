@@ -33,4 +33,7 @@ class GetBindDn(ExtendedOperation):
         self.asn1_spec = Identity()
 
     def populate_result(self):
-        self.result['identity'] = str(self.decoded_response)
+        try:
+            self.result['identity'] = str(self.decoded_response) if self.decoded_response else None
+        except TypeError:
+            self.result['identity'] = None

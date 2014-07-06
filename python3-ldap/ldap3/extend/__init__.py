@@ -21,34 +21,55 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+
+from os import linesep
+from ldap3.extend.novell.ndsToLdap import NdsToLdap
 from .novell.getBindDn import GetBindDn
 from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
+from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
 from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
 
-
-class ExtendedOperationsContainer(object):
-    class StandardExtendedOperations(object):
-        def __init__(self, container):
-            self._container = container
-
-        def who_am_i(self):
-            return WhoAmI(self._container.connection).send()
-
-        def modify_password(self, user=None, old_password=None, new_password=None):
-            return ModifyPassword(self._container.connection, user, old_password, new_password).send()
-
-    class NovellExtendedOperations(object):
-        def __init__(self, container):
-            self._container = container
-
-        def get_bind_dn(self):
-            return GetBindDn(self._container.connection).send()
-
-        def nmas_get_universal_password(self, user):
-            return NmasGetUniversalPassword(self._container.connection, user).send()
-
+class ExtendedOperationContainer(object):
     def __init__(self, connection):
-        self.connection = connection
-        self.novell = self.NovellExtendedOperations(self)
-        self.standard = self.StandardExtendedOperations(self)
+        self._connection = connection
+
+    def __repr__(self):
+        return linesep.join(['  ' + element for element in dir(self) if element[0] != '_'])
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class StandardExtendedOperations(ExtendedOperationContainer):
+    def who_am_i(self):
+        return WhoAmI(self._connection).send()
+
+    def modify_password(self, user=None, old_password=None, new_password=None):
+        return ModifyPassword(self._connection, user, old_password, new_password).send()
+
+
+class NovellExtendedOperations(ExtendedOperationContainer):
+    def get_bind_dn(self):
+        return GetBindDn(self._connection).send()
+
+    def get_universal_password(self, user):
+        return NmasGetUniversalPassword(self._connection, user).send()
+
+    def nds_to_ldap(self, user):
+        return NdsToLdap(self._connection, user).send()
+
+    def set_universal_password(self, user, new_password=None):
+        return NmasSetUniversalPassword(self._connection, user, new_password).send()
+
+
+class MicrosoftExtendedOperations(ExtendedOperationContainer):
+    pass
+
+
+class ExtendedOperationsRoot(ExtendedOperationContainer):
+    def __init__(self, connection):
+        ExtendedOperationContainer.__init__(self, connection)  # calls super
+        self.standard = StandardExtendedOperations(self._connection)
+        self.novell = NovellExtendedOperations(self._connection)
+        self.microsoft = MicrosoftExtendedOperations(self._connection)

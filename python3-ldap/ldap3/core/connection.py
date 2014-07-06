@@ -26,8 +26,9 @@ from pyasn1.codec.ber import encoder
 
 from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
-    STRATEGY_REUSABLE_THREADED, DEFAULT_POOL_NAME
-from ..extend import ExtendedOperationsContainer
+    STRATEGY_REUSABLE_THREADED, DEFAULT_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND
+from ..extend import ExtendedOperationsRoot
+from ldap3 import AUTO_BIND_NO_TLS
 from .pooling import ServerPool
 from .server import Server
 from ..strategy.reusableThreaded import ReusableThreadedStrategy
@@ -68,14 +69,14 @@ class Connection(object):
     refuse the operation
 
     Mixing controls must be defined in controls specification (as per
-    RFC 4511.)
+    RFC 4511)
     """
 
     def __init__(self,
                  server,
                  user=None,
                  password=None,
-                 auto_bind=False,
+                 auto_bind=AUTO_BIND_NONE,
                  version=3,
                  authentication=None,
                  client_strategy=STRATEGY_SYNC,
@@ -107,7 +108,6 @@ class Connection(object):
         else:
             self.last_error = 'unknown authentication method'
             raise LDAPUnknownAuthenticationMethodError(self.last_error)
-
         self.version = version
         self.auto_referrals = True if auto_referrals else False
         self.request = None
@@ -117,7 +117,12 @@ class Connection(object):
         self.listening = False
         self.closed = True
         self.last_error = None
-        self.auto_bind = True if auto_bind else False
+        if auto_bind is False:
+            self.auto_bind = AUTO_BIND_NONE
+        elif auto_bind is True:
+            self.auto_bind = AUTO_BIND_NO_TLS
+        else:
+            self.auto_bind = auto_bind
         self.sasl_mechanism = sasl_mechanism
         self.sasl_credentials = sasl_credentials
         self._usage = ConnectionUsage() if collect_usage else None
@@ -138,7 +143,7 @@ class Connection(object):
         self.starting_tls = False
         self.check_names = check_names
         self.raise_exceptions = raise_exceptions
-        self.extend = ExtendedOperationsContainer(self)
+        self.extend = ExtendedOperationsRoot(self)
 
         if isinstance(server, str):
             server = Server(server)
@@ -177,7 +182,11 @@ class Connection(object):
         if not self.strategy.no_real_dsa and self.server.is_valid():
             if self.auto_bind:
                 self.open()
+                if self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
+                    self.start_tls()
                 self.bind()
+                if self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
+                    self.start_tls()
                 if not self.bound:
                     self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                     raise LDAPBindError(self.last_error)

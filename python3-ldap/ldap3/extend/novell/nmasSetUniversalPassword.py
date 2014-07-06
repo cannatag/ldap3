@@ -1,5 +1,5 @@
 """
-Created on 2014.04.30
+Created on 2014.07.03
 
 @author: Giovanni Cannata
 
@@ -22,29 +22,25 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from ..operation import ExtendedOperation
-from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
-
-# implements RFC3062
+from ...protocol.novell import NmasSetUniversalPasswordRequestValue, NmasSetUniversalPasswordResponseValue, NMAS_LDAP_EXT_VERSION
 
 
-class ModifyPassword(ExtendedOperation):
+class NmasSetUniversalPassword(ExtendedOperation):
     def config(self):
-        self.request_name = '1.3.6.1.4.1.4203.1.11.1'
-        self.request_value = PasswdModifyRequestValue()
-        self.asn1_spec = PasswdModifyResponseValue()
-        self.response_attribute = 'new_password'
+        self.request_name = '2.16.840.1.113719.1.39.42.100.11'
+        self.response_name = '2.16.840.1.113719.1.39.42.100.12'
+        self.request_value = NmasSetUniversalPasswordRequestValue()
+        self.asn1_spec = NmasSetUniversalPasswordResponseValue()
+        self.response_attribute = 'password'
 
-    def __init__(self, connection, user=None, old_password=None, new_password=None):
+    def __init__(self, connection, user, new_password):
         ExtendedOperation.__init__(self, connection)  # calls super __init__()
+        self.request_value['nmasver'] = NMAS_LDAP_EXT_VERSION
         if user:
-            self.request_value['userIdentity'] = user
-        if old_password:
-            self.request_value['oldPasswd'] = old_password
+            self.request_value['reqdn'] = user
         if new_password:
-            self.request_value['newPasswd'] = new_password
+            self.request_value['new_passwd'] = new_password
 
     def populate_result(self):
-        try:
-            self.result['new_password'] = str(self.decoded_response['genPasswd'])
-        except TypeError:  # optional field can be absent
-            self.result['new_password'] = None
+        self.result['nmasver'] = int(self.decoded_response['nmasver'])
+        self.result['error'] = int(self.decoded_response['err'])

@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from pyasn1.type.univ import OctetString, Integer, Sequence
-from pyasn1.type.namedtype import NamedType, NamedTypes
+from pyasn1.type.namedtype import NamedType, NamedTypes, OptionalNamedType
 from pyasn1.type.tag import Tag, tagFormatSimple, tagClassUniversal
 
 NMAS_LDAP_EXT_VERSION = 1
@@ -53,5 +53,28 @@ class NmasGetUniversalPasswordRequestValue(Sequence):
 class NmasGetUniversalPasswordResponseValue(Sequence):
     componentType = NamedTypes(NamedType('nmasver', NmasVer()),
                                NamedType('err', Error()),
-                               NamedType('passwd', Password()))
+                               OptionalNamedType('passwd', Password()))
+
+
+class NdsToLdapRequestValue(Sequence):
+    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
+                               NamedType('reqdn', Identity()))
+
+
+class NdsToLdapResponseValue(Sequence):
+    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
+                               NamedType('err', Error()),
+                               OptionalNamedType('user', Password()))
+
+class NmasSetUniversalPasswordRequestValue(Sequence):
+    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
+                               NamedType('reqdn', Identity()),
+                               NamedType('new_passwd', Password()))
+#                               OptionalNamedType('new_passwd', Password()))
+
+
+class NmasSetUniversalPasswordResponseValue(Sequence):
+    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
+                               NamedType('err', Error()))
+
 

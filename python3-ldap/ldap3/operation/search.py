@@ -439,16 +439,28 @@ def filter_to_string(filter_object):
 
 
 def search_request_to_dict(request):
-    return {'base': str(request['baseObject']), 'scope': int(request['scope']), 'dereferenceAlias': int(request['derefAliases']), 'sizeLimit': int(request['sizeLimit']), 'timeLimit': int(request['timeLimit']), 'typeOnly': bool(request['typesOnly']),
-            'filter': filter_to_string(request['filter']), 'attributes': attributes_to_list(request['attributes'])}
+    return {'base': str(request['baseObject']),
+            'scope': int(request['scope']),
+            'dereferenceAlias': int(request['derefAliases']),
+            'sizeLimit': int(request['sizeLimit']),
+            'timeLimit': int(request['timeLimit']),
+            'typeOnly': bool(request['typesOnly']),
+            'filter': filter_to_string(request['filter']),
+            'attributes': attributes_to_list(request['attributes'])}
 
 
 def search_result_entry_response_to_dict(response):
-    return {'dn': str(response['object']), 'attributes': attributes_to_dict(response['attributes']), 'raw_attributes': raw_attributes_to_dict(response['attributes'])}
+    return {'dn': str(response['object']),
+            'attributes': attributes_to_dict(response['attributes']),
+            'raw_attributes': raw_attributes_to_dict(response['attributes'])}
 
 
 def search_result_done_response_to_dict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'message': str(response['diagnosticMessage']), 'dn': str(response['matchedDN']), 'referrals': referrals_to_list(response['referral'])}
+    return {'result': int(response[0]),
+            'description': ResultCode().getNamedValues().getName(response[0]),
+            'message': str(response['diagnosticMessage']),
+            'dn': str(response['matchedDN']),
+            'referrals': referrals_to_list(response['referral'])}
 
 
 def search_result_reference_response_to_dict(response):

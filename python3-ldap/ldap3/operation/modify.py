@@ -70,8 +70,12 @@ def modify_operation(dn,
 
 
 def modify_request_to_dict(request):
-    return {'entry': str(request['object']), 'changes': changes_to_list(request['changes'])}
+    return {'entry': str(request['object']),
+            'changes': changes_to_list(request['changes'])}
 
 
 def modify_response_to_dict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'message': str(response['diagnosticMessage']), 'dn': str(response['matchedDN']), 'referrals': referrals_to_list(response['referral']), }
+    return {'result': int(response[0]),
+            'description': ResultCode().getNamedValues().getName(response[0]),
+            'message': str(response['diagnosticMessage']), 'dn': str(response['matchedDN']),
+            'referrals': referrals_to_list(response['referral'])}

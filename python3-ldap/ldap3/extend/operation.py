@@ -41,6 +41,13 @@ class ExtendedOperation(object):
         self.config()
 
     def send(self):
+        if self.connection.check_names and self.connection.server.info is not None:  # checks if extension is supported
+            for request_name in self.connection.server.info.supported_extensions:
+                if request_name.oid == self.request_name:
+                    break
+            else:
+                raise LDAPExtensionError('extension not in DSA list of supported extensions')
+
         resp = self.connection.extended(self.request_name, self.request_value)
         if not self.connection.strategy.sync:
             _, self.result = self.connection.get_response(resp)

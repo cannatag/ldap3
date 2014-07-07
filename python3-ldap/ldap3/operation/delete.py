@@ -39,4 +39,8 @@ def delete_request_to_dict(request):
 
 
 def delete_response_to_dict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'referrals': referrals_to_list(response['referral']), }
+    return {'result': int(response[0]),
+            'description': ResultCode().getNamedValues().getName(response[0]),
+            'dn': str(response['matchedDN']),
+            'message': str(response['diagnosticMessage']),
+            'referrals': referrals_to_list(response['referral'])}

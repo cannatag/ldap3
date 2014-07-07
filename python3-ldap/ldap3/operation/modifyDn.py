@@ -47,8 +47,15 @@ def modify_dn_operation(dn,
 
 
 def modify_dn_request_to_dict(request):
-    return {'entry': str(request['entry']), 'newRdn': str(request['newrdn']), 'deleteOldRdn': bool(request['deleteoldrdn']), 'newSuperior': str(request['newSuperior']) if request['newSuperior'] else None}
+    return {'entry': str(request['entry']),
+            'newRdn': str(request['newrdn']),
+            'deleteOldRdn': bool(request['deleteoldrdn']),
+            'newSuperior': str(request['newSuperior']) if request['newSuperior'] else None}
 
 
 def modify_dn_response_to_dict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']), 'referrals': referrals_to_list(response['referral']), 'message': str(response['diagnosticMessage']), }
+    return {'result': int(response[0]),
+            'description': ResultCode().getNamedValues().getName(response[0]),
+            'dn': str(response['matchedDN']),
+            'referrals': referrals_to_list(response['referral']),
+            'message': str(response['diagnosticMessage'])}

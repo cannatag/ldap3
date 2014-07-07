@@ -58,6 +58,7 @@ CHANGELOG
     - refactored extend package to use classes
     - new extended operation: get_universal_password (Novell)
     - new extended operation: set_universal_password (Novell)
+    - added parsing of hostname in scheme://hostname:hostport format. This has the precedence on the parameters (thanks Sorin)
 
 * 0.9.4.2 2014.07.03
     - Moved to Bitbucket + Mercurial

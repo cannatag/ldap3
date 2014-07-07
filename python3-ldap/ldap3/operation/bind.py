@@ -66,9 +66,15 @@ def bind_operation(version,
 
 
 def bind_request_to_dict(request):
-    return {'version': int(request['version']), 'name': str(request['name']), 'authentication': authentication_choice_to_dict(request['authentication'])}
+    return {'version': int(request['version']),
+            'name': str(request['name']),
+            'authentication': authentication_choice_to_dict(request['authentication'])}
 
 
 def bind_response_to_dict(response):
-    return {'result': int(response['resultCode']), 'description': ResultCode().getNamedValues().getName(response['resultCode']), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']),
-            'referrals': referrals_to_list(response['referral']), 'saslCreds': str(response['serverSaslCreds'])}
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
+            'dn': str(response['matchedDN']),
+            'message': str(response['diagnosticMessage']),
+            'referrals': referrals_to_list(response['referral']),
+            'saslCreds': str(response['serverSaslCreds'])}

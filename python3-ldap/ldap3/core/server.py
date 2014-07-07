@@ -27,6 +27,7 @@ from socket import getaddrinfo, gaierror
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT
 from threading import Lock
 from .exceptions import LDAPInvalidPort
+from ..core.exceptions import LDAPInvalidServerError
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 import socket
@@ -48,8 +49,9 @@ class Server(object):
     bind, use ('*', True) to allow any host with same authentication of
     Server.
     """
+
     _real_servers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
-    # and the value is the messageId counter for all connection to that host)
+                            # and the value is the messageId counter for all connection to that host)
 
     def __init__(self,
                  host,
@@ -61,24 +63,24 @@ class Server(object):
 
         if host.startswith('ldap://'):
             self.host = host[7:]
+            use_ssl = False
         elif host.startswith('ldaps://'):
             self.host = host[8:]
+            use_ssl = True
         else:
             self.host = host
 
         if ':' in self.host and self.host.count(':') == 1:
             hostname, _, hostport = self.host.partition(':')
             try:
-                self.port = int(hostport)
-                if not self.port in range(0, 65535):
+                port = int(hostport) or port
+                if not port in range(0, 65535):
                     raise LDAPInvalidPort('port must in range from 0 to 65535')
+                self.host = hostname
             except ValueError:
                 raise LDAPInvalidPort('port must be an integer')
-
-        try:
-            self.address = getaddrinfo(self.host, port)[0][4][0]
-        except gaierror:
-            self.address = self.host
+        elif self.host.count(':') > 1:
+            raise LDAPInvalidServerError
 
         if not use_ssl and not port:
             port = 389
@@ -92,6 +94,11 @@ class Server(object):
                 raise LDAPInvalidPort('port must in range from 0 to 65535')
         else:
             raise LDAPInvalidPort('port must be an integer')
+
+        try:
+            self.address = getaddrinfo(self.host, port)[0][4][0]
+        except gaierror:
+            self.address = self.host
 
         if isinstance(allowed_referral_hosts, (list, tuple)):
             self.allowed_referral_hosts = []

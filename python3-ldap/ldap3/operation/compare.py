@@ -48,8 +48,13 @@ def compare_operation(dn,
 
 def compare_request_to_dict(request):
     ava = ava_to_dict(request['ava'])
-    return {'entry': str(request['entry']), 'attribute': ava['attribute'], 'value': ava['value']}
+    return {'entry': str(request['entry']),
+            'attribute': ava['attribute'],
+            'value': ava['value']}
 
 
 def compare_response_to_dict(response):
-    return {'result': int(response[0]), 'description': ResultCode().getNamedValues().getName(response[0]), 'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']), 'referrals': referrals_to_list(response['referral']), }
+    return {'result': int(response[0]),
+            'description': ResultCode().getNamedValues().getName(response[0]),
+            'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']),
+            'referrals': referrals_to_list(response['referral'])}

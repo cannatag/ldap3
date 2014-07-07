@@ -109,6 +109,9 @@ class AsyncThreadedStrategy(BaseStrategy):
                     else:  # Unsolicited Notification
                         if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                             listen = False
+                        else:
+                            self.connection.last_error = 'unknown unsolicited notification from server'
+                            raise LDAPStartTLSError(self.connection.last_error)
             self.connection.strategy.close()
 
     def __init__(self, ldap_connection):

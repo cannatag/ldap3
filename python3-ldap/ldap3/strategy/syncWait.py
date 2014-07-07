@@ -151,6 +151,11 @@ class SyncWaitStrategy(BaseStrategy):
                             dict_response = BaseStrategy.decode_response(ldap_resp)
                             if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
+                            else:
+                                self.connection.last_error = 'unknown unsolicited notification from server'
+                                raise LDAPSocketReceiveError(self.connection.last_error)
+                        elif int(ldap_resp['messageID']) != message_id and BaseStrategy.decode_response(ldap_resp)['type'] == 'extendedResp':
+                            pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
                         else:
                             self.connection.last_error = 'invalid messageId received'
                             raise LDAPSocketReceiveError(self.connection.last_error)

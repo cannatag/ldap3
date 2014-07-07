@@ -56,16 +56,6 @@ class NmasGetUniversalPasswordResponseValue(Sequence):
                                OptionalNamedType('passwd', Password()))
 
 
-class NdsToLdapRequestValue(Sequence):
-    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
-                               NamedType('reqdn', Identity()))
-
-
-class NdsToLdapResponseValue(Sequence):
-    componentType = NamedTypes(NamedType('nmasver', NmasVer()),
-                               NamedType('err', Error()),
-                               OptionalNamedType('user', Password()))
-
 class NmasSetUniversalPasswordRequestValue(Sequence):
     componentType = NamedTypes(NamedType('nmasver', NmasVer()),
                                NamedType('reqdn', Identity()),

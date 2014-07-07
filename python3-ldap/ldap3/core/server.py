@@ -59,11 +59,6 @@ class Server(object):
                  get_info=GET_NO_INFO,
                  tls=None):
 
-        if not use_ssl and not port:
-            port = 389
-        elif use_ssl and not port:
-            port = 636
-
         if host.startswith('ldap://'):
             self.host = host[7:]
         elif host.startswith('ldaps://'):
@@ -71,15 +66,33 @@ class Server(object):
         else:
             self.host = host
 
+        if ':' in self.host and self.host.count(':') == 1:
+            hostname, _, hostport = self.host.partition(':')
+            try:
+                self.port = int(hostport)
+                if not self.port in range(0, 65535):
+                    raise LDAPInvalidPort('port must in range from 0 to 65535')
+            except ValueError:
+                raise LDAPInvalidPort('port must be an integer')
+
         try:
             self.address = getaddrinfo(self.host, port)[0][4][0]
         except gaierror:
             self.address = self.host
 
+        if not use_ssl and not port:
+            port = 389
+        elif use_ssl and not port:
+            port = 636
+
         if isinstance(port, int):
-            self.port = port
+            if port in range(0, 65535):
+                self.port = port
+            else:
+                raise LDAPInvalidPort('port must in range from 0 to 65535')
         else:
             raise LDAPInvalidPort('port must be an integer')
+
         if isinstance(allowed_referral_hosts, (list, tuple)):
             self.allowed_referral_hosts = []
             for refServer in allowed_referral_hosts:

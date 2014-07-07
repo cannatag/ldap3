@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from os import linesep
-from ldap3.extend.novell.ndsToLdap import NdsToLdap
 from .novell.getBindDn import GetBindDn
 from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
 from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
@@ -55,9 +54,6 @@ class NovellExtendedOperations(ExtendedOperationContainer):
 
     def get_universal_password(self, user):
         return NmasGetUniversalPassword(self._connection, user).send()
-
-    def nds_to_ldap(self, user):
-        return NdsToLdap(self._connection, user).send()
 
     def set_universal_password(self, user, new_password=None):
         return NmasSetUniversalPassword(self._connection, user, new_password).send()

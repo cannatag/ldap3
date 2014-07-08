@@ -23,11 +23,13 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from os import linesep
+from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS
 from .novell.getBindDn import GetBindDn
 from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
 from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
 from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
+from .standard.PagedSearch import paged_search_generator, paged_search_accumulator
 
 class ExtendedOperationContainer(object):
     def __init__(self, connection):
@@ -44,8 +46,32 @@ class StandardExtendedOperations(ExtendedOperationContainer):
     def who_am_i(self):
         return WhoAmI(self._connection).send()
 
-    def modify_password(self, user=None, old_password=None, new_password=None):
+    def modify_password(self,
+                        user=None,
+                        old_password=None,
+                        new_password=None):
         return ModifyPassword(self._connection, user, old_password, new_password).send()
+
+    def paged_search(self,
+                     search_base,
+                     search_filter,
+                     search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
+                     dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
+                     attributes=None,
+                     size_limit=0,
+                     time_limit=0,
+                     types_only=False,
+                     get_operational_attributes=False,
+                     controls=None,
+                     paged_size=100,
+                     paged_criticality=False,
+                     generator=True):
+
+        if generator:
+            return paged_search_generator(self._connection, search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality)
+        else:
+            return paged_search_accumulator(self._connection, search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality)
+
 
 
 class NovellExtendedOperations(ExtendedOperationContainer):

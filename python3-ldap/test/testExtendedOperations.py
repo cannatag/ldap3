@@ -25,7 +25,6 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_DSA_INFO
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
-from ldap3.core.tls import Tls
 
 
 class Test(unittest.TestCase):
@@ -48,3 +47,15 @@ class Test(unittest.TestCase):
         self.connection.extend.novell.get_bind_dn()
         result = self.connection.result
         self.assertTrue(result['description'] in ['success'])
+
+    def test_paged_search_accumulator(self):
+        responses = self.connection.extend.standard.paged_search('o=test', '(cn=*)', generator=False)
+        self.assertEqual(len(responses), 26)
+        self.assertEqual(len(responses), len(self.connection.response))
+
+    def test_paged_search_generator(self):
+        responses = []
+        for response in self.connection.extend.standard.paged_search('o=test', '(cn=*)'):
+            responses.append(response)
+        self.assertEqual(len(responses), 26)
+        self.assertEqual(self.connection.response, None)

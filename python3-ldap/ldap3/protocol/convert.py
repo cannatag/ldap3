@@ -116,7 +116,7 @@ def build_controls_list(controls):
 
 
 def validate_assertion_value(schema, name, value):
-    if schema:
+    if schema and schema.attribute_types is not None:
         if not name.lower() in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in assertion: ' + name)
     if not '\\' in value:
@@ -141,9 +141,9 @@ def validate_assertion_value(schema, name, value):
 
 def validate_attribute_value(schema, name, value):
     if schema:
-        if not name.lower() in schema.attribute_types:
+        if schema.attribute_types is not None and not name.lower() in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in attribute')
-        if name.lower() == 'objectclass':
+        if schema.object_classes is not None and name.lower() == 'objectclass':
             if value.lower() not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
 

@@ -41,7 +41,7 @@ class ExtendedOperation(object):
         self.config()
 
     def send(self):
-        if self.connection.check_names and self.connection.server.info is not None:  # checks if extension is supported
+        if self.connection.check_names and self.connection.server.info is not None and self.connection.server.info.supported_extensions is not None:  # checks if extension is supported
             for request_name in self.connection.server.info.supported_extensions:
                 if request_name.oid == self.request_name:
                     break

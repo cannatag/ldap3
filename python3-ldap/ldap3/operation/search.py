@@ -308,7 +308,7 @@ def build_filter(search_filter, schema):
 def build_attribute_selection(attribute_list, schema):
     attribute_selection = AttributeSelection()
     for index, attribute in enumerate(attribute_list):
-        if schema:
+        if schema and schema.attribute_types is not None:
             if not attribute.lower() in schema.attribute_types and attribute not in '+*1.1':
                 raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
         attribute_selection[index] = Selector(attribute)

@@ -59,7 +59,7 @@ CHANGELOG
     - new extended operation: get_universal_password (Novell)
     - new extended operation: set_universal_password (Novell)
     - added parsing of hostname in scheme://hostname:hostport format. This has the precedence on the parameters (thanks Sorin)
-    - added extra checks when the schema is read but nothing is returned by the server
+    - added extra checks when the schema is read (with the get_info parameter) but nothing is returned by the server
     - updated setuptools to version 5.4.1
 
 * 0.9.4.2 2014.07.03

@@ -2,17 +2,9 @@
   <profile version="1.0" is_locked="false">
     <option name="myName" value="Project Default" />
     <option name="myLocal" value="false" />
-    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+    <inspection_tool class="PyPep8NamingInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="false" level="WARNING" enabled_by_default="false">
       <option name="ignoredIdentifiers">
-        <value>
-          <list size="1">
-            <item index="0" class="java.lang.String" itemvalue="ldap3.utils.conv.unicode" />
-          </list>
-        </value>
-      </option>
-    </inspection_tool>
-    <inspection_tool class="RestRoleInspection" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ignoredRoles">
         <value>
           <list size="0" />
         </value>

@@ -30,7 +30,7 @@ from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPIn
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, \
     ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
-from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
+from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, format_attribute_values
 
 
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
@@ -361,10 +361,7 @@ def search_operation(search_base,
 
 
 def decode_vals(vals):
-    if vals:
-        return [str(val) for val in vals if val]
-    else:
-        return None
+    return [str(val) for val in vals if val] if vals else None
 
 
 def attributes_to_dict(attribute_list):
@@ -385,6 +382,21 @@ def raw_attributes_to_dict(attribute_list):
         attributes[str(attribute['type'])] = decode_raw_vals(attribute['vals'])
 
     return attributes
+
+
+def checked_attributes_to_dict(attribute_list, schema=None):
+    if not schema:
+        return None
+
+    checked_attributes = dict()
+    for attribute in attribute_list:
+        raw_values = decode_raw_vals(attribute['vals'])
+        checked_values = format_attribute_value(schema, attribute['type'], raw_values)
+        if len(checked_values) == 1:
+            checked_attributes[str(attribute['type'])] = checked_values[0]
+        else:
+            checked_attributes[str(attribute['type'])] = checked_values
+    return checked_attributes
 
 
 def matching_rule_assertion_to_string(matching_rule_assertion):
@@ -449,10 +461,11 @@ def search_request_to_dict(request):
             'attributes': attributes_to_list(request['attributes'])}
 
 
-def search_result_entry_response_to_dict(response):
+def search_result_entry_response_to_dict(response, schema):
     return {'dn': str(response['object']),
             'attributes': attributes_to_dict(response['attributes']),
-            'raw_attributes': raw_attributes_to_dict(response['attributes'])}
+            'raw_attributes': raw_attributes_to_dict(response['attributes']),
+            'checked_attributes': checked_attributes_to_dict(response['attributes'])}
 
 
 def search_result_done_response_to_dict(response):

@@ -151,3 +151,13 @@ def validate_attribute_value(schema, name, value):
         return validate_assertion_value(None, name, value)  # schema already checked, no need to check again
 
     return value
+
+
+def format_attribute_values(schema, name, values):
+    if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
+        formatted_values = []
+        for value in values:
+            formatted_values.append(value)
+    else:
+        formatted_values = values
+    return formatted_values

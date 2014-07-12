@@ -284,8 +284,8 @@ class BaseStrategy(object):
 
         return ret_value
 
-    @classmethod
-    def decode_response(cls, ldap_message):
+    # @classmethod
+    def decode_response(self, ldap_message):
         """
         Convert received LDAPMessage to a dict
         """
@@ -295,7 +295,7 @@ class BaseStrategy(object):
         if message_type == 'bindResponse':
             result = bind_response_to_dict(component)
         elif message_type == 'searchResEntry':
-            result = search_result_entry_response_to_dict(component)
+            result = search_result_entry_response_to_dict(component, self.connection.server.schema)
         elif message_type == 'searchResDone':
             result = search_result_done_response_to_dict(component)
         elif message_type == 'searchResRef':
@@ -320,7 +320,7 @@ class BaseStrategy(object):
         if controls:
             result['controls'] = dict()
             for control in controls:
-                decoded_control = cls.decode_control(control)
+                decoded_control = self.decode_control(control)
                 result['controls'][decoded_control[0]] = decoded_control[1]
         return result
 

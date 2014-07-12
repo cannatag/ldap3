@@ -143,7 +143,7 @@ class SyncWaitStrategy(BaseStrategy):
                             self.connection._usage.received_message(len(response))
                         ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAPMessage())
                         if int(ldap_resp['messageID']) == message_id:
-                            dict_response = BaseStrategy.decode_response(ldap_resp)
+                            dict_response = self.decode_response(ldap_resp)
                             ldap_responses.append(dict_response)
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 response_complete = True

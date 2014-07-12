@@ -390,12 +390,7 @@ def checked_attributes_to_dict(attribute_list, schema=None):
 
     checked_attributes = dict()
     for attribute in attribute_list:
-        raw_values = decode_raw_vals(attribute['vals'])
-        checked_values = format_attribute_value(schema, attribute['type'], raw_values)
-        if len(checked_values) == 1:
-            checked_attributes[str(attribute['type'])] = checked_values[0]
-        else:
-            checked_attributes[str(attribute['type'])] = checked_values
+        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, attribute['type'], decode_raw_vals(attribute['vals']))
     return checked_attributes
 
 

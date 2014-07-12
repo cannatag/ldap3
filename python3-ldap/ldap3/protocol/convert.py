@@ -22,6 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
+from ldap3 import SYNTAX_UNICODE, SYNTAX_INT, SYNTAX_BINARY
 
 from .rfc4511 import Controls, Control
 
@@ -155,9 +156,21 @@ def validate_attribute_value(schema, name, value):
 
 def format_attribute_values(schema, name, values):
     if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
+        attr_type = schema.attribute_types[name.lower()]
         formatted_values = []
         for value in values:
-            formatted_values.append(value)
+            if attr_type.syntax in SYNTAX_UNICODE:
+                if str != bytes:  # python3
+                    formatted_values.append(str(value))
+                else:
+                    formatted_values.append(unicode(value, 'utf-8'))
+            elif attr_type in SYNTAX_INT:
+                formatted_values.append(int(value))
+            elif attr_type in SYNTAX_BINARY:
+                formatted_values.append(bytes(value))
+            else:
+                formatted_values.append(value)
     else:
         formatted_values = values
+
     return formatted_values

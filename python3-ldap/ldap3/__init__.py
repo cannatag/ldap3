@@ -186,6 +186,14 @@ POOLING_STRATEGY_ROUND_ROBIN = 1
 POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
+# ldap syntax conversion
+SYNTAX_UNICODE = [
+
+]
+SYNTAX_INT = []
+SYNTAX_BINARY = []
+
+
 from .core.server import Server
 from .core.connection import Connection
 from .core.tls import Tls

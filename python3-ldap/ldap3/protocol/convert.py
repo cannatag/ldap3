@@ -21,9 +21,9 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from uuid import UUID
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
-from ldap3 import SYNTAX_UNICODE, SYNTAX_INT, SYNTAX_BINARY
-
+from .. import FORMAT_UNICODE, FORMAT_INT, FORMAT_BINARY, FORMAT_UUID, FORMAT_UUID_LE, FORMAT_BOOLEAN
 from .rfc4511 import Controls, Control
 
 
@@ -154,22 +154,93 @@ def validate_attribute_value(schema, name, value):
     return value
 
 
+def format_unicode(raw_value):
+    try:
+        if str != bytes:  # python3
+            return str(raw_value)
+        else:
+            return unicode(raw_value, 'utf-8')
+    except TypeError:
+        pass
+
+    return raw_value
+
+def format_int(raw_value):
+    try:
+        return int(raw_value)
+    except TypeError:
+        pass
+    return raw_value
+
+def format_binary(raw_value):
+    try:
+        return bytes(raw_value)
+    except TypeError:
+        pass
+    return raw_value
+
+
+def format_uuid(raw_value):
+    try:
+        return str(UUID(bytes=raw_value))
+    except TypeError:
+        pass
+    return raw_value
+
+
+def format_uuid_le(raw_value):
+    try:
+        return str(UUID(bytes_le=raw_value))
+    except TypeError:
+        pass
+    return raw_value
+
+
+def format_boolean(raw_value):
+    if raw_value in [b'TRUE', b'true', b'True']:
+        return True
+    if raw_value in [b'FALSE', b'false', b'False']:
+        return False
+    return raw_value
+
+
 def format_attribute_values(schema, name, values):
     if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
         attr_type = schema.attribute_types[name.lower()]
         formatted_values = []
-        for value in values:
-            if attr_type.syntax in SYNTAX_UNICODE:
-                if str != bytes:  # python3
-                    formatted_values.append(str(value))
-                else:
-                    formatted_values.append(unicode(value, 'utf-8'))
-            elif attr_type in SYNTAX_INT:
-                formatted_values.append(int(value))
-            elif attr_type in SYNTAX_BINARY:
-                formatted_values.append(bytes(value))
+        for raw_value in values:
+            # tries to format following the SYNTAX_xxx specification. Attribute OIDs have precedence over Syntax OIDs
+            # the attribute oid or the attribute name can be used
+            if attr_type.oid in FORMAT_UNICODE or (any(name.lower() in FORMAT_UNICODE for name in attr_type.name)):
+                formatted_value = format_unicode(raw_value)
+            elif attr_type.oid in FORMAT_INT or (any(name.lower() in FORMAT_INT for name in attr_type.name)):
+                formatted_value = format_int(raw_value)
+            elif attr_type.oid in FORMAT_BINARY or (any(name.lower() in FORMAT_BINARY for name in attr_type.name)):
+                formatted_value = format_binary(raw_value)
+            elif attr_type.oid in FORMAT_UUID or (any(name.lower() in FORMAT_UUID for name in attr_type.name)):
+                formatted_value = format_uuid(raw_value)
+            elif attr_type.oid in FORMAT_UUID_LE or (any(name.lower() in FORMAT_UUID_LE for name in attr_type.name)):
+                formatted_value = format_uuid_le(raw_value)
+            elif attr_type.oid in FORMAT_BOOLEAN or (any(name.lower() in FORMAT_BOOLEAN for name in attr_type.name)):
+                formatted_value = format_boolean(raw_value)
+            elif attr_type.syntax in FORMAT_UNICODE:
+                formatted_value = format_unicode(raw_value)
+            elif attr_type.syntax in FORMAT_INT:
+                formatted_value = format_int(raw_value)
+            elif attr_type.syntax in FORMAT_BINARY:
+                formatted_value = format_binary(raw_value)
+            elif attr_type.syntax in FORMAT_UUID:
+                formatted_value = format_uuid(raw_value)
+            elif attr_type.syntax in FORMAT_UUID_LE:
+                formatted_value = format_uuid_le(raw_value)
+            elif attr_type.syntax in FORMAT_BOOLEAN:
+                formatted_value = format_boolean(raw_value)
             else:
-                formatted_values.append(value)
+                formatted_value = raw_value
+
+            formatted_values.append(formatted_value)
+        if attr_type.single_value:
+            formatted_values = formatted_values[0]
     else:
         formatted_values = values
 

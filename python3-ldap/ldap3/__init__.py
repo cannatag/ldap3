@@ -187,12 +187,26 @@ POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
 # ldap syntax conversion
-SYNTAX_UNICODE = [
+FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.6',  # Bit String
+                  '1.3.6.1.4.1.1466.115.121.1.11',  # Country String
+                  '1.3.6.1.4.1.1466.115.121.1.12',  # Distinguished name (DN)
+                  '1.3.6.1.4.1.1466.115.121.1.14',  # Delivery method
+                  '1.3.6.1.4.1.1466.115.121.1.15',  # Directory string
+                  '1.3.6.1.4.1.1466.115.121.1.16',  # DIT Content Rule Description
+                  '1.3.6.1.4.1.1466.115.121.1.17',  # DIT Structure Rule Description
+                  '1.3.6.1.4.1.1466.115.121.1.21',  # Enhanced Guide
+                  '1.3.6.1.4.1.1466.115.121.1.22',  # Facsimile Telephone Number
+                  ]
+FORMAT_INT = []
+FORMAT_BINARY = ['1.3.6.1.4.1.1466.115.121.1.23',  # Fax'
+                 ]
+FORMAT_UUID = ['1.3.6.1.1.16.1',  # UUID
+              ]
 
-]
-SYNTAX_INT = []
-SYNTAX_BINARY = []
+FORMAT_UUID_LE = []
 
+FORMAT_BOOLEAN = ['1.3.6.1.4.1.1466.115.121.1.7'  # Boolean
+                  ]
 
 from .core.server import Server
 from .core.connection import Connection

@@ -186,7 +186,7 @@ POOLING_STRATEGY_ROUND_ROBIN = 1
 POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
-# ldap syntax conversion
+# ldap format conversion for syntaxes and attribute types
 FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.6',  # Bit String
                   '1.3.6.1.4.1.1466.115.121.1.11',  # Country String
                   '1.3.6.1.4.1.1466.115.121.1.12',  # Distinguished name (DN)
@@ -196,18 +196,42 @@ FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.6',  # Bit String
                   '1.3.6.1.4.1.1466.115.121.1.17',  # DIT Structure Rule Description
                   '1.3.6.1.4.1.1466.115.121.1.21',  # Enhanced Guide
                   '1.3.6.1.4.1.1466.115.121.1.22',  # Facsimile Telephone Number
+                  '1.3.6.1.4.1.1466.115.121.1.25',  # Guide (obsolete)
+                  '1.3.6.1.4.1.1466.115.121.1.26',  # IA5 string
+                  '1.3.6.1.4.1.1466.115.121.1.30',  # Matching rule description
+                  '1.3.6.1.4.1.1466.115.121.1.31',  # Matching ruledescription
+                  '1.3.6.1.4.1.1466.115.121.1.34',  # Name and optional UID
+                  '1.3.6.1.4.1.1466.115.121.1.35',  # Name form description
+                  '1.3.6.1.4.1.1466.115.121.1.36',  # Mumeric string
+                  '1.3.6.1.4.1.1466.115.121.1.37',  # Object class description
+                  '1.3.6.1.4.1.1466.115.121.1.38',  # OID
+                  '1.3.6.1.4.1.1466.115.121.1.39',  # Other mailbox
+                  '1.3.6.1.4.1.1466.115.121.1.41',  # Postal address
+                  '1.3.6.1.4.1.1466.115.121.1.44',  # Printable string
+                  '1.3.6.1.4.1.1466.115.121.1.50',  # Telephone number
+                  '1.3.6.1.4.1.1466.115.121.1.51',  # Teletex terminal identifier
+                  '1.3.6.1.4.1.1466.115.121.1.52',  # Teletex number
+                  '1.3.6.1.4.1.1466.115.121.1.54',  # LDAP syntax description
+                  '1.3.6.1.4.1.1466.115.121.1.58'  # Substring assertion
                   ]
-FORMAT_INT = []
-FORMAT_BINARY = ['1.3.6.1.4.1.1466.115.121.1.23',  # Fax'
-                 ]
-FORMAT_UUID = ['1.3.6.1.1.16.1',  # UUID
+FORMAT_INT = ['1.3.6.1.4.1.1466.115.121.1.27'  # Integer
               ]
+FORMAT_BINARY = ['1.3.6.1.4.1.1466.115.121.1.23',  # Fax
+                 '1.3.6.1.4.1.1466.115.121.1.28',  # JPEG
+                 '1.3.6.1.4.1.1466.115.121.1.40'  # Octet string
+                 ]
+FORMAT_UUID = ['1.3.6.1.1.16.1'  # UUID
 
+               ]
 FORMAT_UUID_LE = []
-
 FORMAT_BOOLEAN = ['1.3.6.1.4.1.1466.115.121.1.7'  # Boolean
                   ]
+FORMAT_TIME = ['1.3.6.1.4.1.1466.115.121.1.24',  # Generalized time
+               '1.3.6.1.4.1.1466.115.121.1.53'  # Utc time  (deprecated)
 
+]
+
+# centralized imports
 from .core.server import Server
 from .core.connection import Connection
 from .core.tls import Tls

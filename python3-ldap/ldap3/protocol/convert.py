@@ -21,9 +21,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from datetime import datetime
 from uuid import UUID
+import parser
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
-from .. import FORMAT_UNICODE, FORMAT_INT, FORMAT_BINARY, FORMAT_UUID, FORMAT_UUID_LE, FORMAT_BOOLEAN
+from .. import FORMAT_UNICODE, FORMAT_INT, FORMAT_BINARY, FORMAT_UUID, FORMAT_UUID_LE, FORMAT_BOOLEAN, FORMAT_TIME
 from .rfc4511 import Controls, Control
 
 
@@ -204,6 +206,15 @@ def format_boolean(raw_value):
     return raw_value
 
 
+def format_time(raw_value):
+    try:
+        return datetime(raw_value)  #tbd
+    except TypeError:
+        pass
+
+    return raw_value
+
+
 def format_attribute_values(schema, name, values):
     if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
         attr_type = schema.attribute_types[name.lower()]
@@ -223,6 +234,8 @@ def format_attribute_values(schema, name, values):
                 formatted_value = format_uuid_le(raw_value)
             elif attr_type.oid in FORMAT_BOOLEAN or (any(name.lower() in FORMAT_BOOLEAN for name in attr_type.name)):
                 formatted_value = format_boolean(raw_value)
+            elif attr_type.oid in FORMAT_TIME or (any(name.lower() in FORMAT_TIME for name in attr_type.name)):
+                formatted_value = format_time(raw_value)
             elif attr_type.syntax in FORMAT_UNICODE:
                 formatted_value = format_unicode(raw_value)
             elif attr_type.syntax in FORMAT_INT:
@@ -235,6 +248,8 @@ def format_attribute_values(schema, name, values):
                 formatted_value = format_uuid_le(raw_value)
             elif attr_type.syntax in FORMAT_BOOLEAN:
                 formatted_value = format_boolean(raw_value)
+            elif attr_type.syntax in FORMAT_TIME:
+                formatted_value = format_time(raw_value)
             else:
                 formatted_value = raw_value
 

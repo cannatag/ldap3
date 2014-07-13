@@ -390,7 +390,7 @@ def checked_attributes_to_dict(attribute_list, schema=None):
 
     checked_attributes = dict()
     for attribute in attribute_list:
-        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, attribute['type'], decode_raw_vals(attribute['vals']))
+        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']))
     return checked_attributes
 
 
@@ -460,7 +460,7 @@ def search_result_entry_response_to_dict(response, schema):
     return {'dn': str(response['object']),
             'attributes': attributes_to_dict(response['attributes']),
             'raw_attributes': raw_attributes_to_dict(response['attributes']),
-            'checked_attributes': checked_attributes_to_dict(response['attributes'])}
+            'checked_attributes': checked_attributes_to_dict(response['attributes'], schema)}
 
 
 def search_result_done_response_to_dict(response):

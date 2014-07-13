@@ -160,7 +160,6 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             self._restarting = False
 
         self.connection.last_error = 'restartable connection failed to send'
-        print('b')
         raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def post_send_single_response(self, message_id):

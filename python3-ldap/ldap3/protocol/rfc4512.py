@@ -323,6 +323,15 @@ class BaseObjectInfo(object):
                 object_def.raw_definition = object_definition
                 if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
                     object_def.syntax = object_def.syntax[0]
+                    object_def.min_length = None
+                    if object_def.syntax.endswith('}'):
+                        try:
+                            object_def.min_length = int(object_def.syntax[object_def.syntax.index('{') + 1:-1])
+                            object_def.syntax = object_def.syntax[:object_def.syntax.index('{')]
+                        except Exception:
+                            pass
+                    else:
+                        object_def.min_length = None
                 if hasattr(object_def, 'name') and object_def.name:
                     for name in object_def.name:
                         ret_dict[name.lower()] = object_def
@@ -446,6 +455,7 @@ class AttributeTypeInfo(BaseObjectInfo):
                  ordering=None,
                  substring=None,
                  syntax=None,
+                 min_length=None,
                  single_value=False,
                  collective=False,
                  no_user_modification=False,
@@ -467,6 +477,7 @@ class AttributeTypeInfo(BaseObjectInfo):
         self.ordering = ordering
         self.substring = substring
         self.syntax = syntax
+        self.min_length = min_length
         self.single_value = single_value
         self.collective = collective
         self.no_user_modification = no_user_modification
@@ -481,7 +492,8 @@ class AttributeTypeInfo(BaseObjectInfo):
         r += (linesep + '  Equality rule: ' + list_to_string(self.equality)) if self.equality else ''
         r += (linesep + '  Ordering rule: ' + list_to_string(self.ordering)) if self.ordering else ''
         r += (linesep + '  Substring rule: ' + list_to_string(self.substring)) if self.substring else ''
-        r += (linesep + '  Syntax: ' + (self.syntax + ' - ' + str(decode_syntax(self.syntax)))) if self.syntax else ''
+        r += (linesep + '  Syntax: ' + (self.syntax + (' [' + str(decode_syntax(self.syntax)))) + ']') if self.syntax else ''
+        r += (linesep + '  Minimum Length: ' + str(self.min_length)) if isinstance(self.min_length, int) else ''
         return 'Attribute type' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 

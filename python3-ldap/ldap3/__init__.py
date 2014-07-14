@@ -187,7 +187,8 @@ POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
 # ldap format conversion for syntaxes and attribute types
-FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.6',  # Bit String
+FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.3',  # Attribute type description
+                  '1.3.6.1.4.1.1466.115.121.1.6',  # Bit String
                   '1.3.6.1.4.1.1466.115.121.1.11',  # Country String
                   '1.3.6.1.4.1.1466.115.121.1.12',  # Distinguished name (DN)
                   '1.3.6.1.4.1.1466.115.121.1.14',  # Delivery method
@@ -214,14 +215,15 @@ FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.6',  # Bit String
                   '1.3.6.1.4.1.1466.115.121.1.54',  # LDAP syntax description
                   '1.3.6.1.4.1.1466.115.121.1.58'  # Substring assertion
                   ]
-FORMAT_INT = ['1.3.6.1.4.1.1466.115.121.1.27'  # Integer
+FORMAT_INT = ['1.3.6.1.4.1.1466.115.121.1.27',  # Integer
+              '2.16.840.1.113719.1.1.5.1.22'  # Counter (Novell)
               ]
 FORMAT_BINARY = ['1.3.6.1.4.1.1466.115.121.1.23',  # Fax
                  '1.3.6.1.4.1.1466.115.121.1.28',  # JPEG
                  '1.3.6.1.4.1.1466.115.121.1.40'  # Octet string
                  ]
-FORMAT_UUID = ['1.3.6.1.1.16.1'  # UUID
-
+FORMAT_UUID = ['1.3.6.1.1.16.1',  # UUID
+               '2.16.840.1.113719.1.1.4.1.501',  # GUID (Novell)
                ]
 FORMAT_UUID_LE = []
 FORMAT_BOOLEAN = ['1.3.6.1.4.1.1466.115.121.1.7'  # Boolean

@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
 from uuid import UUID
-import parser
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
 from .. import FORMAT_UNICODE, FORMAT_INT, FORMAT_BINARY, FORMAT_UUID, FORMAT_UUID_LE, FORMAT_BOOLEAN, FORMAT_TIME
 from .rfc4511 import Controls, Control
@@ -167,7 +166,7 @@ def format_unicode(raw_value):
 
     return raw_value
 
-def format_int(raw_value):
+def format_integer(raw_value):
     try:
         return int(raw_value)
     except TypeError:
@@ -216,47 +215,89 @@ def format_time(raw_value):
 
 
 def format_attribute_values(schema, name, values):
+    """
+    Tries to format following the OIDs info and format_helper specification.
+    Search for attribute oid, then attribute name (can be multiple), then attrubte syntax
+    Precedence is: 1. attribute name
+                   2. attribute oid(from schema)
+                   3. attribute names (from oid_info)
+                   4. attribute syntax (from schema)
+    If no formatter is found the raw_value is returned as bytes.
+    Attributes defined as SINGLE_VALUE in schema are returned as a single object, otherwise are returned as a list of object
+    Formatter functions can return any kind of object
+    """
+    formatter = None
     if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
         attr_type = schema.attribute_types[name.lower()]
-        formatted_values = []
-        for raw_value in values:
-            # tries to format following the SYNTAX_xxx specification. Attribute OIDs have precedence over Syntax OIDs
-            # the attribute oid or the attribute name can be used
-            if attr_type.oid in FORMAT_UNICODE or (any(name.lower() in FORMAT_UNICODE for name in attr_type.name)):
-                formatted_value = format_unicode(raw_value)
-            elif attr_type.oid in FORMAT_INT or (any(name.lower() in FORMAT_INT for name in attr_type.name)):
-                formatted_value = format_int(raw_value)
-            elif attr_type.oid in FORMAT_BINARY or (any(name.lower() in FORMAT_BINARY for name in attr_type.name)):
-                formatted_value = format_binary(raw_value)
-            elif attr_type.oid in FORMAT_UUID or (any(name.lower() in FORMAT_UUID for name in attr_type.name)):
-                formatted_value = format_uuid(raw_value)
-            elif attr_type.oid in FORMAT_UUID_LE or (any(name.lower() in FORMAT_UUID_LE for name in attr_type.name)):
-                formatted_value = format_uuid_le(raw_value)
-            elif attr_type.oid in FORMAT_BOOLEAN or (any(name.lower() in FORMAT_BOOLEAN for name in attr_type.name)):
-                formatted_value = format_boolean(raw_value)
-            elif attr_type.oid in FORMAT_TIME or (any(name.lower() in FORMAT_TIME for name in attr_type.name)):
-                formatted_value = format_time(raw_value)
-            elif attr_type.syntax in FORMAT_UNICODE:
-                formatted_value = format_unicode(raw_value)
-            elif attr_type.syntax in FORMAT_INT:
-                formatted_value = format_int(raw_value)
-            elif attr_type.syntax in FORMAT_BINARY:
-                formatted_value = format_binary(raw_value)
-            elif attr_type.syntax in FORMAT_UUID:
-                formatted_value = format_uuid(raw_value)
-            elif attr_type.syntax in FORMAT_UUID_LE:
-                formatted_value = format_uuid_le(raw_value)
-            elif attr_type.syntax in FORMAT_BOOLEAN:
-                formatted_value = format_boolean(raw_value)
-            elif attr_type.syntax in FORMAT_TIME:
-                formatted_value = format_time(raw_value)
-            else:
-                formatted_value = raw_value
-
-            formatted_values.append(formatted_value)
-        if attr_type.single_value:
-            formatted_values = formatted_values[0]
     else:
-        formatted_values = values
+        attr_type = None
 
-    return formatted_values
+    if name.lower() in format_helper:  # search for attribute name, as returned by the search operation
+        formatter = format_helper[name.lower()]
+
+    if not formatter and attr_type and attr_type.oid in format_helper:  # search for attribute oid as returned by schema
+        formatter = format_helper[attr_type.oid]
+
+    if not formatter and attr_type and attr_type.oid_info:
+        if isinstance(attr_type.oid_info.name, list):  # search for multiple names defined in oid_info
+            for attr_name in attr_type.oid_info.name:
+                if attr_name.lower() in format_helper:
+                    formatter = format_helper[attr_name.lower()]
+                    break
+        elif attr_type.oid_info.name in format_helper:  # search for name defined in oid_info
+            formatter = format_helper[attr_type.oid_info.name]
+
+    if not formatter and attr_type and attr_type.syntax in format_helper:  # search for syntax defined in schema
+        formatter = format_helper[attr_type.syntax]
+
+    if not formatter:
+        print('UNKNOWN NAME:', name)
+        if attr_type:
+            print('UNKNOWN SYNTAX:', attr_type.syntax)
+        else:
+            print('NO ATTR_TYPE')
+        formatter = bytes  # default formatter
+
+    formatted_values = [formatter(raw_value) for raw_value in values]
+    return formatted_values[0] if (attr_type and attr_type.single_value) else formatted_values
+
+
+format_helper = {
+    '1.3.6.1.4.1.1466.115.121.1.3': format_unicode,  # Attribute type description
+    '1.3.6.1.4.1.1466.115.121.1.6': format_unicode,  # Bit String
+    '1.3.6.1.4.1.1466.115.121.1.11': format_unicode,  # Country String
+    '1.3.6.1.4.1.1466.115.121.1.12': format_unicode,  # Distinguished name (DN)
+    '1.3.6.1.4.1.1466.115.121.1.14': format_unicode,  # Delivery method
+    '1.3.6.1.4.1.1466.115.121.1.15': format_unicode,  # Directory string
+    '1.3.6.1.4.1.1466.115.121.1.16': format_unicode,  # DIT Content Rule Description
+    '1.3.6.1.4.1.1466.115.121.1.17': format_unicode,  # DIT Structure Rule Description
+    '1.3.6.1.4.1.1466.115.121.1.21': format_unicode,  # Enhanced Guide
+    '1.3.6.1.4.1.1466.115.121.1.22': format_unicode,  # Facsimile Telephone Number
+    '1.3.6.1.4.1.1466.115.121.1.25': format_unicode,  # Guide (obsolete)
+    '1.3.6.1.4.1.1466.115.121.1.26': format_unicode,  # IA5 string
+    '1.3.6.1.4.1.1466.115.121.1.30': format_unicode,  # Matching rule description
+    '1.3.6.1.4.1.1466.115.121.1.31': format_unicode,  # Matching ruledescription
+    '1.3.6.1.4.1.1466.115.121.1.34': format_unicode,  # Name and optional UID
+    '1.3.6.1.4.1.1466.115.121.1.35': format_unicode,  # Name form description
+    '1.3.6.1.4.1.1466.115.121.1.36': format_unicode,  # Mumeric string
+    '1.3.6.1.4.1.1466.115.121.1.37': format_unicode,  # Object class description
+    '1.3.6.1.4.1.1466.115.121.1.38': format_unicode,  # OID
+    '1.3.6.1.4.1.1466.115.121.1.39': format_unicode,  # Other mailbox
+    '1.3.6.1.4.1.1466.115.121.1.41': format_unicode,  # Postal address
+    '1.3.6.1.4.1.1466.115.121.1.44': format_unicode,  # Printable string
+    '1.3.6.1.4.1.1466.115.121.1.50': format_unicode,  # Telephone number
+    '1.3.6.1.4.1.1466.115.121.1.51': format_unicode,  # Teletex terminal identifier
+    '1.3.6.1.4.1.1466.115.121.1.52': format_unicode,  # Teletex number
+    '1.3.6.1.4.1.1466.115.121.1.54': format_unicode,  # LDAP syntax description
+    '1.3.6.1.4.1.1466.115.121.1.58': format_unicode,  # Substring assertion
+    '1.3.6.1.4.1.1466.115.121.1.27': format_integer,  # Integer
+    '2.16.840.1.113719.1.1.5.1.22': format_integer,  # Counter (Novell)
+    '1.3.6.1.4.1.1466.115.121.1.23': format_binary,  # Fax
+    '1.3.6.1.4.1.1466.115.121.1.28': format_binary,  # JPEG
+    '1.3.6.1.4.1.1466.115.121.1.40': format_binary,  # Octet string
+    '1.3.6.1.1.16.1': format_uuid,  # UUID
+    '2.16.840.1.113719.1.1.4.1.501': format_uuid,  # GUID (Novell)
+    '1.3.6.1.4.1.1466.115.121.1.7': format_boolean,  # Boolean
+    '1.3.6.1.4.1.1466.115.121.1.24': format_time,  # Generalized time
+    '1.3.6.1.4.1.1466.115.121.1.53': format_time  # Utc time  (deprecated)
+}

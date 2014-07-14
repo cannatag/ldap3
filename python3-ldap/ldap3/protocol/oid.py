@@ -519,6 +519,7 @@ Oids = {  # administrative role
           '2.5.4.53': OidInfo('2.5.4.53', OID_ATTRIBUTE_TYPE, 'deltaRevocationList', 'RFC4523'),
           '2.5.4.54': OidInfo('2.5.4.54', OID_ATTRIBUTE_TYPE, 'dmdName', 'RFC2256'),
           '2.5.4.65': OidInfo('2.5.4.65', OID_ATTRIBUTE_TYPE, 'pseudonym', 'RFC3280'),
+          '2.16.840.1.113719.1.1.4.1.501': OidInfo('2.16.840.1.113719.1.1.4.1.501', OID_ATTRIBUTE_TYPE, 'GUID', 'NOVELL'),
 
           # controls
           '1.2.826.0.1.3344810.2.3': OidInfo('1.2.826.0.1.3344810.2.3', OID_CONTROL, 'Matched Values', 'RFC3876'),
@@ -875,6 +876,8 @@ Oids = {  # administrative role
           '1.3.6.1.4.1.1466.115.121.1.53': OidInfo('1.3.6.1.4.1.1466.115.121.1.53', OID_LDAP_SYNTAX, 'UTC Time (deprecated)', 'RFC4517'),
           '1.3.6.1.4.1.1466.115.121.1.54': OidInfo('1.3.6.1.4.1.1466.115.121.1.54', OID_LDAP_SYNTAX, 'LDAP Syntax Description', 'RFC4517'),
           '1.3.6.1.4.1.1466.115.121.1.58': OidInfo('1.3.6.1.4.1.1466.115.121.1.58', OID_LDAP_SYNTAX, 'Substring Assertion', 'RFC4517'),
+          '2.16.840.1.113719.1.1.5.1.17': OidInfo('2.16.840.1.113719.1.1.5.1.17', OID_LDAP_SYNTAX, 'ACL', 'NOVELL'),
+          '2.16.840.1.113719.1.1.5.1.22': OidInfo('2.16.840.1.113719.1.1.5.1.22', OID_LDAP_SYNTAX, 'Counter', 'NOVELL'),
 
 
           # ldap url extensions

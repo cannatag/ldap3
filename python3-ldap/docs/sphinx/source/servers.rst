@@ -12,7 +12,13 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
 * use_ssl: specifies if the connection is on a secure port (defaults to False). When True the secure port is usually set to 636
 
-* allowed_referral_hosts: specifies which servers are considered reliable as referrals (defaults to None), Specify a list of referral servers or an asterisk to accept all servers
+* allowed_referral_hosts: specifies which servers are considered reliable as referrals (defaults to None)
+
+    * Format is a list of tuples; [(server, allow_auth), (server, allow_auth), ...]
+
+    * server is an IP address or DNS name. Specify an asterisk (*) to accept any server.
+
+    * allow_auth is a boolean to indicate if authentication to that server is allowed; if False only anonymous bind will be used.
 
 * get_info: specifies if the server schema and info must be read (defaults to GET_NO_INFO). Possible values are:
 
@@ -28,7 +34,7 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
 Example::
 
-    server = Server('server1', port = 636, use_ssl = True, allowed_referral_hosts = ['server2', 'server3'])
+    server = Server('server1', port = 636, use_ssl = True, allowed_referral_hosts = [('server2', True), ('server3', False)])
 
 Server Pool
 -----------

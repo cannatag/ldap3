@@ -1,0 +1,322 @@
+Status: Verified (1)
+RFC4234, "Augmented BNF for Syntax Specifications: ABNF", October 2005
+
+Note: This RFC has been obsoleted by RFC5234
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+
+Errata ID: 160
+
+Status: Verified
+Type: Technical
+
+Reported By: Alfred Hoenes
+Date Reported: 2005-10-13
+
+Section 3.10 says:
+
+         Strings, Names formation
+
+         Comment
+
+         Value range
+
+         Repetition
+
+         Grouping, Optional
+
+         Concatenation
+
+         Alternative
+
+It should say:
+
+         Strings, Names formation
+
+         Comment
+
+         Value range
+
+         Grouping, Optional
+
+         Repetition
+
+         Concatenation
+
+         Alternative
+
+
+Notes:
+
+This re-ordering aligns the table with the prose description and the
+meta-grammar in section 4.
+Status: Held for Document Update (1)
+RFC4234, "Augmented BNF for Syntax Specifications: ABNF", October 2005
+
+Note: This RFC has been obsoleted by RFC5234
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+
+Errata ID: 2625
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2005-10-13
+Held for Document Update by: Pete Resnick
+Date Held: 2010-11-12
+
+Section Appendix B.2 says:
+
+   Externally, data are represented as "network virtual ASCII" (namely,
+   7-bit US-ASCII in an 8-bit field), with the high (8th) bit set to
+   zero.
+
+It should say:
+
+   Externally, data are represented as "network virtual ASCII" (namely,
+   7-bit US-ASCII in an 8-bit field, with the high (8th) bit set to
+   zero).
+
+Notes:
+
+This change should make it clear (as in RFC 2234) that the phrase,
+"with the high (8th) bit set to zero" is an intrinsic part of the
+full definition of "network virtual ASCII", and not the specification
+of an exception -- or an additional manipulation for the purpose of
+ABNF -- to "network virtual ASCII".
+Status: Rejected (5)
+RFC4234, "Augmented BNF for Syntax Specifications: ABNF", October 2005
+
+Note: This RFC has been obsoleted by RFC5234
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+
+Errata ID: 777
+
+Status: Rejected
+Type: Technical
+
+Reported By: Zoltan Ordogh
+Date Reported: 2006-09-18
+Rejected by: Alexey Melnikov
+Date Rejected: 2010-09-02
+
+Section 3.4 says:
+
+   A range of alternative numeric values can be specified compactly,
+   using dash ("-") to indicate the range of alternative values.  Hence:
+
+         DIGIT       =  %x30-39
+
+   is equivalent to:
+
+         DIGIT       =  "0" / "1" / "2" / "3" / "4" / "5" / "6" /
+
+                        "7" / "8" / "9"
+
+It should say:
+
+[not supplied]
+
+Notes:
+
+The word equivalent is correct only when US-ASCII character set is used, since:
+
+DIGIT = %x30-39 ;
+means any hexadecimal value between 0x30 and 0x39,
+
+while
+
+DIGIT = "0" / "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9" ;
+means any digit from 0 thru 9.
+
+from pending
+--VERIFIER NOTES--
+As per Note in Section 2.3:
+
+ABNF strings are case-insensitive and the character set for these
+strings is us-ascii.
+
+So these 2 representations *are* equivalent.
+
+Errata ID: 778
+
+Status: Rejected
+Type: Technical
+
+Reported By: Zoltan Ordogh
+Date Reported: 2006-09-18
+Rejected by: Alexey Melnikov
+Date Rejected: 2010-09-02
+
+In Appendix B.1, it says:
+
+         CHAR           =  %x01-7F
+                                ; any 7-bit US-ASCII character,
+                                ;  excluding NUL
+
+It should say:
+
+[see below]
+
+Notes:
+
+NUL is not defined.
+
+Suggestions:
+(1)
+Re-write the document in a character-encoding-independent manner.
+(2)
+Add definition of NUL (or NULL) as terminating null character - watch =
+out for character encoding!
+(3)
+Add definition of NOTNULL as any character but terminating null =
+character - watch out for character encoding!
+
+from pending
+--VERIFIER NOTES--
+NUL is defined in US-ASCII.
+
+Errata ID: 783
+
+Status: Rejected
+Type: Technical
+
+Reported By: Alfred Hoenes
+Date Reported: 2005-10-13
+Rejected by: Peter Saint-Andre
+Date Rejected: 2010-11-18
+
+ 
+
+ The following clarifications apply to the meta-grammar in section 4.
+
+a) Near the bottom of page 10, the rule:
+
+         repetition     =  [repeat] element
+
+   should say:
+
+|        repetition     =  ( [repeat] element ) / option
+
+   At the top of page 11, the rule:
+
+         element        =  rulename / group / option /
+                           char-val / num-val / prose-val
+
+   should say:
+
+|        element        =  rulename / group /
+                           char-val / num-val / prose-val
+
+   These changes have the effect to formally disallow
+   a <repeat> element in front of an <option>
+   -- a senseless construct formerly unexpectedly allowed.
+
+b) On page 11, the last rule:
+
+         prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
+                               ; bracketed string of SP and VCHAR
+                               ;  without angles
+                               ; prose description, to be used as
+                               ;  last resort
+   should say:
+
+         prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
+|                              ; bracketed string of:
+|                              ;  SP and VCHAR without closing angle
+                               ; prose description, to be used as
+                               ;  last resort
+
+   This change aligns the comment with the formal rule.
+
+It should say:
+
+[see above]  
+
+Notes:
+
+from pending
+--VERIFIER NOTES--
+Peter: The authors have consensus that these are stylistic issues and therefore are not errors.
+
+Errata ID: 159
+
+Status: Rejected
+Type: Editorial
+
+Reported By: Nikolai Malykh
+Date Reported: 2006-01-31
+Rejected by: Peter Saint-Andre
+Date Rejected: 2010-09-15
+
+Section 2.4 says:
+
+    External representations of terminal value characters will vary
+    according to constraints in the storage or transmission environment.
+    Hence, the same ABNF-based grammar may have multiple external
+    encodings, such as one for a 7-bit US-ASCII environment, another for
+    a binary octet environment, and still a different one when 16-bit
+    Unicode is used.  Encoding details are beyond the scope of ABNF,
+    although Appendix A (Core) provides definitions for a 7-bit US-ASCII
+    environment as has been common to much of the Internet.
+
+It should say:
+
+    External representations of terminal value characters will vary
+    according to constraints in the storage or transmission environment.
+    Hence, the same ABNF-based grammar may have multiple external
+    encodings, such as one for a 7-bit US-ASCII environment, another for
+    a binary octet environment, and still a different one when 16-bit
+    Unicode is used.  Encoding details are beyond the scope of ABNF,
+    although Appendix B (CORE ABNF OF ABNF) provides definitions for
+    a 7-bit US-ASCII environment as has been common to much of the
+    Internet.
+
+Notes:
+
+
+--VERIFIER NOTES--
+Fixed in RFC 5234.
+
+Errata ID: 866
+
+Status: Rejected
+Type: Editorial
+
+Reported By: Julian Reschke
+Date Reported: 2007-03-02
+Rejected by: Peter Saint-Andre
+Date Rejected: 2010-09-15
+
+Appendix A says:
+
+    External representations of terminal value characters will vary
+    according to constraints in the storage or transmission environment.
+    Hence, the same ABNF-based grammar may have multiple external
+    encodings, such as one for a 7-bit US-ASCII environment, another for
+    a binary octet environment, and still a different one when 16-bit
+    Unicode is used.  Encoding details are beyond the scope of ABNF,
+    although Appendix A (Core) provides definitions for a 7-bit US-ASCII
+    environment as has been common to much of the Internet.
+
+It should say:
+
+    External representations of terminal value characters will vary
+    according to constraints in the storage or transmission environment.
+    Hence, the same ABNF-based grammar may have multiple external
+    encodings, such as one for a 7-bit US-ASCII environment, another for
+    a binary octet environment, and still a different one when 16-bit
+    Unicode is used.  Encoding details are beyond the scope of ABNF,
+    although Appendix B (Core) provides definitions for a 7-bit US-ASCII
+    environment as has been common to much of the Internet.
+
+Notes:
+
+Appendix A" by "Appendix B" here.
+
+from pending
+--VERIFIER NOTES--
+Fixed in RFC 5234. 

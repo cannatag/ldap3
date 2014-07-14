@@ -1,0 +1,56 @@
+Errata ID: 860
+
+Status: Verified
+Type: Technical
+
+Reported By: Stephane PERBELLINI
+Date Reported: 2007-02-23
+Verifier Name: Kurt Zeilenga
+Date Verified: 2007-02-23
+Section 2.2 says:
+
+   COMBINING GRAPHEME JOINER (U+034F) and VARIATION SELECTORs 
+   (U+180B-180D, FF00-FE0F) code points are also mapped to nothing. 
+It should say:
+
+   COMBINING GRAPHEME JOINER (U+034F) and VARIATION SELECTORs 
+   (U+180B-180D, FE00-FE0F) code points are also
+Notes:
+
+FF00-FE0F should be FE00-FE0F
+
+from pending
+
+Errata ID: 1757
+
+Status: Verified
+Type: Technical
+
+Reported By: Steven Legg
+Date Reported: 2009-04-05
+Verifier Name: Alexey Melnikov
+Date Verified: 2010-05-20
+Section 2.6.1 says:
+
+Otherwise, the following steps are taken:
+It should say:
+
+Otherwise, the following steps are taken:
+
+   - Any inner (non-empty) sequence of space characters is replaced
+     with exactly two SPACE characters;
+Errata ID: 1758
+
+Status: Verified
+Type: Technical
+
+Reported By: Steven Legg
+Date Reported: 2009-04-05
+Verifier Name: Alexey Melnikov
+Date Verified: 2010-05-20
+Section 2.6.1 says:
+
+As an any or final substring, the same input would result in "foo<SPACE>bar<SPACE>".
+It should say:
+
+As an any or final substring, the same input would result in "foo<SPACE><SPACE>bar<SPACE>".

@@ -50,12 +50,12 @@ class Test(unittest.TestCase):
 
     def test_paged_search_accumulator(self):
         responses = self.connection.extend.standard.paged_search('o=test', '(cn=*)', generator=False)
-        self.assertEqual(len(responses), 26)
+        self.assertEqual(len(responses), 22)
         self.assertEqual(len(responses), len(self.connection.response))
 
     def test_paged_search_generator(self):
         responses = []
         for response in self.connection.extend.standard.paged_search('o=test', '(cn=*)'):
             responses.append(response)
-        self.assertEqual(len(responses), 26)
+        self.assertEqual(len(responses), 22)
         self.assertEqual(self.connection.response, None)

@@ -209,6 +209,7 @@ def format_boolean(raw_value):
 
 def format_time(raw_value):
     try:
+        print('time:', raw_value)
         return datetime(raw_value)  # tbd
     except TypeError:
         pass
@@ -265,41 +266,77 @@ def format_attribute_values(schema, name, values):
 
 
 format_helper = {
+    '1.3.6.1.4.1.1466.115.121.1.1': format_binary,  # ACI item [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.2': format_binary,  # Access point [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.3': format_unicode,  # Attribute type description
+    '1.3.6.1.4.1.1466.115.121.1.4': format_binary,  # Audio [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.5': format_binary,  # Binary [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.6': format_unicode,  # Bit String
+    '1.3.6.1.4.1.1466.115.121.1.7': format_boolean,  # Boolean
+    '1.3.6.1.4.1.1466.115.121.1.8': format_binary,  # Certificate [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.9': format_binary,  # Certificate List [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.10': format_binary,  # Certificate Pair [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.11': format_unicode,  # Country String
     '1.3.6.1.4.1.1466.115.121.1.12': format_unicode,  # Distinguished name (DN)
+    '1.3.6.1.4.1.1466.115.121.1.13': format_binary,  # Data Quality Syntax [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.14': format_unicode,  # Delivery method
     '1.3.6.1.4.1.1466.115.121.1.15': format_unicode,  # Directory string
     '1.3.6.1.4.1.1466.115.121.1.16': format_unicode,  # DIT Content Rule Description
     '1.3.6.1.4.1.1466.115.121.1.17': format_unicode,  # DIT Structure Rule Description
-    '1.3.6.1.4.1.1466.115.121.1.21': format_unicode,  # Enhanced Guide
+    '1.3.6.1.4.1.1466.115.121.1.18': format_binary,  # DL Submit Permission [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.19': format_binary,  # DSA Quality Syntax [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.20': format_binary,  # DSE Type [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.21': format_binary,  # Enhanced Guide
     '1.3.6.1.4.1.1466.115.121.1.22': format_unicode,  # Facsimile Telephone Number
-    '1.3.6.1.4.1.1466.115.121.1.25': format_unicode,  # Guide (obsolete)
+    '1.3.6.1.4.1.1466.115.121.1.23': format_binary,  # Fax
+    '1.3.6.1.4.1.1466.115.121.1.24': format_time,  # Generalized time
+    '1.3.6.1.4.1.1466.115.121.1.25': format_binary,  # Guide [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.26': format_unicode,  # IA5 string
+    '1.3.6.1.4.1.1466.115.121.1.27': format_integer,  # Integer
+    '1.3.6.1.4.1.1466.115.121.1.28': format_binary,  # JPEG
+    '1.3.6.1.4.1.1466.115.121.1.29': format_binary,  # Master and Shadow Access Points [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.30': format_unicode,  # Matching rule description
-    '1.3.6.1.4.1.1466.115.121.1.31': format_unicode,  # Matching ruledescription
+    '1.3.6.1.4.1.1466.115.121.1.31': format_unicode,  # Matching rule use description
+    '1.3.6.1.4.1.1466.115.121.1.32': format_unicode,  # Mail Preference [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.33': format_unicode,  # MHS OR Address [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.34': format_unicode,  # Name and optional UID
     '1.3.6.1.4.1.1466.115.121.1.35': format_unicode,  # Name form description
-    '1.3.6.1.4.1.1466.115.121.1.36': format_unicode,  # Mumeric string
+    '1.3.6.1.4.1.1466.115.121.1.36': format_unicode,  # Numeric string
     '1.3.6.1.4.1.1466.115.121.1.37': format_unicode,  # Object class description
     '1.3.6.1.4.1.1466.115.121.1.38': format_unicode,  # OID
     '1.3.6.1.4.1.1466.115.121.1.39': format_unicode,  # Other mailbox
+    '1.3.6.1.4.1.1466.115.121.1.40': format_binary,  # Octet string
     '1.3.6.1.4.1.1466.115.121.1.41': format_unicode,  # Postal address
+    '1.3.6.1.4.1.1466.115.121.1.42': format_binary,  # Protocol Information [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.43': format_binary,  # Presentation Address [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.44': format_unicode,  # Printable string
+    '1.3.6.1.4.1.1466.115.121.1.45': format_binary,  # Subtree specification [OBSOLETE
+    '1.3.6.1.4.1.1466.115.121.1.46': format_binary,  # Supplier Information [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.47': format_binary,  # Supplier Or Consumer [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.48': format_binary,  # Supplier And Consumer [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.49': format_binary,  # Supported Algorithm [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.50': format_unicode,  # Telephone number
     '1.3.6.1.4.1.1466.115.121.1.51': format_unicode,  # Teletex terminal identifier
     '1.3.6.1.4.1.1466.115.121.1.52': format_unicode,  # Teletex number
+    '1.3.6.1.4.1.1466.115.121.1.53': format_time,  # Utc time  (deprecated)
     '1.3.6.1.4.1.1466.115.121.1.54': format_unicode,  # LDAP syntax description
+    '1.3.6.1.4.1.1466.115.121.1.55': format_binary,  # Modify rights [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.56': format_binary,  # LDAP Schema Definition [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.57': format_unicode,  # LDAP Schema Description [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.58': format_unicode,  # Substring assertion
-    '1.3.6.1.4.1.1466.115.121.1.27': format_integer,  # Integer
-    '2.16.840.1.113719.1.1.5.1.22': format_integer,  # Counter (Novell)
-    '1.3.6.1.4.1.1466.115.121.1.23': format_binary,  # Fax
-    '1.3.6.1.4.1.1466.115.121.1.28': format_binary,  # JPEG
-    '1.3.6.1.4.1.1466.115.121.1.40': format_binary,  # Octet string
     '1.3.6.1.1.16.1': format_uuid,  # UUID
     '2.16.840.1.113719.1.1.4.1.501': format_uuid,  # GUID (Novell)
-    '1.3.6.1.4.1.1466.115.121.1.7': format_boolean,  # Boolean
-    '1.3.6.1.4.1.1466.115.121.1.24': format_time,  # Generalized time
-    '1.3.6.1.4.1.1466.115.121.1.53': format_time  # Utc time  (deprecated)
+    '2.16.840.1.113719.1.1.5.1.0': format_binary,  # Unknown (Novell)
+    '2.16.840.1.113719.1.1.5.1.6': format_unicode,  # Case Ignore List (Novell)
+    '2.16.840.1.113719.1.1.5.1.12': format_binary,  # Tagged Data (Novell)
+    '2.16.840.1.113719.1.1.5.1.13': format_binary,  # Octet List (Novell)
+    '2.16.840.1.113719.1.1.5.1.14': format_unicode,  # Tagged String (Novell)
+    '2.16.840.1.113719.1.1.5.1.15': format_unicode,  # Tagged Name And String (Novell)
+    '2.16.840.1.113719.1.1.5.1.16': format_binary,  # NDS Replica Pointer (Novell)
+    '2.16.840.1.113719.1.1.5.1.17': format_unicode,  # NDS ACL (Novell)
+    '2.16.840.1.113719.1.1.5.1.19': format_time,  # NDS Timestamp (Novell)
+    '2.16.840.1.113719.1.1.5.1.22': format_integer,  # Counter (Novell)
+    '2.16.840.1.113719.1.1.5.1.23': format_unicode,  # Tagged Name (Novell)
+    '2.16.840.1.113719.1.1.5.1.25': format_unicode,  # Typed Name (Novell)
+
 }

@@ -154,7 +154,7 @@ class SyncWaitStrategy(BaseStrategy):
                             else:
                                 self.connection.last_error = 'unknown unsolicited notification from server'
                                 raise LDAPSocketReceiveError(self.connection.last_error)
-                        elif int(ldap_resp['messageID']) != message_id and BaseStrategy.decode_response(ldap_resp)['type'] == 'extendedResp':
+                        elif int(ldap_resp['messageID']) != message_id and self.decode_response(ldap_resp)['type'] == 'extendedResp':
                             pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
                         else:
                             self.connection.last_error = 'invalid messageId received'

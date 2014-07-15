@@ -80,7 +80,7 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertTrue(result['description'] in ['success', 'noSuchObject'])
 
-        result = self.connection.add(test_dn_builder(test_base, 'test-add-for-move-dn'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'move-dn'})
+        result = self.connection.add(test_dn_builder(test_base, 'test-add-for-move-dn'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add-for-move-dn', 'givenName': 'move-dn'})
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:

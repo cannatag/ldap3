@@ -2,3 +2,4 @@
 ^build/.*
 ^dist/.*
 ^python3-ldap/python3_ldap.egg-info/.*
+^.idea/-*

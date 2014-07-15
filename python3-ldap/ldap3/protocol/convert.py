@@ -158,7 +158,7 @@ def validate_attribute_value(schema, name, value):
 def format_unicode(raw_value):
     try:
         if str != bytes:  # python3
-            return str(raw_value)
+            return str(raw_value, 'utf-8')
         else:
             return unicode(raw_value, 'utf-8')
     except TypeError:
@@ -166,12 +166,14 @@ def format_unicode(raw_value):
 
     return raw_value
 
+
 def format_integer(raw_value):
     try:
         return int(raw_value)
     except TypeError:
         pass
     return raw_value
+
 
 def format_binary(raw_value):
     try:
@@ -207,7 +209,7 @@ def format_boolean(raw_value):
 
 def format_time(raw_value):
     try:
-        return datetime(raw_value)  #tbd
+        return datetime(raw_value)  # tbd
     except TypeError:
         pass
 

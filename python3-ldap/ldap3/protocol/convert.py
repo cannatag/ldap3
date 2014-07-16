@@ -21,11 +21,30 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from datetime import datetime
+from datetime import datetime, timedelta, tzinfo
 from uuid import UUID
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
-from .. import FORMAT_UNICODE, FORMAT_INT, FORMAT_BINARY, FORMAT_UUID, FORMAT_UUID_LE, FORMAT_BOOLEAN, FORMAT_TIME
 from .rfc4511 import Controls, Control
+
+
+
+# from python standard library
+ZERO = timedelta(0)
+HOUR = timedelta(hours = 1)
+
+
+# A UTC class.
+class UTC(tzinfo):
+    """UTC"""
+
+    def utcoffset(self, dt):
+        return ZERO
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return ZERO
 
 
 def attribute_to_dict(attribute):
@@ -240,7 +259,7 @@ def format_time(raw_value):
         MINUS           = %x2D  ; minus sign ("-")
     """
 
-    if len(raw_value < 10) or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and raw_value[-1] == b'Z'):  # first ten characters are mandatory and must be numeric or timezone or fraction
+    if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and raw_value[-1] == b'Z'):  # first ten characters are mandatory and must be numeric or timezone or fraction
         return raw_value
 
     try:
@@ -249,8 +268,13 @@ def format_time(raw_value):
         day = int(raw_value[6:8])
         hour = int(raw_value[8:10])
 
-        if raw_value[10] == b'Z':
-            if len(raw_value) != 11:
+        if raw_value[10] == b'Z' and len(raw_value) == 11:  # only hour specified
+            return datetime(year, month, day, hour, tzinfo=UTC())
+        elif raw_value[10] in  b'+-':
+            pass  # time zone
+        elif raw_value[10] in '.,':
+            pass  # fraction
+
         if not raw_value[11] in b'.,+-Z':  # not fraction or timezone
             minute = int(raw_value[10:12])
             if not raw_value[13] in b'.,+-Z':

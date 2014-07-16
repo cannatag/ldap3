@@ -208,13 +208,61 @@ def format_boolean(raw_value):
 
 
 def format_time(raw_value):
-    try:
-        print('time:', raw_value)
-        return datetime(raw_value)  # tbd
-    except TypeError:
-        pass
+    """
+    From RFC4517:
+    A value of the Generalized Time syntax is a character string
+    representing a date and time.  The LDAP-specific encoding of a value
+    of this syntax is a restriction of the format defined in [ISO8601],
+    and is described by the following ABNF:
 
-    return raw_value
+    GeneralizedTime = century year month day hour
+                       [ minute [ second / leap-second ] ]
+                       [ fraction ]
+                       g-time-zone
+
+    century = 2(%x30-39) ; "00" to "99"
+    year    = 2(%x30-39) ; "00" to "99"
+    month   =   ( %x30 %x31-39 ) ; "01" (January) to "09"
+            / ( %x31 %x30-32 ) ; "10" to "12"
+    day     =   ( %x30 %x31-39 )    ; "01" to "09"
+            / ( %x31-32 %x30-39 ) ; "10" to "29"
+            / ( %x33 %x30-31 )    ; "30" to "31"
+    hour    = ( %x30-31 %x30-39 ) / ( %x32 %x30-33 ) ; "00" to "23"
+    minute  = %x30-35 %x30-39                        ; "00" to "59"
+
+    second      = ( %x30-35 %x30-39 ) ; "00" to "59"
+    leap-second = ( %x36 %x30 )       ; "60"
+
+    fraction        = ( DOT / COMMA ) 1*(%x30-39)
+    g-time-zone     = %x5A  ; "Z"
+                    / g-differential
+    g-differential  = ( MINUS / PLUS ) hour [ minute ]
+        MINUS           = %x2D  ; minus sign ("-")
+    """
+
+    if len(raw_value < 10) or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and raw_value[-1] == b'Z'):  # first ten characters are mandatory and must be numeric or timezone or fraction
+        return raw_value
+
+    try:
+        year = int(raw_value[:4])
+        month = int(raw_value[4:6])
+        day = int(raw_value[6:8])
+        hour = int(raw_value[8:10])
+
+        if raw_value[10] == b'Z':
+            if len(raw_value) != 11:
+        if not raw_value[11] in b'.,+-Z':  # not fraction or timezone
+            minute = int(raw_value[10:12])
+            if not raw_value[13] in b'.,+-Z':
+                second = int(raw_value[12:14])
+                if second == 60:  # leap second
+                    second = 59
+            elif raw_value[13] == b'Z':
+                tz = None
+            elif '.,' in raw_value[13]:
+                second =
+    except Exception:
+        return raw_value
 
 
 def format_attribute_values(schema, name, values):

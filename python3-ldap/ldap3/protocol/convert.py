@@ -267,26 +267,35 @@ def format_time(raw_value):
         month = int(raw_value[4:6])
         day = int(raw_value[6:8])
         hour = int(raw_value[8:10])
-
-        if raw_value[10] == b'Z' and len(raw_value) == 11:  # only hour specified
-            return datetime(year, month, day, hour, tzinfo=UTC())
-        elif raw_value[10] in  b'+-':
-            pass  # time zone
-        elif raw_value[10] in '.,':
-            pass  # fraction
-
-        if not raw_value[11] in b'.,+-Z':  # not fraction or timezone
-            minute = int(raw_value[10:12])
-            if not raw_value[13] in b'.,+-Z':
-                second = int(raw_value[12:14])
-                if second == 60:  # leap second
-                    second = 59
-            elif raw_value[13] == b'Z':
-                tz = None
-            elif '.,' in raw_value[13]:
-                second =
-    except Exception:
+    except ValueError:
         return raw_value
+    minute = 0
+    second = 0
+    timezone = UTC()
+
+    remain = raw_value[10:]
+
+    if b'.' in remain or b',' in remain:
+        # fraction time tbd
+        return raw_value
+
+    if remain[-1] == b'Z':  # UTCTime
+        if len(remain) == 5:  # mmssZ format
+            try:
+                minute = int(remain[:2])
+                second = int(remain[2:4])
+            except ValueError:
+                return raw_value
+    elif b'+' in remain or b'-' in remain:
+
+    try:
+        return datetime(year, month, day, hour, minute, second)
+    except (TypeError, ValueError):
+        return raw_value
+
+
+
+
 
 
 def format_attribute_values(schema, name, values):

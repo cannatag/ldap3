@@ -28,23 +28,31 @@ from .rfc4511 import Controls, Control
 
 
 
-# from python standard library
-ZERO = timedelta(0)
-HOUR = timedelta(hours = 1)
+# from python standard library docs
+class OffsetTzinfo(tzinfo):
+    """Fixed offset in minutes east from UTC."""
 
+    def __init__(self, offset, name):
+        self.offset = offset
+        self.name = name
+        self._offset = timedelta(minutes=offset)
+        self.name = name
 
-# A UTC class.
-class UTC(tzinfo):
-    """UTC"""
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+
+        return 'FixedOffsetTimezone(offset={0.offset!r}, name={0.name!r})'.format(self)
 
     def utcoffset(self, dt):
-        return ZERO
+        return self._offset
 
     def tzname(self, dt):
-        return "UTC"
+        return self.name
 
     def dst(self, dt):
-        return ZERO
+        return timedelta(0)
 
 
 def attribute_to_dict(attribute):
@@ -258,39 +266,71 @@ def format_time(raw_value):
     g-differential  = ( MINUS / PLUS ) hour [ minute ]
         MINUS           = %x2D  ; minus sign ("-")
     """
-
+    print('time', raw_value)
     if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and raw_value[-1] == b'Z'):  # first ten characters are mandatory and must be numeric or timezone or fraction
+        print('exit 1')
         return raw_value
 
-    try:
-        year = int(raw_value[:4])
-        month = int(raw_value[4:6])
-        day = int(raw_value[6:8])
-        hour = int(raw_value[8:10])
-    except ValueError:
+    if b'.' in raw_value or b',' in raw_value:
+        # fraction time TODO
+        print('exit 2')
         return raw_value
-    minute = 0
-    second = 0
-    timezone = UTC()
+
+    # sets position for fixed values
+
+    pos_year = 0
+    pos_month = 4
+    pos_day = 6
+    pos_hour = 8
+    pos_minute = 10
+    pos_second = 12
 
     remain = raw_value[10:]
-
-    if b'.' in remain or b',' in remain:
-        # fraction time tbd
+    print(remain)
+    if remain[-1] == 90:  # uppercase 'Z'
+        sep = b'Z'
+    elif b'+' in remain:  # timezone can be specified with +hh[mm] or -hh[mm]
+        sep = b'+'
+    elif b'-' in remain:
+        sep = b'-'
+    else:  # timezone not specified
+        print('exit 3')
         return raw_value
 
-    if remain[-1] == b'Z':  # UTCTime
-        if len(remain) == 5:  # mmssZ format
-            try:
-                minute = int(remain[:2])
-                second = int(remain[2:4])
-            except ValueError:
-                return raw_value
-    elif b'+' in remain or b'-' in remain:
+    time, _, offset = remain.partition(sep)
+    if len(time) == 2:  # mmZ fomat
+        pos_second = None
+    elif len(remain) == 0:  # Z format
+        pos_minute = None
+        pos_second = None
+
+    if sep == b'Z':  # UTC
+        timezone = OffsetTzinfo(0, 'UTC')
+    else:  # build timezone
+        try:
+            if len(offset) == 2:
+                timezone_hour = int(offset[:2])
+                timezone_minute = 0
+            elif len(offset) == 4:
+                timezone_hour = int(offset[:2])
+                timezone_minute = int(offset[3:4])
+            else:  # malformed timezone
+                raise ValueError
+        except ValueError:
+            print('exit 4')
+            return raw_value
+        timezone = OffsetTzinfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), str(sign + offset))
 
     try:
-        return datetime(year, month, day, hour, minute, second)
+        return datetime(year=int(raw_value[pos_year: pos_year + 4]),
+                        month=int(raw_value[pos_month: pos_month +2]),
+                        day=int(raw_value[pos_day: pos_day + 2]),
+                        hour=int(raw_value[pos_hour: pos_hour + 2]),
+                        minute=int(raw_value[pos_minute: pos_minute + 2]) if pos_minute else 0,
+                        second=int(raw_value[pos_second: pos_second + 2]) if pos_second else 0,
+                        tzinfo=timezone)
     except (TypeError, ValueError):
+        print('exit 5')
         return raw_value
 
 
@@ -335,11 +375,13 @@ def format_attribute_values(schema, name, values):
         formatter = format_helper[attr_type.syntax]
 
     if not formatter:
-        print('UNKNOWN NAME:', name)
+        # print('UNKNOWN NAME:', name)
         if attr_type:
-            print('UNKNOWN SYNTAX:', attr_type.syntax)
+            # print('UNKNOWN SYNTAX:', attr_type.syntax)
+            pass
         else:
-            print('NO ATTR_TYPE')
+            pass
+            # print('NO ATTR_TYPE')
         formatter = bytes  # default formatter
 
     formatted_values = [formatter(raw_value) for raw_value in values]

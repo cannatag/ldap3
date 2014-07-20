@@ -53,7 +53,7 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.4.3 2014.07.06
+* 0.9.5 2014.07.20
     - auto_bind can be used even for establishing tls, possible values (defined in ldap3) are: AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND
     - refactored extend package to use classes
     - new extended operation: get_universal_password (Novell)
@@ -61,6 +61,9 @@ CHANGELOG
     - added parsing of hostname in scheme://hostname:hostport format. This has the precedence on the parameters (thanks Sorin)
     - added extra checks when the schema is read (with the get_info parameter) but nothing is returned by the server
     - updated setuptools to version 5.4.1
+    - when check_name is True and schema is read attributes are checked and formatted as specified by schema in "checked_attributes'
+    - added formatter for generalizedTime syntax as specified in rfc 4517 (asn.1)
+    - custom formatter can be added in Server definition
 
 * 0.9.4.2 2014.07.03
     - Moved to Bitbucket + Mercurial

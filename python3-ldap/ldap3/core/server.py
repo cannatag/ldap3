@@ -59,7 +59,8 @@ class Server(object):
                  use_ssl=False,
                  allowed_referral_hosts=None,
                  get_info=GET_NO_INFO,
-                 tls=None):
+                 tls=None,
+                 formatter=None):
 
         if host.startswith('ldap://'):
             self.host = host[7:]
@@ -120,6 +121,7 @@ class Server(object):
         self._schema_info = None
         self.lock = Lock()
         self.message_id_lock = Lock()
+        self.custom_formatter = formatter
 
     def __str__(self):
         if self.host:

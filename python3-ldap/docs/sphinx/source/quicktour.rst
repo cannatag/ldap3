@@ -104,7 +104,9 @@ To search for a binary value you must use the RFC4515 escape ASCII sequence for 
     c.search('o=test', search_filter, attributes=['guid'])
 
 search_filter will contain *'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'*
-Raw values for the attributes retrieved are stored in the *raw_attributes* dictonary of the search resulty entries in c.response.
+Raw values for the attributes retrieved are stored in the *raw_attributes* dictonary of the search result entries in c.response.
+
+Formatted (following the schema and RFC indications) attributes are stored in the *checked_attributes* dictionary of the search result entries in c.response. This field is populated only if the schema is read in the server object and the check_names parameter is set to True
 
 Simple Paged search
 -------------------

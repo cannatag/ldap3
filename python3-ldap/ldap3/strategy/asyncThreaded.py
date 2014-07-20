@@ -82,7 +82,7 @@ class AsyncThreadedStrategy(BaseStrategy):
                         self.connection._usage.received_message(length)
                     ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
                     message_id = int(ldap_resp['messageID'])
-                    dict_response = BaseStrategy.decode_response(ldap_resp)
+                    dict_response = self.connection.strategy.decode_response(ldap_resp)
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
                         if dict_response['result'] == 0:  # StartTls in progress
                             if self.connection.server.tls:

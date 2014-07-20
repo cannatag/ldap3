@@ -148,7 +148,7 @@ class SyncWaitStrategy(BaseStrategy):
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 response_complete = True
                         elif int(ldap_resp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-                            dict_response = BaseStrategy.decode_response(ldap_resp)
+                            dict_response = self.decode_response(ldap_resp)
                             if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
                             else:

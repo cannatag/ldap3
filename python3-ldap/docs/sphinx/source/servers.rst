@@ -32,6 +32,8 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
 * tls: Tls object that contains information about the certificates and the trusted roots needed to establish a secure connection (defaults to None). If None any server certificate will be accepted.
 
+* formatter: a dictionary of custom formatter for attributes returned in search
+
 Example::
 
     server = Server('server1', port = 636, use_ssl = True, allowed_referral_hosts = [('server2', True), ('server3', False)])

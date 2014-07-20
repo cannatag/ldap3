@@ -27,10 +27,9 @@ from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectC
 from .rfc4511 import Controls, Control
 
 
-
 # from python standard library docs
-class OffsetTzinfo(tzinfo):
-    """Fixed offset in minutes east from UTC."""
+class OffsetTzInfo(tzinfo):
+    """Fixed offset in minutes east from UTC"""
 
     def __init__(self, offset, name):
         self.offset = offset
@@ -43,7 +42,7 @@ class OffsetTzinfo(tzinfo):
 
     def __repr__(self):
 
-        return 'FixedOffsetTimezone(offset={0.offset!r}, name={0.name!r})'.format(self)
+        return 'OffsetTzInfo(offset={0.offset!r}, name={0.name!r})'.format(self)
 
     def utcoffset(self, dt):
         return self._offset
@@ -266,14 +265,11 @@ def format_time(raw_value):
     g-differential  = ( MINUS / PLUS ) hour [ minute ]
         MINUS           = %x2D  ; minus sign ("-")
     """
-    print('time', raw_value)
-    if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and raw_value[-1] == b'Z'):  # first ten characters are mandatory and must be numeric or timezone or fraction
-        print('exit 1')
+    if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
         return raw_value
 
     if b'.' in raw_value or b',' in raw_value:
         # fraction time TODO
-        print('exit 2')
         return raw_value
 
     # sets position for fixed values
@@ -286,15 +282,13 @@ def format_time(raw_value):
     pos_second = 12
 
     remain = raw_value[10:]
-    print(remain)
-    if remain[-1] == 90:  # uppercase 'Z'
+    if remain and remain.endswith(b'Z'):  # uppercase 'Z'
         sep = b'Z'
     elif b'+' in remain:  # timezone can be specified with +hh[mm] or -hh[mm]
         sep = b'+'
     elif b'-' in remain:
         sep = b'-'
     else:  # timezone not specified
-        print('exit 3')
         return raw_value
 
     time, _, offset = remain.partition(sep)
@@ -303,9 +297,13 @@ def format_time(raw_value):
     elif len(remain) == 0:  # Z format
         pos_minute = None
         pos_second = None
+    elif len(time) == 4:  # mmssZ
+        pass
+    else:
+        return raw_value
 
     if sep == b'Z':  # UTC
-        timezone = OffsetTzinfo(0, 'UTC')
+        timezone = OffsetTzInfo(0, 'UTC')
     else:  # build timezone
         try:
             if len(offset) == 2:
@@ -313,32 +311,29 @@ def format_time(raw_value):
                 timezone_minute = 0
             elif len(offset) == 4:
                 timezone_hour = int(offset[:2])
-                timezone_minute = int(offset[3:4])
+                timezone_minute = int(offset[2:4])
             else:  # malformed timezone
                 raise ValueError
         except ValueError:
-            print('exit 4')
             return raw_value
-        timezone = OffsetTzinfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), str(sign + offset))
+        if str != bytes:  # python3
+            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), 'UTC' + str(sep + offset, encoding='UTF-8'))
+        else:
+            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), u'UTC' + unicode(sep + offset, encoding='UTF-8'))
 
     try:
         return datetime(year=int(raw_value[pos_year: pos_year + 4]),
-                        month=int(raw_value[pos_month: pos_month +2]),
+                        month=int(raw_value[pos_month: pos_month + 2]),
                         day=int(raw_value[pos_day: pos_day + 2]),
                         hour=int(raw_value[pos_hour: pos_hour + 2]),
                         minute=int(raw_value[pos_minute: pos_minute + 2]) if pos_minute else 0,
                         second=int(raw_value[pos_second: pos_second + 2]) if pos_second else 0,
                         tzinfo=timezone)
     except (TypeError, ValueError):
-        print('exit 5')
         return raw_value
 
 
-
-
-
-
-def format_attribute_values(schema, name, values):
+def format_attribute_values(schema, name, values, custom_formatter):
     """
     Tries to format following the OIDs info and format_helper specification.
     Search for attribute oid, then attribute name (can be multiple), then attrubte syntax
@@ -346,6 +341,7 @@ def format_attribute_values(schema, name, values):
                    2. attribute oid(from schema)
                    3. attribute names (from oid_info)
                    4. attribute syntax (from schema)
+    Custom formatters can be defined in Server object and have precedence over the standard_formatters
     If no formatter is found the raw_value is returned as bytes.
     Attributes defined as SINGLE_VALUE in schema are returned as a single object, otherwise are returned as a list of object
     Formatter functions can return any kind of object
@@ -356,39 +352,56 @@ def format_attribute_values(schema, name, values):
     else:
         attr_type = None
 
-    if name.lower() in format_helper:  # search for attribute name, as returned by the search operation
-        formatter = format_helper[name.lower()]
+    if custom_formatter and isinstance(custom_formatter, dict):  # if custom formatters are defined they have precedence over the standard formatters
+        if name.lower() in custom_formatter:  # search for attribute name, as returned by the search operation
+            formatter = custom_formatter[name.lower()]
 
-    if not formatter and attr_type and attr_type.oid in format_helper:  # search for attribute oid as returned by schema
-        formatter = format_helper[attr_type.oid]
+        if not formatter and attr_type and attr_type.oid in custom_formatter:  # search for attribute oid as returned by schema
+            formatter = custom_formatter[attr_type.oid]
+
+        if not formatter and attr_type and attr_type.oid_info:
+            if isinstance(attr_type.oid_info.name, list):  # search for multiple names defined in oid_info
+                for attr_name in attr_type.oid_info.name:
+                    if attr_name.lower() in custom_formatter:
+                        formatter = custom_formatter[attr_name.lower()]
+                        break
+            elif attr_type.oid_info.name in custom_formatter:  # search for name defined in oid_info
+                formatter = custom_formatter[attr_type.oid_info.name]
+
+        if not formatter and attr_type and attr_type.syntax in custom_formatter:  # search for syntax defined in schema
+            formatter = custom_formatter[attr_type.syntax]
+
+    if not formatter and name.lower() in standard_formatter:  # search for attribute name, as returned by the search operation
+        formatter = standard_formatter[name.lower()]
+
+    if not formatter and attr_type and attr_type.oid in standard_formatter:  # search for attribute oid as returned by schema
+        formatter = standard_formatter[attr_type.oid]
 
     if not formatter and attr_type and attr_type.oid_info:
         if isinstance(attr_type.oid_info.name, list):  # search for multiple names defined in oid_info
             for attr_name in attr_type.oid_info.name:
-                if attr_name.lower() in format_helper:
-                    formatter = format_helper[attr_name.lower()]
+                if attr_name.lower() in standard_formatter:
+                    formatter = standard_formatter[attr_name.lower()]
                     break
-        elif attr_type.oid_info.name in format_helper:  # search for name defined in oid_info
-            formatter = format_helper[attr_type.oid_info.name]
+        elif attr_type.oid_info.name in standard_formatter:  # search for name defined in oid_info
+            formatter = standard_formatter[attr_type.oid_info.name]
 
-    if not formatter and attr_type and attr_type.syntax in format_helper:  # search for syntax defined in schema
-        formatter = format_helper[attr_type.syntax]
+    if not formatter and attr_type and attr_type.syntax in standard_formatter:  # search for syntax defined in schema
+        formatter = standard_formatter[attr_type.syntax]
 
     if not formatter:
         # print('UNKNOWN NAME:', name)
-        if attr_type:
-            # print('UNKNOWN SYNTAX:', attr_type.syntax)
-            pass
-        else:
-            pass
-            # print('NO ATTR_TYPE')
+        # if attr_type:
+        #    print('UNKNOWN SYNTAX:', attr_type.syntax)
+        # else:
+        #    print('NO ATTR_TYPE')
         formatter = bytes  # default formatter
 
     formatted_values = [formatter(raw_value) for raw_value in values]
     return formatted_values[0] if (attr_type and attr_type.single_value) else formatted_values
 
 
-format_helper = {
+standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.1': format_binary,  # ACI item [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.2': format_binary,  # Access point [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.3': format_unicode,  # Attribute type description

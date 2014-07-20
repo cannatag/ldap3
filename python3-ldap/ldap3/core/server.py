@@ -62,12 +62,15 @@ class Server(object):
                  tls=None,
                  formatter=None):
 
+        url_given = False
         if host.startswith('ldap://'):
             self.host = host[7:]
             use_ssl = False
+            url_given = True
         elif host.startswith('ldaps://'):
             self.host = host[8:]
             use_ssl = True
+            url_given = True
         else:
             self.host = host
 
@@ -75,13 +78,25 @@ class Server(object):
             hostname, _, hostport = self.host.partition(':')
             try:
                 port = int(hostport) or port
-                if not port in range(0, 65535):
-                    raise LDAPInvalidPort('port must in range from 0 to 65535')
                 self.host = hostname
             except ValueError:
                 raise LDAPInvalidPort('port must be an integer')
+        elif url_given and self.host.startswith('['):
+            hostname, sep , hostport = self.host[1:].partition(']')
+            if sep != ']' or not self._isIPv6(hostname):
+                print(repr(sep), repr(hostname))
+                raise LDAPInvalidServerError()
+            if len(hostport):
+                if not hostport.startswith(':'):
+                    raise LDAPInvalidServerError('invalid URL given')
+                if not hostport[1:].isdecimal():
+                    raise LDAPInvalidPort('port must be an integer')
+                port = int(hostport[1:])
+            self.host = hostname
+        elif not url_given and self._isIPv6(self.host):
+            pass
         elif self.host.count(':') > 1:
-            raise LDAPInvalidServerError
+            raise LDAPInvalidServerError()
 
         if not use_ssl and not port:
             port = 389
@@ -115,13 +130,26 @@ class Server(object):
 
         self.ssl = True if use_ssl else False
         self.tls = Tls() if self.ssl and not tls else tls
-        self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
+
+        if self._isIPv6(self.host):
+            self.name = ('ldaps' if self.ssl else 'ldap') + '://[' + self.host + ']:' + str(self.port)
+        else:
+            self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
+
         self.get_info = get_info
         self._dsa_info = None
         self._schema_info = None
         self.lock = Lock()
         self.message_id_lock = Lock()
         self.custom_formatter = formatter
+
+    @staticmethod
+    def _isIPv6(host):
+        try:
+            socket.inet_pton(socket.AF_INET6, host)
+        except socket.error:
+            return False
+        return True
 
     def __str__(self):
         if self.host:
@@ -148,17 +176,21 @@ class Server(object):
         and port to check availability.
         """
         available = True
-        temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            temp_socket.connect((self.host, self.port))
-        except socket.error:
-            available = False
-        finally:
+            addrinfo = socket.getaddrinfo(self.host, self.port)
+            temp_socket = socket.socket(*addrinfo[0][:3])
             try:
-                temp_socket.shutdown(socket.SHUT_RDWR)
-                temp_socket.close()
+                temp_socket.connect(addrinfo[0][4])
             except socket.error:
                 available = False
+            finally:
+                try:
+                    temp_socket.shutdown(socket.SHUT_RDWR)
+                    temp_socket.close()
+                except socket.error:
+                    available = False
+        except gaierror:
+            available = False
 
         return available
 

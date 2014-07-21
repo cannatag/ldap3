@@ -105,6 +105,10 @@ To search for a binary value you must use the RFC4515 escape ASCII sequence for 
 
 search_filter will contain *'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'*
 Raw values for the attributes retrieved are stored in the *raw_attributes* dictonary of the search result entries in c.response.
+If the schema is read (with get_info=GET_SCHEMA_INFO (or GET_ALL_INFO in the Server object) and check_names is set to True in the Connection object the *checked_attributes* is populated with the formatted values as specified by the RFCs and the schema syntaxes.
+Custom formatters can be used to specify how an attribute value must be returned in the 'checked_attributes' attribute of the search entry object.
+A formatter must be a callable that receives a bytes value and return an object. The object will be returned in the 'checked_attributes'.
+If the attribute is defined in the schema as 'multi_value' the attribute value is returned as a list (even if only a single value is present) else it's returned as a single value.
 
 Formatted (following the schema and RFC indications) attributes are stored in the *checked_attributes* dictionary of the search result entries in c.response. This field is populated only if the schema is read in the server object and the check_names parameter is set to True
 

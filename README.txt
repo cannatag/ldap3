@@ -61,7 +61,7 @@ CHANGELOG
     - added parsing of hostname in scheme://hostname:hostport format. This has the precedence on the parameters (thanks Sorin)
     - added extra checks when the schema is read (with the get_info parameter) but nothing is returned by the server
     - updated setuptools to version 5.4.1
-    - when check_name is True and schema is read attributes are checked and formatted as specified by schema in "checked_attributes'
+    - when check_name is True and schema is read attributes are checked and formatted in "checked_attributes" as specified by RFCs and schema
     - added formatter for generalizedTime syntax as specified in rfc 4517 (asn.1)
     - custom formatter can be added in Server definition
 

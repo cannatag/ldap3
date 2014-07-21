@@ -58,12 +58,12 @@ responseValueConstraint = SingleValueConstraint(0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 1
                                                 4096)
 
 # custom constraints
-numericOIDConstraint = None  # tbd
-distinguishedNameConstraint = None  # tbd
-nameComponentConstraint = None  # tbd
-attributeDescriptionConstraint = None  # tbd
-uriConstraint = None  # tbd
-attributeSelectorConstraint = None  # tbd
+numericOIDConstraint = None  # TODO
+distinguishedNameConstraint = None  # TODO
+nameComponentConstraint = None  # TODO
+attributeDescriptionConstraint = None  # TODO
+uriConstraint = None  # TODO
+attributeSelectorConstraint = None  # TODO
 
 
 class Integer0ToMax(Integer):

@@ -528,7 +528,7 @@ class BaseStrategy(object):
                 referral_connection.delete(selected_referral['base'] or request['entry'],
                                            controls=request['controls'])
             elif request['type'] == 'extendedRequest':
-                # tbd
+                # TODO
                 raise NotImplementedError()
             elif request['type'] == 'modifyRequest':
                 referral_connection.modify(selected_referral['base'] or request['entry'],

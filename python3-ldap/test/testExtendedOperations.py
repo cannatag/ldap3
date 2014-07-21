@@ -46,7 +46,6 @@ class Test(unittest.TestCase):
     def test_get_bind_dn_extension(self):
         result = self.connection.extend.novell.get_bind_dn()
         # result = self.connection.result
-        print(result)
         self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):

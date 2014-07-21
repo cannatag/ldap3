@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 from os import linesep
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS
+from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS
 from .novell.getBindDn import GetBindDn
 from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
 from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
@@ -71,7 +71,6 @@ class StandardExtendedOperations(ExtendedOperationContainer):
             return paged_search_generator(self._connection, search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality)
         else:
             return paged_search_accumulator(self._connection, search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality)
-
 
 
 class NovellExtendedOperations(ExtendedOperationContainer):

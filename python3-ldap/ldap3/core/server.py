@@ -82,18 +82,17 @@ class Server(object):
             except ValueError:
                 raise LDAPInvalidPort('port must be an integer')
         elif url_given and self.host.startswith('['):
-            hostname, sep , hostport = self.host[1:].partition(']')
-            if sep != ']' or not self._isIPv6(hostname):
-                print(repr(sep), repr(hostname))
+            hostname, sep, hostport = self.host[1:].partition(']')
+            if sep != ']' or not self._is_ipv6(hostname):
                 raise LDAPInvalidServerError()
             if len(hostport):
                 if not hostport.startswith(':'):
-                    raise LDAPInvalidServerError('invalid URL given')
+                    raise LDAPInvalidServerError('invalid URL in server name')
                 if not hostport[1:].isdecimal():
                     raise LDAPInvalidPort('port must be an integer')
                 port = int(hostport[1:])
             self.host = hostname
-        elif not url_given and self._isIPv6(self.host):
+        elif not url_given and self._is_ipv6(self.host):
             pass
         elif self.host.count(':') > 1:
             raise LDAPInvalidServerError()
@@ -131,7 +130,7 @@ class Server(object):
         self.ssl = True if use_ssl else False
         self.tls = Tls() if self.ssl and not tls else tls
 
-        if self._isIPv6(self.host):
+        if self._is_ipv6(self.host):
             self.name = ('ldaps' if self.ssl else 'ldap') + '://[' + self.host + ']:' + str(self.port)
         else:
             self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
@@ -144,10 +143,10 @@ class Server(object):
         self.custom_formatter = formatter
 
     @staticmethod
-    def _isIPv6(host):
+    def _is_ipv6(host):
         try:
             socket.inet_pton(socket.AF_INET6, host)
-        except socket.error:
+        except (socket.error, AttributeError):
             return False
         return True
 

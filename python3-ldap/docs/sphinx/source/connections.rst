@@ -30,7 +30,7 @@ Connection parameters are:
 
 * password: the password of the user for simple bind (defaults to None)
 
-* auto_bind: automatically opens and binds the connection (defaults to False)
+* auto_bind: automatically opens and binds the connection. Can be AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND
 
 * version: LDAP protocol version (defaults to 3)
 
@@ -282,3 +282,27 @@ You can check the result value to know if the operation has been sucessful. The 
 * dn: a distinguish name of an entry related to the request (optional)
 * referrals: a list of referrals where the operation can be continued (optional)
 
+
+Checked Attributes
+==================
+The checked attributes feature checks the LDAP syntax of the atttributes defined in schema and returns a properly formatted entry result while performing searches. This means that if you have an attributes specified as GUID in the server schema you will get the properly formatted GUID value (for example '012381d3-3b1c-904f-b29a-012381d33b1c') in the connection.response[0]['checked_attributes'] key dictionary instead of a sequence of bytes. Or if you request an attribute defined as an Interger in the schema you will get the value already converted to int.
+Furthermore for attributes defined as single valued in schema you will get the value instead of a list of values (that would always be one sized). To activate this feature you must set the get info to GET_SCHEMA_INFO or GET_ALL_INFO value when defining the server object and the 'check_names' attributes to True in the Connection object (this is True by default starting from 0.9.4).
+
+There are a few of standard formatters defined in the library, most of them are defined in the relevants RFCs:
+format_unicode  # returns an unicode object in Python 2 and a string in Python 3
+format_integer  # returns an integer
+format_binary  # returns a bytes() sequence
+format_uuid  # returns a GUID (UUID) as specified in RFC 4122 - byte order is big endian
+format_uuid_le  # same as above but byte order is little endian
+format_boolean  # returns a boolean
+format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as defined in RFC 4517
+
+You can even define your custom formatter for specific purposes. Just pass a dictionary in the format {'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte value and convert it the relevant object or class instance.
+
+The resolution order of the format feature is the following:
+Custom formatters have precedence over standard formatter. In each category (from highest to lowest):
+1. attribute name
+2. attribute oid(from schema)
+3. attribute names (from oid_info)
+4. attribute syntax (from schema)
+If a suitable formatter is not found the value will be rendered as bytes

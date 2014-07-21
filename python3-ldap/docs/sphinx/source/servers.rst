@@ -83,3 +83,8 @@ Pools can be dynamically changed. You can add and remove Server objects from poo
     server_pool.add(server4)
 
 Connections are notified of the change and can reopen the socket to the new server at next open() operation.
+
+
+Custom formatters can be used to specify how an attribute value must be returned in the 'checked_attributes' attribute of the search entry object.
+A formatter must be a callable that receives a bytes value and return an object. The object will be returned in the 'checked_attributes'.
+If the attribute is defined in the schema as 'multi_value' the attribute value is returned as a list (even if only a single value is present) else it's returned as a single value.

@@ -31,6 +31,7 @@ from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
 from .standard.PagedSearch import paged_search_generator, paged_search_accumulator
 
+
 class ExtendedOperationContainer(object):
     def __init__(self, connection):
         self._connection = connection

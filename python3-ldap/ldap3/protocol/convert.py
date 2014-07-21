@@ -390,11 +390,6 @@ def format_attribute_values(schema, name, values, custom_formatter):
         formatter = standard_formatter[attr_type.syntax]
 
     if not formatter:
-        # print('UNKNOWN NAME:', name)
-        # if attr_type:
-        #    print('UNKNOWN SYNTAX:', attr_type.syntax)
-        # else:
-        #    print('NO ATTR_TYPE')
         formatter = bytes  # default formatter
 
     formatted_values = [formatter(raw_value) for raw_value in values]

@@ -19,6 +19,14 @@ extend.microsoft
 
 You can call the requested operation and get the extended result back as specified in the relevant rfc or documentation. The result dictionary is augmented with the specific keys of the extendedResponse.
 
+
+Just call the extend operation in the usual way, for example::
+    c = Connection(....)
+    c.bind()
+    i_am = c.extend.standard.who_am_i()
+
+The payload of these extended operation is properly encoded and decoded. When available you should get the response value as the return value of the function and as an additional field of the result dictionary
+
  For example::
     s = Server(...)
     c = Connection(s, ...)
@@ -28,7 +36,6 @@ You can call the requested operation and get the extended result back as specifi
 
 The extend.standard.paged_search() operation is a convenient wrapper for the simple paged search as specified in the RFC2696. You can indicate how many entries will be read in the paged_size parameter (defaults to 100) and you get back a *generator* for the entries.
 If you set to False the generator parameter of the search will be fully executed before returning the results. If generator is set to True (the default) any subsequent search will be executed only when you read all the previous read entries, saving memory.
-
 
 Novell extended operations are specific for the Novell (NetIq) eDirectory LDAP Server and return and set the universal password of the specified user.
 

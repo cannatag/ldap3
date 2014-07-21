@@ -44,9 +44,10 @@ class Test(unittest.TestCase):
         self.assertTrue(result['description'] in ['success', 'protocolError'])
 
     def test_get_bind_dn_extension(self):
-        self.connection.extend.novell.get_bind_dn()
-        result = self.connection.result
-        self.assertTrue(result['description'] in ['success'])
+        result = self.connection.extend.novell.get_bind_dn()
+        # result = self.connection.result
+        print(result)
+        self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):
         responses = self.connection.extend.standard.paged_search('o=test', '(cn=*)', generator=False)

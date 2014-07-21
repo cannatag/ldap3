@@ -53,7 +53,6 @@ class ExtendedOperation(object):
             _, self.result = self.connection.get_response(resp)
         else:
             self.result = self.connection.result
-
         self.decode_response()
         self.populate_result()
         self.set_response()
@@ -80,7 +79,7 @@ class ExtendedOperation(object):
             raise LDAPExtensionError('invalid response name received')
 
     def set_response(self):
-        self.response_value = self.connection.result[self.response_attribute] if self.response_attribute in self.connection.result else None
+        self.response_value = self.result[self.response_attribute] if self.result and self.response_attribute in self.result else None
         self.connection.response = self.response_value
 
     def config(self):

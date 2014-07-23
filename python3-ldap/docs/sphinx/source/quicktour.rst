@@ -130,12 +130,12 @@ Example::
     c.search(search_base = 'o=test', search_filter = '(objectClass=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
                       attributes = ['cn', 'givenName'], paged_size = 5)
     total_entries += len(c.response)
-    cookie = self.c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
         c.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
                           attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
         total_entries += len(c.response)
-        cookie = self.c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     print('Total entries retrieved:', total_entries)
     c.unbind()
 

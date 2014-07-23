@@ -35,7 +35,7 @@ You can create a connection with::
 
     # define the server and the connection
     s = Server('servername', port = 389, get_info = GET_ALL_INFO)  # define an unsecure LDAP server, requesting info on DSE and schema
-    c = Connection(s, auto_bind = True, client_strategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE)
+    c = Connection(s, auto_bind = True, client_strategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE, check_names=True)
     print(s.info) # display info from the DSE. OID are decoded when recognized by the library
 
     # request a few objects from the LDAP server
@@ -45,6 +45,7 @@ You can create a connection with::
     for r in response:
         print(r['dn'], r['attributes']) # return unicode attributes
         print(r['dn'], r['raw_attributes']) return raw (bytes) attributes
+        print(r['dn'], r['checked_attributes']) # return checked attributes
     print(result)
     c.unbind()
 
@@ -127,15 +128,57 @@ Example::
     total_entries = 0
     server = Server('test-server')
     c = Connection(server, user = 'username', password = 'password')
-    c.search(search_base = 'o=test', search_filter = '(objectClass=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
-                      attributes = ['cn', 'givenName'], paged_size = 5)
+    c.search(search_base = 'o=test',
+             search_filter = '(objectClass=inetOrgPerson)',
+             search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+             attributes = ['cn', 'givenName'],
+             paged_size = 5)
     total_entries += len(c.response)
+    for entry in c.response:
+        print(entry['dn'], entry['checked_attributes])
     cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
-        c.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
-                          attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
+        c.search(search_base = 'o=test',
+                 search_filter = '(object_class=inetOrgPerson)',
+                 search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                 attributes = ['cn', 'givenName'],
+                 paged_size = 5,
+                 paged_cookie = cookie)
         total_entries += len(c.response)
         cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        for entry in c.response:
+            print(entry['dn'], entry['checked_attributes])
     print('Total entries retrieved:', total_entries)
-    c.unbind()
 
+Or you can use the much simpler extended operations package that wraps all this machinery and hides implementation details, you can choose to get back a generator or the whole list of entries found.
+
+
+Working with a generator is better when you deal with very long list of entries or have memory issues::
+
+    # generator
+    total_entries = 0
+    entry_generator = c.extend.standard.paged_search(search_base = 'o=test',
+                                                     search_filter = '(objectClass=inetOrgPerson)',
+                                                     search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                                     attributes = ['cn', 'givenName'],
+                                                     paged_size = 5)
+    for entry in entry_generator:
+        total_entries += 1
+        print(entry['dn'], entry['checked_attributes])
+    print('Total entries retrieved:', total_entries)
+
+Remember that a generator can be consumed only one time, so you must elaborate the results in a sequential way.
+
+
+Working with a list keeps all the found entries in a list and you can elaborate them in a random way::
+
+    # whole result list
+    entry_list = c.extend.standard.paged_search(search_base = 'o=test',
+                                                search_filter = '(objectClass=inetOrgPerson)',
+                                                search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                                attributes = ['cn', 'givenName'],
+                                                paged_size = 5)
+    for entry in entry_list:
+        print entry['checked_attributes']
+    total_entries = len(entry_list)
+    print('Total entries retrieved:', total_entries)

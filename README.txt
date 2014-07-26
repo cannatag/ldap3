@@ -49,7 +49,7 @@ Acknowledgements
 Contact me
 ----------
 
-For information and suggestions you can contact me at python3ldap@gmail.com or you can join the python3-ldap mailing list at http://mail.python.org/mailman/listinfo/python3-ldap. You can also open a support ticket on https://www.assembla.com/spaces/python3-ldap/support/tickets
+For information and suggestions you can contact me at python3ldap@gmail.com or you can join the python3-ldap mailing list at http://mail.python.org/mailman/listinfo/python3-ldap. You can also open a support ticket on https://bitbucket.org/python3ldap/python3-ldap/issues/new
 
 CHANGELOG
 =========

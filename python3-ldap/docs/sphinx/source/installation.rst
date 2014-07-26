@@ -17,7 +17,7 @@ This library has only one dependence on the *pyasn1* module (you don't need the 
 Installation from the source
 ----------------------------
 
-You can download the latest source in trunk from https://subversion.assembla.com/svn/python3-ldap using a svn client, then you can build the library in the source directory with::
+You can download the latest source in trunk from https://python3ldap@bitbucket.org/python3ldap/python3-ldap, then you can build the library in the source directory with::
 
     python setup.py install
 

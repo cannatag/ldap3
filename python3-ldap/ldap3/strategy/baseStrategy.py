@@ -121,8 +121,10 @@ class BaseStrategy(object):
         """
         exc = None
         try:
-            addrinfo = socket.getaddrinfo(self.connection.server.host, self.connection.server.port)
-            self.connection.socket = socket.socket(*addrinfo[0][:3])
+            if not self.connection.server._address_info:
+                self.connection.server._address_info = socket.getaddrinfo(self.connection.server.host, self.connection.server.port)
+
+            self.connection.socket = socket.socket(*self.connection.server._address_info[0][:3])
         except Exception as e:
             self.connection.last_error = 'socket creation error: ' + str(e)
             exc = e
@@ -131,7 +133,7 @@ class BaseStrategy(object):
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         try:
-            self.connection.socket.connect(addrinfo[0][4])
+            self.connection.socket.connect(self.connection.server._address_info[0][4])
         except socket.error as e:
             self.connection.last_error = 'socket connection error: ' + str(e)
             exc = e

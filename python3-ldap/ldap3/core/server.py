@@ -50,8 +50,8 @@ class Server(object):
     Server.
     """
 
-    _real_servers = dict()  # dictionary of real servers currently active, the key is the host part of the server address
-                            # and the value is the messageId counter for all connection to that host)
+    _message_counter = 0
+    _message_id_lock = Lock()
 
     def __init__(self,
                  host,
@@ -110,11 +110,6 @@ class Server(object):
         else:
             raise LDAPInvalidPort('port must be an integer')
 
-        try:
-            self.address = getaddrinfo(self.host, port)[0][4][0]
-        except gaierror:
-            self.address = self.host
-
         if isinstance(allowed_referral_hosts, (list, tuple)):
             self.allowed_referral_hosts = []
             for refServer in allowed_referral_hosts:
@@ -139,8 +134,8 @@ class Server(object):
         self._dsa_info = None
         self._schema_info = None
         self.lock = Lock()
-        self.message_id_lock = Lock()
         self.custom_formatter = formatter
+        self._address_info = None  # will be resolved at open time (or when you call check_availability)
 
     @staticmethod
     def _is_ipv6(host):
@@ -166,9 +161,6 @@ class Server(object):
 
         return r
 
-    def is_valid(self):
-        return True if self.address else False
-
     def check_availability(self):
         """
         Tries to open, connect and close a socket to specified address
@@ -176,10 +168,11 @@ class Server(object):
         """
         available = True
         try:
-            addrinfo = socket.getaddrinfo(self.host, self.port)
-            temp_socket = socket.socket(*addrinfo[0][:3])
+            if not self._address_info:
+                self._address_info = socket.getaddrinfo(self.host, self.port)
+            temp_socket = socket.socket(*self._address_info[0][:3])
             try:
-                temp_socket.connect(addrinfo[0][4])
+                temp_socket.connect(self._address_info[0][4])
             except socket.error:
                 available = False
             finally:
@@ -193,18 +186,17 @@ class Server(object):
 
         return available
 
-    def next_message_id(self):
+    @staticmethod
+    def next_message_id():
         """
-        messageId is unique in all connections to the server.
+        messageId is unique for all connection
         """
-        with self.message_id_lock:
-            if self.address and self.address in Server._real_servers:
-                Server._real_servers[self.address] += 1
-                if Server._real_servers[self.address] >= LDAP_MAX_INT:  # wrap as per MAXINT (2147483647) in RFC4511 specification
-                    Server._real_servers[self.address] = 1  # 0 is reserved for Unsolicited messages
-            else:
-                Server._real_servers[self.address] = 1
-            return Server._real_servers[self.address]
+        with Server._message_id_lock:
+            Server._message_counter += 1
+            if Server._message_counter >= LDAP_MAX_INT:
+                Server._message_counter = 1
+
+        return Server._message_counter
 
     def _get_dsa_info(self, connection):
         """

@@ -178,7 +178,7 @@ class Connection(object):
         self.post_send_single_response = self.strategy.post_send_single_response
         self.post_send_search = self.strategy.post_send_search
 
-        if not self.strategy.no_real_dsa and self.server.is_valid():
+        if not self.strategy.no_real_dsa:
             if self.auto_bind:
                 self.open()
                 if self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
@@ -197,7 +197,7 @@ class Connection(object):
 
     def __str__(self):
         s = [
-            str(self.server) if self.server and self.server.is_valid else 'None',
+            str(self.server) if self.server else 'None',
             'user: ' + str(self.user),
             'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
             'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
@@ -382,8 +382,10 @@ class Connection(object):
         elif attributes == ALL_ATTRIBUTES:
             attributes = ['*']
 
-        if get_operational_attributes:
+        if get_operational_attributes and isinstance(attributes, list):
             attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
+        elif get_operational_attributes and isinstance(attributes, tuple):
+            attributes += (ALL_OPERATIONAL_ATTRIBUTES, )  # concatenate tuple
 
         if isinstance(paged_size, int):
             real_search_control_value = RealSearchControlValue()

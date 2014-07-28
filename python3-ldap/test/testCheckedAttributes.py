@@ -33,7 +33,7 @@ from ldap3.protocol.convert import format_time, OffsetTzInfo
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_ALL_INFO)
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
+        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=True)
         result = self.connection.add(test_dn_builder(test_base, 'test-checked-attributes'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-checked-attributes', 'loginGraceLimit': 10})
         if not isinstance(result, bool):
             self.connection.get_response(result)
@@ -53,13 +53,13 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
-        self.assertEqual(response[0]['checked_attributes']['sn'][0], 'test-checked-attributes')
-        self.assertEqual(response[0]['checked_attributes']['loginGraceLimit'], 10)
+        self.assertEqual(response[0]['attributes']['sn'][0], 'test-checked-attributes')
+        self.assertEqual(response[0]['attributes']['loginGraceLimit'], 10)
         if str != bytes:  # python3
-            self.assertTrue(isinstance(response[0]['checked_attributes']['sn'][0], str))
+            self.assertTrue(isinstance(response[0]['attributes']['sn'][0], str))
         else:  # python2
-            self.assertTrue(isinstance(response[0]['checked_attributes']['sn'][0], unicode))
-        self.assertTrue(isinstance(response[0]['checked_attributes']['loginGraceLimit'], int))
+            self.assertTrue(isinstance(response[0]['attributes']['sn'][0], unicode))
+        self.assertTrue(isinstance(response[0]['attributes']['loginGraceLimit'], int))
 
     def test_format_time(self):
         self.assertEqual(format_time(b'20140102030405Z'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(0, 'UTC')))
@@ -91,18 +91,18 @@ class Test(unittest.TestCase):
         self.assertEqual(format_time(b'2014010203-0130'),  b'2014010203-0130')
 
     def test_custom_formatter(self):
-        def toUpper(byte_value):
+        def to_upper(byte_value):
             if str != bytes:
                 return str(byte_value, encoding='UTF-8').upper()
             else:
                 return unicode(byte_value, encoding='UTF-8').upper()
         if str != bytes:  # python3
-            formatter = {'cn': toUpper,  # name to upper
+            formatter = {'cn': to_upper,  # name to upper
                          '2.5.4.4': lambda v: str(v, encoding='UTF-8')[::-1],  # sn reversed
                          '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000  # integer syntax incremented by 1000
             }
         else:
-            formatter = {'cn': toUpper,  # name to upper
+            formatter = {'cn': to_upper,  # name to upper
                          '2.5.4.4': lambda v: unicode(v, encoding='UTF-8')[::-1],  # sn reversed
                          '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000  # integer syntax incremented by 1000
             }
@@ -115,6 +115,6 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
-        self.assertEqual(response[0]['checked_attributes']['cn'][0], 'TEST-CHECKED-ATTRIBUTES')
-        self.assertEqual(response[0]['checked_attributes']['sn'][0], 'setubirtta-dekcehc-tset')
-        self.assertEqual(response[0]['checked_attributes']['loginGraceLimit'], 1010)
+        self.assertEqual(response[0]['attributes']['cn'][0], 'TEST-CHECKED-ATTRIBUTES')
+        self.assertEqual(response[0]['attributes']['sn'][0], 'setubirtta-dekcehc-tset')
+        self.assertEqual(response[0]['attributes']['loginGraceLimit'], 1010)

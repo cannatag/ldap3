@@ -184,9 +184,9 @@ def validate_attribute_value(schema, name, value):
 def format_unicode(raw_value):
     try:
         if str != bytes:  # python3
-            return str(raw_value, 'utf-8')
+            return str(raw_value, 'utf-8', errors='strict')
         else:
-            return unicode(raw_value, 'utf-8')
+            return unicode(raw_value, 'utf-8', errors='strict')
     except TypeError:
         pass
 
@@ -390,7 +390,7 @@ def format_attribute_values(schema, name, values, custom_formatter):
         formatter = standard_formatter[attr_type.syntax]
 
     if not formatter:
-        formatter = bytes  # default formatter
+        formatter = format_unicode  # default formatter
 
     formatted_values = [formatter(raw_value) for raw_value in values]
     return formatted_values[0] if (attr_type and attr_type.single_value) else formatted_values
@@ -469,5 +469,4 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.22': format_integer,  # Counter (Novell)
     '2.16.840.1.113719.1.1.5.1.23': format_unicode,  # Tagged Name (Novell)
     '2.16.840.1.113719.1.1.5.1.25': format_unicode,  # Typed Name (Novell)
-
 }

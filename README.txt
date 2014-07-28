@@ -53,6 +53,12 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.5.1 2014.07.28
+    - getaddrinfo called only once
+    - real_server machinery removed - messageId is now global and monotonic for the whole library
+    - attributes are returned formatted if schema is read and check_names = True
+
+
 * 0.9.5 2014.07.22
     - added support for IPv6 (thanks Robert)
     - auto_bind can be used even for establishing tls, possible values (defined in ldap3) are: AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND

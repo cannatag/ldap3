@@ -298,7 +298,7 @@ class BaseStrategy(object):
         if message_type == 'bindResponse':
             result = bind_response_to_dict(component)
         elif message_type == 'searchResEntry':
-            result = search_result_entry_response_to_dict(component, self.connection.server.schema, self.connection.server.custom_formatter)
+            result = search_result_entry_response_to_dict(component, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
         elif message_type == 'searchResDone':
             result = search_result_done_response_to_dict(component)
         elif message_type == 'searchResRef':

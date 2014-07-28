@@ -34,7 +34,7 @@ from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_l
 
 
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
-#     baseObject      LDAPDN,
+# baseObject      LDAPDN,
 #     scope           ENUMERATED {
 #         baseObject              (0),
 #         singleLevel             (1),
@@ -456,11 +456,16 @@ def search_request_to_dict(request):
             'attributes': attributes_to_list(request['attributes'])}
 
 
-def search_result_entry_response_to_dict(response, schema, custom_formatter):
-    return {'dn': str(response['object']),
-            'attributes': attributes_to_dict(response['attributes']),
-            'raw_attributes': raw_attributes_to_dict(response['attributes']),
-            'checked_attributes': checked_attributes_to_dict(response['attributes'], schema, custom_formatter)}
+def search_result_entry_response_to_dict(response, schema, custom_formatter, check_names):
+    entry = dict()
+    entry['dn'] = str(response['object'])
+    entry['raw_attributes'] = raw_attributes_to_dict(response['attributes'])
+    if check_names and schema:
+        entry['attributes'] = checked_attributes_to_dict(response['attributes'], schema, custom_formatter)
+    else:
+        entry['attributes'] = attributes_to_dict(response['attributes'])
+
+    return entry
 
 
 def search_result_done_response_to_dict(response):

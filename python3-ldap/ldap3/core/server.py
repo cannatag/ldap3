@@ -169,7 +169,7 @@ class Server(object):
         available = True
         try:
             if not self._address_info:
-                self._address_info = socket.getaddrinfo(self.host, self.port)
+                self._address_info = socket.getaddrinfo(self.host, self.port, 0, socket.SOCK_STREAM)
             temp_socket = socket.socket(*self._address_info[0][:3])
             try:
                 temp_socket.connect(self._address_info[0][4])

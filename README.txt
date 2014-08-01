@@ -56,7 +56,7 @@ CHANGELOG
 * 0.9.5.1 2014.07.28
     - getaddrinfo called only once
     - real_server machinery removed - messageId is now global and monotonic for the whole library
-    - attributes are returned formatted if schema is read and check_names = True
+    - attributes are returned formatted if schema is read and check_names = True, removed checked_attributes
 
 
 * 0.9.5 2014.07.22

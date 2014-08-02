@@ -254,9 +254,6 @@ class Server(object):
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
                 self._get_schema_info(connection)
 
-            connection.response = None
-            connection.result = None
-
     @property
     def info(self):
         return self._dsa_info

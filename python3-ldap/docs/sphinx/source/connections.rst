@@ -50,7 +50,7 @@ Connection parameters are:
 
 * lazy: when True connection will defer open and bind until another LDAP operation is requested
 
-* check_names: when True attribute names in assertion and in filter will be checked against the schema (Server must have schema infos loaded with the get_info parameter)
+* check_names: when True attribute names in assertion and in filter will be checked against the schema (Server must have schema infos loaded with the get_info parameter) and search result will be formatted as specified in schema
 
 * raise_exceptions: when True LDAP operations will raise exceptions (subclasses of LDAPOperationResult) when the result is not one of the following: RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL.
 
@@ -285,7 +285,9 @@ You can check the result value to know if the operation has been sucessful. The 
 
 Checked Attributes
 ==================
-The checked attributes feature checks the LDAP syntax of the atttributes defined in schema and returns a properly formatted entry result while performing searches. This means that if you have an attributes specified as GUID in the server schema you will get the properly formatted GUID value (for example '012381d3-3b1c-904f-b29a-012381d33b1c') in the connection.response[0]['checked_attributes'] key dictionary instead of a sequence of bytes. Or if you request an attribute defined as an Interger in the schema you will get the value already converted to int.
+The checked attributes feature checks the LDAP syntax of the attributes defined in schema and returns a properly formatted entry result while performing searches.
+This means that if, for example, you have an attributes specified as GUID in the server schema you will get the properly formatted GUID value ('012381d3-3b1c-904f-b29a-012381d33b1c') in the connection.response[0]['attributes'] key dictionary instead of a sequence of bytes.
+Or if you request an attribute defined as an Interger in the schema you will get the value already converted to int.
 Furthermore for attributes defined as single valued in schema you will get the value instead of a list of values (that would always be one sized). To activate this feature you must set the get info to GET_SCHEMA_INFO or GET_ALL_INFO value when defining the server object and the 'check_names' attributes to True in the Connection object (this is True by default starting from 0.9.4).
 
 There are a few of standard formatters defined in the library, most of them are defined in the relevants RFCs:

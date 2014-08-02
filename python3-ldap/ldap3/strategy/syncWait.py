@@ -27,6 +27,7 @@ from pyasn1.codec.ber import decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError
+from ldap3.core.exceptions import LDAPExtensionError
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
@@ -155,7 +156,9 @@ class SyncWaitStrategy(BaseStrategy):
                                 self.connection.last_error = 'unknown unsolicited notification from server'
                                 raise LDAPSocketReceiveError(self.connection.last_error)
                         elif int(ldap_resp['messageID']) != message_id and self.decode_response(ldap_resp)['type'] == 'extendedResp':
-                            pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
+                            self.connection.last_error = 'multiple extended responses to a single extended request'
+                            raise LDAPExtensionError(self.connection.last_error)
+                            #pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
                         else:
                             self.connection.last_error = 'invalid messageId received'
                             raise LDAPSocketReceiveError(self.connection.last_error)

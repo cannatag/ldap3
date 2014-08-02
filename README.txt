@@ -53,11 +53,12 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.5.1 2014.07.28
+* 0.9.5.1 2014.08.02
     - getaddrinfo called only once
     - real_server machinery removed - messageId is now global and monotonic for the whole library
     - attributes are returned formatted if schema is read and check_names = True, removed checked_attributes
-
+    - bind result is populated again when successful (was removed in 0.9.2.1)
+    - exception is now raised if you receive multiple extended response to a single extended request. This is not allowed by RFC 4511
 
 * 0.9.5 2014.07.22
     - added support for IPv6 (thanks Robert)

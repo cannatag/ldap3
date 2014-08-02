@@ -613,7 +613,11 @@ class Connection(object):
 
     def refresh_dsa_info(self):
         if not self.closed:
+            previous_response = self.response
+            previous_result = self.result
             self.server.get_info_from_server(self)
+            self.response = previous_response
+            self.result = previous_result
 
     def response_to_ldif(self,
                          search_result=None,

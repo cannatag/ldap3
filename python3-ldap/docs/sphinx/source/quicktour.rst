@@ -45,7 +45,6 @@ You can create a connection with::
     for r in response:
         print(r['dn'], r['attributes']) # return unicode attributes
         print(r['dn'], r['raw_attributes']) return raw (bytes) attributes
-        print(r['dn'], r['checked_attributes']) # return checked attributes
     print(result)
     c.unbind()
 
@@ -106,12 +105,12 @@ To search for a binary value you must use the RFC4515 escape ASCII sequence for 
 
 search_filter will contain *'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'*
 Raw values for the attributes retrieved are stored in the *raw_attributes* dictonary of the search result entries in c.response.
-If the schema is read (with get_info=GET_SCHEMA_INFO (or GET_ALL_INFO in the Server object) and check_names is set to True in the Connection object the *checked_attributes* is populated with the formatted values as specified by the RFCs and the schema syntaxes.
-Custom formatters can be used to specify how an attribute value must be returned in the 'checked_attributes' attribute of the search entry object.
-A formatter must be a callable that receives a bytes value and return an object. The object will be returned in the 'checked_attributes'.
+If the schema is read (with get_info=GET_SCHEMA_INFO (or GET_ALL_INFO in the Server object) and check_names is set to True in the Connection object the *attributes* is populated with the formatted values as specified by the RFCs and the schema syntaxes.
+Custom formatters can be used to specify how an attribute value must be returned in the 'attributes' attribute of the search entry object.
+A formatter must be a callable that receives a bytes value and return an object. The object will be returned in the 'attributes'.
 If the attribute is defined in the schema as 'multi_value' the attribute value is returned as a list (even if only a single value is present) else it's returned as a single value.
 
-Formatted (following the schema and RFC indications) attributes are stored in the *checked_attributes* dictionary of the search result entries in c.response. This field is populated only if the schema is read in the server object and the check_names parameter is set to True
+Formatted (following the schema and RFC indications) attributes are stored in the *attributes* dictionary of the search result entries in c.response. This is performed only if the schema is read in the server object and the check_names parameter is set to True else the unicode value is returned.
 
 Simple Paged search
 -------------------
@@ -135,7 +134,7 @@ Example::
              paged_size = 5)
     total_entries += len(c.response)
     for entry in c.response:
-        print(entry['dn'], entry['checked_attributes])
+        print(entry['dn'], entry['attributes])
     cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
         c.search(search_base = 'o=test',
@@ -147,7 +146,7 @@ Example::
         total_entries += len(c.response)
         cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
         for entry in c.response:
-            print(entry['dn'], entry['checked_attributes])
+            print(entry['dn'], entry['attributes])
     print('Total entries retrieved:', total_entries)
 
 Or you can use the much simpler extended operations package that wraps all this machinery and hides implementation details, you can choose to get back a generator or the whole list of entries found.
@@ -164,7 +163,7 @@ Working with a generator is better when you deal with very long list of entries 
                                                      paged_size = 5)
     for entry in entry_generator:
         total_entries += 1
-        print(entry['dn'], entry['checked_attributes])
+        print(entry['dn'], entry['attributes])
     print('Total entries retrieved:', total_entries)
 
 Remember that a generator can be consumed only one time, so you must elaborate the results in a sequential way.
@@ -179,6 +178,6 @@ Working with a list keeps all the found entries in a list and you can elaborate 
                                                 attributes = ['cn', 'givenName'],
                                                 paged_size = 5)
     for entry in entry_list:
-        print entry['checked_attributes']
+        print entry['attributes']
     total_entries = len(entry_list)
     print('Total entries retrieved:', total_entries)

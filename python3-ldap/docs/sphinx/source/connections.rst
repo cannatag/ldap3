@@ -290,6 +290,8 @@ This means that if, for example, you have an attributes specified as GUID in the
 Or if you request an attribute defined as an Interger in the schema you will get the value already converted to int.
 Furthermore for attributes defined as single valued in schema you will get the value instead of a list of values (that would always be one sized). To activate this feature you must set the get info to GET_SCHEMA_INFO or GET_ALL_INFO value when defining the server object and the 'check_names' attributes to True in the Connection object (this is True by default starting from 0.9.4).
 
+To activate checked attributes you must read the schema with the get_info parameter in the Server definition and set the check_names parameter to True (default) in the Connection definition.
+
 There are a few of standard formatters defined in the library, most of them are defined in the relevants RFCs:
 format_unicode  # returns an unicode object in Python 2 and a string in Python 3
 format_integer  # returns an integer

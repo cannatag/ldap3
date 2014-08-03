@@ -22,8 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED
 
-test_server = 'edir1'  # the ldap server where tests executed
-test_user = 'cn=admin,o=services'  # the user that performs the tests
+test_server = 'server'  # the ldap server where tests executed
+test_user = 'user'  # the user that performs the tests
 test_password = 'password'  # user's password
 
 test_base = 'o=test'  # base context where test objects are created

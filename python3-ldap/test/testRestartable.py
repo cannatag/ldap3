@@ -50,7 +50,7 @@ class Test(unittest.TestCase):
 
     def test_restartable_invalid_server2(self):
         #hosts = ['sl08', 'sl09', 'sl10', 'idmprofiler', 'openldap', 'localhost', 'edir1', 'edir2', 'edir3']
-        hosts = ['sl10', 'edir1']  # faster
+        hosts = ['sl10', 'edir1', 'idmprofiler', test_server]  # faster
         search_results = []
         servers = [Server(host=host, port=389, use_ssl=False) for host in hosts]
         server_pool = ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)

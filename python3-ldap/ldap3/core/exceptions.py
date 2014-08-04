@@ -77,7 +77,7 @@ class LDAPOperationResult(LDAPException):
              self.type if self.type else None,
              self.response if self.response else None]
 
-        return ' - '.join(filter(None, s))
+        return ' - '.join([str(item) for item in s if s is not None])
 
     def __repr__(self):
         return self.__str__()

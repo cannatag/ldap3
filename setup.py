@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 from setuptools import setup
 
 setup(name='python3-ldap',
-      version='0.9.5.1',
+      version='0.9.5.2',
       packages=['ldap3',
                 'ldap3.core',
                 'ldap3.abstract',

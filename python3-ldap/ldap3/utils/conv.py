@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-
+from string import whitespace
 
 def escape_bytes(bytes_value):
     if str != bytes:  # Python 3
@@ -41,3 +41,54 @@ def prepare_for_stream(value):
         return value
     else:  # Python 2
         return value.decode()
+
+
+def _add_ava(ava, decompose, remove_space, space_around_equal):
+    if not ava:
+        return ''
+
+    space = ' ' if space_around_equal else ''
+    attr_name, _, value = ava.partition('=')
+    if decompose:
+        if remove_space:
+            component = (attr_name.strip(), value.strip())
+        else:
+            component = (attr_name, value)
+    else:
+        if remove_space:
+            component = attr_name.strip() + space + '=' + space + value.strip()
+        else:
+            component = attr_name + space + '=' + space + value
+
+    return component
+
+
+def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=False, separe_rdn=False):
+    """
+    Convert an iterator to a list of dn parts
+    if decompose=True return a list of tuple (one for each dn component) else return a list of strings
+    if remove_space=True removes unneeded spaces
+    if space_around_equal=True add spaces around equal in returned strigns
+    if separe_rdn=True consider mutiple rnd as different component of dn
+    """
+    dn = []
+    component = ''
+    escape_sequence = False
+    for pos, c in enumerate(iterator):
+        if c in '\\':  # escape sequence
+            escape_sequence = True
+        elif escape_sequence and c not in whitespace:
+            escape_sequence = False
+        elif c in '+' and separe_rdn:
+            dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
+            component = ''
+            continue
+        elif c in ',':
+            dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
+            component = ''
+            continue
+
+        component += c
+
+    dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
+    return dn

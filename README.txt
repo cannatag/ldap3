@@ -53,6 +53,10 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.5.2 2014.08.04
+    - fixed LDAPOperationResult.__str__ (thanks David)
+    - added to_dn() in utils.conv to convert a dn string in a list of components (strings or tuples)
+
 * 0.9.5.1 2014.08.02
     - getaddrinfo called only once
     - real_server machinery removed - messageId is now global and monotonic for the whole library

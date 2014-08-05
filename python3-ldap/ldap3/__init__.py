@@ -19,6 +19,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+__version__ = '0.9.5.2'
 
 # authentication
 AUTH_ANONYMOUS = 0

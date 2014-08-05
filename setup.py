@@ -22,10 +22,12 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
+from ldap3 import __version__
+
 from setuptools import setup
 
 setup(name='python3-ldap',
-      version='0.9.5.2',
+      version= __version__,
       packages=['ldap3',
                 'ldap3.core',
                 'ldap3.abstract',

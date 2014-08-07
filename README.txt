@@ -53,9 +53,12 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.5.2 2014.08.04
+* 0.9.5.2 2014.08.05
     - fixed LDAPOperationResult.__str__ (thanks David)
     - added to_dn() in utils.conv to convert a dn string in a list of components (strings or tuples)
+    - added __version__ in ldap3
+    - don't raise exception if the schema cannot be read in unauthenticated state
+    - server.address_info is now a property
 
 * 0.9.5.1 2014.08.02
     - getaddrinfo called only once

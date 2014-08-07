@@ -26,8 +26,7 @@ import socket
 from pyasn1.codec.ber import decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
-from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError
-from ldap3.core.exceptions import LDAPExtensionError
+from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
@@ -50,7 +49,11 @@ class SyncWaitStrategy(BaseStrategy):
 
     def open(self, reset_usage=True):
         BaseStrategy.open(self, reset_usage)
-        self.connection.refresh_dsa_info()
+        try:
+            self.connection.refresh_dsa_info()
+        except LDAPOperationResult:  # catch errors from server if raise_exception = True
+            self.connection.server._dsa_info = None
+            self.connection.server._schema_info = None
 
     def _start_listen(self):
         if not self.connection.listening and not self.connection.closed:

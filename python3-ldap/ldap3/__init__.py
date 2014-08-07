@@ -231,8 +231,7 @@ FORMAT_BOOLEAN = ['1.3.6.1.4.1.1466.115.121.1.7'  # Boolean
                   ]
 FORMAT_TIME = ['1.3.6.1.4.1.1466.115.121.1.24',  # Generalized time
                '1.3.6.1.4.1.1466.115.121.1.53'  # Utc time  (deprecated)
-
-]
+               ]
 
 # centralized imports
 from .core.server import Server

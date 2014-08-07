@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from string import whitespace
 
+
 def escape_bytes(bytes_value):
     if str != bytes:  # Python 3
         if isinstance(bytes_value, str):

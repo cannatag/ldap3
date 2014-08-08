@@ -57,6 +57,7 @@ CHANGELOG
 =========
 * 0.9.5.3 2014.08.07
     - change parameter name from separe_rdn to separate_rnd in ldap3.utils.conv.to_dn()
+    - sync dev from Bitbucket to GitHub
 
 * 0.9.5.2 2014.08.05
     - fixed LDAPOperationResult.__str__ (thanks David)

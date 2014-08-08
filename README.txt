@@ -1,3 +1,5 @@
+A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Python 2 compatible
+
 License
 -------
 
@@ -53,6 +55,9 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.5.3 2014.08.07
+    - change parameter name from separe_rdn to separate_rnd in ldap3.utils.conv.to_dn()
+
 * 0.9.5.2 2014.08.05
     - fixed LDAPOperationResult.__str__ (thanks David)
     - added to_dn() in utils.conv to convert a dn string in a list of components (strings or tuples)

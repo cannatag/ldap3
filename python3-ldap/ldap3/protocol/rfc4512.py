@@ -179,7 +179,8 @@ class SchemaInfo(object):
 
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep
-            r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else v + linesep
+            r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else v
+            r += linesep
         return r
 
 

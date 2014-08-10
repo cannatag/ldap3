@@ -234,7 +234,22 @@ class Server(object):
 
         result = None
         if schema_entry:
-            result = connection.search(schema_entry, search_filter='(objectClass=subschema)', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
+            result = connection.search(schema_entry,
+                                       search_filter='(objectClass=subschema)',
+                                       search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                       attributes=['objectClasses',  # requests specific subschema attributes
+                                                   'attributeTypes',
+                                                   'ldapSyntaxes',
+                                                   'matchingRules',
+                                                   'matchingRuleUse',
+                                                   'dITContentRules',
+                                                   'dITStructureRules',
+                                                   'nameForms',
+                                                   'createTimestamp',
+                                                   'modifyTimestamp',
+                                                   '*'],  # requests all remaining attributes (other)
+                                       get_operational_attributes=True
+                                       )
 
         with self.lock:
             self._schema_info = None

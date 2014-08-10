@@ -28,6 +28,7 @@ from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     STRATEGY_REUSABLE_THREADED, DEFAULT_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS
 from ..extend import ExtendedOperationsRoot
+from ldap3 import STRATEGY_REUSABLE_PARALLEL
 from .pooling import ServerPool
 from .server import Server
 from ..strategy.reusableThreaded import ReusableThreadedStrategy
@@ -47,6 +48,7 @@ from ..strategy.asyncThreaded import AsyncThreadedStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.syncWait import SyncWaitStrategy
 from ..strategy.syncWaitRestartable import SyncWaitRestartableStrategy
+from ..strategy.reusableParallel import ReusableParallelStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
@@ -167,6 +169,8 @@ class Connection(object):
             self.strategy = SyncWaitRestartableStrategy(self)
         elif self.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.strategy = ReusableThreadedStrategy(self)
+        elif self.strategy_type == STRATEGY_REUSABLE_PARALLEL:
+            self.strategy = ReusableParallelStrategy(self)
         else:
             self.last_error = 'unknown strategy'
             raise LDAPUnknownStrategyError(self.last_error)

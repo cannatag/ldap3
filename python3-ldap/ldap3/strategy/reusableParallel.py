@@ -22,25 +22,28 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
-from os import linesep
+from os import linesep, cpu_count
 from time import sleep
 from multiprocessing import Process, Lock, JoinableQueue
-from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError
 
 
 # noinspection PyProtectedMember
+from ldap3 import REUSABLE_PARALLEL_NUMBER_OF_THREADS, STRATEGY_REUSABLE_THREADED
+
+
 class ReusableParallelStrategy(BaseStrategy):
     """
-    A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
+    A pool of reusable ReusableThreadedStrategy connections with lazy behaviour and limited lifetime.
     The connection using this strategy presents itself as a normal connection, but internally the strategy has a pool of
-    connections that can be used as needed. Each connection lives in its own process and has a busy/available status.
+    connections that can be used as needed. Each connection has multiple threads and lives in its own process and has a busy/available status.
     The strategy performs the requested operation on the first available connection.
     The pool of connections is instantiated at strategy initialization.
-    Strategy has two customizable properties, the total number of connections in the pool and the lifetime of each connection.
-    When lifetime is expired the connection is closed and will be opened again when needed.
+    Strategy has 3 customizable properties, the total number of connections in the pool, the number of threads in each connection and the lifetime of each connection.
+    When lifetime is expired no more operations are sent to the connection that when idle will be closed and open again when needed.
     """
     pools = dict()
 
@@ -66,8 +69,9 @@ class ReusableParallelStrategy(BaseStrategy):
                 self.name = connection.pool_name
                 self.original_connection = connection
                 self.connections = []
-                self.pool_size = connection.pool_size or REUSABLE_POOL_SIZE
-                self.lifetime = connection.pool_lifetime or REUSABLE_CONNECTION_LIFETIME
+                self.pool_size = connection.pool_size or (cpu_count() // 2 if cpu_count() and cpu_count() > 1 else 2)  # at least 2 parallel process, defaults to half of the cpu available
+                self.lifetime = connection.pool_lifetime or REUSABLE_THREADED_LIFETIME
+                self.threads = connection.pool_number_of_threads or REUSABLE_PARALLEL_NUMBER_OF_THREADS
                 self.request_queue = JoinableQueue()
                 self.open_pool = False
                 self.bind_pool = False
@@ -184,7 +188,7 @@ class ReusableParallelStrategy(BaseStrategy):
 
     class ReusableParallelConnection(object):
         """
-        Container for the Restartable connection. it includes a process and a lock to execute the connection in the pool
+        Container for the ReusableThreadedStrategy connection. it includes a process and a lock to execute the connection in the pool
         """
         def __init__(self, connection, request_queue):
 
@@ -213,7 +217,7 @@ class ReusableParallelStrategy(BaseStrategy):
                                          password=self.original_connection.password,
                                          version=self.original_connection.version,
                                          authentication=self.original_connection.authentication,
-                                         client_strategy=STRATEGY_SYNC_RESTARTABLE,
+                                         client_strategy=STRATEGY_REUSABLE_THREADED,
                                          raise_exceptions=self.original_connection.raise_exceptions,
                                          check_names=self.original_connection.check_names,
                                          auto_referrals=self.original_connection.auto_referrals,

@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, CompareRequest, AttributeValueAssertion, AssertionValue, ValsAtLeast1
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_dn_builder, test_base, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, dn_for_test, test_base, test_lazy_connection
 
 
 class Test(unittest.TestCase):
@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
+        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-compare'))
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
         ava['attributeDesc'] = AttributeDescription('givenName')
         ava['assertionValue'] = AssertionValue('tust')
         compare_req = CompareRequest()
-        compare_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-compare'))
+        compare_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-compare'))
         compare_req['ava'] = ava
 
         result = self.connection.post_send_single_response(self.connection.send('compareRequest', compare_req))

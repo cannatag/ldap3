@@ -27,7 +27,7 @@ from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
 
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, AssertionValue, Substrings, Initial, Any, Final, SubstringFilter, And, Or, Not, Substring, SearchRequest, ValsAtLeast1, Scope, \
     Integer0ToMax, TypesOnly, Filter, AttributeSelection, Selector, EqualityMatch
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, dn_for_test, test_lazy_connection
 
 
 class Test(unittest.TestCase):
@@ -66,7 +66,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-1'))
+        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-search-1'))
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
@@ -125,7 +125,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-2'))
+        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-search-2'))
         add_req['attributes'] = attributes
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
         if not isinstance(result, bool):
@@ -193,7 +193,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-3'))
+        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-search-3'))
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
@@ -266,7 +266,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req1 = AddRequest()
-        add_req1['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-4'))
+        add_req1['entry'] = LDAPDN(dn_for_test(test_base, 'test-search-4'))
         add_req1['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req1))
@@ -297,7 +297,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req2 = AddRequest()
-        add_req2['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-5'))
+        add_req2['entry'] = LDAPDN(dn_for_test(test_base, 'test-search-5'))
         add_req2['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req2))
@@ -370,7 +370,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(test_dn_builder(test_base, 'test-search-6'))
+        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-search-6'))
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))

@@ -25,7 +25,7 @@ from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
 from time import sleep
-from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError
@@ -72,8 +72,8 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.name = connection.pool_name
                 self.original_connection = connection
                 self.connections = []
-                self.pool_size = connection.pool_size or REUSABLE_POOL_SIZE
-                self.lifetime = connection.pool_lifetime or REUSABLE_CONNECTION_LIFETIME
+                self.pool_size = connection.pool_size or REUSABLE_THREADED_POOL_SIZE
+                self.lifetime = connection.pool_lifetime or REUSABLE_THREADED_LIFETIME
                 self.request_queue = Queue()
                 self.open_pool = False
                 self.bind_pool = False

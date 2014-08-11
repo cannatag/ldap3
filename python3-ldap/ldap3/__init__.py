@@ -19,6 +19,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
+from os import cpu_count
 
 __version__ = '0.9.5.3'
 
@@ -80,11 +81,15 @@ SOCKET_SIZE = 4096  # socket byte size
 RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
 RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 
-# reusable strategy
+# reusable strategies (Threaded and Parallel)
 TERMINATE_REUSABLE = -1
-REUSABLE_POOL_SIZE = 10
-REUSABLE_CONNECTION_LIFETIME = 3600
-DEFAULT_POOL_NAME = 'connection_pool'
+REUSABLE_THREADED_POOL_SIZE = 10
+REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
+DEFAULT_THREADED_POOL_NAME = 'connection_threaded_pool'
+REUSABLE_PARALLEL_LIFETIME = 28800  # 8 hours
+REUSABLE_PARALLEL_NUMBER_OF_THREADS = 5
+DEFAULT_PARALLEL_POOL_NAME = 'connection_parallel_pool'
+
 
 # LDAP protocol
 LDAP_MAX_INT = 2147483647

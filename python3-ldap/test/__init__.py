@@ -20,7 +20,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED
+from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED, STRATEGY_REUSABLE_PARALLEL
 
 test_server = 'server'  # the ldap server where tests executed
 test_user = 'user'  # the user that performs the tests
@@ -39,8 +39,9 @@ test_lazy_connection = False  # connection lazy
 test_strategy = STRATEGY_SYNC  # strategy for executing tests
 #test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
 #test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
-#test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable# strategy
+#test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
+#test_strategy = STRATEGY_REUSABLE_PARALLEL  # uncomment this line to test the sync_reusable_parallel strategy
 
 
-def test_dn_builder(base, name):
+def dn_for_test(base, name):
     return test_name_attr + '=' + name + ',' + base

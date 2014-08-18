@@ -24,6 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
 from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS
+from .novell.partition_entry_count import PartitionEntryCount
+from .novell.replicaInfo import ReplicaInfo
+from .novell.listReplicas import ListReplicas
 from .novell.getBindDn import GetBindDn
 from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
 from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
@@ -83,6 +86,15 @@ class NovellExtendedOperations(ExtendedOperationContainer):
 
     def set_universal_password(self, user, new_password=None):
         return NmasSetUniversalPassword(self._connection, user, new_password).send()
+
+    def list_replicas(self, server_dn):
+        return ListReplicas(self._connection, server_dn).send()
+
+    def partition_entry_count(self, partition_dn):
+        return PartitionEntryCount(self._connection, partition_dn).send()
+
+    def replica_info(self, server_dn, partition_dn):
+        return ReplicaInfo(self._connection, server_dn, partition_dn).send()
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):

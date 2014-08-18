@@ -19,9 +19,9 @@ You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
-from os import cpu_count
 
 __version__ = '0.9.5.3'
+__author__ = 'Giovanni Cannata'
 
 # authentication
 AUTH_ANONYMOUS = 0
@@ -53,6 +53,9 @@ SEARCH_DEREFERENCE_ALWAYS = 3
 ALL_ATTRIBUTES = '*'
 NO_ATTRIBUTES = '1.1'  # as per RFC 4511
 ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
+
+#checks
+ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, 'ldapSyntaxes', 'matchingRules', 'matchingRuleUse', 'dITContentRules', 'dITStructureRules', 'nameForms']
 
 # modify type
 MODIFY_ADD = 0
@@ -193,6 +196,7 @@ POOLING_STRATEGY_FIRST = 0
 POOLING_STRATEGY_ROUND_ROBIN = 1
 POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
+
 
 # ldap format conversion for syntaxes and attribute types
 FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.3',  # Attribute type description

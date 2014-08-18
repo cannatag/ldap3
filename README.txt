@@ -59,6 +59,10 @@ CHANGELOG
     - change parameter name from separe_rdn to separate_rnd in ldap3.utils.conv.to_dn()
     - sync dev from Bitbucket to GitHub
     - schema attributes are explicitly read (useful for Active directory)
+    - new extended operation: list_replicas (Novell)
+    - new extended operation: get_replica_info (Novell)
+    - new extended operation: partition_entry_count (Novell)
+
 
 * 0.9.5.2 2014.08.05
     - fixed LDAPOperationResult.__str__ (thanks David)

@@ -42,7 +42,10 @@ class Test(unittest.TestCase):
         controls = list()
         controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'sn'))
-        controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(u'\u00e0\u00e0', encoding='UTF-8')))  # for python2 compatability
+        if str != bytes:  # python3
+            controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray('\u00e0\u00e0', encoding='UTF-8')))
+        else:
+            controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(unicode('\xe0\xe0', encoding='latin1'), encoding='UTF-8')))  # for python2 compatability
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'trailingspace '))
         self.connection.add(dn_for_test(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls=controls)
         response = self.connection.response

@@ -319,7 +319,7 @@ def format_time(raw_value):
         if str != bytes:  # python3
             timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), 'UTC' + str(sep + offset, encoding='utf-8'))
         else:
-            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), u'UTC' + unicode(sep + offset, encoding='utf-8'))
+            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), unicode('UTC' + sep + offset, encoding='utf-8'))
 
     try:
         return datetime(year=int(raw_value[pos_year: pos_year + 4]),

@@ -22,9 +22,10 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
-from os import linesep, cpu_count
+from os import linesep
+from queue import Empty
 from time import sleep
-from multiprocessing import Process, Lock, JoinableQueue
+from multiprocessing import Process, Lock, JoinableQueue, Queue, Pool, cpu_count
 from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
@@ -68,11 +69,12 @@ class ReusableParallelStrategy(BaseStrategy):
             if not hasattr(self, 'connections'):
                 self.name = connection.pool_name
                 self.original_connection = connection
-                self.connections = []
                 self.pool_size = connection.pool_size or (cpu_count() // 2 if cpu_count() and cpu_count() > 1 else 2)  # at least 2 parallel process, defaults to half of the cpu available
+                self.connections = []
                 self.lifetime = connection.pool_lifetime or REUSABLE_THREADED_LIFETIME
-                self.threads = connection.pool_number_of_threads or REUSABLE_PARALLEL_NUMBER_OF_THREADS
+                self.threads = REUSABLE_PARALLEL_NUMBER_OF_THREADS
                 self.request_queue = JoinableQueue()
+                self.response_queue = Queue()
                 self.open_pool = False
                 self.bind_pool = False
                 self.tls_pool = False
@@ -83,6 +85,7 @@ class ReusableParallelStrategy(BaseStrategy):
                 self.lock = Lock()
                 ReusableParallelStrategy.pools[self.name] = self
                 self.started = False
+
 
         def __str__(self):
             s = str(self.name) + ' - ' + ('started' if self.started else 'terminated') + linesep
@@ -107,7 +110,7 @@ class ReusableParallelStrategy(BaseStrategy):
             if not self.started:
                 self.create_pool()
                 for connection in self.connections:
-                    connection.process.start()
+                    connection.start()
                 self.started = True
                 return True
             return False
@@ -120,24 +123,25 @@ class ReusableParallelStrategy(BaseStrategy):
             self.request_queue.join()  # wait for all queue pending operations
 
             for _ in range(len([connection for connection in self.connections if connection.process.is_alive()])):  # put a TERMINATE signal on the queue for each active prcoess
-                self.request_queue.put((TERMINATE_REUSABLE, None, None, None))
+                self.request_queue.put((TERMINATE_REUSABLE, None, None, None, None, None, None))
 
             self.request_queue.join()  # wait for all queue terminate operations
 
     class PooledConnectionProcess(Process):
-        def __init__(self, reusable_connection, original_connection):
+        def __init__(self, reusable_connection, original_connection, request_queue, response_queue):
             Process.__init__(self)
             self.daemon = True
             self.active_connection = reusable_connection
             self.original_connection = original_connection
+            self.request_queue = request_queue
+            self.response_queue = response_queue
 
         # noinspection PyProtectedMember
         def run(self):
             self.active_connection.running = True
             terminate = False
-            pool = self.original_connection.strategy.pool
             while not terminate:
-                counter, message_type, request, controls = pool.request_queue.get()
+                counter, message_type, request, controls, pool_open, pool_bind, pool_tls = self.request_queue.get()
                 self.active_connection.busy = True
                 if counter == TERMINATE_REUSABLE:
                     terminate = True
@@ -154,11 +158,11 @@ class ReusableParallelStrategy(BaseStrategy):
                             pass
                         self.active_connection.new_connection()
                     if message_type not in ['bindRequest', 'unbindRequest']:
-                        if pool.open_pool and self.active_connection.connection.closed:
+                        if pool_open and self.active_connection.connection.closed:
                             self.active_connection.connection.open()
-                        if pool.bind_pool and not self.active_connection.connection.bound:
+                        if pool_bind and not self.active_connection.connection.bound:
                             self.active_connection.connection.bind()
-                        if pool.tls_pool and not self.active_connection.connection.tls_started:
+                        if pool_tls and not self.active_connection.connection.tls_started:
                             self.active_connection.connection.start_tls()
                         # noinspection PyProtectedMember
                         self.active_connection.connection._fire_deferred()  # force deferred operations
@@ -175,31 +179,29 @@ class ReusableParallelStrategy(BaseStrategy):
                         except LDAPOperationResult as e:  # raise_exceptions has raise an exception. It must be redirected to the original connection process
                             exc = e
 
-                        with pool.lock:
-                            if exc:
-                                pool._incoming[counter] = (exc, None)
-                            else:
-                                pool._incoming[counter] = (response, result)
-                self.original_connection.busy = False
-                pool.request_queue.task_done()
-            if self.original_connection.usage:
-                pool.terminated_usage += self.active_connection.connection.usage
+                        self.response_queue.put((counter, exc, None) if exc else (counter, response, result))
+
+                # self.original_connection.busy = False
+                self.request_queue.task_done()
+            #if self.original_connection.usage:
+            #    pool.terminated_usage += self.active_connection.connection.usage
             self.active_connection.running = False
 
     class ReusableParallelConnection(object):
         """
         Container for the ReusableThreadedStrategy connection. it includes a process and a lock to execute the connection in the pool
         """
-        def __init__(self, connection, request_queue):
+        def __init__(self, connection, request_queue, response_queue):
 
             self.original_connection = connection
             self.request_queue = request_queue
+            self.response_queue = response_queue
             self.running = False
             self.busy = False
             self.connection = None
             self.creation_time = None
             self.new_connection()
-            self.process = ReusableParallelStrategy.PooledConnectionProcess(self, connection)
+            self.process = ReusableParallelStrategy.PooledConnectionProcess(self, connection, self.request_queue, self.response_queue)
 
         def __str__(self):
             s = str(self.connection) + linesep
@@ -230,7 +232,11 @@ class ReusableParallelStrategy(BaseStrategy):
 
             if self.original_connection.server_pool:
                 self.connection.server_pool = self.original_connection.server_pool
+                for server in self.connection.server_pool:
+                    server.lock = Lock()  # substitutes threading lock with multiprocessing lock
                 self.connection.server_pool.initialize(self.connection)
+            else:
+                self.server.lock = Lock() # substitute threading lock with multiprocessing lock
 
             self.creation_time = datetime.now()
 
@@ -287,7 +293,7 @@ class ReusableParallelStrategy(BaseStrategy):
                     if self.pool.counter > LDAP_MAX_INT:
                         self.pool.counter = 1
                     counter = self.pool.counter
-                self.pool.request_queue.put((counter, message_type, request, controls))
+                self.pool.request_queue.put((counter, message_type, request, controls, self.pool.open_pool, self.pool.bind_pool, self.pool.tls_pool))
             return counter
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
@@ -301,14 +307,23 @@ class ReusableParallelStrategy(BaseStrategy):
         response = None
         result = None
         while timeout >= 0:  # waiting for completed message to appear in _incoming
-            try:
+            try:  #checks if response already received
                 with self.connection.strategy.pool.lock:
                     response, result = self.connection.strategy.pool._incoming.pop(counter)
+                    break
             except KeyError:
-                sleep(RESPONSE_SLEEPTIME)
+                pass
+
+            try:
+                response_counter, response, result = self.pool.response_queue.get(True, RESPONSE_SLEEPTIME)
+                if counter == response_counter:  # response returned
+                    break
+                else:
+                    with self.connection.strategy.pool.lock:
+                        self.connection.strategy._incoming[counter] == (response, result)  # stores response in _incoming
+                    continue
+            except Empty:
                 timeout -= RESPONSE_SLEEPTIME
-                continue
-            break
 
         if isinstance(response, LDAPOperationResult):
             raise response  # an exception has been raised with raise_connections

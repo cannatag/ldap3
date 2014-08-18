@@ -74,7 +74,7 @@ class ExtendedOperation(object):
                         raise LDAPExtensionError('error decoding extended response value')
                     self.decoded_response = decoded
                 else:
-                    self.decoded_response = self.result['responseValue'].decode('utf-8')
+                    self.decoded_response = self.result['responseValue']
         else:
             raise LDAPExtensionError('invalid response name received')
 

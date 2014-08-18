@@ -26,6 +26,7 @@ from ..core.exceptions import LDAPExtensionError
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
 from ..protocol.convert import decode_referrals
 from pyasn1.codec.ber import encoder
+from pyasn1.type.base import Asn1Item
 
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
@@ -37,12 +38,14 @@ def extended_operation(request_name,
                        request_value=None):
     request = ExtendedRequest()
     request['requestName'] = RequestName(request_name)
-    if request_value and not isinstance(request_value, (str, bytes, bytearray)):
+    if request_value and isinstance(request_value, Asn1Item):
         request['requestValue'] = RequestValue(encoder.encode(request_value))
-    elif request_value and isinstance(request_value, (str, bytes, bytearray)):
-        request['requestValue'] = RequestValue(encoder.encode(OctetString(request_value)))
-    elif request_value is not None:
-        raise LDAPExtensionError('unable to encode value for extended operation')
+    elif isinstance(request_value, (bytes, bytearray)):
+        request['requestValue'] = request_value
+    elif request_value:  # tries to encode as a octet string
+        request['requestValue'] = RequestValue(encoder.encode(OctetString(str(request_value))))
+    #elif request_value is not None:
+    #    raise LDAPExtensionError('unable to encode value for extended operation')
     return request
 
 

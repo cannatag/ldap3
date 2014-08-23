@@ -56,7 +56,8 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 CHANGELOG
 =========
 * 0.9.5.3 2014.08.24
-    - attributes name returned in searches are now case insensitive (default can be changed in ldap3.CASE_INSENSITIVE_ATTRIBUTES_NAME = True|False)
+    - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)
+    - attributes name returned in searches are now case insensitive (can be changed in ldap3.CASE_INSENSITIVE_ATTRIBUTE_NAMES = True|False)
     - change parameter name from separe_rdn to separate_rnd in ldap3.utils.conv.to_dn()
     - sync dev from Bitbucket to GitHub
     - schema attributes are explicitly read (useful for Active directory and 389 Directory Server)

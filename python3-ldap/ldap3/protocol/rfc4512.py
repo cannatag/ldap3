@@ -25,7 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 from os import linesep
 import re
 
-from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
+from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
+from ..utils.caseInsensitiveDictonary import CaseInsensitiveDict
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError
 
@@ -234,7 +235,7 @@ class BaseObjectInfo(object):
         if not definitions:
             return None
 
-        ret_dict = dict()
+        ret_dict = CaseInsensitiveDict() if CASE_INSENSITIVE_SCHEMA_NAMES else dict()
         for object_definition in definitions:
             if [object_definition[0] == ')' and object_definition[:-1] == ')']:
                 if cls is MatchingRuleInfo:
@@ -335,7 +336,7 @@ class BaseObjectInfo(object):
                         object_def.min_length = None
                 if hasattr(object_def, 'name') and object_def.name:
                     for name in object_def.name:
-                        ret_dict[name.lower()] = object_def
+                        ret_dict[name] = object_def
                 else:
                     ret_dict[object_def.oid] = object_def
             else:

@@ -55,13 +55,15 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.5.3 2014.08.07
+* 0.9.5.3 2014.08.24
+    - attributes name returned in searches are now case insensitive (default can be changed in ldap3.CASE_INSENSITIVE_ATTRIBUTES_NAME = True|False)
     - change parameter name from separe_rdn to separate_rnd in ldap3.utils.conv.to_dn()
     - sync dev from Bitbucket to GitHub
-    - schema attributes are explicitly read (useful for Active directory)
+    - schema attributes are explicitly read (useful for Active directory and 389 Directory Server)
     - new extended operation: list_replicas (Novell)
     - new extended operation: get_replica_info (Novell)
     - new extended operation: partition_entry_count (Novell)
+    - renamed convert_to_ldif() to _convert_to_ldif()
 
 
 * 0.9.5.2 2014.08.05

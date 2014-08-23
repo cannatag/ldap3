@@ -70,4 +70,4 @@ class Test(unittest.TestCase):
 
     def test_novell_partition_entry_count(self):
         result = self.connection.extend.novell.partition_entry_count('o=test')
-        self.assertGreater(result, 200)
+        self.assertTrue(result > 200)

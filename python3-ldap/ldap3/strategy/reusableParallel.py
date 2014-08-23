@@ -23,7 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from datetime import datetime
 from os import linesep
-from queue import Empty
+try:
+    from queue import Empty
+except ImportError:  # Python 2
+    # noinspection PyUnresolvedReferences
+    from Queue import Empty
 from time import sleep
 from multiprocessing import Process, Lock, JoinableQueue, Queue, Pool, cpu_count
 from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME

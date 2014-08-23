@@ -27,6 +27,8 @@ from os import linesep
 
 from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
+from ldap3 import CASE_INSENSITIVE_ATTRIBUTES_NAME
+from ldap3.utils.caseInsensitiveDictonary import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, \
     ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
@@ -365,7 +367,7 @@ def decode_vals(vals):
 
 
 def attributes_to_dict(attribute_list):
-    attributes = dict()
+    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTES_NAME else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_vals(attribute['vals'])
 
@@ -377,7 +379,7 @@ def decode_raw_vals(vals):
 
 
 def raw_attributes_to_dict(attribute_list):
-    attributes = dict()
+    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTES_NAME else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_raw_vals(attribute['vals'])
 
@@ -388,7 +390,7 @@ def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=Non
     if not schema:
         return None
 
-    checked_attributes = dict()
+    checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTES_NAME else dict()
     for attribute in attribute_list:
         checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']), custom_formatter)
     return checked_attributes

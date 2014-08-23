@@ -56,6 +56,7 @@ ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
 
 #checks
 ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, 'ldapSyntaxes', 'matchingRules', 'matchingRuleUse', 'dITContentRules', 'dITStructureRules', 'nameForms']
+CASE_INSENSITIVE_ATTRIBUTES_NAME = True
 
 # modify type
 MODIFY_ADD = 0

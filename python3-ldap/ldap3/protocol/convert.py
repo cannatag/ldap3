@@ -111,7 +111,7 @@ def substring_to_dict(substring):
 
 
 def prepare_changes_for_request(changes):
-    prepared = {}
+    prepared = dict()
     for change in changes:
         prepared[change['attribute']['type']] = (change['operation'], change['attribute']['value'])
     return prepared
@@ -187,7 +187,7 @@ def format_unicode(raw_value):
             return str(raw_value, 'utf-8', errors='strict')
         else:
             return unicode(raw_value, 'utf-8', errors='strict')
-    except TypeError:
+    except (TypeError, UnicodeDecodeError):
         pass
 
     return raw_value

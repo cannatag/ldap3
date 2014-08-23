@@ -30,15 +30,10 @@ except ImportError:  # Python 2
     from Queue import Empty
 from time import sleep
 from multiprocessing import Process, Lock, JoinableQueue, Queue, Pool, cpu_count
-from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME, REUSABLE_PARALLEL_NUMBER_OF_THREADS, STRATEGY_REUSABLE_THREADED
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError
-
-
-# noinspection PyProtectedMember
-from ldap3 import REUSABLE_PARALLEL_NUMBER_OF_THREADS, STRATEGY_REUSABLE_THREADED
-
 
 class ReusableParallelStrategy(BaseStrategy):
     """

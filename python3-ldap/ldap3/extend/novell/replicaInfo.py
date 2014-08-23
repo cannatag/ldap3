@@ -22,7 +22,7 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from pyasn1.type.univ import Integer
-from ldap3.core.exceptions import LDAPExtensionError
+from ...core.exceptions import LDAPExtensionError
 from ...protocol.novell import LDAPDN, ReplicaInfoResponseValue, ReplicaInfoRequestValue
 from ..operation import ExtendedOperation
 from pyasn1.codec.ber import decoder

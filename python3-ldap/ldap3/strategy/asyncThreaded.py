@@ -30,7 +30,7 @@ from .. import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-
+import socket
 
 # noinspection PyProtectedMember
 class AsyncThreadedStrategy(BaseStrategy):
@@ -67,8 +67,11 @@ class AsyncThreadedStrategy(BaseStrategy):
                 if get_more_data:
                     try:
                         data = self.connection.socket.recv(SOCKET_SIZE)
-                    except OSError:
+                    except (OSError, socket.error):
                         listen = False
+                    except Exception as e:
+                        print('EXC', e)
+                        print(type(e))
                     if len(data) > 0:
                         unprocessed += data
                         data = b''

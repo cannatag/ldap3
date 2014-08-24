@@ -65,6 +65,7 @@ CHANGELOG
     - new extended operation: get_replica_info (Novell)
     - new extended operation: partition_entry_count (Novell)
     - renamed convert_to_ldif() to _convert_to_ldif()
+    - tested against PyPy and Pypy3 (v2.3.1)
 
 
 * 0.9.5.2 2014.08.05

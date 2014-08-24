@@ -45,7 +45,6 @@ class PartitionEntryCount(ExtendedOperation):
             decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['entry_count'] = int(decoded)
         except Exception as e:
-            print(e)
             raise LDAPExtensionError('unable to decode substrate')
         if substrate:
             raise LDAPExtensionError('unknown substrate remaining')

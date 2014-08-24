@@ -51,9 +51,9 @@ class ReplicaInfo(ExtendedOperation):
             decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
             self.result['replica_state'] = int(decoded)
             decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
-            self.result['modification_time'] = datetime.utcfromtimestamp(decoded)
+            self.result['modification_time'] = datetime.utcfromtimestamp(int(decoded))
             decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
-            self.result['purge_time'] = datetime.utcfromtimestamp(decoded)
+            self.result['purge_time'] = datetime.utcfromtimestamp(int(decoded))
             decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
             self.result['local_partition_id'] = int(decoded)
             decoded, substrate = decoder.decode(substrate, asn1Spec = LDAPDN())
@@ -63,7 +63,6 @@ class ReplicaInfo(ExtendedOperation):
             decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
             self.result['flags'] = int(decoded)
         except Exception as e:
-            print(e)
             raise LDAPExtensionError('unable to decode substrate')
         if substrate:
             raise LDAPExtensionError('unknown substrate remaining')

@@ -112,6 +112,7 @@ If the attribute is defined in the schema as 'multi_value' the attribute value i
 
 Formatted (following the schema and RFC indications) attributes are stored in the *attributes* dictionary of the search result entries in c.response. This is performed only if the schema is read in the server object and the check_names parameter is set to True else the unicode value is returned.
 
+Attributes key are case insensitive, this means that you can access c.response[0]['attributes']['postalAddress'] or c.response[0]['attributes']['postaladdress'] and get the same values back.
 Simple Paged search
 -------------------
 

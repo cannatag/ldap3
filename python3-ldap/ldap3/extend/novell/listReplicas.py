@@ -25,6 +25,7 @@ from ..operation import ExtendedOperation
 from ...protocol.novell import ReplicaList
 from ...protocol.rfc4511 import LDAPDN
 
+
 class ListReplicas(ExtendedOperation):
     def config(self):
         self.request_name = '2.16.840.1.113719.1.27.100.19'

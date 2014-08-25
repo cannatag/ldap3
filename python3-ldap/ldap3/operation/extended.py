@@ -22,7 +22,6 @@ along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
 """
 from pyasn1.type.univ import OctetString
-from ..core.exceptions import LDAPExtensionError
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
 from ..protocol.convert import decode_referrals
 from pyasn1.codec.ber import encoder

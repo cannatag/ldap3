@@ -1,5 +1,6 @@
 import collections
 
+
 class CaseInsensitiveDict(collections.MutableMapping):
     if bytes == str:  # python2
         case_insensitive_types = (str, unicode)
@@ -48,9 +49,18 @@ class CaseInsensitiveDict(collections.MutableMapping):
             return NotImplemented
 
         if isinstance(other, CaseInsensitiveDict):
-            return self.items() == other.items()
+            if isinstance(self.items(), list):  # python 2
+                if len(self.items()) != len(other.items()):
+                    return False
+                else:
+                    for key, value in self.items():
+                        if not (key in other and other[key] == value):
+                            return False
+                    return True
+            else:
+                return self.items() == other.items()
 
-        return self.items() == CaseInsensitiveDict(other.items()).items()
+        return self == CaseInsensitiveDict(other)
 
     def copy(self):
         return CaseInsensitiveDict(self._store)

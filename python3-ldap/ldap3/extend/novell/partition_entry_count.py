@@ -25,8 +25,8 @@ from pyasn1.codec.ber import decoder
 from pyasn1.type.univ import Integer
 from ...core.exceptions import LDAPExtensionError
 from ..operation import ExtendedOperation
-from ...protocol.novell import ReplicaList
 from ...protocol.rfc4511 import LDAPDN
+
 
 class PartitionEntryCount(ExtendedOperation):
     def config(self):
@@ -44,7 +44,8 @@ class PartitionEntryCount(ExtendedOperation):
         try:
             decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['entry_count'] = int(decoded)
-        except Exception as e:
+        except Exception:
             raise LDAPExtensionError('unable to decode substrate')
+
         if substrate:
             raise LDAPExtensionError('unknown substrate remaining')

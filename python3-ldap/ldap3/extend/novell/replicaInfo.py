@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from pyasn1.type.univ import Integer
 from ...core.exceptions import LDAPExtensionError
-from ...protocol.novell import LDAPDN, ReplicaInfoResponseValue, ReplicaInfoRequestValue
+from ...protocol.novell import LDAPDN, ReplicaInfoRequestValue
 from ..operation import ExtendedOperation
 from pyasn1.codec.ber import decoder
 from datetime import datetime
@@ -42,27 +42,27 @@ class ReplicaInfo(ExtendedOperation):
         self.request_value['server_dn'] = server_dn
         self.request_value['partition_dn'] = partition_dn
 
-
     def populate_result(self):
         substrate = self.decoded_response
         try:
-            decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['partition_id'] = int(decoded)
-            decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['replica_state'] = int(decoded)
-            decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['modification_time'] = datetime.utcfromtimestamp(int(decoded))
-            decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['purge_time'] = datetime.utcfromtimestamp(int(decoded))
-            decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['local_partition_id'] = int(decoded)
-            decoded, substrate = decoder.decode(substrate, asn1Spec = LDAPDN())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=LDAPDN())
             self.result['partition_dn'] = str(decoded)
-            decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['replica_type'] = int(decoded)
-            decoded, substrate = decoder.decode(substrate, asn1Spec = Integer())
+            decoded, substrate = decoder.decode(substrate, asn1Spec=Integer())
             self.result['flags'] = int(decoded)
-        except Exception as e:
+        except Exception:
             raise LDAPExtensionError('unable to decode substrate')
+
         if substrate:
             raise LDAPExtensionError('unknown substrate remaining')

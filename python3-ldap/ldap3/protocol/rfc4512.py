@@ -26,7 +26,7 @@ from os import linesep
 import re
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
-from ..utils.caseInsensitiveDictonary import CaseInsensitiveDict
+from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError
 

@@ -1,4 +1,3 @@
-
 """
 Created on 2014.06.27
 
@@ -24,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 from pyasn1.type.univ import OctetString, Integer, Sequence, SequenceOf
 from pyasn1.type.namedtype import NamedType, NamedTypes, OptionalNamedType
-from pyasn1.type.tag import Tag, tagFormatSimple, tagClassUniversal, tagFormatConstructed, tagClassContext, TagSet
+from pyasn1.type.tag import Tag, tagFormatSimple, tagClassUniversal, TagSet
 
 NMAS_LDAP_EXT_VERSION = 1
 
@@ -84,7 +83,7 @@ class ReplicaInfoRequestValue(Sequence):
 
 
 class ReplicaInfoResponseValue(Sequence):
-    #tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatConstructed, 3))
+    # tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatConstructed, 3))
     tagSet = TagSet()
     componentType = NamedTypes(NamedType('partition_id', Integer()),
                                NamedType('replica_state', Integer()),
@@ -93,5 +92,4 @@ class ReplicaInfoResponseValue(Sequence):
                                NamedType('local_partition_id', Integer()),
                                NamedType('partition_dn', LDAPDN()),
                                NamedType('replica_type', Integer()),
-                               NamedType('flags', Integer())
-    )
+                               NamedType('flags', Integer()))

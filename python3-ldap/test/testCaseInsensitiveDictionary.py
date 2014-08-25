@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-from ldap3.utils.caseInsensitiveDictonary import CaseInsensitiveDict
+from ldap3.utils.caseInsensitiveDictionary import CaseInsensitiveDict
 
 
 class Test(unittest.TestCase):
@@ -32,11 +32,11 @@ class Test(unittest.TestCase):
         self.assertTrue(isinstance(cid, CaseInsensitiveDict))
 
     def test_create_case_insensitive_dict_from_dict(self):
-        d = dict()
-        d['ONE'] = 1
-        d['TWO'] = 2
-        d[3] = 3
-        cid = CaseInsensitiveDict(d)
+        dic = dict()
+        dic['ONE'] = 1
+        dic['TWO'] = 2
+        dic[3] = 3
+        cid = CaseInsensitiveDict(dic)
         self.assertEqual(cid['ONE'], 1)
         self.assertEqual(cid['one'], 1)
         self.assertEqual(cid['TWO'], 2)
@@ -224,7 +224,20 @@ class Test(unittest.TestCase):
         self.assertEqual(cid2['two'], 2)
         self.assertEqual(cid2[3], 3)
 
-    def test_equality_case_insensitive_dict_with_case_insensitive_dict(self):
+    def test_equality_case_insensitive_dict_with_same_case(self):
+        cid = CaseInsensitiveDict()
+        cid['one'] = 1
+        cid['two'] = 2
+        cid[3] = 3
+
+        cid2 = CaseInsensitiveDict()
+        cid2['one'] = 1
+        cid2['two'] = 2
+        cid2[3] = 3
+
+        self.assertTrue(cid == cid2)
+
+    def test_equality_case_insensitive_dict_with_different_case(self):
         cid = CaseInsensitiveDict()
         cid['one'] = 1
         cid['two'] = 2
@@ -237,33 +250,44 @@ class Test(unittest.TestCase):
 
         self.assertTrue(cid == cid2)
 
-    def test_equality_case_insensitive_dict_with_dict(self):
+    def test_equality_case_insensitive_dict_with_same_case_dict(self):
         cid = CaseInsensitiveDict()
         cid['one'] = 1
         cid['two'] = 2
         cid[3] = 3
 
-        cid2 = dict()
-        cid2['ONE'] = 1
-        cid2['TWO'] = 2
-        cid2[3] = 3
+        dic = dict()
+        dic['one'] = 1
+        dic['two'] = 2
+        dic[3] = 3
 
-        self.assertTrue(cid == cid2)
+        self.assertTrue(cid == dic)
+
+
+    def test_equality_case_insensitive_dict_with_different_case_dict(self):
+        cid = CaseInsensitiveDict()
+        cid['one'] = 1
+        cid['two'] = 2
+        cid[3] = 3
+
+        dic = dict()
+        dic['ONE'] = 1
+        dic['TWO'] = 2
+        dic[3] = 3
+
+        self.assertTrue(cid == dic)
 
     def test_preserve_key_case_case_insensitive_dict(self):
         cid = CaseInsensitiveDict()
         cid['One'] = 1
         cid['Two'] = 2
         cid[3] = 3
-
-        self.assertTrue('One' in cid.keys())
-        self.assertTrue('Two' in cid.keys())
-        self.assertTrue(3 in cid.keys())
-        self.assertFalse('ONE' in cid.keys())
-        self.assertFalse('one' in cid.keys())
-        self.assertFalse('TWO' in cid.keys())
-        self.assertFalse('TWO' in cid.keys())
-        self.assertFalse(4 in cid.keys())
-
-
-        ''
+        key_list = list(cid.keys())
+        self.assertTrue('One' in key_list)
+        self.assertTrue('Two' in key_list)
+        self.assertTrue(3 in key_list)
+        self.assertFalse('ONE' in key_list)
+        self.assertFalse('one' in key_list)
+        self.assertFalse('TWO' in key_list)
+        self.assertFalse('TWO' in key_list)
+        self.assertFalse(4 in key_list)

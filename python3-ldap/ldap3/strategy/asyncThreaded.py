@@ -32,6 +32,7 @@ from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 import socket
 
+
 # noinspection PyProtectedMember
 class AsyncThreadedStrategy(BaseStrategy):
     """

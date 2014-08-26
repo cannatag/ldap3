@@ -47,6 +47,11 @@ class AttrDef(object):
         self.dereference_dn = dereference_dn
 
     def __repr__(self):
+        """
+
+        :return:
+        :rtype:
+        """
         r = 'AttrDef(key={0.key!r}'.format(self)
         r += ', name={0.name!r}'.format(self)
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)

@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.protocol.novell &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.protocol.novell</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on 2014.06.27</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2014 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pyasn1.type.univ</span> <span class="kn">import</span> <span class="n">OctetString</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">SequenceOf</span>
+<span class="kn">from</span> <span class="nn">pyasn1.type.namedtype</span> <span class="kn">import</span> <span class="n">NamedType</span><span class="p">,</span> <span class="n">NamedTypes</span><span class="p">,</span> <span class="n">OptionalNamedType</span>
+<span class="kn">from</span> <span class="nn">pyasn1.type.tag</span> <span class="kn">import</span> <span class="n">Tag</span><span class="p">,</span> <span class="n">tagFormatSimple</span><span class="p">,</span> <span class="n">tagClassUniversal</span><span class="p">,</span> <span class="n">TagSet</span>
+
+<span class="n">NMAS_LDAP_EXT_VERSION</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="Identity"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.Identity">[docs]</a><span class="k">class</span> <span class="nc">Identity</span><span class="p">(</span><span class="n">OctetString</span><span class="p">):</span>
+    <span class="n">encoding</span> <span class="o">=</span> <span class="s">&#39;utf-8&#39;</span>
+
+</div>
+<div class="viewcode-block" id="LDAPDN"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.LDAPDN">[docs]</a><span class="k">class</span> <span class="nc">LDAPDN</span><span class="p">(</span><span class="n">OctetString</span><span class="p">):</span>
+    <span class="n">tagSet</span> <span class="o">=</span> <span class="n">OctetString</span><span class="o">.</span><span class="n">tagSet</span><span class="o">.</span><span class="n">tagImplicitly</span><span class="p">(</span><span class="n">Tag</span><span class="p">(</span><span class="n">tagClassUniversal</span><span class="p">,</span> <span class="n">tagFormatSimple</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">encoding</span> <span class="o">=</span> <span class="s">&#39;utf-8&#39;</span>
+
+</div>
+<div class="viewcode-block" id="Password"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.Password">[docs]</a><span class="k">class</span> <span class="nc">Password</span><span class="p">(</span><span class="n">OctetString</span><span class="p">):</span>
+    <span class="n">tagSet</span> <span class="o">=</span> <span class="n">OctetString</span><span class="o">.</span><span class="n">tagSet</span><span class="o">.</span><span class="n">tagImplicitly</span><span class="p">(</span><span class="n">Tag</span><span class="p">(</span><span class="n">tagClassUniversal</span><span class="p">,</span> <span class="n">tagFormatSimple</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">encoding</span> <span class="o">=</span> <span class="s">&#39;utf-8&#39;</span>
+
+</div>
+<div class="viewcode-block" id="NmasVer"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.NmasVer">[docs]</a><span class="k">class</span> <span class="nc">NmasVer</span><span class="p">(</span><span class="n">Integer</span><span class="p">):</span>
+    <span class="n">tagSet</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="n">tagSet</span><span class="o">.</span><span class="n">tagImplicitly</span><span class="p">(</span><span class="n">Tag</span><span class="p">(</span><span class="n">tagClassUniversal</span><span class="p">,</span> <span class="n">tagFormatSimple</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="n">Integer</span><span class="p">):</span>
+    <span class="n">tagSet</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="n">tagSet</span><span class="o">.</span><span class="n">tagImplicitly</span><span class="p">(</span><span class="n">Tag</span><span class="p">(</span><span class="n">tagClassUniversal</span><span class="p">,</span> <span class="n">tagFormatSimple</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="NmasGetUniversalPasswordRequestValue"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.NmasGetUniversalPasswordRequestValue">[docs]</a><span class="k">class</span> <span class="nc">NmasGetUniversalPasswordRequestValue</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="n">componentType</span> <span class="o">=</span> <span class="n">NamedTypes</span><span class="p">(</span><span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;nmasver&#39;</span><span class="p">,</span> <span class="n">NmasVer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;reqdn&#39;</span><span class="p">,</span> <span class="n">Identity</span><span class="p">()))</span>
+
+</div>
+<div class="viewcode-block" id="NmasGetUniversalPasswordResponseValue"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.NmasGetUniversalPasswordResponseValue">[docs]</a><span class="k">class</span> <span class="nc">NmasGetUniversalPasswordResponseValue</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="n">componentType</span> <span class="o">=</span> <span class="n">NamedTypes</span><span class="p">(</span><span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;nmasver&#39;</span><span class="p">,</span> <span class="n">NmasVer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;err&#39;</span><span class="p">,</span> <span class="n">Error</span><span class="p">()),</span>
+                               <span class="n">OptionalNamedType</span><span class="p">(</span><span class="s">&#39;passwd&#39;</span><span class="p">,</span> <span class="n">Password</span><span class="p">()))</span>
+
+</div>
+<div class="viewcode-block" id="NmasSetUniversalPasswordRequestValue"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.NmasSetUniversalPasswordRequestValue">[docs]</a><span class="k">class</span> <span class="nc">NmasSetUniversalPasswordRequestValue</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="n">componentType</span> <span class="o">=</span> <span class="n">NamedTypes</span><span class="p">(</span><span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;nmasver&#39;</span><span class="p">,</span> <span class="n">NmasVer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;reqdn&#39;</span><span class="p">,</span> <span class="n">Identity</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;new_passwd&#39;</span><span class="p">,</span> <span class="n">Password</span><span class="p">()))</span>
+
+</div>
+<div class="viewcode-block" id="NmasSetUniversalPasswordResponseValue"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.NmasSetUniversalPasswordResponseValue">[docs]</a><span class="k">class</span> <span class="nc">NmasSetUniversalPasswordResponseValue</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="n">componentType</span> <span class="o">=</span> <span class="n">NamedTypes</span><span class="p">(</span><span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;nmasver&#39;</span><span class="p">,</span> <span class="n">NmasVer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;err&#39;</span><span class="p">,</span> <span class="n">Error</span><span class="p">()))</span>
+
+</div>
+<div class="viewcode-block" id="ReplicaList"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.ReplicaList">[docs]</a><span class="k">class</span> <span class="nc">ReplicaList</span><span class="p">(</span><span class="n">SequenceOf</span><span class="p">):</span>
+    <span class="n">componentType</span> <span class="o">=</span> <span class="n">OctetString</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="ReplicaInfoRequestValue"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.ReplicaInfoRequestValue">[docs]</a><span class="k">class</span> <span class="nc">ReplicaInfoRequestValue</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="n">tagSet</span> <span class="o">=</span> <span class="n">TagSet</span><span class="p">()</span>
+    <span class="n">componentType</span> <span class="o">=</span> <span class="n">NamedTypes</span><span class="p">(</span><span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;server_dn&#39;</span><span class="p">,</span> <span class="n">LDAPDN</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;partition_dn&#39;</span><span class="p">,</span> <span class="n">LDAPDN</span><span class="p">()))</span>
+
+</div>
+<div class="viewcode-block" id="ReplicaInfoResponseValue"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.novell.ReplicaInfoResponseValue">[docs]</a><span class="k">class</span> <span class="nc">ReplicaInfoResponseValue</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="c"># tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatConstructed, 3))</span>
+    <span class="n">tagSet</span> <span class="o">=</span> <span class="n">TagSet</span><span class="p">()</span>
+    <span class="n">componentType</span> <span class="o">=</span> <span class="n">NamedTypes</span><span class="p">(</span><span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;partition_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;replica_state&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;modification_time&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;purge_time&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;local_partition_id&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;partition_dn&#39;</span><span class="p">,</span> <span class="n">LDAPDN</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;replica_type&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()),</span>
+                               <span class="n">NamedType</span><span class="p">(</span><span class="s">&#39;flags&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

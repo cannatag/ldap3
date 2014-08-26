@@ -1,0 +1,1141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.core package &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="index.html" />
+    <link rel="up" title="ldap3 package" href="ldap3.html" />
+    <link rel="next" title="ldap3.extend package" href="ldap3.extend.html" />
+    <link rel="prev" title="ldap3.compat package" href="ldap3.compat.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.extend.html" title="ldap3.extend package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ldap3.compat.html" title="ldap3.compat package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >ldap3</a> &raquo;</li>
+          <li><a href="ldap3.html" accesskey="U">ldap3 package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ldap3-core-package">
+<h1>ldap3.core package<a class="headerlink" href="#ldap3-core-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ldap3.core.connection">
+<span id="ldap3-core-connection-module"></span><h2>ldap3.core.connection module<a class="headerlink" href="#module-ldap3.core.connection" title="Permalink to this headline">¶</a></h2>
+<p>Created on 2013.05.31</p>
+<p>&#64;author: Giovanni Cannata</p>
+<p>Copyright 2013 Giovanni Cannata</p>
+<p>This file is part of python3-ldap.</p>
+<p>python3-ldap is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>python3-ldap is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with python3-ldap in the COPYING and COPYING.LESSER files.
+If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="class">
+<dt id="ldap3.core.connection.Connection">
+<em class="property">class </em><tt class="descclassname">ldap3.core.connection.</tt><tt class="descname">Connection</tt><big>(</big><em>server</em>, <em>user=None</em>, <em>password=None</em>, <em>auto_bind=0</em>, <em>version=3</em>, <em>authentication=None</em>, <em>client_strategy=0</em>, <em>auto_referrals=True</em>, <em>sasl_mechanism=None</em>, <em>sasl_credentials=None</em>, <em>check_names=True</em>, <em>collect_usage=False</em>, <em>read_only=False</em>, <em>lazy=False</em>, <em>raise_exceptions=False</em>, <em>pool_name=None</em>, <em>pool_size=None</em>, <em>pool_lifetime=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Main ldap connection class.</p>
+<p>Controls, if used, must be a list of tuples. Each tuple must have 3
+elements, the control OID, a boolean meaning if the control is
+critical, a value.</p>
+<p>If the boolean is set to True the server must honor the control or
+refuse the operation</p>
+<p>Mixing controls must be defined in controls specification (as per
+RFC 4511)</p>
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.abandon">
+<tt class="descname">abandon</tt><big>(</big><em>message_id</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.abandon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.abandon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abandon the operation indicated by message_id</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.add">
+<tt class="descname">add</tt><big>(</big><em>dn</em>, <em>object_class=None</em>, <em>attributes=None</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add dn to the DIT, object_class is None, a class name or a list
+of class names.</p>
+<p>Attributes is a dictionary in the form &#8216;attr&#8217;: &#8216;val&#8217; or &#8216;attr&#8217;:
+[&#8216;val1&#8217;, &#8216;val2&#8217;, ...] for multivalued attributes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.bind">
+<tt class="descname">bind</tt><big>(</big><em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind to ldap with the user defined in Server object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.compare">
+<tt class="descname">compare</tt><big>(</big><em>dn</em>, <em>attribute</em>, <em>value</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.compare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a compare operation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.delete">
+<tt class="descname">delete</tt><big>(</big><em>dn</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the entry identified by the DN from the DIB.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.do_sasl_bind">
+<tt class="descname">do_sasl_bind</tt><big>(</big><em>controls</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.do_sasl_bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.do_sasl_bind" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.extended">
+<tt class="descname">extended</tt><big>(</big><em>request_name</em>, <em>request_value=None</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.extended"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.extended" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs an extended operation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.modify">
+<tt class="descname">modify</tt><big>(</big><em>dn</em>, <em>changes</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.modify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify attributes of entry</p>
+<ul class="simple">
+<li>Changes is a dictionary in the form {&#8216;attribute1&#8217;:
+(operation, [val1, val2]), &#8216;attribute2&#8217;: (operation, [val1, val2])}</li>
+<li>Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.modify_dn">
+<tt class="descname">modify_dn</tt><big>(</big><em>dn</em>, <em>relative_dn</em>, <em>delete_old_dn=True</em>, <em>new_superior=None</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.modify_dn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.modify_dn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify DN of the entry or performs a move of the entry in the
+DIT.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.refresh_dsa_info">
+<tt class="descname">refresh_dsa_info</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.refresh_dsa_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.refresh_dsa_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.response_to_ldif">
+<tt class="descname">response_to_ldif</tt><big>(</big><em>search_result=None</em>, <em>all_base64=False</em>, <em>line_separator=None</em>, <em>sort_order=None</em>, <em>stream=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.response_to_ldif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.response_to_ldif" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.search">
+<tt class="descname">search</tt><big>(</big><em>search_base</em>, <em>search_filter</em>, <em>search_scope=2</em>, <em>dereference_aliases=3</em>, <em>attributes=None</em>, <em>size_limit=0</em>, <em>time_limit=0</em>, <em>types_only=False</em>, <em>get_operational_attributes=False</em>, <em>controls=None</em>, <em>paged_size=None</em>, <em>paged_criticality=False</em>, <em>paged_cookie=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an ldap search:</p>
+<ul class="simple">
+<li>If attributes is empty no attribute is returned</li>
+<li>If attributes is ALL_ATTRIBUTES all attributes are returned</li>
+<li>If paged_size is an int greater than 0 a simple paged search
+is tried as described in RFC2696 with the specified size</li>
+<li>If paged is 0 and cookie is present the search is abandoned on
+server</li>
+<li>Cookie is an opaque string received in the last paged search
+and must be used on the next paged search response</li>
+<li>If lazy = True open and bind will be deferred until another
+LDAP operation is performed</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.start_tls">
+<tt class="descname">start_tls</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.start_tls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.start_tls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.core.connection.Connection.stream">
+<tt class="descname">stream</tt><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a reference to the response stream if defined in the strategy.
+Used in the LDIFProducer to accumulate the ldif-change operations with a single LDIF header</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.connection.Connection.unbind">
+<tt class="descname">unbind</tt><big>(</big><em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.unbind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.unbind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unbinds the connected user
+Unbind implies closing session as per RFC4511 (4.3)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.core.connection.Connection.usage">
+<tt class="descname">usage</tt><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.core.exceptions">
+<span id="ldap3-core-exceptions-module"></span><h2>ldap3.core.exceptions module<a class="headerlink" href="#module-ldap3.core.exceptions" title="Permalink to this headline">¶</a></h2>
+<p>Created on 2014.05.14</p>
+<p>&#64;author: Giovanni Cannata</p>
+<p>Copyright 2014 Giovanni Cannata</p>
+<p>This file is part of python3-ldap.</p>
+<p>python3-ldap is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>python3-ldap is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with python3-ldap in the COPYING and COPYING.LESSER files.
+If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAdminLimitExceededResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAdminLimitExceededResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAdminLimitExceededResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAdminLimitExceededResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAffectMultipleDSASResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAffectMultipleDSASResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAffectMultipleDSASResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAffectMultipleDSASResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAliasDereferencingProblemResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAliasDereferencingProblemResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAliasDereferencingProblemResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAliasDereferencingProblemResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAliasProblemResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAliasProblemResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAliasProblemResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAliasProblemResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAssertionFailedResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAssertionFailedResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAssertionFailedResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAssertionFailedResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAttributeError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAttributeError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAttributeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAttributeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.AttributeError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAttributeOrValueExistsResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAttributeOrValueExistsResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAttributeOrValueExistsResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAttributeOrValueExistsResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAuthMethodNotSupportedResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAuthMethodNotSupportedResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAuthMethodNotSupportedResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAuthMethodNotSupportedResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPAuthorizationDeniedResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPAuthorizationDeniedResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPAuthorizationDeniedResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPAuthorizationDeniedResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPBindError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPBindError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPBindError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPBindError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPBusyResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPBusyResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPBusyResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPBusyResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPCanceledResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPCanceledResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPCanceledResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPCanceledResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPCannotCancelResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPCannotCancelResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPCannotCancelResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPCannotCancelResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPCertificateError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPCertificateError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPCertificateError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPCertificateError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPChangesError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPChangesError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPChangesError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPChangesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPCommunicationError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPCommunicationError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPCommunicationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPCommunicationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPConfidentialityRequiredResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPConfidentialityRequiredResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPConfidentialityRequiredResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPConfidentialityRequiredResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPConnectionIsReadOnlyError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPConnectionIsReadOnlyError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPConnectionIsReadOnlyError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPConnectionIsReadOnlyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPConnectionPoolNameIsMandatoryError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPConnectionPoolNameIsMandatoryError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPConnectionPoolNameIsMandatoryError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPConnectionPoolNameIsMandatoryError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPConnectionPoolNotStartedError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPConnectionPoolNotStartedError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPConnectionPoolNotStartedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPConnectionPoolNotStartedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPConstraintViolationResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPConstraintViolationResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPConstraintViolationResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPConstraintViolationResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPControlsError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPControlsError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPControlsError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPControlsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPESyncRefreshRequiredResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPESyncRefreshRequiredResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPESyncRefreshRequiredResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPESyncRefreshRequiredResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPEntryAlreadyExistsResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPEntryAlreadyExistsResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPEntryAlreadyExistsResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPEntryAlreadyExistsResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPEntryError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPEntryError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPEntryError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPEntryError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPException">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPException</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.Exception</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPExceptionError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPExceptionError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPExceptionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPExceptionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPException" title="ldap3.core.exceptions.LDAPException"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPException</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPExtensionError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPExtensionError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPExtensionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPExtensionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInappropriateAuthenticationResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInappropriateAuthenticationResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInappropriateAuthenticationResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInappropriateAuthenticationResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInappropriateMatchingResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInappropriateMatchingResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInappropriateMatchingResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInappropriateMatchingResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInsufficientAccessRightsResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInsufficientAccessRightsResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInsufficientAccessRightsResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInsufficientAccessRightsResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidAttributeSyntaxResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidAttributeSyntaxResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidAttributeSyntaxResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidAttributeSyntaxResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidCredentialsResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidCredentialsResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidCredentialsResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidCredentialsResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidDNSyntaxResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidDNSyntaxResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidDNSyntaxResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidDNSyntaxResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidDereferenceAliasesError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidDereferenceAliasesError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidDereferenceAliasesError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidDereferenceAliasesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidFilterError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidFilterError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidFilterError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidFilterError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidPort">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidPort</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidPort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidPort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidScopeError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidScopeError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidScopeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidScopeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPInvalidServerError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPInvalidServerError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPInvalidServerError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPInvalidServerError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPKeyError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPKeyError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPKeyError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPKeyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.KeyError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPLCUPInvalidDataResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPLCUPInvalidDataResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPLCUPInvalidDataResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPLCUPInvalidDataResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPLCUPReloadRequiredResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPLCUPReloadRequiredResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPLCUPReloadRequiredResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPLCUPReloadRequiredResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPLCUPResourcesExhaustedResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPLCUPResourcesExhaustedResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPLCUPResourcesExhaustedResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPLCUPResourcesExhaustedResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPLCUPSecurityViolationResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPLCUPSecurityViolationResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPLCUPSecurityViolationResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPLCUPSecurityViolationResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPLCUPUnsupportedSchemeResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPLCUPUnsupportedSchemeResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPLCUPUnsupportedSchemeResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPLCUPUnsupportedSchemeResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPLDIFError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPLDIFError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPLDIFError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPLDIFError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPLoopDetectedResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPLoopDetectedResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPLoopDetectedResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPLoopDetectedResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPMaximumRetriesError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPMaximumRetriesError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPMaximumRetriesError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPMaximumRetriesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPMetricsError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPMetricsError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPMetricsError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPMetricsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPNamingViolationResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPNamingViolationResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPNamingViolationResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPNamingViolationResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPNoSuchAttributeResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPNoSuchAttributeResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPNoSuchAttributeResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPNoSuchAttributeResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPNoSuchObjectResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPNoSuchObjectResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPNoSuchObjectResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPNoSuchObjectResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPNoSuchOperationResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPNoSuchOperationResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPNoSuchOperationResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPNoSuchOperationResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPNotAllowedOnNotLeafResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPNotAllowedOnNotLeafResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPNotAllowedOnNotLeafResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPNotAllowedOnNotLeafResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPNotAllowedOnRDNResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPNotAllowedOnRDNResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPNotAllowedOnRDNResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPNotAllowedOnRDNResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPObjectClassError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPObjectClassError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPObjectClassError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPObjectClassError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPObjectClassModsProhibitedResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPObjectClassModsProhibitedResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPObjectClassModsProhibitedResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPObjectClassModsProhibitedResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPObjectClassViolationResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPObjectClassViolationResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPObjectClassViolationResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPObjectClassViolationResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPObjectError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPObjectError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPObjectError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPObjectError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.ValueError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPOperationResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPOperationResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPOperationResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPOperationResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPException" title="ldap3.core.exceptions.LDAPException"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPException</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPOperationsErrorResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPOperationsErrorResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPOperationsErrorResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPOperationsErrorResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPOtherResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPOtherResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPOtherResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPOtherResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPPasswordIsMandatoryError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPPasswordIsMandatoryError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPPasswordIsMandatoryError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPPasswordIsMandatoryError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPProtocolErrorResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPProtocolErrorResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPProtocolErrorResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPProtocolErrorResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPReaderError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPReaderError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPReaderError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPReaderError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPReferralError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPReferralError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPReferralError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPReferralError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPReferralResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPReferralResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPReferralResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPReferralResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSASLBindInProgressError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSASLBindInProgressError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSASLBindInProgressError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSASLBindInProgressError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSASLBindInProgressResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSASLBindInProgressResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSASLBindInProgressResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSASLBindInProgressResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSASLMechanismNotSupportedError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSASLMechanismNotSupportedError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSASLMechanismNotSupportedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSASLMechanismNotSupportedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSASLPrepError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSASLPrepError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSASLPrepError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSASLPrepError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSSLConfigurationError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSSLConfigurationError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSSLConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSSLConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSSLNotSupportedError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSSLNotSupportedError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSSLNotSupportedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSSLNotSupportedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.ImportError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSchemaError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSchemaError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSchemaError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSchemaError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPServerPoolError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPServerPoolError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPServerPoolError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPServerPoolError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPServerPoolExhaustedError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPServerPoolExhaustedError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPServerPoolExhaustedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPServerPoolExhaustedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSessionTerminatedByServer">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSessionTerminatedByServer</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSessionTerminatedByServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSessionTerminatedByServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSizeLimitExceededResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSizeLimitExceededResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSizeLimitExceededResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSizeLimitExceededResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSocketCloseError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSocketCloseError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSocketCloseError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSocketCloseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSocketOpenError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSocketOpenError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSocketOpenError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSocketOpenError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSocketReceiveError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSocketReceiveError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSocketReceiveError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSocketReceiveError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.OSError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPSocketSendError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPSocketSendError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPSocketSendError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPSocketSendError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.OSError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPStartTLSError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPStartTLSError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPStartTLSError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPStartTLSError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPStrongerAuthRequiredResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPStrongerAuthRequiredResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPStrongerAuthRequiredResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPStrongerAuthRequiredResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPTimeLimitExceededResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPTimeLimitExceededResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPTimeLimitExceededResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPTimeLimitExceededResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPTooLateResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPTooLateResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPTooLateResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPTooLateResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPTypeError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPTypeError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPTypeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPTypeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.TypeError</span></tt></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUnavailableCriticalExtensionResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUnavailableCriticalExtensionResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUnavailableCriticalExtensionResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUnavailableCriticalExtensionResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUnavailableResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUnavailableResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUnavailableResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUnavailableResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUndefinedAttributeTypeResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUndefinedAttributeTypeResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUndefinedAttributeTypeResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUndefinedAttributeTypeResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUnknownAuthenticationMethodError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUnknownAuthenticationMethodError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUnknownAuthenticationMethodError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUnknownAuthenticationMethodError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUnknownRequestError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUnknownRequestError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUnknownRequestError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUnknownRequestError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUnknownResponseError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUnknownResponseError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUnknownResponseError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUnknownResponseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPCommunicationError" title="ldap3.core.exceptions.LDAPCommunicationError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPCommunicationError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUnknownStrategyError">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUnknownStrategyError</tt><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUnknownStrategyError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUnknownStrategyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPExceptionError" title="ldap3.core.exceptions.LDAPExceptionError"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPExceptionError</span></tt></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ldap3.core.exceptions.LDAPUnwillingToPerformResult">
+<em class="property">exception </em><tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">LDAPUnwillingToPerformResult</tt><big>(</big><em>result=None</em>, <em>description=None</em>, <em>dn=None</em>, <em>message=None</em>, <em>response_type=None</em>, <em>response=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#LDAPUnwillingToPerformResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.LDAPUnwillingToPerformResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.core.exceptions.LDAPOperationResult" title="ldap3.core.exceptions.LDAPOperationResult"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.exceptions.LDAPOperationResult</span></tt></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ldap3.core.exceptions.communication_exception_factory">
+<tt class="descclassname">ldap3.core.exceptions.</tt><tt class="descname">communication_exception_factory</tt><big>(</big><em>exc_to_raise</em>, <em>exc</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/exceptions.html#communication_exception_factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.exceptions.communication_exception_factory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new exception class of the requested type (subclass of LDAPCommunication) merged with the exception raised by the interpreter</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.core.pooling">
+<span id="ldap3-core-pooling-module"></span><h2>ldap3.core.pooling module<a class="headerlink" href="#module-ldap3.core.pooling" title="Permalink to this headline">¶</a></h2>
+<p>Created on 2014.03.14</p>
+<p>&#64;author: Giovanni Cannata</p>
+<p>Copyright 2014 Giovanni Cannata</p>
+<p>This file is part of python3-ldap.</p>
+<p>python3-ldap is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>python3-ldap is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with python3-ldap in the COPYING and COPYING.LESSER files.
+If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="class">
+<dt id="ldap3.core.pooling.ServerPool">
+<em class="property">class </em><tt class="descclassname">ldap3.core.pooling.</tt><tt class="descname">ServerPool</tt><big>(</big><em>servers=None</em>, <em>pool_strategy=1</em>, <em>active=True</em>, <em>exhaust=False</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPool.add">
+<tt class="descname">add</tt><big>(</big><em>servers</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPool.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPool.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPool.get_current_server">
+<tt class="descname">get_current_server</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPool.get_current_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPool.get_current_server" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPool.get_server">
+<tt class="descname">get_server</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPool.get_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPool.get_server" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPool.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPool.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPool.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPool.remove">
+<tt class="descname">remove</tt><big>(</big><em>server</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPool.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPool.remove" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ldap3.core.pooling.ServerPoolState">
+<em class="property">class </em><tt class="descclassname">ldap3.core.pooling.</tt><tt class="descname">ServerPoolState</tt><big>(</big><em>server_pool</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPoolState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPoolState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPoolState.find_active_random_server">
+<tt class="descname">find_active_random_server</tt><big>(</big><em>exhaust=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPoolState.find_active_random_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPoolState.find_active_random_server" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPoolState.find_active_server">
+<tt class="descname">find_active_server</tt><big>(</big><em>starting=0</em>, <em>exhaust=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPoolState.find_active_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPoolState.find_active_server" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPoolState.get_current_server">
+<tt class="descname">get_current_server</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPoolState.get_current_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPoolState.get_current_server" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPoolState.get_server">
+<tt class="descname">get_server</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPoolState.get_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPoolState.get_server" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.pooling.ServerPoolState.refresh">
+<tt class="descname">refresh</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/pooling.html#ServerPoolState.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.pooling.ServerPoolState.refresh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.core.server">
+<span id="ldap3-core-server-module"></span><h2>ldap3.core.server module<a class="headerlink" href="#module-ldap3.core.server" title="Permalink to this headline">¶</a></h2>
+<p>Created on 2013.05.31</p>
+<p>&#64;author: Giovanni Cannata</p>
+<p>Copyright 2013 Giovanni Cannata</p>
+<p>This file is part of python3-ldap.</p>
+<p>python3-ldap is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>python3-ldap is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with python3-ldap in the COPYING and COPYING.LESSER files.
+If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="class">
+<dt id="ldap3.core.server.Server">
+<em class="property">class </em><tt class="descclassname">ldap3.core.server.</tt><tt class="descname">Server</tt><big>(</big><em>host</em>, <em>port=None</em>, <em>use_ssl=False</em>, <em>allowed_referral_hosts=None</em>, <em>get_info=0</em>, <em>tls=None</em>, <em>formatter=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/server.html#Server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.server.Server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>LDAP Server definition class</p>
+<p>Allowed_referral_hosts can be None (default), or a list of tuples of
+allowed servers ip address or names to contact while redirecting
+search to referrals.</p>
+<p>The second element of the tuple is a boolean to indicate if
+authentication to that server is allowed; if False only anonymous
+bind will be used.</p>
+<p>Per RFC 4516. Use (&#8216;*&#8217;, False) to allow any host with anonymous
+bind, use (&#8216;*&#8217;, True) to allow any host with same authentication of
+Server.</p>
+<dl class="attribute">
+<dt id="ldap3.core.server.Server.address_info">
+<tt class="descname">address_info</tt><a class="reference internal" href="_modules/ldap3/core/server.html#Server.address_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.server.Server.address_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.server.Server.check_availability">
+<tt class="descname">check_availability</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/server.html#Server.check_availability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.server.Server.check_availability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to open, connect and close a socket to specified address
+and port to check availability.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.server.Server.get_info_from_server">
+<tt class="descname">get_info_from_server</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/server.html#Server.get_info_from_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.server.Server.get_info_from_server" title="Permalink to this definition">¶</a></dt>
+<dd><p>read info from DSE and from subschema</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.core.server.Server.info">
+<tt class="descname">info</tt><a class="reference internal" href="_modules/ldap3/core/server.html#Server.info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.server.Server.info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="ldap3.core.server.Server.next_message_id">
+<em class="property">static </em><tt class="descname">next_message_id</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/server.html#Server.next_message_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.server.Server.next_message_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>messageId is unique for all connections</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.core.server.Server.schema">
+<tt class="descname">schema</tt><a class="reference internal" href="_modules/ldap3/core/server.html#Server.schema"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.server.Server.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.core.tls">
+<span id="ldap3-core-tls-module"></span><h2>ldap3.core.tls module<a class="headerlink" href="#module-ldap3.core.tls" title="Permalink to this headline">¶</a></h2>
+<p>Created on 2013.08.05</p>
+<p>&#64;author: Giovanni Cannata</p>
+<p>Copyright 2013 Giovanni Cannata</p>
+<p>This file is part of python3-ldap.</p>
+<p>python3-ldap is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>python3-ldap is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with python3-ldap in the COPYING and COPYING.LESSER files.
+If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="class">
+<dt id="ldap3.core.tls.Tls">
+<em class="property">class </em><tt class="descclassname">ldap3.core.tls.</tt><tt class="descname">Tls</tt><big>(</big><em>local_private_key_file=None</em>, <em>local_certificate_file=None</em>, <em>validate=0</em>, <em>version=None</em>, <em>ca_certs_file=None</em>, <em>valid_names=None</em>, <em>ca_certs_path=None</em>, <em>ca_certs_data=None</em>, <em>local_private_key_password=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/tls.html#Tls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.tls.Tls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>tls/ssl configuration for Server object
+Starting from python 3-4 it uses the SSLContext object
+that tries to read the CAs defined at system level
+ca_certs_path and ca_certs_data are valid only when using SSLContext
+local_private_key_password is valid only when using SSLContext</p>
+<dl class="method">
+<dt id="ldap3.core.tls.Tls.start_tls">
+<tt class="descname">start_tls</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/tls.html#Tls.start_tls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.tls.Tls.start_tls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.tls.Tls.wrap_socket">
+<tt class="descname">wrap_socket</tt><big>(</big><em>connection</em>, <em>do_handshake=False</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/tls.html#Tls.wrap_socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.tls.Tls.wrap_socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds TLS to the connection socket</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ldap3.core.tls.check_hostname">
+<tt class="descclassname">ldap3.core.tls.</tt><tt class="descname">check_hostname</tt><big>(</big><em>sock</em>, <em>server_name</em>, <em>additional_names</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/tls.html#check_hostname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.tls.check_hostname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ldap3.core.tls.match_hostname_backport">
+<tt class="descclassname">ldap3.core.tls.</tt><tt class="descname">match_hostname_backport</tt><big>(</big><em>cert</em>, <em>hostname</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/tls.html#match_hostname_backport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.tls.match_hostname_backport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fix for Python2; code from Python 3.4.1 standard library.</p>
+<p>Verify that <em>cert</em> (in decoded format as returned by
+SSLSocket.getpeercert()) matches the <em>hostname</em>.  RFC 2818 and RFC 6125
+rules are followed, but IP addresses are not accepted for <em>hostname</em>.</p>
+<p>CertificateError is raised on failure. On success, the function
+returns nothing.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.core.usage">
+<span id="ldap3-core-usage-module"></span><h2>ldap3.core.usage module<a class="headerlink" href="#module-ldap3.core.usage" title="Permalink to this headline">¶</a></h2>
+<p>Created on 2014.03.15</p>
+<p>&#64;author: Giovanni Cannata</p>
+<p>Copyright 2014 Giovanni Cannata</p>
+<p>This file is part of python3-ldap.</p>
+<p>python3-ldap is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>python3-ldap is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with python3-ldap in the COPYING and COPYING.LESSER files.
+If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="class">
+<dt id="ldap3.core.usage.ConnectionUsage">
+<em class="property">class </em><tt class="descclassname">ldap3.core.usage.</tt><tt class="descname">ConnectionUsage</tt><a class="reference internal" href="_modules/ldap3/core/usage.html#ConnectionUsage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.usage.ConnectionUsage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Collect statistics on connection usage</p>
+<dl class="attribute">
+<dt id="ldap3.core.usage.ConnectionUsage.elapsed_time">
+<tt class="descname">elapsed_time</tt><a class="reference internal" href="_modules/ldap3/core/usage.html#ConnectionUsage.elapsed_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.usage.ConnectionUsage.elapsed_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.usage.ConnectionUsage.received_message">
+<tt class="descname">received_message</tt><big>(</big><em>length</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/usage.html#ConnectionUsage.received_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.usage.ConnectionUsage.received_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.usage.ConnectionUsage.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/usage.html#ConnectionUsage.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.usage.ConnectionUsage.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.usage.ConnectionUsage.start">
+<tt class="descname">start</tt><big>(</big><em>reset=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/usage.html#ConnectionUsage.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.usage.ConnectionUsage.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.usage.ConnectionUsage.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/core/usage.html#ConnectionUsage.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.usage.ConnectionUsage.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.core.usage.ConnectionUsage.transmitted_message">
+<tt class="descname">transmitted_message</tt><big>(</big><em>message</em>, <em>length</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/usage.html#ConnectionUsage.transmitted_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.usage.ConnectionUsage.transmitted_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.core">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ldap3.core" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ldap3.core package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.connection">ldap3.core.connection module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.exceptions">ldap3.core.exceptions module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.pooling">ldap3.core.pooling module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.server">ldap3.core.server module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.tls">ldap3.core.tls module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.usage">ldap3.core.usage module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ldap3.compat.html"
+                        title="previous chapter">ldap3.compat package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ldap3.extend.html"
+                        title="next chapter">ldap3.extend package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ldap3.core.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.extend.html" title="ldap3.extend package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ldap3.compat.html" title="ldap3.compat package"
+             >previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >ldap3</a> &raquo;</li>
+          <li><a href="ldap3.html" >ldap3 package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

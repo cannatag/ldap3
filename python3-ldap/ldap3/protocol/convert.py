@@ -265,6 +265,7 @@ def format_time(raw_value):
     g-differential  = ( MINUS / PLUS ) hour [ minute ]
         MINUS           = %x2D  ; minus sign ("-")
     """
+
     if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
         return raw_value
 
@@ -337,15 +338,17 @@ def format_attribute_values(schema, name, values, custom_formatter):
     """
     Tries to format following the OIDs info and format_helper specification.
     Search for attribute oid, then attribute name (can be multiple), then attrubte syntax
-    Precedence is: 1. attribute name
-                   2. attribute oid(from schema)
-                   3. attribute names (from oid_info)
-                   4. attribute syntax (from schema)
+    Precedence is:
+    1. attribute name
+    2. attribute oid(from schema)
+    3. attribute names (from oid_info)
+    4. attribute syntax (from schema)
     Custom formatters can be defined in Server object and have precedence over the standard_formatters
     If no formatter is found the raw_value is returned as bytes.
     Attributes defined as SINGLE_VALUE in schema are returned as a single object, otherwise are returned as a list of object
     Formatter functions can return any kind of object
     """
+
     formatter = None
     if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
         attr_type = schema.attribute_types[name.lower()]

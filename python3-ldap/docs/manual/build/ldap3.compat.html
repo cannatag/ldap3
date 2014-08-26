@@ -60,141 +60,17 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-ldap3.compat.connection">
-<span id="ldap3-compat-connection-module"></span><h2>ldap3.compat.connection module<a class="headerlink" href="#module-ldap3.compat.connection" title="Permalink to this headline">¶</a></h2>
-<p>Created on 2013.05.31</p>
-<p>&#64;author: Giovanni Cannata</p>
-<p>Copyright 2013 Giovanni Cannata</p>
-<p>This file is part of python3-ldap.</p>
-<p>python3-ldap is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.</p>
-<p>python3-ldap is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.</p>
-<p>You should have received a copy of the GNU Lesser General Public License
-along with python3-ldap in the COPYING and COPYING.LESSER files.
-If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
-<dl class="class">
-<dt id="ldap3.compat.connection.Connection">
-<em class="property">class </em><tt class="descclassname">ldap3.compat.connection.</tt><tt class="descname">Connection</tt><big>(</big><em>server</em>, <em>user=None</em>, <em>password=None</em>, <em>autoBind=False</em>, <em>version=3</em>, <em>authentication=None</em>, <em>clientStrategy=0</em>, <em>autoReferrals=True</em>, <em>saslMechanism=None</em>, <em>saslCredentials=None</em>, <em>collectUsage=False</em>, <em>readOnly=False</em>, <em>lazy=False</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ldap3.core.html#ldap3.core.connection.Connection" title="ldap3.core.connection.Connection"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.connection.Connection</span></tt></a></p>
-<p>Proxy class (with camel case parameters) to new Connection class (pep8
-compliant)</p>
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.abandon">
-<tt class="descname">abandon</tt><big>(</big><em>messageId</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.abandon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.abandon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Abandon the operation indicated by messageId.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.add">
-<tt class="descname">add</tt><big>(</big><em>dn</em>, <em>objectClass=None</em>, <em>attributes=None</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add DN to the DIB, objectClass is None, a class name or a list of class
-names.</p>
-<p>attributes is a dictionary in the form &#8216;attr&#8217;: &#8216;val&#8217; or &#8216;attr&#8217;:
-[&#8216;val1&#8217;, &#8216;val2&#8217;, &#8216;valN&#8217;] for multivalued types.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.doSaslBind">
-<tt class="descname">doSaslBind</tt><big>(</big><em>controls</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.doSaslBind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.doSaslBind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.extended">
-<tt class="descname">extended</tt><big>(</big><em>requestName</em>, <em>requestValue=None</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.extended"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.extended" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform an extended operation.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.modifyDn">
-<tt class="descname">modifyDn</tt><big>(</big><em>dn</em>, <em>relativeDn</em>, <em>deleteOldDn=True</em>, <em>newSuperior=None</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.modifyDn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.modifyDn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modify DN of the entry and optionally performs a move of the entry in
-the DIB.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.refreshDsaInfo">
-<tt class="descname">refreshDsaInfo</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.refreshDsaInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.refreshDsaInfo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.responseToLdif">
-<tt class="descname">responseToLdif</tt><big>(</big><em>searchResult=None</em>, <em>allBase64=False</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.responseToLdif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.responseToLdif" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.search">
-<tt class="descname">search</tt><big>(</big><em>searchBase</em>, <em>searchFilter</em>, <em>searchScope=2</em>, <em>dereferenceAliases=3</em>, <em>attributes=None</em>, <em>sizeLimit=0</em>, <em>timeLimit=0</em>, <em>typesOnly=False</em>, <em>getOperationalAttributes=False</em>, <em>controls=None</em>, <em>pagedSize=None</em>, <em>pagedCriticality=False</em>, <em>pagedCookie=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.search" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="ldap3.compat.connection.Connection.startTls">
-<tt class="descname">startTls</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/compat/connection.html#Connection.startTls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.connection.Connection.startTls" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<div class="section" id="ldap3-compat-connection-module">
+<h2>ldap3.compat.connection module<a class="headerlink" href="#ldap3-compat-connection-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-ldap3.compat.server">
-<span id="ldap3-compat-server-module"></span><h2>ldap3.compat.server module<a class="headerlink" href="#module-ldap3.compat.server" title="Permalink to this headline">¶</a></h2>
-<p>Created on 2014.03.10</p>
-<p>&#64;author: Giovanni Cannata</p>
-<p>Copyright 2014 Giovanni Cannata</p>
-<p>This file is part of python3-ldap.</p>
-<p>python3-ldap is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.</p>
-<p>python3-ldap is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.</p>
-<p>You should have received a copy of the GNU Lesser General Public License
-along with python3-ldap in the COPYING and COPYING.LESSER files.
-If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
-<dl class="class">
-<dt id="ldap3.compat.server.Server">
-<em class="property">class </em><tt class="descclassname">ldap3.compat.server.</tt><tt class="descname">Server</tt><big>(</big><em>host</em>, <em>port=389</em>, <em>useSsl=False</em>, <em>allowedReferralHosts=None</em>, <em>getInfo=None</em>, <em>tls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/server.html#Server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.server.Server" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ldap3.core.html#ldap3.core.server.Server" title="ldap3.core.server.Server"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.server.Server</span></tt></a></p>
-</dd></dl>
-
+<div class="section" id="ldap3-compat-server-module">
+<h2>ldap3.compat.server module<a class="headerlink" href="#ldap3-compat-server-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-ldap3.compat.tls">
-<span id="ldap3-compat-tls-module"></span><h2>ldap3.compat.tls module<a class="headerlink" href="#module-ldap3.compat.tls" title="Permalink to this headline">¶</a></h2>
-<p>Created on 2014.03.10</p>
-<p>&#64;author: Giovanni Cannata</p>
-<p>Copyright 2014 Giovanni Cannata</p>
-<p>This file is part of python3-ldap.</p>
-<p>python3-ldap is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.</p>
-<p>python3-ldap is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.</p>
-<p>You should have received a copy of the GNU Lesser General Public License
-along with python3-ldap in the COPYING and COPYING.LESSER files.
-If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
-<dl class="class">
-<dt id="ldap3.compat.tls.Tls">
-<em class="property">class </em><tt class="descclassname">ldap3.compat.tls.</tt><tt class="descname">Tls</tt><big>(</big><em>localPrivateKeyFile=None</em>, <em>localCertificateFile=None</em>, <em>validate=0</em>, <em>version=3</em>, <em>caCertsFile=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/tls.html#Tls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.tls.Tls" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ldap3.core.html#ldap3.core.tls.Tls" title="ldap3.core.tls.Tls"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.core.tls.Tls</span></tt></a></p>
-<p>tls/ssl configuration for Server object</p>
-<dl class="method">
-<dt id="ldap3.compat.tls.Tls.startTls">
-<tt class="descname">startTls</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/compat/tls.html#Tls.startTls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.compat.tls.Tls.startTls" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<div class="section" id="ldap3-compat-tls-module">
+<h2>ldap3.compat.tls module<a class="headerlink" href="#ldap3-compat-tls-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-ldap3.compat">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ldap3.compat" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -208,10 +84,10 @@ If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/
   <ul>
 <li><a class="reference internal" href="#">ldap3.compat package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-ldap3.compat.connection">ldap3.compat.connection module</a></li>
-<li><a class="reference internal" href="#module-ldap3.compat.server">ldap3.compat.server module</a></li>
-<li><a class="reference internal" href="#module-ldap3.compat.tls">ldap3.compat.tls module</a></li>
-<li><a class="reference internal" href="#module-ldap3.compat">Module contents</a></li>
+<li><a class="reference internal" href="#ldap3-compat-connection-module">ldap3.compat.connection module</a></li>
+<li><a class="reference internal" href="#ldap3-compat-server-module">ldap3.compat.server module</a></li>
+<li><a class="reference internal" href="#ldap3-compat-tls-module">ldap3.compat.tls module</a></li>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>

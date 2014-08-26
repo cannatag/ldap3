@@ -1,9 +1,12 @@
 """
-Created on 2013.05.31
+"""
+
+'''
+Created on 2014.03.10
 
 @author: Giovanni Cannata
 
-Copyright 2013 Giovanni Cannata
+Copyright 2014 Giovanni Cannata
 
 This file is part of python3-ldap.
 
@@ -20,7 +23,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
 
 from ..core.connection import Connection as newConnection
 from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS, STRATEGY_SYNC

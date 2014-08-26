@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2014.04.30
 
 @author: Giovanni Cannata
@@ -20,7 +23,9 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
+'''ot, see <http://www.gnu.org/licenses/>.
 """
+
 from ...protocol.novell import Identity
 from ..operation import ExtendedOperation
 

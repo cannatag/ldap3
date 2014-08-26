@@ -1,5 +1,8 @@
 """
-Created on 2014.07.03
+"""
+
+'''
+Created on 2014.08.05
 
 @author: Giovanni Cannata
 
@@ -20,7 +23,8 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from pyasn1.codec.ber import decoder
 from pyasn1.type.univ import Integer
 from ...core.exceptions import LDAPExtensionError

@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2014.05.14
 
 @author: Giovanni Cannata
@@ -20,8 +23,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
-
+'''
 from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT_EXCEEDED, RESULT_SIZE_LIMIT_EXCEEDED, \
     RESULT_STRONGER_AUTH_REQUIRED, RESULT_REFERRAL, RESULT_ADMIN_LIMIT_EXCEEDED, RESULT_UNAVAILABLE_CRITICAL_EXTENSION, \
     RESULT_AUTH_METHOD_NOT_SUPPORTED, RESULT_UNDEFINED_ATTRIBUTE_TYPE, RESULT_NO_SUCH_ATTRIBUTE, \

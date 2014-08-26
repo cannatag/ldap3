@@ -314,6 +314,7 @@
 <span class="sd">    g-differential  = ( MINUS / PLUS ) hour [ minute ]</span>
 <span class="sd">        MINUS           = %x2D  ; minus sign (&quot;-&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">((</span><span class="n">c</span> <span class="ow">in</span> <span class="n">b</span><span class="s">&#39;0123456789+-,.Z&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">raw_value</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">b</span><span class="s">&#39;Z&#39;</span> <span class="ow">in</span> <span class="n">raw_value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">raw_value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">b</span><span class="s">&#39;Z&#39;</span><span class="p">)):</span>  <span class="c"># first ten characters are mandatory and must be numeric or timezone or fraction</span>
         <span class="k">return</span> <span class="n">raw_value</span>
 

@@ -48,6 +48,10 @@
             
   <h1>Source code for ldap3.utils.conv</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Created on 2014.04.26</span>
 
 <span class="sd">@author: Giovanni Cannata</span>
@@ -69,7 +73,8 @@
 <span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
 <span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
 <span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
 <span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">whitespace</span>
 
 
@@ -118,8 +123,8 @@
 <span class="sd">    Convert an iterator to a list of dn parts</span>
 <span class="sd">    if decompose=True return a list of tuple (one for each dn component) else return a list of strings</span>
 <span class="sd">    if remove_space=True removes unneeded spaces</span>
-<span class="sd">    if space_around_equal=True add spaces around equal in returned strigns</span>
-<span class="sd">    if separe_rdn=True consider mutiple rnd as different component of dn</span>
+<span class="sd">    if space_around_equal=True add spaces around equal in returned strings</span>
+<span class="sd">    if separate_rdn=True consider multiple RDNs as different component of DN</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dn</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">component</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>

@@ -1,9 +1,12 @@
 """
+"""
+
+'''
 Created on 2014.06.27
 
 @author: Giovanni Cannata
 
-Copyright 2014 Giovanni Cannata
+Copyright 2013 Giovanni Cannata
 
 This file is part of python3-ldap.
 
@@ -20,7 +23,8 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from pyasn1.type.univ import OctetString, Integer, Sequence, SequenceOf
 from pyasn1.type.namedtype import NamedType, NamedTypes, OptionalNamedType
 from pyasn1.type.tag import Tag, tagFormatSimple, tagClassUniversal, TagSet

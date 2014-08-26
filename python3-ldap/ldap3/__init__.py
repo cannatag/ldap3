@@ -1,4 +1,9 @@
 """
+"""
+
+'''
+Created on 2013.05.15
+
 @author: Giovanni Cannata
 
 Copyright 2013 Giovanni Cannata
@@ -18,7 +23,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
 
 __version__ = '0.9.5.3'
 __author__ = 'Giovanni Cannata'

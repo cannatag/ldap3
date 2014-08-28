@@ -395,7 +395,7 @@ def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=Non
 
     checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
     for attribute in attribute_list:
-        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']), custom_formatter)
+        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']) or [], custom_formatter)
     return checked_attributes
 
 

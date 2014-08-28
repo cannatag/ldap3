@@ -1,0 +1,539 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.abstract.reader &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.abstract.reader</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Created on 2014.01.06</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2014 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">linesep</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span><span class="p">,</span> <span class="n">SEARCH_DEREFERENCE_ALWAYS</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">,</span> <span class="n">ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX</span>
+<span class="kn">from</span> <span class="nn">.attribute</span> <span class="kn">import</span> <span class="n">Attribute</span>
+<span class="kn">from</span> <span class="nn">.entry</span> <span class="kn">import</span> <span class="n">Entry</span>
+<span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPReaderError</span>
+<span class="kn">from</span> <span class="nn">.operationalAttribute</span> <span class="kn">import</span> <span class="n">OperationalAttribute</span>
+
+
+<span class="k">def</span> <span class="nf">_ret_search_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;=&#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;&lt;&gt;~&#39;</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;=&#39;</span> <span class="k">else</span> <span class="n">value</span>
+
+
+<span class="k">def</span> <span class="nf">_create_query_dict</span><span class="p">(</span><span class="n">query_text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a dictionary with query key:value definitions</span>
+<span class="sd">    query_text is a comma delimited key:value sequence</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">query_text</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">arg_value_str</span> <span class="ow">in</span> <span class="n">query_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s">&#39;:&#39;</span> <span class="ow">in</span> <span class="n">arg_value_str</span><span class="p">:</span>
+                <span class="n">arg_value_list</span> <span class="o">=</span> <span class="n">arg_value_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+                <span class="n">query_dict</span><span class="p">[</span><span class="n">arg_value_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> <span class="n">arg_value_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">query_dict</span>
+
+
+<div class="viewcode-block" id="Reader"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader">[docs]</a><span class="k">class</span> <span class="nc">Reader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reader object perform the search with the requested parameters:</span>
+<span class="sd">    &#39;connection&#39;: the connection to use</span>
+<span class="sd">    &#39;object_def&#39;: the definition of the LDAP object to be returned</span>
+<span class="sd">    &#39;query&#39;: the simplified query to be transformed in an LDAP filter</span>
+<span class="sd">    &#39;base&#39;: starting base of the DIT</span>
+<span class="sd">    &#39;components_in_and&#39;: specify if components of query mus be all satisfied or not (AND/OR)</span>
+<span class="sd">    &#39;sub_tree&#39;: a boolean to specify if the search must be performed ad Single Level (False) or Whole SubTree (True)</span>
+<span class="sd">    &#39;get_operational_attributes&#39;: a boolean to specify if operational attributes are returned or not</span>
+<span class="sd">    &#39;controls&#39;: controls to be used in search</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">object_def</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">components_in_and</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">sub_tree</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">get_operational_attributes</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">controls</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span> <span class="o">=</span> <span class="n">object_def</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_components_in_and</span> <span class="o">=</span> <span class="n">components_in_and</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">attr</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_operational_attributes</span> <span class="o">=</span> <span class="n">get_operational_attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controls</span> <span class="o">=</span> <span class="n">controls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="o">=</span> <span class="n">sub_tree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query</span> <span class="o">=</span> <span class="n">query</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dereference_aliases</span> <span class="o">=</span> <span class="n">SEARCH_DEREFERENCE_ALWAYS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">types_only</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_size</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_criticality</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validated_query</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validated_query_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_cookie</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_sub_tree</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Reader.definition"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.definition">[docs]</a>    <span class="k">def</span> <span class="nf">definition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span>
+</div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span>
+
+    <span class="nd">@query.setter</span>
+<div class="viewcode-block" id="Reader.query"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">components_in_and</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components_in_and</span>
+
+    <span class="nd">@components_in_and.setter</span>
+<div class="viewcode-block" id="Reader.components_in_and"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.components_in_and">[docs]</a>    <span class="k">def</span> <span class="nf">components_in_and</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_components_in_and</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;CONN   : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">)</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;BASE   : &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39; [SUB]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="s">&#39; [LEVEL]&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;DEFS   : &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; [&#39;</span>
+        <span class="k">for</span> <span class="n">attr_def</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">):</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">attr_def</span><span class="o">.</span><span class="n">key</span> <span class="k">if</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="p">(</span><span class="n">attr_def</span><span class="o">.</span><span class="n">key</span> <span class="o">+</span> <span class="s">&#39; &lt;&#39;</span> <span class="o">+</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;&gt;&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;,&#39;</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;]&#39;</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;QUERY  : &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39; [AND]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">components_in_and</span> <span class="k">else</span> <span class="s">&#39; [OR]&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;PARSED : &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validated_query</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39; [AND]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">components_in_and</span> <span class="k">else</span> <span class="s">&#39; [OR]&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;ATTRS  : &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39; [OPERATIONAL]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_operational_attributes</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;FILTER : &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span><span class="p">)</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;ENTRIES: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">))</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39; [SUB]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_sub_tree</span> <span class="k">else</span> <span class="s">&#39; [level]&#39;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39; [SIZE LIMIT: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39; [TIME LIMIT: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39; [executed at: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="k">return</span> <span class="n">r</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Reader.clear"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dereference_aliases</span> <span class="o">=</span> <span class="n">SEARCH_DEREFERENCE_ALWAYS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">types_only</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_size</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_criticality</span> <span class="o">=</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="Reader.reset"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validated_query</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validated_query_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_cookie</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_sub_tree</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_query_filter</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">__iter__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_validate_query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Processes the text query and verifies that the requested friendly names are in the Reader dictionary</span>
+<span class="sd">        If the AttrDef has a &#39;validate&#39; property the callable is executed and if it returns False an Exception is raised</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span> <span class="o">=</span> <span class="n">_create_query_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">)</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span><span class="p">):</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;&amp;|&#39;</span> <span class="k">else</span> <span class="n">d</span>
+            <span class="k">for</span> <span class="n">attr_def</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">split</span><span class="p">())</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="n">attr</span> <span class="o">=</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">key</span>
+                    <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">:</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">))</span>
+
+                <span class="n">query</span> <span class="o">+=</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">attr</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;&amp;|&#39;</span> <span class="k">else</span> <span class="n">attr</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="n">val_not</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;!&#39;</span> <span class="k">else</span> <span class="bp">False</span>
+                    <span class="n">val_search_operator</span> <span class="o">=</span> <span class="s">&#39;=&#39;</span>  <span class="c"># default</span>
+                    <span class="k">if</span> <span class="n">val_not</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&#39;=&lt;&gt;~&#39;</span><span class="p">:</span>
+                            <span class="n">value</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">val_search_operator</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">value</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&#39;=&lt;&gt;~&#39;</span><span class="p">:</span>
+                            <span class="n">value</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">val_search_operator</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">value</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">validate</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                            <span class="k">raise</span> <span class="n">LDAPReaderError</span><span class="p">(</span><span class="s">&#39;validation failed for attribute </span><span class="si">%s</span><span class="s"> and value </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="n">val_not</span><span class="p">:</span>
+                        <span class="n">query</span> <span class="o">+=</span> <span class="s">&#39;!&#39;</span> <span class="o">+</span> <span class="n">val_search_operator</span> <span class="o">+</span> <span class="n">value</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">query</span> <span class="o">+=</span> <span class="n">val_search_operator</span> <span class="o">+</span> <span class="n">value</span>
+
+                    <span class="n">query</span> <span class="o">+=</span> <span class="s">&#39;;&#39;</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">validated_query</span> <span class="o">=</span> <span class="n">query</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validated_query_dict</span> <span class="o">=</span> <span class="n">_create_query_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validated_query</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_query_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the query dictionary in the filter text</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="o">.</span><span class="n">stopswith</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">):</span>  <span class="c"># query is already an LDAP filter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(&amp;&#39;</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(objectClass=&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(&amp;&#39;</span>
+                <span class="k">for</span> <span class="n">object_class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(objectClass=&#39;</span> <span class="o">+</span> <span class="n">object_class</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;)&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPReaderError</span><span class="p">(</span><span class="s">&#39;object_class must be a string or a list&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components_in_and</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(|&#39;</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(&amp;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_query</span><span class="p">()</span>
+
+        <span class="n">attr_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validated_query_dict</span><span class="p">):</span>
+            <span class="n">attr_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">multi</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="s">&#39;;&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated_query_dict</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validated_query_dict</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">))</span>
+            <span class="n">attr_def</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">[</span><span class="n">attr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span> <span class="k">if</span> <span class="n">attr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;&amp;|&#39;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">pre_query</span><span class="p">:</span>
+                <span class="n">modvals</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+                    <span class="n">modvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">pre_query</span><span class="p">(</span><span class="n">attr_def</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="n">modvals</span>
+            <span class="k">if</span> <span class="n">multi</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">attr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;&amp;|&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(&#39;</span> <span class="o">+</span> <span class="n">attr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(|&#39;</span>
+
+            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;!&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(!(&#39;</span> <span class="o">+</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">_ret_search_value</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">+</span> <span class="s">&#39;))&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;(&#39;</span> <span class="o">+</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">_ret_search_value</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span>
+            <span class="k">if</span> <span class="n">multi</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;)&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components_in_and</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;))&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">+=</span> <span class="s">&#39;)&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="o">.</span><span class="n">object_class</span> <span class="ow">and</span> <span class="n">attr_counter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c"># remove unneeded starting filter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">attr_defs</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assign the result of the LDAP query to the Entry object dictionary.</span>
+<span class="sd">        If the optional &#39;post_query&#39; callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute</span>
+<span class="sd">        Returns the default value for missing attributes</span>
+<span class="sd">        If the &#39;dereference_dn&#39; in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">used_attribute_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">attr_def</span> <span class="ow">in</span> <span class="n">attr_defs</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">attr_name</span>
+                    <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>  <span class="c"># attribute value found in result or default value present</span>
+                <span class="n">attribute</span> <span class="o">=</span> <span class="n">Attribute</span><span class="p">(</span><span class="n">attr_def</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span>
+                <span class="n">attribute</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;raw_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;raw_attributes&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="bp">None</span>
+                <span class="k">if</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">post_query</span> <span class="ow">and</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]:</span>
+                    <span class="n">attribute</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">post_query</span><span class="p">(</span><span class="n">attr_def</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">attribute</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="p">(</span><span class="n">attr_def</span><span class="o">.</span><span class="n">default</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_def</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="p">[</span><span class="n">attr_def</span><span class="o">.</span><span class="n">default</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">dereference_dn</span><span class="p">:</span>  <span class="c"># try to get object referenced in value</span>
+                    <span class="c"># noinspection PyUnresolvedReferences</span>
+                    <span class="k">if</span> <span class="n">attribute</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                        <span class="n">temp_reader</span> <span class="o">=</span> <span class="n">Reader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="n">attr_def</span><span class="o">.</span><span class="n">dereference_dn</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">get_operational_attributes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_operational_attributes</span><span class="p">,</span> <span class="n">controls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">controls</span><span class="p">)</span>
+                        <span class="n">temp_values</span> <span class="o">=</span> <span class="p">[]</span>
+
+                        <span class="c"># noinspection PyUnresolvedReferences</span>
+                        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">attribute</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                            <span class="n">temp_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_reader</span><span class="o">.</span><span class="n">search_object</span><span class="p">(</span><span class="n">element</span><span class="p">))</span>
+                        <span class="k">del</span> <span class="n">temp_reader</span>  <span class="c"># remove the temporary Reader</span>
+                        <span class="n">attribute</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_values</span>
+
+                <span class="c"># noinspection PyUnresolvedReferences</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span>
+                <span class="n">used_attribute_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">used_attribute_names</span><span class="p">:</span>
+                <span class="n">attribute</span> <span class="o">=</span> <span class="n">OperationalAttribute</span><span class="p">(</span><span class="n">ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span>
+                <span class="n">attribute</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;raw_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;raw_attributes&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+                <span class="n">attribute</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+                    <span class="n">attributes</span><span class="p">[</span><span class="n">ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX</span> <span class="o">+</span> <span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span>
+
+        <span class="k">return</span> <span class="n">attributes</span>
+
+    <span class="k">def</span> <span class="nf">_get_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;searchResEntry&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;dn&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_attributes</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;_raw_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;raw_attributes&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>  <span class="c"># returns the whole attribute object</span>
+            <span class="n">attr_name</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">key</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
+
+        <span class="k">return</span> <span class="n">entry</span>
+
+    <span class="k">def</span> <span class="nf">_execute_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_scope</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPReaderError</span><span class="p">(</span><span class="s">&#39;no connection established&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_query_filter</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">search_base</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="p">,</span>
+                                            <span class="n">search_filter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span><span class="p">,</span>
+                                            <span class="n">search_scope</span><span class="o">=</span><span class="n">query_scope</span><span class="p">,</span>
+                                            <span class="n">dereference_aliases</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dereference_aliases</span><span class="p">,</span>
+                                            <span class="n">attributes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">,</span>
+                                            <span class="n">size_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span><span class="p">,</span>
+                                            <span class="n">time_limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span><span class="p">,</span>
+                                            <span class="n">types_only</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">types_only</span><span class="p">,</span>
+                                            <span class="n">get_operational_attributes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_operational_attributes</span><span class="p">,</span>
+                                            <span class="n">controls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">controls</span><span class="p">,</span>
+                                            <span class="n">paged_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">paged_size</span><span class="p">,</span>
+                                            <span class="n">paged_criticality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">paged_criticality</span><span class="p">,</span>
+                                            <span class="n">paged_cookie</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">paged_cookie</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">sync</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">response</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entry</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_sub_tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Reader.search"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">query_scope</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+</div>
+<div class="viewcode-block" id="Reader.search_level"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_level">[docs]</a>    <span class="k">def</span> <span class="nf">search_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+</div>
+<div class="viewcode-block" id="Reader.search_subtree"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_subtree">[docs]</a>    <span class="k">def</span> <span class="nf">search_subtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+</div>
+<div class="viewcode-block" id="Reader.search_object"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_object">[docs]</a>    <span class="k">def</span> <span class="nf">search_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_dn</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  <span class="c"># base must be a single dn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">entry_dn</span><span class="p">:</span>
+            <span class="n">old_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">entry_dn</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">old_base</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Reader.search_size_limit"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_size_limit">[docs]</a>    <span class="k">def</span> <span class="nf">search_size_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size_limit</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="o">=</span> <span class="n">size_limit</span>
+        <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">query_scope</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+</div>
+<div class="viewcode-block" id="Reader.search_time_limit"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_time_limit">[docs]</a>    <span class="k">def</span> <span class="nf">search_time_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="n">time_limit</span>
+        <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">query_scope</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+</div>
+<div class="viewcode-block" id="Reader.search_types_only"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_types_only">[docs]</a>    <span class="k">def</span> <span class="nf">search_types_only</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">types_only</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">query_scope</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+</div>
+<div class="viewcode-block" id="Reader.search_paged"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_paged">[docs]</a>    <span class="k">def</span> <span class="nf">search_paged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paged_size</span><span class="p">,</span> <span class="n">paged_criticality</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">paged_cookie</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_size</span> <span class="o">=</span> <span class="n">paged_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paged_criticality</span> <span class="o">=</span> <span class="n">paged_criticality</span>
+        <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">query_scope</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

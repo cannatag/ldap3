@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2014.04.26
 
 @author: Giovanni Cannata
@@ -20,7 +23,8 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from string import whitespace
 
 
@@ -64,13 +68,13 @@ def _add_ava(ava, decompose, remove_space, space_around_equal):
     return component
 
 
-def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=False, separe_rdn=False):
+def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=False, separate_rdn=False):
     """
     Convert an iterator to a list of dn parts
     if decompose=True return a list of tuple (one for each dn component) else return a list of strings
     if remove_space=True removes unneeded spaces
-    if space_around_equal=True add spaces around equal in returned strigns
-    if separe_rdn=True consider mutiple rnd as different component of dn
+    if space_around_equal=True add spaces around equal in returned strings
+    if separate_rdn=True consider multiple RDNs as different component of DN
     """
     dn = []
     component = ''
@@ -80,7 +84,7 @@ def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=Fals
             escape_sequence = True
         elif escape_sequence and c not in whitespace:
             escape_sequence = False
-        elif c in '+' and separe_rdn:
+        elif c in '+' and separate_rdn:
             dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
             component = ''
             continue

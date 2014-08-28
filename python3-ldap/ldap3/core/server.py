@@ -1,9 +1,12 @@
 """
-Created on 2013.05.31
+"""
+
+'''
+Created on 2014.05.31
 
 @author: Giovanni Cannata
 
-Copyright 2013 Giovanni Cannata
+Copyright 2014 Giovanni Cannata
 
 This file is part of python3-ldap.
 
@@ -20,7 +23,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
 
 import socket
 from threading import Lock
@@ -234,7 +237,22 @@ class Server(object):
 
         result = None
         if schema_entry:
-            result = connection.search(schema_entry, search_filter='(objectClass=subschema)', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
+            result = connection.search(schema_entry,
+                                       search_filter='(objectClass=subschema)',
+                                       search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                       attributes=['objectClasses',  # requests specific subschema attributes
+                                                   'attributeTypes',
+                                                   'ldapSyntaxes',
+                                                   'matchingRules',
+                                                   'matchingRuleUse',
+                                                   'dITContentRules',
+                                                   'dITStructureRules',
+                                                   'nameForms',
+                                                   'createTimestamp',
+                                                   'modifyTimestamp',
+                                                   '*'],  # requests all remaining attributes (other)
+                                       get_operational_attributes=True
+                                       )
 
         with self.lock:
             self._schema_info = None

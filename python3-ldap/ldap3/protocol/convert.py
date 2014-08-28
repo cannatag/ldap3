@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2013.07.24
 
 @author: Giovanni Cannata
@@ -20,7 +23,8 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from datetime import datetime, timedelta, tzinfo
 from uuid import UUID
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
@@ -111,7 +115,7 @@ def substring_to_dict(substring):
 
 
 def prepare_changes_for_request(changes):
-    prepared = {}
+    prepared = dict()
     for change in changes:
         prepared[change['attribute']['type']] = (change['operation'], change['attribute']['value'])
     return prepared
@@ -187,7 +191,7 @@ def format_unicode(raw_value):
             return str(raw_value, 'utf-8', errors='strict')
         else:
             return unicode(raw_value, 'utf-8', errors='strict')
-    except TypeError:
+    except (TypeError, UnicodeDecodeError):
         pass
 
     return raw_value
@@ -265,6 +269,7 @@ def format_time(raw_value):
     g-differential  = ( MINUS / PLUS ) hour [ minute ]
         MINUS           = %x2D  ; minus sign ("-")
     """
+
     if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
         return raw_value
 
@@ -319,7 +324,7 @@ def format_time(raw_value):
         if str != bytes:  # python3
             timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), 'UTC' + str(sep + offset, encoding='utf-8'))
         else:
-            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), u'UTC' + unicode(sep + offset, encoding='utf-8'))
+            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), unicode('UTC' + sep + offset, encoding='utf-8'))
 
     try:
         return datetime(year=int(raw_value[pos_year: pos_year + 4]),
@@ -337,15 +342,17 @@ def format_attribute_values(schema, name, values, custom_formatter):
     """
     Tries to format following the OIDs info and format_helper specification.
     Search for attribute oid, then attribute name (can be multiple), then attrubte syntax
-    Precedence is: 1. attribute name
-                   2. attribute oid(from schema)
-                   3. attribute names (from oid_info)
-                   4. attribute syntax (from schema)
+    Precedence is:
+    1. attribute name
+    2. attribute oid(from schema)
+    3. attribute names (from oid_info)
+    4. attribute syntax (from schema)
     Custom formatters can be defined in Server object and have precedence over the standard_formatters
     If no formatter is found the raw_value is returned as bytes.
     Attributes defined as SINGLE_VALUE in schema are returned as a single object, otherwise are returned as a list of object
     Formatter functions can return any kind of object
     """
+
     formatter = None
     if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
         attr_type = schema.attribute_types[name.lower()]

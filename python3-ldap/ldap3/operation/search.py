@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2013.06.02
 
 @author: Giovanni Cannata
@@ -20,13 +23,15 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
 
 from string import whitespace
 from os import linesep
 
-from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES
+from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, \
+    ATTRIBUTES_EXCLUDED_FROM_CHECK, CASE_INSENSITIVE_ATTRIBUTE_NAMES
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
+from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, \
     ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
@@ -309,7 +314,7 @@ def build_attribute_selection(attribute_list, schema):
     attribute_selection = AttributeSelection()
     for index, attribute in enumerate(attribute_list):
         if schema and schema.attribute_types is not None:
-            if not attribute.lower() in schema.attribute_types and attribute not in '+*1.1':
+            if not attribute.lower() in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
                 raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
         attribute_selection[index] = Selector(attribute)
 
@@ -365,7 +370,7 @@ def decode_vals(vals):
 
 
 def attributes_to_dict(attribute_list):
-    attributes = dict()
+    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_vals(attribute['vals'])
 
@@ -377,7 +382,7 @@ def decode_raw_vals(vals):
 
 
 def raw_attributes_to_dict(attribute_list):
-    attributes = dict()
+    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_raw_vals(attribute['vals'])
 
@@ -388,9 +393,9 @@ def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=Non
     if not schema:
         return None
 
-    checked_attributes = dict()
+    checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
     for attribute in attribute_list:
-        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']), custom_formatter)
+        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']) or [], custom_formatter)
     return checked_attributes
 
 

@@ -47,6 +47,7 @@ class Test(unittest.TestCase):
         else:
             response = self.connection.response
             result = self.connection.result
+        print(result['description'])
         self.assertTrue(result['description'] in ['success', 'noSuchObject'])
 
     def test_who_am_i_extension(self):

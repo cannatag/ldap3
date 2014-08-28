@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2013.05.31
 
 @author: Giovanni Cannata
@@ -20,7 +23,8 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from ..protocol.convert import validate_attribute_value
 from ..protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, ResultCode
 from ..operation.search import ava_to_dict

@@ -1,9 +1,12 @@
 """
+"""
+
+'''
 Created on 2014.03.23
 
 @author: Giovanni Cannata
 
-Copyright 2014 Giovanni Cannata
+Copyright 2013 Giovanni Cannata
 
 This file is part of python3-ldap.
 
@@ -20,12 +23,13 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
 from time import sleep
-from .. import REUSABLE_POOL_SIZE, REUSABLE_CONNECTION_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .baseStrategy import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError
@@ -72,8 +76,8 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.name = connection.pool_name
                 self.original_connection = connection
                 self.connections = []
-                self.pool_size = connection.pool_size or REUSABLE_POOL_SIZE
-                self.lifetime = connection.pool_lifetime or REUSABLE_CONNECTION_LIFETIME
+                self.pool_size = connection.pool_size or REUSABLE_THREADED_POOL_SIZE
+                self.lifetime = connection.pool_lifetime or REUSABLE_THREADED_LIFETIME
                 self.request_queue = Queue()
                 self.open_pool = False
                 self.bind_pool = False

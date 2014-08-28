@@ -1,9 +1,12 @@
 """
-Created on 2013.05.31
+"""
+
+'''
+Created on 2014.05.31
 
 @author: Giovanni Cannata
 
-Copyright 2013 Giovanni Cannata
+Copyright 2014 Giovanni Cannata
 
 This file is part of python3-ldap.
 
@@ -20,13 +23,14 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from os import linesep
 from pyasn1.codec.ber import encoder
 
 from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
-    STRATEGY_REUSABLE_THREADED, DEFAULT_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS
+    STRATEGY_REUSABLE_THREADED, DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -136,7 +140,7 @@ class Connection(object):
         self._bind_controls = None
         self._executing_deferred = False
         self.lazy = lazy
-        self.pool_name = pool_name if pool_name else DEFAULT_POOL_NAME
+        self.pool_name = pool_name if pool_name else DEFAULT_THREADED_POOL_NAME
         self.pool_size = pool_size
         self.pool_lifetime = pool_lifetime
         self.starting_tls = False
@@ -227,7 +231,7 @@ class Connection(object):
         r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
-        r += '' if (self.pool_name is None or self.pool_name == DEFAULT_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(self)
+        r += '' if (self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += ')'

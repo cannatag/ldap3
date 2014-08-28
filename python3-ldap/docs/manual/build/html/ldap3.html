@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3 package &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="index.html" />
+    <link rel="up" title="ldap3" href="modules.html" />
+    <link rel="next" title="ldap3.abstract package" href="ldap3.abstract.html" />
+    <link rel="prev" title="ldap3" href="modules.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.abstract.html" title="ldap3.abstract package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="ldap3"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">ldap3</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ldap3-package">
+<h1>ldap3 package<a class="headerlink" href="#ldap3-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.abstract.html">ldap3.abstract package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#module-ldap3.abstract.attrDef">ldap3.abstract.attrDef module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#module-ldap3.abstract.attribute">ldap3.abstract.attribute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#module-ldap3.abstract.entry">ldap3.abstract.entry module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#module-ldap3.abstract.objectDef">ldap3.abstract.objectDef module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#module-ldap3.abstract.operationalAttribute">ldap3.abstract.operationalAttribute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#module-ldap3.abstract.reader">ldap3.abstract.reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.abstract.html#module-ldap3.abstract">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.compat.html">ldap3.compat package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.compat.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.compat.html#module-ldap3.compat.connection">ldap3.compat.connection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.compat.html#module-ldap3.compat.server">ldap3.compat.server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.compat.html#module-ldap3.compat.tls">ldap3.compat.tls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.compat.html#module-ldap3.compat">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.core.html">ldap3.core package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#module-ldap3.core.connection">ldap3.core.connection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#module-ldap3.core.exceptions">ldap3.core.exceptions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#module-ldap3.core.pooling">ldap3.core.pooling module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#module-ldap3.core.server">ldap3.core.server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#module-ldap3.core.tls">ldap3.core.tls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#module-ldap3.core.usage">ldap3.core.usage module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.core.html#module-ldap3.core">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.extend.html">ldap3.extend package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.extend.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ldap3.extend.novell.html">ldap3.extend.novell package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#module-ldap3.extend.novell.getBindDn">ldap3.extend.novell.getBindDn module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#module-ldap3.extend.novell.listReplicas">ldap3.extend.novell.listReplicas module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#module-ldap3.extend.novell.nmasGetUniversalPassword">ldap3.extend.novell.nmasGetUniversalPassword module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#module-ldap3.extend.novell.nmasSetUniversalPassword">ldap3.extend.novell.nmasSetUniversalPassword module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#module-ldap3.extend.novell.partition_entry_count">ldap3.extend.novell.partition_entry_count module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#module-ldap3.extend.novell.replicaInfo">ldap3.extend.novell.replicaInfo module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.novell.html#module-ldap3.extend.novell">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ldap3.extend.standard.html">ldap3.extend.standard package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.standard.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.standard.html#module-ldap3.extend.standard.PagedSearch">ldap3.extend.standard.PagedSearch module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.standard.html#module-ldap3.extend.standard.modifyPassword">ldap3.extend.standard.modifyPassword module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.standard.html#module-ldap3.extend.standard.whoAmI">ldap3.extend.standard.whoAmI module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.extend.standard.html#module-ldap3.extend.standard">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.extend.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.extend.html#module-ldap3.extend.operation">ldap3.extend.operation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.extend.html#module-ldap3.extend">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.operation.html">ldap3.operation package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.abandon">ldap3.operation.abandon module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.add">ldap3.operation.add module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.bind">ldap3.operation.bind module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.compare">ldap3.operation.compare module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.delete">ldap3.operation.delete module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.extended">ldap3.operation.extended module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.modify">ldap3.operation.modify module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.modifyDn">ldap3.operation.modifyDn module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.search">ldap3.operation.search module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation.unbind">ldap3.operation.unbind module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.operation.html#module-ldap3.operation">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.protocol.html">ldap3.protocol package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ldap3.protocol.sasl.html">ldap3.protocol.sasl package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.protocol.sasl.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.protocol.sasl.html#module-ldap3.protocol.sasl.digestMd5">ldap3.protocol.sasl.digestMd5 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.protocol.sasl.html#module-ldap3.protocol.sasl.external">ldap3.protocol.sasl.external module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.protocol.sasl.html#module-ldap3.protocol.sasl.sasl">ldap3.protocol.sasl.sasl module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ldap3.protocol.sasl.html#module-ldap3.protocol.sasl">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.convert">ldap3.protocol.convert module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.novell">ldap3.protocol.novell module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.oid">ldap3.protocol.oid module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.rfc2696">ldap3.protocol.rfc2696 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.rfc2849">ldap3.protocol.rfc2849 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.rfc3062">ldap3.protocol.rfc3062 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.rfc4511">ldap3.protocol.rfc4511 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol.rfc4512">ldap3.protocol.rfc4512 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.protocol.html#module-ldap3.protocol">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.strategy.html">ldap3.strategy package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#module-ldap3.strategy.asyncThreaded">ldap3.strategy.asyncThreaded module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#module-ldap3.strategy.baseStrategy">ldap3.strategy.baseStrategy module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#module-ldap3.strategy.ldifProducer">ldap3.strategy.ldifProducer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#module-ldap3.strategy.reusableThreaded">ldap3.strategy.reusableThreaded module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#module-ldap3.strategy.syncWait">ldap3.strategy.syncWait module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#module-ldap3.strategy.syncWaitRestartable">ldap3.strategy.syncWaitRestartable module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.strategy.html#module-ldap3.strategy">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ldap3.utils.html">ldap3.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.utils.html#module-ldap3.utils.caseInsensitiveDictionary">ldap3.utils.caseInsensitiveDictionary module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.utils.html#module-ldap3.utils.conv">ldap3.utils.conv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ldap3.utils.html#module-ldap3.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-ldap3">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ldap3" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: Giovanni Cannata</p>
+<p>Copyright 2013 Giovanni Cannata</p>
+<p>This file is part of python3-ldap.</p>
+<p>python3-ldap is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>python3-ldap is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with python3-ldap in the COPYING and COPYING.LESSER files.
+If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ldap3 package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#module-ldap3">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">ldap3</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ldap3.abstract.html"
+                        title="next chapter">ldap3.abstract package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ldap3.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.abstract.html" title="ldap3.abstract package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="ldap3"
+             >previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >ldap3</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

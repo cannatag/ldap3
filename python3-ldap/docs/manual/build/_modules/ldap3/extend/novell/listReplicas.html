@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.extend.novell.listReplicas &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../../index.html" />
+    <link rel="up" title="ldap3.extend" href="../../extend.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../extend.html" accesskey="U">ldap3.extend</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.extend.novell.listReplicas</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on 2014.07.03</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2014 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">..operation</span> <span class="kn">import</span> <span class="n">ExtendedOperation</span>
+<span class="kn">from</span> <span class="nn">...protocol.novell</span> <span class="kn">import</span> <span class="n">ReplicaList</span>
+<span class="kn">from</span> <span class="nn">...protocol.rfc4511</span> <span class="kn">import</span> <span class="n">LDAPDN</span>
+
+
+<div class="viewcode-block" id="ListReplicas"><a class="viewcode-back" href="../../../../ldap3.extend.novell.html#ldap3.extend.novell.listReplicas.ListReplicas">[docs]</a><span class="k">class</span> <span class="nc">ListReplicas</span><span class="p">(</span><span class="n">ExtendedOperation</span><span class="p">):</span>
+<div class="viewcode-block" id="ListReplicas.config"><a class="viewcode-back" href="../../../../ldap3.extend.novell.html#ldap3.extend.novell.listReplicas.ListReplicas.config">[docs]</a>    <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_name</span> <span class="o">=</span> <span class="s">&#39;2.16.840.1.113719.1.27.100.19&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_name</span> <span class="o">=</span> <span class="s">&#39;2.16.840.1.113719.1.27.100.20&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_value</span> <span class="o">=</span> <span class="n">LDAPDN</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asn1_spec</span> <span class="o">=</span> <span class="n">ReplicaList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_attribute</span> <span class="o">=</span> <span class="s">&#39;replicas&#39;</span>
+</div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">server_dn</span><span class="p">):</span>
+        <span class="n">ExtendedOperation</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>  <span class="c"># calls super __init__()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_value</span> <span class="o">=</span> <span class="n">LDAPDN</span><span class="p">(</span><span class="n">server_dn</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ListReplicas.populate_result"><a class="viewcode-back" href="../../../../ldap3.extend.novell.html#ldap3.extend.novell.listReplicas.ListReplicas.populate_result">[docs]</a>    <span class="k">def</span> <span class="nf">populate_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;replicas&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoded_response</span><span class="p">[</span><span class="s">&#39;replicaList&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoded_response</span><span class="p">[</span><span class="s">&#39;replicaList&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;replicas&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../extend.html" >ldap3.extend</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

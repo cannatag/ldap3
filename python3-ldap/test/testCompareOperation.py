@@ -24,14 +24,14 @@ If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_check_names, test_get_info
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, dn_for_test, test_lazy_connection, test_check_names, test_get_info
 
 
 class Test(unittest.TestCase):
     def setUp(self):
         server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
-        result = self.connection.add(test_dn_builder(test_base, 'test-add-for-compare'), None, {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'compare'})
+        result = self.connection.add(dn_for_test(test_base, 'test-add-for-compare'), None, {'objectClass': 'iNetOrgPerson', 'sn': 'test-compare', 'givenName': 'compare'})
         if not isinstance(result, bool):
             self.connection.get_response(result)
 
@@ -42,7 +42,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_compare_true(self):
-        result = self.connection.compare(test_dn_builder(test_base, 'test-add-for-compare'), 'givenName', 'compare')
+        result = self.connection.compare(dn_for_test(test_base, 'test-add-for-compare'), 'givenName', 'compare')
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'compareTrue')
 
     def test_compare_false(self):
-        result = self.connection.compare(test_dn_builder(test_base, 'test-add-for-compare'), 'givenName', 'error')
+        result = self.connection.compare(dn_for_test(test_base, 'test-add-for-compare'), 'givenName', 'error')
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:

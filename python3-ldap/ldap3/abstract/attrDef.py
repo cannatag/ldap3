@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2014.01.11
 
 @author: Giovanni Cannata
@@ -20,7 +23,8 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
+
 from ..core.exceptions import LDAPKeyError
 
 
@@ -47,6 +51,11 @@ class AttrDef(object):
         self.dereference_dn = dereference_dn
 
     def __repr__(self):
+        """
+
+        :return:
+        :rtype:
+        """
         r = 'AttrDef(key={0.key!r}'.format(self)
         r += ', name={0.name!r}'.format(self)
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)

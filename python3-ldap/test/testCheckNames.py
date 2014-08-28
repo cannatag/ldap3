@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from ldap3.core.exceptions import LDAPException
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, test_dn_builder, test_lazy_connection, test_name_attr, test_get_info, test_check_names
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, dn_for_test, test_lazy_connection, test_name_attr, test_get_info, test_check_names
 
 
 class Test(unittest.TestCase):
@@ -59,7 +59,7 @@ class Test(unittest.TestCase):
     def test_wrong_object_class_add(self):
         ok = False
         try:
-            result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+            result = self.connection.add(dn_for_test(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
         except LDAPException:
             ok = True
         self.assertTrue(ok)
@@ -85,7 +85,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(response) > 1)
 
     def test_valid_object_class_add(self):
-        result = self.connection.add(test_dn_builder(test_base, 'test-add-operation-check-names'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'Person'], 'sn': 'test-add', test_name_attr: 'test-add-operation-check-names'})
+        result = self.connection.add(dn_for_test(test_base, 'test-add-operation-check-names'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'Person'], 'sn': 'test-add', test_name_attr: 'test-add-operation-check-names'})
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:

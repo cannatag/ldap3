@@ -1,4 +1,7 @@
 """
+"""
+
+'''
 Created on 2013.07.15
 
 @author: Giovanni Cannata
@@ -20,7 +23,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with python3-ldap in the COPYING and COPYING.LESSER files.
 If not, see <http://www.gnu.org/licenses/>.
-"""
+'''
 
 from threading import Thread, Lock
 
@@ -30,6 +33,7 @@ from .. import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
+import socket
 
 
 # noinspection PyProtectedMember
@@ -67,8 +71,11 @@ class AsyncThreadedStrategy(BaseStrategy):
                 if get_more_data:
                     try:
                         data = self.connection.socket.recv(SOCKET_SIZE)
-                    except OSError:
+                    except (OSError, socket.error):
                         listen = False
+                    except Exception as e:
+                        print('EXC', e)
+                        print(type(e))
                     if len(data) > 0:
                         unprocessed += data
                         data = b''

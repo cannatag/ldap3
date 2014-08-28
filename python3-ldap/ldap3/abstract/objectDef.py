@@ -3,7 +3,7 @@
 
 # Created on 2014.02.02
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -30,16 +30,13 @@ from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError,
 
 
 class ObjectDef(object):
-    """
-    AttrDefs are stored in a dictionary; the key is the friendly name defined
-    in AttrDef
+    """Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.
 
     AttrDefs can be added and removed using the += ad -= operators
 
-    ObjectDef can be accessed either as a sequence and a dictionary. When
-    accessed the whole AttrDef instance is returned
-    """
+    ObjectDef can be accessed either as a sequence and a dictionary. When accessed the whole AttrDef instance is returned
 
+    """
     def __init__(self, object_class=None):
         self.__dict__['object_class'] = object_class
         self.__dict__['_attributes'] = dict()
@@ -98,6 +95,11 @@ class ObjectDef(object):
         return True
 
     def add(self, definition=None):
+        """Add an AttrDef to the ObjectDef. Can be called with the += operator.
+        :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add
+
+        """
+
         if isinstance(definition, str):
             element = AttrDef(definition)
             self.add(element)
@@ -115,6 +117,10 @@ class ObjectDef(object):
             raise LDAPObjectError('unable to add element to object definition')
 
     def remove(self, item):
+        """Remove an AttrDef from the ObjectDef. Can be called with the -= operator.
+        :param item: the AttrDef to remove, can also be a string containing the name of attribute to remove
+
+        """
         key = None
         if isinstance(item, str):
             key = ''.join(item.split()).lower()
@@ -132,5 +138,8 @@ class ObjectDef(object):
             raise LDAPTypeError('key must be str or AttrDef not ' + str(type(key)))
 
     def clear(self):
+        """Empty the ObjectDef attribute list
+
+        """
         self.__dict__['object_class'] = None
         self.__dict__['_attributes'] = dict()

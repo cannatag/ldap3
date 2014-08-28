@@ -8,7 +8,7 @@
     
     <title>ldap3.abstract.attrDef &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -39,24 +39,7 @@
         <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -69,7 +52,7 @@
 
 <span class="c"># Created on 2014.01.11</span>
 <span class="c">#</span>
-<span class="c"># @author: Giovanni Cannata</span>
+<span class="c"># Author: Giovanni Cannata</span>
 <span class="c">#</span>
 <span class="c"># Copyright 2014 Giovanni Cannata</span>
 <span class="c">#</span>
@@ -93,16 +76,23 @@
 
 
 <div class="viewcode-block" id="AttrDef"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.attrDef.AttrDef">[docs]</a><span class="k">class</span> <span class="nc">AttrDef</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Attribute definition for abstract layer:</span>
-<span class="sd">    &#39;name&#39; is the real attribute name</span>
-<span class="sd">    &#39;key&#39; is the friendly name to use in query and while accessing the attribute, if not set is the same of name</span>
-<span class="sd">    &#39;default&#39; is the value returned if the attribute is not present</span>
-<span class="sd">    &#39;validate&#39; is an optional callable, called to check if the value in the query is valid, the callable is called with the value parameter</span>
-<span class="sd">    &#39;preQuery&#39; is an optional callable, called to transform values to be searched</span>
-<span class="sd">    &#39;postQuery&#39; is an optional callable, called to transform values returned by search</span>
-<span class="sd">    &#39;dereference_dn&#39; is a reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry</span>
-<span class="sd">    AttrDef(&#39;name&#39;) creates an AttrDef object for attribute &#39;name&#39; with all default values</span>
+    <span class="sd">&quot;&quot;&quot;Hold the definition of an attribute</span>
+
+<span class="sd">    :param name: the real attribute name</span>
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param key: the friendly name to use in queries and when accessing the attribute, default to the real attribute name</span>
+<span class="sd">    :type key: string</span>
+<span class="sd">    :param validate: called to check if the value in the query is valid, the callable is called with the value parameter</span>
+<span class="sd">    :type validate: callable</span>
+<span class="sd">    :param pre_query: called to transform values returned by search</span>
+<span class="sd">    :type pre_query: callable</span>
+<span class="sd">    :param post_query: called to transform values returned by search</span>
+<span class="sd">    :type post_query: callable</span>
+<span class="sd">    :param default: value returned when the attribute is absent</span>
+<span class="sd">    :type default: string, integer</span>
+<span class="sd">    :param dereference_dn: reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry</span>
+<span class="sd">    :type dereference_dn: ObjectDef</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pre_query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">post_query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dereference_dn</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -115,11 +105,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dereference_dn</span> <span class="o">=</span> <span class="n">dereference_dn</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :return:</span>
-<span class="sd">        :rtype:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;AttrDef(key={0.key!r}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;, name={0.name!r}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="s">&#39;, validate={0.validate!r}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -160,6 +145,23 @@
 </pre></div>
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

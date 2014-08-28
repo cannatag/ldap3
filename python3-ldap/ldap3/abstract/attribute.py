@@ -3,7 +3,7 @@
 
 # Created on 2014.01.06
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -30,11 +30,14 @@ from ..core.exceptions import LDAPAttributeError
 
 # noinspection PyUnresolvedReferences
 class Attribute(object):
-    """
-    Attribute/values object, it includes the search result (after post_query transformation) of each attribute in an entry
+    """Attribute/values object, it includes the search result (after post_query transformation) of each attribute in an entry
+
     Attribute object is read only
-    'values' contains the processed attribute values
-    'raw_values' contains the unprocessed attribute values
+
+    - values: contain the processed attribute values
+    - raw_values': contain the unprocessed attribute values
+
+
     """
 
     def __init__(self, attr_def, entry):
@@ -77,4 +80,7 @@ class Attribute(object):
 
     @property
     def value(self):
+        """
+        :return: The single value or a list of values of the attribute.
+        """
         return self.__dict__['values'][0] if len(self.__dict__['values']) == 1 else self.__dict__['values']

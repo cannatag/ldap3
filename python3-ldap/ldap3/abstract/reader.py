@@ -3,7 +3,7 @@
 
 # Created on 2014.01.06
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -53,18 +53,26 @@ def _create_query_dict(query_text):
 
 
 class Reader(object):
-    """
-    Reader object perform the search with the requested parameters:
-    'connection': the connection to use
-    'object_def': the definition of the LDAP object to be returned
-    'query': the simplified query to be transformed in an LDAP filter
-    'base': starting base of the DIT
-    'components_in_and': specify if components of query mus be all satisfied or not (AND/OR)
-    'sub_tree': a boolean to specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
-    'get_operational_attributes': a boolean to specify if operational attributes are returned or not
-    'controls': controls to be used in search
-    """
+    """Reader object to perform searches:
 
+    :param connection: the LDAP connection object to use
+    :type connection: LDAPConnection
+    :param object_def: the ObjectDef of the LDAP object returned
+    :type object_def: ObjectDef
+    :param query: the simplified query (will be transformed in an LDAP filter)
+    :type query: str
+    :param base: starting base of the search
+    :type base: str
+    :param components_in_and: specify if assertions in the query mus be all satisfied or not (AND/OR)
+    :type components_in_and: bool
+    :param sub_tree: specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
+    :type sub_tree: bool
+    :param get_operational_attributes: specify if operational attributes are returned or not
+    :type get_operational_attributes: bool
+    :param controls: controls to be used in search
+    :type controls: tuple
+
+    """
     def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, controls=None):
         self.connection = connection
         self._definition = object_def
@@ -138,6 +146,9 @@ class Reader(object):
         return self.__repr__()
 
     def clear(self):
+        """Clear the Reader search parameters
+
+        """
         self.dereference_aliases = SEARCH_DEREFERENCE_ALWAYS
         self.size_limit = 0
         self.time_limit = 0
@@ -146,6 +157,8 @@ class Reader(object):
         self.paged_criticality = False
 
     def reset(self):
+        """Clear all the Reader parameters
+        """
         self.clear()
         self.validated_query = None
         self._query_dict = dict()
@@ -167,9 +180,9 @@ class Reader(object):
         return len(self.entries)
 
     def _validate_query(self):
-        """
-        Processes the text query and verifies that the requested friendly names are in the Reader dictionary
+        """Processes the text query and verifies that the requested friendly names are in the Reader dictionary
         If the AttrDef has a 'validate' property the callable is executed and if it returns False an Exception is raised
+
         """
         if not self._query_dict:
             self._query_dict = _create_query_dict(self._query)
@@ -219,9 +232,7 @@ class Reader(object):
         self._validated_query_dict = _create_query_dict(self.validated_query)
 
     def _create_query_filter(self):
-        """
-        Converts the query dictionary in the filter text
-        """
+        """Converts the query dictionary in the filter text"""
         if self._query and self._query.startswith('(') and self._query.stopswith(')'):  # query is already an LDAP filter
             self.query_filter = self._query
             return
@@ -281,11 +292,13 @@ class Reader(object):
             self.query_filter = self.query_filter[2:-1]
 
     def _get_attributes(self, result, attr_defs, entry):
-        """
-        Assign the result of the LDAP query to the Entry object dictionary.
-        If the optional 'post_query' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute
-        Returns the default value for missing attributes
-        If the 'dereference_dn' in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value
+        """Assign the result of the LDAP query to the Entry object dictionary.
+
+        If the optional 'post_query' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute.
+
+        Returns the default value for missing attributes.
+        If the 'dereference_dn' in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value.
+
         """
         attributes = dict()
         used_attribute_names = []
@@ -375,6 +388,11 @@ class Reader(object):
             self.execution_time = datetime.now()
 
     def search(self):
+        """Perform the LDAP search
+
+        :return: Entries found in search
+
+        """
         self.clear()
         query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
         self._execute_query(query_scope)
@@ -382,18 +400,33 @@ class Reader(object):
         return self.entries
 
     def search_level(self):
+        """Perform the LDAP search operation with SINGLE_LEVEL scope
+
+        :return: Entries found in search
+
+        """
         self.clear()
         self._execute_query(SEARCH_SCOPE_SINGLE_LEVEL)
 
         return self.entries
 
     def search_subtree(self):
+        """Perform the LDAP search operation WHOLE_SUBTREE scope
+
+        :return: Entries found in search
+
+        """
         self.clear()
         self._execute_query(SEARCH_SCOPE_WHOLE_SUBTREE)
 
         return self.entries
 
     def search_object(self, entry_dn=None):  # base must be a single dn
+        """Perform the LDAP search operation SINGLE_OBJECT scope
+
+        :return: Entry found in search
+
+        """
         self.clear()
         if entry_dn:
             old_base = self.base
@@ -406,6 +439,13 @@ class Reader(object):
         return self.entries[0] if len(self.entries) > 0 else None
 
     def search_size_limit(self, size_limit):
+        """Perform the LDAP search with limit of entries found
+
+        :param size_limit: maximum number of entries returned
+        :return: Entries found in search
+
+        """
+
         self.clear()
         self.size_limit = size_limit
         query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
@@ -414,6 +454,12 @@ class Reader(object):
         return self.entries
 
     def search_time_limit(self, time_limit):
+        """Perform the LDAP search with limit of time spent in searching by the server
+
+        :param time_limit: maximum number of seconds to wait for a search
+        :return: Entries found in search
+
+        """
         self.clear()
         self.time_limit = time_limit
         query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
@@ -422,6 +468,11 @@ class Reader(object):
         return self.entries
 
     def search_types_only(self):
+        """Perform the search returning attribute names only.
+
+        :return: Entries found in search
+
+        """
         self.clear()
         self.types_only = True
         query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
@@ -430,6 +481,16 @@ class Reader(object):
         return self.entries
 
     def search_paged(self, paged_size, paged_criticality=True):
+        """Perform a paged search, can be called as an Iterator
+
+        :param paged_size: number of entries returned in each search
+        :type paged_size: int
+        :param paged_criticality: specify if server must not execute the search if it is not capable of paging searches
+        :type paged_criticality: bool
+        :return: Entries found in search
+
+        """
+
         if not self.paged_cookie:
             self.clear()
 

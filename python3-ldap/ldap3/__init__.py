@@ -3,7 +3,7 @@
 
 # Created on 2013.05.15
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2013 Giovanni Cannata
 #
@@ -213,10 +213,10 @@ FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.3',  # Attribute type description
                   '1.3.6.1.4.1.1466.115.121.1.25',  # Guide (obsolete)
                   '1.3.6.1.4.1.1466.115.121.1.26',  # IA5 string
                   '1.3.6.1.4.1.1466.115.121.1.30',  # Matching rule description
-                  '1.3.6.1.4.1.1466.115.121.1.31',  # Matching ruledescription
+                  '1.3.6.1.4.1.1466.115.121.1.31',  # Matching rule use description
                   '1.3.6.1.4.1.1466.115.121.1.34',  # Name and optional UID
                   '1.3.6.1.4.1.1466.115.121.1.35',  # Name form description
-                  '1.3.6.1.4.1.1466.115.121.1.36',  # Mumeric string
+                  '1.3.6.1.4.1.1466.115.121.1.36',  # Numeric string
                   '1.3.6.1.4.1.1466.115.121.1.37',  # Object class description
                   '1.3.6.1.4.1.1466.115.121.1.38',  # OID
                   '1.3.6.1.4.1.1466.115.121.1.39',  # Other mailbox

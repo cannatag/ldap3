@@ -3,7 +3,7 @@
 
 # Created on 2014.05.14
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #

@@ -3,7 +3,7 @@
 
 # Created on 2014.05.31
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -134,7 +134,7 @@ class Server(object):
         self._schema_info = None
         self.lock = Lock()
         self.custom_formatter = formatter
-        self._address_info = None  # propertu self.address_info resolved at open time (or when you call check_availability)
+        self._address_info = None  # property self.address_info resolved at open time (or when you call check_availability)
 
     @staticmethod
     def _is_ipv6(host):

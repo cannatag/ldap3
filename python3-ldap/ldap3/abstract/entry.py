@@ -3,7 +3,7 @@
 
 # Created on 2014.01.06
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -29,18 +29,17 @@ from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 
 
 class Entry(object):
-    """
-
-    The Entry object contains a single entry from the result of an LDAP
+    """The Entry object contains a single entry from the result of an LDAP
     search.  Attributes can be accessed either by sequence, by assignment
     or as dictionary keys. Keys are not case sensitive.
+
+    The Entry object is read only
 
     - The DN is retrieved by get_entry_dn()
     - The Reader reference is in get_entry_reader()
     - Raw attributes values are retrieved by the get_raw_attributes() and
       get_raw_attribute() methods
 
-    The Entry object is read only
     """
 
     def __init__(self, dn, reader):
@@ -104,19 +103,40 @@ class Entry(object):
         return False
 
     def get_entry_dn(self):
+        """
+
+        :return: The distinguished name of the Entry
+        """
         return self._dn
 
     def get_entry_reader(self):
+        """
+
+        :return: the Reader object of the Entry
+        """
         return self._reader
 
     def get_raw_attributes(self):
+        """
+
+        :return: The raw (unencoded) attributes of the Entry as bytes
+        """
         return self._raw_attributes
 
     def get_raw_attribute(self, name):
+        """
+
+        :param name: name of the attribute
+        :return: raw (unencoded) value of the attribute, None if attribute is not foound
+        """
         return self._raw_attributes[name] if name in self._raw_attributes else None
 
     # noinspection PyProtectedMember
     def refresh(self):
+        """Re-read the entry from the LDAP Server
+
+        :return: the updated Entry attibutes values
+        """
         temp_entry = self.get_entry_reader().search_object(self.get_entry_dn())
         self.__dict__['_attributes'] = temp_entry._attributes
         self.__dict__['_raw_attributes'] = temp_entry._raw_attributes

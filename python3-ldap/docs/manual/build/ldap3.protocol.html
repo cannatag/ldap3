@@ -8,7 +8,7 @@
     
     <title>ldap3.protocol package &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -48,53 +48,7 @@
           <li><a href="modules.html" >ldap3</a> &raquo;</li>
           <li><a href="ldap3.html" accesskey="U">ldap3 package</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">ldap3.protocol package</a><ul>
-<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.convert">ldap3.protocol.convert module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.novell">ldap3.protocol.novell module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.oid">ldap3.protocol.oid module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.rfc2696">ldap3.protocol.rfc2696 module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.rfc2849">ldap3.protocol.rfc2849 module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.rfc3062">ldap3.protocol.rfc3062 module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.rfc4511">ldap3.protocol.rfc4511 module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol.rfc4512">ldap3.protocol.rfc4512 module</a></li>
-<li><a class="reference internal" href="#module-ldap3.protocol">Module contents</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="ldap3.operation.html"
-                        title="previous chapter">ldap3.operation package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="ldap3.protocol.sasl.html"
-                        title="next chapter">ldap3.protocol.sasl package</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/ldap3.protocol.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -197,7 +151,7 @@ criticality must be a boolean</p>
 <dt id="ldap3.protocol.convert.format_attribute_values">
 <tt class="descclassname">ldap3.protocol.convert.</tt><tt class="descname">format_attribute_values</tt><big>(</big><em>schema</em>, <em>name</em>, <em>values</em>, <em>custom_formatter</em><big>)</big><a class="reference internal" href="_modules/ldap3/protocol/convert.html#format_attribute_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.protocol.convert.format_attribute_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tries to format following the OIDs info and format_helper specification.
-Search for attribute oid, then attribute name (can be multiple), then attrubte syntax
+Search for attribute oid, then attribute name (can be multiple), then attribute syntax
 Precedence is:
 1. attribute name
 2. attribute oid(from schema)
@@ -364,7 +318,7 @@ Formatter functions can return any kind of object</p>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyasn1.type.univ.Sequence</span></tt></p>
 <dl class="attribute">
 <dt id="ldap3.protocol.novell.NmasSetUniversalPasswordResponseValue.componentType">
-<tt class="descname">componentType</tt><em class="property"> = NamedTypes(NamedType(nmasver, &lt;pyasn1.type.base.__NoValue object at 0x0000000004067588&gt;), NamedType(err, &lt;pyasn1.type.base.__NoValue object at 0x0000000004067588&gt;), )</em><a class="headerlink" href="#ldap3.protocol.novell.NmasSetUniversalPasswordResponseValue.componentType" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">componentType</tt><em class="property"> = NamedTypes(NamedType(nmasver, &lt;pyasn1.type.base.__NoValue object at 0x0000000003CE55F8&gt;), NamedType(err, &lt;pyasn1.type.base.__NoValue object at 0x0000000003CE55F8&gt;), )</em><a class="headerlink" href="#ldap3.protocol.novell.NmasSetUniversalPasswordResponseValue.componentType" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -866,7 +820,7 @@ newPasswd [2] OCTET STRING OPTIONAL }</dd>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyasn1.type.univ.Sequence</span></tt></p>
 <dl class="attribute">
 <dt id="ldap3.protocol.rfc4511.Change.componentType">
-<tt class="descname">componentType</tt><em class="property"> = NamedTypes(NamedType(operation, &lt;pyasn1.type.base.__NoValue object at 0x0000000004067588&gt;), NamedType(modification, PartialAttribute()), )</em><a class="headerlink" href="#ldap3.protocol.rfc4511.Change.componentType" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">componentType</tt><em class="property"> = NamedTypes(NamedType(operation, &lt;pyasn1.type.base.__NoValue object at 0x0000000003CE55F8&gt;), NamedType(modification, PartialAttribute()), )</em><a class="headerlink" href="#ldap3.protocol.rfc4511.Change.componentType" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1003,7 +957,7 @@ newPasswd [2] OCTET STRING OPTIONAL }</dd>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyasn1.type.univ.Enumerated</span></tt></p>
 <dl class="attribute">
 <dt id="ldap3.protocol.rfc4511.DerefAliases.namedValues">
-<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x00000000048DD828&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.DerefAliases.namedValues" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x0000000003D1D898&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.DerefAliases.namedValues" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1188,7 +1142,7 @@ newPasswd [2] OCTET STRING OPTIONAL }</dd>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyasn1.type.univ.Sequence</span></tt></p>
 <dl class="attribute">
 <dt id="ldap3.protocol.rfc4511.LDAPMessage.componentType">
-<tt class="descname">componentType</tt><em class="property"> = NamedTypes(NamedType(messageID, &lt;pyasn1.type.base.__NoValue object at 0x0000000004067588&gt;), NamedType(protocolOp, ProtocolOp()), OptionalNamedType(controls, Controls()), )</em><a class="headerlink" href="#ldap3.protocol.rfc4511.LDAPMessage.componentType" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">componentType</tt><em class="property"> = NamedTypes(NamedType(messageID, &lt;pyasn1.type.base.__NoValue object at 0x0000000003CE55F8&gt;), NamedType(protocolOp, ProtocolOp()), OptionalNamedType(controls, Controls()), )</em><a class="headerlink" href="#ldap3.protocol.rfc4511.LDAPMessage.componentType" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1364,7 +1318,7 @@ newPasswd [2] OCTET STRING OPTIONAL }</dd>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyasn1.type.univ.Enumerated</span></tt></p>
 <dl class="attribute">
 <dt id="ldap3.protocol.rfc4511.Operation.namedValues">
-<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x00000000048E95C0&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.Operation.namedValues" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x0000000003D2A630&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.Operation.namedValues" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1516,7 +1470,7 @@ newPasswd [2] OCTET STRING OPTIONAL }</dd>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyasn1.type.univ.Enumerated</span></tt></p>
 <dl class="attribute">
 <dt id="ldap3.protocol.rfc4511.ResultCode.namedValues">
-<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x00000000048D2EF0&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.ResultCode.namedValues" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x0000000003D13F60&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.ResultCode.namedValues" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1548,7 +1502,7 @@ newPasswd [2] OCTET STRING OPTIONAL }</dd>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyasn1.type.univ.Enumerated</span></tt></p>
 <dl class="attribute">
 <dt id="ldap3.protocol.rfc4511.Scope.namedValues">
-<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x00000000048DD748&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.Scope.namedValues" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">namedValues</tt><em class="property"> = &lt;pyasn1.type.namedval.NamedValues object at 0x0000000003D1D7B8&gt;</em><a class="headerlink" href="#ldap3.protocol.rfc4511.Scope.namedValues" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1905,6 +1859,52 @@ as defined in RFC4512. Unknown attributes are stored in the &#8220;other&#8221; 
 
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ldap3.protocol package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.convert">ldap3.protocol.convert module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.novell">ldap3.protocol.novell module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.oid">ldap3.protocol.oid module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.rfc2696">ldap3.protocol.rfc2696 module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.rfc2849">ldap3.protocol.rfc2849 module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.rfc3062">ldap3.protocol.rfc3062 module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.rfc4511">ldap3.protocol.rfc4511 module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol.rfc4512">ldap3.protocol.rfc4512 module</a></li>
+<li><a class="reference internal" href="#module-ldap3.protocol">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ldap3.operation.html"
+                        title="previous chapter">ldap3.operation package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ldap3.protocol.sasl.html"
+                        title="next chapter">ldap3.protocol.sasl package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ldap3.protocol.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

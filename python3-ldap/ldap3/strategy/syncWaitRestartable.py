@@ -3,7 +3,7 @@
 
 # Created on 2014.03.04
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2013 Giovanni Cannata
 #
@@ -126,7 +126,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not self.connection.closed:
                     try:  # resetting connection
                         self.connection.close()
-                    except (socket.error, LDAPSocketOpenError):  # don't trace socket errrors because socket could already be closed
+                    except (socket.error, LDAPSocketOpenError):  # don't trace socket errors because socket could already be closed
                         pass
                     except Exception:
                         self._add_exception_to_history()

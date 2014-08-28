@@ -3,7 +3,7 @@
 
 # Created on 2014.05.31
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -59,8 +59,7 @@ from ..utils.conv import prepare_for_stream
 
 # noinspection PyProtectedMember
 class Connection(object):
-    """
-    Main ldap connection class.
+    """Main ldap connection class.
 
     Controls, if used, must be a list of tuples. Each tuple must have 3
     elements, the control OID, a boolean meaning if the control is
@@ -71,6 +70,44 @@ class Connection(object):
 
     Mixing controls must be defined in controls specification (as per
     RFC 4511)
+
+    :param server: the Server object to connect to
+    :type server: Server, str
+    :param user: the user name for simple authentication
+    :type user: str
+    :param password: the password for simple authentication
+    :type password: str
+    :param auto_bind: speficy if the bind will be performed automatically when defining the Connectioon object
+    :type auto_bind: int, can be one of AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND as specified in ldap3
+    :param version: LDAP version, default to 3
+    :type version: int
+    :param authentication: type of authentication
+    :type authentication: int, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL, as specified in ldap3
+    :param client_strategy: communication strategy used in the Connection
+    :type client_strategy: can be one of STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED as specified in ldap3
+    :param auto_referrals: specify if the connection object must automatically follow referrals
+    :type auto_referrals: bool
+    :param sasl_mechanism: mechanism for SASL authentication, can be one of 'EXTERNAL', 'DIGEST-MD5'
+    :type sasl_mechanism: str
+    :param sasl_credentials: credentials for SASL mechanism
+    :type sasl_credentials: tuple
+    :param check_names: if True the library will check names of attributes and object classes against the schema. Also values found in entries will be formatted as indicated by the schema
+    :type check_names: bool
+    :param collect_usage: collect usage metrics in the usage attribute
+    :type collect_usage: bool
+    :param read_only: disable operations that modify data in the LDAP server
+    :type read_only: bool
+    :param lazy: open and bind the connection only when an actual operation is performed
+    :type lazy: bool
+    :param raise_exceptions: raise exceptions when operations are not succesful, if False operations return False if not succesful but not raise exceptions
+    :type raise_exceptions: bool
+    :param pool_name: pool name for pooled strategies
+    :type pool_name: str
+    :param pool_size: pool size for pooled strategies
+    :type pool_size: int
+    :param pool_lifetime: pool lifetime for pooled strategies
+    :type pool_size: int
+
     """
 
     def __init__(self,
@@ -238,9 +275,8 @@ class Connection(object):
 
     @property
     def stream(self):
-        """
-        returns a reference to the response stream if defined in the strategy.
-        Used in the LDIFProducer to accumulate the ldif-change operations with a single LDIF header
+        """Used by the LDIFProducer strategy to accumulate the ldif-change operations with a single LDIF header
+        :return: reference to the response stream if defined in the strategy.
         """
         return self.strategy.get_stream() if self.strategy.can_stream else None
 
@@ -251,6 +287,9 @@ class Connection(object):
 
     @property
     def usage(self):
+        """Usage statistics for the connection.
+        :return: Usage object
+        """
         if not self._usage:
             return None
         if self.strategy.pooled:
@@ -286,8 +325,12 @@ class Connection(object):
 
     def bind(self,
              controls=None):
-        """
-        Bind to ldap with the user defined in Server object
+        """Bind to ldap Server with the authentication method and the user defined in the connection
+
+        :param controls: LDAP controls to send along with the bind operation
+        :type controls: list of tuple
+        :return: bool
+
         """
         if self.lazy and not self._executing_deferred:
             self._deferred_bind = True
@@ -334,9 +377,10 @@ class Connection(object):
 
     def unbind(self,
                controls=None):
-        """
-        Unbinds the connected user
-        Unbind implies closing session as per RFC4511 (4.3)
+        """Unbind the connected user. Unbind implies closing session as per RFC4511 (4.3)
+
+        :param controls: LDAP controls to send along with the bind operation
+
         """
         if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # clear deferred status
             self.strategy.close()

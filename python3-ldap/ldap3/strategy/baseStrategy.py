@@ -3,7 +3,7 @@
 
 # Created on 2013.07.15
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2013 Giovanni Cannata
 #
@@ -62,7 +62,7 @@ class BaseStrategy(object):
         self.sync = None  # indicates a synchronous connection
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
         self.pooled = None  # Indicates a connection with a connection pool
-        self.can_stream = False  # indicate if a strategy keep a stream of responses (i.e. LDIFProducer can accumulate responses with a single header). Stream must be initilized and closed in _start_listen() and _stop_listen()
+        self.can_stream = False  # indicate if a strategy keep a stream of responses (i.e. LDIFProducer can accumulate responses with a single header). Stream must be initialized and closed in _start_listen() and _stop_listen()
 
     def open(self, reset_usage=True):
         """
@@ -285,7 +285,6 @@ class BaseStrategy(object):
 
         return ret_value
 
-    # @classmethod
     def decode_response(self, ldap_message):
         """
         Convert received LDAPMessage to a dict

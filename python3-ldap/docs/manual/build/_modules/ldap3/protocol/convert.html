@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ldap3.protocol.convert &mdash; python3-ldap 0.9.5.3 documentation</title>
+    <title>ldap3.protocol.convert &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.9.5.3',
+        VERSION:     '0.9.5.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="top" title="python3-ldap 0.9.5.4 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body>
@@ -36,10 +36,27 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -48,28 +65,30 @@
             
   <h1>Source code for ldap3.protocol.convert</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Created on 2013.07.24</span>
-
-<span class="sd">@author: Giovanni Cannata</span>
-
-<span class="sd">Copyright 2013 Giovanni Cannata</span>
-
-<span class="sd">This file is part of python3-ldap.</span>
-
-<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
-<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
-<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
-<span class="sd">(at your option) any later version.</span>
-
-<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
-<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
-<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
-<span class="sd">GNU Lesser General Public License for more details.</span>
-
-<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
-<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
-<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># Created on 2013.07.24</span>
+<span class="c">#</span>
+<span class="c"># @author: Giovanni Cannata</span>
+<span class="c">#</span>
+<span class="c"># Copyright 2013 Giovanni Cannata</span>
+<span class="c">#</span>
+<span class="c"># This file is part of python3-ldap.</span>
+<span class="c">#</span>
+<span class="c"># python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU Lesser General Public License as published</span>
+<span class="c"># by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU Lesser General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c"># along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="c"># If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">tzinfo</span>
 <span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">UUID</span>
 <span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPControlsError</span><span class="p">,</span> <span class="n">LDAPAttributeError</span><span class="p">,</span> <span class="n">LDAPObjectClassError</span>
@@ -284,6 +303,9 @@
 </div>
 <div class="viewcode-block" id="format_time"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.convert.format_time">[docs]</a><span class="k">def</span> <span class="nf">format_time</span><span class="p">(</span><span class="n">raw_value</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    From RFC4517:</span>
 <span class="sd">    A value of the Generalized Time syntax is a character string</span>
 <span class="sd">    representing a date and time.  The LDAP-specific encoding of a value</span>
@@ -304,16 +326,14 @@
 <span class="sd">            / ( %x33 %x30-31 )    ; &quot;30&quot; to &quot;31&quot;</span>
 <span class="sd">    hour    = ( %x30-31 %x30-39 ) / ( %x32 %x30-33 ) ; &quot;00&quot; to &quot;23&quot;</span>
 <span class="sd">    minute  = %x30-35 %x30-39                        ; &quot;00&quot; to &quot;59&quot;</span>
-
 <span class="sd">    second      = ( %x30-35 %x30-39 ) ; &quot;00&quot; to &quot;59&quot;</span>
 <span class="sd">    leap-second = ( %x36 %x30 )       ; &quot;60&quot;</span>
-
 <span class="sd">    fraction        = ( DOT / COMMA ) 1*(%x30-39)</span>
 <span class="sd">    g-time-zone     = %x5A  ; &quot;Z&quot;</span>
 <span class="sd">                    / g-differential</span>
 <span class="sd">    g-differential  = ( MINUS / PLUS ) hour [ minute ]</span>
 <span class="sd">        MINUS           = %x2D  ; minus sign (&quot;-&quot;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">((</span><span class="n">c</span> <span class="ow">in</span> <span class="n">b</span><span class="s">&#39;0123456789+-,.Z&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">raw_value</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">b</span><span class="s">&#39;Z&#39;</span> <span class="ow">in</span> <span class="n">raw_value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">raw_value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">b</span><span class="s">&#39;Z&#39;</span><span class="p">)):</span>  <span class="c"># first ten characters are mandatory and must be numeric or timezone or fraction</span>
         <span class="k">return</span> <span class="n">raw_value</span>
@@ -527,23 +547,6 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
     <div class="related">
@@ -555,7 +558,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

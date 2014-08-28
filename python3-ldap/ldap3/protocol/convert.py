@@ -3,7 +3,7 @@
 
 # Created on 2013.07.24
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2013 Giovanni Cannata
 #
@@ -296,7 +296,7 @@ def format_time(raw_value):
         return raw_value
 
     time, _, offset = remain.partition(sep)
-    if len(time) == 2:  # mmZ fomat
+    if len(time) == 2:  # mmZ format
         pos_second = None
     elif len(remain) == 0:  # Z format
         pos_minute = None
@@ -340,7 +340,7 @@ def format_time(raw_value):
 def format_attribute_values(schema, name, values, custom_formatter):
     """
     Tries to format following the OIDs info and format_helper specification.
-    Search for attribute oid, then attribute name (can be multiple), then attrubte syntax
+    Search for attribute oid, then attribute name (can be multiple), then attribute syntax
     Precedence is:
     1. attribute name
     2. attribute oid(from schema)

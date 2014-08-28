@@ -8,7 +8,7 @@
     
     <title>ldap3.core package &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -48,50 +48,7 @@
           <li><a href="modules.html" >ldap3</a> &raquo;</li>
           <li><a href="ldap3.html" accesskey="U">ldap3 package</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">ldap3.core package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-ldap3.core.connection">ldap3.core.connection module</a></li>
-<li><a class="reference internal" href="#module-ldap3.core.exceptions">ldap3.core.exceptions module</a></li>
-<li><a class="reference internal" href="#module-ldap3.core.pooling">ldap3.core.pooling module</a></li>
-<li><a class="reference internal" href="#module-ldap3.core.server">ldap3.core.server module</a></li>
-<li><a class="reference internal" href="#module-ldap3.core.tls">ldap3.core.tls module</a></li>
-<li><a class="reference internal" href="#module-ldap3.core.usage">ldap3.core.usage module</a></li>
-<li><a class="reference internal" href="#module-ldap3.core">Module contents</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="ldap3.compat.html"
-                        title="previous chapter">ldap3.compat package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="ldap3.extend.html"
-                        title="next chapter">ldap3.extend package</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/ldap3.core.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -117,6 +74,34 @@ critical, a value.</p>
 refuse the operation</p>
 <p>Mixing controls must be defined in controls specification (as per
 RFC 4511)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>server</strong> (<em>Server, str</em>) &#8211; the Server object to connect to</li>
+<li><strong>user</strong> (<em>str</em>) &#8211; the user name for simple authentication</li>
+<li><strong>password</strong> (<em>str</em>) &#8211; the password for simple authentication</li>
+<li><strong>auto_bind</strong> (<em>int, can be one of AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND as specified in ldap3</em>) &#8211; speficy if the bind will be performed automatically when defining the Connectioon object</li>
+<li><strong>version</strong> (<em>int</em>) &#8211; LDAP version, default to 3</li>
+<li><strong>authentication</strong> (<em>int, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL, as specified in ldap3</em>) &#8211; type of authentication</li>
+<li><strong>client_strategy</strong> (<em>can be one of STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED as specified in ldap3</em>) &#8211; communication strategy used in the Connection</li>
+<li><strong>auto_referrals</strong> (<em>bool</em>) &#8211; specify if the connection object must automatically follow referrals</li>
+<li><strong>sasl_mechanism</strong> (<em>str</em>) &#8211; mechanism for SASL authentication, can be one of &#8216;EXTERNAL&#8217;, &#8216;DIGEST-MD5&#8217;</li>
+<li><strong>sasl_credentials</strong> (<em>tuple</em>) &#8211; credentials for SASL mechanism</li>
+<li><strong>check_names</strong> (<em>bool</em>) &#8211; if True the library will check names of attributes and object classes against the schema. Also values found in entries will be formatted as indicated by the schema</li>
+<li><strong>collect_usage</strong> (<em>bool</em>) &#8211; collect usage metrics in the usage attribute</li>
+<li><strong>read_only</strong> (<em>bool</em>) &#8211; disable operations that modify data in the LDAP server</li>
+<li><strong>lazy</strong> (<em>bool</em>) &#8211; open and bind the connection only when an actual operation is performed</li>
+<li><strong>raise_exceptions</strong> (<em>bool</em>) &#8211; raise exceptions when operations are not succesful, if False operations return False if not succesful but not raise exceptions</li>
+<li><strong>pool_name</strong> (<em>str</em>) &#8211; pool name for pooled strategies</li>
+<li><strong>pool_size</strong> (<em>int</em>) &#8211; pool size for pooled strategies</li>
+<li><strong>pool_lifetime</strong> &#8211; pool lifetime for pooled strategies</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ldap3.core.connection.Connection.abandon">
 <tt class="descname">abandon</tt><big>(</big><em>message_id</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.abandon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.abandon" title="Permalink to this definition">¶</a></dt>
@@ -135,7 +120,17 @@ of class names.</p>
 <dl class="method">
 <dt id="ldap3.core.connection.Connection.bind">
 <tt class="descname">bind</tt><big>(</big><em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.bind" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bind to ldap with the user defined in Server object</p>
+<dd><p>Bind to ldap Server with the authentication method and the user defined in the connection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>controls</strong> (<em>list of tuple</em>) &#8211; LDAP controls to send along with the bind operation</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -215,21 +210,30 @@ LDAP operation is performed</li>
 <dl class="attribute">
 <dt id="ldap3.core.connection.Connection.stream">
 <tt class="descname">stream</tt><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.stream" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns a reference to the response stream if defined in the strategy.
-Used in the LDIFProducer to accumulate the ldif-change operations with a single LDIF header</p>
+<dd><p>Used by the LDIFProducer strategy to accumulate the ldif-change operations with a single LDIF header
+:return: reference to the response stream if defined in the strategy.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ldap3.core.connection.Connection.unbind">
 <tt class="descname">unbind</tt><big>(</big><em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.unbind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.unbind" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unbinds the connected user
-Unbind implies closing session as per RFC4511 (4.3)</p>
+<dd><p>Unbind the connected user. Unbind implies closing session as per RFC4511 (4.3)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>controls</strong> &#8211; LDAP controls to send along with the bind operation</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="ldap3.core.connection.Connection.usage">
 <tt class="descname">usage</tt><a class="reference internal" href="_modules/ldap3/core/connection.html#Connection.usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.core.connection.Connection.usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Usage statistics for the connection.
+:return: Usage object</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1019,6 +1023,49 @@ returns nothing.</p>
 
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ldap3.core package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.connection">ldap3.core.connection module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.exceptions">ldap3.core.exceptions module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.pooling">ldap3.core.pooling module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.server">ldap3.core.server module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.tls">ldap3.core.tls module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core.usage">ldap3.core.usage module</a></li>
+<li><a class="reference internal" href="#module-ldap3.core">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ldap3.compat.html"
+                        title="previous chapter">ldap3.compat package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ldap3.extend.html"
+                        title="next chapter">ldap3.extend package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ldap3.core.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

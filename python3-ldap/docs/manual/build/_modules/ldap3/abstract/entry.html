@@ -8,7 +8,7 @@
     
     <title>ldap3.abstract.entry &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -39,24 +39,7 @@
         <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -69,7 +52,7 @@
 
 <span class="c"># Created on 2014.01.06</span>
 <span class="c">#</span>
-<span class="c"># @author: Giovanni Cannata</span>
+<span class="c"># Author: Giovanni Cannata</span>
 <span class="c">#</span>
 <span class="c"># Copyright 2014 Giovanni Cannata</span>
 <span class="c">#</span>
@@ -95,18 +78,17 @@
 
 
 <div class="viewcode-block" id="Entry"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.entry.Entry">[docs]</a><span class="k">class</span> <span class="nc">Entry</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    The Entry object contains a single entry from the result of an LDAP</span>
+    <span class="sd">&quot;&quot;&quot;The Entry object contains a single entry from the result of an LDAP</span>
 <span class="sd">    search.  Attributes can be accessed either by sequence, by assignment</span>
 <span class="sd">    or as dictionary keys. Keys are not case sensitive.</span>
+
+<span class="sd">    The Entry object is read only</span>
 
 <span class="sd">    - The DN is retrieved by get_entry_dn()</span>
 <span class="sd">    - The Reader reference is in get_entry_reader()</span>
 <span class="sd">    - Raw attributes values are retrieved by the get_raw_attributes() and</span>
 <span class="sd">      get_raw_attribute() methods</span>
 
-<span class="sd">    The Entry object is read only</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dn</span><span class="p">,</span> <span class="n">reader</span><span class="p">):</span>
@@ -170,19 +152,40 @@
         <span class="k">return</span> <span class="bp">False</span>
 
 <div class="viewcode-block" id="Entry.get_entry_dn"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.entry.Entry.get_entry_dn">[docs]</a>    <span class="k">def</span> <span class="nf">get_entry_dn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :return: The distinguished name of the Entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dn</span>
 </div>
 <div class="viewcode-block" id="Entry.get_entry_reader"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.entry.Entry.get_entry_reader">[docs]</a>    <span class="k">def</span> <span class="nf">get_entry_reader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :return: the Reader object of the Entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reader</span>
 </div>
 <div class="viewcode-block" id="Entry.get_raw_attributes"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.entry.Entry.get_raw_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :return: The raw (unencoded) attributes of the Entry as bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_attributes</span>
 </div>
 <div class="viewcode-block" id="Entry.get_raw_attribute"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.entry.Entry.get_raw_attribute">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param name: name of the attribute</span>
+<span class="sd">        :return: raw (unencoded) value of the attribute, None if attribute is not foound</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_attributes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_attributes</span> <span class="k">else</span> <span class="bp">None</span>
 
     <span class="c"># noinspection PyProtectedMember</span></div>
 <div class="viewcode-block" id="Entry.refresh"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.entry.Entry.refresh">[docs]</a>    <span class="k">def</span> <span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Re-read the entry from the LDAP Server</span>
+
+<span class="sd">        :return: the updated Entry attibutes values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">temp_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entry_reader</span><span class="p">()</span><span class="o">.</span><span class="n">search_object</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_entry_dn</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_entry</span><span class="o">.</span><span class="n">_attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;_raw_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_entry</span><span class="o">.</span><span class="n">_raw_attributes</span>
@@ -191,6 +194,23 @@
 </pre></div>
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

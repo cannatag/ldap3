@@ -8,7 +8,7 @@
     
     <title>ldap3.strategy.baseStrategy &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -39,24 +39,7 @@
         <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -69,7 +52,7 @@
 
 <span class="c"># Created on 2013.07.15</span>
 <span class="c">#</span>
-<span class="c"># @author: Giovanni Cannata</span>
+<span class="c"># Author: Giovanni Cannata</span>
 <span class="c">#</span>
 <span class="c"># Copyright 2013 Giovanni Cannata</span>
 <span class="c">#</span>
@@ -128,7 +111,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sync</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># indicates a synchronous connection</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_real_dsa</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># indicates a connection to a fake LDAP server</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pooled</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># Indicates a connection with a connection pool</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">can_stream</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># indicate if a strategy keep a stream of responses (i.e. LDIFProducer can accumulate responses with a single header). Stream must be initilized and closed in _start_listen() and _stop_listen()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">can_stream</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># indicate if a strategy keep a stream of responses (i.e. LDIFProducer can accumulate responses with a single header). Stream must be initialized and closed in _start_listen() and _stop_listen()</span>
 
 <div class="viewcode-block" id="BaseStrategy.open"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset_usage</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -350,8 +333,7 @@
                     <span class="n">ret_value</span> <span class="o">=</span> <span class="n">value_length</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">bytes_length</span>
 
         <span class="k">return</span> <span class="n">ret_value</span>
-
-    <span class="c"># @classmethod</span></div>
+</div>
 <div class="viewcode-block" id="BaseStrategy.decode_response"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.decode_response">[docs]</a>    <span class="k">def</span> <span class="nf">decode_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ldap_message</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert received LDAPMessage to a dict</span>
@@ -647,6 +629,23 @@
 </pre></div>
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

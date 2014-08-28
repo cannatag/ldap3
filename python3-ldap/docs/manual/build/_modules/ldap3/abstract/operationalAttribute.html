@@ -8,7 +8,7 @@
     
     <title>ldap3.abstract.operationalAttribute &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -39,24 +39,7 @@
         <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -69,7 +52,7 @@
 
 <span class="c"># Created on 2014.02.09</span>
 <span class="c">#</span>
-<span class="c"># @author: Giovanni Cannata</span>
+<span class="c"># Author: Giovanni Cannata</span>
 <span class="c">#</span>
 <span class="c"># Copyright 2014 Giovanni Cannata</span>
 <span class="c">#</span>
@@ -96,17 +79,17 @@
 
 <span class="c"># noinspection PyUnresolvedReferences,PyMissingConstructor</span>
 <div class="viewcode-block" id="OperationalAttribute"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.operationalAttribute.OperationalAttribute">[docs]</a><span class="k">class</span> <span class="nc">OperationalAttribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Operational attribute/values object, it includes the search result of an</span>
+    <span class="sd">&quot;&quot;&quot;Operational attribute/values object. Include the search result of an</span>
 <span class="sd">    operational attribute in an entry</span>
 
 <span class="sd">    Attribute object is read only</span>
-<span class="sd">    &#39;values&#39; contains the processed attribute values</span>
-<span class="sd">    &#39;raw_values&#39; contains the unprocessed attribute values</span>
+
+<span class="sd">    - values: contains the processed attribute values</span>
+<span class="sd">    - raw_values: contains the unprocessed attribute values</span>
 
 <span class="sd">    It doesn&#39;t have any AttrDef</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;entry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
@@ -128,6 +111,23 @@
 </pre></div>
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

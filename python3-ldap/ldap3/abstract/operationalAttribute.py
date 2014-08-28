@@ -3,7 +3,7 @@
 
 # Created on 2014.02.09
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -30,17 +30,17 @@ from .attribute import Attribute
 
 # noinspection PyUnresolvedReferences,PyMissingConstructor
 class OperationalAttribute(Attribute):
-    """
-    Operational attribute/values object, it includes the search result of an
+    """Operational attribute/values object. Include the search result of an
     operational attribute in an entry
 
     Attribute object is read only
-    'values' contains the processed attribute values
-    'raw_values' contains the unprocessed attribute values
+
+    - values: contains the processed attribute values
+    - raw_values: contains the unprocessed attribute values
 
     It doesn't have any AttrDef
-    """
 
+    """
     def __init__(self, key, entry):
         self.__dict__['key'] = key
         self.__dict__['entry'] = entry

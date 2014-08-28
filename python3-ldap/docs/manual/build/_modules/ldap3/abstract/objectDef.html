@@ -8,7 +8,7 @@
     
     <title>ldap3.abstract.objectDef &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -39,24 +39,7 @@
         <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -69,7 +52,7 @@
 
 <span class="c"># Created on 2014.02.02</span>
 <span class="c">#</span>
-<span class="c"># @author: Giovanni Cannata</span>
+<span class="c"># Author: Giovanni Cannata</span>
 <span class="c">#</span>
 <span class="c"># Copyright 2014 Giovanni Cannata</span>
 <span class="c">#</span>
@@ -96,16 +79,13 @@
 
 
 <div class="viewcode-block" id="ObjectDef"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.objectDef.ObjectDef">[docs]</a><span class="k">class</span> <span class="nc">ObjectDef</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    AttrDefs are stored in a dictionary; the key is the friendly name defined</span>
-<span class="sd">    in AttrDef</span>
+    <span class="sd">&quot;&quot;&quot;Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.</span>
 
 <span class="sd">    AttrDefs can be added and removed using the += ad -= operators</span>
 
-<span class="sd">    ObjectDef can be accessed either as a sequence and a dictionary. When</span>
-<span class="sd">    accessed the whole AttrDef instance is returned</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    ObjectDef can be accessed either as a sequence and a dictionary. When accessed the whole AttrDef instance is returned</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_class</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;object_class&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_class</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -164,6 +144,11 @@
         <span class="k">return</span> <span class="bp">True</span>
 
 <div class="viewcode-block" id="ObjectDef.add"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.objectDef.ObjectDef.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add an AttrDef to the ObjectDef. Can be called with the += operator.</span>
+<span class="sd">        :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">element</span> <span class="o">=</span> <span class="n">AttrDef</span><span class="p">(</span><span class="n">definition</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
@@ -181,6 +166,10 @@
             <span class="k">raise</span> <span class="n">LDAPObjectError</span><span class="p">(</span><span class="s">&#39;unable to add element to object definition&#39;</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="ObjectDef.remove"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.objectDef.ObjectDef.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove an AttrDef from the ObjectDef. Can be called with the -= operator.</span>
+<span class="sd">        :param item: the AttrDef to remove, can also be a string containing the name of attribute to remove</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">())</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -198,11 +187,31 @@
             <span class="k">raise</span> <span class="n">LDAPTypeError</span><span class="p">(</span><span class="s">&#39;key must be str or AttrDef not &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">key</span><span class="p">)))</span>
 </div>
 <div class="viewcode-block" id="ObjectDef.clear"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.objectDef.ObjectDef.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Empty the ObjectDef attribute list</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;object_class&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s">&#39;_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span></div></div>
 </pre></div>
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

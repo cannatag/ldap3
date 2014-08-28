@@ -3,7 +3,7 @@
 
 # Created on 2014.01.11
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2014 Giovanni Cannata
 #
@@ -27,16 +27,23 @@ from ..core.exceptions import LDAPKeyError
 
 
 class AttrDef(object):
-    """
-    Attribute definition for abstract layer:
-    'name' is the real attribute name
-    'key' is the friendly name to use in query and while accessing the attribute, if not set is the same of name
-    'default' is the value returned if the attribute is not present
-    'validate' is an optional callable, called to check if the value in the query is valid, the callable is called with the value parameter
-    'preQuery' is an optional callable, called to transform values to be searched
-    'postQuery' is an optional callable, called to transform values returned by search
-    'dereference_dn' is a reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry
-    AttrDef('name') creates an AttrDef object for attribute 'name' with all default values
+    """Hold the definition of an attribute
+
+    :param name: the real attribute name
+    :type name: string
+    :param key: the friendly name to use in queries and when accessing the attribute, default to the real attribute name
+    :type key: string
+    :param validate: called to check if the value in the query is valid, the callable is called with the value parameter
+    :type validate: callable
+    :param pre_query: called to transform values returned by search
+    :type pre_query: callable
+    :param post_query: called to transform values returned by search
+    :type post_query: callable
+    :param default: value returned when the attribute is absent
+    :type default: string, integer
+    :param dereference_dn: reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry
+    :type dereference_dn: ObjectDef
+
     """
 
     def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=None, dereference_dn=None):
@@ -49,11 +56,6 @@ class AttrDef(object):
         self.dereference_dn = dereference_dn
 
     def __repr__(self):
-        """
-
-        :return:
-        :rtype:
-        """
         r = 'AttrDef(key={0.key!r}'.format(self)
         r += ', name={0.name!r}'.format(self)
         r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)

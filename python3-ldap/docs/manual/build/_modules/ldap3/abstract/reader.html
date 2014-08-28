@@ -8,7 +8,7 @@
     
     <title>ldap3.abstract.reader &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -39,24 +39,7 @@
         <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -69,7 +52,7 @@
 
 <span class="c"># Created on 2014.01.06</span>
 <span class="c">#</span>
-<span class="c"># @author: Giovanni Cannata</span>
+<span class="c"># Author: Giovanni Cannata</span>
 <span class="c">#</span>
 <span class="c"># Copyright 2014 Giovanni Cannata</span>
 <span class="c">#</span>
@@ -119,18 +102,26 @@
 
 
 <div class="viewcode-block" id="Reader"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader">[docs]</a><span class="k">class</span> <span class="nc">Reader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Reader object perform the search with the requested parameters:</span>
-<span class="sd">    &#39;connection&#39;: the connection to use</span>
-<span class="sd">    &#39;object_def&#39;: the definition of the LDAP object to be returned</span>
-<span class="sd">    &#39;query&#39;: the simplified query to be transformed in an LDAP filter</span>
-<span class="sd">    &#39;base&#39;: starting base of the DIT</span>
-<span class="sd">    &#39;components_in_and&#39;: specify if components of query mus be all satisfied or not (AND/OR)</span>
-<span class="sd">    &#39;sub_tree&#39;: a boolean to specify if the search must be performed ad Single Level (False) or Whole SubTree (True)</span>
-<span class="sd">    &#39;get_operational_attributes&#39;: a boolean to specify if operational attributes are returned or not</span>
-<span class="sd">    &#39;controls&#39;: controls to be used in search</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Reader object to perform searches:</span>
 
+<span class="sd">    :param connection: the LDAP connection object to use</span>
+<span class="sd">    :type connection: LDAPConnection</span>
+<span class="sd">    :param object_def: the ObjectDef of the LDAP object returned</span>
+<span class="sd">    :type object_def: ObjectDef</span>
+<span class="sd">    :param query: the simplified query (will be transformed in an LDAP filter)</span>
+<span class="sd">    :type query: str</span>
+<span class="sd">    :param base: starting base of the search</span>
+<span class="sd">    :type base: str</span>
+<span class="sd">    :param components_in_and: specify if assertions in the query mus be all satisfied or not (AND/OR)</span>
+<span class="sd">    :type components_in_and: bool</span>
+<span class="sd">    :param sub_tree: specify if the search must be performed ad Single Level (False) or Whole SubTree (True)</span>
+<span class="sd">    :type sub_tree: bool</span>
+<span class="sd">    :param get_operational_attributes: specify if operational attributes are returned or not</span>
+<span class="sd">    :type get_operational_attributes: bool</span>
+<span class="sd">    :param controls: controls to be used in search</span>
+<span class="sd">    :type controls: tuple</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">object_def</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">components_in_and</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">sub_tree</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">get_operational_attributes</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">controls</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span> <span class="o">=</span> <span class="n">object_def</span>
@@ -204,6 +195,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Reader.clear"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear the Reader search parameters</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dereference_aliases</span> <span class="o">=</span> <span class="n">SEARCH_DEREFERENCE_ALWAYS</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="mi">0</span>
@@ -212,6 +206,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">paged_criticality</span> <span class="o">=</span> <span class="bp">False</span>
 </div>
 <div class="viewcode-block" id="Reader.reset"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear all the Reader parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validated_query</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -233,9 +229,9 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_validate_query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Processes the text query and verifies that the requested friendly names are in the Reader dictionary</span>
+        <span class="sd">&quot;&quot;&quot;Processes the text query and verifies that the requested friendly names are in the Reader dictionary</span>
 <span class="sd">        If the AttrDef has a &#39;validate&#39; property the callable is executed and if it returns False an Exception is raised</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_query_dict</span> <span class="o">=</span> <span class="n">_create_query_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">)</span>
@@ -285,9 +281,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_validated_query_dict</span> <span class="o">=</span> <span class="n">_create_query_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validated_query</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_query_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Converts the query dictionary in the filter text</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Converts the query dictionary in the filter text&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="o">.</span><span class="n">stopswith</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">):</span>  <span class="c"># query is already an LDAP filter</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span>
             <span class="k">return</span>
@@ -347,11 +341,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_filter</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_get_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">attr_defs</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Assign the result of the LDAP query to the Entry object dictionary.</span>
-<span class="sd">        If the optional &#39;post_query&#39; callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute</span>
-<span class="sd">        Returns the default value for missing attributes</span>
-<span class="sd">        If the &#39;dereference_dn&#39; in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value</span>
+        <span class="sd">&quot;&quot;&quot;Assign the result of the LDAP query to the Entry object dictionary.</span>
+
+<span class="sd">        If the optional &#39;post_query&#39; callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute.</span>
+
+<span class="sd">        Returns the default value for missing attributes.</span>
+<span class="sd">        If the &#39;dereference_dn&#39; in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">attributes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">used_attribute_names</span> <span class="o">=</span> <span class="p">[]</span>
@@ -441,6 +437,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Reader.search"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the LDAP search</span>
+
+<span class="sd">        :return: Entries found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">query_scope</span><span class="p">)</span>
@@ -448,18 +449,33 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 </div>
 <div class="viewcode-block" id="Reader.search_level"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_level">[docs]</a>    <span class="k">def</span> <span class="nf">search_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the LDAP search operation with SINGLE_LEVEL scope</span>
+
+<span class="sd">        :return: Entries found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 </div>
 <div class="viewcode-block" id="Reader.search_subtree"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_subtree">[docs]</a>    <span class="k">def</span> <span class="nf">search_subtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the LDAP search operation WHOLE_SUBTREE scope</span>
+
+<span class="sd">        :return: Entries found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 </div>
 <div class="viewcode-block" id="Reader.search_object"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_object">[docs]</a>    <span class="k">def</span> <span class="nf">search_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_dn</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  <span class="c"># base must be a single dn</span>
+        <span class="sd">&quot;&quot;&quot;Perform the LDAP search operation SINGLE_OBJECT scope</span>
+
+<span class="sd">        :return: Entry found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">entry_dn</span><span class="p">:</span>
             <span class="n">old_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span>
@@ -472,6 +488,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">None</span>
 </div>
 <div class="viewcode-block" id="Reader.search_size_limit"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_size_limit">[docs]</a>    <span class="k">def</span> <span class="nf">search_size_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size_limit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the LDAP search with limit of entries found</span>
+
+<span class="sd">        :param size_limit: maximum number of entries returned</span>
+<span class="sd">        :return: Entries found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size_limit</span> <span class="o">=</span> <span class="n">size_limit</span>
         <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
@@ -480,6 +503,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 </div>
 <div class="viewcode-block" id="Reader.search_time_limit"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_time_limit">[docs]</a>    <span class="k">def</span> <span class="nf">search_time_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the LDAP search with limit of time spent in searching by the server</span>
+
+<span class="sd">        :param time_limit: maximum number of seconds to wait for a search</span>
+<span class="sd">        :return: Entries found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span> <span class="o">=</span> <span class="n">time_limit</span>
         <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
@@ -488,6 +517,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 </div>
 <div class="viewcode-block" id="Reader.search_types_only"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_types_only">[docs]</a>    <span class="k">def</span> <span class="nf">search_types_only</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the search returning attribute names only.</span>
+
+<span class="sd">        :return: Entries found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">types_only</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">query_scope</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_tree</span> <span class="k">else</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
@@ -496,6 +530,16 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 </div>
 <div class="viewcode-block" id="Reader.search_paged"><a class="viewcode-back" href="../../../ldap3.abstract.html#ldap3.abstract.reader.Reader.search_paged">[docs]</a>    <span class="k">def</span> <span class="nf">search_paged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paged_size</span><span class="p">,</span> <span class="n">paged_criticality</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform a paged search, can be called as an Iterator</span>
+
+<span class="sd">        :param paged_size: number of entries returned in each search</span>
+<span class="sd">        :type paged_size: int</span>
+<span class="sd">        :param paged_criticality: specify if server must not execute the search if it is not capable of paging searches</span>
+<span class="sd">        :type paged_criticality: bool</span>
+<span class="sd">        :return: Entries found in search</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">paged_cookie</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
@@ -512,6 +556,23 @@
 </pre></div>
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

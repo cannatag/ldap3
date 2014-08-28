@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ldap3.strategy.baseStrategy &mdash; python3-ldap 0.9.5.3 documentation</title>
+    <title>ldap3.strategy.baseStrategy &mdash; python3-ldap 0.9.5.4 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.9.5.3',
+        VERSION:     '0.9.5.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="top" title="python3-ldap 0.9.5.4 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body>
@@ -36,10 +36,27 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -48,28 +65,29 @@
             
   <h1>Source code for ldap3.strategy.baseStrategy</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Created on 15/lug/2013</span>
-
-<span class="sd">@author: Giovanni Cannata</span>
-
-<span class="sd">Copyright 2013 Giovanni Cannata</span>
-
-<span class="sd">This file is part of python3-ldap.</span>
-
-<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
-<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
-<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
-<span class="sd">(at your option) any later version.</span>
-
-<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
-<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
-<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
-<span class="sd">GNU Lesser General Public License for more details.</span>
-
-<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
-<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
-<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># Created on 2013.07.15</span>
+<span class="c">#</span>
+<span class="c"># @author: Giovanni Cannata</span>
+<span class="c">#</span>
+<span class="c"># Copyright 2013 Giovanni Cannata</span>
+<span class="c">#</span>
+<span class="c"># This file is part of python3-ldap.</span>
+<span class="c">#</span>
+<span class="c"># python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU Lesser General Public License as published</span>
+<span class="c"># by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU Lesser General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c"># along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="c"># If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
@@ -438,50 +456,50 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Decode referral URI as specified in RFC 4516 relaxing specifications</span>
 <span class="sd">        permitting &#39;ldaps&#39; as scheme meaning ssl-ldap</span>
-
-<span class="sd">        ldapurl     = scheme COLON SLASH SLASH [host [COLON port]]</span>
-<span class="sd">                       [SLASH dn [QUESTION [attributes]</span>
-<span class="sd">                       [QUESTION [scope] [QUESTION [filter]</span>
-<span class="sd">                       [QUESTION extensions]]]]]</span>
-<span class="sd">                                      ; &lt;host&gt; and &lt;port&gt; are defined</span>
-<span class="sd">                                      ;   in Sections 3.2.2 and 3.2.3</span>
-<span class="sd">                                      ;   of [RFC3986].</span>
-<span class="sd">                                      ; &lt;filter&gt; is from Section 3 of</span>
-<span class="sd">                                      ;   [RFC4515], subject to the</span>
-<span class="sd">                                      ;   provisions of the</span>
-<span class="sd">                                      ;   &quot;Percent-Encoding&quot; section</span>
-<span class="sd">                                      ;   below.</span>
-
-<span class="sd">        scheme      = &quot;ldap&quot; / &quot;ldaps&quot;  &lt;== not RFC4516 compliant (original is &#39;scheme      = &quot;ldap&quot;&#39;)</span>
-<span class="sd">        dn          = distinguishedName ; From Section 3 of [RFC4514],</span>
-<span class="sd">                                      ; subject to the provisions of</span>
-<span class="sd">                                      ; the &quot;Percent-Encoding&quot;</span>
-<span class="sd">                                      ; section below.</span>
-
-<span class="sd">        attributes  = attrdesc *(COMMA attrdesc)</span>
-<span class="sd">        attrdesc    = selector *(COMMA selector)</span>
-<span class="sd">        selector    = attributeSelector ; From Section 4.5.1 of</span>
-<span class="sd">                                      ; [RFC4511], subject to the</span>
-<span class="sd">                                      ; provisions of the</span>
-<span class="sd">                                      ; &quot;Percent-Encoding&quot; section</span>
-<span class="sd">                                      ; below.</span>
-
-<span class="sd">        scope       = &quot;base&quot; / &quot;one&quot; / &quot;sub&quot;</span>
-<span class="sd">        extensions  = extension *(COMMA extension)</span>
-<span class="sd">        extension   = [EXCLAMATION] extype [EQUALS exvalue]</span>
-<span class="sd">        extype      = oid               ; From section 1.4 of [RFC4512].</span>
-
-<span class="sd">        exvalue     = LDAPString        ; From section 4.1.2 of</span>
-<span class="sd">                                      ; [RFC4511], subject to the</span>
-<span class="sd">                                      ; provisions of the</span>
-<span class="sd">                                      ; &quot;Percent-Encoding&quot; section</span>
-<span class="sd">                                      ; below.</span>
-
-<span class="sd">        EXCLAMATION = %x21              ; exclamation mark (&quot;!&quot;)</span>
-<span class="sd">        SLASH       = %x2F              ; forward slash (&quot;/&quot;)</span>
-<span class="sd">        COLON       = %x3A              ; colon (&quot;:&quot;)</span>
-<span class="sd">        QUESTION    = %x3F              ; question mark (&quot;?&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># ldapurl     = scheme COLON SLASH SLASH [host [COLON port]]</span>
+        <span class="c">#                [SLASH dn [QUESTION [attributes]</span>
+        <span class="c">#                [QUESTION [scope] [QUESTION [filter]</span>
+        <span class="c">#                [QUESTION extensions]]]]]</span>
+        <span class="c">#                               ; &lt;host&gt; and &lt;port&gt; are defined</span>
+        <span class="c">#                               ;   in Sections 3.2.2 and 3.2.3</span>
+        <span class="c">#                               ;   of [RFC3986].</span>
+        <span class="c">#                               ; &lt;filter&gt; is from Section 3 of</span>
+        <span class="c">#                               ;   [RFC4515], subject to the</span>
+        <span class="c">#                               ;   provisions of the</span>
+        <span class="c">#                               ;   &quot;Percent-Encoding&quot; section</span>
+        <span class="c">#                               ;   below.</span>
+        <span class="c">#</span>
+        <span class="c"># scheme      = &quot;ldap&quot; / &quot;ldaps&quot;  &lt;== not RFC4516 compliant (original is &#39;scheme      = &quot;ldap&quot;&#39;)</span>
+        <span class="c"># dn          = distinguishedName ; From Section 3 of [RFC4514],</span>
+        <span class="c">#                               ; subject to the provisions of</span>
+        <span class="c">#                               ; the &quot;Percent-Encoding&quot;</span>
+        <span class="c">#                               ; section below.</span>
+        <span class="c">#</span>
+        <span class="c"># attributes  = attrdesc *(COMMA attrdesc)</span>
+        <span class="c"># attrdesc    = selector *(COMMA selector)</span>
+        <span class="c"># selector    = attributeSelector ; From Section 4.5.1 of</span>
+        <span class="c">#                               ; [RFC4511], subject to the</span>
+        <span class="c">#                               ; provisions of the</span>
+        <span class="c">#                               ; &quot;Percent-Encoding&quot; section</span>
+        <span class="c">#                               ; below.</span>
+        <span class="c">#</span>
+        <span class="c"># scope       = &quot;base&quot; / &quot;one&quot; / &quot;sub&quot;</span>
+        <span class="c"># extensions  = extension *(COMMA extension)</span>
+        <span class="c"># extension   = [EXCLAMATION] extype [EQUALS exvalue]</span>
+        <span class="c"># extype      = oid               ; From section 1.4 of [RFC4512].</span>
+        <span class="c">#</span>
+        <span class="c"># exvalue     = LDAPString        ; From section 4.1.2 of</span>
+        <span class="c">#                               ; [RFC4511], subject to the</span>
+        <span class="c">#                               ; provisions of the</span>
+        <span class="c">#                               ; &quot;Percent-Encoding&quot; section</span>
+        <span class="c">#                               ; below.</span>
+        <span class="c">#</span>
+        <span class="c"># EXCLAMATION = %x21              ; exclamation mark (&quot;!&quot;)</span>
+        <span class="c"># SLASH       = %x2F              ; forward slash (&quot;/&quot;)</span>
+        <span class="c"># COLON       = %x3A              ; colon (&quot;:&quot;)</span>
+        <span class="c"># QUESTION    = %x3F              ; question mark (&quot;?&quot;)</span>
 
         <span class="n">referral</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="n">uri</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;?&#39;</span><span class="p">)</span>
@@ -631,23 +649,6 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
     <div class="related">
@@ -659,7 +660,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

@@ -1,29 +1,27 @@
 """
 """
 
-'''
-Created on 2013.07.24
-
-@author: Giovanni Cannata
-
-Copyright 2013 Giovanni Cannata
-
-This file is part of python3-ldap.
-
-python3-ldap is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-python3-ldap is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with python3-ldap in the COPYING and COPYING.LESSER files.
-If not, see <http://www.gnu.org/licenses/>.
-'''
+# Created on 2013.07.24
+#
+# @author: Giovanni Cannata
+#
+# Copyright 2013 Giovanni Cannata
+#
+# This file is part of python3-ldap.
+#
+# python3-ldap is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# python3-ldap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with python3-ldap in the COPYING and COPYING.LESSER files.
+# If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime, timedelta, tzinfo
 from uuid import UUID
@@ -239,6 +237,9 @@ def format_boolean(raw_value):
 
 def format_time(raw_value):
     """
+    """
+
+    '''
     From RFC4517:
     A value of the Generalized Time syntax is a character string
     representing a date and time.  The LDAP-specific encoding of a value
@@ -259,16 +260,14 @@ def format_time(raw_value):
             / ( %x33 %x30-31 )    ; "30" to "31"
     hour    = ( %x30-31 %x30-39 ) / ( %x32 %x30-33 ) ; "00" to "23"
     minute  = %x30-35 %x30-39                        ; "00" to "59"
-
     second      = ( %x30-35 %x30-39 ) ; "00" to "59"
     leap-second = ( %x36 %x30 )       ; "60"
-
     fraction        = ( DOT / COMMA ) 1*(%x30-39)
     g-time-zone     = %x5A  ; "Z"
                     / g-differential
     g-differential  = ( MINUS / PLUS ) hour [ minute ]
         MINUS           = %x2D  ; minus sign ("-")
-    """
+    '''
 
     if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
         return raw_value

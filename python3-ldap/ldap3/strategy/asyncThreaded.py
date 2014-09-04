@@ -124,7 +124,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         self.sync = False
         self.no_real_dsa = False
         self.pooled = False
-        self.has_stream_capapbility = False
+        self.has_stream_capability = False
         self._responses = None
         self.receiver = None
         self.lock = Lock()

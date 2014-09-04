@@ -127,7 +127,7 @@ class Entry(object):
         """
 
         :param name: name of the attribute
-        :return: raw (unencoded) value of the attribute, None if attribute is not foound
+        :return: raw (unencoded) value of the attribute, None if attribute is not found
         """
         return self._raw_attributes[name] if name in self._raw_attributes else None
 
@@ -135,7 +135,7 @@ class Entry(object):
     def refresh(self):
         """Re-read the entry from the LDAP Server
 
-        :return: the updated Entry attibutes values
+        :return: the updated Entry attributes values
         """
         temp_entry = self.get_entry_reader().search_object(self.get_entry_dn())
         self.__dict__['_attributes'] = temp_entry._attributes

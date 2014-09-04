@@ -77,7 +77,7 @@ class Connection(object):
     :type user: str
     :param password: the password for simple authentication
     :type password: str
-    :param auto_bind: speficy if the bind will be performed automatically when defining the Connectioon object
+    :param auto_bind: specify if the bind will be performed automatically when defining the Connection object
     :type auto_bind: int, can be one of AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND as specified in ldap3
     :param version: LDAP version, default to 3
     :type version: int
@@ -99,7 +99,7 @@ class Connection(object):
     :type read_only: bool
     :param lazy: open and bind the connection only when an actual operation is performed
     :type lazy: bool
-    :param raise_exceptions: raise exceptions when operations are not succesful, if False operations return False if not succesful but not raise exceptions
+    :param raise_exceptions: raise exceptions when operations are not successful, if False operations return False if not successful but not raise exceptions
     :type raise_exceptions: bool
     :param pool_name: pool name for pooled strategies
     :type pool_name: str

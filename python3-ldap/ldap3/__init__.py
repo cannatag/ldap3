@@ -23,7 +23,7 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '0.9.5.4'
+__version__ = '0.9.5.3'
 __author__ = 'Giovanni Cannata'
 
 # authentication

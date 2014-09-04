@@ -24,6 +24,11 @@
 #
 # from ldap3.protocol.sasl.sasl import validate_simple_password
 
+import unittest
+from unicodedata import lookup
+
+from ldap3.protocol.sasl.sasl import validate_simple_password
+
 
 class Test(unittest.TestCase):
     def test_valid_simple_alphanumeric_password(self):

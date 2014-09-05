@@ -1,0 +1,7 @@
+__version__ = '0.9.5.4'
+__author__ = 'Giovanni Cannata'
+__email__ = 'python3ldap@gmail.com'
+__license__ = 'LGPL v3'
+__description__ = 'A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Python 2 compatible'
+__url__ = 'https://bitbucket.org/python3ldap/python3-ldap'
+__status__ = 'development'

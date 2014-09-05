@@ -21,9 +21,22 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
+from os import path
+package_name = 'python3-ldap'
+package_folder = 'python3-ldap'
+version_file = open(path.join(package_folder, 'ldap3', '_version.py'))
+exec_local = dict()
+exec(version_file.read(), dict(), exec_local)
+__version__ = exec_local['__version__']
+__author__ = exec_local['__author__']
+__email__ = exec_local['__email__']
+__license__ = exec_local['__license__']
+__url__ = exec_local['__url__']
+__description__ = exec_local['__description__']
+version_file.close()
 
-setup(name='python3-ldap',
-      version='0.9.5.3',
+setup(name=package_name,
+      version=__version__,
       packages=['ldap3',
                 'ldap3.core',
                 'ldap3.abstract',
@@ -38,14 +51,14 @@ setup(name='python3-ldap',
                 'ldap3.extend.microsoft',
                 'ldap3.extend.standard'
       ],
-      package_dir={'': 'python3-ldap'},
+      package_dir={'': package_folder},
       install_requires=['pyasn1 == 0.1.7'],
-      license='LGPL v3',
-      author='Giovanni Cannata',
-      author_email='python3ldap@gmail.com',
-      description='A strictly RFC 4511 conforming LDAP V3 pure Python 3 client - Python 2 compatible',
+      license=__license__,
+      author=__author__,
+      author_email=__email__,
+      description=__description__,
       keywords='python3 python2 ldap',
-      url='https://bitbucket.org/python3ldap/python3-ldap',
+      url=__url__,
       classifiers=['Development Status :: 4 - Beta',
                    'Intended Audience :: Developers',
                    'Intended Audience :: System Administrators',

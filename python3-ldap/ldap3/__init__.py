@@ -23,9 +23,6 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '0.9.5.3'
-__author__ = 'Giovanni Cannata'
-
 # authentication
 AUTH_ANONYMOUS = 0
 AUTH_SIMPLE = 1
@@ -264,3 +261,5 @@ from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSA
     LDAPNoSuchOperationResult, LDAPNotAllowedOnNotLeafResult, LDAPNotAllowedOnRDNResult, LDAPObjectClassModsProhibitedResult, LDAPObjectClassViolationResult, LDAPOperationResult, LDAPOperationsErrorResult, LDAPOtherResult, LDAPProtocolErrorResult, \
     LDAPReferralResult, LDAPSASLBindInProgressResult, LDAPSizeLimitExceededResult, LDAPStrongerAuthRequiredResult, LDAPTimeLimitExceededResult, LDAPTooLateResult, LDAPUnavailableCriticalExtensionResult, LDAPUnavailableResult, \
     LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult, LDAPMaximumRetriesError, LDAPExtensionError
+
+from ._version import __author__, __version__, __email__, __description__, __status__, __license__, __url__

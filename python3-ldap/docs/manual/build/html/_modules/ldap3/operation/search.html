@@ -1,0 +1,574 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.operation.search &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.operation.search</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on 2013.06.02</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2013 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">whitespace</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">linesep</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">SEARCH_NEVER_DEREFERENCE_ALIASES</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span><span class="p">,</span> <span class="n">SEARCH_DEREFERENCE_IN_SEARCHING</span><span class="p">,</span> <span class="n">SEARCH_DEREFERENCE_FINDING_BASE_OBJECT</span><span class="p">,</span> <span class="n">SEARCH_DEREFERENCE_ALWAYS</span><span class="p">,</span> <span class="n">NO_ATTRIBUTES</span><span class="p">,</span> \
+    <span class="n">ATTRIBUTES_EXCLUDED_FROM_CHECK</span><span class="p">,</span> <span class="n">CASE_INSENSITIVE_ATTRIBUTE_NAMES</span>
+<span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPInvalidFilterError</span><span class="p">,</span> <span class="n">LDAPAttributeError</span><span class="p">,</span> <span class="n">LDAPInvalidScopeError</span><span class="p">,</span> <span class="n">LDAPInvalidDereferenceAliasesError</span>
+<span class="kn">from</span> <span class="nn">..utils.caseInsensitiveDictionary</span> <span class="kn">import</span> <span class="n">CaseInsensitiveDict</span>
+<span class="kn">from</span> <span class="nn">..protocol.rfc4511</span> <span class="kn">import</span> <span class="n">SearchRequest</span><span class="p">,</span> <span class="n">LDAPDN</span><span class="p">,</span> <span class="n">Scope</span><span class="p">,</span> <span class="n">DerefAliases</span><span class="p">,</span> <span class="n">Integer0ToMax</span><span class="p">,</span> <span class="n">TypesOnly</span><span class="p">,</span> <span class="n">AttributeSelection</span><span class="p">,</span> <span class="n">Selector</span><span class="p">,</span> <span class="n">EqualityMatch</span><span class="p">,</span> <span class="n">AttributeDescription</span><span class="p">,</span> <span class="n">AssertionValue</span><span class="p">,</span> <span class="n">Filter</span><span class="p">,</span> <span class="n">Not</span><span class="p">,</span> <span class="n">And</span><span class="p">,</span> <span class="n">Or</span><span class="p">,</span> <span class="n">ApproxMatch</span><span class="p">,</span> <span class="n">GreaterOrEqual</span><span class="p">,</span> <span class="n">LessOrEqual</span><span class="p">,</span> \
+    <span class="n">ExtensibleMatch</span><span class="p">,</span> <span class="n">Present</span><span class="p">,</span> <span class="n">SubstringFilter</span><span class="p">,</span> <span class="n">Substrings</span><span class="p">,</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Initial</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ResultCode</span><span class="p">,</span> <span class="n">Substring</span><span class="p">,</span> <span class="n">MatchingRule</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">MatchValue</span><span class="p">,</span> <span class="n">DnAttributes</span>
+<span class="kn">from</span> <span class="nn">..operation.bind</span> <span class="kn">import</span> <span class="n">referrals_to_list</span>
+<span class="kn">from</span> <span class="nn">..protocol.convert</span> <span class="kn">import</span> <span class="n">ava_to_dict</span><span class="p">,</span> <span class="n">attributes_to_list</span><span class="p">,</span> <span class="n">search_refs_to_list</span><span class="p">,</span> <span class="n">validate_assertion_value</span><span class="p">,</span> <span class="n">format_attribute_values</span>
+
+
+<span class="c"># SearchRequest ::= [APPLICATION 3] SEQUENCE {</span>
+<span class="c"># baseObject      LDAPDN,</span>
+<span class="c">#     scope           ENUMERATED {</span>
+<span class="c">#         baseObject              (0),</span>
+<span class="c">#         singleLevel             (1),</span>
+<span class="c">#         wholeSubtree            (2),</span>
+<span class="c">#     ...  },</span>
+<span class="c">#     derefAliases    ENUMERATED {</span>
+<span class="c">#         neverDerefAliases       (0),</span>
+<span class="c">#         derefInSearching        (1),</span>
+<span class="c">#         derefFindingBaseObj     (2),</span>
+<span class="c">#         derefAlways             (3) },</span>
+<span class="c">#     sizeLimit       INTEGER (0 ..  maxInt),</span>
+<span class="c">#     timeLimit       INTEGER (0 ..  maxInt),</span>
+<span class="c">#     typesOnly       BOOLEAN,</span>
+<span class="c">#     filter          Filter,</span>
+<span class="c">#     attributes      AttributeSelection }</span>
+
+<span class="n">ROOT</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">AND</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">OR</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">NOT</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">MATCH_APPROX</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">MATCH_GREATER_OR_EQUAL</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">MATCH_LESS_OR_EQUAL</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">MATCH_EXTENSIBLE</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">MATCH_PRESENT</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">MATCH_SUBSTRING</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">MATCH_EQUAL</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">SEARCH_OPEN</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">SEARCH_OPEN_OR_CLOSE</span> <span class="o">=</span> <span class="mi">21</span>
+<span class="n">SEARCH_MATCH_OR_CLOSE</span> <span class="o">=</span> <span class="mi">22</span>
+<span class="n">SEARCH_MATCH_OR_CONTROL</span> <span class="o">=</span> <span class="mi">23</span>
+
+
+<div class="viewcode-block" id="FilterNode"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.FilterNode">[docs]</a><span class="k">class</span> <span class="nc">FilterNode</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">assertion</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertion</span> <span class="o">=</span> <span class="n">assertion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="FilterNode.append"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.FilterNode.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_node</span><span class="p">):</span>
+        <span class="n">filter_node</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filter_node</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filter_node</span>
+</div>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">node_tags</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ROOT&#39;</span><span class="p">,</span> <span class="s">&#39;AND&#39;</span><span class="p">,</span> <span class="s">&#39;OR&#39;</span><span class="p">,</span> <span class="s">&#39;NOT&#39;</span><span class="p">,</span> <span class="s">&#39;MATCH_APPROX&#39;</span><span class="p">,</span> <span class="s">&#39;MATCH_GREATER_OR_EQUAL&#39;</span><span class="p">,</span> <span class="s">&#39;MATCH_LESS_OR_EQUAL&#39;</span><span class="p">,</span> <span class="s">&#39;MATCH_EXTENSIBLE&#39;</span><span class="p">,</span> <span class="s">&#39;MATCH_PRESENT&#39;</span><span class="p">,</span> <span class="s">&#39;MATCH_SUBSTRING&#39;</span><span class="p">,</span> <span class="s">&#39;MATCH_EQUAL&#39;</span><span class="p">]</span>
+        <span class="n">representation</span> <span class="o">=</span> <span class="s">&#39; &#39;</span> <span class="o">*</span> <span class="n">pos</span> <span class="o">+</span> <span class="s">&#39;tag: &#39;</span> <span class="o">+</span> <span class="n">node_tags</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; - assertion: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+            <span class="n">representation</span> <span class="o">+=</span> <span class="s">&#39; - elements: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+                <span class="n">representation</span> <span class="o">+=</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">*</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">element</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">representation</span>
+
+</div>
+<div class="viewcode-block" id="evaluate_match"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.evaluate_match">[docs]</a><span class="k">def</span> <span class="nf">evaluate_match</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s">&#39;~=&#39;</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">MATCH_APPROX</span>
+        <span class="n">left_part</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">right_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;~=&#39;</span><span class="p">)</span>
+        <span class="n">left_part</span> <span class="o">=</span> <span class="n">left_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">right_part</span> <span class="o">=</span> <span class="n">right_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">assertion</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;attr&#39;</span><span class="p">:</span> <span class="n">left_part</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">left_part</span><span class="p">,</span> <span class="n">right_part</span><span class="p">)}</span>
+    <span class="k">elif</span> <span class="s">&#39;&gt;=&#39;</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">MATCH_GREATER_OR_EQUAL</span>
+        <span class="n">left_part</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">right_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;&gt;=&#39;</span><span class="p">)</span>
+        <span class="n">left_part</span> <span class="o">=</span> <span class="n">left_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">right_part</span> <span class="o">=</span> <span class="n">right_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">assertion</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;attr&#39;</span><span class="p">:</span> <span class="n">left_part</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">left_part</span><span class="p">,</span> <span class="n">right_part</span><span class="p">)}</span>
+    <span class="k">elif</span> <span class="s">&#39;&lt;=&#39;</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">MATCH_LESS_OR_EQUAL</span>
+        <span class="n">left_part</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">right_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;&lt;=&#39;</span><span class="p">)</span>
+        <span class="n">left_part</span> <span class="o">=</span> <span class="n">left_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">right_part</span> <span class="o">=</span> <span class="n">right_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">assertion</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;attr&#39;</span><span class="p">:</span> <span class="n">left_part</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">left_part</span><span class="p">,</span> <span class="n">right_part</span><span class="p">)}</span>
+    <span class="k">elif</span> <span class="s">&#39;:=&#39;</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">MATCH_EXTENSIBLE</span>
+        <span class="n">left_part</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">right_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;:=&#39;</span><span class="p">)</span>
+        <span class="n">left_part</span> <span class="o">=</span> <span class="n">left_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">right_part</span> <span class="o">=</span> <span class="n">right_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">extended_filter_list</span> <span class="o">=</span> <span class="n">left_part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+        <span class="n">matching_rule</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">dn_attributes</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">attribute_name</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>  <span class="c"># extensible filter format [:dn]:matchingRule:=assertionValue</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">extended_filter_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;dn&#39;</span><span class="p">:</span>
+                <span class="n">matching_rule</span> <span class="o">=</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">extended_filter_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;dn&#39;</span><span class="p">:</span>
+                <span class="n">dn_attributes</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">matching_rule</span> <span class="o">=</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;invalid extensible filter&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">extended_filter_list</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>  <span class="c"># extensible filter format attr[:dn][:matchingRule]:=assertionValue</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">extended_filter_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">attribute_name</span> <span class="o">=</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">extended_filter_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">attribute_name</span> <span class="o">=</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;dn&#39;</span><span class="p">:</span>
+                    <span class="n">dn_attributes</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">matching_rule</span> <span class="o">=</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">extended_filter_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;dn&#39;</span><span class="p">:</span>
+                <span class="n">attribute_name</span> <span class="o">=</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">dn_attributes</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">matching_rule</span> <span class="o">=</span> <span class="n">extended_filter_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;invalid extensible filter&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">attribute_name</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">matching_rule</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;invalid extensible filter&#39;</span><span class="p">)</span>
+        <span class="n">attribute_name</span> <span class="o">=</span> <span class="n">attribute_name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="n">attribute_name</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="n">matching_rule</span> <span class="o">=</span> <span class="n">matching_rule</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="n">matching_rule</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="n">assertion</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;attr&#39;</span><span class="p">:</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">right_part</span><span class="p">),</span> <span class="s">&#39;matchingRule&#39;</span><span class="p">:</span> <span class="n">matching_rule</span><span class="p">,</span> <span class="s">&#39;dnAttributes&#39;</span><span class="p">:</span> <span class="n">dn_attributes</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">match</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;=*&#39;</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">MATCH_PRESENT</span>
+        <span class="n">assertion</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;attr&#39;</span><span class="p">:</span> <span class="n">match</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]}</span>
+    <span class="k">elif</span> <span class="s">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">match</span> <span class="ow">and</span> <span class="s">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">MATCH_SUBSTRING</span>
+        <span class="n">left_part</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">right_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">)</span>
+        <span class="n">left_part</span> <span class="o">=</span> <span class="n">left_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">right_part</span> <span class="o">=</span> <span class="n">right_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">substrings</span> <span class="o">=</span> <span class="n">right_part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">left_part</span><span class="p">,</span> <span class="n">substrings</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">substrings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="n">final</span> <span class="o">=</span> <span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">left_part</span><span class="p">,</span> <span class="n">substrings</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">substrings</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="n">any_string</span> <span class="o">=</span> <span class="p">[</span><span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">left_part</span><span class="p">,</span> <span class="n">substring</span><span class="p">)</span> <span class="k">for</span> <span class="n">substring</span> <span class="ow">in</span> <span class="n">substrings</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">substring</span><span class="p">]</span>
+        <span class="n">assertion</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;attr&#39;</span><span class="p">:</span> <span class="n">left_part</span><span class="p">,</span> <span class="s">&#39;initial&#39;</span><span class="p">:</span> <span class="n">initial</span><span class="p">,</span> <span class="s">&#39;any&#39;</span><span class="p">:</span> <span class="n">any_string</span><span class="p">,</span> <span class="s">&#39;final&#39;</span><span class="p">:</span> <span class="n">final</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="s">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">MATCH_EQUAL</span>
+        <span class="n">left_part</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">right_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">)</span>
+        <span class="n">left_part</span> <span class="o">=</span> <span class="n">left_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">right_part</span> <span class="o">=</span> <span class="n">right_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">assertion</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;attr&#39;</span><span class="p">:</span> <span class="n">left_part</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">validate_assertion_value</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">left_part</span><span class="p">,</span> <span class="n">right_part</span><span class="p">)}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;invalid matching assertion&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">FilterNode</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">assertion</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="parse_filter"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.parse_filter">[docs]</a><span class="k">def</span> <span class="nf">parse_filter</span><span class="p">(</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+    <span class="n">search_filter</span> <span class="o">=</span> <span class="n">search_filter</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">search_filter</span> <span class="ow">and</span> <span class="n">search_filter</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">search_filter</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">search_filter</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">search_filter</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">):</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">SEARCH_OPEN_OR_CLOSE</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">FilterNode</span><span class="p">(</span><span class="n">ROOT</span><span class="p">)</span>
+        <span class="n">current_node</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="n">start_pos</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">skip_white_space</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">just_closed</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">search_filter</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">skip_white_space</span> <span class="ow">and</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">whitespace</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">state</span> <span class="o">==</span> <span class="n">SEARCH_OPEN</span> <span class="ow">or</span> <span class="n">state</span> <span class="o">==</span> <span class="n">SEARCH_OPEN_OR_CLOSE</span><span class="p">)</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;(&#39;</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">SEARCH_MATCH_OR_CONTROL</span>
+                <span class="n">just_closed</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">elif</span> <span class="n">state</span> <span class="o">==</span> <span class="n">SEARCH_MATCH_OR_CONTROL</span> <span class="ow">and</span> <span class="n">c</span> <span class="ow">in</span> <span class="s">&#39;&amp;!|&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;&amp;&#39;</span><span class="p">:</span>
+                    <span class="n">current_node</span> <span class="o">=</span> <span class="n">current_node</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FilterNode</span><span class="p">(</span><span class="n">AND</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;|&#39;</span><span class="p">:</span>
+                    <span class="n">current_node</span> <span class="o">=</span> <span class="n">current_node</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FilterNode</span><span class="p">(</span><span class="n">OR</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;!&#39;</span><span class="p">:</span>
+                    <span class="n">current_node</span> <span class="o">=</span> <span class="n">current_node</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FilterNode</span><span class="p">(</span><span class="n">NOT</span><span class="p">))</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">SEARCH_OPEN</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">state</span> <span class="o">==</span> <span class="n">SEARCH_MATCH_OR_CLOSE</span> <span class="ow">or</span> <span class="n">state</span> <span class="o">==</span> <span class="n">SEARCH_OPEN_OR_CLOSE</span><span class="p">)</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">==</span> <span class="s">&#39;)&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">just_closed</span><span class="p">:</span>
+                    <span class="n">current_node</span> <span class="o">=</span> <span class="n">current_node</span><span class="o">.</span><span class="n">parent</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">just_closed</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">skip_white_space</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">end_pos</span> <span class="o">=</span> <span class="n">pos</span>
+                    <span class="k">if</span> <span class="n">start_pos</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">current_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">NOT</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_node</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;not clause in filter cannot be multiple&#39;</span><span class="p">)</span>
+                        <span class="n">current_node</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">evaluate_match</span><span class="p">(</span><span class="n">search_filter</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">],</span> <span class="n">schema</span><span class="p">))</span>
+                <span class="n">start_pos</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">SEARCH_OPEN_OR_CLOSE</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">state</span> <span class="o">==</span> <span class="n">SEARCH_MATCH_OR_CLOSE</span> <span class="ow">or</span> <span class="n">state</span> <span class="o">==</span> <span class="n">SEARCH_MATCH_OR_CONTROL</span><span class="p">)</span> <span class="ow">and</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&#39;()&#39;</span><span class="p">:</span>
+                <span class="n">skip_white_space</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">start_pos</span><span class="p">:</span>
+                    <span class="n">start_pos</span> <span class="o">=</span> <span class="n">pos</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">SEARCH_MATCH_OR_CLOSE</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;malformed filter&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;missing boolean operator in filter&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">root</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;invalid filter&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="compile_filter"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.compile_filter">[docs]</a><span class="k">def</span> <span class="nf">compile_filter</span><span class="p">(</span><span class="n">filter_node</span><span class="p">):</span>
+    <span class="n">compiled_filter</span> <span class="o">=</span> <span class="n">Filter</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">AND</span><span class="p">:</span>
+        <span class="n">boolean_filter</span> <span class="o">=</span> <span class="n">And</span><span class="p">()</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+            <span class="n">boolean_filter</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">compile_filter</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;and&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">boolean_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">OR</span><span class="p">:</span>
+        <span class="n">boolean_filter</span> <span class="o">=</span> <span class="n">Or</span><span class="p">()</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+            <span class="n">boolean_filter</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">compile_filter</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;or&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">boolean_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">NOT</span><span class="p">:</span>
+        <span class="n">boolean_filter</span> <span class="o">=</span> <span class="n">Not</span><span class="p">()</span>
+        <span class="n">boolean_filter</span><span class="p">[</span><span class="s">&#39;innerNotFilter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compile_filter</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;notFilter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">boolean_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">MATCH_APPROX</span><span class="p">:</span>
+        <span class="n">matching_filter</span> <span class="o">=</span> <span class="n">ApproxMatch</span><span class="p">()</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;attributeDesc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AttributeDescription</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">])</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;assertionValue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AssertionValue</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;approxMatch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matching_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">MATCH_GREATER_OR_EQUAL</span><span class="p">:</span>
+        <span class="n">matching_filter</span> <span class="o">=</span> <span class="n">GreaterOrEqual</span><span class="p">()</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;attributeDesc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AttributeDescription</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">])</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;assertionValue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AssertionValue</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;greaterOrEqual&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matching_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">MATCH_LESS_OR_EQUAL</span><span class="p">:</span>
+        <span class="n">matching_filter</span> <span class="o">=</span> <span class="n">LessOrEqual</span><span class="p">()</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;attributeDesc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AttributeDescription</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">])</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;assertionValue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AssertionValue</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;lessOrEqual&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matching_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">MATCH_EXTENSIBLE</span><span class="p">:</span>
+        <span class="n">matching_filter</span> <span class="o">=</span> <span class="n">ExtensibleMatch</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;matchingRule&#39;</span><span class="p">]:</span>
+            <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;matchingRule&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MatchingRule</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;matchingRule&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">]:</span>
+            <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Type</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">])</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;matchValue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MatchValue</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;dnAttributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DnAttributes</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;dnAttributes&#39;</span><span class="p">])</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;extensibleMatch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matching_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">MATCH_PRESENT</span><span class="p">:</span>
+        <span class="n">matching_filter</span> <span class="o">=</span> <span class="n">Present</span><span class="p">(</span><span class="n">AttributeDescription</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">]))</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;present&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matching_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">MATCH_SUBSTRING</span><span class="p">:</span>
+        <span class="n">matching_filter</span> <span class="o">=</span> <span class="n">SubstringFilter</span><span class="p">()</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AttributeDescription</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">])</span>
+        <span class="n">substrings</span> <span class="o">=</span> <span class="n">Substrings</span><span class="p">()</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;initial&#39;</span><span class="p">]:</span>
+            <span class="n">substrings</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">Substring</span><span class="p">()</span><span class="o">.</span><span class="n">setComponentByName</span><span class="p">(</span><span class="s">&#39;initial&#39;</span><span class="p">,</span> <span class="n">Initial</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;initial&#39;</span><span class="p">]))</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;any&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">substring</span> <span class="ow">in</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;any&#39;</span><span class="p">]:</span>
+                <span class="n">substrings</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">Substring</span><span class="p">()</span><span class="o">.</span><span class="n">setComponentByName</span><span class="p">(</span><span class="s">&#39;any&#39;</span><span class="p">,</span> <span class="n">Any</span><span class="p">(</span><span class="n">substring</span><span class="p">))</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;final&#39;</span><span class="p">]:</span>
+            <span class="n">substrings</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">Substring</span><span class="p">()</span><span class="o">.</span><span class="n">setComponentByName</span><span class="p">(</span><span class="s">&#39;final&#39;</span><span class="p">,</span> <span class="n">Final</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;final&#39;</span><span class="p">]))</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;substrings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">substrings</span>
+        <span class="n">compiled_filter</span><span class="p">[</span><span class="s">&#39;substringFilter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matching_filter</span>
+    <span class="k">elif</span> <span class="n">filter_node</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">MATCH_EQUAL</span><span class="p">:</span>
+        <span class="n">matching_filter</span> <span class="o">=</span> <span class="n">EqualityMatch</span><span class="p">()</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;attributeDesc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AttributeDescription</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;attr&#39;</span><span class="p">])</span>
+        <span class="n">matching_filter</span><span class="p">[</span><span class="s">&#39;assertionValue&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AssertionValue</span><span class="p">(</span><span class="n">filter_node</span><span class="o">.</span><span class="n">assertion</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span>
+        <span class="n">compiled_filter</span><span class="o">.</span><span class="n">setComponentByName</span><span class="p">(</span><span class="s">&#39;equalityMatch&#39;</span><span class="p">,</span> <span class="n">matching_filter</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;unknown filter node tag&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">compiled_filter</span>
+
+</div>
+<div class="viewcode-block" id="build_filter"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.build_filter">[docs]</a><span class="k">def</span> <span class="nf">build_filter</span><span class="p">(</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">compile_filter</span><span class="p">(</span><span class="n">parse_filter</span><span class="p">(</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="build_attribute_selection"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.build_attribute_selection">[docs]</a><span class="k">def</span> <span class="nf">build_attribute_selection</span><span class="p">(</span><span class="n">attribute_list</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+    <span class="n">attribute_selection</span> <span class="o">=</span> <span class="n">AttributeSelection</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">attribute_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">schema</span> <span class="ow">and</span> <span class="n">schema</span><span class="o">.</span><span class="n">attribute_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">attribute</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">schema</span><span class="o">.</span><span class="n">attribute_types</span> <span class="ow">and</span> <span class="n">attribute</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ATTRIBUTES_EXCLUDED_FROM_CHECK</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPAttributeError</span><span class="p">(</span><span class="s">&#39;invalid attribute type in attribute list: &#39;</span> <span class="o">+</span> <span class="n">attribute</span><span class="p">)</span>
+        <span class="n">attribute_selection</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">Selector</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">attribute_selection</span>
+
+</div>
+<div class="viewcode-block" id="search_operation"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.search_operation">[docs]</a><span class="k">def</span> <span class="nf">search_operation</span><span class="p">(</span><span class="n">search_base</span><span class="p">,</span>
+                     <span class="n">search_filter</span><span class="p">,</span>
+                     <span class="n">search_scope</span><span class="p">,</span>
+                     <span class="n">dereference_aliases</span><span class="p">,</span>
+                     <span class="n">attributes</span><span class="p">,</span>
+                     <span class="n">size_limit</span><span class="p">,</span>
+                     <span class="n">time_limit</span><span class="p">,</span>
+                     <span class="n">types_only</span><span class="p">,</span>
+                     <span class="n">schema</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">SearchRequest</span><span class="p">()</span>
+    <span class="n">request</span><span class="p">[</span><span class="s">&#39;baseObject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">LDAPDN</span><span class="p">(</span><span class="n">search_base</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">search_scope</span> <span class="o">==</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Scope</span><span class="p">(</span><span class="s">&#39;baseObject&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">search_scope</span> <span class="o">==</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Scope</span><span class="p">(</span><span class="s">&#39;singleLevel&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">search_scope</span> <span class="o">==</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Scope</span><span class="p">(</span><span class="s">&#39;wholeSubtree&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPInvalidScopeError</span><span class="p">(</span><span class="s">&#39;invalid scope type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dereference_aliases</span> <span class="o">==</span> <span class="n">SEARCH_NEVER_DEREFERENCE_ALIASES</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s">&#39;derefAliases&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DerefAliases</span><span class="p">(</span><span class="s">&#39;neverDerefAliases&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dereference_aliases</span> <span class="o">==</span> <span class="n">SEARCH_DEREFERENCE_IN_SEARCHING</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s">&#39;derefAliases&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DerefAliases</span><span class="p">(</span><span class="s">&#39;derefInSearching&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dereference_aliases</span> <span class="o">==</span> <span class="n">SEARCH_DEREFERENCE_FINDING_BASE_OBJECT</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s">&#39;derefAliases&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DerefAliases</span><span class="p">(</span><span class="s">&#39;derefFindingBaseObj&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dereference_aliases</span> <span class="o">==</span> <span class="n">SEARCH_DEREFERENCE_ALWAYS</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s">&#39;derefAliases&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DerefAliases</span><span class="p">(</span><span class="s">&#39;derefAlways&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPInvalidDereferenceAliasesError</span><span class="p">(</span><span class="s">&#39;invalid dereference aliases type&#39;</span><span class="p">)</span>
+
+    <span class="n">request</span><span class="p">[</span><span class="s">&#39;sizeLimit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Integer0ToMax</span><span class="p">(</span><span class="n">size_limit</span><span class="p">)</span>
+    <span class="n">request</span><span class="p">[</span><span class="s">&#39;timeLimit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Integer0ToMax</span><span class="p">(</span><span class="n">time_limit</span><span class="p">)</span>
+    <span class="n">request</span><span class="p">[</span><span class="s">&#39;typesOnly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypesOnly</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">types_only</span> <span class="k">else</span> <span class="n">TypesOnly</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">request</span><span class="p">[</span><span class="s">&#39;filter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_filter</span><span class="p">(</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>  <span class="c"># parse the searchFilter string and compile it starting from the root node</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attributes</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="n">NO_ATTRIBUTES</span><span class="p">]</span>
+
+    <span class="n">request</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_attribute_selection</span><span class="p">(</span><span class="n">attributes</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">request</span>
+
+</div>
+<div class="viewcode-block" id="decode_vals"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.decode_vals">[docs]</a><span class="k">def</span> <span class="nf">decode_vals</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span> <span class="k">if</span> <span class="n">val</span><span class="p">]</span> <span class="k">if</span> <span class="n">vals</span> <span class="k">else</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="attributes_to_dict"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.attributes_to_dict">[docs]</a><span class="k">def</span> <span class="nf">attributes_to_dict</span><span class="p">(</span><span class="n">attribute_list</span><span class="p">):</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">CaseInsensitiveDict</span><span class="p">()</span> <span class="k">if</span> <span class="n">CASE_INSENSITIVE_ATTRIBUTE_NAMES</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attribute_list</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="n">decode_vals</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s">&#39;vals&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">attributes</span>
+
+</div>
+<div class="viewcode-block" id="decode_raw_vals"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.decode_raw_vals">[docs]</a><span class="k">def</span> <span class="nf">decode_raw_vals</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">bytes</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span> <span class="k">if</span> <span class="n">vals</span> <span class="k">else</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="raw_attributes_to_dict"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.raw_attributes_to_dict">[docs]</a><span class="k">def</span> <span class="nf">raw_attributes_to_dict</span><span class="p">(</span><span class="n">attribute_list</span><span class="p">):</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">CaseInsensitiveDict</span><span class="p">()</span> <span class="k">if</span> <span class="n">CASE_INSENSITIVE_ATTRIBUTE_NAMES</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attribute_list</span><span class="p">:</span>
+        <span class="n">attributes</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="n">decode_raw_vals</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s">&#39;vals&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">attributes</span>
+
+</div>
+<div class="viewcode-block" id="checked_attributes_to_dict"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.checked_attributes_to_dict">[docs]</a><span class="k">def</span> <span class="nf">checked_attributes_to_dict</span><span class="p">(</span><span class="n">attribute_list</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">custom_formatter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">checked_attributes</span> <span class="o">=</span> <span class="n">CaseInsensitiveDict</span><span class="p">()</span> <span class="k">if</span> <span class="n">CASE_INSENSITIVE_ATTRIBUTE_NAMES</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attribute_list</span><span class="p">:</span>
+        <span class="n">checked_attributes</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="n">format_attribute_values</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]),</span> <span class="n">decode_raw_vals</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s">&#39;vals&#39;</span><span class="p">]),</span> <span class="n">custom_formatter</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">checked_attributes</span>
+
+</div>
+<div class="viewcode-block" id="matching_rule_assertion_to_string"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.matching_rule_assertion_to_string">[docs]</a><span class="k">def</span> <span class="nf">matching_rule_assertion_to_string</span><span class="p">(</span><span class="n">matching_rule_assertion</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">matching_rule_assertion</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="filter_to_string"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.filter_to_string">[docs]</a><span class="k">def</span> <span class="nf">filter_to_string</span><span class="p">(</span><span class="n">filter_object</span><span class="p">):</span>
+    <span class="n">filter_type</span> <span class="o">=</span> <span class="n">filter_object</span><span class="o">.</span><span class="n">getName</span><span class="p">()</span>
+    <span class="n">filter_string</span> <span class="o">=</span> <span class="s">&#39;(&#39;</span>
+    <span class="k">if</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;and&#39;</span><span class="p">:</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="s">&#39;&amp;&#39;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;and&#39;</span><span class="p">]:</span>
+            <span class="n">filter_string</span> <span class="o">+=</span> <span class="n">filter_to_string</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;or&#39;</span><span class="p">:</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="s">&#39;!&#39;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;or&#39;</span><span class="p">]:</span>
+            <span class="n">filter_string</span> <span class="o">+=</span> <span class="n">filter_to_string</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;notFilter&#39;</span><span class="p">:</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="s">&#39;!&#39;</span> <span class="o">+</span> <span class="n">filter_to_string</span><span class="p">(</span><span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;notFilter&#39;</span><span class="p">][</span><span class="s">&#39;innerNotFilter&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;equalityMatch&#39;</span><span class="p">:</span>
+        <span class="n">ava</span> <span class="o">=</span> <span class="n">ava_to_dict</span><span class="p">(</span><span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;equalityMatch&#39;</span><span class="p">])</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;=&#39;</span> <span class="o">+</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;substringFilter&#39;</span><span class="p">:</span>
+        <span class="n">attribute</span> <span class="o">=</span> <span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;substringFilter&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;=&#39;</span>
+        <span class="k">for</span> <span class="n">substring</span> <span class="ow">in</span> <span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;substringFilter&#39;</span><span class="p">][</span><span class="s">&#39;substrings&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">substring</span><span class="p">[</span><span class="s">&#39;initial&#39;</span><span class="p">]:</span>
+                <span class="n">filter_string</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">substring</span><span class="p">[</span><span class="s">&#39;initial&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;*&#39;</span>
+            <span class="k">elif</span> <span class="n">substring</span><span class="p">[</span><span class="s">&#39;any&#39;</span><span class="p">]:</span>
+                <span class="n">filter_string</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">substring</span><span class="p">[</span><span class="s">&#39;any&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">filter_string</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s">&#39;*&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">substring</span><span class="p">[</span><span class="s">&#39;any&#39;</span><span class="p">])</span>
+                <span class="n">filter_string</span> <span class="o">+=</span> <span class="s">&#39;*&#39;</span>
+            <span class="k">elif</span> <span class="n">substring</span><span class="p">[</span><span class="s">&#39;final&#39;</span><span class="p">]:</span>
+                <span class="n">filter_string</span> <span class="o">+=</span> <span class="s">&#39;*&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">substring</span><span class="p">[</span><span class="s">&#39;final&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;greaterOrEqual&#39;</span><span class="p">:</span>
+        <span class="n">ava</span> <span class="o">=</span> <span class="n">ava_to_dict</span><span class="p">(</span><span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;greaterOrEqual&#39;</span><span class="p">])</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;&gt;=&#39;</span> <span class="o">+</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;lessOrEqual&#39;</span><span class="p">:</span>
+        <span class="n">ava</span> <span class="o">=</span> <span class="n">ava_to_dict</span><span class="p">(</span><span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;lessOrEqual&#39;</span><span class="p">])</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;&lt;=&#39;</span> <span class="o">+</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;present&#39;</span><span class="p">:</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;present&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;=*&#39;</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;approxMatch&#39;</span><span class="p">:</span>
+        <span class="n">ava</span> <span class="o">=</span> <span class="n">ava_to_dict</span><span class="p">(</span><span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;approxMatch&#39;</span><span class="p">])</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;~=&#39;</span> <span class="o">+</span> <span class="n">ava</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">filter_type</span> <span class="o">==</span> <span class="s">&#39;extensibleMatch&#39;</span><span class="p">:</span>
+        <span class="n">filter_string</span> <span class="o">+=</span> <span class="n">matching_rule_assertion_to_string</span><span class="p">(</span><span class="n">filter_object</span><span class="p">[</span><span class="s">&#39;extensibleMatch&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPInvalidFilterError</span><span class="p">(</span><span class="s">&#39;error converting filter to string&#39;</span><span class="p">)</span>
+
+    <span class="n">filter_string</span> <span class="o">+=</span> <span class="s">&#39;)&#39;</span>
+    <span class="k">return</span> <span class="n">filter_string</span>
+
+</div>
+<div class="viewcode-block" id="search_request_to_dict"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.search_request_to_dict">[docs]</a><span class="k">def</span> <span class="nf">search_request_to_dict</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;base&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;baseObject&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;scope&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;dereferenceAlias&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;derefAliases&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;sizeLimit&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;sizeLimit&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;timeLimit&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;timeLimit&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;typeOnly&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;typesOnly&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;filter&#39;</span><span class="p">:</span> <span class="n">filter_to_string</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;filter&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;attributes&#39;</span><span class="p">:</span> <span class="n">attributes_to_list</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">])}</span>
+
+</div>
+<div class="viewcode-block" id="search_result_entry_response_to_dict"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.search_result_entry_response_to_dict">[docs]</a><span class="k">def</span> <span class="nf">search_result_entry_response_to_dict</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">custom_formatter</span><span class="p">,</span> <span class="n">check_names</span><span class="p">):</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">entry</span><span class="p">[</span><span class="s">&#39;dn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;object&#39;</span><span class="p">])</span>
+    <span class="n">entry</span><span class="p">[</span><span class="s">&#39;raw_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_attributes_to_dict</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">check_names</span> <span class="ow">and</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="n">entry</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">checked_attributes_to_dict</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">],</span> <span class="n">schema</span><span class="p">,</span> <span class="n">custom_formatter</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">entry</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attributes_to_dict</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">entry</span>
+
+</div>
+<div class="viewcode-block" id="search_result_done_response_to_dict"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.search_result_done_response_to_dict">[docs]</a><span class="k">def</span> <span class="nf">search_result_done_response_to_dict</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;result&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="n">ResultCode</span><span class="p">()</span><span class="o">.</span><span class="n">getNamedValues</span><span class="p">()</span><span class="o">.</span><span class="n">getName</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;diagnosticMessage&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;dn&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;matchedDN&#39;</span><span class="p">]),</span>
+            <span class="s">&#39;referrals&#39;</span><span class="p">:</span> <span class="n">referrals_to_list</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;referral&#39;</span><span class="p">])}</span>
+
+</div>
+<div class="viewcode-block" id="search_result_reference_response_to_dict"><a class="viewcode-back" href="../../../ldap3.operation.html#ldap3.operation.search.search_result_reference_response_to_dict">[docs]</a><span class="k">def</span> <span class="nf">search_result_reference_response_to_dict</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;uri&#39;</span><span class="p">:</span> <span class="n">search_refs_to_list</span><span class="p">(</span><span class="n">response</span><span class="p">)}</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

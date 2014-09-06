@@ -1,0 +1,724 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.protocol.rfc4512 &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.protocol.rfc4512</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on 2013.09.11</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2013 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">linesep</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">CLASS_ABSTRACT</span><span class="p">,</span> <span class="n">CLASS_STRUCTURAL</span><span class="p">,</span> <span class="n">CLASS_AUXILIARY</span><span class="p">,</span> <span class="n">ATTRIBUTE_USER_APPLICATION</span><span class="p">,</span> <span class="n">ATTRIBUTE_DIRECTORY_OPERATION</span><span class="p">,</span> <span class="n">ATTRIBUTE_DISTRIBUTED_OPERATION</span><span class="p">,</span> <span class="n">ATTRIBUTE_DSA_OPERATION</span><span class="p">,</span> <span class="n">CASE_INSENSITIVE_SCHEMA_NAMES</span>
+<span class="kn">from</span> <span class="nn">..utils.caseInsensitiveDictionary</span> <span class="kn">import</span> <span class="n">CaseInsensitiveDict</span>
+<span class="kn">from</span> <span class="nn">.oid</span> <span class="kn">import</span> <span class="n">Oids</span><span class="p">,</span> <span class="n">decode_oids</span><span class="p">,</span> <span class="n">decode_syntax</span>
+<span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPSchemaError</span>
+
+
+<div class="viewcode-block" id="constant_to_class_kind"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.constant_to_class_kind">[docs]</a><span class="k">def</span> <span class="nf">constant_to_class_kind</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">CLASS_STRUCTURAL</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;Structural&#39;</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="n">CLASS_ABSTRACT</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;Abstract&#39;</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="n">CLASS_AUXILIARY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;Auxiliary&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;unknown&#39;</span>
+
+</div>
+<div class="viewcode-block" id="constant_to_attribute_usage"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.constant_to_attribute_usage">[docs]</a><span class="k">def</span> <span class="nf">constant_to_attribute_usage</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">ATTRIBUTE_USER_APPLICATION</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;User Application&#39;</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="n">ATTRIBUTE_DIRECTORY_OPERATION</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&quot;Directory operation&quot;</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="n">ATTRIBUTE_DISTRIBUTED_OPERATION</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;Distributed operation&#39;</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="n">ATTRIBUTE_DSA_OPERATION</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;DSA operation&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;unknown&#39;</span>
+
+</div>
+<div class="viewcode-block" id="attribute_usage_to_constant"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.attribute_usage_to_constant">[docs]</a><span class="k">def</span> <span class="nf">attribute_usage_to_constant</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s">&#39;userApplications&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ATTRIBUTE_USER_APPLICATION</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="s">&#39;directoryOperation&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ATTRIBUTE_DIRECTORY_OPERATION</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="s">&#39;distributedOperation&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ATTRIBUTE_DISTRIBUTED_OPERATION</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="s">&#39;dsaOperation&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ATTRIBUTE_DSA_OPERATION</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;unknown&#39;</span>
+
+</div>
+<div class="viewcode-block" id="quoted_string_to_list"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.quoted_string_to_list">[docs]</a><span class="k">def</span> <span class="nf">quoted_string_to_list</span><span class="p">(</span><span class="n">quoted_string</span><span class="p">):</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">quoted_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;(&#39;</span> <span class="ow">and</span> <span class="n">string</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;)&#39;</span><span class="p">:</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">elements</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span> <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+
+</div>
+<div class="viewcode-block" id="oids_string_to_list"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.oids_string_to_list">[docs]</a><span class="k">def</span> <span class="nf">oids_string_to_list</span><span class="p">(</span><span class="n">oid_string</span><span class="p">):</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">oid_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;(&#39;</span> <span class="ow">and</span> <span class="n">string</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;)&#39;</span><span class="p">:</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">elements</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;$&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span> <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+
+</div>
+<div class="viewcode-block" id="extension_to_tuple"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.extension_to_tuple">[docs]</a><span class="k">def</span> <span class="nf">extension_to_tuple</span><span class="p">(</span><span class="n">extension_string</span><span class="p">):</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">extension_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">quoted_string_to_list</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="list_to_string"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.list_to_string">[docs]</a><span class="k">def</span> <span class="nf">list_to_string</span><span class="p">(</span><span class="n">list_object</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">list_object</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">list_object</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">list_object</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">list_to_string</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span>
+
+    <span class="k">return</span> <span class="n">r</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="n">r</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+
+</div>
+<div class="viewcode-block" id="DsaInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.DsaInfo">[docs]</a><span class="k">class</span> <span class="nc">DsaInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class contains info about the ldap server (DSA) read from DSE</span>
+<span class="sd">    as defined in RFC4512 and RFC3045. Unknown attributes are stored in the &quot;other&quot; dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alt_servers</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;altServer&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">naming_contexts</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;namingContexts&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported_controls</span> <span class="o">=</span> <span class="n">decode_oids</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;supportedControl&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported_extensions</span> <span class="o">=</span> <span class="n">decode_oids</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;supportedExtension&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported_features</span> <span class="o">=</span> <span class="n">decode_oids</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;supportedFeatures&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span> <span class="o">+</span> <span class="n">decode_oids</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;supportedCapabilities&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported_ldap_versions</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;supportedLDAPVersion&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported_sasl_mechanisms</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;supportedSASLMechanisms&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vendor_name</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;vendorName&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vendor_version</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;vendorVersion&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema_entry</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;subschemaSubentry&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">other</span> <span class="o">=</span> <span class="n">attributes</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;DSA info (from DSE):&#39;</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Supported LDAP Versions: &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_ldap_versions</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_ldap_versions</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Naming Contexts:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">naming_contexts</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">naming_contexts</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Alternative Servers:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alt_servers</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alt_servers</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Supported Controls:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_controls</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_controls</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Supported Extensions:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_extensions</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_extensions</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Supported Features:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_features</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_features</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Supported SASL Mechanisms:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_sasl_mechanisms</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_sasl_mechanisms</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Schema Entry:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_entry</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_entry</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;Other:&#39;</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">other</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;  &#39;</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span> <span class="o">+</span> <span class="n">linesep</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">v</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="n">v</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="k">return</span> <span class="n">r</span>
+
+</div>
+<div class="viewcode-block" id="SchemaInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.SchemaInfo">[docs]</a><span class="k">class</span> <span class="nc">SchemaInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class contains info about the ldap server schema read from an entry (default entry is DSE)</span>
+<span class="sd">    as defined in RFC4512. Unknown attributes are stored in the &quot;other&quot; dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_entry</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema_entry</span> <span class="o">=</span> <span class="n">schema_entry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_time_stamp</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;createTimestamp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modify_time_stamp</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;modifyTimestamp&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attribute_types</span> <span class="o">=</span> <span class="n">AttributeTypeInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;attributeTypes&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_classes</span> <span class="o">=</span> <span class="n">ObjectClassInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;objectClasses&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matching_rules</span> <span class="o">=</span> <span class="n">MatchingRuleInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;matchingRules&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matching_rule_uses</span> <span class="o">=</span> <span class="n">MatchingRuleUseInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;matchingRuleUse&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dit_content_rules</span> <span class="o">=</span> <span class="n">DitContentRuleInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;dITContentRules&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dit_structure_rules</span> <span class="o">=</span> <span class="n">DitStructureRuleInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;dITStructureRules&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_forms</span> <span class="o">=</span> <span class="n">NameFormInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;nameForms&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ldap_syntaxes</span> <span class="o">=</span> <span class="n">LdapSyntaxInfo</span><span class="o">.</span><span class="n">from_definition</span><span class="p">(</span><span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;ldapSyntaxes&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">other</span> <span class="o">=</span> <span class="n">attributes</span>  <span class="c"># remaining attributes not in RFC4512</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;DSA Schema from: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_entry</span> <span class="o">+</span> <span class="n">linesep</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Attribute types:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attribute_types</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribute_types</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribute_types</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Object classes:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_classes</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_classes</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_classes</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Matching rules:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matching_rules</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_rules</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_rules</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Matching rule uses:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matching_rule_uses</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_rule_uses</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">matching_rule_uses</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  DIT content rule:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dit_content_rules</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dit_content_rules</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dit_content_rules</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  DIT structure rule:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dit_structure_rules</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dit_structure_rules</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dit_structure_rules</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  Name forms:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name_forms</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_forms</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_forms</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39;  LDAP syntaxes:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ldap_syntaxes</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ldap_syntaxes</span><span class="p">])</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ldap_syntaxes</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;Other:&#39;</span> <span class="o">+</span> <span class="n">linesep</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">other</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;  &#39;</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span> <span class="o">+</span> <span class="n">linesep</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="n">v</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="n">linesep</span>
+        <span class="k">return</span> <span class="n">r</span>
+
+</div>
+<div class="viewcode-block" id="BaseObjectInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.BaseObjectInfo">[docs]</a><span class="k">class</span> <span class="nc">BaseObjectInfo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for objects defined in the schema as per RFC4512</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">oid</span> <span class="o">=</span> <span class="n">oid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obsolete</span> <span class="o">=</span> <span class="n">obsolete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extensions</span> <span class="o">=</span> <span class="n">extensions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experimental</span> <span class="o">=</span> <span class="n">experimental</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_definition</span> <span class="o">=</span> <span class="n">definition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oid_info</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BaseObjectInfo.oid_info"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.BaseObjectInfo.oid_info">[docs]</a>    <span class="k">def</span> <span class="nf">oid_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oid_info</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">oid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_oid_info</span> <span class="o">=</span> <span class="n">Oids</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oid</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oid_info</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oid_info</span> <span class="k">else</span> <span class="bp">None</span>
+</div>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">oid</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39; [OBSOLETE]&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obsolete</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Short name: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Description: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;&lt;__desc__&gt;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Extensions:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extensions</span><span class="p">]))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extensions</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Experimental:&#39;</span> <span class="o">+</span> <span class="n">linesep</span> <span class="o">+</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental</span><span class="p">]))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  OidInfo: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oid_info</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">oid_info</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">linesep</span>
+        <span class="k">return</span> <span class="n">r</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseObjectInfo.from_definition"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.BaseObjectInfo.from_definition">[docs]</a>    <span class="k">def</span> <span class="nf">from_definition</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">definitions</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">definitions</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">ret_dict</span> <span class="o">=</span> <span class="n">CaseInsensitiveDict</span><span class="p">()</span> <span class="k">if</span> <span class="n">CASE_INSENSITIVE_SCHEMA_NAMES</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">object_definition</span> <span class="ow">in</span> <span class="n">definitions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">[</span><span class="n">object_definition</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;)&#39;</span> <span class="ow">and</span> <span class="n">object_definition</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;)&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">MatchingRuleInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| SYNTAX &#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">ObjectClassInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| SUP | ABSTRACT| STRUCTURAL| AUXILIARY| MUST | MAY &#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">AttributeTypeInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| SUP | EQUALITY | ORDERING | SUBSTR | SYNTAX | SINGLE-VALUE| COLLECTIVE| NO-USER-MODIFICATION| USAGE &#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">MatchingRuleUseInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| APPLIES &#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">DitContentRuleInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| AUX &#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">LdapSyntaxInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">DitContentRuleInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| AUX | MUST | MAY | NOT &#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">DitStructureRuleInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| FORM | SUP &#39;</span>
+                <span class="k">elif</span> <span class="n">cls</span> <span class="ow">is</span> <span class="n">NameFormInfo</span><span class="p">:</span>
+                    <span class="n">pattern</span> <span class="o">=</span> <span class="s">&#39;| OC | MUST | MAY  &#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">LDAPSchemaError</span><span class="p">(</span><span class="s">&#39;unknown schema definition class&#39;</span><span class="p">)</span>
+
+                <span class="n">splitted</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;( NAME | DESC | OBSOLETE| X-| E-&#39;</span> <span class="o">+</span> <span class="n">pattern</span> <span class="o">+</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="n">object_definition</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">splitted</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">separators</span> <span class="o">=</span> <span class="n">splitted</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">separators</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;OID&#39;</span><span class="p">)</span>
+                <span class="n">defs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">separators</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+                <span class="n">object_def</span> <span class="o">=</span> <span class="n">cls</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">defs</span><span class="p">:</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;OID&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">oid</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;NAME&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">quoted_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;DESC&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;OBSOLETE&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">obsolete</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;SYNTAX&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;SUP&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">superior</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;ABSTRACT&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">CLASS_ABSTRACT</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;STRUCTURAL&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">CLASS_STRUCTURAL</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;AUXILIARY&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">CLASS_AUXILIARY</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;MUST&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">must_contain</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;MAY&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">may_contain</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;EQUALITY&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">equality</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;ORDERING&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">ordering</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;SUBSTR&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">substr</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;SINGLE-VALUE&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">single_value</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;COLLECTIVE&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">collective</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;NO-USER-MODIFICATION&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">no_user_modification</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;USAGE&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">usage</span> <span class="o">=</span> <span class="n">attribute_usage_to_constant</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;APPLIES&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">apply_to</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;AUX&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">auxiliary_classes</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;FORM&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">name_form</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;OC&#39;</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">object_class</span> <span class="o">=</span> <span class="n">oids_string_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;X-&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">object_def</span><span class="o">.</span><span class="n">extensions</span><span class="p">:</span>
+                            <span class="n">object_def</span><span class="o">.</span><span class="n">extensions</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">extensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extension_to_tuple</span><span class="p">(</span><span class="s">&#39;X-&#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;E-&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">object_def</span><span class="o">.</span><span class="n">experimental</span><span class="p">:</span>
+                            <span class="n">object_def</span><span class="o">.</span><span class="n">experimental</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extension_to_tuple</span><span class="p">(</span><span class="s">&#39;E-&#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">LDAPSchemaError</span><span class="p">(</span><span class="s">&#39;malformed schema definition key:&#39;</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span>
+                <span class="n">object_def</span><span class="o">.</span><span class="n">raw_definition</span> <span class="o">=</span> <span class="n">object_definition</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">object_def</span><span class="p">,</span> <span class="s">&#39;syntax&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span> <span class="o">=</span> <span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">object_def</span><span class="o">.</span><span class="n">min_length</span> <span class="o">=</span> <span class="bp">None</span>
+                    <span class="k">if</span> <span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">):</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">object_def</span><span class="o">.</span><span class="n">min_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span><span class="p">[</span><span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                            <span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span> <span class="o">=</span> <span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span><span class="p">[:</span><span class="n">object_def</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">)]</span>
+                        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">object_def</span><span class="o">.</span><span class="n">min_length</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">object_def</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">object_def</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">object_def</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                        <span class="n">ret_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_def</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ret_dict</span><span class="p">[</span><span class="n">object_def</span><span class="o">.</span><span class="n">oid</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_def</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPSchemaError</span><span class="p">(</span><span class="s">&#39;malformed schema definition&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret_dict</span>
+
+</div></div>
+<div class="viewcode-block" id="MatchingRuleInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.MatchingRuleInfo">[docs]</a><span class="k">class</span> <span class="nc">MatchingRuleInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">syntax</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="n">obsolete</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syntax</span> <span class="o">=</span> <span class="n">syntax</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Syntax: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">syntax</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">syntax</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;Matching rule&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MatchingRuleUseInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.MatchingRuleUseInfo">[docs]</a><span class="k">class</span> <span class="nc">MatchingRuleUseInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.4)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">apply_to</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="n">obsolete</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_to</span> <span class="o">=</span> <span class="n">apply_to</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Apply to: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">apply_to</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_to</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;Matching rule use&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ObjectClassInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.ObjectClassInfo">[docs]</a><span class="k">class</span> <span class="nc">ObjectClassInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">superior</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">must_contain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">may_contain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="n">obsolete</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">superior</span> <span class="o">=</span> <span class="n">superior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span> <span class="o">=</span> <span class="n">must_contain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span> <span class="o">=</span> <span class="n">may_contain</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Type: &#39;</span> <span class="o">+</span> <span class="n">constant_to_class_kind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Must contain attributes: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  May contain attributes: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;Object Class&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AttributeTypeInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.AttributeTypeInfo">[docs]</a><span class="k">class</span> <span class="nc">AttributeTypeInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">superior</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">equality</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">ordering</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">substring</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">syntax</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">min_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">single_value</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">collective</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">no_user_modification</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">usage</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="n">obsolete</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">superior</span> <span class="o">=</span> <span class="n">superior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equality</span> <span class="o">=</span> <span class="n">equality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="o">=</span> <span class="n">ordering</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">substring</span> <span class="o">=</span> <span class="n">substring</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syntax</span> <span class="o">=</span> <span class="n">syntax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_length</span> <span class="o">=</span> <span class="n">min_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">single_value</span> <span class="o">=</span> <span class="n">single_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collective</span> <span class="o">=</span> <span class="n">collective</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_user_modification</span> <span class="o">=</span> <span class="n">no_user_modification</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">usage</span> <span class="o">=</span> <span class="n">usage</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Single Value: True&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_value</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Collective: True&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">collective</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  No user modification: True&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_user_modification</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Usage: &#39;</span> <span class="o">+</span> <span class="n">constant_to_attribute_usage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">usage</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usage</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Equality rule: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equality</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equality</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Ordering rule: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Substring rule: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">substring</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">substring</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Syntax: &#39;</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">syntax</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39; [&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">decode_syntax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">syntax</span><span class="p">))))</span> <span class="o">+</span> <span class="s">&#39;]&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">syntax</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Minimum Length: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_length</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_length</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;Attribute type&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="LdapSyntaxInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.LdapSyntaxInfo">[docs]</a><span class="k">class</span> <span class="nc">LdapSyntaxInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.5)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;LDAP syntax&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="DitContentRuleInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.DitContentRuleInfo">[docs]</a><span class="k">class</span> <span class="nc">DitContentRuleInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.6)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">auxiliary_classes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">must_contain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">may_contain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">not_contains</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="n">obsolete</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_classes</span> <span class="o">=</span> <span class="n">auxiliary_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span> <span class="o">=</span> <span class="n">must_contain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span> <span class="o">=</span> <span class="n">may_contain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">not_contains</span> <span class="o">=</span> <span class="n">not_contains</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Auxiliary classes: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_classes</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxiliary_classes</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Must contain: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  May contain: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Not contains: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">not_contains</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">not_contains</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;DIT content rule&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="DitStructureRuleInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.DitStructureRuleInfo">[docs]</a><span class="k">class</span> <span class="nc">DitStructureRuleInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.7.1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">name_form</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">superior</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="n">obsolete</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">superior</span> <span class="o">=</span> <span class="n">superior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_form</span> <span class="o">=</span> <span class="n">name_form</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Superior rules: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">superior</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">superior</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Name form: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name_form</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_form</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;DIT content rule&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="NameFormInfo"><a class="viewcode-back" href="../../../ldap3.protocol.html#ldap3.protocol.rfc4512.NameFormInfo">[docs]</a><span class="k">class</span> <span class="nc">NameFormInfo</span><span class="p">(</span><span class="n">BaseObjectInfo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    As per RFC 4512 (4.1.7.2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">oid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">obsolete</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">object_class</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">must_contain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">may_contain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">experimental</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                <span class="n">obsolete</span><span class="o">=</span><span class="n">obsolete</span><span class="p">,</span>
+                                <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span>
+                                <span class="n">experimental</span><span class="o">=</span><span class="n">experimental</span><span class="p">,</span>
+                                <span class="n">definition</span><span class="o">=</span><span class="n">definition</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_class</span> <span class="o">=</span> <span class="n">object_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span> <span class="o">=</span> <span class="n">must_contain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span> <span class="o">=</span> <span class="n">may_contain</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Object class: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_class</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_class</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  Must contain: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">must_contain</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="p">(</span><span class="n">linesep</span> <span class="o">+</span> <span class="s">&#39;  May contain: &#39;</span> <span class="o">+</span> <span class="n">list_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">may_contain</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;DIT content rule&#39;</span> <span class="o">+</span> <span class="n">BaseObjectInfo</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;__desc__&gt;&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

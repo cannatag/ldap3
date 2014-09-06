@@ -1,0 +1,17 @@
+Errata ID: 340
+
+Status: Verified
+Type: Technical
+
+Reported By: Kurt Zeilenga
+Date Reported: 2001-03-07
+Section 1 says:
+
+   Traditionally, LDAP users where identified by the Distinguished Name
+   [RFC2253] of a directory entry and this entry contained a userPassword
+   [RFC2256] attribute containing one or more passwords.
+It should say:
+
+   Traditionally, LDAP users were identified by the Distinguished
+   Name [RFC2253] of a directory entry and this entry contained a
+   userPassword [RFC2256] attribute containing one or more passwords.

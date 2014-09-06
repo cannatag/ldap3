@@ -1,0 +1,260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.protocol.sasl.sasl &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.protocol.sasl.sasl</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on 2013.09.11</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2013 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">stringprep</span>
+<span class="kn">from</span> <span class="nn">unicodedata</span> <span class="kn">import</span> <span class="n">ucd_3_2_0</span> <span class="k">as</span> <span class="n">unicode32</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">urandom</span>
+<span class="kn">from</span> <span class="nn">binascii</span> <span class="kn">import</span> <span class="n">hexlify</span>
+
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">AUTH_SASL</span><span class="p">,</span> <span class="n">RESULT_AUTH_METHOD_NOT_SUPPORTED</span>
+<span class="kn">from</span> <span class="nn">...core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPSASLPrepError</span><span class="p">,</span> <span class="n">LDAPPasswordIsMandatoryError</span>
+
+
+<div class="viewcode-block" id="sasl_prep"><a class="viewcode-back" href="../../../../ldap3.protocol.sasl.html#ldap3.protocol.sasl.sasl.sasl_prep">[docs]</a><span class="k">def</span> <span class="nf">sasl_prep</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    implement SASLPrep profile as per RFC4013:</span>
+<span class="sd">    it defines the &quot;SASLprep&quot; profile of the &quot;stringprep&quot; algorithm [StringPrep].</span>
+<span class="sd">    The profile is designed for use in Simple Authentication and Security</span>
+<span class="sd">    Layer ([SASL]) mechanisms, such as [PLAIN], [CRAM-MD5], and</span>
+<span class="sd">    [DIGEST-MD5].  It may be applicable where simple user names and</span>
+<span class="sd">    passwords are used.  This profile is not intended for use in</span>
+<span class="sd">    preparing identity strings that are not simple user names (e.g.,</span>
+<span class="sd">    email addresses, domain names, distinguished names), or where</span>
+<span class="sd">    identity or password strings that are not character data, or require</span>
+<span class="sd">    different handling (e.g., case folding).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># mapping</span>
+    <span class="n">prepared_data</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c12</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># non-ASCII space characters [StringPrep, C.1.2] that can be mapped to SPACE (U+0020)</span>
+            <span class="n">prepared_data</span> <span class="o">+=</span> <span class="s">&#39; &#39;</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_b1</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># the &quot;commonly mapped to nothing&quot; characters [StringPrep, B.1] that can be mapped to nothing.</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prepared_data</span> <span class="o">+=</span> <span class="n">c</span>
+
+    <span class="c"># normalizing</span>
+    <span class="c"># This profile specifies using Unicode normalization form KC</span>
+    <span class="c"># The repertoire is Unicode 3.2 as per RFC 4013 (2)</span>
+
+    <span class="n">prepared_data</span> <span class="o">=</span> <span class="n">unicode32</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s">&#39;NFKC&#39;</span><span class="p">,</span> <span class="n">prepared_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">prepared_data</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: unable to normalize string&#39;</span><span class="p">)</span>
+
+    <span class="c"># prohibit</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">prepared_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c12</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Non-ASCII space characters [StringPrep, C.1.2]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: non-ASCII space character present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c21</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># ASCII control characters [StringPrep, C.2.1]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: ASCII control character present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c22</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Non-ASCII control characters [StringPrep, C.2.2]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: non-ASCII control character present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c3</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Private Use characters [StringPrep, C.3]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: private character present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c4</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Non-character code points [StringPrep, C.4]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: non-character code point present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c5</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Surrogate code points [StringPrep, C.5]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: surrogate code point present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c6</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Inappropriate for plain text characters [StringPrep, C.6]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: inappropriate for plain text character present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c7</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Inappropriate for canonical representation characters [StringPrep, C.7]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: inappropriate for canonical representation character present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c8</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Change display properties or deprecated characters [StringPrep, C.8]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: change display property or deprecated character present&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_c9</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="c"># Tagging characters [StringPrep, C.9]</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: tagging character present&#39;</span><span class="p">)</span>
+
+    <span class="c"># check bidi</span>
+    <span class="c"># if a string contains any r_and_al_cat character, the string MUST NOT contain any l_cat character.</span>
+    <span class="n">flag_r_and_al_cat</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">flag_l_cat</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">prepared_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_d1</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="n">flag_r_and_al_cat</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_d2</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+            <span class="n">flag_l_cat</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">if</span> <span class="n">flag_r_and_al_cat</span> <span class="ow">and</span> <span class="n">flag_l_cat</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;SASLprep error: string cannot contain (R or AL) and L bidirectional chars&#39;</span><span class="p">)</span>
+
+    <span class="c"># If a string contains any r_and_al_cat character, a r_and_al_cat character MUST be the first character of the string</span>
+    <span class="c"># and a r_and_al_cat character MUST be the last character of the string.</span>
+    <span class="k">if</span> <span class="n">flag_r_and_al_cat</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_d1</span><span class="p">(</span><span class="n">prepared_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">stringprep</span><span class="o">.</span><span class="n">in_table_d2</span><span class="p">(</span><span class="n">prepared_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="n">LDAPSASLPrepError</span><span class="p">(</span><span class="s">&#39;r_and_al_cat character present, must be first and last character of the string&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">prepared_data</span>
+
+</div>
+<div class="viewcode-block" id="validate_simple_password"><a class="viewcode-back" href="../../../../ldap3.protocol.sasl.html#ldap3.protocol.sasl.sasl.validate_simple_password">[docs]</a><span class="k">def</span> <span class="nf">validate_simple_password</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    validate simple password as per RFC4013 using sasl_prep:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">password</span> <span class="o">==</span> <span class="s">&#39;&#39;</span> <span class="ow">or</span> <span class="n">password</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">LDAPPasswordIsMandatoryError</span><span class="p">(</span><span class="s">&quot;simple password can&#39;t be empty&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">password</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>  <span class="c"># bytes are returned raw, as per RFC (4.2)</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">sasl_prep</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">password</span>
+
+
+<span class="c"># def addSaslCredentialsToBindRequest(request, mechanism, credentials):</span>
+<span class="c">#     sasl_credentials = SaslCredentials()</span>
+<span class="c">#     sasl_credentials[&#39;mechanism&#39;] = mechanism</span>
+<span class="c">#     if credentials:</span>
+<span class="c">#         sasl_credentials[&#39;credentials&#39;] = credentials</span>
+<span class="c">#     request[&#39;authentication&#39;] = AuthenticationChoice().setComponentByName(&#39;sasl&#39;, sasl_credentials)</span>
+<span class="c">#</span>
+<span class="c">#     return request</span>
+
+</div>
+<div class="viewcode-block" id="abort_sasl_negotiation"><a class="viewcode-back" href="../../../../ldap3.protocol.sasl.html#ldap3.protocol.sasl.sasl.abort_sasl_negotiation">[docs]</a><span class="k">def</span> <span class="nf">abort_sasl_negotiation</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">controls</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">...operation.bind</span> <span class="kn">import</span> <span class="n">bind_operation</span>
+
+    <span class="n">request</span> <span class="o">=</span> <span class="n">bind_operation</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">AUTH_SASL</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">post_send_single_response</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;bindRequest&#39;</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">controls</span><span class="p">))</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="n">response</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">connection</span><span class="o">.</span><span class="n">result</span>
+
+    <span class="k">return</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;result&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">RESULT_AUTH_METHOD_NOT_SUPPORTED</span> <span class="k">else</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="send_sasl_negotiation"><a class="viewcode-back" href="../../../../ldap3.protocol.sasl.html#ldap3.protocol.sasl.sasl.send_sasl_negotiation">[docs]</a><span class="k">def</span> <span class="nf">send_sasl_negotiation</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">controls</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">...operation.bind</span> <span class="kn">import</span> <span class="n">bind_operation</span>
+
+    <span class="n">request</span> <span class="o">=</span> <span class="n">bind_operation</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">AUTH_SASL</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">sasl_mechanism</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">post_send_single_response</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;bindRequest&#39;</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">controls</span><span class="p">))</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="n">response</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">connection</span><span class="o">.</span><span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="random_hex_string"><a class="viewcode-back" href="../../../../ldap3.protocol.sasl.html#ldap3.protocol.sasl.sasl.random_hex_string">[docs]</a><span class="k">def</span> <span class="nf">random_hex_string</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">hexlify</span><span class="p">(</span><span class="n">urandom</span><span class="p">(</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">))</span>  <span class="c"># str fix for Python 2</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

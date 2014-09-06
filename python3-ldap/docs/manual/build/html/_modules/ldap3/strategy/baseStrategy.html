@@ -1,0 +1,671 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.strategy.baseStrategy &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.strategy.baseStrategy</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on 15/lug/2013</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2013 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choice</span>
+
+<span class="kn">from</span> <span class="nn">pyasn1.codec.ber</span> <span class="kn">import</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">SESSION_TERMINATED_BY_SERVER</span><span class="p">,</span> <span class="n">RESPONSE_SLEEPTIME</span><span class="p">,</span> <span class="n">RESPONSE_WAITING_TIMEOUT</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span><span class="p">,</span> <span class="n">STRATEGY_SYNC</span><span class="p">,</span> <span class="n">AUTH_ANONYMOUS</span><span class="p">,</span> <span class="n">DO_NOT_RAISE_EXCEPTIONS</span>
+<span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPOperationResult</span><span class="p">,</span> <span class="n">LDAPSASLBindInProgressError</span><span class="p">,</span> <span class="n">LDAPSocketOpenError</span><span class="p">,</span> <span class="n">LDAPSessionTerminatedByServer</span><span class="p">,</span> <span class="n">LDAPUnknownResponseError</span><span class="p">,</span> <span class="n">LDAPUnknownRequestError</span><span class="p">,</span> <span class="n">LDAPReferralError</span><span class="p">,</span> <span class="n">communication_exception_factory</span><span class="p">,</span> \
+    <span class="n">LDAPSocketSendError</span><span class="p">,</span> <span class="n">LDAPExceptionError</span><span class="p">,</span> <span class="n">LDAPSocketCloseError</span>
+<span class="kn">from</span> <span class="nn">..protocol.rfc4511</span> <span class="kn">import</span> <span class="n">LDAPMessage</span><span class="p">,</span> <span class="n">ProtocolOp</span><span class="p">,</span> <span class="n">MessageID</span>
+<span class="kn">from</span> <span class="nn">..operation.add</span> <span class="kn">import</span> <span class="n">add_response_to_dict</span><span class="p">,</span> <span class="n">add_request_to_dict</span>
+<span class="kn">from</span> <span class="nn">..operation.modify</span> <span class="kn">import</span> <span class="n">modify_request_to_dict</span><span class="p">,</span> <span class="n">modify_response_to_dict</span>
+<span class="kn">from</span> <span class="nn">..operation.search</span> <span class="kn">import</span> <span class="n">search_result_reference_response_to_dict</span><span class="p">,</span> <span class="n">search_result_done_response_to_dict</span><span class="p">,</span> <span class="n">search_result_entry_response_to_dict</span><span class="p">,</span> <span class="n">search_request_to_dict</span>
+<span class="kn">from</span> <span class="nn">..operation.bind</span> <span class="kn">import</span> <span class="n">bind_response_to_dict</span><span class="p">,</span> <span class="n">bind_request_to_dict</span>
+<span class="kn">from</span> <span class="nn">..operation.compare</span> <span class="kn">import</span> <span class="n">compare_response_to_dict</span><span class="p">,</span> <span class="n">compare_request_to_dict</span>
+<span class="kn">from</span> <span class="nn">..operation.extended</span> <span class="kn">import</span> <span class="n">extended_request_to_dict</span><span class="p">,</span> <span class="n">extended_response_to_dict</span><span class="p">,</span> <span class="n">intermediate_response_to_dict</span>
+<span class="kn">from</span> <span class="nn">..core.server</span> <span class="kn">import</span> <span class="n">Server</span>
+<span class="kn">from</span> <span class="nn">..operation.modifyDn</span> <span class="kn">import</span> <span class="n">modify_dn_request_to_dict</span><span class="p">,</span> <span class="n">modify_dn_response_to_dict</span>
+<span class="kn">from</span> <span class="nn">..operation.delete</span> <span class="kn">import</span> <span class="n">delete_response_to_dict</span><span class="p">,</span> <span class="n">delete_request_to_dict</span>
+<span class="kn">from</span> <span class="nn">..protocol.convert</span> <span class="kn">import</span> <span class="n">prepare_changes_for_request</span><span class="p">,</span> <span class="n">build_controls_list</span>
+<span class="kn">from</span> <span class="nn">..operation.abandon</span> <span class="kn">import</span> <span class="n">abandon_request_to_dict</span>
+<span class="kn">from</span> <span class="nn">..core.tls</span> <span class="kn">import</span> <span class="n">Tls</span>
+<span class="kn">from</span> <span class="nn">..protocol.oid</span> <span class="kn">import</span> <span class="n">Oids</span>
+<span class="kn">from</span> <span class="nn">..protocol.rfc2696</span> <span class="kn">import</span> <span class="n">RealSearchControlValue</span>
+
+
+<span class="c"># noinspection PyProtectedMember</span>
+<div class="viewcode-block" id="BaseStrategy"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy">[docs]</a><span class="k">class</span> <span class="nc">BaseStrategy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for connection strategy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ldap_connection</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">ldap_connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_referrals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sync</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># indicates a synchronous connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_real_dsa</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># indicates a connection to a fake LDAP server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pooled</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># Indicates a connection with a connection pool</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">can_stream</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># indicate if a strategy keep a stream of responses (i.e. LDIFProducer can accumulate responses with a single header). Stream must be initilized and closed in _start_listen() and _stop_listen()</span>
+
+<div class="viewcode-block" id="BaseStrategy.open"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset_usage</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open a socket to a server. Choose a server from the server pool if available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">lazy</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_executing_deferred</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_deferred_open</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_executing_deferred</span><span class="p">:</span>  <span class="c"># try to close connection if still open</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">reset_usage</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">initial_connection_start_time</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server_pool</span><span class="p">:</span>
+                <span class="n">new_server</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server_pool</span><span class="o">.</span><span class="n">get_server</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">)</span>  <span class="c"># get a server from the server_pool if available</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span> <span class="o">!=</span> <span class="n">new_server</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">new_server</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">servers_from_pool</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_real_dsa</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_open_socket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">ssl</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_deferred_open</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start_listen</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.close"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close connection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">lazy</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_executing_deferred</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_deferred_bind</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_deferred_open</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">listening</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stop_listen</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span> <span class="n">no_real_dsa</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_close_socket</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">bound</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">tls_started</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_referrals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">_open_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_ssl</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tries to open and connect a socket to a Server</span>
+<span class="sd">        raise LDAPExceptionError if unable to open or connect socket</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">exc</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">address_info</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;socket creation error: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">e</span>
+
+        <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">communication_exception_factory</span><span class="p">(</span><span class="n">LDAPSocketOpenError</span><span class="p">,</span> <span class="n">exc</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">address_info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;socket connection error: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">e</span>
+
+        <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">communication_exception_factory</span><span class="p">(</span><span class="n">LDAPSocketOpenError</span><span class="p">,</span> <span class="n">exc</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_ssl</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">tls</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="n">do_handshake</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">wrapped_sockets</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;socket ssl wrapping error: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">exc</span> <span class="o">=</span> <span class="n">e</span>
+
+            <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">communication_exception_factory</span><span class="p">(</span><span class="n">LDAPSocketOpenError</span><span class="p">,</span> <span class="n">exc</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">opened_sockets</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">_close_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try to close a socket</span>
+<span class="sd">        raise LDAPExceptionError if unable to close socket</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">exc</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SHUT_RDWR</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;socket closing error&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">e</span>
+
+        <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">communication_exception_factory</span><span class="p">(</span><span class="n">LDAPSocketCloseError</span><span class="p">,</span> <span class="n">exc</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">closed_sockets</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">_stop_listen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">listening</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="BaseStrategy.send"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_type</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">controls</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send an LDAP message</span>
+<span class="sd">        Returns the message_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">exc</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">listening</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">sasl_in_progress</span> <span class="ow">and</span> <span class="n">message_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;bindRequest&#39;</span><span class="p">]:</span>  <span class="c"># as per RFC4511 (4.2.1)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;cannot send operation requests while SASL bind is in progress&#39;</span>
+                <span class="k">raise</span> <span class="n">LDAPSASLBindInProgressError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+            <span class="n">message_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">next_message_id</span><span class="p">()</span>
+            <span class="n">ldap_message</span> <span class="o">=</span> <span class="n">LDAPMessage</span><span class="p">()</span>
+            <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;messageID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MessageID</span><span class="p">(</span><span class="n">message_id</span><span class="p">)</span>
+            <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;protocolOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ProtocolOp</span><span class="p">()</span><span class="o">.</span><span class="n">setComponentByName</span><span class="p">(</span><span class="n">message_type</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+            <span class="n">message_controls</span> <span class="o">=</span> <span class="n">build_controls_list</span><span class="p">(</span><span class="n">controls</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">message_controls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message_controls</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">encoded_message</span> <span class="o">=</span> <span class="n">encoder</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">ldap_message</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">encoded_message</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;socket sending error&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">encoded_message</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">exc</span> <span class="o">=</span> <span class="n">e</span>
+
+            <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">communication_exception_factory</span><span class="p">(</span><span class="n">LDAPSocketSendError</span><span class="p">,</span> <span class="n">exc</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">BaseStrategy</span><span class="o">.</span><span class="n">decode_request</span><span class="p">(</span><span class="n">ldap_message</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">controls</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span><span class="p">[</span><span class="n">message_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">transmitted_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoded_message</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;unable to send message, socket is not open&#39;</span>
+            <span class="k">raise</span> <span class="n">LDAPSocketOpenError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">message_id</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.get_response"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.get_response">[docs]</a>    <span class="k">def</span> <span class="nf">get_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_id</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">RESPONSE_WAITING_TIMEOUT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get response LDAP messages</span>
+<span class="sd">        Responses are returned by the underlying connection strategy</span>
+<span class="sd">        Check if message_id LDAP message is still outstanding and wait for timeout to see if it appears in _get_response</span>
+<span class="sd">        Result is stored in connection.result</span>
+<span class="sd">        Responses without result is stored in connection.response</span>
+<span class="sd">        A tuple (responses, result) is returned</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span> <span class="ow">and</span> <span class="n">message_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">timeout</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># waiting for completed message to appear in responses</span>
+                <span class="n">responses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_response</span><span class="p">(</span><span class="n">message_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">responses</span> <span class="o">==</span> <span class="n">SESSION_TERMINATED_BY_SERVER</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>  <span class="c"># try to close the session but don&#39;t raise any error if server has already closed the session</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">LDAPExceptionError</span><span class="p">):</span>
+                        <span class="k">pass</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;session terminated by server&#39;</span>
+                    <span class="k">raise</span> <span class="n">LDAPSessionTerminatedByServer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">responses</span><span class="p">:</span>
+                    <span class="n">sleep</span><span class="p">(</span><span class="n">RESPONSE_SLEEPTIME</span><span class="p">)</span>
+                    <span class="n">timeout</span> <span class="o">-=</span> <span class="n">RESPONSE_SLEEPTIME</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">responses</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">message_id</span><span class="p">)</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="n">responses</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                        <span class="n">response</span> <span class="o">=</span> <span class="n">responses</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">result</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="bp">None</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">raise_exceptions</span> <span class="ow">and</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;result&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DO_NOT_RAISE_EXCEPTIONS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPOperationResult</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;result&#39;</span><span class="p">],</span> <span class="n">description</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">],</span> <span class="n">dn</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;dn&#39;</span><span class="p">],</span> <span class="n">message</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;message&#39;</span><span class="p">],</span> <span class="n">response_type</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">],</span> <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="n">result</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseStrategy.compute_ldap_message_size"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.compute_ldap_message_size">[docs]</a>    <span class="k">def</span> <span class="nf">compute_ldap_message_size</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute LDAP Message size according to BER definite length rules</span>
+<span class="sd">        Returns -1 if too few data to compute message length</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c"># fix for Python 2, data is string not bytes</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c"># Python 2 bytearray is equivalent to Python 3 bytes</span>
+
+        <span class="n">ret_value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">127</span><span class="p">:</span>  <span class="c"># BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long</span>
+                <span class="n">ret_value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c"># BER definite length - long form. Highest bit of byte 1 is 1, last 7 bits counts the number of following octets containing the value length</span>
+                <span class="n">bytes_length</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">128</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">bytes_length</span> <span class="o">+</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">value_length</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">cont</span> <span class="o">=</span> <span class="n">bytes_length</span>
+                    <span class="k">for</span> <span class="n">byte</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">2</span> <span class="o">+</span> <span class="n">bytes_length</span><span class="p">]:</span>
+                        <span class="n">cont</span> <span class="o">-=</span> <span class="mi">1</span>
+                        <span class="n">value_length</span> <span class="o">+=</span> <span class="n">byte</span> <span class="o">*</span> <span class="p">(</span><span class="mi">256</span> <span class="o">**</span> <span class="n">cont</span><span class="p">)</span>
+                    <span class="n">ret_value</span> <span class="o">=</span> <span class="n">value_length</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">bytes_length</span>
+
+        <span class="k">return</span> <span class="n">ret_value</span>
+
+    <span class="c"># @classmethod</span></div>
+<div class="viewcode-block" id="BaseStrategy.decode_response"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.decode_response">[docs]</a>    <span class="k">def</span> <span class="nf">decode_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ldap_message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert received LDAPMessage to a dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">message_type</span> <span class="o">=</span> <span class="n">ldap_message</span><span class="o">.</span><span class="n">getComponentByName</span><span class="p">(</span><span class="s">&#39;protocolOp&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getName</span><span class="p">()</span>
+        <span class="n">component</span> <span class="o">=</span> <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;protocolOp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">getComponent</span><span class="p">()</span>
+        <span class="n">controls</span> <span class="o">=</span> <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;bindResponse&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">bind_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;searchResEntry&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">search_result_entry_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">custom_formatter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">check_names</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;searchResDone&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">search_result_done_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;searchResRef&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">search_result_reference_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;modifyResponse&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">modify_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;addResponse&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">add_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;delResponse&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">delete_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;modDNResponse&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">modify_dn_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;compareResponse&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">compare_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;extendedResp&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">extended_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;intermediateResponse&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">intermediate_response_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPUnknownResponseError</span><span class="p">(</span><span class="s">&#39;unknown response&#39;</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message_type</span>
+        <span class="k">if</span> <span class="n">controls</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">control</span> <span class="ow">in</span> <span class="n">controls</span><span class="p">:</span>
+                <span class="n">decoded_control</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode_control</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+                <span class="n">result</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">][</span><span class="n">decoded_control</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">decoded_control</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseStrategy.decode_control"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.decode_control">[docs]</a>    <span class="k">def</span> <span class="nf">decode_control</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">control</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        decode control, return a 2-element tuple where the first element is the control oid</span>
+<span class="sd">        and the second element is a dictionary with description (from Oids), criticality and decoded control value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">control_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">control</span><span class="p">[</span><span class="s">&#39;controlType&#39;</span><span class="p">])</span>
+        <span class="n">criticality</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">control</span><span class="p">[</span><span class="s">&#39;criticality&#39;</span><span class="p">])</span>
+        <span class="n">control_value</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">control</span><span class="p">[</span><span class="s">&#39;controlValue&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">control_type</span> <span class="o">==</span> <span class="s">&#39;1.2.840.113556.1.4.319&#39;</span><span class="p">:</span>  <span class="c"># simple paged search as per RFC2696</span>
+            <span class="n">control_resp</span><span class="p">,</span> <span class="n">unprocessed</span> <span class="o">=</span> <span class="n">decoder</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">control_value</span><span class="p">,</span> <span class="n">asn1Spec</span><span class="o">=</span><span class="n">RealSearchControlValue</span><span class="p">())</span>
+            <span class="n">control_value</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">control_value</span><span class="p">[</span><span class="s">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">control_resp</span><span class="p">[</span><span class="s">&#39;size&#39;</span><span class="p">])</span>
+            <span class="n">control_value</span><span class="p">[</span><span class="s">&#39;cookie&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">control_resp</span><span class="p">[</span><span class="s">&#39;cookie&#39;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">control_type</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="n">Oids</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">control_type</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">),</span> <span class="s">&#39;criticality&#39;</span><span class="p">:</span> <span class="n">criticality</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">control_value</span><span class="p">}</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseStrategy.decode_request"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.decode_request">[docs]</a>    <span class="k">def</span> <span class="nf">decode_request</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">ldap_message</span><span class="p">):</span>
+        <span class="n">message_type</span> <span class="o">=</span> <span class="n">ldap_message</span><span class="o">.</span><span class="n">getComponentByName</span><span class="p">(</span><span class="s">&#39;protocolOp&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">getName</span><span class="p">()</span>
+        <span class="n">component</span> <span class="o">=</span> <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;protocolOp&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">getComponent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;bindRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">bind_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;unbindRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;addRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">add_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;compareRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">compare_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;delRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">delete_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;extendedReq&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">extended_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;modifyRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">modify_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;modDNRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">modify_dn_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;searchRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">search_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s">&#39;abandonRequest&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">abandon_request_to_dict</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPUnknownRequestError</span><span class="p">(</span><span class="s">&#39;unknown request&#39;</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message_type</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.valid_referral_list"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.valid_referral_list">[docs]</a>    <span class="k">def</span> <span class="nf">valid_referral_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">referrals</span><span class="p">):</span>
+        <span class="n">referral_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">referral</span> <span class="ow">in</span> <span class="n">referrals</span><span class="p">:</span>
+            <span class="n">candidate_referral</span> <span class="o">=</span> <span class="n">BaseStrategy</span><span class="o">.</span><span class="n">decode_referral</span><span class="p">(</span><span class="n">referral</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">candidate_referral</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ref_host</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">allowed_referral_hosts</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">ref_host</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">candidate_referral</span><span class="p">[</span><span class="s">&#39;host&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">ref_host</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;*&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">candidate_referral</span><span class="p">[</span><span class="s">&#39;host&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_referrals</span><span class="p">:</span>
+                            <span class="n">candidate_referral</span><span class="p">[</span><span class="s">&#39;anonymousBindOnly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">ref_host</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">referral_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate_referral</span><span class="p">)</span>
+                            <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">referral_list</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseStrategy.decode_referral"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.decode_referral">[docs]</a>    <span class="k">def</span> <span class="nf">decode_referral</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode referral URI as specified in RFC 4516 relaxing specifications</span>
+<span class="sd">        permitting &#39;ldaps&#39; as scheme meaning ssl-ldap</span>
+
+<span class="sd">        ldapurl     = scheme COLON SLASH SLASH [host [COLON port]]</span>
+<span class="sd">                       [SLASH dn [QUESTION [attributes]</span>
+<span class="sd">                       [QUESTION [scope] [QUESTION [filter]</span>
+<span class="sd">                       [QUESTION extensions]]]]]</span>
+<span class="sd">                                      ; &lt;host&gt; and &lt;port&gt; are defined</span>
+<span class="sd">                                      ;   in Sections 3.2.2 and 3.2.3</span>
+<span class="sd">                                      ;   of [RFC3986].</span>
+<span class="sd">                                      ; &lt;filter&gt; is from Section 3 of</span>
+<span class="sd">                                      ;   [RFC4515], subject to the</span>
+<span class="sd">                                      ;   provisions of the</span>
+<span class="sd">                                      ;   &quot;Percent-Encoding&quot; section</span>
+<span class="sd">                                      ;   below.</span>
+
+<span class="sd">        scheme      = &quot;ldap&quot; / &quot;ldaps&quot;  &lt;== not RFC4516 compliant (original is &#39;scheme      = &quot;ldap&quot;&#39;)</span>
+<span class="sd">        dn          = distinguishedName ; From Section 3 of [RFC4514],</span>
+<span class="sd">                                      ; subject to the provisions of</span>
+<span class="sd">                                      ; the &quot;Percent-Encoding&quot;</span>
+<span class="sd">                                      ; section below.</span>
+
+<span class="sd">        attributes  = attrdesc *(COMMA attrdesc)</span>
+<span class="sd">        attrdesc    = selector *(COMMA selector)</span>
+<span class="sd">        selector    = attributeSelector ; From Section 4.5.1 of</span>
+<span class="sd">                                      ; [RFC4511], subject to the</span>
+<span class="sd">                                      ; provisions of the</span>
+<span class="sd">                                      ; &quot;Percent-Encoding&quot; section</span>
+<span class="sd">                                      ; below.</span>
+
+<span class="sd">        scope       = &quot;base&quot; / &quot;one&quot; / &quot;sub&quot;</span>
+<span class="sd">        extensions  = extension *(COMMA extension)</span>
+<span class="sd">        extension   = [EXCLAMATION] extype [EQUALS exvalue]</span>
+<span class="sd">        extype      = oid               ; From section 1.4 of [RFC4512].</span>
+
+<span class="sd">        exvalue     = LDAPString        ; From section 4.1.2 of</span>
+<span class="sd">                                      ; [RFC4511], subject to the</span>
+<span class="sd">                                      ; provisions of the</span>
+<span class="sd">                                      ; &quot;Percent-Encoding&quot; section</span>
+<span class="sd">                                      ; below.</span>
+
+<span class="sd">        EXCLAMATION = %x21              ; exclamation mark (&quot;!&quot;)</span>
+<span class="sd">        SLASH       = %x2F              ; forward slash (&quot;/&quot;)</span>
+<span class="sd">        COLON       = %x3A              ; colon (&quot;:&quot;)</span>
+<span class="sd">        QUESTION    = %x3F              ; question mark (&quot;?&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">referral</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">uri</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;?&#39;</span><span class="p">)</span>
+        <span class="n">scheme</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">remain</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;://&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sep</span> <span class="o">!=</span> <span class="s">&#39;://&#39;</span> <span class="ow">or</span> <span class="n">scheme</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;ldap&#39;</span><span class="p">,</span> <span class="s">&#39;ldaps&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">address</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remain</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="n">referral</span><span class="p">[</span><span class="s">&#39;ssl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s">&#39;ldaps&#39;</span> <span class="k">else</span> <span class="bp">False</span>
+        <span class="n">referral</span><span class="p">[</span><span class="s">&#39;host&#39;</span><span class="p">],</span> <span class="n">sep</span><span class="p">,</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">address</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sep</span> <span class="o">!=</span> <span class="s">&#39;:&#39;</span><span class="p">:</span>
+            <span class="n">referral</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">referral</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">65536</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">referral</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">referral</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">])</span>
+
+        <span class="n">referral</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;base&#39;</span><span class="p">:</span>
+            <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span>
+        <span class="k">elif</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;sub&#39;</span><span class="p">:</span>
+            <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_WHOLE_SUBTREE</span>
+        <span class="k">elif</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;one&#39;</span><span class="p">:</span>
+            <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SEARCH_SCOPE_SINGLE_LEVEL</span>
+        <span class="k">elif</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">referral</span><span class="p">[</span><span class="s">&#39;filter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="n">referral</span><span class="p">[</span><span class="s">&#39;extensions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="k">else</span> <span class="bp">None</span>
+
+        <span class="k">return</span> <span class="n">referral</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.do_operation_on_referral"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.do_operation_on_referral">[docs]</a>    <span class="k">def</span> <span class="nf">do_operation_on_referral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">referrals</span><span class="p">):</span>
+        <span class="n">valid_referral_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_referral_list</span><span class="p">(</span><span class="n">referrals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">valid_referral_list</span><span class="p">:</span>
+            <span class="n">preferred_referral_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">referral</span> <span class="k">for</span> <span class="n">referral</span> <span class="ow">in</span> <span class="n">valid_referral_list</span> <span class="k">if</span> <span class="n">referral</span><span class="p">[</span><span class="s">&#39;ssl&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">ssl</span><span class="p">]</span>
+            <span class="n">selected_referral</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="n">preferred_referral_list</span><span class="p">)</span> <span class="k">if</span> <span class="n">preferred_referral_list</span> <span class="k">else</span> <span class="n">choice</span><span class="p">(</span><span class="n">valid_referral_list</span><span class="p">)</span>
+
+            <span class="n">referral_server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;host&#39;</span><span class="p">],</span>
+                                     <span class="n">port</span><span class="o">=</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+                                     <span class="n">use_ssl</span><span class="o">=</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;ssl&#39;</span><span class="p">],</span>
+                                     <span class="n">allowed_referral_hosts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">allowed_referral_hosts</span><span class="p">,</span>
+                                     <span class="n">tls</span><span class="o">=</span><span class="n">Tls</span><span class="p">(</span><span class="n">local_private_key_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">tls</span><span class="o">.</span><span class="n">private_key_file</span><span class="p">,</span>
+                                             <span class="n">local_certificate_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">tls</span><span class="o">.</span><span class="n">certificate_file</span><span class="p">,</span>
+                                             <span class="n">validate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">tls</span><span class="o">.</span><span class="n">validate</span><span class="p">,</span>
+                                             <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">tls</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+                                             <span class="n">ca_certs_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">tls</span><span class="o">.</span><span class="n">ca_certs_file</span><span class="p">)</span> <span class="k">if</span> <span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;ssl&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+
+            <span class="kn">from</span> <span class="nn">..core.connection</span> <span class="kn">import</span> <span class="n">Connection</span>
+
+            <span class="n">referral_connection</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="n">referral_server</span><span class="p">,</span>
+                                             <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;anonymousBindOnly&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+                                             <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">password</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;anonymousBindOnly&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+                                             <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+                                             <span class="n">authentication</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">authentication</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;anonymousBindOnly&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="n">AUTH_ANONYMOUS</span><span class="p">,</span>
+                                             <span class="n">client_strategy</span><span class="o">=</span><span class="n">STRATEGY_SYNC</span><span class="p">,</span>
+                                             <span class="n">auto_referrals</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                             <span class="n">read_only</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">read_only</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">_usage</span><span class="o">.</span><span class="n">referrals_followed</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">referral_connection</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+            <span class="n">referral_connection</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">_referrals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_referrals</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">bound</span><span class="p">:</span>
+                <span class="n">referral_connection</span><span class="o">.</span><span class="n">bind</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;searchRequest&#39;</span><span class="p">:</span>
+                <span class="n">referral_connection</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">],</span>
+                                           <span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;filter&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;filter&#39;</span><span class="p">],</span>
+                                           <span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;scope&#39;</span><span class="p">],</span>
+                                           <span class="n">request</span><span class="p">[</span><span class="s">&#39;dereferenceAlias&#39;</span><span class="p">],</span>
+                                           <span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">],</span>
+                                           <span class="n">request</span><span class="p">[</span><span class="s">&#39;sizeLimit&#39;</span><span class="p">],</span>
+                                           <span class="n">request</span><span class="p">[</span><span class="s">&#39;timeLimit&#39;</span><span class="p">],</span>
+                                           <span class="n">request</span><span class="p">[</span><span class="s">&#39;typeOnly&#39;</span><span class="p">],</span>
+                                           <span class="n">controls</span><span class="o">=</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;addRequest&#39;</span><span class="p">:</span>
+                <span class="n">referral_connection</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;entry&#39;</span><span class="p">],</span>
+                                        <span class="bp">None</span><span class="p">,</span>
+                                        <span class="n">request</span><span class="p">[</span><span class="s">&#39;attributes&#39;</span><span class="p">],</span>
+                                        <span class="n">controls</span><span class="o">=</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;compareRequest&#39;</span><span class="p">:</span>
+                <span class="n">referral_connection</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;entry&#39;</span><span class="p">],</span>
+                                            <span class="n">request</span><span class="p">[</span><span class="s">&#39;attribute&#39;</span><span class="p">],</span>
+                                            <span class="n">request</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">],</span>
+                                            <span class="n">controls</span><span class="o">=</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;delRequest&#39;</span><span class="p">:</span>
+                <span class="n">referral_connection</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;entry&#39;</span><span class="p">],</span>
+                                           <span class="n">controls</span><span class="o">=</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;extendedRequest&#39;</span><span class="p">:</span>
+                <span class="c"># TODO</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;modifyRequest&#39;</span><span class="p">:</span>
+                <span class="n">referral_connection</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;entry&#39;</span><span class="p">],</span>
+                                           <span class="n">prepare_changes_for_request</span><span class="p">(</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;changes&#39;</span><span class="p">]),</span>
+                                           <span class="n">controls</span><span class="o">=</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;modDNRequest&#39;</span><span class="p">:</span>
+                <span class="n">referral_connection</span><span class="o">.</span><span class="n">modify_dn</span><span class="p">(</span><span class="n">selected_referral</span><span class="p">[</span><span class="s">&#39;base&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">request</span><span class="p">[</span><span class="s">&#39;entry&#39;</span><span class="p">],</span>
+                                              <span class="n">request</span><span class="p">[</span><span class="s">&#39;newRdn&#39;</span><span class="p">],</span>
+                                              <span class="n">request</span><span class="p">[</span><span class="s">&#39;deleteOldRdn&#39;</span><span class="p">],</span>
+                                              <span class="n">request</span><span class="p">[</span><span class="s">&#39;newSuperior&#39;</span><span class="p">],</span>
+                                              <span class="n">controls</span><span class="o">=</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span> <span class="o">=</span> <span class="s">&#39;referral operation not permitted&#39;</span>
+                <span class="k">raise</span> <span class="n">LDAPReferralError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">last_error</span><span class="p">)</span>
+
+            <span class="n">response</span> <span class="o">=</span> <span class="n">referral_connection</span><span class="o">.</span><span class="n">response</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">referral_connection</span><span class="o">.</span><span class="n">result</span>
+            <span class="n">referral_connection</span><span class="o">.</span><span class="n">unbind</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="n">result</span>
+</div>
+    <span class="k">def</span> <span class="nf">_start_listen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#overridden on strategy class</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_get_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+        <span class="c"># overridden in strategy class</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="BaseStrategy.receiving"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.receiving">[docs]</a>    <span class="k">def</span> <span class="nf">receiving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># overridden in strategy class</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.post_send_single_response"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.post_send_single_response">[docs]</a>    <span class="k">def</span> <span class="nf">post_send_single_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+        <span class="c"># overridden in strategy class</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.post_send_search"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.post_send_search">[docs]</a>    <span class="k">def</span> <span class="nf">post_send_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+        <span class="c"># overridden in strategy class</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.get_stream"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.get_stream">[docs]</a>    <span class="k">def</span> <span class="nf">get_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="BaseStrategy.set_stream"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.baseStrategy.BaseStrategy.set_stream">[docs]</a>    <span class="k">def</span> <span class="nf">set_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

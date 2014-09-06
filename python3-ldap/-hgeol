@@ -1,0 +1,7 @@
+[repository]
+native = LF
+
+[patterns]
+** = LF
+
+; See http://mercurial.selenic.com/wiki/EolExtension

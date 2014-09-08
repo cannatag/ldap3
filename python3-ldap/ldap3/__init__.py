@@ -80,6 +80,7 @@ RESPONSE_COMPLETE = -1
 RESPONSE_SLEEPTIME = 0.02  # seconds to wait while waiting for a response in asynchronous strategies
 RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
+CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 
 # restartable strategy
 RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request

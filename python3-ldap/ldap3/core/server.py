@@ -25,7 +25,7 @@
 
 import socket
 from threading import Lock
-from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT
+from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
@@ -59,7 +59,8 @@ class Server(object):
                  allowed_referral_hosts=None,
                  get_info=GET_NO_INFO,
                  tls=None,
-                 formatter=None):
+                 formatter=None,
+                 connect_timeout=None):
 
         url_given = False
         if host.startswith('ldap://'):
@@ -135,6 +136,7 @@ class Server(object):
         self.lock = Lock()
         self.custom_formatter = formatter
         self._address_info = None  # property self.address_info resolved at open time (or when you call check_availability)
+        self.connect_timeout = connect_timeout
 
     @staticmethod
     def _is_ipv6(host):
@@ -170,11 +172,15 @@ class Server(object):
     def check_availability(self):
         """
         Tries to open, connect and close a socket to specified address
-        and port to check availability.
+        and port to check availability. Timeout is 2.5 seconds if not specified in the Server object
         """
         available = True
         try:
             temp_socket = socket.socket(*self.address_info[0][:3])
+            if self.connect_timeout:
+                temp_socket.settimeout(self.connect_timeout)
+            else:
+                temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to 2.5 seconds
             try:
                 temp_socket.connect(self.address_info[0][4])
             except socket.error:

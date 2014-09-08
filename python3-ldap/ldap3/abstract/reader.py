@@ -233,7 +233,7 @@ class Reader(object):
 
     def _create_query_filter(self):
         """Converts the query dictionary in the filter text"""
-        if self._query and self._query.startswith('(') and self._query.stopswith(')'):  # query is already an LDAP filter
+        if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
             self.query_filter = self._query
             return
 

@@ -15,7 +15,7 @@
 
 import sys
 import os
-from ldap3 import __version__
+from ldap3 import __version__, __author__, __description__
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'python3-ldap'
-copyright = '2014, Giovanni Cannata'
+copyright = '2014 - ' + __author__
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -204,7 +204,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'python3-ldap.tex', 'python3-ldap Documentation',
-   'Giovanni Cannata', 'manual'),
+   __author__, 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -234,7 +234,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'python3-ldap', 'python3-ldap Documentation',
-     ['Giovanni Cannata'], 1)
+     [__author__], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -248,7 +248,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'python3-ldap', 'python3-ldap Documentation',
-   'Giovanni Cannata', 'python3-ldap', 'One line description of project.',
+   __author__, 'python3-ldap', __description__,
    'Miscellaneous'),
 ]
 
@@ -269,9 +269,9 @@ texinfo_documents = [
 
 # Bibliographic Dublin Core info.
 epub_title = 'python3-ldap'
-epub_author = 'Giovanni Cannata'
-epub_publisher = 'Giovanni Cannata'
-epub_copyright = '2014, Giovanni Cannata'
+epub_author = __author__
+epub_publisher = __author__
+epub_copyright = '2014 - ' + __author__
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = 'python3-ldap'

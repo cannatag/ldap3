@@ -38,6 +38,9 @@ def escape_bytes(bytes_value):
 
     return ('\\' + escaped) if escaped else ''
 
+def escape_dn(dn):
+    escaped = dn.replace(' ', '\ ')
+
 
 def prepare_for_stream(value):
     if str != bytes:  # Python 3
@@ -86,10 +89,11 @@ def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=Fals
             dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
             component = ''
             continue
-        elif c in ',':
-            dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
-            component = ''
-            continue
+        elif c == ',':
+            if '=' in component:
+                dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
+                component = ''
+                continue
 
         component += c
 

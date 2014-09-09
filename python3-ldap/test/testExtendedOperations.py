@@ -59,11 +59,11 @@ class Test(unittest.TestCase):
         self.assertEqual(self.connection.response, None)
 
     def test_novell_list_replicas(self):
-        result = self.connection.extend.novell.list_replicas('cn=edir1,o=services')
+        result = self.connection.extend.novell.list_replicas('cn=sl10,o=risorse')
         self.assertEquals(result, None)
 
     def test_novell_replica_info(self):
-        result = self.connection.extend.novell.replica_info('cn=edir1,o=services', '')
+        result = self.connection.extend.novell.replica_info('cn=sl10,o=risorse', '')
         self.assertEquals(result, '')
 
     def test_novell_partition_entry_count(self):

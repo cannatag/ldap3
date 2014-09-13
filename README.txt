@@ -55,6 +55,9 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.5.4 2014.09.12
+    - Fixed security issue in lazy connections (thanks Moritz)
+
 * 0.9.5.3 2014.08.24
     - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)
     - attributes name returned in searches are now case insensitive (can be changed in ldap3.CASE_INSENSITIVE_ATTRIBUTE_NAMES = True|False)

@@ -694,10 +694,10 @@ class Connection(object):
             try:
                 if self._deferred_open:
                     self.open()
-                if self._deferred_bind:
-                    self.bind(self._bind_controls)
                 if self._deferred_start_tls:
                     self.start_tls()
+                if self._deferred_bind:
+                    self.bind(self._bind_controls)
             except LDAPExceptionError:
                 raise  # re-raise LDAPExceptionError
             finally:

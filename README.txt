@@ -47,6 +47,8 @@ Acknowledgements
 * I wish to thank **Mark Lutz** for his *Learning Python* and *Programming Python* excellent books series and **John Goerzen** and **Brandon Rhodes** for their book *Foundations of Python Network Programming*. These books are wonderful tools for learning Python and this project owes a lot to them.
 * I wish to thank **JetBrains** for donating to this project the Open Source license of *PyCharm 3 Professional*.
 * I wish to thank **Atlassian** for providing the *free source repository space and the tools* I use to develop this project.
+* I wish to thank the **Python Software Foundation** for providing support for the testing lab.
+
 
 Contact me
 ----------

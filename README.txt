@@ -59,6 +59,8 @@ CHANGELOG
 =========
 * 0.9.5.4 2014.09.12
     - Fixed security issue in lazy connections (thanks Moritz)
+    - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514
+    - Check for trailing slashes in hostname (thanks Dylan)
 
 * 0.9.5.3 2014.08.24
     - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)

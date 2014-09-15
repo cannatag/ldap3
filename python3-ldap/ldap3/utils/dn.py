@@ -23,19 +23,8 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from string import whitespace
 from ldap3.core.exceptions import LDAPExceptionError
 
-#  escaped int for special characters ( "+,;<=>\) while parsing dn as per RFC4514
-ESCAPED_SPACE = -1
-ESCAPED_DOUBLE_QUOTE = -2
-ESCAPED_PLUS = -3
-ESCAPED_COMMA = -4
-ESCAPED_SEMICOLON = -5
-ESCAPED_LESS_THAN = -6
-ESCAPED_EQUAL = -7
-ESCAPED_GREATER_THAN = -8
-ESCAPED_BACKSLASH = -9
 
 def _add_ava(ava, decompose, remove_space, space_around_equal):
     if not ava:
@@ -88,7 +77,8 @@ def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=Fals
     dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
     return dn
 
-def parse_dn(dn):
+
+def parse_dn1(dn):
     """
     Parse dn as per rfc4514
     :param dn:
@@ -247,13 +237,27 @@ def parse_dn3(dn):
             continue
         elif escaping and first_hex:  # backslash alone followed by a hex digit, not an escape sequence, revert pos to previous character
             component += '\\' + first_hex
-            pos = pos -1
+            pos -= 1
             continue
         starting = pos
         found = dn.find(searching)
 
 
-def parse_dn4(dn):
+def parse_dn(dn):
+    def _find_valid_token(s):
+        """
+        :param s: string to analyze
+        :return: an unused char to be used as token locally in the string
+        """
+        nonlocal i
+        while i < 256:
+            i += 1
+            if chr(i) not in s:
+                return chr(i)
+
+        raise LDAPExceptionError('unable to tokenize dn')
+
+
     escape_table = {
         '\\ ': 0,
         '\\"': 0,
@@ -265,18 +269,19 @@ def parse_dn4(dn):
         '\\>': 0,
         '\\\\': 0
     }
+
+    for e in ' ";<>':  # escape safe chars
+        if e in dn:
+            dn = dn.replace(e, '\\' + e)
+
     i = 0
     for c in escape_table:  # find a suitable unused char value to tokenize escaped values, unusued escaped chars are 0
         if c in dn:
-            while i < 256:
-                i += 1
-                if chr(i) not in dn:
-                    escape_table[c] = chr(i)
-                    break
+            escape_table[c] = _find_valid_token(dn)
 
-    for e in escape_table:
+    for e in escape_table:  # tokenize found escaped chars
         if escape_table[e]:
-            dn = dn.replace(e, escape_table[e])  # untokenize used tokens
+            dn = dn.replace(e, escape_table[e])
 
     components = dn.split(',')
     rdns = []
@@ -293,11 +298,31 @@ def parse_dn4(dn):
             rdn = '\\,'
 
         if rdn.count('=') == 1:
+            if '+' in rdn:
+                rdn = rdn.replace('+', '\\+')
             rdns.append(rdn)
-        elif rdn.count('=') > 1:
+        elif rdn.count('=') > 1 and not '+' in rdn:
             rdn = rdn.replace('=', '\\=')
             rdn = rdn.replace('\\=', '=', 1)
             rdns.append(rdn)
+        elif rdn.count('=') > 1 and '+' in rdn:
+            expecting = '='
+            temp_rdn = ''
+            for c in rdn[::-1]:
+                if c == '=' and expecting == '=':
+                    expecting = '+'
+                elif c == '+' and expecting == '+':
+                    expecting = '='
+                elif c == '=' and expecting == '+':
+                    if not escape_table['\\=']:  # find a valid token for escaped equal if not already set
+                        escape_table['\\='] = _find_valid_token(dn)
+                    c = escape_table['\\=']
+                elif c == '+' and expecting == '=':
+                    if not escape_table['\\+']:  # find a valid token for escaped plus if not already set
+                        escape_table['\\+'] = _find_valid_token(dn)
+                    c = escape_table['\\+']
+                temp_rdn += c
+            rdns.append(temp_rdn[::-1])
         else:
             fragment = rdn + fragment
 
@@ -307,9 +332,6 @@ def parse_dn4(dn):
     avas = []
     for rdn in reversed(rdns):
         # escape unenscaped invalid characters
-        for e in ' ";<>//':
-            if e in rdn:
-                rdn = rdn.replace(e, '\\' + e)
         for e in escape_table:
             if escape_table[e]:
                 rdn = rdn.replace(escape_table[e], e)  # untokenize used tokens

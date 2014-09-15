@@ -21,7 +21,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3.utils.dn import parse_dn4 as p
+from ldap3.utils.dn import parse_dn as p
 
 
 class Test(unittest.TestCase):
@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
     def test_parse_dn_escaped_multi_type(self):
         parsed = p('cn=us\\+er1+sn=su\\,rname1,o=users')
         self.assertEqual(len(parsed), 2)
-        self.assertEqual(parsed[0], 'cn=user1+sn=surname1')
+        self.assertEqual(parsed[0], 'cn=us\\+er1+sn=su\\,rname1')
         self.assertEqual(parsed[1], 'o=users')
 
     def test_parse_dn_unescaped_single(self):

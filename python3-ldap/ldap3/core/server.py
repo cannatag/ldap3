@@ -97,6 +97,8 @@ class Server(object):
         elif self.host.count(':') > 1:
             raise LDAPInvalidServerError()
 
+        self.host.rstrip('/')
+
         if not use_ssl and not port:
             port = 389
         elif use_ssl and not port:

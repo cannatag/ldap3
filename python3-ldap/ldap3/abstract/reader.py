@@ -317,9 +317,8 @@ class Reader(object):
                 else:
                     attribute.__dict__['values'] = result['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, (list, tuple)) else [attr_def.default])
                 if attr_def.dereference_dn:  # try to get object referenced in value
-                    # noinspection PyUnresolvedReferences
                     if attribute.values:
-                        temp_reader = Reader(self.connection, attr_def.dereference_dn, query=None, base=None, get_operational_attributes=self.get_operational_attributes, controls=self.controls)
+                        temp_reader = Reader(self.connection, attr_def.dereference_dn, query='', base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []
 
                         # noinspection PyUnresolvedReferences

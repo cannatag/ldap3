@@ -23,8 +23,6 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from string import whitespace
-
 
 def escape_bytes(bytes_value):
     if str != bytes:  # Python 3

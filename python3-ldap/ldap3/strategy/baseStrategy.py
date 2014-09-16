@@ -29,9 +29,11 @@ from random import choice
 
 from pyasn1.codec.ber import encoder, decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, STRATEGY_SYNC, AUTH_ANONYMOUS, DO_NOT_RAISE_EXCEPTIONS
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS, DO_NOT_RAISE_EXCEPTIONS
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer, LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPSocketCloseError
+from ldap3.core.exceptions import LDAPControlsError
+from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
@@ -342,6 +344,8 @@ class BaseStrategy(object):
             control_value = dict()
             control_value['size'] = int(control_resp['size'])
             control_value['cookie'] = bytes(control_resp['cookie'])
+            if unprocessed:
+                raise LDAPControlsError('unprocessed control response in substrate for simple paged search')
 
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
@@ -377,7 +381,7 @@ class BaseStrategy(object):
     def valid_referral_list(self, referrals):
         referral_list = []
         for referral in referrals:
-            candidate_referral = BaseStrategy.decode_referral(referral)
+            candidate_referral = parse_uri(referral)
             if candidate_referral:
                 for ref_host in self.connection.server.allowed_referral_hosts:
                     if ref_host[0] == candidate_referral['host'] or ref_host[0] == '*':
@@ -387,90 +391,6 @@ class BaseStrategy(object):
                             break
 
         return referral_list
-
-    @classmethod
-    def decode_referral(cls, uri):
-        """
-        Decode referral URI as specified in RFC 4516 relaxing specifications
-        permitting 'ldaps' as scheme meaning ssl-ldap
-        """
-
-        # ldapurl     = scheme COLON SLASH SLASH [host [COLON port]]
-        #                [SLASH dn [QUESTION [attributes]
-        #                [QUESTION [scope] [QUESTION [filter]
-        #                [QUESTION extensions]]]]]
-        #                               ; <host> and <port> are defined
-        #                               ;   in Sections 3.2.2 and 3.2.3
-        #                               ;   of [RFC3986].
-        #                               ; <filter> is from Section 3 of
-        #                               ;   [RFC4515], subject to the
-        #                               ;   provisions of the
-        #                               ;   "Percent-Encoding" section
-        #                               ;   below.
-        #
-        # scheme      = "ldap" / "ldaps"  <== not RFC4516 compliant (original is 'scheme      = "ldap"')
-        # dn          = distinguishedName ; From Section 3 of [RFC4514],
-        #                               ; subject to the provisions of
-        #                               ; the "Percent-Encoding"
-        #                               ; section below.
-        #
-        # attributes  = attrdesc *(COMMA attrdesc)
-        # attrdesc    = selector *(COMMA selector)
-        # selector    = attributeSelector ; From Section 4.5.1 of
-        #                               ; [RFC4511], subject to the
-        #                               ; provisions of the
-        #                               ; "Percent-Encoding" section
-        #                               ; below.
-        #
-        # scope       = "base" / "one" / "sub"
-        # extensions  = extension *(COMMA extension)
-        # extension   = [EXCLAMATION] extype [EQUALS exvalue]
-        # extype      = oid               ; From section 1.4 of [RFC4512].
-        #
-        # exvalue     = LDAPString        ; From section 4.1.2 of
-        #                               ; [RFC4511], subject to the
-        #                               ; provisions of the
-        #                               ; "Percent-Encoding" section
-        #                               ; below.
-        #
-        # EXCLAMATION = %x21              ; exclamation mark ("!")
-        # SLASH       = %x2F              ; forward slash ("/")
-        # COLON       = %x3A              ; colon (":")
-        # QUESTION    = %x3F              ; question mark ("?")
-
-        referral = dict()
-        parts = uri.split('?')
-        scheme, sep, remain = parts[0].partition('://')
-        if sep != '://' or scheme not in ['ldap', 'ldaps']:
-            return None
-
-        address, _, referral['base'] = remain.partition('/')
-
-        referral['ssl'] = True if scheme == 'ldaps' else False
-        referral['host'], sep, referral['port'] = address.partition(':')
-        if sep != ':':
-            referral['port'] = None
-        else:
-            if not referral['port'].isdigit() or not (0 < int(referral['port']) < 65536):
-                return None
-            else:
-                referral['port'] = int(referral['port'])
-
-        referral['attributes'] = parts[1].split(',') if len(parts) > 1 else None
-        referral['scope'] = parts[2] if len(parts) > 2 else None
-        if referral['scope'] == 'base':
-            referral['scope'] = SEARCH_SCOPE_BASE_OBJECT
-        elif referral['scope'] == 'sub':
-            referral['scope'] = SEARCH_SCOPE_WHOLE_SUBTREE
-        elif referral['scope'] == 'one':
-            referral['scope'] = SEARCH_SCOPE_SINGLE_LEVEL
-        elif referral['scope']:
-            return None
-
-        referral['filter'] = parts[3] if len(parts) > 3 else None
-        referral['extensions'] = parts[3].split(',') if len(parts) > 4 else None
-
-        return referral
 
     def do_operation_on_referral(self, request, referrals):
         valid_referral_list = self.valid_referral_list(referrals)

@@ -165,19 +165,19 @@ class BaseStrategy(object):
     def _close_socket(self):
         """
         Try to close a socket
-        raise LDAPExceptionError if unable to close socket
+        don't raise exception if unable to close socket, assume socket is already close
         """
         exc = None
 
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)
-            self.connection.socket.close()
-        except Exception as e:
-            self.connection.last_error = 'socket closing error' + str(e)
-            exc = e
+        except:
+            pass
 
-        if exc:
-            raise communication_exception_factory(LDAPSocketCloseError, exc)(self.connection.last_error)
+        try:
+            self.connection.socket.close()
+        except:
+            pass
 
         self.connection.socket = None
         self.connection.closed = True

@@ -22,9 +22,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from string import whitespace
-from ..core.exceptions import LDAPExceptionError
 
+from ..core.exceptions import LDAPInvalidDnError, LDAPExceptionError
+from string import hexdigits
+
+
+STATE_ANY = 0
+STATE_ESCAPE = 1
+STATE_ESCAPE_HEX = 2
 
 def _add_ava(ava, decompose, remove_space, space_around_equal):
     if not ava:
@@ -60,7 +65,7 @@ def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=Fals
     for c in iterator:
         if c in '\\':  # escape sequence
             escape_sequence = True
-        elif escape_sequence and c not in whitespace:
+        elif escape_sequence and c not in ' ':
             escape_sequence = False
         elif c in '+' and separate_rdn:
             dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
@@ -78,97 +83,175 @@ def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=Fals
     return dn
 
 
-def parse_dn(dn):
-    def _find_valid_token(s):
-        """
-        :param s: string to analyze
-        :return: an unused char to be used as token locally in the string
-        """
-        nonlocal i
-        while i < 256:
-            i += 1
-            if chr(i) not in s:
-                return chr(i)
+def get_next_ava(dn):
+    comma = dn.find(',')
+    plus = dn.find('+')
+    if plus > 0 and plus < comma:
+        if dn.find('=', plus, comma) > 0:  # break dn at + only if an equal is still present
+            return dn[:plus], '+'
+        else:
+            return dn[:comma], ','
+    elif comma > 0:
+        return dn[:comma], ','
 
-        raise LDAPExceptionError('unable to tokenize dn')
+    return dn, ''
 
-    escape_table = {
-        '\\ ': 0,
-        '\\"': 0,
-        '\\+': 0,
-        '\\,': 0,
-        '\\;': 0,
-        '\\<': 0,
-        '\\=': 0,
-        '\\>': 0,
-        '\\\\': 0
-    }
 
-    for e in ' ";<>':  # escape safe chars
-        if e in dn:
-            dn = dn.replace(e, '\\' + e)
+def split_ava(ava, escape = False, strip = True):
+    equal = ava.rfind('=')
+    while equal > 0:
+        if ava[equal - 1] != '\\': # not an escaped equal so it must be an ava separator
+            attribute_type = ava[0:equal].strip() if strip else ava[0:equal]
+            if strip:
+                attribute_type = ava[0:equal].strip()
+                attribute_value = escape_attribute_value(ava[equal + 1:].strip()) if escape else ava[equal + 1:].strip()
+            else:
+                attribute_type = ava[0:equal]
+                attribute_value = escape_attribute_value(ava[equal + 1:]) if escape else ava[equal + 1:]
 
-    i = 0
-    for c in escape_table:  # find a suitable unused char value to tokenize escaped values, unused escaped chars are 0
-        if c in dn:
-            escape_table[c] = _find_valid_token(dn)
+            return attribute_type, attribute_value
+        equal = ava.rfind('=', 0, equal)
 
-    for e in escape_table:  # tokenize found escaped chars
-        if escape_table[e]:
-            dn = dn.replace(e, escape_table[e])
+    return '', (ava.strip if strip else ava)  # if no equal found return only value
 
-    components = dn.split(',')
+def validate_attribute_type(attribute_type):
+    if not attribute_type:
+        return False
+    for c in attribute_type:
+        if not c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-':  # allowed uppercase and lowercase letters, digits and hyphen as per RFC 4512
+            raise LDAPInvalidDnError('character ' + c + ' not allowed in Attribute Type')
+
+    if attribute_type[0] in '0123456789-':  # digits and hyphen not allowed as first character
+        raise LDAPInvalidDnError('character ' + attribute_type[0] + ' not allowed as first character of Attribute Type')
+
+    return True
+
+def validate_attribute_value(attribute_value):
+    if not attribute_value:
+        return False
+
+    if attribute_value[0] == '#':  # only hex characters are valid
+        for c in attribute_value:
+            if not 'c' in hexdigits:  # allowed only hex digits as per RFC 4514
+                raise LDAPInvalidDnError('character ' + c + ' not allowed in hex representation of Attribute_Value')
+        if len(attribute_value) % 2 == 0:  # string must be # + HEX HEX (an odd number of chars)
+            raise LDAPInvalidDnError('hex representation must be in the form of <HEX><HEX> pairs')
+    if attribute_value[0] == ' ':  # space cannot be used as first or last character
+        raise LDAPInvalidDnError('SPACE not allowed as first character of Attribute Value')
+    if attribute_value[-1] == ' ':
+        raise LDAPInvalidDnError('SPACE not allowed as last character of Attribute Value')
+
+    state = STATE_ANY
+    for c in (attribute_value):
+        if state == STATE_ANY:
+            if c == '\\':
+                state = STATE_ESCAPE
+            elif c in '"#+,;<=>\00':
+                raise LDAPInvalidDnError('special characters ' + c + ' must be escaped')
+        elif state == STATE_ESCAPE:
+            if c in hexdigits:
+                state = STATE_ESCAPE_HEX
+            elif c in ' "#+,;<=>\\\00':
+                state = STATE_ANY
+            else:
+                raise LDAPInvalidDnError('invalid escaped character ' + c)
+        elif state == STATE_ESCAPE_HEX:
+            if c in hexdigits:
+                state = STATE_ANY
+            else:
+                raise LDAPInvalidDnError('invalid escaped character ' + c)
+
+
+    # final state
+    if state != STATE_ANY:
+        raise LDAPInvalidDnError('invalid final character')
+
+    return True
+
+
+def escape_attribute_value(attribute_value):
+    if not attribute_value:
+        return ''
+
+    if attribute_value[0] == '#':  # with leading SHARP only pairs of hex characters are valid
+        valid = True
+        if len(attribute_value) % 2 == 0:  # string must be # + HEX HEX (an odd number of chars)
+            valid = False
+
+        if valid:
+            for c in attribute_value:
+                if not 'c' in hexdigits:  # allowed only hex digits as per RFC 4514
+                    valid = False
+                    break
+
+        if valid:
+            return attribute_value
+
+    state = STATE_ANY
+    escaped = ''
+    buffer = ''
+    for c in (attribute_value):
+        if state == STATE_ANY:
+            if c == '\\':
+                state = STATE_ESCAPE
+            elif c in '"#+,;<=>\00':
+                escaped += '\\' + c
+            else:
+                escaped += c
+        elif state == STATE_ESCAPE:
+            if c in hexdigits:
+                buffer = c
+                state = STATE_ESCAPE_HEX
+            elif c in ' "#+,;<=>\\\00':
+                escaped += '\\' + c
+                state = STATE_ANY
+            else:
+                escaped += '\\\\' + c
+        elif state == STATE_ESCAPE_HEX:
+            if c in hexdigits:
+                escaped += '\\' + buffer + c
+            else:
+                escaped += '\\\\' + buffer + c
+            buffer = ''
+            state = STATE_ANY
+
+    # final state
+    if state == STATE_ESCAPE:
+        escaped += '\\\\'
+    elif state == STATE_ESCAPE_HEX:
+        escaped += '\\\\' + buffer
+
+    if escaped[0] == ' ':  # leading  SPACE must be escaped
+        escaped = '\\' + escaped
+
+    if escaped[-1] == ' ' and len(escaped) > 1 and escaped[-2] != '\\':  # trailing SPACE must be escaped
+        escaped = escaped[:-1] + '\\ '
+
+    return escaped
+
+def parse_dn(dn, escape=False, strip=True):
+    done = False
     rdns = []
-    fragment = ''
+    while not done:
+        ava, separator = get_next_ava(dn)
+        if ava:
+            attribute_type, attribute_value = split_ava(ava, escape, strip)
+            if not validate_attribute_type(attribute_type):
+                raise LDAPInvalidDnError('unable to validate attribute type: ' + attribute_type)
 
-    for component in reversed(components):
-        if fragment:
-            rdn = component + '\\,' + fragment
-            fragment = ''
+            if not validate_attribute_value(attribute_value):
+                raise LDAPInvalidDnError('unable to validate attribute value: ' + attribute_value)
+
+            rdns.append((attribute_type, attribute_value, separator))
+            dn = dn[len(ava) + 1:]
         else:
-            rdn = component
+            done = True
 
-        if rdn == '':
-            rdn = '\\,'
+    return rdns
 
-        if rdn.count('=') == 1:
-            if '+' in rdn:
-                rdn = rdn.replace('+', '\\+')
-            rdns.append(rdn)
-        elif rdn.count('=') > 1 and not '+' in rdn:
-            rdn = rdn.replace('=', '\\=')
-            rdn = rdn.replace('\\=', '=', 1)
-            rdns.append(rdn)
-        elif rdn.count('=') > 1 and '+' in rdn:
-            expecting = '='
-            temp_rdn = ''
-            for c in rdn[::-1]:
-                if c == '=' and expecting == '=':
-                    expecting = '+'
-                elif c == '+' and expecting == '+':
-                    expecting = '='
-                elif c == '=' and expecting == '+':
-                    if not escape_table['\\=']:  # find a valid token for escaped equal if not already set
-                        escape_table['\\='] = _find_valid_token(dn)
-                    c = escape_table['\\=']
-                elif c == '+' and expecting == '=':
-                    if not escape_table['\\+']:  # find a valid token for escaped plus if not already set
-                        escape_table['\\+'] = _find_valid_token(dn)
-                    c = escape_table['\\+']
-                temp_rdn += c
-            rdns.append(temp_rdn[::-1])
-        else:
-            fragment = rdn + fragment
+def safe_dn(dn):
+    safe_dn = ''
+    for rdn in parse_dn(dn, escape=True):
+        safe_dn += rdn[0] + '=' + rdn[1] + rdn[2]
 
-    if fragment:
-        rdns.append(fragment)
-
-    avas = []
-    for rdn in reversed(rdns):
-        # escape unescaped invalid characters
-        for e in escape_table:
-            if escape_table[e]:
-                rdn = rdn.replace(escape_table[e], e)  # untokenize used tokens
-        avas.append(rdn)
-
-    return avas
+    return safe_dn

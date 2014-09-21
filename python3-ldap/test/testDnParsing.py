@@ -21,84 +21,86 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3.utils.dn import parse_dn as p
+from ldap3.utils.dn import parse_dn as p, safe_dn as s
 
 
 class Test(unittest.TestCase):
     def test_parse_dn_single(self):
         parsed = p('cn=admin')
         self.assertEqual(len(parsed), 1)
-        self.assertEqual(parsed[0], 'cn=admin')
+        self.assertEqual(parsed[0], ('cn', 'admin', ''))
 
     def test_parse_dn_double(self):
         parsed = p('cn=user1,o=users')
         self.assertEqual(len(parsed), 2)
-        self.assertEqual(parsed[0], 'cn=user1')
-        self.assertEqual(parsed[1], 'o=users')
+        self.assertEqual(parsed[0], ('cn', 'user1', ','))
+        self.assertEqual(parsed[1], ('o', 'users', ''))
 
     def test_parse_dn_multi(self):
         parsed = p('cn=user1,ou=users,dc=branch,dc=company,c=IT')
         self.assertEqual(len(parsed), 5)
-        self.assertEqual(parsed[0], 'cn=user1')
-        self.assertEqual(parsed[1], 'ou=users')
-        self.assertEqual(parsed[2], 'dc=branch')
-        self.assertEqual(parsed[3], 'dc=company')
-        self.assertEqual(parsed[4], 'c=IT')
+        self.assertEqual(parsed[0], ('cn', 'user1', ','))
+        self.assertEqual(parsed[1], ('ou', 'users', ','))
+        self.assertEqual(parsed[2], ('dc', 'branch', ','))
+        self.assertEqual(parsed[3], ('dc', 'company', ','))
+        self.assertEqual(parsed[4], ('c', 'IT', ''))
 
     def test_parse_dn_multi_type(self):
         parsed = p('cn=user1+sn=surname1,o=users')
-        self.assertEqual(len(parsed), 2)
-        self.assertEqual(parsed[0], 'cn=user1+sn=surname1')
-        self.assertEqual(parsed[1], 'o=users')
+        self.assertEqual(len(parsed), 3)
+        self.assertEqual(parsed[0], ('cn', 'user1', '+'))
+        self.assertEqual(parsed[1], ('sn', 'surname1', ','))
+        self.assertEqual(parsed[2], ('o', 'users', ''))
 
     def test_parse_dn_escaped_single(self):
         parsed = p('cn=admi\\,n')
         self.assertEqual(len(parsed), 1)
-        self.assertEqual(parsed[0], 'cn=admi\\,n')
+        self.assertEqual(parsed[0], ('cn', 'admi\\,n', ''))
 
     def test_parse_dn_escaped_double(self):
         parsed = p('cn=us\\=er1,o=us\\,ers')
         self.assertEqual(len(parsed), 2)
-        self.assertEqual(parsed[0], 'cn=us\\=er1')
-        self.assertEqual(parsed[1], 'o=us\\,ers')
+        self.assertEqual(parsed[0], ('cn', 'us\\=er1', ','))
+        self.assertEqual(parsed[1], ('o', 'us\\,ers', ''))
 
     def test_parse_dn_escaped_multi(self):
         parsed = p('cn=us\\,er1,ou=us\\08ers,dc=br\\,anch,dc=company,c=IT')
         self.assertEqual(len(parsed), 5)
-        self.assertEqual(parsed[0], 'cn=us\\,er1')
-        self.assertEqual(parsed[1], 'ou=us\\08ers')
-        self.assertEqual(parsed[2], 'dc=br\\,anch')
-        self.assertEqual(parsed[3], 'dc=company')
-        self.assertEqual(parsed[4], 'c=IT')
+        self.assertEqual(parsed[0], ('cn', 'us\\,er1', ','))
+        self.assertEqual(parsed[1], ('ou', 'us\\08ers', ','))
+        self.assertEqual(parsed[2], ('dc', 'br\\,anch', ','))
+        self.assertEqual(parsed[3], ('dc', 'company', ','))
+        self.assertEqual(parsed[4], ('c', 'IT', ''))
 
     def test_parse_dn_escaped_multi_type(self):
         parsed = p('cn=us\\+er1+sn=su\\,rname1,o=users')
-        self.assertEqual(len(parsed), 2)
-        self.assertEqual(parsed[0], 'cn=us\\+er1+sn=su\\,rname1')
-        self.assertEqual(parsed[1], 'o=users')
+        self.assertEqual(len(parsed), 3)
+        self.assertEqual(parsed[0], ('cn', 'us\\+er1', '+'))
+        self.assertEqual(parsed[1], ('sn', 'su\\,rname1', ','))
+        self.assertEqual(parsed[2], ('o', 'users', ''))
 
     def test_parse_dn_unescaped_single(self):
-        parsed = p('cn=admi,n')
+        parsed = p('cn=admi,n', escape=True)
         self.assertEqual(len(parsed), 1)
-        self.assertEqual(parsed[0], 'cn=admi\\,n')
+        self.assertEqual(parsed[0], ('cn', 'admi\\,n', ''))
 
     def test_parse_dn_unescaped_double(self):
-        parsed = p('cn=us=er1,o=us,ers')
+        parsed = p('cn=us=er1,o=us,ers', escape=True)
         self.assertEqual(len(parsed), 2)
-        self.assertEqual(parsed[0], 'cn=us\\=er1')
-        self.assertEqual(parsed[1], 'o=us\\,ers')
-
+        self.assertEqual(parsed[0], ('cn', 'us\\=er1', ','))
+        self.assertEqual(parsed[1], ('o', 'us\\,ers', ''))
     def test_parse_dn_unescaped_multi(self):
-        parsed = p('cn=us,er1,ou=use<rs,dc=br,anch,dc=company,c=IT')
+        parsed = p('cn=us,er1,ou=use<rs,dc=br+anch,dc=company,c=IT', escape=True)
         self.assertEqual(len(parsed), 5)
-        self.assertEqual(parsed[0], 'cn=us\\,er1')
-        self.assertEqual(parsed[1], 'ou=use\\<rs')
-        self.assertEqual(parsed[2], 'dc=br\\,anch')
-        self.assertEqual(parsed[3], 'dc=company')
-        self.assertEqual(parsed[4], 'c=IT')
+        self.assertEqual(parsed[0], ('cn', 'us\\,er1', ','))
+        self.assertEqual(parsed[1], ('ou', 'use\\<rs', ','))
+        self.assertEqual(parsed[2], ('dc', 'br\\+anch', ','))
+        self.assertEqual(parsed[3], ('dc', 'company', ','))
+        self.assertEqual(parsed[4], ('c', 'IT', ''))
 
     def test_parse_dn_unescaped_multi_type(self):
-        parsed = p('cn=us+er1+sn=su,rname1,o=users')
-        self.assertEqual(len(parsed), 2)
-        self.assertEqual(parsed[0], 'cn=us\\+er1+sn=su\\,rname1')
-        self.assertEqual(parsed[1], 'o=users')
+        parsed = p('cn=us+er1+sn=su,rname1,o=users', escape=True)
+        self.assertEqual(len(parsed), 3)
+        self.assertEqual(parsed[0], ('cn', 'us\\+er1', '+'))
+        self.assertEqual(parsed[1], ('sn', 'su\\,rname1', ','))
+        self.assertEqual(parsed[2], ('o', 'users', ''))

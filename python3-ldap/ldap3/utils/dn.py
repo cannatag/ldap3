@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from ..core.exceptions import LDAPInvalidDnError, LDAPExceptionError
-from string import hexdigits
+from string import hexdigits, ascii_letters, digits
 
 
 STATE_ANY = 0
@@ -83,23 +83,55 @@ def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=Fals
     return dn
 
 
+def _find_first_unescaped(dn, char, pos):
+    while True:
+        pos = dn.find(char, pos)
+        if pos == -1:
+            break  # no char found
+        if pos > 0 and dn[pos - 1] != '\\':  # unescaped comma
+            break
+
+        pos += 1
+
+    return pos
+
+def _find_last_unescaped(dn, char, start, stop=0):
+    while True:
+        stop = dn.rfind(char, start, stop)
+        if stop == -1:
+            break
+        if stop >= 0 and dn[stop - 1] != '\\':
+            break
+
+
+        if stop < start:
+            stop = -1
+            break
+
+    return stop
+
 def get_next_ava(dn):
-    comma = dn.find(',')
-    plus = dn.find('+')
-    if plus > 0 and plus < comma:
-        if dn.find('=', plus, comma) > 0:  # break dn at + only if an equal is still present
+    comma = _find_first_unescaped(dn, ',', 0)
+    plus = _find_first_unescaped(dn, '+', 0)
+
+    if plus > 0 and (plus < comma or comma == -1):
+        equal = _find_first_unescaped(dn, '=', plus + 1)
+        if equal > plus + 1:
+            plus = _find_last_unescaped(dn, '+', plus, equal)
             return dn[:plus], '+'
-        else:
+
+    if comma > 0:
+        equal = _find_first_unescaped(dn, '=', comma + 1)
+        if equal > comma + 1:
+            comma = _find_last_unescaped(dn, ',', comma, equal)
             return dn[:comma], ','
-    elif comma > 0:
-        return dn[:comma], ','
 
     return dn, ''
 
 
 def split_ava(ava, escape = False, strip = True):
-    equal = ava.rfind('=')
-    while equal > 0:
+    equal = ava.find('=')
+    while equal > 0:  # not first character
         if ava[equal - 1] != '\\': # not an escaped equal so it must be an ava separator
             attribute_type = ava[0:equal].strip() if strip else ava[0:equal]
             if strip:
@@ -110,7 +142,7 @@ def split_ava(ava, escape = False, strip = True):
                 attribute_value = escape_attribute_value(ava[equal + 1:]) if escape else ava[equal + 1:]
 
             return attribute_type, attribute_value
-        equal = ava.rfind('=', 0, equal)
+        equal = ava.find('=', equal + 1)
 
     return '', (ava.strip if strip else ava)  # if no equal found return only value
 
@@ -118,11 +150,11 @@ def validate_attribute_type(attribute_type):
     if not attribute_type:
         return False
     for c in attribute_type:
-        if not c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-':  # allowed uppercase and lowercase letters, digits and hyphen as per RFC 4512
-            raise LDAPInvalidDnError('character ' + c + ' not allowed in Attribute Type')
+        if not (c in ascii_letters or c in digits or c == '-'):  # allowed uppercase and lowercase letters, digits and hyphen as per RFC 4512
+            raise LDAPInvalidDnError('character ' + c + ' not allowed in attribute type')
 
-    if attribute_type[0] in '0123456789-':  # digits and hyphen not allowed as first character
-        raise LDAPInvalidDnError('character ' + attribute_type[0] + ' not allowed as first character of Attribute Type')
+    if attribute_type[0] in digits or attribute_type[0] == '-':  # digits and hyphen not allowed as first character
+        raise LDAPInvalidDnError('character ' + attribute_type[0] + ' not allowed as first character of attribute type')
 
     return True
 
@@ -133,13 +165,13 @@ def validate_attribute_value(attribute_value):
     if attribute_value[0] == '#':  # only hex characters are valid
         for c in attribute_value:
             if not 'c' in hexdigits:  # allowed only hex digits as per RFC 4514
-                raise LDAPInvalidDnError('character ' + c + ' not allowed in hex representation of Attribute_Value')
+                raise LDAPInvalidDnError('character ' + c + ' not allowed in hex representation of attribute value')
         if len(attribute_value) % 2 == 0:  # string must be # + HEX HEX (an odd number of chars)
             raise LDAPInvalidDnError('hex representation must be in the form of <HEX><HEX> pairs')
     if attribute_value[0] == ' ':  # space cannot be used as first or last character
-        raise LDAPInvalidDnError('SPACE not allowed as first character of Attribute Value')
+        raise LDAPInvalidDnError('SPACE not allowed as first character of attribute value')
     if attribute_value[-1] == ' ':
-        raise LDAPInvalidDnError('SPACE not allowed as last character of Attribute Value')
+        raise LDAPInvalidDnError('SPACE not allowed as last character of attribute value')
 
     state = STATE_ANY
     for c in (attribute_value):
@@ -232,20 +264,28 @@ def escape_attribute_value(attribute_value):
 def parse_dn(dn, escape=False, strip=True):
     done = False
     rdns = []
-    while not done:
-        ava, separator = get_next_ava(dn)
-        if ava:
-            attribute_type, attribute_value = split_ava(ava, escape, strip)
-            if not validate_attribute_type(attribute_type):
-                raise LDAPInvalidDnError('unable to validate attribute type: ' + attribute_type)
-
-            if not validate_attribute_value(attribute_value):
-                raise LDAPInvalidDnError('unable to validate attribute value: ' + attribute_value)
-
-            rdns.append((attribute_type, attribute_value, separator))
-            dn = dn[len(ava) + 1:]
+    avas = []
+    while dn:
+        ava, separator = get_next_ava(dn)  # if returned ava doesn't containg any unescaped equal it'a appended to last ava in avas
+        dn = dn[len(ava) + 1:]
+        if _find_first_unescaped(ava, '=', 0) > 0 or len(avas) == 0:
+            avas.append((ava, separator))
         else:
-            done = True
+            avas[len(avas) -1] = (avas[len(avas) -1][0] + avas[len(avas) -1][1] + ava, separator)
+
+    for ava, separator in avas:
+        attribute_type, attribute_value = split_ava(ava, escape, strip)
+        if not validate_attribute_type(attribute_type):
+            raise LDAPInvalidDnError('unable to validate attribute type in ' + ava)
+
+        if not validate_attribute_value(attribute_value):
+            raise LDAPInvalidDnError('unable to validate attribute value in ' + ava)
+
+        rdns.append((attribute_type, attribute_value, separator))
+        dn = dn[len(ava) + 1:]
+
+    if not rdns:
+        raise LDAPInvalidDnError('empty dn')
 
     return rdns
 

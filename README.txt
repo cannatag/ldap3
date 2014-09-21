@@ -60,6 +60,7 @@ CHANGELOG
 * 0.9.5.4 2014.09.12
     - Fixed security issue in lazy connections (thanks Moritz)
     - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514
+    - Added safe_dn(dn) to properly escape dn (if possible)
     - Added ldap3.utils.uri with parse_uri(uri) to verify uri compliance with RFC4516
     - Check for trailing slashes in hostname (thanks Dylan)
     - timeout for socket connect operation. Server.connect_timeout = seconds_to_wait_for_establishing_connection (thanks Florian)

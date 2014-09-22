@@ -57,7 +57,7 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.5.4 2014.09.12
+* 0.9.5.4 2014.09.22
     - Fixed security issue in lazy connections (thanks Moritz)
     - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514
     - Added safe_dn(dn) to properly escape dn (if possible)
@@ -65,7 +65,7 @@ CHANGELOG
     - Check for trailing slashes in hostname (thanks Dylan)
     - Timeout for socket connect operation. Server.connect_timeout = seconds_to_wait_for_establishing_connection (thanks Florian)
     - Closing socket error doesn't raise exception anymore
-    - ServerPool can be implicity defined with a list of server names
+    - ServerPool can be implicity defined with a list of server names (even when defining a connection)
 
 * 0.9.5.3 2014.08.24
     - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)

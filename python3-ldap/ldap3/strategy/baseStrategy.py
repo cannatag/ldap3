@@ -31,7 +31,7 @@ from pyasn1.codec.ber import encoder, decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS, DO_NOT_RAISE_EXCEPTIONS
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer, LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-    LDAPSocketSendError, LDAPExceptionError, LDAPSocketCloseError
+    LDAPSocketSendError, LDAPExceptionError
 from ldap3.core.exceptions import LDAPControlsError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
@@ -167,7 +167,6 @@ class BaseStrategy(object):
         Try to close a socket
         don't raise exception if unable to close socket, assume socket is already close
         """
-        exc = None
 
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)

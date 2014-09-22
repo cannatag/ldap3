@@ -23,13 +23,14 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ..core.exceptions import LDAPInvalidDnError, LDAPExceptionError
+from ..core.exceptions import LDAPInvalidDnError
 from string import hexdigits, ascii_letters, digits
 
 
 STATE_ANY = 0
 STATE_ESCAPE = 1
 STATE_ESCAPE_HEX = 2
+
 
 def _add_ava(ava, decompose, remove_space, space_around_equal):
     if not ava:
@@ -95,6 +96,7 @@ def _find_first_unescaped(dn, char, pos):
 
     return pos
 
+
 def _find_last_unescaped(dn, char, start, stop=0):
     while True:
         stop = dn.rfind(char, start, stop)
@@ -103,12 +105,12 @@ def _find_last_unescaped(dn, char, start, stop=0):
         if stop >= 0 and dn[stop - 1] != '\\':
             break
 
-
         if stop < start:
             stop = -1
             break
 
     return stop
+
 
 def get_next_ava(dn):
     comma = _find_first_unescaped(dn, ',', 0)
@@ -129,10 +131,10 @@ def get_next_ava(dn):
     return dn, ''
 
 
-def split_ava(ava, escape = False, strip = True):
+def split_ava(ava, escape=False, strip=True):
     equal = ava.find('=')
     while equal > 0:  # not first character
-        if ava[equal - 1] != '\\': # not an escaped equal so it must be an ava separator
+        if ava[equal - 1] != '\\':  # not an escaped equal so it must be an ava separator
             attribute_type = ava[0:equal].strip() if strip else ava[0:equal]
             if strip:
                 attribute_type = ava[0:equal].strip()
@@ -146,6 +148,7 @@ def split_ava(ava, escape = False, strip = True):
 
     return '', (ava.strip if strip else ava)  # if no equal found return only value
 
+
 def validate_attribute_type(attribute_type):
     if not attribute_type:
         return False
@@ -157,6 +160,7 @@ def validate_attribute_type(attribute_type):
         raise LDAPInvalidDnError('character ' + attribute_type[0] + ' not allowed as first character of attribute type')
 
     return True
+
 
 def validate_attribute_value(attribute_value):
     if not attribute_value:
@@ -174,7 +178,7 @@ def validate_attribute_value(attribute_value):
         raise LDAPInvalidDnError('SPACE not allowed as last character of attribute value')
 
     state = STATE_ANY
-    for c in (attribute_value):
+    for c in attribute_value:
         if state == STATE_ANY:
             if c == '\\':
                 state = STATE_ESCAPE
@@ -193,7 +197,6 @@ def validate_attribute_value(attribute_value):
             else:
                 raise LDAPInvalidDnError('invalid escaped character ' + c)
 
-
     # final state
     if state != STATE_ANY:
         raise LDAPInvalidDnError('invalid final character')
@@ -206,23 +209,23 @@ def escape_attribute_value(attribute_value):
         return ''
 
     if attribute_value[0] == '#':  # with leading SHARP only pairs of hex characters are valid
-        valid = True
+        valid_hex = True
         if len(attribute_value) % 2 == 0:  # string must be # + HEX HEX (an odd number of chars)
-            valid = False
+            valid_hex = False
 
-        if valid:
+        if valid_hex:
             for c in attribute_value:
-                if not 'c' in hexdigits:  # allowed only hex digits as per RFC 4514
-                    valid = False
+                if not c in hexdigits:  # allowed only hex digits as per RFC 4514
+                    valid_hex = False
                     break
 
-        if valid:
+        if valid_hex:
             return attribute_value
 
     state = STATE_ANY
     escaped = ''
     buffer = ''
-    for c in (attribute_value):
+    for c in attribute_value:
         if state == STATE_ANY:
             if c == '\\':
                 state = STATE_ESCAPE
@@ -261,8 +264,8 @@ def escape_attribute_value(attribute_value):
 
     return escaped
 
+
 def parse_dn(dn, escape=False, strip=True):
-    done = False
     rdns = []
     avas = []
     while dn:
@@ -271,7 +274,7 @@ def parse_dn(dn, escape=False, strip=True):
         if _find_first_unescaped(ava, '=', 0) > 0 or len(avas) == 0:
             avas.append((ava, separator))
         else:
-            avas[len(avas) -1] = (avas[len(avas) -1][0] + avas[len(avas) -1][1] + ava, separator)
+            avas[len(avas) - 1] = (avas[len(avas) - 1][0] + avas[len(avas) - 1][1] + ava, separator)
 
     for ava, separator in avas:
         attribute_type, attribute_value = split_ava(ava, escape, strip)
@@ -289,9 +292,10 @@ def parse_dn(dn, escape=False, strip=True):
 
     return rdns
 
-def safe_dn(dn):
-    safe_dn = ''
-    for rdn in parse_dn(dn, escape=True):
-        safe_dn += rdn[0] + '=' + rdn[1] + rdn[2]
 
-    return safe_dn
+def safe_dn(dn):
+    escaped_dn = ''
+    for rdn in parse_dn(dn, escape=True):
+        escaped_dn += rdn[0] + '=' + rdn[1] + rdn[2]
+
+    return escaped_dn

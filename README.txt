@@ -63,8 +63,9 @@ CHANGELOG
     - Added safe_dn(dn) to properly escape dn (if possible)
     - Added ldap3.utils.uri with parse_uri(uri) to verify uri compliance with RFC4516
     - Check for trailing slashes in hostname (thanks Dylan)
-    - timeout for socket connect operation. Server.connect_timeout = seconds_to_wait_for_establishing_connection (thanks Florian)
-    - closing socket error doesn't raise exception anymore
+    - Timeout for socket connect operation. Server.connect_timeout = seconds_to_wait_for_establishing_connection (thanks Florian)
+    - Closing socket error doesn't raise exception anymore
+    - ServerPool can be implicity defined with a list of server names
 
 * 0.9.5.3 2014.08.24
     - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)

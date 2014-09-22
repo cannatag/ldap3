@@ -22,7 +22,7 @@
 
 import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_DSA_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection, test_server_context
 
 
 class Test(unittest.TestCase):
@@ -59,11 +59,11 @@ class Test(unittest.TestCase):
         self.assertEqual(self.connection.response, None)
 
     def test_novell_list_replicas(self):
-        result = self.connection.extend.novell.list_replicas('cn=sl10,o=risorse')
+        result = self.connection.extend.novell.list_replicas('cn=' + test_server + ',' + test_server_context)
         self.assertEquals(result, None)
 
     def test_novell_replica_info(self):
-        result = self.connection.extend.novell.replica_info('cn=sl10,o=risorse', '')
+        result = self.connection.extend.novell.replica_info('cn=' + test_server + ',' + test_server_context, '')
         self.assertEquals(result, '')
 
     def test_novell_partition_entry_count(self):

@@ -23,13 +23,16 @@
 import unittest
 
 from ldap3.protocol.rfc4511 import BindRequest, LDAPDN, AuthenticationChoice, Simple, Version
-from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy
+from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(test_server, test_port)
+        if isinstance(test_server, (list, tuple)):
+            server = ServerPool(test_server, pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+        else:
+            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info)
         self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, pool_name='pool1')
 
     def tearDown(self):

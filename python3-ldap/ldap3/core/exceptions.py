@@ -460,8 +460,10 @@ class LDAPMetricsError(LDAPExceptionError):
 class LDAPObjectClassError(LDAPExceptionError):
     pass
 
+
 class LDAPInvalidDnError(LDAPExceptionError):
     pass
+
 
 # communication exceptions
 class LDAPCommunicationError(LDAPExceptionError):

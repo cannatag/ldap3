@@ -358,7 +358,7 @@ class Connection(object):
                 raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
             if not self.strategy.sync and self.authentication != AUTH_SASL:  # get response if async except for sasl that returns the bind result even for async
-                response, result = self.get_response(response)
+                _, result = self.get_response(response)
             else:
                 result = self.result
 

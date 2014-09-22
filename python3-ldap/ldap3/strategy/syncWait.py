@@ -125,7 +125,7 @@ class SyncWaitStrategy(BaseStrategy):
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        responses, result = self.get_response(message_id)
+        responses, _ = self.get_response(message_id)
         if isinstance(responses, (list, tuple)):
             self.connection.response = responses[:]  # copy search result entries without result
             return responses

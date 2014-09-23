@@ -23,7 +23,7 @@
 import unittest
 from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, CompareRequest, AttributeValueAssertion, AssertionValue, ValsAtLeast1
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, dn_for_test, test_base, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, dn_for_test, test_base, test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_get_info
 
 
 class Test(unittest.TestCase):

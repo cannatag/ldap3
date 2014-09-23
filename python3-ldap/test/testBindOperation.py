@@ -23,7 +23,7 @@
 import unittest
 
 from ldap3 import Server, Connection, ServerPool, AUTH_ANONYMOUS, AUTH_SASL, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl, test_lazy_connection, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl, test_lazy_connection, test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_get_info
 
 
 class Test(unittest.TestCase):

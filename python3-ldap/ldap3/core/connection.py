@@ -357,8 +357,8 @@ class Connection(object):
                 self.last_error = 'unknown authentication method'
                 raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-            if not self.strategy.sync and self.authentication != AUTH_SASL:  # get response if async except for sasl that return the bind result even for async
-                response, result = self.get_response(response)
+            if not self.strategy.sync and self.authentication != AUTH_SASL:  # get response if async except for sasl that returns the bind result even for async
+                _, result = self.get_response(response)
             else:
                 result = self.result
 
@@ -694,10 +694,10 @@ class Connection(object):
             try:
                 if self._deferred_open:
                     self.open()
-                if self._deferred_bind:
-                    self.bind(self._bind_controls)
                 if self._deferred_start_tls:
                     self.start_tls()
+                if self._deferred_bind:
+                    self.bind(self._bind_controls)
             except LDAPExceptionError:
                 raise  # re-raise LDAPExceptionError
             finally:

@@ -47,6 +47,8 @@ Acknowledgements
 * I wish to thank **Mark Lutz** for his *Learning Python* and *Programming Python* excellent books series and **John Goerzen** and **Brandon Rhodes** for their book *Foundations of Python Network Programming*. These books are wonderful tools for learning Python and this project owes a lot to them.
 * I wish to thank **JetBrains** for donating to this project the Open Source license of *PyCharm 3 Professional*.
 * I wish to thank **Atlassian** for providing the *free source repository space and the tools* I use to develop this project.
+* I wish to thank the **Python Software Foundation** for providing support for the testing lab.
+
 
 Contact me
 ----------
@@ -55,10 +57,20 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.5.4 2014.09.22
+    - Fixed security issue in lazy connections (thanks Moritz)
+    - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514
+    - Added safe_dn(dn) to properly escape dn (if possible)
+    - Added ldap3.utils.uri with parse_uri(uri) to verify uri compliance with RFC4516
+    - Check for trailing slashes in hostname (thanks Dylan)
+    - Timeout for socket connect operation. Server.connect_timeout = seconds_to_wait_for_establishing_connection (thanks Florian)
+    - Closing socket error doesn't raise exception anymore
+    - ServerPool can be implicity defined with a list of server names (even when defining a connection)
+
 * 0.9.5.3 2014.08.24
     - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)
     - attributes name returned in searches are now case insensitive (can be changed in ldap3.CASE_INSENSITIVE_ATTRIBUTE_NAMES = True|False)
-    - change parameter name from separe_rdn to separate_rnd in ldap3.utils.conv.to_dn()
+    - change parameter name from separe_rdn to separate_rdn in ldap3.utils.conv.to_dn()
     - sync dev from Bitbucket to GitHub
     - schema attributes are explicitly read (useful for Active directory and 389 Directory Server)
     - new extended operation: list_replicas (Novell)
@@ -68,7 +80,7 @@ CHANGELOG
 
 * 0.9.5.2 2014.08.05
     - fixed LDAPOperationResult.__str__ (thanks David)
-    - added to_dn() in utils.conv to convert a dn string in a list of components (strings or tuples)
+    - added to_dn() in utils.conv to convert a dn string to a list of components (strings or tuples)
     - added __version__ in ldap3
     - don't raise exception if the schema cannot be read in unauthenticated state
     - server.address_info is now a property

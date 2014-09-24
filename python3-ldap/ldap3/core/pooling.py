@@ -143,11 +143,10 @@ class ServerPool(object):
         self.pool_states = dict()
         self.active = active
         self.exhaust = exhaust
-        if isinstance(servers, (list, tuple)):
-            for server in servers:
-                self.add(server)
-        elif isinstance(servers, Server):
+        if isinstance(servers, (list, tuple, Server)):
             self.add(servers)
+        elif isinstance(servers, str):
+            self.add(Server(servers))
         self.strategy = pool_strategy
 
     def __str__(self):
@@ -191,10 +190,14 @@ class ServerPool(object):
         if isinstance(servers, Server):
             if servers not in self.servers:
                 self.servers.append(servers)
+        elif isinstance(servers, str):
+            self.servers.append(Server(servers))
         elif isinstance(servers, (list, tuple)):
             for server in servers:
                 if isinstance(server, Server):
                     self.servers.append(server)
+                elif isinstance(server, str):
+                    self.servers.append(Server(server))
                 else:
                     raise LDAPServerPoolError('server in ServerPool must be a Server')
         else:

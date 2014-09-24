@@ -461,6 +461,10 @@ class LDAPObjectClassError(LDAPExceptionError):
     pass
 
 
+class LDAPInvalidDnError(LDAPExceptionError):
+    pass
+
+
 # communication exceptions
 class LDAPCommunicationError(LDAPExceptionError):
     pass
@@ -529,6 +533,6 @@ def communication_exception_factory(exc_to_raise, exc):
     Generates a new exception class of the requested type (subclass of LDAPCommunication) merged with the exception raised by the interpreter
     """
     if exc_to_raise.__name__ in [cls.__name__ for cls in LDAPCommunicationError.__subclasses__()]:
-        return type(exc_to_raise.__name__, (type(exc), LDAPCommunicationError), dict())
+        return type(exc_to_raise.__name__, (exc_to_raise, type(exc)), dict())
     else:
         raise LDAPExceptionError('unable to generate exception type ' + str(exc_to_raise))

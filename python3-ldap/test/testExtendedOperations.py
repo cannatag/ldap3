@@ -22,7 +22,7 @@
 
 import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_DSA_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection, test_server_context
 
 
 class Test(unittest.TestCase):
@@ -47,23 +47,23 @@ class Test(unittest.TestCase):
         self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):
-        responses = self.connection.extend.standard.paged_search('o=test', '(cn=*)', generator=False)
-        self.assertEqual(len(responses), 22)
+        responses = self.connection.extend.standard.paged_search('o=test', '(&(cn=*)(!(cn=*move*)))', generator=False)
+        self.assertEqual(len(responses), 21)
         self.assertEqual(len(responses), len(self.connection.response))
 
     def test_paged_search_generator(self):
         responses = []
-        for response in self.connection.extend.standard.paged_search('o=test', '(cn=*)'):
+        for response in self.connection.extend.standard.paged_search('o=test', '(&(cn=*)(!(cn=*move*)))'):
             responses.append(response)
-        self.assertEqual(len(responses), 22)
+        self.assertEqual(len(responses), 21)
         self.assertEqual(self.connection.response, None)
 
     def test_novell_list_replicas(self):
-        result = self.connection.extend.novell.list_replicas('cn=edir1,o=services')
+        result = self.connection.extend.novell.list_replicas('cn=' + test_server + ',' + test_server_context)
         self.assertEquals(result, None)
 
     def test_novell_replica_info(self):
-        result = self.connection.extend.novell.replica_info('cn=edir1,o=services', '')
+        result = self.connection.extend.novell.replica_info('cn=' + test_server + ',' + test_server_context, '')
         self.assertEquals(result, '')
 
     def test_novell_partition_entry_count(self):

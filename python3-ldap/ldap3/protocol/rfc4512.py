@@ -127,13 +127,13 @@ class DsaInfo(object):
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
         r += ('  Supported LDAP Versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions]) + linesep) if self.supported_ldap_versions else ''
-        r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + s for s in self.naming_contexts]) + linesep) if self.naming_contexts else ''
-        r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + s for s in self.alt_servers]) + linesep) if self.alt_servers else ''
+        r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts]) + linesep) if self.naming_contexts else ''
+        r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers]) + linesep) if self.alt_servers else ''
         r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls]) + linesep) if self.supported_controls else ''
         r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions]) + linesep) if self.supported_extensions else ''
         r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features]) + linesep) if self.supported_features else ''
-        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([s for s in self.supported_sasl_mechanisms]) + linesep) if self.supported_sasl_mechanisms else ''
-        r += ('  Schema Entry:' + linesep + linesep.join(['    ' + s for s in self.schema_entry]) + linesep) if self.schema_entry else ''
+        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms]) + linesep) if self.supported_sasl_mechanisms else ''
+        r += ('  Schema Entry:' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry]) + linesep) if self.schema_entry else ''
         r += 'Other:' + linesep
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep

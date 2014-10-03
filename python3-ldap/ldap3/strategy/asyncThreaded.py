@@ -72,8 +72,7 @@ class AsyncThreadedStrategy(BaseStrategy):
                     except (OSError, socket.error):
                         listen = False
                     except Exception as e:
-                        print('EXC', e)
-                        print(type(e))
+                        raise  # unexpected exception - reraise
                     if len(data) > 0:
                         unprocessed += data
                         data = b''

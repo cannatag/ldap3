@@ -239,11 +239,9 @@ class BaseStrategy(object):
         """
         response = None
         result = None
-        # print(message_id, self._outstanding)
 
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
-                # print ('waiting for', message_id)
                 responses = self._get_response(message_id)
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     try:  # try to close the session but don't raise any error if server has already closed the session

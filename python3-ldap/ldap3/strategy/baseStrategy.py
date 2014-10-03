@@ -239,6 +239,7 @@ class BaseStrategy(object):
         """
         response = None
         result = None
+
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)

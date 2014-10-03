@@ -29,6 +29,9 @@ import hmac
 
 from .sasl import abort_sasl_negotiation, send_sasl_negotiation, random_hex_string
 
+STATE_KEY = 0
+STATE_VALUE = 1
+
 
 def md5_h(value):
     if not isinstance(value, bytes):
@@ -73,7 +76,7 @@ def sasl_digest_md5(connection, controls):
     # step One of RFC2831
     result = send_sasl_negotiation(connection, controls, None)
     if 'saslCreds' in result and result['saslCreds'] != 'None':
-        server_directives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in result['saslCreds'].split(',')])  # convert directives to dict, unquote values
+        server_directives = decode_directives(result['saslCreds'])
     else:
         return None
 
@@ -110,3 +113,37 @@ def sasl_digest_md5(connection, controls):
 
     result = send_sasl_negotiation(connection, controls, digest_response)
     return result
+
+
+def decode_directives(directives_string):
+    """
+    converts directives to dict, unquote values
+    """
+
+    # old_directives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in directives_string.split(',')])
+    state = STATE_KEY
+    buffer = ''
+    quoting = False
+    key = ''
+    directives = dict()
+    for c in directives_string:
+        if state == STATE_KEY and c == '=':
+            key = buffer
+            buffer = ''
+            state = STATE_VALUE
+        elif state == STATE_VALUE and c == '"' and not quoting and not buffer:
+            quoting = True
+        elif state == STATE_VALUE and c == '"' and quoting:
+            quoting = False
+        elif state == STATE_VALUE and c == ',' and not quoting:
+            directives[key] = buffer
+            buffer = ''
+            key = ''
+            state = STATE_KEY
+        else:
+            buffer += c
+
+    if key and buffer:
+        directives[key] = buffer
+
+    return directives

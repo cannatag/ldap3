@@ -57,6 +57,9 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.5.5 2014.10.03
+    - LDAPStartTLSError exception is merged with exception raised from ssl packaged
+
 * 0.9.5.4 2014.09.22
     - Fixed security issue in lazy connections (thanks Moritz)
     - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514

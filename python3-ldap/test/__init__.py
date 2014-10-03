@@ -23,7 +23,7 @@
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED, POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO
 
 test_server = ['edir1', 'edir2', 'edir3']  # the ldap server where tests executed, if a list is given a pool will be created
-#test_server = 'sl10'
+test_server = 'edir1'
 test_user = 'cn=admin,o=services'  # the user that performs the tests
 test_password = 'password'  # user password
 test_server_context = 'o=risorse'  # used in novell edirectory extended operations

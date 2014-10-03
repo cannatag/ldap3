@@ -541,6 +541,7 @@ def start_tls_exception_factory(exc_to_raise, exc):
     """
     Generates a new exception class of the requested type (subclass of LDAPCommunication) merged with the exception raised by the interpreter
     """
+
     if exc_to_raise.__name__ == 'LDAPStartTLSError':
         return type(exc_to_raise.__name__, (exc_to_raise, type(exc)), dict())
     else:

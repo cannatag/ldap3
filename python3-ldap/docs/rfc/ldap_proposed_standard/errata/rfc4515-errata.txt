@@ -1,0 +1,52 @@
+Errata ID: 72
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-06-23
+Held for Document Update by: Alexey Melnikov
+Date Held: 2010-05-21
+Section 4 says:
+
+   The first example shows use of the matching rule "caseExactMatch."
+It should say:
+
+   The first example shows use of the matching rule "caseExactMatch".
+Notes:
+
+Source: apps
+
+Errata ID: 840
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-06-23
+Held for Document Update by: Alexey Melnikov
+Date Held: 2010-05-21
+Section 2 says:
+
+The ASN.1 term, `AttributeValue`, has been replaced by
+`AssertionValue` wherever it was used previously.
+Hence, in Section 2 (on page 3) of RFC 4515
+
+- the ASN.1 line
+
+        AttributeValue ::= OCTET STRING
+
+  is not needed any more and might have been omitted, and
+
+- in the subsequent explanation, the sentence,
+
+        [...]  The AttributeValue and AssertionValue OCTET STRING have
+   the form defined in [RFC4517].  [...]
+
+  might have been shortened to say:
+
+        [...]  The AssertionValue OCTET STRING has the form defined ib
+   [RFC4517].  [...]
+Notes:
+
+Source: apps

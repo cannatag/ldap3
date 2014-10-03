@@ -1,0 +1,36 @@
+Errata ID: 67
+
+Status: Rejected
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-07-06
+Rejected by: Peter Saint-Andre
+Date Rejected: 2010-09-15
+
+Section 4 says:
+
+   Subject: Request for LDAP Protocol Mechanism Registration Object
+   Identifier: 1.3.6.1.4.1.4203.1.5.3 Description: True/False filters
+   Person & email address to contact for further information:
+        Kurt Zeilenga <kurt@openldap.org> Usage: Feature Specification:
+   RFC 4526 Author/Change Controller: IESG Comments: none
+
+It should say:
+
+   Subject: Request for LDAP Protocol Mechanism Registration
+   Object Identifier: 1.3.6.1.4.1.4203.1.5.3
+   Description: True/False filters
+   Person & email address to contact for further information:
+        Kurt Zeilenga <kurt@openldap.org>
+   Usage: Feature
+   Specification: RFC 4526
+   Author/Change Controller: IESG
+   Comments: none
+
+
+Notes:
+
+
+--VERIFIER NOTES--
+Although the RFC text has unfortunate line breaks, the registration with the IANA is accurate at http://www.iana.org/assignments/ldap-parameters

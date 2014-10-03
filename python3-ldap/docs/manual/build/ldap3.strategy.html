@@ -1,0 +1,517 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.strategy package &mdash; python3-ldap 0.9.5.4 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.9.5.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.4 documentation" href="index.html" />
+    <link rel="up" title="ldap3 package" href="ldap3.html" />
+    <link rel="next" title="ldap3.utils package" href="ldap3.utils.html" />
+    <link rel="prev" title="ldap3.protocol.sasl package" href="ldap3.protocol.sasl.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.utils.html" title="ldap3.utils package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ldap3.protocol.sasl.html" title="ldap3.protocol.sasl package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >ldap3</a> &raquo;</li>
+          <li><a href="ldap3.html" accesskey="U">ldap3 package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ldap3-strategy-package">
+<h1>ldap3.strategy package<a class="headerlink" href="#ldap3-strategy-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ldap3.strategy.asyncThreaded">
+<span id="ldap3-strategy-asyncthreaded-module"></span><h2>ldap3.strategy.asyncThreaded module<a class="headerlink" href="#module-ldap3.strategy.asyncThreaded" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.strategy.asyncThreaded.AsyncThreadedStrategy">
+<em class="property">class </em><tt class="descclassname">ldap3.strategy.asyncThreaded.</tt><tt class="descname">AsyncThreadedStrategy</tt><big>(</big><em>ldap_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/asyncThreaded.html#AsyncThreadedStrategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.asyncThreaded.AsyncThreadedStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.strategy.baseStrategy.BaseStrategy" title="ldap3.strategy.baseStrategy.BaseStrategy"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.strategy.baseStrategy.BaseStrategy</span></tt></a></p>
+<p>This strategy is asynchronous. You send the request and get the messageId of the request sent
+Receiving data from socket is managed in a separated thread in a blocking mode
+Requests return an int value to indicate the messageId of the requested Operation
+You get the response with get_response, it has a timeout to wait for response to appear
+Connection.response will contain the whole LDAP response for the messageId requested in a dict form
+Connection.request will contain the result LDAP message in a dict form
+Response appear in strategy._responses dictionary</p>
+<dl class="class">
+<dt id="ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.ReceiverSocketThread">
+<em class="property">class </em><tt class="descname">ReceiverSocketThread</tt><big>(</big><em>ldap_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/asyncThreaded.html#AsyncThreadedStrategy.ReceiverSocketThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.ReceiverSocketThread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></tt></p>
+<p>The thread that actually manage the receiver socket</p>
+<dl class="method">
+<dt id="ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.ReceiverSocketThread.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/asyncThreaded.html#AsyncThreadedStrategy.ReceiverSocketThread.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.ReceiverSocketThread.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for data on socket, compute the length of the message and wait for enough bytes to decode the message
+Message are appended to strategy._responses</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.close">
+<tt class="descclassname">AsyncThreadedStrategy.</tt><tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/asyncThreaded.html#AsyncThreadedStrategy.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close connection and stop socket thread</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.open">
+<tt class="descclassname">AsyncThreadedStrategy.</tt><tt class="descname">open</tt><big>(</big><em>reset_usage=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/asyncThreaded.html#AsyncThreadedStrategy.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open connection and start listen on the socket in a different thread</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.post_send_search">
+<tt class="descclassname">AsyncThreadedStrategy.</tt><tt class="descname">post_send_search</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/asyncThreaded.html#AsyncThreadedStrategy.post_send_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.post_send_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears connection.response and returns messageId</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.post_send_single_response">
+<tt class="descclassname">AsyncThreadedStrategy.</tt><tt class="descname">post_send_single_response</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/asyncThreaded.html#AsyncThreadedStrategy.post_send_single_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.asyncThreaded.AsyncThreadedStrategy.post_send_single_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears connection.response and returns messageId.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.strategy.baseStrategy">
+<span id="ldap3-strategy-basestrategy-module"></span><h2>ldap3.strategy.baseStrategy module<a class="headerlink" href="#module-ldap3.strategy.baseStrategy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy">
+<em class="property">class </em><tt class="descclassname">ldap3.strategy.baseStrategy.</tt><tt class="descname">BaseStrategy</tt><big>(</big><em>ldap_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Base class for connection strategy</p>
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close connection</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.compute_ldap_message_size">
+<em class="property">classmethod </em><tt class="descname">compute_ldap_message_size</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.compute_ldap_message_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.compute_ldap_message_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute LDAP Message size according to BER definite length rules
+Returns -1 if too few data to compute message length</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.decode_control">
+<em class="property">classmethod </em><tt class="descname">decode_control</tt><big>(</big><em>control</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.decode_control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.decode_control" title="Permalink to this definition">¶</a></dt>
+<dd><p>decode control, return a 2-element tuple where the first element is the control oid
+and the second element is a dictionary with description (from Oids), criticality and decoded control value</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.decode_referral">
+<em class="property">classmethod </em><tt class="descname">decode_referral</tt><big>(</big><em>uri</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.decode_referral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.decode_referral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode referral URI as specified in RFC 4516 relaxing specifications
+permitting &#8216;ldaps&#8217; as scheme meaning ssl-ldap</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.decode_request">
+<em class="property">classmethod </em><tt class="descname">decode_request</tt><big>(</big><em>ldap_message</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.decode_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.decode_request" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.decode_response">
+<tt class="descname">decode_response</tt><big>(</big><em>ldap_message</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.decode_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.decode_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert received LDAPMessage to a dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.do_operation_on_referral">
+<tt class="descname">do_operation_on_referral</tt><big>(</big><em>request</em>, <em>referrals</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.do_operation_on_referral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.do_operation_on_referral" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.get_response">
+<tt class="descname">get_response</tt><big>(</big><em>message_id</em>, <em>timeout=10</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.get_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.get_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get response LDAP messages
+Responses are returned by the underlying connection strategy
+Check if message_id LDAP message is still outstanding and wait for timeout to see if it appears in _get_response
+Result is stored in connection.result
+Responses without result is stored in connection.response
+A tuple (responses, result) is returned</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.get_stream">
+<tt class="descname">get_stream</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.get_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.get_stream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.open">
+<tt class="descname">open</tt><big>(</big><em>reset_usage=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a socket to a server. Choose a server from the server pool if available</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.post_send_search">
+<tt class="descname">post_send_search</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.post_send_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.post_send_search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.post_send_single_response">
+<tt class="descname">post_send_single_response</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.post_send_single_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.post_send_single_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.receiving">
+<tt class="descname">receiving</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.receiving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.receiving" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.send">
+<tt class="descname">send</tt><big>(</big><em>message_type</em>, <em>request</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an LDAP message
+Returns the message_id</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.set_stream">
+<tt class="descname">set_stream</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.set_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.set_stream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.baseStrategy.BaseStrategy.valid_referral_list">
+<tt class="descname">valid_referral_list</tt><big>(</big><em>referrals</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/baseStrategy.html#BaseStrategy.valid_referral_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.baseStrategy.BaseStrategy.valid_referral_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.strategy.ldifProducer">
+<span id="ldap3-strategy-ldifproducer-module"></span><h2>ldap3.strategy.ldifProducer module<a class="headerlink" href="#module-ldap3.strategy.ldifProducer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy">
+<em class="property">class </em><tt class="descclassname">ldap3.strategy.ldifProducer.</tt><tt class="descname">LdifProducerStrategy</tt><big>(</big><em>ldap_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.strategy.baseStrategy.BaseStrategy" title="ldap3.strategy.baseStrategy.BaseStrategy"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.strategy.baseStrategy.BaseStrategy</span></tt></a></p>
+<p>This strategy is used to create the LDIF stream for the Add, Delete, Modify, ModifyDn operations.
+You send the request and get the request in the ldif-change representation of the operation.
+NO OPERATION IS SENT TO THE LDAP SERVER!
+Connection.request will contain the result LDAP message in a dict form
+Connection.response will contain the ldif-change format of the requested operation if available
+You don&#8217;t need a real server to connect to for this strategy</p>
+<dl class="method">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy.accumulate_stream">
+<tt class="descname">accumulate_stream</tt><big>(</big><em>fragment</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy.accumulate_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy.accumulate_stream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy.get_stream">
+<tt class="descname">get_stream</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy.get_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy.get_stream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy.post_send_search">
+<tt class="descname">post_send_search</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy.post_send_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy.post_send_search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy.post_send_single_response">
+<tt class="descname">post_send_single_response</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy.post_send_single_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy.post_send_single_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy.receiving">
+<tt class="descname">receiving</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy.receiving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy.receiving" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy.send">
+<tt class="descname">send</tt><big>(</big><em>message_type</em>, <em>request</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the LDAPMessage without sending to server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.ldifProducer.LdifProducerStrategy.set_stream">
+<tt class="descname">set_stream</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/ldifProducer.html#LdifProducerStrategy.set_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.ldifProducer.LdifProducerStrategy.set_stream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.strategy.reusableThreaded">
+<span id="ldap3-strategy-reusablethreaded-module"></span><h2>ldap3.strategy.reusableThreaded module<a class="headerlink" href="#module-ldap3.strategy.reusableThreaded" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy">
+<em class="property">class </em><tt class="descclassname">ldap3.strategy.reusableThreaded.</tt><tt class="descname">ReusableThreadedStrategy</tt><big>(</big><em>ldap_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.strategy.baseStrategy.BaseStrategy" title="ldap3.strategy.baseStrategy.BaseStrategy"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.strategy.baseStrategy.BaseStrategy</span></tt></a></p>
+<p>A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
+The connection using this strategy presents itself as a normal connection, but internally the strategy has a pool of
+connections that can be used as needed. Each connection lives in its own thread and has a busy/available status.
+The strategy performs the requested operation on the first available connection.
+The pool of connections is instantiated at strategy initialization.
+Strategy has two customizable properties, the total number of connections in the pool and the lifetime of each connection.
+When lifetime is expired the connection is closed and will be opened again when needed.</p>
+<dl class="class">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool">
+<em class="property">class </em><tt class="descname">ConnectionPool</tt><big>(</big><em>connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.ConnectionPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool.create_pool">
+<tt class="descname">create_pool</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.ConnectionPool.create_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool.create_pool" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool.start_pool">
+<tt class="descname">start_pool</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.ConnectionPool.start_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool.start_pool" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool.terminate_pool">
+<tt class="descname">terminate_pool</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.ConnectionPool.terminate_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ConnectionPool.terminate_pool" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.PooledConnectionThread">
+<em class="property">class </em><tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">PooledConnectionThread</tt><big>(</big><em>reusable_connection</em>, <em>original_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.PooledConnectionThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.PooledConnectionThread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></tt></p>
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.PooledConnectionThread.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.PooledConnectionThread.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.PooledConnectionThread.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ReusableConnection">
+<em class="property">class </em><tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">ReusableConnection</tt><big>(</big><em>connection</em>, <em>request_queue</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.ReusableConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ReusableConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Container for the Restartable connection. it includes a thread and a lock to execute the connection in the pool</p>
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ReusableConnection.new_connection">
+<tt class="descname">new_connection</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.ReusableConnection.new_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.ReusableConnection.new_connection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.get_response">
+<tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">get_response</tt><big>(</big><em>counter</em>, <em>timeout=10</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.get_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.get_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.open">
+<tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">open</tt><big>(</big><em>reset_usage=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.pools">
+<tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">pools</tt><em class="property"> = {}</em><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.pools" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.post_send_search">
+<tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">post_send_search</tt><big>(</big><em>counter</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.post_send_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.post_send_search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.post_send_single_response">
+<tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">post_send_single_response</tt><big>(</big><em>counter</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.post_send_single_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.post_send_single_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.send">
+<tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">send</tt><big>(</big><em>message_type</em>, <em>request</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.send" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.terminate">
+<tt class="descclassname">ReusableThreadedStrategy.</tt><tt class="descname">terminate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/reusableThreaded.html#ReusableThreadedStrategy.terminate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.reusableThreaded.ReusableThreadedStrategy.terminate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.strategy.syncWait">
+<span id="ldap3-strategy-syncwait-module"></span><h2>ldap3.strategy.syncWait module<a class="headerlink" href="#module-ldap3.strategy.syncWait" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.strategy.syncWait.SyncWaitStrategy">
+<em class="property">class </em><tt class="descclassname">ldap3.strategy.syncWait.</tt><tt class="descname">SyncWaitStrategy</tt><big>(</big><em>ldap_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWait.html#SyncWaitStrategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWait.SyncWaitStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.strategy.baseStrategy.BaseStrategy" title="ldap3.strategy.baseStrategy.BaseStrategy"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.strategy.baseStrategy.BaseStrategy</span></tt></a></p>
+<p>This strategy is synchronous. You send the request and get the response
+Requests return a boolean value to indicate the result of the requested Operation
+Connection.response will contain the whole LDAP response for the messageId requested in a dict form
+Connection.request will contain the result LDAP message in a dict form</p>
+<dl class="method">
+<dt id="ldap3.strategy.syncWait.SyncWaitStrategy.open">
+<tt class="descname">open</tt><big>(</big><em>reset_usage=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWait.html#SyncWaitStrategy.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWait.SyncWaitStrategy.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.syncWait.SyncWaitStrategy.post_send_search">
+<tt class="descname">post_send_search</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWait.html#SyncWaitStrategy.post_send_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWait.SyncWaitStrategy.post_send_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executed after a search request
+Returns the result message and store in connection.response the objects found</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.syncWait.SyncWaitStrategy.post_send_single_response">
+<tt class="descname">post_send_single_response</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWait.html#SyncWaitStrategy.post_send_single_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWait.SyncWaitStrategy.post_send_single_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executed after an Operation Request (except Search)
+Returns the result message or None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.syncWait.SyncWaitStrategy.receiving">
+<tt class="descname">receiving</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWait.html#SyncWaitStrategy.receiving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWait.SyncWaitStrategy.receiving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive data over the socket
+Checks if the socket is closed</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.strategy.syncWaitRestartable">
+<span id="ldap3-strategy-syncwaitrestartable-module"></span><h2>ldap3.strategy.syncWaitRestartable module<a class="headerlink" href="#module-ldap3.strategy.syncWaitRestartable" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy">
+<em class="property">class </em><tt class="descclassname">ldap3.strategy.syncWaitRestartable.</tt><tt class="descname">SyncWaitRestartableStrategy</tt><big>(</big><em>ldap_connection</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWaitRestartable.html#SyncWaitRestartableStrategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.strategy.syncWait.SyncWaitStrategy" title="ldap3.strategy.syncWait.SyncWaitStrategy"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.strategy.syncWait.SyncWaitStrategy</span></tt></a></p>
+<dl class="method">
+<dt id="ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.open">
+<tt class="descname">open</tt><big>(</big><em>reset_usage=False</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWaitRestartable.html#SyncWaitRestartableStrategy.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.post_send_search">
+<tt class="descname">post_send_search</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWaitRestartable.html#SyncWaitRestartableStrategy.post_send_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.post_send_search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.post_send_single_response">
+<tt class="descname">post_send_single_response</tt><big>(</big><em>message_id</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWaitRestartable.html#SyncWaitRestartableStrategy.post_send_single_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.post_send_single_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.send">
+<tt class="descname">send</tt><big>(</big><em>message_type</em>, <em>request</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/strategy/syncWaitRestartable.html#SyncWaitRestartableStrategy.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.strategy.syncWaitRestartable.SyncWaitRestartableStrategy.send" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.strategy">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ldap3.strategy" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ldap3.strategy package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ldap3.strategy.asyncThreaded">ldap3.strategy.asyncThreaded module</a></li>
+<li><a class="reference internal" href="#module-ldap3.strategy.baseStrategy">ldap3.strategy.baseStrategy module</a></li>
+<li><a class="reference internal" href="#module-ldap3.strategy.ldifProducer">ldap3.strategy.ldifProducer module</a></li>
+<li><a class="reference internal" href="#module-ldap3.strategy.reusableThreaded">ldap3.strategy.reusableThreaded module</a></li>
+<li><a class="reference internal" href="#module-ldap3.strategy.syncWait">ldap3.strategy.syncWait module</a></li>
+<li><a class="reference internal" href="#module-ldap3.strategy.syncWaitRestartable">ldap3.strategy.syncWaitRestartable module</a></li>
+<li><a class="reference internal" href="#module-ldap3.strategy">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ldap3.protocol.sasl.html"
+                        title="previous chapter">ldap3.protocol.sasl package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ldap3.utils.html"
+                        title="next chapter">ldap3.utils package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ldap3.strategy.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.utils.html" title="ldap3.utils package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ldap3.protocol.sasl.html" title="ldap3.protocol.sasl package"
+             >previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >ldap3</a> &raquo;</li>
+          <li><a href="ldap3.html" >ldap3 package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

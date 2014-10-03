@@ -1,0 +1,222 @@
+Errata ID: 74
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-07-07
+Held for Document Update by: Alexey Melnikov
+Date Held: 2010-05-21
+ 
+
+(E1)  text truncation (?)
+
+Apparently, the text of the first paragraph of Section 3.2,
+on page 18 of RFC 4512, has been truncated inadvertently.
+The RFC text says:
+
+   A subentry is a "special sort of entry, known by the Directory, used
+   to hold information associated with a subtree or subtree refinement"
+|  [X.501].  Subentries are used in Directory to hold for administrative
+|  and operational purposes as defined in [X.501].  Their use in LDAP is
+   detailed in [RFC3672].
+
+I suspect that it should in fact say:
+
+   A subentry is a "special sort of entry, known by the Directory, used
+   to hold information associated with a subtree or subtree refinement"
+|  [X.501].  Subentries are used in the Directory to hold attributes for
+|  administrative and operational purposes as defined in [X.501].  Their
+   use in LDAP is detailed in [RFC3672].
+
+
+(E2)  typo
+
+In Section 4.1.7.1, near the bottom of page 30, the explanation,
+
+     FORM is specifies the name form associated with this DIT structure
+         rule;
+
+should say:
+
+|    FORM specifies the name form associated with this DIT structure
+         rule;
+
+
+(E3)  typo
+
+The first paragraph of Section 5.1, on page 36, says:
+
+   An LDAP server SHALL provide information about itself and other
+   information that is specific to each server.  This is represented as
+   a group of attributes located in the root DSE, which is named with
+|  the DN with zero RDNs (whose [RFC4514] representation is as the
+   zero-length string).
+
+It should say:
+
+   An LDAP server SHALL provide information about itself and other
+   information that is specific to each server.  This is represented as
+   a group of attributes located in the root DSE, which is named with
+|  the DN with zero RDNs (whose [RFC4514] representation is the zero-
+   length string).
+
+
+(E4)  word omission
+
+The second paragraph of Section A.2.1, on page 49, says:
+
+   The <descr> syntax was changed to disallow semicolon (U+003B)
+   characters in order to appear to be consistent its natural language
+   specification "descr is the syntactic representation of an object
+   descriptor, which consists of letters and digits, starting with a
+   letter".  In a related change, the statement "an AttributeDescription
+   can be used as the value in a NAME part of an
+   AttributeTypeDescription" was deleted.  RFC 2252 provided no
+   specification of the semantics of attribute options appearing in NAME
+   fields.
+
+It should say:
+
+   The <descr> syntax was changed to disallow semicolon (U+003B)
+|  characters in order to appear to be consistent with its natural
+   language specification "descr is the syntactic representation of an
+   object descriptor, which consists of letters and digits, starting
+   with a letter".
+   In a related change, the statement "an AttributeDescription can be
+   used as the value in a NAME part of an AttributeTypeDescription" was
+   deleted.  RFC 2252 provided no specification of the semantics of
+   attribute options appearing in NAME fields.
+
+
+And these are my side notes for future consideration.
+There are a couple of missing articles in the RFC text.
+I have noted the following places:
+
+
+(N1)
+
+In Section 4.1.1, on page 24, the explanation,
+
+   where:
+     <numericoid> is object identifier assigned to this object class;
+     [...]
+
+should better say:
+
+   where:
+|    <numericoid> is the object identifier assigned to this object
+         class;
+     [...]
+
+
+(N2)
+
+In Section 4.1.2,
+
+a) on page 25, the literally same correction as (N1) applies, and
+
+b) the explanation:
+
+     SYNTAX identifies value syntax by object identifier and may suggest
+         a minimum upper bound;
+
+should better say:
+
+|    SYNTAX identifies the value syntax by its object identifier and may
+         suggest a minimum upper bound;
+
+c) Finally, on top of page 26, the paragraph,
+
+   If SUP field is provided, the EQUALITY, ORDERING, and SUBSTRING
+   fields, if not specified, take their value from the supertype.
+
+should better say:
+
+|  If the SUP field is provided, the EQUALITY, ORDERING, and SUBSTRING
+   fields, if not specified, take their value from the supertype.
+
+
+(N3)
+
+In Section 4.1.3, on page 27, -- similarly to (N1) --
+the explanation,
+
+   where:
+     <numericoid> is object identifier assigned to this matching rule;
+     [...]
+
+should better say:
+
+   where:
+     <numericoid> is the object identifier assigned to this matching
+         rule;
+     [...]
+
+
+(N4)
+
+In Section 4.1.7.2, on page 31, -- again like in (N1) --
+the explanation,
+
+   where:
+     <numericoid> is object identifier that identifies this name form;
+     [...]
+
+should better say:
+
+   where:
+     <numericoid> is the object identifier that identifies this name
+         form;
+     [...]
+
+
+(N5)
+
+The final sentence of Section 4.2, i.e. the 3rd paragraph on page 33,
+says:
+
+   The following subsections provide attribute type definitions for each
+   of schema definition attribute types.
+
+It should say:
+
+   The following subsections provide attribute type definitions for each
+|  of the schema definition attribute types.
+Notes:
+
+Source: apps
+
+Errata ID: 2281
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-07-07
+Held for Document Update by: Peter Saint-Andre
+Date Held: 2010-05-21
+Section A.3 says:
+
+The second paragraph of Section A.3, at the bottom of page 50, says:
+
+   Section 5.1 of RFC 2256 provided the definition of the 'objectClass'
+   attribute type.  This was integrated into Section 2.4.1 of this
+   document.  The statement "One of the values is either 'top' or
+   'alias'" was replaced with statement that one of the values is 'top'
+   as entries belonging to 'alias' also belong to 'top'.
+
+It should say:
+
+   Section 5.1 of RFC 2256 provided the definition of the 'objectClass'
+|  attribute type.  This was integrated into Section 3.3 of this
+   document.  The statement "One of the values is either 'top' or
+   'alias'" was replaced with statement that one of the values is 'top'
+   as entries belonging to 'alias' also belong to 'top'.
+
+Notes:
+
+Apparently, 'Section 3.3' would have been much more appropriate than
+'Section 2.4.1'.
+
+Source: apps

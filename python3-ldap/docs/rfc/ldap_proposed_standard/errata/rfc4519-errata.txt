@@ -1,0 +1,89 @@
+Errata ID: 70
+
+Status: Held for Document Update
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-07-07
+Held for Document Update by: Alexey Melnikov
+Appendix A says:
+
+      18. Removed Section 2.4 (Source).  Replaced the source table with
+          explicit references for each definition.
+It should say:
+
+      18. Removed Section 4 (Source).  Replaced the source table with
+          explicit references for each definition.
+Status: Rejected (1)
+
+RFC4519, "Lightweight Directory Access Protocol (LDAP): Schema for User Applications", June 2006
+
+Source of RFC: ldapbis (app)
+Errata ID: 1761
+
+Status: Rejected
+Type: Technical
+
+Reported By: Fotis Georgatos
+Date Reported: 2009-04-10
+Rejected by: Alexey Melnikov
+Date Rejected: 2010-09-02
+Section 3.10 says:
+
+3.10.  'organizationalRole'
+
+   The 'organizationalRole' object class is the basis of an entry that
+   represents a job, function, or position in an organization.
+   (Source: X.521 [X.521])
+
+      ( 2.5.6.8 NAME 'organizationalRole'
+         SUP top
+         STRUCTURAL
+         MUST cn
+         MAY ( x121Address $ registeredAddress $ destinationIndicator $
+               preferredDeliveryMethod $ telexNumber $
+               teletexTerminalIdentifier $ telephoneNumber $
+               internationalISDNNumber $ facsimileTelephoneNumber $
+               seeAlso $ roleOccupant $ preferredDeliveryMethod $
+               street $ postOfficeBox $ postalCode $ postalAddress $
+               physicalDeliveryOfficeName $ ou $ st $ l $
+               description ) )
+It should say:
+
+3.10.  'organizationalRole'
+
+   The 'organizationalRole' object class is the basis of an entry that
+   represents a job, function, or position in an organization.
+   (Source: X.521 [X.521])
+
+      ( 2.5.6.8 NAME 'organizationalRole'
+         SUP top
+         STRUCTURAL
+         MUST cn
+         MAY ( x121Address $ registeredAddress $ destinationIndicator $
+               preferredDeliveryMethod $ telexNumber $
+               teletexTerminalIdentifier $ telephoneNumber $
+               internationalISDNNumber $ facsimileTelephoneNumber $
+               seeAlso $ roleOccupant $ 
+               street $ postOfficeBox $ postalCode $ postalAddress $
+               physicalDeliveryOfficeName $ ou $ st $ l $
+               description ) )
+Notes:
+
+Any object classes that include the preferredDeliveryMethod twice should be either redefined, by including it only once, OR provide an explicit reference about how it should be interpreted by the implementations; such examples are:
+organizationalRole (3.10)
+residentialPerson (3.13)
+
+Note that this error has been affecting OpenLDAP implementations at least 
+since year 2002; with the side-effect that imported ldif data would disappear:
+http://www.openldap.org/lists/ietf-ldapbis/200207/msg00002.html
+It is surprising that it has remained unaddressed during so many years.
+
+Also, Kurt Zeilinga has proposed to adopt the following (sufficient) rule:
+"that implementations SHOULD be (and are) ignoring the redundant listing".
+--VERIFIER NOTES-- 
+Kurt Zeilenga said:
+
+This issue was raised to the LDAPbis WG at the time it was working on the I-D which became RFC 4519 yet RFC 4519 did not include the suggested change. Simply put, there was insufficient support of the suggested change at that time.
+
+The change is also bad in that in removes one of the examples of multiple listed attributes, a rarely used but still valid (for historical reasons) of X.500/LDAP schema descriptions, and hence may lead to implementations not supporting this feature and by doing so causing interop problems.

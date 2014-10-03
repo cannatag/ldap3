@@ -1,4 +1,4 @@
-__version__ = '0.9.5.4'
+__version__ = '0.9.5.5'
 __author__ = 'Giovanni Cannata'
 __email__ = 'python3ldap@gmail.com'
 __license__ = 'LGPL v3'

@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError
+from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
 
 
 try:
@@ -189,12 +189,20 @@ class Tls(object):
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
-        self.wrap_socket(connection, do_handshake=True)
+        exc = None
+        try:
+            self.wrap_socket(connection, do_handshake=True)
+        except Exception as e:
+            connection.last_error = 'wrap socket error: ' + str(e)
+            exc = e
+
+        connection.starting_tls = False
+        if exc:
+            raise start_tls_exception_factory(LDAPStartTLSError, exc)(connection.last_error)
 
         if connection.usage:
             connection._usage.wrapped_sockets += 1
 
-        connection.starting_tls = False
         connection.tls_started = True
         return True
 

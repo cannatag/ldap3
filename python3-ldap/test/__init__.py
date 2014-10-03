@@ -23,9 +23,9 @@
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED, POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO
 
 test_server = ['edir1', 'edir2', 'edir3']  # the ldap server where tests executed, if a list is given a pool will be created
-test_server = 'sl10'
+#test_server = 'sl10'
 test_user = 'cn=admin,o=services'  # the user that performs the tests
-test_password = 'camera'  # user password
+test_password = 'password'  # user password
 test_server_context = 'o=risorse'  # used in novell edirectory extended operations
 
 test_base = 'o=test'  # base context where test objects are created
@@ -43,9 +43,9 @@ test_check_names = True  # check attribute names in operations
 test_get_info = GET_ALL_INFO  # get info from DSA
 test_lazy_connection = False  # connection lazy
 test_strategy = STRATEGY_SYNC  # strategy for executing tests
-test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
-test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
-test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
+#test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+#test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+#test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
 
 
 def dn_for_test(base, name):

@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import collections
+import json
 
 
 class CaseInsensitiveDict(collections.MutableMapping):
@@ -69,6 +70,12 @@ class CaseInsensitiveDict(collections.MutableMapping):
     def __str__(self):
         return str(self._store)
 
+    def keys(self):
+        return self._store.keys()
+
+    def values(self):
+        return self._store.values()
+
     def __eq__(self, other):
         if not isinstance(other, collections.Mapping):
             return NotImplemented
@@ -89,3 +96,6 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
     def copy(self):
         return CaseInsensitiveDict(self._store)
+
+    def to_json(self):
+        return json.dumps(self._store, sort_keys=True, indent=4)

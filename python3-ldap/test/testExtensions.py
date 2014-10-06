@@ -24,7 +24,7 @@
 import unittest
 
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection, test_server_context
 from ldap3.core.tls import Tls
 
 
@@ -40,13 +40,12 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_get_replica_list_extension(self):
-        result = self.connection.extended('2.16.840.1.113719.1.27.100.19', 'cn=server')
+        result = self.connection.extended('2.16.840.1.113719.1.27.100.19', ('cn=' + test_server + ',' + test_server_context))
         if not isinstance(result, bool):
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
-        print(result['description'])
         self.assertTrue(result['description'] in ['success', 'noSuchObject'])
 
     def test_who_am_i_extension(self):

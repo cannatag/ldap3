@@ -26,7 +26,7 @@ test_server = ['edir1', 'edir2', 'edir3']  # the ldap server where tests execute
 test_server = 'edir1'
 test_user = 'cn=admin,o=services'  # the user that performs the tests
 test_password = 'password'  # user password
-test_server_context = 'o=risorse'  # used in novell edirectory extended operations
+test_server_context = 'o=services'  # used in novell eDirectory extended operations
 
 test_base = 'o=test'  # base context where test objects are created
 test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations

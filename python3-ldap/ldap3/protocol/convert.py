@@ -402,6 +402,7 @@ def format_attribute_values(schema, name, values, custom_formatter):
     return formatted_values[0] if (attr_type and attr_type.single_value) else formatted_values
 
 
+# attribute type name must be lowercase
 standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.1': format_binary,  # ACI item [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.2': format_binary,  # Access point [OBSOLETE]
@@ -475,4 +476,5 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.22': format_integer,  # Counter (Novell)
     '2.16.840.1.113719.1.1.5.1.23': format_unicode,  # Tagged Name (Novell)
     '2.16.840.1.113719.1.1.5.1.25': format_unicode,  # Typed Name (Novell)
+    'supportedldapversion': format_integer  # supportedLdapVersion (Microsoft)
 }

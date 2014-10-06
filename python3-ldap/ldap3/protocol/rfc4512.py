@@ -25,9 +25,11 @@
 
 from os import linesep
 import re
+import json
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
 from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
+from ..protocol.convert import format_unicode, format_integer
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError
 
@@ -108,7 +110,8 @@ class DsaInfo(object):
     as defined in RFC4512 and RFC3045. Unknown attributes are stored in the "other" dict
     """
 
-    def __init__(self, attributes):
+    def __init__(self, attributes, raw_attributes):
+        self.raw_info = dict(raw_attributes)
         self.alt_servers = attributes.pop('altServer', None)
         self.naming_contexts = attributes.pop('namingContexts', None)
         self.supported_controls = decode_oids(attributes.pop('supportedControl', None))
@@ -143,6 +146,14 @@ class DsaInfo(object):
                 r += v + linesep
         return r
 
+    def to_json(self, indent=4, sort=True):
+        return json.dumps(dict(raw_info = self.raw_info), sort_keys=sort, indent=indent, check_circular=True, default=format_unicode)
+
+    @classmethod
+    def from_json(cls, json_definition):
+        raw_attributes = json.loads(json_definition)
+        attributes = raw_attributes
+        return DsaInfo(attributes, raw_attributes)
 
 class SchemaInfo(object):
     """
@@ -150,7 +161,8 @@ class SchemaInfo(object):
     as defined in RFC4512. Unknown attributes are stored in the "other" dict
     """
 
-    def __init__(self, schema_entry, attributes):
+    def __init__(self, schema_entry, attributes, raw_attributes):
+        self.raw_schema = dict(raw_attributes)
         self.schema_entry = schema_entry
         self.create_time_stamp = attributes.pop('createTimestamp', None)
         self.modify_time_stamp = attributes.pop('modifyTimestamp', None)
@@ -162,7 +174,7 @@ class SchemaInfo(object):
         self.dit_structure_rules = DitStructureRuleInfo.from_definition(attributes.pop('dITStructureRules', []))
         self.name_forms = NameFormInfo.from_definition(attributes.pop('nameForms', []))
         self.ldap_syntaxes = LdapSyntaxInfo.from_definition(attributes.pop('ldapSyntaxes', []))
-        self.other = attributes  # remaining attributes not in RFC4512
+        self.other = attributes  # remainingschema definition attributes not in RFC4512
 
     def __str__(self):
         return self.__repr__()
@@ -185,6 +197,14 @@ class SchemaInfo(object):
             r += linesep
         return r
 
+    def to_json(self, indent=4, sort = True):
+        return json.dumps(dict(schema_entry = self.schema_entry, raw_schema = self.raw_schema), sort_keys=sort, indent=indent, check_circular=True, default=format_unicode)
+
+    @classmethod
+    def from_json(cls, json_definition):
+        raw_attributes = json.loads(json_definition, object_hook=bytes())
+        attributes = raw_attributes
+        return SchemaInfo(attributes, raw_attributes)
 
 class BaseObjectInfo(object):
     """

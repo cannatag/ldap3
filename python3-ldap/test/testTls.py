@@ -86,7 +86,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_bind_ssl_with_certificate(self):
-        tls = Tls(local_private_key_file='c:/admin2524KeyPlain.pem', local_certificate_file='c:/admin2524Cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='c:/idmprofiler2524CA.b64')
+        tls = Tls(local_private_key_file='admin-key.pem', local_certificate_file='admin-cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='ca-cert.pem', valid_names=['EDIR-TEST', 'edir1.hyperv', 'edir1'])
         server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
         connection.open()
@@ -98,7 +98,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_sasl_with_external_certificate(self):
-        tls = Tls(local_private_key_file='c:/admin2524KeyPlain.pem', local_certificate_file='c:/admin2524Cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='c:/idmprofiler2524CA.b64')
+        tls = Tls(local_private_key_file='admin-key.pem', local_certificate_file='admin-cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='ca-cert.pem', valid_names=['EDIR-TEST', 'edir1.hyperv'])
         server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
         connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='EXTERNAL')
         connection.open()

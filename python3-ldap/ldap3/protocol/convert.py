@@ -198,7 +198,7 @@ def format_unicode(raw_value):
 def format_integer(raw_value):
     try:
         return int(raw_value)
-    except TypeError:
+    except (TypeError, ValueError):
         pass
     return raw_value
 

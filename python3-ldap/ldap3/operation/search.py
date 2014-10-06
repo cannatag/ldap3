@@ -388,9 +388,6 @@ def raw_attributes_to_dict(attribute_list):
 
 
 def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=None):
-    if not schema:
-        return None
-
     checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
     for attribute in attribute_list:
         checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']) or [], custom_formatter)
@@ -463,7 +460,7 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
     entry = dict()
     entry['dn'] = str(response['object'])
     entry['raw_attributes'] = raw_attributes_to_dict(response['attributes'])
-    if check_names and schema:
+    if check_names:
         entry['attributes'] = checked_attributes_to_dict(response['attributes'], schema, custom_formatter)
     else:
         entry['attributes'] = attributes_to_dict(response['attributes'])

@@ -24,11 +24,12 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+import json
 from threading import Lock
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT
 from .exceptions import LDAPInvalidPort
-from ..core.exceptions import LDAPInvalidServerError
-from ..protocol.rfc4512 import SchemaServerInfo, DsaServerInfo
+from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
+from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 
 
@@ -218,11 +219,11 @@ class Server(object):
         self._dsa_info = None
         with self.lock:
             if isinstance(result, bool):  # sync request
-                self._dsa_info = DsaServerInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
+                self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
             elif result:  # async request, must check if attributes in response
                 results, _ = connection.get_response(result)
                 if len(results) == 1 and 'attributes' in results[0]:
-                    self._dsa_info = DsaServerInfo(results[0]['attributes'], connection.response[0]['raw_attributes'])
+                    self._dsa_info = DsaInfo(results[0]['attributes'], connection.response[0]['raw_attributes'])
 
     def _get_schema_info(self, connection, entry=''):
         """
@@ -264,11 +265,11 @@ class Server(object):
             self._schema_info = None
             if result:
                 if isinstance(result, bool):  # sync request
-                    self._schema_info = SchemaServerInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
+                    self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
                 else:  # async request, must check if attributes in response
                     results, _ = connection.get_response(result)
                     if len(results) == 1 and 'attributes' in results[0]:
-                        self._schema_info = SchemaServerInfo(schema_entry, results[0]['attributes'], connection.response[0]['raw_attributes'])
+                        self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], connection.response[0]['raw_attributes'])
 
     def get_info_from_server(self, connection):
         """
@@ -288,3 +289,18 @@ class Server(object):
     @property
     def schema(self):
         return self._schema_info
+
+    @classmethod
+    def from_definition(cls, host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
+        dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter)
+        if isinstance(dsa_info, DsaInfo):
+            dummy._dsa_info = dsa_info
+        else:
+            raise LDAPDefinitionError('invalid dsa info')
+
+        if isinstance(dsa_schema, SchemaInfo):
+            dummy._schema_info = dsa_schema
+        else:
+            raise LDAPDefinitionError('invalid schema info')
+
+        return dummy

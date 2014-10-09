@@ -23,7 +23,8 @@
 from setuptools import setup
 from os import path
 package_name = 'python3-ldap'
-package_folder = 'python3-ldap'
+package_folder = path.join(path.abspath(path.dirname(__file__)),
+                           'python3-ldap')
 version_file = open(path.join(package_folder, 'ldap3', '_version.py'))
 exec_local = dict()
 exec(version_file.read(), dict(), exec_local)

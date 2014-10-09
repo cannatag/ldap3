@@ -25,9 +25,11 @@
 
 from os import linesep
 import re
+import json
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
 from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
+from ..protocol.convert import format_unicode, attributes_to_dict, format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError
 
@@ -102,13 +104,58 @@ def list_to_string(list_object):
     return r[:-2] if r else ''
 
 
-class DsaInfo(object):
+class BaseServerInfo(object):
+    def __init__(self, raw_attributes):
+        self.raw = dict(raw_attributes)
+
+    @classmethod
+    def from_json(cls, json_definition, schema=None, custom_formatter=None):
+        raw_attributes = json.loads(json_definition)
+        if CASE_INSENSITIVE_SCHEMA_NAMES:
+            attributes = CaseInsensitiveDict()
+        else:
+            attributes = dict()
+
+        if schema:
+            for attribute in raw_attributes['raw_info']:
+                attributes[attribute] = format_attribute_values(raw_attributes['raw_info'][attribute], schema, custom_formatter)
+        else:
+            for attribute in raw_attributes['raw_info']:
+                attributes[attribute] = str(raw_attributes['raw_info'][attribute])
+
+        return cls(attributes, raw_attributes)
+
+    @classmethod
+    def from_file(cls, target):
+        if isinstance(target, str):
+            target = open(target, 'r')
+
+        new = cls.from_json(target.read())
+        target.close()
+        return new
+
+    def to_file(self, target):
+        if isinstance(target, str):
+            target = open(target, 'w+')
+
+        target.writelines(self.to_json())
+        target.close()
+
+    def __str__(self):
+        return self.__repr__()
+
+    def to_json(self, indent=4, sort=True):
+        return json.dumps(dict(raw_info=self.raw), sort_keys=sort, indent=indent, check_circular=True, default=format_unicode)
+
+
+class DsaServerInfo(BaseServerInfo):
     """
     This class contains info about the ldap server (DSA) read from DSE
     as defined in RFC4512 and RFC3045. Unknown attributes are stored in the "other" dict
     """
 
-    def __init__(self, attributes):
+    def __init__(self, attributes, raw_attributes):
+        BaseServerInfo.__init__(self, raw_attributes)
         self.alt_servers = attributes.pop('altServer', None)
         self.naming_contexts = attributes.pop('namingContexts', None)
         self.supported_controls = decode_oids(attributes.pop('supportedControl', None))
@@ -120,9 +167,6 @@ class DsaInfo(object):
         self.vendor_version = attributes.pop('vendorVersion', None)
         self.schema_entry = attributes.pop('subschemaSubentry', None)
         self.other = attributes
-
-    def __str__(self):
-        return self.__repr__()
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
@@ -144,13 +188,14 @@ class DsaInfo(object):
         return r
 
 
-class SchemaInfo(object):
+class SchemaServerInfo(BaseServerInfo):
     """
     This class contains info about the ldap server schema read from an entry (default entry is DSE)
     as defined in RFC4512. Unknown attributes are stored in the "other" dict
     """
 
-    def __init__(self, schema_entry, attributes):
+    def __init__(self, schema_entry, attributes, raw_attributes):
+        BaseServerInfo.__init__(self, raw_attributes)
         self.schema_entry = schema_entry
         self.create_time_stamp = attributes.pop('createTimestamp', None)
         self.modify_time_stamp = attributes.pop('modifyTimestamp', None)
@@ -162,10 +207,7 @@ class SchemaInfo(object):
         self.dit_structure_rules = DitStructureRuleInfo.from_definition(attributes.pop('dITStructureRules', []))
         self.name_forms = NameFormInfo.from_definition(attributes.pop('nameForms', []))
         self.ldap_syntaxes = LdapSyntaxInfo.from_definition(attributes.pop('ldapSyntaxes', []))
-        self.other = attributes  # remaining attributes not in RFC4512
-
-    def __str__(self):
-        return self.__repr__()
+        self.other = attributes  # remaining schema definition attributes not in RFC4512
 
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry + linesep

@@ -57,6 +57,14 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.5.5 2014.10.04
+    - LDAPStartTLSError exception is merged with exception raised from ssl packaged
+    - Digest-MD5 SASL authentication accepts directives with list attributes (thanks John)
+    - Fixed caseInsensitiveDictionary for keys() and values() methods
+    - Added to_json() method to attributes when using caseInsensitiveDict (default)
+    - Fixed matching of certificate name in ssl with Python2
+    - Attributes names and formatters are checked even if schema is not read by the server
+
 * 0.9.5.4 2014.09.22
     - Fixed security issue in lazy connections (thanks Moritz)
     - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514

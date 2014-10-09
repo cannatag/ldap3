@@ -1,0 +1,265 @@
+
+Status: Verified (7)
+RFC2119, "Key words for use in RFCs to Indicate Requirement Levels", March 1997
+Source of RFC: Legacy
+Area Assignment: gen
+
+Errata ID: 493
+
+Status: Verified
+Type: Technical
+
+Reported By: Davidson, Malcolm
+Date Reported: 2001-05-31
+
+Section 1 says:
+
+2. MUST NOT   This phrase, or the phrase "SHALL NOT", mean that the
+   definition is an absolute prohibition of the specification.
+
+It should say:
+
+2. MUST NOT   This phrase, or the phrase "SHALL NOT", means that the
+   definition is an absolute prohibition of the specification.
+
+Errata ID: 495
+
+Status: Verified
+Type: Technical
+
+Reported By: Davidson, Malcolm
+Date Reported: 2001-05-31
+
+Section 1 says:
+
+1. MUST   This word, or the terms "REQUIRED" or "SHALL", mean that the
+   definition is an absolute requirement of the specification.
+
+
+It should say:
+
+1. MUST   This word, or the terms "REQUIRED" or "SHALL", means that the
+   definition is an absolute requirement of the specification.
+
+Notes:
+
+
+Errata ID: 496
+
+Status: Verified
+Type: Technical
+
+Reported By: Kurt Zeilenga
+Date Reported: 2001-01-31
+
+Section 6 says:
+
+   In particular, they MUST only be used where it is actually required
+   for interoperation or to limit behavior which has potential for
+   causing harm (e.g., limiting retransmisssions)  For example, they
+   must not be used to try to impose a particular method on
+   implementors where the method is not required for interoperability.   
+
+It should say:
+
+   In particular, they MUST only be used where it is actually required
+   for interoperation or to limit behavior which has potential for
+   causing harm (e.g., limiting retransmissions).  For example, they
+   must not be used to try to impose a particular method on
+   implementors where the method is not required for interoperability.
+
+Errata ID: 498
+
+Status: Verified
+Type: Technical
+
+Reported By: Davidson, Malcolm
+Date Reported: 2001-05-31
+
+Section 1 says:
+
+4. SHOULD NOT   This phrase, or the phrase "NOT RECOMMENDED" mean that
+   there may exist valid reasons in particular circumstances when the
+   particular behavior is acceptable or even useful, but the full
+   implications should be understood and the case carefully weighed
+   before implementing any behavior described with this label.
+
+It should say:
+
+4. SHOULD NOT   This phrase, or the phrase "NOT RECOMMENDED", means that
+   there may exist valid reasons in particular circumstances when the
+   particular behavior is acceptable or even useful, but the full
+   implications should be understood and the case carefully weighed
+   before implementing any behavior described with this label.
+
+Errata ID: 500
+
+Status: Verified
+Type: Technical
+
+Reported By: Davidson, Malcolm
+Date Reported: 2001-05-31
+
+Section 1 says:
+
+3. SHOULD   This word, or the adjective "RECOMMENDED", mean that there
+   may exist valid reasons in particular circumstances to ignore a
+   particular item, but the full implications must be understood and
+   carefully weighed before choosing a different course.
+
+It should say:
+
+3. SHOULD   This word, or the adjective "RECOMMENDED", means that there
+   may exist valid reasons in particular circumstances to ignore a
+   particular item, but the full implications must be understood and
+   carefully weighed before choosing a different course.
+
+Errata ID: 494
+
+Status: Verified
+Type: Editorial
+
+Reported By: Davidson, Malcolm
+Date Reported: 2001-05-31
+Verifier Name: RFC Editor
+Date Verified: 2007-11-07
+
+Section 6 says:
+
+(e.g., limiting retransmisssions)
+
+It should say:
+
+(e.g., limiting retransmissions)
+
+Errata ID: 499
+
+Status: Verified
+Type: Editorial
+
+Reported By: Anders Langmyr
+Date Reported: 2006-01-09
+Verifier Name: Peter Saint-Andre
+Date Verified: 2011-11-15
+
+Section Abstract says:
+
+       The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+       NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and
+       "OPTIONAL" in this document are to be interpreted as described in
+       RFC 2119.
+
+It should say:
+
+       The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+       NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT 
+       RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to 
+       be interpreted as described in RFC 2119.
+
+Notes:
+
+The phrase "NOT RECOMMENDED" is missing from this sentence.
+Status: Held for Document Update (1)
+RFC2119, "Key words for use in RFCs to Indicate Requirement Levels", March 1997
+Source of RFC: Legacy
+Area Assignment: gen
+
+Errata ID: 2969
+
+Status: Held for Document Update
+Type: Technical
+
+Reported By: John Klensin
+Date Reported: 2011-09-12
+Held for Document Update by: Russ Housley
+
+Section 1,3,4 says:
+
+(1) "The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" mean
+
+(2) 1. MUST   This word, or the terms "REQUIRED" or "SHALL", mean
+
+(3) 3. SHOULD   This word, or the adjective "RECOMMENDED", mean
+
+(4) 4. SHOULD NOT   This phrase, or the phrase "NOT RECOMMENDED" mean
+
+It should say:
+
+(1) "The key words "MUST", "MUST NOT", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", and "MAY" means
+
+(2) 1. MUST   This word, or the term "SHALL", means
+
+(3) 3. SHOULD   This word means
+
+(4) 4. SHOULD NOT   This phrase means
+
+Editorial note: The use of "mean" after a singular subject is simply wrong.  Subordinate phrases like ", or the term BLATHER," do nothing to change that.
+
+
+ 
+
+Notes:
+
+RFC 2026, to which RFC 2119 should be subordinate, carefully distinguishes between Technical Specifications (TS) and Applicability Statements (AS). Its Section 3.3 prescribes specific language to be used in ASs, with categories "Required", "Recommended", "Elective", "Limited Use", and "Not Recommended", while 2119's language, especially in its Section 6, fairly clearly apply to interoperability requirements within TS documents. Use of terms that 2026 requires for AS documents in a TS context (as synonyms for other, unambiguous, terms) is just an invitation to confusion, especially if the IETF continues to have hair-splitting arguments about the nature of requirements in particular contexts. Consequently, while the change proposed in erratum 419 (altering the definition phrase to reflect the language of Section 4) appears reasonable from an editorial standpoint, the correct fix is to remove the 2026 AS terms as acceptable synonyms from 2119 entirely. If people want to say "SHOULD NOT" and give it specific meaning, they should say "SHOULD NOT" rather than trying to use nearly-synonymous terms and hoping that the reader will figure out what was really met.
+Status: Rejected (1)
+RFC2119, "Key words for use in RFCs to Indicate Requirement Levels", March 1997
+Source of RFC: Legacy
+Area Assignment: gen
+
+Errata ID: 497
+
+Status: Rejected
+Type: Editorial
+
+Reported By: Kiyoshi Ogawa
+Date Reported: 2006-07-10
+Rejected by: Russ Housley
+Date Rejected: 2010-08-19
+
+ 
+
+3. SHOULD   This word, or the adjective "RECOMMENDED", mean that there
+   may exist valid reasons in particular circumstances to ignore a
+   particular item, but the full implications must be understood and
+   carefully weighed before choosing a different course.
+
+4. SHOULD NOT   This phrase, or the phrase "NOT RECOMMENDED" mean that
+   there may exist valid reasons in particular circumstances when the
+   particular behavior is acceptable or even useful, but the full
+   implications should be understood and the case carefully weighed
+   before implementing any behavior described with this label.
+
+It should say:
+
+3. SHOULD   This word, or the adjective "RECOMMENDED", mean that there
+   may exist valid reasons in particular circumstances to ignore a
+   particular item, but the full implications should be understood and
+   carefully weighed before choosing a different course.
+
+4. SHOULD NOT   This phrase, or the phrase "NOT RECOMMENDED" mean that
+   there may exist valid reasons in particular circumstances when the
+   particular behavior is acceptable or even useful, but the full
+   implications should be understood and the case carefully weighed
+   before implementing any behavior described with this label.
+
+Notes:
+
+OR should say:
+3. SHOULD This word, or the adjective "RECOMMENDED", mean that there
+may exist valid reasons in particular circumstances to ignore a
+particular item, but the full implications is understood and
+carefully weighed before choosing a different course.
+
+4. SHOULD NOT This phrase, or the phrase "NOT RECOMMENDED" mean that
+there may exist valid reasons in particular circumstances when the
+particular behavior is acceptable or even useful, but the full
+implications should be understood and the case carefully weighed
+before implementing any behavior described with this label.
+
+
+The change request is "must" to "should".
+It may be self definition.
+For the balance of SHOULD and SHOULD NOT , it should use "should", not
+"must".
+--VERIFIER NOTES--
+The full implications MUST be understood in order to ignore a "SHOULD" or "SHOULD NOT" statement in a specification. 

@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.strategy.ldifProducer &mdash; python3-ldap 0.9.5.4 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.5.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.4 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.strategy.ldifProducer</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># Created on 2013.07.15</span>
+<span class="c">#</span>
+<span class="c"># Author: Giovanni Cannata</span>
+<span class="c">#</span>
+<span class="c"># Copyright 2013 Giovanni Cannata</span>
+<span class="c">#</span>
+<span class="c"># This file is part of python3-ldap.</span>
+<span class="c">#</span>
+<span class="c"># python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU Lesser General Public License as published</span>
+<span class="c"># by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU Lesser General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c"># along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="c"># If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">linesep</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">LDAP_MAX_INT</span>
+<span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPLDIFError</span>
+<span class="kn">from</span> <span class="nn">..utils.conv</span> <span class="kn">import</span> <span class="n">prepare_for_stream</span>
+<span class="kn">from</span> <span class="nn">..protocol.rfc4511</span> <span class="kn">import</span> <span class="n">LDAPMessage</span><span class="p">,</span> <span class="n">MessageID</span><span class="p">,</span> <span class="n">ProtocolOp</span>
+<span class="kn">from</span> <span class="nn">..protocol.rfc2849</span> <span class="kn">import</span> <span class="n">operation_to_ldif</span><span class="p">,</span> <span class="n">add_ldif_header</span>
+<span class="kn">from</span> <span class="nn">..protocol.convert</span> <span class="kn">import</span> <span class="n">build_controls_list</span>
+<span class="kn">from</span> <span class="nn">.baseStrategy</span> <span class="kn">import</span> <span class="n">BaseStrategy</span>
+
+
+<div class="viewcode-block" id="LdifProducerStrategy"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy">[docs]</a><span class="k">class</span> <span class="nc">LdifProducerStrategy</span><span class="p">(</span><span class="n">BaseStrategy</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This strategy is used to create the LDIF stream for the Add, Delete, Modify, ModifyDn operations.</span>
+<span class="sd">    You send the request and get the request in the ldif-change representation of the operation.</span>
+<span class="sd">    NO OPERATION IS SENT TO THE LDAP SERVER!</span>
+<span class="sd">    Connection.request will contain the result LDAP message in a dict form</span>
+<span class="sd">    Connection.response will contain the ldif-change format of the requested operation if available</span>
+<span class="sd">    You don&#39;t need a real server to connect to for this strategy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ldap_connection</span><span class="p">):</span>
+        <span class="n">BaseStrategy</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ldap_connection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sync</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_real_dsa</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pooled</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">can_stream</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_separator</span> <span class="o">=</span> <span class="n">linesep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_base64</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_added</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_start_listen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">listening</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_added</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">,</span> <span class="n">StringIO</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">closed</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_stream</span><span class="p">(</span><span class="n">StringIO</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_stop_listen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">listening</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="LdifProducerStrategy.receiving"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy.receiving">[docs]</a>    <span class="k">def</span> <span class="nf">receiving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="LdifProducerStrategy.send"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_type</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">controls</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the LDAPMessage without sending to server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">message_id</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">LDAP_MAX_INT</span><span class="p">)</span>
+        <span class="n">ldap_message</span> <span class="o">=</span> <span class="n">LDAPMessage</span><span class="p">()</span>
+        <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;messageID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MessageID</span><span class="p">(</span><span class="n">message_id</span><span class="p">)</span>
+        <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;protocolOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ProtocolOp</span><span class="p">()</span><span class="o">.</span><span class="n">setComponentByName</span><span class="p">(</span><span class="n">message_type</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="n">message_controls</span> <span class="o">=</span> <span class="n">build_controls_list</span><span class="p">(</span><span class="n">controls</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">message_controls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ldap_message</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message_controls</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">BaseStrategy</span><span class="o">.</span><span class="n">decode_request</span><span class="p">(</span><span class="n">ldap_message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;controls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">controls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span><span class="p">[</span><span class="n">message_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span>
+        <span class="k">return</span> <span class="n">message_id</span>
+</div>
+<div class="viewcode-block" id="LdifProducerStrategy.post_send_single_response"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy.post_send_single_response">[docs]</a>    <span class="k">def</span> <span class="nf">post_send_single_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span> <span class="ow">and</span> <span class="n">message_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span><span class="p">:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outstanding</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">message_id</span><span class="p">)</span>
+            <span class="n">ldif_lines</span> <span class="o">=</span> <span class="n">operation_to_ldif</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">],</span> <span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_base64</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="ow">and</span> <span class="n">ldif_lines</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">accumulate_stream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">line_separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ldif_lines</span><span class="p">))</span>
+            <span class="n">ldif_lines</span> <span class="o">=</span> <span class="n">add_ldif_header</span><span class="p">(</span><span class="n">ldif_lines</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ldif_lines</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">response</span>
+
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="LdifProducerStrategy.post_send_search"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy.post_send_search">[docs]</a>    <span class="k">def</span> <span class="nf">post_send_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">LDAPLDIFError</span><span class="p">(</span><span class="s">&#39;LDIF-CONTENT cannot be produced for Search Operations&#39;</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_id</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="LdifProducerStrategy.accumulate_stream"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy.accumulate_stream">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fragment</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header_added</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_header_added</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">add_ldif_header</span><span class="p">([</span><span class="s">&#39;-&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">prepare_for_stream</span><span class="p">(</span><span class="n">header</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_separator</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_separator</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">prepare_for_stream</span><span class="p">(</span><span class="n">fragment</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_separator</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_separator</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="LdifProducerStrategy.get_stream"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy.get_stream">[docs]</a>    <span class="k">def</span> <span class="nf">get_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span>
+</div>
+<div class="viewcode-block" id="LdifProducerStrategy.set_stream"><a class="viewcode-back" href="../../../ldap3.strategy.html#ldap3.strategy.ldifProducer.LdifProducerStrategy.set_stream">[docs]</a>    <span class="k">def</span> <span class="nf">set_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">writable</span><span class="p">():</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPLDIFError</span><span class="p">(</span><span class="s">&#39;stream must be writable&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">value</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

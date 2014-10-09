@@ -1,0 +1,35 @@
+Errata ID: 65
+
+Status: Verified
+Type: Editorial
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-07-06
+Verifier Name: Alexey Melnikov
+Date Verified: 2010-09-02
+Section 3 says:
+
+   Servers indicate their support for this extended operation by
+   providing a whoamiOID object identifier as a value of the
+   'supportedExtension' attribute type in their root DSE.  The server
+   SHOULD advertise this extension only when the client is willing and
+                                             ^^^^^^^^^^
+   able to perform this operation.   
+It should say:
+
+   Servers indicate their support for this extended operation by
+   providing a whoamiOID object identifier as a value of the
+   'supportedExtension' attribute type in their root DSE.  The server
+   SHOULD advertise this extension only when it is willing
+                                             ^^
+   and able to perform this operation.
+
+Notes:
+
+As far as I can see, the last sentence there is misleading and
+does not match the operational scenario; and hence, it should be
+clarified. According to the recommendations given, the client
+will not try the operation if the OID is not offered by the server,
+and hence the server cannot know whether the client is willing
+to send the whoami Request; and in this case, the *server* will
+perform the operation, i.e., send the whoami Response.

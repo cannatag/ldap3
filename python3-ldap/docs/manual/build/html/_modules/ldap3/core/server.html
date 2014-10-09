@@ -1,0 +1,373 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.core.server &mdash; python3-ldap 0.9.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.3 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ldap3.core.server</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on 2013.05.31</span>
+
+<span class="sd">@author: Giovanni Cannata</span>
+
+<span class="sd">Copyright 2013 Giovanni Cannata</span>
+
+<span class="sd">This file is part of python3-ldap.</span>
+
+<span class="sd">python3-ldap is free software: you can redistribute it and/or modify</span>
+<span class="sd">it under the terms of the GNU Lesser General Public License as published</span>
+<span class="sd">by the Free Software Foundation, either version 3 of the License, or</span>
+<span class="sd">(at your option) any later version.</span>
+
+<span class="sd">python3-ldap is distributed in the hope that it will be useful,</span>
+<span class="sd">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="sd">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="sd">GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License</span>
+<span class="sd">along with python3-ldap in the COPYING and COPYING.LESSER files.</span>
+<span class="sd">If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">GET_NO_INFO</span><span class="p">,</span> <span class="n">GET_DSA_INFO</span><span class="p">,</span> <span class="n">GET_SCHEMA_INFO</span><span class="p">,</span> <span class="n">GET_ALL_INFO</span><span class="p">,</span> <span class="n">ALL_ATTRIBUTES</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">,</span> <span class="n">LDAP_MAX_INT</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">LDAPInvalidPort</span>
+<span class="kn">from</span> <span class="nn">..core.exceptions</span> <span class="kn">import</span> <span class="n">LDAPInvalidServerError</span>
+<span class="kn">from</span> <span class="nn">..protocol.rfc4512</span> <span class="kn">import</span> <span class="n">SchemaInfo</span><span class="p">,</span> <span class="n">DsaInfo</span>
+<span class="kn">from</span> <span class="nn">.tls</span> <span class="kn">import</span> <span class="n">Tls</span>
+
+
+<div class="viewcode-block" id="Server"><a class="viewcode-back" href="../../../ldap3.core.html#ldap3.core.server.Server">[docs]</a><span class="k">class</span> <span class="nc">Server</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    LDAP Server definition class</span>
+
+<span class="sd">    Allowed_referral_hosts can be None (default), or a list of tuples of</span>
+<span class="sd">    allowed servers ip address or names to contact while redirecting</span>
+<span class="sd">    search to referrals.</span>
+
+<span class="sd">    The second element of the tuple is a boolean to indicate if</span>
+<span class="sd">    authentication to that server is allowed; if False only anonymous</span>
+<span class="sd">    bind will be used.</span>
+
+<span class="sd">    Per RFC 4516. Use (&#39;*&#39;, False) to allow any host with anonymous</span>
+<span class="sd">    bind, use (&#39;*&#39;, True) to allow any host with same authentication of</span>
+<span class="sd">    Server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_message_counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">_message_id_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">host</span><span class="p">,</span>
+                 <span class="n">port</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">use_ssl</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">allowed_referral_hosts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">get_info</span><span class="o">=</span><span class="n">GET_NO_INFO</span><span class="p">,</span>
+                 <span class="n">tls</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">formatter</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">url_given</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">host</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;ldap://&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span><span class="p">[</span><span class="mi">7</span><span class="p">:]</span>
+            <span class="n">use_ssl</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">url_given</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">host</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;ldaps://&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span>
+            <span class="n">use_ssl</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">url_given</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+
+        <span class="k">if</span> <span class="s">&#39;:&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">hostname</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">hostport</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hostport</span><span class="p">)</span> <span class="ow">or</span> <span class="n">port</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">hostname</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPInvalidPort</span><span class="p">(</span><span class="s">&#39;port must be an integer&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">url_given</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;[&#39;</span><span class="p">):</span>
+            <span class="n">hostname</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">hostport</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s">&#39;]&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sep</span> <span class="o">!=</span> <span class="s">&#39;]&#39;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_ipv6</span><span class="p">(</span><span class="n">hostname</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">LDAPInvalidServerError</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hostport</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">hostport</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">LDAPInvalidServerError</span><span class="p">(</span><span class="s">&#39;invalid URL in server name&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">hostport</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">isdecimal</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="n">LDAPInvalidPort</span><span class="p">(</span><span class="s">&#39;port must be an integer&#39;</span><span class="p">)</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hostport</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">hostname</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">url_given</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_ipv6</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPInvalidServerError</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">use_ssl</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">port</span><span class="p">:</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="mi">389</span>
+        <span class="k">elif</span> <span class="n">use_ssl</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">port</span><span class="p">:</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="mi">636</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LDAPInvalidPort</span><span class="p">(</span><span class="s">&#39;port must in range from 0 to 65535&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LDAPInvalidPort</span><span class="p">(</span><span class="s">&#39;port must be an integer&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">allowed_referral_hosts</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allowed_referral_hosts</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">refServer</span> <span class="ow">in</span> <span class="n">allowed_referral_hosts</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">refServer</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">refServer</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">bool</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_referral_hosts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">refServer</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">allowed_referral_hosts</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">allowed_referral_hosts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">bool</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allowed_referral_hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">allowed_referral_hosts</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allowed_referral_hosts</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ssl</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">use_ssl</span> <span class="k">else</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tls</span> <span class="o">=</span> <span class="n">Tls</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssl</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">tls</span> <span class="k">else</span> <span class="n">tls</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_ipv6</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;ldaps&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssl</span> <span class="k">else</span> <span class="s">&#39;ldap&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;://[&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s">&#39;]:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;ldaps&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssl</span> <span class="k">else</span> <span class="s">&#39;ldap&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;://&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_info</span> <span class="o">=</span> <span class="n">get_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema_info</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_formatter</span> <span class="o">=</span> <span class="n">formatter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_address_info</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c"># propertu self.address_info resolved at open time (or when you call check_availability)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_is_ipv6</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">socket</span><span class="o">.</span><span class="n">inet_pton</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET6</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39; - ssl&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssl</span> <span class="k">else</span> <span class="s">&#39; - cleartext&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;Server(host={0.host!r}, port={0.port!r}, use_ssl={0.ssl!r}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_referral_hosts</span> <span class="k">else</span> <span class="s">&#39;, allowed_referral_hosts={0.allowed_referral_hosts!r}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tls</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="s">&#39;, tls={0.tls!r}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_info</span> <span class="k">else</span> <span class="s">&#39;, get_info={0.get_info!r}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s">&#39;)&#39;</span>
+
+        <span class="k">return</span> <span class="n">r</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Server.address_info"><a class="viewcode-back" href="../../../ldap3.core.html#ldap3.core.server.Server.address_info">[docs]</a>    <span class="k">def</span> <span class="nf">address_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address_info</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_address_info</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address_info</span>
+</div>
+<div class="viewcode-block" id="Server.check_availability"><a class="viewcode-back" href="../../../ldap3.core.html#ldap3.core.server.Server.check_availability">[docs]</a>    <span class="k">def</span> <span class="nf">check_availability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tries to open, connect and close a socket to specified address</span>
+<span class="sd">        and port to check availability.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">available</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">temp_socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">address_info</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">3</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">temp_socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address_info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+            <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                <span class="n">available</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">temp_socket</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SHUT_RDWR</span><span class="p">)</span>
+                    <span class="n">temp_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                    <span class="n">available</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">gaierror</span><span class="p">:</span>
+            <span class="n">available</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="n">available</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Server.next_message_id"><a class="viewcode-back" href="../../../ldap3.core.html#ldap3.core.server.Server.next_message_id">[docs]</a>    <span class="k">def</span> <span class="nf">next_message_id</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        messageId is unique for all connections</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">Server</span><span class="o">.</span><span class="n">_message_id_lock</span><span class="p">:</span>
+            <span class="n">Server</span><span class="o">.</span><span class="n">_message_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">Server</span><span class="o">.</span><span class="n">_message_counter</span> <span class="o">&gt;=</span> <span class="n">LDAP_MAX_INT</span><span class="p">:</span>
+                <span class="n">Server</span><span class="o">.</span><span class="n">_message_counter</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">Server</span><span class="o">.</span><span class="n">_message_counter</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_dsa_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve DSE operational attribute as per RFC4512 (5.1).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;(objectClass=*)&#39;</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="n">ALL_ATTRIBUTES</span><span class="p">,</span> <span class="n">get_operational_attributes</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>  <span class="c"># sync request</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span> <span class="o">=</span> <span class="n">DsaInfo</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="bp">None</span>
+            <span class="k">elif</span> <span class="n">result</span><span class="p">:</span>  <span class="c"># async request, must check if attributes in response</span>
+                <span class="n">results</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s">&#39;attributes&#39;</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span> <span class="o">=</span> <span class="n">DsaInfo</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_schema_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">entry</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve schema from subschemaSubentry DSE attribute, per RFC</span>
+<span class="sd">        4512 (4.4 and 5.1); entry = &#39;&#39; means DSE.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema_entry</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span> <span class="ow">and</span> <span class="n">entry</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>  <span class="c"># subschemaSubentry already present in dsaInfo</span>
+            <span class="n">schema_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span><span class="o">.</span><span class="n">schema_entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span><span class="o">.</span><span class="n">schema_entry</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="s">&#39;(objectClass=*)&#39;</span><span class="p">,</span> <span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;subschemaSubentry&#39;</span><span class="p">],</span> <span class="n">get_operational_attributes</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>  <span class="c"># sync request</span>
+                <span class="n">schema_entry</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="s">&#39;subschemaSubentry&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c"># async request, must check if subschemaSubentry in attributes</span>
+                <span class="n">results</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s">&#39;attributes&#39;</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="s">&#39;subschemaSubentry&#39;</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">]:</span>
+                    <span class="n">schema_entry</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">][</span><span class="s">&#39;subschemaSubentry&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">schema_entry</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">schema_entry</span><span class="p">,</span>
+                                       <span class="n">search_filter</span><span class="o">=</span><span class="s">&#39;(objectClass=subschema)&#39;</span><span class="p">,</span>
+                                       <span class="n">search_scope</span><span class="o">=</span><span class="n">SEARCH_SCOPE_BASE_OBJECT</span><span class="p">,</span>
+                                       <span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;objectClasses&#39;</span><span class="p">,</span>  <span class="c"># requests specific subschema attributes</span>
+                                                   <span class="s">&#39;attributeTypes&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;ldapSyntaxes&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;matchingRules&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;matchingRuleUse&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;dITContentRules&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;dITStructureRules&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;nameForms&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;createTimestamp&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;modifyTimestamp&#39;</span><span class="p">,</span>
+                                                   <span class="s">&#39;*&#39;</span><span class="p">],</span>  <span class="c"># requests all remaining attributes (other)</span>
+                                       <span class="n">get_operational_attributes</span><span class="o">=</span><span class="bp">True</span>
+                                       <span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_schema_info</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>  <span class="c"># sync request</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_schema_info</span> <span class="o">=</span> <span class="n">SchemaInfo</span><span class="p">(</span><span class="n">schema_entry</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="bp">None</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c"># async request, must check if attributes in response</span>
+                    <span class="n">results</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s">&#39;attributes&#39;</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_schema_info</span> <span class="o">=</span> <span class="n">SchemaInfo</span><span class="p">(</span><span class="n">schema_entry</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;attributes&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Server.get_info_from_server"><a class="viewcode-back" href="../../../ldap3.core.html#ldap3.core.server.Server.get_info_from_server">[docs]</a>    <span class="k">def</span> <span class="nf">get_info_from_server</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        read info from DSE and from subschema</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_info</span> <span class="ow">in</span> <span class="p">[</span><span class="n">GET_DSA_INFO</span><span class="p">,</span> <span class="n">GET_ALL_INFO</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_dsa_info</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_info</span> <span class="ow">in</span> <span class="p">[</span><span class="n">GET_SCHEMA_INFO</span><span class="p">,</span> <span class="n">GET_ALL_INFO</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_schema_info</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Server.info"><a class="viewcode-back" href="../../../ldap3.core.html#ldap3.core.server.Server.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsa_info</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Server.schema"><a class="viewcode-back" href="../../../ldap3.core.html#ldap3.core.server.Server.schema">[docs]</a>    <span class="k">def</span> <span class="nf">schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema_info</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">python3-ldap 0.9.5.3 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

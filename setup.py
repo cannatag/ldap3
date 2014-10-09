@@ -22,9 +22,9 @@
 
 from setuptools import setup
 from os import path
+
 package_name = 'python3-ldap'
-package_folder = path.join(path.abspath(path.dirname(__file__)),
-                           'python3-ldap')
+package_folder = path.join(path.abspath(path.dirname(__file__)), 'python3-ldap')
 version_file = open(path.join(package_folder, 'ldap3', '_version.py'))
 exec_local = dict()
 exec(version_file.read(), dict(), exec_local)
@@ -51,8 +51,8 @@ setup(name=package_name,
                 'ldap3.extend.novell',
                 'ldap3.extend.microsoft',
                 'ldap3.extend.standard'
-      ],
-      package_dir={'': package_folder},
+               ],
+      package_dir={ '': package_folder },
       install_requires=['pyasn1 == 0.1.7'],
       license=__license__,
       author=__author__,
@@ -71,4 +71,4 @@ setup(name=package_name,
                    'Programming Language :: Python :: 3',
                    'Topic :: Software Development :: Libraries :: Python Modules',
                    'Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP']
-)
+      )

@@ -57,7 +57,9 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.5.5 2014.10.04
+* 0.9.6 2014.10.09
+    - New exception hierarchy LDAPConfigurationError includes library configuration exceptions
+    - New exception LDAPInvalidConfigurationDefinitionError
     - LDAPStartTLSError exception is merged with exception raised from ssl packaged
     - Digest-MD5 SASL authentication accepts directives with list attributes (thanks John)
     - Fixed caseInsensitiveDictionary for keys() and values() methods

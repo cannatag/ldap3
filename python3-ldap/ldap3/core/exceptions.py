@@ -330,6 +330,27 @@ class LDAPExceptionError(LDAPException):
     pass
 
 
+# configuration exceptions
+class LDAPConfigurationError(LDAPExceptionError):
+    pass
+
+
+class LDAPUnknownStrategyError(LDAPConfigurationError):
+    pass
+
+
+class LDAPUnknownAuthenticationMethodError(LDAPConfigurationError):
+    pass
+
+
+class LDAPSSLConfigurationError(LDAPConfigurationError):
+    pass
+
+
+class LDAPDefinitionError(LDAPConfigurationError):
+    pass
+
+
 # abstract layer exceptions
 class LDAPKeyError(LDAPExceptionError, KeyError):
     pass
@@ -361,14 +382,6 @@ class LDAPSSLNotSupportedError(LDAPExceptionError, ImportError):
 
 
 # connection exceptions
-class LDAPUnknownStrategyError(LDAPExceptionError):
-    pass
-
-
-class LDAPUnknownAuthenticationMethodError(LDAPExceptionError):
-    pass
-
-
 class LDAPBindError(LDAPExceptionError):
     pass
 
@@ -398,10 +411,6 @@ class LDAPServerPoolExhaustedError(LDAPExceptionError):
 
 
 class LDAPInvalidPort(LDAPExceptionError):
-    pass
-
-
-class LDAPSSLConfigurationError(LDAPExceptionError):
     pass
 
 
@@ -536,6 +545,7 @@ def communication_exception_factory(exc_to_raise, exc):
         return type(exc_to_raise.__name__, (exc_to_raise, type(exc)), dict())
     else:
         raise LDAPExceptionError('unable to generate exception type ' + str(exc_to_raise))
+
 
 def start_tls_exception_factory(exc_to_raise, exc):
     """

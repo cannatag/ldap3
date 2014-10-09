@@ -29,9 +29,9 @@ import json
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
 from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
-from ..protocol.convert import format_unicode, attributes_to_dict, format_attribute_values
+from ..protocol.convert import format_unicode, format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
-from ..core.exceptions import LDAPSchemaError
+from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError
 
 
 def constant_to_class_kind(value):
@@ -110,20 +110,31 @@ class BaseServerInfo(object):
 
     @classmethod
     def from_json(cls, json_definition, schema=None, custom_formatter=None):
-        raw_attributes = json.loads(json_definition)
+        definition = json.loads(json_definition)
+        if not 'raw' in definition or not 'type' in definition:
+            raise LDAPDefinitionError('invalid JSON for DSE info')
+
         if CASE_INSENSITIVE_SCHEMA_NAMES:
             attributes = CaseInsensitiveDict()
         else:
             attributes = dict()
 
         if schema:
-            for attribute in raw_attributes['raw_info']:
-                attributes[attribute] = format_attribute_values(raw_attributes['raw_info'][attribute], schema, custom_formatter)
+            for attribute in definition['raw']:
+                attributes[attribute] = format_attribute_values(definition['raw'][attribute], schema, custom_formatter)
         else:
-            for attribute in raw_attributes['raw_info']:
-                attributes[attribute] = str(raw_attributes['raw_info'][attribute])
+            for attribute in definition['raw']:
+                attributes[attribute] = str(definition['raw'][attribute])
 
-        return cls(attributes, raw_attributes)
+        if definition['type'] == 'DsaInfo':
+            return DsaInfo(attributes, definition)
+        elif definition['type'] == 'SchemaInfo':
+            if not 'schema_entry' in definition:
+                raise LDAPDefinitionError('invalid schema in JSON')
+            return SchemaInfo(definition['schema_entry'], attributes, definition)
+
+        raise LDAPDefinitionError('invalid Info type ' + str(definition['type']) + ' in JSON definition')
+
 
     @classmethod
     def from_file(cls, target):
@@ -145,10 +156,20 @@ class BaseServerInfo(object):
         return self.__repr__()
 
     def to_json(self, indent=4, sort=True):
-        return json.dumps(dict(raw_info=self.raw), sort_keys=sort, indent=indent, check_circular=True, default=format_unicode)
+        json_dict = dict()
+        json_dict['type'] = self.__class__.__name__
+        json_dict['raw'] = self.raw
 
+        if isinstance(self, SchemaInfo):
+            json_dict['schema_entry'] = self.schema_entry
+        elif isinstance(self, DsaInfo):
+            pass
+        else:
+            raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
-class DsaServerInfo(BaseServerInfo):
+        return json.dumps(json_dict, sort_keys=sort, indent=indent, check_circular=True, default=format_unicode)
+
+class DsaInfo(BaseServerInfo):
     """
     This class contains info about the ldap server (DSA) read from DSE
     as defined in RFC4512 and RFC3045. Unknown attributes are stored in the "other" dict
@@ -166,7 +187,7 @@ class DsaServerInfo(BaseServerInfo):
         self.vendor_name = attributes.pop('vendorName', None)
         self.vendor_version = attributes.pop('vendorVersion', None)
         self.schema_entry = attributes.pop('subschemaSubentry', None)
-        self.other = attributes
+        self.other = attributes  # remaining schema definition attributes not in RFC4512
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
@@ -188,7 +209,7 @@ class DsaServerInfo(BaseServerInfo):
         return r
 
 
-class SchemaServerInfo(BaseServerInfo):
+class SchemaInfo(BaseServerInfo):
     """
     This class contains info about the ldap server schema read from an entry (default entry is DSE)
     as defined in RFC4512. Unknown attributes are stored in the "other" dict

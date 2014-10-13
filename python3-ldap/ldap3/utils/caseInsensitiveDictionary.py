@@ -29,9 +29,9 @@ import json
 
 class CaseInsensitiveDict(collections.MutableMapping):
     if bytes == str:  # python2
-        case_insensitive_types = (str, unicode)
+        _case_insensitive_types = (str, unicode)
     else:  # python3
-        case_insensitive_types = (str,)
+        _case_insensitive_types = (str,)
 
     def __init__(self, other=None, **kwargs):
         self._store = dict()
@@ -41,9 +41,9 @@ class CaseInsensitiveDict(collections.MutableMapping):
             self.update(other, **kwargs)
 
     def _getkey(self, key):
-        if isinstance(key, CaseInsensitiveDict.case_insensitive_types):
+        if isinstance(key, CaseInsensitiveDict._case_insensitive_types):
             for stored_key in self._store:
-                if isinstance(stored_key, CaseInsensitiveDict.case_insensitive_types):
+                if isinstance(stored_key, CaseInsensitiveDict._case_insensitive_types):
                     if key.lower() == stored_key.lower():
                         key = stored_key
                         break

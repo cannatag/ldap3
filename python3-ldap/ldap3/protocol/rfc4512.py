@@ -124,7 +124,7 @@ class BaseServerInfo(object):
                 attributes[attribute] = format_attribute_values(definition['raw'][attribute], schema, custom_formatter)
         else:
             for attribute in definition['raw']:
-                attributes[attribute] = str(definition['raw'][attribute])
+                attributes[attribute] = definition['raw'][attribute]
 
         if definition['type'] == 'DsaInfo':
             return DsaInfo(attributes, definition)
@@ -137,11 +137,11 @@ class BaseServerInfo(object):
 
 
     @classmethod
-    def from_file(cls, target):
+    def from_file(cls, target, schema=None, custom_formatter=None):
         if isinstance(target, str):
             target = open(target, 'r')
 
-        new = cls.from_json(target.read())
+        new = cls.from_json(target.read(), schema=schema, custom_formatter=custom_formatter)
         target.close()
         return new
 
@@ -191,14 +191,46 @@ class DsaInfo(BaseServerInfo):
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
-        r += ('  Supported LDAP Versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions]) + linesep) if self.supported_ldap_versions else ''
-        r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts]) + linesep) if self.naming_contexts else ''
-        r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers]) + linesep) if self.alt_servers else ''
-        r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls]) + linesep) if self.supported_controls else ''
-        r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions]) + linesep) if self.supported_extensions else ''
-        r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features]) + linesep) if self.supported_features else ''
-        r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms]) + linesep) if self.supported_sasl_mechanisms else ''
-        r += ('  Schema Entry:' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry]) + linesep) if self.schema_entry else ''
+        if isinstance(self.supported_ldap_versions, (list, tuple)):
+            r += ('  Supported LDAP Versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions]) + linesep) if self.supported_ldap_versions else ''
+        else:
+            r += ('  Supported LDAP Versions: ' + str(self.supported_ldap_versions))
+
+        if isinstance(self.naming_contexts, (list, tuple)):
+            r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts]) + linesep) if self.naming_contexts else ''
+        else:
+            r += ('  Naming Contexts:' + str(self.naming_contexts))
+
+        if isinstance(self.alt_servers, (list, tuple)):
+            r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers]) + linesep) if self.alt_servers else ''
+        else:
+            r += ('  Alternative Servers:' + str(self.alt_servers))
+
+        if isinstance(self.supported_controls, (list, tuple)):
+            r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls]) + linesep) if self.supported_controls else ''
+        else:
+            r += ('  Supported Controls:' + str(self.supported_controls))
+
+        if isinstance(self.supported_extensions, (list, tuple)):
+            r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions]) + linesep) if self.supported_extensions else ''
+        else:
+            r += ('  Supported Extensions:' + str(self.supported_extensions))
+
+        if isinstance(self.supported_features, (list, tuple)):
+            r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features]) + linesep) if self.supported_features else ''
+        else:
+            r += ('  Supported Features:' + str(self.supported_features))
+
+        if isinstance(self.supported_sasl_mechanisms, (list, tuple)):
+            r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms]) + linesep) if self.supported_sasl_mechanisms else ''
+        else:
+            r += ('  Supported SASL Mechanisms:' + str(self.supported_sasl_mechanisms))
+
+        if isinstance(self.schema_entry, (list, tuple)):
+            r += ('  Schema Entry:' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry]) + linesep) if self.schema_entry else ''
+        else:
+            r += ('  Schema Entry:' + str(self.schema_entry))
+
         r += 'Other:' + linesep
         for k, v in self.other.items():
             r += '  ' + k + ': ' + linesep
@@ -232,14 +264,46 @@ class SchemaInfo(BaseServerInfo):
 
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry + linesep
-        r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attribute_types[s]) for s in self.attribute_types]) + linesep) if self.attribute_types else ''
-        r += ('  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes]) + linesep) if self.object_classes else ''
-        r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules]) + linesep) if self.matching_rules else ''
-        r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matching_rule_uses[s]) for s in self.matching_rule_uses]) + linesep) if self.matching_rule_uses else ''
-        r += ('  DIT content rule:' + linesep + '    ' + ', '.join([str(self.dit_content_rules[s]) for s in self.dit_content_rules]) + linesep) if self.dit_content_rules else ''
-        r += ('  DIT structure rule:' + linesep + '    ' + ', '.join([str(self.dit_structure_rules[s]) for s in self.dit_structure_rules]) + linesep) if self.dit_structure_rules else ''
-        r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.name_forms[s]) for s in self.name_forms]) + linesep) if self.name_forms else ''
-        r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldap_syntaxes[s]) for s in self.ldap_syntaxes]) + linesep) if self.ldap_syntaxes else ''
+        if isinstance(self.attribute_types, (list, tuple)):
+            r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attribute_types[s]) for s in self.attribute_types]) + linesep) if self.attribute_types else ''
+        else:
+            r += ('  Attribute types:' + str(self.attribute_types))
+
+        if isinstance(self.object_classes, (list, tuple)):
+            r += ('  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes]) + linesep) if self.object_classes else ''
+        else:
+            r += ('  Object classes:' + str(self.object_classes))
+
+        if isinstance(self.matching_rules, (list, tuple)):
+            r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules]) + linesep) if self.matching_rules else ''
+        else:
+            r += ('  Matching rules:' + str(self.matching_rules))
+
+        if isinstance(self.matching_rule_uses, (list, tuple)):
+            r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matching_rule_uses[s]) for s in self.matching_rule_uses]) + linesep) if self.matching_rule_uses else ''
+        else:
+            r += ('  Matching rule uses:' + str(self.matching_rule_uses))
+
+        if isinstance(self.dit_content_rules, (list, tuple)):
+            r += ('  DIT content rules:' + linesep + '    ' + ', '.join([str(self.dit_content_rules[s]) for s in self.dit_content_rules]) + linesep) if self.dit_content_rules else ''
+        else:
+            r += ('  DIT content rules:' + str(self.dit_content_rules))
+
+        if isinstance(self.dit_structure_rules, (list, tuple)):
+            r += ('  DIT structure rules:' + linesep + '    ' + ', '.join([str(self.dit_structure_rules[s]) for s in self.dit_structure_rules]) + linesep) if self.dit_structure_rules else ''
+        else:
+            r += ('  DIT structure rules:' + str(self.dit_structure_rules))
+
+        if isinstance(self.name_forms, (list, tuple)):
+            r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.name_forms[s]) for s in self.name_forms]) + linesep) if self.name_forms else ''
+        else:
+            r += ('  Name forms:' + str(self.name_forms))
+
+        if isinstance(self.ldap_syntaxes, (list, tuple)):
+            r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldap_syntaxes[s]) for s in self.ldap_syntaxes]) + linesep) if self.ldap_syntaxes else ''
+        else:
+            r += ('  LDAP syntaxes:' + str(self.ldap_syntaxes))
+
         r += 'Other:' + linesep
 
         for k, v in self.other.items():

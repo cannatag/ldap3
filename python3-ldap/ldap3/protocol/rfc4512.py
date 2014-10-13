@@ -26,6 +26,7 @@
 from os import linesep
 import re
 import json
+from base64 import b64encode, b64decode
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
 from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
@@ -33,6 +34,27 @@ from ..protocol.convert import format_unicode, format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError
 
+def _json_hook(object):
+    if hasattr(object, 'keys') and len(object.keys()) == 3 and 'encoding' in object.keys() and 'type' in object.keys() and 'encoded' in object.keys():
+        if object['type'] == 'bytes':
+            return b64decode(object['encoded'])
+        else:
+            raise LDAPDefinitionError('unknown type ' + str(object['type']) + ' in JSON definition')
+
+    return object
+
+def _format_json(object):
+    print(type(object))
+    try:
+        if str != bytes:  # python3
+            return str(object, 'utf-8', errors='strict')
+        else:
+            return unicode(object, 'utf-8', errors='strict')
+    except (TypeError, UnicodeDecodeError):
+        try:
+            return dict(encoding='base64', encoded=b64encode(object), type=type(object).__name__)
+        except:
+            raise LDAPDefinitionError('unable to encode ' + str(object))
 
 def constant_to_class_kind(value):
     if value == CLASS_STRUCTURAL:
@@ -110,7 +132,7 @@ class BaseServerInfo(object):
 
     @classmethod
     def from_json(cls, json_definition, schema=None, custom_formatter=None):
-        definition = json.loads(json_definition)
+        definition = json.loads(json_definition, object_hook=_json_hook)
         if not 'raw' in definition or not 'type' in definition:
             raise LDAPDefinitionError('invalid JSON for DSE info')
 
@@ -167,7 +189,7 @@ class BaseServerInfo(object):
         else:
             raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
-        return json.dumps(json_dict, sort_keys=sort, indent=indent, check_circular=True, default=format_unicode)
+        return json.dumps(json_dict, sort_keys=sort, indent=indent, check_circular=True, default=_format_json)
 
 class DsaInfo(BaseServerInfo):
     """
@@ -307,7 +329,7 @@ class SchemaInfo(BaseServerInfo):
         r += 'Other:' + linesep
 
         for k, v in self.other.items():
-            r += '  ' + k + ': ' + linesep
+            r += '  ' + str(k) + ': ' + linesep
             r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else v
             r += linesep
         return r

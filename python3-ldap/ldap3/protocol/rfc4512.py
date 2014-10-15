@@ -29,6 +29,7 @@ import json
 from base64 import b64encode, b64decode
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
+from ldap3.utils.conv import escape_bytes
 from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
 from ..protocol.convert import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
@@ -191,7 +192,7 @@ class BaseServerInfo(object):
         else:
             raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
-        return '\n'.join([json_line.rstrip() for json_line in json.dumps(json_dict, sort_keys=sort, indent=indent, check_circular=True, default=_format_json).splitlines()])  # remove unneeded traling space
+        return '\n'.join([json_line.rstrip() for json_line in json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=_format_json).splitlines()])  # remove unneeded traling spaces in python2.7 json package
 
 
 class DsaInfo(BaseServerInfo):
@@ -258,11 +259,12 @@ class DsaInfo(BaseServerInfo):
 
         r += 'Other:' + linesep
         for k, v in self.other.items():
-            r += '  ' + k + ': ' + linesep
-            if isinstance(v, (list, tuple)):
-                r += linesep.join(['    ' + str(s) for s in v]) + linesep
-            else:
-                r += v + linesep
+            r += '  ' + str(k) + ': ' + linesep
+            try:
+                r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else str(v)
+            except UnicodeDecodeError:
+                r += (linesep.join(['    ' + str(escape_bytes(s)) for s in v])) if isinstance(v, (list, tuple)) else str(escape_bytes(v))
+            r += linesep
         return r
 
 
@@ -333,7 +335,10 @@ class SchemaInfo(BaseServerInfo):
 
         for k, v in self.other.items():
             r += '  ' + str(k) + ': ' + linesep
-            r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else v
+            try:
+                r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else str(v)
+            except UnicodeDecodeError:
+                r += (linesep.join(['    ' + str(escape_bytes(s)) for s in v])) if isinstance(v, (list, tuple)) else str(escape_bytes(v))
             r += linesep
         return r
 

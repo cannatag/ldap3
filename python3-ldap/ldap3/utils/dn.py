@@ -135,7 +135,7 @@ def split_ava(ava, escape=False, strip=True):
     equal = ava.find('=')
     while equal > 0:  # not first character
         if ava[equal - 1] != '\\':  # not an escaped equal so it must be an ava separator
-            attribute_type = ava[0:equal].strip() if strip else ava[0:equal]
+            # attribute_type1 = ava[0:equal].strip() if strip else ava[0:equal]
             if strip:
                 attribute_type = ava[0:equal].strip()
                 attribute_value = escape_attribute_value(ava[equal + 1:].strip()) if escape else ava[equal + 1:].strip()

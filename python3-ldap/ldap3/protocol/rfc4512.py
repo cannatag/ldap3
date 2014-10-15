@@ -30,31 +30,34 @@ from base64 import b64encode, b64decode
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
 from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
-from ..protocol.convert import format_unicode, format_attribute_values
+from ..protocol.convert import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError
 
-def _json_hook(object):
-    if hasattr(object, 'keys') and len(object.keys()) == 3 and 'encoding' in object.keys() and 'type' in object.keys() and 'encoded' in object.keys():
-        if object['type'] == 'bytes':
-            return b64decode(object['encoded'])
+
+def _json_hook(obj):
+    if hasattr(obj, 'keys') and len(obj.keys()) == 3 and 'encoding' in obj.keys() and 'type' in obj.keys() and 'encoded' in obj.keys():
+        if obj['type'] == 'bytes':
+            return b64decode(obj['encoded'])
         else:
-            raise LDAPDefinitionError('unknown type ' + str(object['type']) + ' in JSON definition')
+            raise LDAPDefinitionError('unknown type ' + str(obj['type']) + ' in JSON definition')
 
-    return object
+    return obj
 
-def _format_json(object):
-    print(type(object))
+
+def _format_json(obj):
+    print(type(obj))
     try:
         if str != bytes:  # python3
-            return str(object, 'utf-8', errors='strict')
+            return str(obj, 'utf-8', errors='strict')
         else:
-            return unicode(object, 'utf-8', errors='strict')
+            return unicode(obj, 'utf-8', errors='strict')
     except (TypeError, UnicodeDecodeError):
         try:
-            return dict(encoding='base64', encoded=b64encode(object), type=type(object).__name__)
+            return dict(encoding='base64', encoded=b64encode(obj), type=type(obj).__name__)
         except:
-            raise LDAPDefinitionError('unable to encode ' + str(object))
+            raise LDAPDefinitionError('unable to encode ' + str(obj))
+
 
 def constant_to_class_kind(value):
     if value == CLASS_STRUCTURAL:
@@ -157,7 +160,6 @@ class BaseServerInfo(object):
 
         raise LDAPDefinitionError('invalid Info type ' + str(definition['type']) + ' in JSON definition')
 
-
     @classmethod
     def from_file(cls, target, schema=None, custom_formatter=None):
         if isinstance(target, str):
@@ -167,11 +169,11 @@ class BaseServerInfo(object):
         target.close()
         return new
 
-    def to_file(self, target):
+    def to_file(self, target, indent=4, sort=True):
         if isinstance(target, str):
             target = open(target, 'w+')
 
-        target.writelines(self.to_json())
+        target.writelines(self.to_json(indent, sort))
         target.close()
 
     def __str__(self):
@@ -189,7 +191,8 @@ class BaseServerInfo(object):
         else:
             raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
-        return json.dumps(json_dict, sort_keys=sort, indent=indent, check_circular=True, default=_format_json)
+        return '\n'.join([json_line.rstrip() for json_line in json.dumps(json_dict, sort_keys=sort, indent=indent, check_circular=True, default=_format_json).splitlines()])  # remove unneeded traling space
+
 
 class DsaInfo(BaseServerInfo):
     """

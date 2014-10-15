@@ -170,12 +170,12 @@ class BaseStrategy(object):
 
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)
-        except:
+        except Exception:
             pass
 
         try:
             self.connection.socket.close()
-        except:
+        except Exception:
             pass
 
         self.connection.socket = None

@@ -24,8 +24,10 @@
 # If not, see <http://www.gnu.org/licenses/>.
 import re
 
+
 class CertificateError(ValueError):  # fix for Python 2, code from Python 3.3 standard library
     pass
+
 
 def _dnsname_match_backport(dn, hostname, max_wildcards=1):
     """Matching according to RFC 6125, section 6.4.3

@@ -1,4 +1,4 @@
-edir_8_8_8_schema ="""
+edir_8_8_8_schema = """
 {
     "raw": {
         "attributeTypes": [

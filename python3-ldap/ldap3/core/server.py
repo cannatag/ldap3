@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
-import json
 from threading import Lock
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT
 from .exceptions import LDAPInvalidPort

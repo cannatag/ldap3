@@ -23,7 +23,6 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import re
 from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
 
 
@@ -204,6 +203,7 @@ class Tls(object):
 
         connection.tls_started = True
         return True
+
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()

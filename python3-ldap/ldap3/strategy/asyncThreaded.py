@@ -71,7 +71,7 @@ class AsyncThreadedStrategy(BaseStrategy):
                         data = self.connection.socket.recv(SOCKET_SIZE)
                     except (OSError, socket.error):
                         listen = False
-                    except Exception as e:
+                    except Exception:
                         raise  # unexpected exception - reraise
                     if len(data) > 0:
                         unprocessed += data

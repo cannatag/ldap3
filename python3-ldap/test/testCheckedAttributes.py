@@ -27,7 +27,6 @@ import unittest
 
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
-from ldap3.protocol.convert import format_time, OffsetTzInfo
 
 
 class Test(unittest.TestCase):
@@ -63,35 +62,6 @@ class Test(unittest.TestCase):
         else:  # python2
             self.assertTrue(isinstance(response[0]['attributes']['sn'][0], unicode))
         self.assertTrue(isinstance(response[0]['attributes']['loginGraceLimit'], int))
-
-    def test_format_time(self):
-        self.assertEqual(format_time(b'20140102030405Z'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(0, 'UTC')))
-        self.assertEqual(format_time(b'201401020304Z'), datetime(2014, 1, 2, 3, 4, 0, 0, OffsetTzInfo(0, 'UTC')))
-        self.assertEqual(format_time(b'2014010203Z'),  b'2014010203Z')
-        self.assertEqual(format_time(b'20140102030405'),  b'20140102030405')
-        self.assertEqual(format_time(b'201401020304'),  b'201401020304')
-        self.assertEqual(format_time(b'2014010203'),  b'2014010203')
-
-        self.assertEqual(format_time(b'20140102030405+01'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(60, 'UTC+01')))
-        self.assertEqual(format_time(b'201401020304+01'), datetime(2014, 1, 2, 3, 4, 0, 0, OffsetTzInfo(60, 'UTC+01')))
-        self.assertEqual(format_time(b'2014010203+01'),  b'2014010203+01')
-        self.assertEqual(format_time(b'20140102030405-01'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(-60, 'UTC-01')))
-        self.assertEqual(format_time(b'201401020304-01'), datetime(2014, 1, 2, 3, 4, 0, 0, OffsetTzInfo(-60, 'UTC-01')))
-        self.assertEqual(format_time(b'2014010203-01'),  b'2014010203-01')
-
-        self.assertEqual(format_time(b'20140102030405+0100'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(60, 'UTC+01')))
-        self.assertEqual(format_time(b'201401020304+0100'), datetime(2014, 1, 2, 3, 4, 0, 0, OffsetTzInfo(60, 'UTC+01')))
-        self.assertEqual(format_time(b'2014010203+0100'),  b'2014010203+0100')
-        self.assertEqual(format_time(b'20140102030405-0100'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(-60, 'UTC-01')))
-        self.assertEqual(format_time(b'201401020304-0100'), datetime(2014, 1, 2, 3, 4, 0, 0, OffsetTzInfo(-60, 'UTC-01')))
-        self.assertEqual(format_time(b'2014010203-0100'),  b'2014010203-0100')
-
-        self.assertEqual(format_time(b'20140102030405+0130'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(90, 'UTC+0130')))
-        self.assertEqual(format_time(b'201401020304+0130'), datetime(2014, 1, 2, 3, 4, 0, 0, OffsetTzInfo(90, 'UTC+0130')))
-        self.assertEqual(format_time(b'2014010203+0130'),  b'2014010203+0130')
-        self.assertEqual(format_time(b'20140102030405-0130'), datetime(2014, 1, 2, 3, 4, 5, 0, OffsetTzInfo(-90, 'UTC-0130')))
-        self.assertEqual(format_time(b'201401020304-0130'), datetime(2014, 1, 2, 3, 4, 0, 0, OffsetTzInfo(-90, 'UTC-0130')))
-        self.assertEqual(format_time(b'2014010203-0130'),  b'2014010203-0130')
 
     def test_custom_formatter(self):
         def to_upper(byte_value):

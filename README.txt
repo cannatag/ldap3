@@ -66,6 +66,7 @@ CHANGELOG
     - Added to_json() method to attributes when using caseInsensitiveDict (default)
     - Fixed matching of certificate name in ssl with Python2
     - Attributes names and formatters are checked even if schema is not read by the server
+    - Fixed fractional time when parsing generalized time
 
 * 0.9.5.4 2014.09.22
     - Fixed security issue in lazy connections (thanks Moritz)

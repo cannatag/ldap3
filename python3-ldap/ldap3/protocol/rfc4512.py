@@ -36,28 +36,49 @@ from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError
 
 
-def _json_hook(obj):
-    if hasattr(obj, 'keys') and len(obj.keys()) == 3 and 'encoding' in obj.keys() and 'type' in obj.keys() and 'encoded' in obj.keys():
-        if obj['type'] == 'bytes':
-            return b64decode(obj['encoded'])
+def json_encode_b64(obj):
+    try:
+        return dict(encoding='base64', encoded=b64encode(obj))
+    except:
+        raise LDAPDefinitionError('unable to encode ' + str(obj))
+
+
+def check_json_dict(json_dict):
+    for k, v in json_dict.items():
+        if isinstance(v, (dict, CaseInsensitiveDict)):
+            check_json_dict(v)
         else:
-            raise LDAPDefinitionError('unknown type ' + str(obj['type']) + ' in JSON definition')
+            if isinstance(v, (list, tuple)):
+                for index, element in enumerate(v):
+                    if isinstance(element, (dict, CaseInsensitiveDict)):
+                        check_json_dict(element)
+                    else:
+                        try:
+                            element.encode('utf-8')
+                        except (TypeError, UnicodeDecodeError):
+                            v[index] = json_encode_b64(element)
+            else:
+                try:
+                    v.encode('utf-8')
+                except (TypeError, UnicodeDecodeError):
+                    json_dict[k] = json_encode_b64(v)
+
+
+def _json_hook(obj):
+    if hasattr(obj, 'keys') and len(obj.keys()) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
+        return b64decode(obj['encoded'])
 
     return obj
 
 
 def _format_json(obj):
-    print(type(obj))
     try:
         if str != bytes:  # python3
             return str(obj, 'utf-8', errors='strict')
         else:
             return unicode(obj, 'utf-8', errors='strict')
     except (TypeError, UnicodeDecodeError):
-        try:
-            return dict(encoding='base64', encoded=b64encode(obj), type=type(obj).__name__)
-        except:
-            raise LDAPDefinitionError('unable to encode ' + str(obj))
+        return json_encode_b64(obj)
 
 
 def constant_to_class_kind(value):
@@ -192,7 +213,10 @@ class BaseServerInfo(object):
         else:
             raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
-        return '\n'.join([json_line.rstrip() for json_line in json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=_format_json).splitlines()])  # remove unneeded traling spaces in python2.7 json package
+        if str == bytes:
+           check_json_dict(json_dict)
+
+        return json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=_format_json, separators=(',', ': '))
 
 
 class DsaInfo(BaseServerInfo):
@@ -481,7 +505,7 @@ class BaseObjectInfo(object):
                     else:
                         raise LDAPSchemaError('malformed schema definition key:' + key)
                 object_def.raw_definition = object_definition
-                if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
+                if hasattr(object_def, 'syntax') and len(object_def.syntax) == 1:
                     object_def.syntax = object_def.syntax[0]
                     object_def.min_length = None
                     if object_def.syntax.endswith('}'):
@@ -492,11 +516,13 @@ class BaseObjectInfo(object):
                             pass
                     else:
                         object_def.min_length = None
+                    object_def.syntax = object_def.syntax.strip("'")
                 if hasattr(object_def, 'name') and object_def.name:
                     for name in object_def.name:
                         ret_dict[name] = object_def
                 else:
                     ret_dict[object_def.oid] = object_def
+
             else:
                 raise LDAPSchemaError('malformed schema definition')
         return ret_dict

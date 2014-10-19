@@ -843,6 +843,13 @@ Oids = {  # administrative role
           '2.16.840.1.113719.1.27.99.1': OidInfo('2.16.840.1.113719.1.27.99.1', OID_FEATURE, 'Superior References', 'NOVELL'),
 
           # ldap syntaxes
+          '1.2.840.113556.1.4.903': OidInfo('1.2.840.113556.1.4.903', OID_LDAP_SYNTAX, 'Object (DN-binary)', 'MICROSOFT'),
+          '1.2.840.113556.1.4.904': OidInfo('1.2.840.113556.1.4.904', OID_LDAP_SYNTAX, 'Object(DN-string)', 'MICROSOFT'),
+          '1.2.840.113556.1.4.905': OidInfo('1.2.840.113556.1.4.905', OID_LDAP_SYNTAX, 'String (Teletex)', 'MICROSOFT'),
+          '1.2.840.113556.1.4.906': OidInfo('1.2.840.113556.1.4.906', OID_LDAP_SYNTAX, 'Large Integer', 'MICROSOFT'),
+          '1.2.840.113556.1.4.907': OidInfo('1.2.840.113556.1.4.907', OID_LDAP_SYNTAX, 'String (NT-Sec-Desc)', 'MICROSOFT'),
+          '1.2.840.113556.1.4.1221': OidInfo('1.2.840.113556.1.4.1221', OID_LDAP_SYNTAX, 'Object (OR-Name)', 'MICROSOFT'),
+          '1.2.840.113556.1.4.1362': OidInfo('1.2.840.113556.1.4.1362', OID_LDAP_SYNTAX, 'String (Case)', 'MICROSOFT'),
           '1.3.6.1.1.16.1': OidInfo('1.3.6.1.1.16.1', OID_LDAP_SYNTAX, 'Universally Unique Identifier (UUID)', 'RFC4530'),
           '1.3.6.1.4.1.1466.115.121.1.1': OidInfo('1.3.6.1.4.1.1466.115.121.1.1', OID_LDAP_SYNTAX, 'ACI item [OBSOLETE]', 'RFC2252'),
           '1.3.6.1.4.1.1466.115.121.1.2': OidInfo('1.3.6.1.4.1.1466.115.121.1.2', OID_LDAP_SYNTAX, 'Access point [OBSOLETE]', 'RFC2252'),

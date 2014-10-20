@@ -224,7 +224,7 @@ def escape_attribute_value(attribute_value):
 
     state = STATE_ANY
     escaped = ''
-    buffer = ''
+    tmp_buffer = ''
     for c in attribute_value:
         if state == STATE_ANY:
             if c == '\\':
@@ -235,7 +235,7 @@ def escape_attribute_value(attribute_value):
                 escaped += c
         elif state == STATE_ESCAPE:
             if c in hexdigits:
-                buffer = c
+                tmp_buffer = c
                 state = STATE_ESCAPE_HEX
             elif c in ' "#+,;<=>\\\00':
                 escaped += '\\' + c
@@ -244,17 +244,17 @@ def escape_attribute_value(attribute_value):
                 escaped += '\\\\' + c
         elif state == STATE_ESCAPE_HEX:
             if c in hexdigits:
-                escaped += '\\' + buffer + c
+                escaped += '\\' + tmp_buffer + c
             else:
-                escaped += '\\\\' + buffer + c
-            buffer = ''
+                escaped += '\\\\' + tmp_buffer + c
+            tmp_buffer = ''
             state = STATE_ANY
 
     # final state
     if state == STATE_ESCAPE:
         escaped += '\\\\'
     elif state == STATE_ESCAPE_HEX:
-        escaped += '\\\\' + buffer
+        escaped += '\\\\' + tmp_buffer
 
     if escaped[0] == ' ':  # leading  SPACE must be escaped
         escaped = '\\' + escaped

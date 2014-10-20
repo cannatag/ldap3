@@ -25,10 +25,9 @@
 
 import socket
 from threading import Lock
-from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT
+from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
-from ldap3 import OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 

@@ -29,7 +29,7 @@ import json
 from base64 import b64encode, b64decode
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
-from ldap3.utils.conv import escape_bytes
+from ..utils.conv import escape_bytes
 from ..utils.caseInsensitiveDictionary import CaseInsensitiveDict
 from ..protocol.convert import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
@@ -168,7 +168,7 @@ class BaseServerInfo(object):
 
         if schema:
             for attribute in definition['raw']:
-                attributes[attribute] = format_attribute_values(definition['raw'][attribute], schema, custom_formatter)
+                attributes[attribute] = format_attribute_values(schema, attribute, definition['raw'][attribute], custom_formatter)
         else:
             for attribute in definition['raw']:
                 attributes[attribute] = definition['raw'][attribute]
@@ -214,7 +214,7 @@ class BaseServerInfo(object):
             raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
         if str == bytes:
-           check_json_dict(json_dict)
+            check_json_dict(json_dict)
 
         return json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=_format_json, separators=(',', ': '))
 
@@ -254,7 +254,7 @@ class DsaInfo(BaseServerInfo):
         if isinstance(self.alt_servers, (list, tuple)):
             r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers]) + linesep) if self.alt_servers else ''
         else:
-            r += ('  Alternative Servers:' + str(self.alt_servers))+ linesep
+            r += ('  Alternative Servers:' + str(self.alt_servers)) + linesep
 
         if isinstance(self.supported_controls, (list, tuple)):
             r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls]) + linesep) if self.supported_controls else ''

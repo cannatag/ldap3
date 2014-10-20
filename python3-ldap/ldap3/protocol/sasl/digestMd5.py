@@ -122,28 +122,28 @@ def decode_directives(directives_string):
 
     # old_directives = dict((attr[0], attr[1].strip('"')) for attr in [line.split('=') for line in directives_string.split(',')])
     state = STATE_KEY
-    buffer = ''
+    tmp_buffer = ''
     quoting = False
     key = ''
     directives = dict()
     for c in directives_string:
         if state == STATE_KEY and c == '=':
-            key = buffer
-            buffer = ''
+            key = tmp_buffer
+            tmp_buffer = ''
             state = STATE_VALUE
-        elif state == STATE_VALUE and c == '"' and not quoting and not buffer:
+        elif state == STATE_VALUE and c == '"' and not quoting and not tmp_buffer:
             quoting = True
         elif state == STATE_VALUE and c == '"' and quoting:
             quoting = False
         elif state == STATE_VALUE and c == ',' and not quoting:
-            directives[key] = buffer
-            buffer = ''
+            directives[key] = tmp_buffer
+            tmp_buffer = ''
             key = ''
             state = STATE_KEY
         else:
-            buffer += c
+            tmp_buffer += c
 
-    if key and buffer:
-        directives[key] = buffer
+    if key and tmp_buffer:
+        directives[key] = tmp_buffer
 
     return directives

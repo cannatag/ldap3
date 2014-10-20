@@ -236,6 +236,19 @@ def format_boolean(raw_value):
     return raw_value
 
 
+def format_ad_timestamp(raw_value):
+    """
+    The Active Directory stores date/time values as the number of 100-nanosecond intervals
+    that have elapsed since the 0 hour on January 1, 1601 till the date/time that is being stored.
+     The time is always stored in Greenwich Mean Time (GMT) in the Active Directory.
+    """
+    try:
+        timestamp = int(raw_value)
+        return datetime.fromtimestamp(timestamp / 10000000 - 11644473600, tz=OffsetTzInfo(0, 'UTC')
+        )
+    except:
+        return raw_value
+
 def format_time(raw_value):
     """
     """
@@ -375,19 +388,30 @@ def format_sid(raw_value):
     SubAuthority (variable): A variable length array of unsigned 32-bit integers that uniquely identifies a principal relative to the IdentifierAuthority. Its length is determined by SubAuthorityCount.
 
   """
-    print(len(raw_value), list(raw_value))
-    revision = int(raw_value[0])
-    sub_authority_count = int(raw_value[1])
-    identifier_authority = int(hexlify(raw_value[2:8]), 16)
-    if identifier_authority >= 4294967296:  # 2 ^ 32
-        identifier_authority = hex(identifier_authority)
+    if str != bytes:  # python 3
+        revision = int(raw_value[0])
+        sub_authority_count = int(raw_value[1])
+        identifier_authority = int.from_bytes(raw_value[2:8], byteorder='big')
+        if identifier_authority >= 4294967296:  # 2 ^ 32
+            identifier_authority = hex(identifier_authority)
 
-    sub_authority = ''
-    i = 0
-    while i < sub_authority_count:
-        sub_authority += '-' + str(int(hexlify(raw_value[11 + (i*4): 7 + (i*4): -1]), 16))  # little endian
-        i += 1
-    # print('S-' + str(revision) + '-' + str(identifier_authority) + sub_authority)
+        sub_authority = ''
+        i = 0
+        while i < sub_authority_count:
+            sub_authority += '-' + str(int.from_bytes(raw_value[8 + (i*4): 12 + (i*4)], byteorder='little'))  # little endian
+            i += 1
+    else:  # python 2
+        revision = int(ord(raw_value[0]))
+        sub_authority_count = int(ord(raw_value[1]))
+        identifier_authority = int(hexlify(raw_value[2:8]), 16)
+        if identifier_authority >= 4294967296:  # 2 ^ 32
+            identifier_authority = hex(identifier_authority)
+
+        sub_authority = ''
+        i = 0
+        while i < sub_authority_count:
+            sub_authority += '-' + str(int(hexlify(raw_value[11 + (i * 4): 7 + (i * 4): -1]), 16))  # little endian
+            i += 1
     return 'S-' + str(revision) + '-' + str(identifier_authority) + sub_authority
 
 
@@ -539,5 +563,15 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.25': format_unicode,  # Typed Name (Novell)
     'supportedldapversion': format_integer,  # supportedLdapVersion (Microsoft)
     'octetstring': format_binary, # octect string (Microsoft)
-    '1.2.840.113556.1.4.146': format_sid  # security id (Microsoft)
+    '1.2.840.113556.1.4.2': format_uuid_le,  # object guid (Microsoft)
+    '1.2.840.113556.1.4.13': format_ad_timestamp,  # builtinCreationTime (Microsoft)
+    '1.2.840.113556.1.4.26': format_ad_timestamp,  # creationTime (Microsoft)
+    '1.2.840.113556.1.4.49': format_ad_timestamp,  # badPasswordTime (Microsoft)
+    '1.2.840.113556.1.4.51': format_ad_timestamp,  # lastLogoff (Microsoft)
+    '1.2.840.113556.1.4.52': format_ad_timestamp,  # lastLogon (Microsoft)
+    '1.2.840.113556.1.4.96': format_ad_timestamp,  # pwdLastSet (Microsoft)
+    '1.2.840.113556.1.4.146': format_sid,  # objectSid (Microsoft)
+    '1.2.840.113556.1.4.159': format_ad_timestamp,  # accountExpires (Microsoft)
+    '1.2.840.113556.1.4.662': format_ad_timestamp,  # lockoutTime (Microsoft)
+    '1.2.840.113556.1.4.1696': format_ad_timestamp  # lastLogonTimestamp (Microsoft)
 }

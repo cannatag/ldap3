@@ -23,7 +23,7 @@
 import unittest
 
 from ldap3 import Server, Connection, GET_ALL_INFO, STRATEGY_REUSABLE_THREADED
-from ldap3.protocol.rfc4512 import SchemaServerInfo, ObjectClassInfo, AttributeTypeInfo
+from ldap3.protocol.rfc4512 import SchemaInfo, ObjectClassInfo, AttributeTypeInfo
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection, test_get_info
 
 
@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_schema(self):
-        self.assertTrue(type(self.server.schema), SchemaServerInfo)
+        self.assertTrue(type(self.server.schema), SchemaInfo)
 
     def test_object_classes(self):
         self.assertTrue(type(self.server.schema.object_classes['inetorgperson']), ObjectClassInfo)

@@ -244,10 +244,10 @@ def format_ad_timestamp(raw_value):
     """
     try:
         timestamp = int(raw_value)
-        return datetime.fromtimestamp(timestamp / 10000000 - 11644473600, tz=OffsetTzInfo(0, 'UTC')
-        )
-    except:
+        return datetime.fromtimestamp(timestamp / 10000000 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))
+    except Exception:
         return raw_value
+
 
 def format_time(raw_value):
     """
@@ -562,7 +562,7 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.23': format_unicode,  # Tagged Name (Novell)
     '2.16.840.1.113719.1.1.5.1.25': format_unicode,  # Typed Name (Novell)
     'supportedldapversion': format_integer,  # supportedLdapVersion (Microsoft)
-    'octetstring': format_binary, # octect string (Microsoft)
+    'octetstring': format_binary,  # octect string (Microsoft)
     '1.2.840.113556.1.4.2': format_uuid_le,  # object guid (Microsoft)
     '1.2.840.113556.1.4.13': format_ad_timestamp,  # builtinCreationTime (Microsoft)
     '1.2.840.113556.1.4.26': format_ad_timestamp,  # creationTime (Microsoft)

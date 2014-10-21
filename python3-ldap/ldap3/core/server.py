@@ -28,6 +28,7 @@ from threading import Lock
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
+from ..protocol.convert import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 
@@ -269,6 +270,12 @@ class Server(object):
                     results, _ = connection.get_response(result)
                     if len(results) == 1 and 'attributes' in results[0]:
                         self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], connection.response[0]['raw_attributes'])
+                if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
+                    for attribute in self._schema_info.other:
+                        self._schema_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._schema_info.raw[attribute], self.custom_formatter)
+                    if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
+                        for attribute in self._dsa_info.other:
+                            self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
 
     def get_info_from_server(self, connection):
         """

@@ -30,7 +30,7 @@ from base64 import b64encode, b64decode
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
 from ..utils.conv import escape_bytes
-from ..utils.caseInsDict import CaseInsensitiveDict
+from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.convert import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError

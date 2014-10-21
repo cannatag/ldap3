@@ -21,7 +21,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3.utils.caseInsDict import CaseInsensitiveDict
+from ldap3.utils.ciDict import CaseInsensitiveDict
 
 
 class Test(unittest.TestCase):

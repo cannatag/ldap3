@@ -1,0 +1,20 @@
+Errata ID: 1812
+
+Status: Verified
+Type: Editorial
+
+Reported By: Alexey Melnikov
+Date Reported: 2009-07-18
+Verifier Name: Sean Turner
+Date Verified: 2010-04-19
+Section 2.3 says:
+
+This profile specifies the following characters as prohibited input:
+
+It should say:
+
+This profile specifies the following characters as prohibited output:
+
+Notes:
+
+Per RFC 3454, the check for prohibited characters is done after the "Map" and "Normalize" steps. Characters listed here are actually allowed as inputs if they get removed by the "Map" or "Normalize" steps.

@@ -1,0 +1,102 @@
+Errata ID: 75
+
+Status: Rejected
+Type: Technical
+
+Reported By: Alfred Hoenes
+Date Reported: 2006-06-23
+Rejected by: Jim Sermersheim
+Date Rejected: 2006-07-03
+ 
+
+(2)  Typo
+
+Section 2, on page 4, contains the paragraph:
+                                        v
+|  The term "SASL layer" refers to Simply Authentication and Security
+   Layer (SASL) services used in providing security services, as well as
+   associations established by these services.
+
+It should say:
+                                        v
+|  The term "SASL layer" refers to Simple Authentication and Security
+   Layer (SASL) services used in providing security services, as well as
+   associations established by these services.
+
+
+(3)  Misrepresented relationship between ISO 10646 and Unicode
+
+Section 4.1.2 unfortunately has not corrected a misconception
+initially spelled out in RFC 2251.
+
+The first paragraph of Section 4.1.2, on page 7, says:
+
+   The LDAPString is a notational convenience to indicate that, although
+   strings of LDAPString type encode as ASN.1 OCTET STRING types, the
+|  [ISO10646] character set (a superset of [Unicode]) is used, encoded
+   following the UTF-8 [RFC3629] algorithm.  [...]
+
+The (..) enclosed note on the relationship of ISO 10646 and Unicode
+is *not* appropriate, as far as I know:
+
+Unicode covers exactly the same character repertoire as ISO 10646,
+but it *adds* a lot of *semantics* to ISO 10646.
+The character repertoire synchronization between ISO 10646 and
+Unicode is said to hold since 1993, and it is promised for all
+future updates.
+(Details can be found in Section 1.4 and Appendix C of
+The Unicode Standard (book and online version), verbatim
+identical in the Unicode 3.0 and Unicode 4.0 versions.)
+
+In particular, this congruence holds for Unicode 3.2.0
+(and the coordinated edition of ISO 10646) that has been
+made the invariable base for the new LDAP specs.
+
+Therefore, the above sentence should perhaps better be
+corrected to say:
+
+   The LDAPString is a notational convenience to indicate that, although
+   strings of LDAPString type encode as ASN.1 OCTET STRING types, the
+|  [ISO10646] character set (as detailed in [Unicode]) is used, encoded
+   following the UTF-8 [RFC3629] algorithm.  [...]
+
+(or similar).
+
+
+(4)  Typo (word omission)
+
+The 3rd paragraph of Section 4.2.2, on page 18, says:
+
+   If the client receives a BindResponse where the resultCode is set to
+   protocolError, it is to assume that the server does not support this
+|  version of LDAP.  While the client may be able proceed with another
+   version of this protocol (which may or may not require closing and
+   re-establishing the transport connection), how to proceed with
+   another version of this protocol is beyond the scope of this
+   document.  Clients that are unable or unwilling to proceed SHOULD
+   terminate the LDAP session.
+
+It should say:
+                                                 vvvv
+|            [...].  While the client may be able to proceed with
+   another version of this protocol (which may or may not require
+   closing and re-establishing the transport connection), how to proceed
+   with another version of this protocol is beyond the scope of this
+   document.  [...]
+
+
+Items (2)..(4) above might be considered for an Errata Note
+to be posted to the RFC Editor's "RFC Errata" web pages.
+I propose that you submit an Author's Errata Note, based on the
+material presented above, and/or choosing alternate text for (3).
+Notes:
+
+In any case, these items should be noted for future reference,
+whenever once another revision of these RFCs is to be produced,
+e.g., for advancement on the Standards Track.
+
+[note: (1) contained general comments and has been removed.]
+
+Author saving on file for possible revision.
+
+from pending

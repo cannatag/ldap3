@@ -1,0 +1,511 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ldap3.abstract package &mdash; python3-ldap 0.9.5.4 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.9.5.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python3-ldap 0.9.5.4 documentation" href="index.html" />
+    <link rel="up" title="ldap3 package" href="ldap3.html" />
+    <link rel="next" title="ldap3.compat package" href="ldap3.compat.html" />
+    <link rel="prev" title="ldap3 package" href="ldap3.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.compat.html" title="ldap3.compat package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ldap3.html" title="ldap3 package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >ldap3</a> &raquo;</li>
+          <li><a href="ldap3.html" accesskey="U">ldap3 package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ldap3-abstract-package">
+<h1>ldap3.abstract package<a class="headerlink" href="#ldap3-abstract-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ldap3.abstract.attrDef">
+<span id="ldap3-abstract-attrdef-module"></span><h2>ldap3.abstract.attrDef module<a class="headerlink" href="#module-ldap3.abstract.attrDef" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.abstract.attrDef.AttrDef">
+<em class="property">class </em><tt class="descclassname">ldap3.abstract.attrDef.</tt><tt class="descname">AttrDef</tt><big>(</big><em>name</em>, <em>key=None</em>, <em>validate=None</em>, <em>pre_query=None</em>, <em>post_query=None</em>, <em>default=None</em>, <em>dereference_dn=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/attrDef.html#AttrDef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.attrDef.AttrDef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Hold the definition of an attribute</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; the real attribute name</li>
+<li><strong>key</strong> (<em>string</em>) &#8211; the friendly name to use in queries and when accessing the attribute, default to the real attribute name</li>
+<li><strong>validate</strong> (<em>callable</em>) &#8211; called to check if the value in the query is valid, the callable is called with the value parameter</li>
+<li><strong>pre_query</strong> (<em>callable</em>) &#8211; called to transform values returned by search</li>
+<li><strong>post_query</strong> (<em>callable</em>) &#8211; called to transform values returned by search</li>
+<li><strong>default</strong> (<em>string, integer</em>) &#8211; value returned when the attribute is absent</li>
+<li><strong>dereference_dn</strong> (<em>ObjectDef</em>) &#8211; reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.abstract.attribute">
+<span id="ldap3-abstract-attribute-module"></span><h2>ldap3.abstract.attribute module<a class="headerlink" href="#module-ldap3.abstract.attribute" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.abstract.attribute.Attribute">
+<em class="property">class </em><tt class="descclassname">ldap3.abstract.attribute.</tt><tt class="descname">Attribute</tt><big>(</big><em>attr_def</em>, <em>entry</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/attribute.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.attribute.Attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Attribute/values object, it includes the search result (after post_query transformation) of each attribute in an entry</p>
+<p>Attribute object is read only</p>
+<ul class="simple">
+<li>values: contain the processed attribute values</li>
+<li>raw_values&#8217;: contain the unprocessed attribute values</li>
+</ul>
+<dl class="attribute">
+<dt id="ldap3.abstract.attribute.Attribute.value">
+<tt class="descname">value</tt><a class="reference internal" href="_modules/ldap3/abstract/attribute.html#Attribute.value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.attribute.Attribute.value" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The single value or a list of values of the attribute.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.abstract.entry">
+<span id="ldap3-abstract-entry-module"></span><h2>ldap3.abstract.entry module<a class="headerlink" href="#module-ldap3.abstract.entry" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.abstract.entry.Entry">
+<em class="property">class </em><tt class="descclassname">ldap3.abstract.entry.</tt><tt class="descname">Entry</tt><big>(</big><em>dn</em>, <em>reader</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/entry.html#Entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.entry.Entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>The Entry object contains a single entry from the result of an LDAP
+search.  Attributes can be accessed either by sequence, by assignment
+or as dictionary keys. Keys are not case sensitive.</p>
+<p>The Entry object is read only</p>
+<ul class="simple">
+<li>The DN is retrieved by get_entry_dn()</li>
+<li>The Reader reference is in get_entry_reader()</li>
+<li>Raw attributes values are retrieved by the get_raw_attributes() and
+get_raw_attribute() methods</li>
+</ul>
+<dl class="method">
+<dt id="ldap3.abstract.entry.Entry.get_entry_dn">
+<tt class="descname">get_entry_dn</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/entry.html#Entry.get_entry_dn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.entry.Entry.get_entry_dn" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The distinguished name of the Entry</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.entry.Entry.get_entry_reader">
+<tt class="descname">get_entry_reader</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/entry.html#Entry.get_entry_reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.entry.Entry.get_entry_reader" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the Reader object of the Entry</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.entry.Entry.get_raw_attribute">
+<tt class="descname">get_raw_attribute</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/entry.html#Entry.get_raw_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.entry.Entry.get_raw_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; name of the attribute</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">raw (unencoded) value of the attribute, None if attribute is not foound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.entry.Entry.get_raw_attributes">
+<tt class="descname">get_raw_attributes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/entry.html#Entry.get_raw_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.entry.Entry.get_raw_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The raw (unencoded) attributes of the Entry as bytes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.entry.Entry.refresh">
+<tt class="descname">refresh</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/entry.html#Entry.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.entry.Entry.refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-read the entry from the LDAP Server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the updated Entry attibutes values</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.abstract.objectDef">
+<span id="ldap3-abstract-objectdef-module"></span><h2>ldap3.abstract.objectDef module<a class="headerlink" href="#module-ldap3.abstract.objectDef" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.abstract.objectDef.ObjectDef">
+<em class="property">class </em><tt class="descclassname">ldap3.abstract.objectDef.</tt><tt class="descname">ObjectDef</tt><big>(</big><em>object_class=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/objectDef.html#ObjectDef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.objectDef.ObjectDef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.</p>
+<p>AttrDefs can be added and removed using the += ad -= operators</p>
+<p>ObjectDef can be accessed either as a sequence and a dictionary. When accessed the whole AttrDef instance is returned</p>
+<dl class="method">
+<dt id="ldap3.abstract.objectDef.ObjectDef.add">
+<tt class="descname">add</tt><big>(</big><em>definition=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/objectDef.html#ObjectDef.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.objectDef.ObjectDef.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an AttrDef to the ObjectDef. Can be called with the += operator.
+:param definition: the AttrDef object to add, can also be a string containing the name of attribute to add</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.objectDef.ObjectDef.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/objectDef.html#ObjectDef.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.objectDef.ObjectDef.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empty the ObjectDef attribute list</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.objectDef.ObjectDef.remove">
+<tt class="descname">remove</tt><big>(</big><em>item</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/objectDef.html#ObjectDef.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.objectDef.ObjectDef.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove an AttrDef from the ObjectDef. Can be called with the -= operator.
+:param item: the AttrDef to remove, can also be a string containing the name of attribute to remove</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.abstract.operationalAttribute">
+<span id="ldap3-abstract-operationalattribute-module"></span><h2>ldap3.abstract.operationalAttribute module<a class="headerlink" href="#module-ldap3.abstract.operationalAttribute" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.abstract.operationalAttribute.OperationalAttribute">
+<em class="property">class </em><tt class="descclassname">ldap3.abstract.operationalAttribute.</tt><tt class="descname">OperationalAttribute</tt><big>(</big><em>key</em>, <em>entry</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/operationalAttribute.html#OperationalAttribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.operationalAttribute.OperationalAttribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ldap3.abstract.attribute.Attribute" title="ldap3.abstract.attribute.Attribute"><tt class="xref py py-class docutils literal"><span class="pre">ldap3.abstract.attribute.Attribute</span></tt></a></p>
+<p>Operational attribute/values object. Include the search result of an
+operational attribute in an entry</p>
+<p>Attribute object is read only</p>
+<ul class="simple">
+<li>values: contains the processed attribute values</li>
+<li>raw_values: contains the unprocessed attribute values</li>
+</ul>
+<p>It doesn&#8217;t have any AttrDef</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.abstract.reader">
+<span id="ldap3-abstract-reader-module"></span><h2>ldap3.abstract.reader module<a class="headerlink" href="#module-ldap3.abstract.reader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ldap3.abstract.reader.Reader">
+<em class="property">class </em><tt class="descclassname">ldap3.abstract.reader.</tt><tt class="descname">Reader</tt><big>(</big><em>connection</em>, <em>object_def</em>, <em>query</em>, <em>base</em>, <em>components_in_and=True</em>, <em>sub_tree=True</em>, <em>get_operational_attributes=False</em>, <em>controls=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Reader object to perform searches:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>connection</strong> (<em>LDAPConnection</em>) &#8211; the LDAP connection object to use</li>
+<li><strong>object_def</strong> (<em>ObjectDef</em>) &#8211; the ObjectDef of the LDAP object returned</li>
+<li><strong>query</strong> (<em>str</em>) &#8211; the simplified query (will be transformed in an LDAP filter)</li>
+<li><strong>base</strong> (<em>str</em>) &#8211; starting base of the search</li>
+<li><strong>components_in_and</strong> (<em>bool</em>) &#8211; specify if assertions in the query mus be all satisfied or not (AND/OR)</li>
+<li><strong>sub_tree</strong> (<em>bool</em>) &#8211; specify if the search must be performed ad Single Level (False) or Whole SubTree (True)</li>
+<li><strong>get_operational_attributes</strong> (<em>bool</em>) &#8211; specify if operational attributes are returned or not</li>
+<li><strong>controls</strong> (<em>tuple</em>) &#8211; controls to be used in search</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the Reader search parameters</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.abstract.reader.Reader.components_in_and">
+<tt class="descname">components_in_and</tt><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.components_in_and"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.components_in_and" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.abstract.reader.Reader.definition">
+<tt class="descname">definition</tt><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.definition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.definition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ldap3.abstract.reader.Reader.query">
+<tt class="descname">query</tt><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear all the Reader parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search">
+<tt class="descname">search</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the LDAP search</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Entries found in search</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search_level">
+<tt class="descname">search_level</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the LDAP search operation with SINGLE_LEVEL scope</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Entries found in search</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search_object">
+<tt class="descname">search_object</tt><big>(</big><em>entry_dn=None</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the LDAP search operation SINGLE_OBJECT scope</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Entry found in search</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search_paged">
+<tt class="descname">search_paged</tt><big>(</big><em>paged_size</em>, <em>paged_criticality=True</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search_paged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search_paged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a paged search, can be called as an Iterator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>paged_size</strong> (<em>int</em>) &#8211; number of entries returned in each search</li>
+<li><strong>paged_criticality</strong> (<em>bool</em>) &#8211; specify if server must not execute the search if it is not capable of paging searches</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Entries found in search</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search_size_limit">
+<tt class="descname">search_size_limit</tt><big>(</big><em>size_limit</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search_size_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search_size_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the LDAP search with limit of entries found</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>size_limit</strong> &#8211; maximum number of entries returned</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Entries found in search</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search_subtree">
+<tt class="descname">search_subtree</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search_subtree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search_subtree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the LDAP search operation WHOLE_SUBTREE scope</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Entries found in search</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search_time_limit">
+<tt class="descname">search_time_limit</tt><big>(</big><em>time_limit</em><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search_time_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search_time_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the LDAP search with limit of time spent in searching by the server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>time_limit</strong> &#8211; maximum number of seconds to wait for a search</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Entries found in search</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ldap3.abstract.reader.Reader.search_types_only">
+<tt class="descname">search_types_only</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/ldap3/abstract/reader.html#Reader.search_types_only"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ldap3.abstract.reader.Reader.search_types_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the search returning attribute names only.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Entries found in search</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ldap3.abstract">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ldap3.abstract" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ldap3.abstract package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ldap3.abstract.attrDef">ldap3.abstract.attrDef module</a></li>
+<li><a class="reference internal" href="#module-ldap3.abstract.attribute">ldap3.abstract.attribute module</a></li>
+<li><a class="reference internal" href="#module-ldap3.abstract.entry">ldap3.abstract.entry module</a></li>
+<li><a class="reference internal" href="#module-ldap3.abstract.objectDef">ldap3.abstract.objectDef module</a></li>
+<li><a class="reference internal" href="#module-ldap3.abstract.operationalAttribute">ldap3.abstract.operationalAttribute module</a></li>
+<li><a class="reference internal" href="#module-ldap3.abstract.reader">ldap3.abstract.reader module</a></li>
+<li><a class="reference internal" href="#module-ldap3.abstract">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ldap3.html"
+                        title="previous chapter">ldap3 package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ldap3.compat.html"
+                        title="next chapter">ldap3.compat package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ldap3.abstract.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldap3.compat.html" title="ldap3.compat package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ldap3.html" title="ldap3 package"
+             >previous</a> |</li>
+        <li><a href="index.html">python3-ldap 0.9.5.4 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >ldap3</a> &raquo;</li>
+          <li><a href="ldap3.html" >ldap3 package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Giovanni Cannata.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

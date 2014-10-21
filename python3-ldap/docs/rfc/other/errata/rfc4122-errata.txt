@@ -1,0 +1,251 @@
+Status: Verified (5)
+RFC4122, "A Universally Unique IDentifier (UUID) URN Namespace", July 2005
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+
+Errata ID: 1352
+
+Status: Verified
+Type: Technical
+
+Reported By: Frank Ellermann
+Date Reported: 2008-03-08
+Verifier Name: Alexey Melnikov
+Date Verified: 2009-12-04
+
+In Appendix B, it says:
+
+uuid_create_md5_from_name(): e902893a-9d22-3c7e-a7b8-d6e313b71d9f
+
+It should say:
+
+uuid_create_md5_from_name(): 3d813cbb-47fb-32ba-91df-831e1593ac29
+
+Notes:
+
+The given value e902... etc. is based on a calculation swapping the eight octets 0..3, 4..5, 6..7 twice, for the name space UUID, and for the MD5 output, as foreseen for little endian input, but the example values were already big endian. I can reproduce the example and the proposed fix, see <http://omniplex.blogspot.com/2008/03/md5-16-pop3-and-uuid.html>.
+
+The blog entry contains links to an identical older error report, and two (different) examples from third parties also agreeing with that theory.
+
+Errata ID: 1428
+
+Status: Verified
+Type: Technical
+
+Reported By: Russ Housley
+Date Reported: 2008-05-22
+Verifier Name: Alexey Melnikov
+Date Verified: 2009-12-04
+
+Section 3 says:
+
+UUIDs, as defined in this document, can also be ordered lexicographically.
+For a pair of UUIDs, the first one follows the second if the most significant
+field in which the UUIDs differ is greater for the first UUID.  The second
+precedes the first if the most significant field in which the UUIDs differ
+is greater for the second UUID.
+
+It should say:
+
+UUIDs, as defined in this document, can also be ordered lexicographically.
+For a pair of UUIDs, the first one follows the second if the most significant
+field in which the UUIDs differ is greater for the first UUID.  The second
+follows the first if the most significant field in which the UUIDs differ
+is greater for the second UUID.
+
+Notes:
+
+The second and third sentences in the paragraph as originally written are
+inconsistent. I have proposed one of the possible fixes. There are others
+that will make them consistent.
+
+Errata ID: 3641
+
+Status: Verified
+Type: Technical
+
+Reported By: Douglas Ray
+Date Reported: 2013-06-06
+Verifier Name: Barry Leiba
+Date Verified: 2013-06-06
+
+Throughout the document, when it says:
+
+Advice on generating cryptographic-quality random numbers can be
+   found in RFC1750 [5].
+
+It should say:
+
+Advice on generating cryptographic-quality random numbers can be
+   found in RFC4086 [5].
+
+Notes:
+
+(Above sample is from section 4.5).
+References to RFC 1750 should currently refer to RFC 4086.
+(Likewise in Appendix A.)
+The note [5] actually references RFC4086, but this is the only
+point that is updated, ie, the document is inconsistent in its references.
+The references in Appendix A are not cross-referenced to note [5].
+
+------------------------ Verifier notes ------------------------
+This is correct: reference [5] was updated to point to 4086, but the text in the
+document body was not changed accordingly.
+
+Errata ID: 184
+
+Status: Verified
+Type: Editorial
+
+Reported By: Tim Wilson-Brown
+Date Reported: 2006-05-03
+Verifier Name: Alexey Melnikov
+Date Verified: 2009-12-04
+
+Section 4.3 says:
+
+The UUIDs generated from the same name in two different namespaces
+       should be different with (very high probability).
+
+It should say:
+
+The UUIDs generated from the same name in two different namespaces
+       should be different (with very high probability).
+
+Notes:
+
+The brackets should be set similarly to the other points.
+
+Errata ID: 3476
+
+Status: Verified
+Type: Editorial
+
+Reported By: Simon Kissane
+Date Reported: 2013-02-02
+Verifier Name: Barry Leiba
+Date Verified: 2013-02-03
+
+Section Appendix A,B says:
+
+In Appendix A, the line:
+    uuid_create_md5_from_name(&u, NameSpace_DNS, "www.widgets.com", 15);
+In Appendix B, the line:
+     uuid_create_md5_from_name(): e902893a-9d22-3c7e-a7b8-d6e313b71d9f
+
+It should say:
+
+In Appendix A, the line:
+    uuid_create_md5_from_name(&u, NameSpace_DNS, "www.example.com", 15);
+In Appendix B, the line:
+     uuid_create_md5_from_name(): 5df41881-3aed-3515-88a7-2f4a814cf09e
+
+Notes:
+
+Per RFC2606 section 5, it is best practice for standards and other documentation (including RFCs) to use the reserved example domains (e.g. example.com) rather than domains which could be in actual use. Indeed, the domain in question (www.widgets.com) is in actual use at the time of writing. So this proposed change uses "www.example.com" instead, and changes the example output accordingly. (Note that original output was wrong for the original input, as already noted in verified errata 1352.)
+Status: Held for Document Update (2)
+RFC4122, "A Universally Unique IDentifier (UUID) URN Namespace", July 2005
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+
+Errata ID: 3546
+
+Status: Held for Document Update
+Type: Technical
+
+Reported By: Askar Safin
+Date Reported: 2013-03-14
+Held for Document Update by: Barry Leiba
+Date Held: 2013-03-20
+
+Section 4.1.3 says:
+
+The version number is in the most significant 4 bits of the time
+stamp (bits 4 through 7 of the time_hi_and_version field).
+
+It should say:
+
+The version number is in the most significant 4 bits of the time
+stamp (bits 0 through 3 of the time_hi_and_version field).
+
+Notes:
+
+We use network order (as far as I know, we use network order in this RFC both for bits and bytes). So, the most significant bits comes first and they are located in first bytes. So, 0 through 3.
+
+---VERIFIER NOTES ---
+This erratum is correct as far as it goes, but, given other text in the RFC, so is erratum 1957. There is a pervasive problem in this RFC with inconsistent and unclear usage of bit numbering, which switches between several conventions. The diagram in Section 4.1.2 uses left-to-right bit numbering (the most significant bit is numbered 0), but much of the text (such as in Section 4.2.2) uses right-to-left bit numbering (the least significant bit is numbered 0). Most of the text uses big-ending byte order (network byte order), but some seems to assume little-ending, probably mistakes that come from the authors' familiarity with that convention.
+
+With respect to the text in question, the first sentence of Section 4.1.3, we have the following situation:
+
+- The original text is correct if we assume right-to-left bit numbering and little-endian byte order.
+
+- Erratum 1957 is correct if we assume right-to-left bit numbering and big-endian byte order. This change also makes the first sentence of Section 4.1.3 consistent with the sixth bullet in Section 4.2.2.
+
+- Erratum 3546 is correct if we assume left-to-right bit numbering and big-endian byte order.
+
+In the end, the real point is that this document needs a revision that carefully and thoroughly fixes every instance of byte numbering (or removes the byte numbering and refers only to "most significant" and "least significant"). Such a revision should also double-check the sample code in Appendix A to be sure it works in both big-ending and little-endian machines.
+
+Happily, it's not likely that misunderstandings here will cause actual interoperability problems: this isn't a situation where things need to be disassembled and reassembled. The algorithm merely turns a UUID into a URN, and the URN is thereafter a "black box", an unchanged identifier. The only issue would be whether different interpretations of the document would turn two different UUIDs into the same URN, and, given the number of bits involved, the likelihood of collisions in practice is small.
+
+Errata ID: 1957
+
+Status: Held for Document Update
+Type: Technical
+
+Reported By: Sergey Shandar
+Date Reported: 2009-12-03
+Held for Document Update by: Barry Leiba
+Date Held: 2013-03-20
+
+Section 4.1.3 says:
+
+The version number is in the most significant 4 bits of the time
+stamp (bits 4 through 7 of the time_hi_and_version field).
+
+It should say:
+
+The version number is in the most significant 4 bits of the time
+stamp (bits 12 through 15 of the time_hi_and_version field).
+
+Notes:
+
+time_hi_and_version is defined as 16 bit field.
+
+--- VERIFIER NOTES ---
+This change does make the text in Section 4.1.3 consistent with the sixth
+bullet in Section 4.2.2. But the issue goes well beyond that: there is a real
+problem with the bit numbering throughout the RFC. Please see erratum
+3546 for more details.
+Status: Rejected (1)
+RFC4122, "A Universally Unique IDentifier (UUID) URN Namespace", July 2005
+Source of RFC: IETF - NON WORKING GROUP
+Area Assignment: app
+
+Errata ID: 3970
+
+Status: Rejected
+Type: Technical
+
+Reported By: Jennifer Arsenault
+Date Reported: 2014-04-19
+Rejected by: Barry Leiba
+Date Rejected: 2014-05-07
+
+Section 4.1.3 says:
+
+The version number is in the most significant 4 bits of the time
+stamp (bits 4 through 7 of the time_hi_and_version field).
+
+It should say:
+
+The version number is in the most significant 4 bits of the
+time_hi_and_version field...
+
+Notes:
+
+Errata 1957 and 3546 refer to the inconsistent bit numbering. That is a separate issue and has been left out of this correction. This report is in reference to the use of "time stamp" vs "time_hi_and_version field". The version number does not replace the most significant 4 bits of the time stamp. The 4-bit version number is in addition to the 60-bit time stamp.
+--VERIFIER NOTES--
+This seems to be a misunderstanding of the meaning here:
+The time_hi_and_version field includes 4 bits for version, followed by the most significant 12 bits of the time stamp. Therefore, the most significant four bits of the time stamp *are* bits 4 thru 7 of the time_hi_and_version field.
+
+That said, this is all a confusing mess, and really could use a revision for clarity.

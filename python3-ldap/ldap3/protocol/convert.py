@@ -564,6 +564,7 @@ standard_formatter = {
     'supportedldapversion': format_integer,  # supportedLdapVersion (Microsoft)
     'octetstring': format_binary,  # octect string (Microsoft)
     '1.2.840.113556.1.4.2': format_uuid_le,  # object guid (Microsoft)
+    'objectGUID': format_uuid_le,  # object guid (Microsoft)
     '1.2.840.113556.1.4.13': format_ad_timestamp,  # builtinCreationTime (Microsoft)
     '1.2.840.113556.1.4.26': format_ad_timestamp,  # creationTime (Microsoft)
     '1.2.840.113556.1.4.49': format_ad_timestamp,  # badPasswordTime (Microsoft)

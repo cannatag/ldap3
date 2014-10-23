@@ -77,7 +77,7 @@ class Connection(newConnection):
         return newConnection.do_sasl_bind(self, controls)
 
     def refreshDsaInfo(self):
-        return newConnection.refresh_dsa_info(self)
+        return newConnection.refresh_server_info(self)
 
     def responseToLdif(self, searchResult=None, allBase64=False):
         return newConnection.response_to_ldif(self, searchResult, allBase64)

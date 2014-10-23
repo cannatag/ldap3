@@ -128,19 +128,13 @@ class AsyncThreadedStrategy(BaseStrategy):
         self.receiver = None
         self.lock = Lock()
 
-    def open(self, reset_usage=True):
+    def open(self, reset_usage=True, read_server_info=True):
         """
         Open connection and start listen on the socket in a different thread
         """
         with self.lock:
-            BaseStrategy.open(self, reset_usage=True)
             self._responses = dict()
-
-        try:
-            self.connection.refresh_dsa_info()
-        except LDAPOperationResult:  # catch errors from server if raise_exception = True
-            self.connection.server._dsa_info = None
-            self.connection.server._schema_info = None
+            BaseStrategy.open(self, reset_usage, read_server_info)
 
     def close(self):
         """

@@ -232,7 +232,10 @@ class Server(object):
         """
         schema_entry = None
         if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
-            schema_entry = self._dsa_info.schema_entry[0] if self._dsa_info.schema_entry else None
+            if isinstance(self._dsa_info.schema_entry, (list, tuple)):
+                schema_entry = self._dsa_info.schema_entry[0] if self._dsa_info.schema_entry else None
+            else:
+                schema_entry = self._dsa_info.schema_entry if self._dsa_info.schema_entry else None
         else:
             result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request

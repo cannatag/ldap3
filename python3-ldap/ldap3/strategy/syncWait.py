@@ -48,13 +48,9 @@ class SyncWaitStrategy(BaseStrategy):
         self.pooled = False
         self.can_stream = False
 
-    def open(self, reset_usage=True):
-        BaseStrategy.open(self, reset_usage)
-        try:
-            self.connection.refresh_dsa_info()
-        except LDAPOperationResult:  # catch errors from server if raise_exception = True
-            self.connection.server._dsa_info = None
-            self.connection.server._schema_info = None
+    def open(self, reset_usage=True, read_server_info=True):
+        BaseStrategy.open(self, reset_usage, read_server_info)
+
 
     def _start_listen(self):
         if not self.connection.listening and not self.connection.closed:

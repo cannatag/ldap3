@@ -340,7 +340,7 @@ class Connection(object):
             self._deferred_bind = False
             self._bind_controls = None
             if self.closed:  # try to open connection if closed
-                self.open()
+                self.open(read_server_info=False)
             if self.authentication == AUTH_ANONYMOUS:
                 request = bind_operation(self.version, self.authentication, '', '')
                 response = self.post_send_single_response(self.send('bindRequest', request, controls))
@@ -371,7 +371,7 @@ class Connection(object):
                 self.last_error = result['description']
 
             if self.bound and not self.strategy.pooled:
-                self.refresh_dsa_info()
+                self.refresh_server_info()
 
         return self.bound
 
@@ -637,7 +637,7 @@ class Connection(object):
         else:
             self._deferred_start_tls = False
             if self.server.tls.start_tls(self):
-                self.refresh_dsa_info()  # refresh server info as per RFC4515 (3.1.5)
+                self.refresh_server_info()  # refresh server info as per RFC4515 (3.1.5)
                 return True
 
         return False
@@ -656,7 +656,7 @@ class Connection(object):
 
         return response
 
-    def refresh_dsa_info(self):
+    def refresh_server_info(self):
         if not self.closed:
             previous_response = self.response
             previous_result = self.result

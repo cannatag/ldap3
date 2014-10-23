@@ -429,7 +429,6 @@ def format_attribute_values(schema, name, values, custom_formatter):
     Attributes defined as SINGLE_VALUE in schema are returned as a single object, otherwise are returned as a list of object
     Formatter functions can return any kind of object
     """
-
     formatter = None
     if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
         attr_type = schema.attribute_types[name.lower()]

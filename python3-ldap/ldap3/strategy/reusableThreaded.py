@@ -249,7 +249,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         else:
             raise LDAPConnectionPoolNameIsMandatoryError('reusable connection must have a pool_name')
 
-    def open(self, reset_usage=True):
+    def open(self, reset_usage=True, read_server_info=True):
         self.pool.open_pool = True
         self.pool.start_pool()
         self.connection.closed = False

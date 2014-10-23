@@ -529,7 +529,7 @@ class LDAPMaximumRetriesError(LDAPExceptionError):
                 if len(self.args) > 0:
                     print('Error: ' + self.args[0])
                 if len(self.args) > 1:
-                    print('Exceptions history:')
+                    print('Exception history:')
                     for i, exc in enumerate(self.args[1]):  # args[1] contains exception history
                         print(str(i).rjust(5), str(exc[0]), ':', exc[1], '-', exc[2])
                 if len(self.args) > 2:

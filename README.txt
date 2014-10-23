@@ -60,6 +60,7 @@ CHANGELOG
 * 0.9.6 2014.10.09
     - New exception hierarchy LDAPConfigurationError includes library configuration exceptions
     - New exception LDAPInvalidConfigurationDefinitionError
+    - info and schema are not read twice anymore when binding (thanks phobie)
     - LDAPStartTLSError exception is merged with exception raised from ssl packaged
     - Digest-MD5 SASL authentication accepts directives with list attributes (thanks John)
     - Fixed caseInsensitiveDictionary for keys() and values() methods

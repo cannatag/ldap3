@@ -51,8 +51,8 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         self._restart_tls = None
         self.exception_history = []
 
-    def open(self, reset_usage=False):
-        SyncWaitStrategy.open(self, reset_usage)
+    def open(self, reset_usage=False, read_server_info=True):
+        SyncWaitStrategy.open(self, reset_usage, read_server_info)
 
     def _open_socket(self, use_ssl=False):
         """

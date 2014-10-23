@@ -505,7 +505,7 @@ class BaseObjectInfo(object):
                     else:
                         raise LDAPSchemaError('malformed schema definition key:' + key)
                 object_def.raw_definition = object_definition
-                if hasattr(object_def, 'syntax') and len(object_def.syntax) == 1:
+                if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
                     object_def.syntax = object_def.syntax[0]
                     object_def.min_length = None
                     if object_def.syntax.endswith('}'):

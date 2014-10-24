@@ -94,13 +94,6 @@ class BaseStrategy(object):
             self.connection._deferred_open = False
             self._start_listen()
 
-            if not self.no_real_dsa and read_server_info:
-                try:
-                    self.connection.refresh_server_info()
-                except LDAPOperationResult:  # catch errors from server if raise_exception = True
-                    self.connection.server._dsa_info = None
-                    self.connection.server._schema_info = None
-
     def close(self):
         """
         Close connection

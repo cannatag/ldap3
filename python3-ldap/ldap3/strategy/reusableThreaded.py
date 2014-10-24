@@ -184,6 +184,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                                 pool._incoming[counter] = (exc, None)
                             else:
                                 pool._incoming[counter] = (response, result)
+
                 self.original_connection.busy = False
                 pool.request_queue.task_done()
             if self.original_connection.usage:
@@ -292,6 +293,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                         self.pool.counter = 1
                     counter = self.pool.counter
                 self.pool.request_queue.put((counter, message_type, request, controls))
+
             return counter
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
@@ -308,6 +310,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             try:
                 with self.connection.strategy.pool.lock:
                     response, result = self.connection.strategy.pool._incoming.pop(counter)
+
             except KeyError:
                 sleep(RESPONSE_SLEEPTIME)
                 timeout -= RESPONSE_SLEEPTIME

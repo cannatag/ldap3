@@ -98,7 +98,6 @@ class AsyncThreadedStrategy(BaseStrategy):
                             self.connection.last_error = 'asynchronous StartTls failed'
                             raise LDAPStartTLSError(self.connection.last_error)
                     if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-
                         with self.connection.strategy.lock:
                             if message_id in self.connection.strategy._responses:
                                 self.connection.strategy._responses[message_id].append(dict_response)
@@ -135,6 +134,13 @@ class AsyncThreadedStrategy(BaseStrategy):
         with self.lock:
             self._responses = dict()
             BaseStrategy.open(self, reset_usage, read_server_info)
+
+        if read_server_info:
+            try:
+                self.connection.refresh_server_info()
+            except LDAPOperationResult:  # catch errors from server if raise_exception = True
+                self.connection.server._dsa_info = None
+                self.connection.server._schema_info = None
 
     def close(self):
         """

@@ -208,7 +208,6 @@ class Server(object):
             Server._message_counter += 1
             if Server._message_counter >= LDAP_MAX_INT:
                 Server._message_counter = 1
-
         return Server._message_counter
 
     def _get_dsa_info(self, connection):
@@ -222,8 +221,8 @@ class Server(object):
                 self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
             elif result:  # async request, must check if attributes in response
                 results, _ = connection.get_response(result)
-                if len(results) == 1 and 'attributes' in results[0]:
-                    self._dsa_info = DsaInfo(results[0]['attributes'], connection.response[0]['raw_attributes'])
+                if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
+                    self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
 
     def _get_schema_info(self, connection, entry=''):
         """
@@ -263,7 +262,6 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-
         with self.lock:
             self._schema_info = None
             if result:
@@ -271,8 +269,8 @@ class Server(object):
                     self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
                 else:  # async request, must check if attributes in response
                     results, _ = connection.get_response(result)
-                    if len(results) == 1 and 'attributes' in results[0]:
-                        self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], connection.response[0]['raw_attributes'])
+                    if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
+                        self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
                 if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
                     for attribute in self._schema_info.other:
                         self._schema_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._schema_info.raw[attribute], self.custom_formatter)

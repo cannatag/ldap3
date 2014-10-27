@@ -148,7 +148,7 @@ def build_controls_list(controls):
 
 def validate_assertion_value(schema, name, value):
     if schema and schema.attribute_types is not None:
-        if not name.lower() in schema.attribute_types:
+        if not name in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in assertion: ' + name)
     if not '\\' in value:
         return value.encode('utf-8')
@@ -172,10 +172,10 @@ def validate_assertion_value(schema, name, value):
 
 def validate_attribute_value(schema, name, value):
     if schema:
-        if schema.attribute_types is not None and not name.lower() in schema.attribute_types:
+        if schema.attribute_types is not None and not name in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in attribute')
-        if schema.object_classes is not None and name.lower() == 'objectclass':
-            if value.lower() not in schema.object_classes:
+        if schema.object_classes is not None and name == 'objectClass':
+            if value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
 
     if isinstance(value, str):
@@ -430,14 +430,14 @@ def format_attribute_values(schema, name, values, custom_formatter):
     Formatter functions can return any kind of object
     """
     formatter = None
-    if schema and schema.attribute_types is not None and name.lower() in schema.attribute_types:
-        attr_type = schema.attribute_types[name.lower()]
+    if schema and schema.attribute_types is not None and name in schema.attribute_types:
+        attr_type = schema.attribute_types[name]
     else:
         attr_type = None
 
     if custom_formatter and isinstance(custom_formatter, dict):  # if custom formatters are defined they have precedence over the standard formatters
-        if name.lower() in custom_formatter:  # search for attribute name, as returned by the search operation
-            formatter = custom_formatter[name.lower()]
+        if name in custom_formatter:  # search for attribute name, as returned by the search operation
+            formatter = custom_formatter[name]
 
         if not formatter and attr_type and attr_type.oid in custom_formatter:  # search for attribute oid as returned by schema
             formatter = custom_formatter[attr_type.oid]
@@ -445,8 +445,8 @@ def format_attribute_values(schema, name, values, custom_formatter):
         if not formatter and attr_type and attr_type.oid_info:
             if isinstance(attr_type.oid_info.name, list):  # search for multiple names defined in oid_info
                 for attr_name in attr_type.oid_info.name:
-                    if attr_name.lower() in custom_formatter:
-                        formatter = custom_formatter[attr_name.lower()]
+                    if attr_name in custom_formatter:
+                        formatter = custom_formatter[attr_name]
                         break
             elif attr_type.oid_info.name in custom_formatter:  # search for name defined in oid_info
                 formatter = custom_formatter[attr_type.oid_info.name]
@@ -454,8 +454,8 @@ def format_attribute_values(schema, name, values, custom_formatter):
         if not formatter and attr_type and attr_type.syntax in custom_formatter:  # search for syntax defined in schema
             formatter = custom_formatter[attr_type.syntax]
 
-    if not formatter and name.lower() in standard_formatter:  # search for attribute name, as returned by the search operation
-        formatter = standard_formatter[name.lower()]
+    if not formatter and name in standard_formatter:  # search for attribute name, as returned by the search operation
+        formatter = standard_formatter[name]
 
     if not formatter and attr_type and attr_type.oid in standard_formatter:  # search for attribute oid as returned by schema
         formatter = standard_formatter[attr_type.oid]
@@ -463,8 +463,8 @@ def format_attribute_values(schema, name, values, custom_formatter):
     if not formatter and attr_type and attr_type.oid_info:
         if isinstance(attr_type.oid_info.name, list):  # search for multiple names defined in oid_info
             for attr_name in attr_type.oid_info.name:
-                if attr_name.lower() in standard_formatter:
-                    formatter = standard_formatter[attr_name.lower()]
+                if attr_name in standard_formatter:
+                    formatter = standard_formatter[attr_name]
                     break
         elif attr_type.oid_info.name in standard_formatter:  # search for name defined in oid_info
             formatter = standard_formatter[attr_type.oid_info.name]
@@ -479,7 +479,6 @@ def format_attribute_values(schema, name, values, custom_formatter):
     return formatted_values[0] if (attr_type and attr_type.single_value) else formatted_values
 
 
-# attribute type name must be lowercase
 standard_formatter = {
     '1.2.840.113556.1.4.903': format_binary,  # Object (DN-binary) - Microsoft
     '1.2.840.113556.1.4.904': format_unicode,  # Object (DN-string) - Microsoft
@@ -563,7 +562,6 @@ standard_formatter = {
     'supportedldapversion': format_integer,  # supportedLdapVersion (Microsoft)
     'octetstring': format_binary,  # octect string (Microsoft)
     '1.2.840.113556.1.4.2': format_uuid_le,  # object guid (Microsoft)
-    'objectGUID': format_uuid_le,  # object guid (Microsoft)
     '1.2.840.113556.1.4.13': format_ad_timestamp,  # builtinCreationTime (Microsoft)
     '1.2.840.113556.1.4.26': format_ad_timestamp,  # creationTime (Microsoft)
     '1.2.840.113556.1.4.49': format_ad_timestamp,  # badPasswordTime (Microsoft)

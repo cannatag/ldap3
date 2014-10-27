@@ -49,6 +49,13 @@ class CaseInsensitiveDict(collections.MutableMapping):
                         break
         return key
 
+    def __contains__(self, item):
+        try:
+            self.__getitem__(item)
+            return True
+        except:
+            return False
+
     def __delitem__(self, key):
         del self._store[self._getkey(key)]
 
@@ -77,7 +84,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
         return self._store.values()
 
     def __eq__(self, other):
-        if not isinstance(other, collections.Mapping):
+        if not isinstance(other, (collections.Mapping, dict)):
             return NotImplemented
 
         if isinstance(other, CaseInsensitiveDict):

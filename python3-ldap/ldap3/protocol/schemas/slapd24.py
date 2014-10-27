@@ -23,7 +23,7 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-openldap_2_4_schema = """
+slapd_2_4_schema = """
 {
     "raw": {
         "attributeTypes": [
@@ -623,7 +623,7 @@ openldap_2_4_schema = """
 }
 """
 
-openldap_2_4_info = """
+slapd_2_4_info = """
 {
     "raw": {
         "configContext": [

@@ -28,6 +28,7 @@ from threading import Lock
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
+from ldap3 import OFFLINE_SLAPD_2_4
 from ..protocol.convert import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
@@ -296,6 +297,10 @@ class Server(object):
             elif self.get_info == OFFLINE_AD_2012_R2:
                 from ..protocol.schemas.edir888 import edir_8_8_8_schema
                 dsa_schema = SchemaInfo.from_json(edir_8_8_8_schema)
+                self.attach_schema(dsa_schema)
+            elif self.get_info == OFFLINE_SLAPD_2_4:
+                from ..protocol.schemas.slapd24 import slapd_2_4_schema
+                dsa_schema = SchemaInfo.from_json(slapd_2_4_schema)
                 self.attach_schema(dsa_schema)
 
     def attach_info(self, dsa_info=None):

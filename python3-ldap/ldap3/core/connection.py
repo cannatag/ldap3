@@ -712,7 +712,10 @@ class Connection(object):
                         entry['raw'] = dict(response['raw_attributes'])
                     json_dict['response'].append(entry)
 
-            json_output = json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))
+            if str == bytes:
+                check_json_dict(json_dict)
+
+            json_output = json.dumps(json_dict, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))
 
             if stream:
                 stream.write(json_output)

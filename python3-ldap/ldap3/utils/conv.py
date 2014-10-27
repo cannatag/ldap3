@@ -23,6 +23,11 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from base64 import b64encode, b64decode
+import datetime
+from ..utils.ciDict import CaseInsensitiveDict
+from ..core.exceptions import LDAPDefinitionError
+
 
 def escape_bytes(bytes_value):
     if str != bytes:  # Python 3
@@ -44,3 +49,63 @@ def prepare_for_stream(value):
         return value.decode()
 
 
+def json_encode_b64(obj):
+    try:
+        return dict(encoding='base64', encoded=b64encode(obj))
+    except:
+        raise LDAPDefinitionError('unable to encode ' + str(obj))
+
+
+def check_json_dict(json_dict):
+    """
+    # needed only for python 2
+    for k, v in json_dict.items():
+        if isinstance(v, (CaseInsensitiveDict)):
+            json_dict[k] = v._store
+            check_json_dict(json_dict['k'])
+        else:
+            if isinstance(v, (list, tuple)):
+                for index, element in enumerate(v):
+                    if isinstance(element, (CaseInsensitiveDict)):
+                        json_dict[k][v] = element._store
+                        check_json_dict(json_dict[k][v])
+                    else:
+                        v[index] = format_json(element)
+            else:
+                json_dict[k] == format_json(v)
+    """
+
+def json_hook(obj):
+    if hasattr(obj, 'keys') and len(obj.keys()) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
+        return b64decode(obj['encoded'])
+
+    return obj
+
+
+def format_json(obj):
+    print(type(obj), obj)
+    if isinstance(obj, CaseInsensitiveDict):
+        return obj._store
+
+    if isinstance(obj, datetime.datetime):
+        return str(obj)
+
+    try:
+        if str != bytes:  # python3
+            return str(obj, 'utf-8', errors='strict')
+        else:
+            if isinstance(obj, unicode):
+                return obj
+            else:
+                return unicode(obj, 'utf-8', errors='strict')
+    except (TypeError, UnicodeDecodeError):
+        pass
+
+    try:
+        return json_encode_b64(bytes(obj))
+    except:
+        pass
+
+    print('unable', type(obj), obj)
+
+    return 'unable to convert'

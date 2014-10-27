@@ -26,60 +26,13 @@
 from os import linesep
 import re
 import json
-from base64 import b64encode, b64decode
 
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
-from ..utils.conv import escape_bytes
+from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.convert import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError
-
-
-def json_encode_b64(obj):
-    try:
-        return dict(encoding='base64', encoded=b64encode(obj))
-    except:
-        raise LDAPDefinitionError('unable to encode ' + str(obj))
-
-
-def check_json_dict(json_dict):
-    for k, v in json_dict.items():
-        if isinstance(v, (dict, CaseInsensitiveDict)):
-            check_json_dict(v)
-        else:
-            if isinstance(v, (list, tuple)):
-                for index, element in enumerate(v):
-                    if isinstance(element, (dict, CaseInsensitiveDict)):
-                        check_json_dict(element)
-                    else:
-                        try:
-                            element.encode('utf-8')
-                        except (TypeError, UnicodeDecodeError):
-                            v[index] = json_encode_b64(element)
-            else:
-                try:
-                    v.encode('utf-8')
-                except (TypeError, UnicodeDecodeError):
-                    json_dict[k] = json_encode_b64(v)
-
-
-def _json_hook(obj):
-    if hasattr(obj, 'keys') and len(obj.keys()) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
-        return b64decode(obj['encoded'])
-
-    return obj
-
-
-def _format_json(obj):
-    try:
-        if str != bytes:  # python3
-            return str(obj, 'utf-8', errors='strict')
-        else:
-            return unicode(obj, 'utf-8', errors='strict')
-    except (TypeError, UnicodeDecodeError):
-        return json_encode_b64(obj)
-
 
 def constant_to_class_kind(value):
     if value == CLASS_STRUCTURAL:
@@ -157,7 +110,7 @@ class BaseServerInfo(object):
 
     @classmethod
     def from_json(cls, json_definition, schema=None, custom_formatter=None):
-        definition = json.loads(json_definition, object_hook=_json_hook)
+        definition = json.loads(json_definition, object_hook=json_hook)
         if not 'raw' in definition or not 'type' in definition:
             raise LDAPDefinitionError('invalid JSON for DSE info')
 
@@ -191,17 +144,22 @@ class BaseServerInfo(object):
         target.close()
         return new
 
-    def to_file(self, target, indent=4, sort=True):
+    def to_file(self,
+                target,
+                indent=4,
+                sort=True):
         if isinstance(target, str):
             target = open(target, 'w+')
 
-        target.writelines(self.to_json(indent, sort))
+        target.writelines(self.to_json(indent=indent, sort=sort))
         target.close()
 
     def __str__(self):
         return self.__repr__()
 
-    def to_json(self, indent=4, sort=True):
+    def to_json(self,
+                indent=4,
+                sort=True):
         json_dict = dict()
         json_dict['type'] = self.__class__.__name__
         json_dict['raw'] = self.raw
@@ -213,10 +171,10 @@ class BaseServerInfo(object):
         else:
             raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
-        if str == bytes:
+        if str == bytes:  # python 2
             check_json_dict(json_dict)
 
-        return json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=_format_json, separators=(',', ': '))
+        return json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))
 
 
 class DsaInfo(BaseServerInfo):

@@ -25,6 +25,7 @@
 
 from os import linesep
 from pyasn1.codec.ber import encoder
+import json
 
 from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
     RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
@@ -54,7 +55,7 @@ from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError
-from ..utils.conv import prepare_for_stream
+from ..utils.conv import prepare_for_stream, check_json_dict, format_json
 
 
 # noinspection PyProtectedMember
@@ -496,7 +497,7 @@ class Connection(object):
         if not object_class_attr_name:
             object_class_attr_name = 'objectClass'
 
-        attributes[object_class_attr_name] = list(set([object_class.lower() for object_class in parm_object_class + attr_object_class]))  # remove duplicate ObjectClasses
+        attributes[object_class_attr_name] = list(set([object_class for object_class in parm_object_class + attr_object_class]))  # remove duplicate ObjectClasses
         if not attributes[object_class_attr_name]:
             self.last_error = 'ObjectClass attribute is mandatory'
             raise LDAPObjectClassError(self.last_error)
@@ -686,6 +687,50 @@ class Connection(object):
             return ldif_output
 
         return None
+
+    def response_to_json(self,
+                         raw=False,
+                         search_result=None,
+                         indent=4,
+                         sort=True,
+                         stream=None):
+
+        if search_result is None:
+            search_result = self.response
+
+        if isinstance(search_result, (list, tuple)):
+            json_dict = dict()
+            json_dict['response'] = list()
+
+            for response in search_result:
+                if response['type'] == 'searchResEntry':
+                    entry = dict()
+
+                    entry['dn'] = response['dn']
+                    entry['attributes'] = dict(response['attributes'])
+                    if raw:
+                        entry['raw'] = dict(response['raw_attributes'])
+                    json_dict['response'].append(entry)
+
+            json_output = json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))
+
+            if stream:
+                stream.write(json_output)
+
+            return json_output
+
+    def response_to_file(self,
+                target,
+                raw=False,
+                indent=4,
+                sort=True):
+
+        if self.response:
+            if isinstance(target, str):
+                target = open(target, 'w+')
+
+            target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
+            target.close()
 
     def _fire_deferred(self):
         if self.lazy:

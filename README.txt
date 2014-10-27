@@ -69,6 +69,7 @@ CHANGELOG
     - Attributes names and formatters are checked even if schema is not read by the server
     - Fixed fractional time when parsing generalized time
     - Specific decoder for Active Directory ObjectGuid and ObjectSid
+    - Added response_to_json() and response_to_file() to Connection object to have the search response serialized in JSON as a string or as a file
 
 * 0.9.5.4 2014.09.22
     - Fixed security issue in lazy connections (thanks Moritz)

@@ -57,23 +57,24 @@ def json_encode_b64(obj):
 
 
 def check_json_dict(json_dict):
-    """
     # needed only for python 2
+
     for k, v in json_dict.items():
-        if isinstance(v, (CaseInsensitiveDict)):
-            json_dict[k] = v._store
-            check_json_dict(json_dict['k'])
+        if isinstance(v, dict):
+            check_json_dict(v)
+        elif isinstance(v, CaseInsensitiveDict):
+            check_json_dict(v._store)
+        elif isinstance(v, (list, tuple)):
+            for i, e in enumerate(v):
+                if isinstance(e, dict):
+                    check_json_dict(e)
+                elif isinstance(e, CaseInsensitiveDict):
+                    check_json_dict(e._store)
+                else:
+                    v[i] = format_json(e)
         else:
-            if isinstance(v, (list, tuple)):
-                for index, element in enumerate(v):
-                    if isinstance(element, (CaseInsensitiveDict)):
-                        json_dict[k][v] = element._store
-                        check_json_dict(json_dict[k][v])
-                    else:
-                        v[index] = format_json(element)
-            else:
-                json_dict[k] == format_json(v)
-    """
+            json_dict[k] = format_json(v)
+
 
 def json_hook(obj):
     if hasattr(obj, 'keys') and len(obj.keys()) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
@@ -83,17 +84,23 @@ def json_hook(obj):
 
 
 def format_json(obj):
-    print(type(obj), obj)
     if isinstance(obj, CaseInsensitiveDict):
         return obj._store
 
     if isinstance(obj, datetime.datetime):
         return str(obj)
 
+    if isinstance(obj, int):
+        return obj
+
+    if str == bytes:
+        if isinstance(obj, long):  # long only in python2
+            return obj
+
     try:
         if str != bytes:  # python3
             return str(obj, 'utf-8', errors='strict')
-        else:
+        else:  # python2
             if isinstance(obj, unicode):
                 return obj
             else:
@@ -104,8 +111,4 @@ def format_json(obj):
     try:
         return json_encode_b64(bytes(obj))
     except:
-        pass
-
-    print('unable', type(obj), obj)
-
-    return 'unable to convert'
+        return 'unable to convert'

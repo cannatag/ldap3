@@ -27,12 +27,15 @@ from os import linesep
 import re
 import json
 
-from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CASE_INSENSITIVE_SCHEMA_NAMES
+from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, \
+    ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, \
+    CASE_INSENSITIVE_SCHEMA_NAMES, SEQUENCE_TYPES, STRING_TYPES
 from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json
 from ..utils.ciDict import CaseInsensitiveDict
-from ..protocol.convert import format_attribute_values
+from ..protocol.formatters.standard import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
 from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError
+
 
 def constant_to_class_kind(value):
     if value == CLASS_STRUCTURAL:
@@ -94,12 +97,12 @@ def extension_to_tuple(extension_string):
 
 
 def list_to_string(list_object):
-    if not isinstance(list_object, (list, tuple)):
+    if not isinstance(list_object, SEQUENCE_TYPES):
         return list_object
 
     r = ''
     for element in list_object:
-        r += (list_to_string(element) if isinstance(element, (list, tuple)) else str(element)) + ', '
+        r += (list_to_string(element) if isinstance(element, SEQUENCE_TYPES) else str(element)) + ', '
 
     return r[:-2] if r else ''
 
@@ -137,7 +140,7 @@ class BaseServerInfo(object):
 
     @classmethod
     def from_file(cls, target, schema=None, custom_formatter=None):
-        if isinstance(target, str):
+        if isinstance(target, STRING_TYPES):
             target = open(target, 'r')
 
         new = cls.from_json(target.read(), schema=schema, custom_formatter=custom_formatter)
@@ -148,7 +151,7 @@ class BaseServerInfo(object):
                 target,
                 indent=4,
                 sort=True):
-        if isinstance(target, str):
+        if isinstance(target, STRING_TYPES):
             target = open(target, 'w+')
 
         target.writelines(self.to_json(indent=indent, sort=sort))
@@ -199,42 +202,42 @@ class DsaInfo(BaseServerInfo):
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
-        if isinstance(self.supported_ldap_versions, (list, tuple)):
+        if isinstance(self.supported_ldap_versions, SEQUENCE_TYPES):
             r += ('  Supported LDAP Versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions]) + linesep) if self.supported_ldap_versions else ''
         else:
             r += ('  Supported LDAP Versions: ' + str(self.supported_ldap_versions))
 
-        if isinstance(self.naming_contexts, (list, tuple)):
+        if isinstance(self.naming_contexts, SEQUENCE_TYPES):
             r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts]) + linesep) if self.naming_contexts else ''
         else:
             r += ('  Naming Contexts:' + str(self.naming_contexts)) + linesep
 
-        if isinstance(self.alt_servers, (list, tuple)):
+        if isinstance(self.alt_servers, SEQUENCE_TYPES):
             r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers]) + linesep) if self.alt_servers else ''
         else:
             r += ('  Alternative Servers:' + str(self.alt_servers)) + linesep
 
-        if isinstance(self.supported_controls, (list, tuple)):
+        if isinstance(self.supported_controls, SEQUENCE_TYPES):
             r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls]) + linesep) if self.supported_controls else ''
         else:
             r += ('  Supported Controls:' + str(self.supported_controls)) + linesep
 
-        if isinstance(self.supported_extensions, (list, tuple)):
+        if isinstance(self.supported_extensions, SEQUENCE_TYPES):
             r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions]) + linesep) if self.supported_extensions else ''
         else:
             r += ('  Supported Extensions:' + str(self.supported_extensions)) + linesep
 
-        if isinstance(self.supported_features, (list, tuple)):
+        if isinstance(self.supported_features, SEQUENCE_TYPES):
             r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features]) + linesep) if self.supported_features else ''
         else:
             r += ('  Supported Features:' + str(self.supported_features)) + linesep
 
-        if isinstance(self.supported_sasl_mechanisms, (list, tuple)):
+        if isinstance(self.supported_sasl_mechanisms, SEQUENCE_TYPES):
             r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms]) + linesep) if self.supported_sasl_mechanisms else ''
         else:
             r += ('  Supported SASL Mechanisms:' + str(self.supported_sasl_mechanisms)) + linesep
 
-        if isinstance(self.schema_entry, (list, tuple)):
+        if isinstance(self.schema_entry, SEQUENCE_TYPES):
             r += ('  Schema Entry:' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry]) + linesep) if self.schema_entry else ''
         else:
             r += ('  Schema Entry:' + str(self.schema_entry)) + linesep
@@ -243,9 +246,9 @@ class DsaInfo(BaseServerInfo):
         for k, v in self.other.items():
             r += '  ' + str(k) + ': ' + linesep
             try:
-                r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else str(v)
+                r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, SEQUENCE_TYPES) else str(v)
             except UnicodeDecodeError:
-                r += (linesep.join(['    ' + str(escape_bytes(s)) for s in v])) if isinstance(v, (list, tuple)) else str(escape_bytes(v))
+                r += (linesep.join(['    ' + str(escape_bytes(s)) for s in v])) if isinstance(v, SEQUENCE_TYPES) else str(escape_bytes(v))
             r += linesep
         return r
 
@@ -273,42 +276,42 @@ class SchemaInfo(BaseServerInfo):
 
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry + linesep
-        if isinstance(self.attribute_types, (list, tuple)):
+        if isinstance(self.attribute_types, SEQUENCE_TYPES):
             r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attribute_types[s]) for s in self.attribute_types]) + linesep) if self.attribute_types else ''
         else:
             r += ('  Attribute types:' + str(self.attribute_types)) + linesep
 
-        if isinstance(self.object_classes, (list, tuple)):
+        if isinstance(self.object_classes, SEQUENCE_TYPES):
             r += ('  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes]) + linesep) if self.object_classes else ''
         else:
             r += ('  Object classes:' + str(self.object_classes)) + linesep
 
-        if isinstance(self.matching_rules, (list, tuple)):
+        if isinstance(self.matching_rules, SEQUENCE_TYPES):
             r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules]) + linesep) if self.matching_rules else ''
         else:
             r += ('  Matching rules:' + str(self.matching_rules)) + linesep
 
-        if isinstance(self.matching_rule_uses, (list, tuple)):
+        if isinstance(self.matching_rule_uses, SEQUENCE_TYPES):
             r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matching_rule_uses[s]) for s in self.matching_rule_uses]) + linesep) if self.matching_rule_uses else ''
         else:
             r += ('  Matching rule uses:' + str(self.matching_rule_uses)) + linesep
 
-        if isinstance(self.dit_content_rules, (list, tuple)):
+        if isinstance(self.dit_content_rules, SEQUENCE_TYPES):
             r += ('  DIT content rules:' + linesep + '    ' + ', '.join([str(self.dit_content_rules[s]) for s in self.dit_content_rules]) + linesep) if self.dit_content_rules else ''
         else:
             r += ('  DIT content rules:' + str(self.dit_content_rules)) + linesep
 
-        if isinstance(self.dit_structure_rules, (list, tuple)):
+        if isinstance(self.dit_structure_rules, SEQUENCE_TYPES):
             r += ('  DIT structure rules:' + linesep + '    ' + ', '.join([str(self.dit_structure_rules[s]) for s in self.dit_structure_rules]) + linesep) if self.dit_structure_rules else ''
         else:
             r += ('  DIT structure rules:' + str(self.dit_structure_rules)) + linesep
 
-        if isinstance(self.name_forms, (list, tuple)):
+        if isinstance(self.name_forms, SEQUENCE_TYPES):
             r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.name_forms[s]) for s in self.name_forms]) + linesep) if self.name_forms else ''
         else:
             r += ('  Name forms:' + str(self.name_forms)) + linesep
 
-        if isinstance(self.ldap_syntaxes, (list, tuple)):
+        if isinstance(self.ldap_syntaxes, SEQUENCE_TYPES):
             r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldap_syntaxes[s]) for s in self.ldap_syntaxes]) + linesep) if self.ldap_syntaxes else ''
         else:
             r += ('  LDAP syntaxes:' + str(self.ldap_syntaxes)) + linesep
@@ -318,9 +321,9 @@ class SchemaInfo(BaseServerInfo):
         for k, v in self.other.items():
             r += '  ' + str(k) + ': ' + linesep
             try:
-                r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, (list, tuple)) else str(v)
+                r += (linesep.join(['    ' + str(s) for s in v])) if isinstance(v, SEQUENCE_TYPES) else str(v)
             except UnicodeDecodeError:
-                r += (linesep.join(['    ' + str(escape_bytes(s)) for s in v])) if isinstance(v, (list, tuple)) else str(escape_bytes(v))
+                r += (linesep.join(['    ' + str(escape_bytes(s)) for s in v])) if isinstance(v, SEQUENCE_TYPES) else str(escape_bytes(v))
             r += linesep
         return r
 

@@ -26,6 +26,7 @@
 from os import linesep
 
 from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
+from .. import STRING_TYPES
 
 
 class Entry(object):
@@ -70,7 +71,7 @@ class Entry(object):
         return True if self.__getitem__(item) else False
 
     def __getattr__(self, item):
-        if isinstance(item, str):
+        if isinstance(item, STRING_TYPES):
             item = ''.join(item.split()).lower()
             for attr in self._attributes:
                 if item == attr.lower():

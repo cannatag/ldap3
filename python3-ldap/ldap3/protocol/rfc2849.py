@@ -25,7 +25,7 @@
 
 from base64 import b64encode
 
-from .. import LDIF_LINE_LENGTH
+from .. import LDIF_LINE_LENGTH, STRING_TYPES
 from ..core.exceptions import LDAPLDIFError
 
 # LDIF converter RFC 2849 compliant
@@ -57,7 +57,7 @@ def safe_ldif_string(bytes_value):
 def _convert_to_ldif(descriptor, value, base64):
     if not value:
         value = ''
-    if isinstance(value, str):
+    if isinstance(value, STRING_TYPES):
         value = bytearray(value, encoding='utf-8')
 
     if base64 or not safe_ldif_string(value):

@@ -26,6 +26,8 @@
 import collections
 import json
 
+from .. import SEQUENCE_TYPES
+
 
 class CaseInsensitiveDict(collections.MutableMapping):
     if bytes == str:  # python2
@@ -88,7 +90,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
             return NotImplemented
 
         if isinstance(other, CaseInsensitiveDict):
-            if isinstance(self.items(), list):  # python 2
+            if isinstance(self.items(), SEQUENCE_TYPES):  # python 2
                 if len(self.items()) != len(other.items()):
                     return False
                 else:

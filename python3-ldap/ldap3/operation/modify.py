@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
+from .. import SEQUENCE_TYPES
 from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import changes_to_list, validate_attribute_value
@@ -51,7 +51,7 @@ def modify_operation(dn,
         partial_attribute = PartialAttribute()
         partial_attribute['type'] = AttributeDescription(attribute)
         partial_attribute['vals'] = Vals()
-        if isinstance(changes[attribute][1], (list, tuple)):
+        if isinstance(changes[attribute][1], SEQUENCE_TYPES):
             for index, value in enumerate(changes[attribute][1]):
                 partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
         else:

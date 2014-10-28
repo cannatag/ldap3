@@ -26,14 +26,18 @@
 from string import whitespace
 from os import linesep
 
-from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, \
-    ATTRIBUTES_EXCLUDED_FROM_CHECK, CASE_INSENSITIVE_ATTRIBUTE_NAMES
+from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, \
+    SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, \
+    SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, CASE_INSENSITIVE_ATTRIBUTE_NAMES, SEQUENCE_TYPES
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..utils.ciDict import CaseInsensitiveDict
-from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, \
-    ExtensibleMatch, Present, SubstringFilter, Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
+from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
+    AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, \
+    Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, ExtensibleMatch, Present, SubstringFilter, \
+    Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
-from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, format_attribute_values
+from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
+from ..protocol.formatters.standard import format_attribute_values
 
 
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
@@ -355,7 +359,7 @@ def search_operation(search_base,
     request['timeLimit'] = Integer0ToMax(time_limit)
     request['typesOnly'] = TypesOnly(True) if types_only else TypesOnly(False)
     request['filter'] = build_filter(search_filter, schema)  # parse the searchFilter string and compile it starting from the root node
-    if not isinstance(attributes, (list, tuple)):
+    if not isinstance(attributes, SEQUENCE_TYPES):
         attributes = [NO_ATTRIBUTES]
 
     request['attributes'] = build_attribute_selection(attributes, schema)

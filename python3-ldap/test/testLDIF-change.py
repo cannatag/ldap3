@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: w6DDoA==' in response)
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: dHJhaWxpbmdzcGFjZSA=' in response)
         self.assertTrue('changetype: add' in response)
-        self.assertTrue('objectClass: inetorgperson' in response)
+        self.assertTrue('objectClass: iNetOrgPerson' in response)
         self.assertTrue('sn: test-add' in response)
         self.assertTrue('cn: test-add-operation' in response)
 

@@ -199,6 +199,13 @@ POOLING_STRATEGY_ROUND_ROBIN = 1
 POOLING_STRATEGY_RANDOM = 2
 POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
+# types for string and sequence
+if str != bytes:
+    STRING_TYPES = (str, )
+else:
+    STRING_TYPES = (str, unicode)
+
+SEQUENCE_TYPES = (list, tuple)
 
 # ldap format conversion for syntaxes and attribute types
 FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.3',  # Attribute type description

@@ -25,8 +25,10 @@
 
 from collections import namedtuple
 
-from .. import OID_CONTROL, OID_EXTENSION, OID_FEATURE, OID_UNSOLICITED_NOTICE, OID_LDAP_SYNTAX, OID_ATTRIBUTE_TYPE, OID_MATCHING_RULE, OID_NAME_FORM, OID_OBJECT_CLASS, OID_ADMINISTRATIVE_ROLE, OID_DIT_CONTENT_RULE, OID_LDAP_URL_EXTENSION, \
-    OID_FAMILY
+from .. import OID_CONTROL, OID_EXTENSION, OID_FEATURE, OID_UNSOLICITED_NOTICE, \
+    OID_LDAP_SYNTAX, OID_ATTRIBUTE_TYPE, OID_MATCHING_RULE, OID_NAME_FORM, \
+    OID_OBJECT_CLASS, OID_ADMINISTRATIVE_ROLE, OID_DIT_CONTENT_RULE, OID_LDAP_URL_EXTENSION, \
+    OID_FAMILY, SEQUENCE_TYPES
 
 # Holds info about OIDs.
 # Each OID info is a named tuple with the following attributes:
@@ -86,7 +88,7 @@ class OidInfo(namedtuple('OidInfo', 'oid, kind, name, docs')):
     def __str__(self):
         r = self.oid + ' - '
         if self.name:
-            r += ((', '.join(self.name)) if isinstance(self.name, (list, tuple)) else self.name) + ' - '
+            r += ((', '.join(self.name)) if isinstance(self.name, SEQUENCE_TYPES) else self.name) + ' - '
         r += constant_to_oid_kind(self.kind) + ' - ' if self.kind is not None else ''
         r += self.docs + ' - ' if self.docs else ''
 

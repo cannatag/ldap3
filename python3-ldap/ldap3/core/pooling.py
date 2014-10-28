@@ -26,7 +26,7 @@
 from datetime import datetime
 from os import linesep
 from random import randint
-from .. import POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_STRATEGIES
+from .. import POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES
 from .exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError
 from .server import Server
 
@@ -38,7 +38,7 @@ class ServerPoolState(object):
         self.server_pool = server_pool
         self.refresh()
         self.initialize_time = datetime.now()
-        self.last_used_server = randint(0, len(self.servers)-1)
+        self.last_used_server = randint(0, len(self.servers) - 1)
 
     def __str__(self):
         s = 'servers: '
@@ -143,9 +143,9 @@ class ServerPool(object):
         self.pool_states = dict()
         self.active = active
         self.exhaust = exhaust
-        if isinstance(servers, (list, tuple, Server)):
+        if isinstance(servers, SEQUENCE_TYPES + (Server, )):
             self.add(servers)
-        elif isinstance(servers, str):
+        elif isinstance(servers, STRING_TYPES):
             self.add(Server(servers))
         self.strategy = pool_strategy
 
@@ -190,13 +190,13 @@ class ServerPool(object):
         if isinstance(servers, Server):
             if servers not in self.servers:
                 self.servers.append(servers)
-        elif isinstance(servers, str):
+        elif isinstance(servers, STRING_TYPES):
             self.servers.append(Server(servers))
-        elif isinstance(servers, (list, tuple)):
+        elif isinstance(servers, SEQUENCE_TYPES):
             for server in servers:
                 if isinstance(server, Server):
                     self.servers.append(server)
-                elif isinstance(server, str):
+                elif isinstance(server, STRING_TYPES):
                     self.servers.append(Server(server))
                 else:
                     raise LDAPServerPoolError('server in ServerPool must be a Server')

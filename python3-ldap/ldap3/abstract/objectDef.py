@@ -27,6 +27,7 @@ from os import linesep
 
 from .attrDef import AttrDef
 from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError
+from .. import STRING_TYPES, SEQUENCE_TYPES
 
 
 class ObjectDef(object):
@@ -74,7 +75,7 @@ class ObjectDef(object):
     def __isub__(self, other):
         if isinstance(other, AttrDef):
             self.remove(other.key)
-        elif isinstance(other, str):
+        elif isinstance(other, STRING_TYPES):
             self.remove(other)
 
         return self
@@ -100,7 +101,7 @@ class ObjectDef(object):
 
         """
 
-        if isinstance(definition, str):
+        if isinstance(definition, STRING_TYPES):
             element = AttrDef(definition)
             self.add(element)
         elif isinstance(definition, AttrDef):
@@ -110,7 +111,7 @@ class ObjectDef(object):
                     raise LDAPAttributeError('attribute already present')
             self._attributes[key] = definition
             self.__dict__[key] = definition
-        elif isinstance(definition, (list, tuple)):
+        elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
                 self.add(element)
         else:
@@ -122,7 +123,7 @@ class ObjectDef(object):
 
         """
         key = None
-        if isinstance(item, str):
+        if isinstance(item, STRING_TYPES):
             key = ''.join(item.split()).lower()
         elif isinstance(item, AttrDef):
             key = item.key

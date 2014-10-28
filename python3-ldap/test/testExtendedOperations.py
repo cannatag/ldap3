@@ -52,13 +52,13 @@ class Test(unittest.TestCase):
 
     def test_paged_search_accumulator(self):
         responses = self.connection.extend.standard.paged_search('o=test', '(&(cn=*)(!(cn=*move*)))', generator=False)
-        self.assertGreater(len(responses), 20)
+        self.assertTrue(len(responses) > 20)
 
     def test_paged_search_generator(self):
         responses = []
         for response in self.connection.extend.standard.paged_search('o=test', '(&(cn=*)(!(cn=*move*)))'):
             responses.append(response)
-        self.assertGreater(len(responses), 20)
+        self.assertTrue(len(responses) > 20)
 
 
     def test_novell_list_replicas(self):

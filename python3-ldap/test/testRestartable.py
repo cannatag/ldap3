@@ -21,15 +21,11 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from time import sleep
-
 import unittest
 
-from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, AttributeValue, CompareRequest, AttributeValueAssertion, AssertionValue, ValsAtLeast1
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, dn_for_test, test_base, test_lazy_connection
 
 from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN,  SEARCH_SCOPE_SINGLE_LEVEL, ALL_ATTRIBUTES
-from ldap3.core.exceptions import LDAPException
 
 
 class Test(unittest.TestCase):

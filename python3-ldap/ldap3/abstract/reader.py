@@ -26,7 +26,7 @@
 from datetime import datetime
 from os import linesep
 
-from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX
+from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, STRING_TYPES, SEQUENCE_TYPES
 from .attribute import Attribute
 from .entry import Entry
 from ..core.exceptions import LDAPReaderError
@@ -241,9 +241,9 @@ class Reader(object):
 
         if self._definition.object_class:
             self.query_filter += '(&'
-            if isinstance(self._definition.object_class, str):
+            if isinstance(self._definition.object_class, STRING_TYPES):
                 self.query_filter += '(objectClass=' + self._definition.object_class + ')'
-            elif isinstance(self._definition.object_class, (list, tuple)):
+            elif isinstance(self._definition.object_class, SEQUENCE_TYPES):
                 self.query_filter += '(&'
                 for object_class in self._definition.object_class:
                     self.query_filter += '(objectClass=' + object_class + ')'
@@ -315,7 +315,7 @@ class Reader(object):
                 if attr_def.post_query and attr_def.name in result['attributes']:
                     attribute.__dict__['values'] = attr_def.post_query(attr_def.key, result['attributes'][name])
                 else:
-                    attribute.__dict__['values'] = result['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, (list, tuple)) else [attr_def.default])
+                    attribute.__dict__['values'] = result['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
                 if attr_def.dereference_dn:  # try to get object referenced in value
                     if attribute.values:
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, query='', base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)

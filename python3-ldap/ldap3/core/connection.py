@@ -704,7 +704,7 @@ class Connection(object):
 
         if isinstance(search_result, SEQUENCE_TYPES):
             json_dict = dict()
-            json_dict['response'] = list()
+            json_dict['entries'] = list()
 
             for response in search_result:
                 if response['type'] == 'searchResEntry':
@@ -714,7 +714,7 @@ class Connection(object):
                     entry['attributes'] = dict(response['attributes'])
                     if raw:
                         entry['raw'] = dict(response['raw_attributes'])
-                    json_dict['response'].append(entry)
+                    json_dict['entries'].append(entry)
 
             if str == bytes:
                 check_json_dict(json_dict)

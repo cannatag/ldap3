@@ -2090,7 +2090,7 @@ ad_2012_r2_dsa_info = """
             "CN=Configuration,DC=AD2012,DC=LAB"
         ],
         "currentTime": [
-            "20141021164424.0Z"
+            "20141028132959.0Z"
         ],
         "defaultNamingContext": [
             "DC=AD2012,DC=LAB"
@@ -2111,7 +2111,7 @@ ad_2012_r2_dsa_info = """
             "6"
         ],
         "highestCommittedUSN": [
-            "20545"
+            "21227"
         ],
         "isGlobalCatalogReady": [
             "TRUE"

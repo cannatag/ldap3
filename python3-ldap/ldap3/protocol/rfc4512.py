@@ -115,7 +115,7 @@ class BaseServerInfo(object):
     def from_json(cls, json_definition, schema=None, custom_formatter=None):
         definition = json.loads(json_definition, object_hook=json_hook)
         if not 'raw' in definition or not 'type' in definition:
-            raise LDAPDefinitionError('invalid JSON for DSE info')
+            raise LDAPDefinitionError('invalid JSON for server info')
 
         if CASE_INSENSITIVE_SCHEMA_NAMES:
             attributes = CaseInsensitiveDict()

@@ -45,6 +45,7 @@ setup(name=package_name,
                 'ldap3.protocol',
                 'ldap3.protocol.sasl',
                 'ldap3.protocol.schemas',
+                'ldap3.protocol.formatters'
                 'ldap3.strategy',
                 'ldap3.compat',
                 'ldap3.utils',

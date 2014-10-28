@@ -25,6 +25,8 @@
 
 from base64 import b64encode, b64decode
 import datetime
+
+from .. import SEQUENCE_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
@@ -64,7 +66,7 @@ def check_json_dict(json_dict):
             check_json_dict(v)
         elif isinstance(v, CaseInsensitiveDict):
             check_json_dict(v._store)
-        elif isinstance(v, (list, tuple)):
+        elif isinstance(v, SEQUENCE_TYPES):
             for i, e in enumerate(v):
                 if isinstance(e, dict):
                     check_json_dict(e)

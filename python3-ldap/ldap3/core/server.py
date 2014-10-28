@@ -25,11 +25,10 @@
 
 import socket
 from threading import Lock
-from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2
+from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, SEQUENCE_TYPES
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
-from ldap3 import OFFLINE_SLAPD_2_4
-from ..protocol.convert import format_attribute_values
+from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 
@@ -114,7 +113,7 @@ class Server(object):
         else:
             raise LDAPInvalidPort('port must be an integer')
 
-        if isinstance(allowed_referral_hosts, (list, tuple)):
+        if isinstance(allowed_referral_hosts, SEQUENCE_TYPES):
             self.allowed_referral_hosts = []
             for refServer in allowed_referral_hosts:
                 if isinstance(refServer, tuple):
@@ -232,7 +231,7 @@ class Server(object):
         """
         schema_entry = None
         if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
-            if isinstance(self._dsa_info.schema_entry, (list, tuple)):
+            if isinstance(self._dsa_info.schema_entry, SEQUENCE_TYPES):
                 schema_entry = self._dsa_info.schema_entry[0] if self._dsa_info.schema_entry else None
             else:
                 schema_entry = self._dsa_info.schema_entry if self._dsa_info.schema_entry else None

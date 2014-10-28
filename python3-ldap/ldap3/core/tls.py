@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
+from .. import SEQUENCE_TYPES
 
 
 try:
@@ -207,7 +208,7 @@ class Tls(object):
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()
-    host_names = [server_name] + (additional_names if isinstance(additional_names, (list, tuple)) else [additional_names])
+    host_names = [server_name] + (additional_names if isinstance(additional_names, SEQUENCE_TYPES) else [additional_names])
     for host_name in host_names:
         if host_name is None:
             continue

@@ -27,9 +27,13 @@ from os import linesep
 from pyasn1.codec.ber import encoder
 import json
 
-from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, \
-    RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
-    STRATEGY_REUSABLE_THREADED, DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS
+from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, \
+    SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, \
+    CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
+    ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
+    STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, STRATEGY_REUSABLE_THREADED, \
+    DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -184,9 +188,9 @@ class Connection(object):
         self.raise_exceptions = raise_exceptions
         self.extend = ExtendedOperationsRoot(self)
 
-        if isinstance(server, str):
+        if isinstance(server, STRING_TYPES):
             server = Server(server)
-        if isinstance(server, (list, tuple)):
+        if isinstance(server, SEQUENCE_TYPES):
             server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
 
         if isinstance(server, ServerPool):
@@ -483,14 +487,14 @@ class Connection(object):
         if object_class is None:
             parm_object_class = []
         else:
-            parm_object_class = object_class if isinstance(object_class, (list, tuple)) else [object_class]
+            parm_object_class = object_class if isinstance(object_class, SEQUENCE_TYPES) else [object_class]
 
         object_class_attr_name = ''
         if attributes:
             for attr in attributes:
                 if attr.lower() == 'objectclass':
                     object_class_attr_name = attr
-                    attr_object_class = attributes[object_class_attr_name] if isinstance(attributes[object_class_attr_name], (list, tuple)) else [attributes[object_class_attr_name]]
+                    attr_object_class = attributes[object_class_attr_name] if isinstance(attributes[object_class_attr_name], SEQUENCE_TYPES) else [attributes[object_class_attr_name]]
         else:
             attributes = dict()
 
@@ -505,7 +509,7 @@ class Connection(object):
         request = add_operation(dn, attributes, self.server.schema if self.server else None)
         response = self.post_send_single_response(self.send('addRequest', request, controls))
 
-        if isinstance(response, (int, str)):
+        if isinstance(response, STRING_TYPES + (int, )):
             return response
 
         return True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -524,7 +528,7 @@ class Connection(object):
         request = delete_operation(dn)
         response = self.post_send_single_response(self.send('delRequest', request, controls))
 
-        if isinstance(response, (int, str)):
+        if isinstance(response, STRING_TYPES + (int, )):
             return response
 
         return True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -564,7 +568,7 @@ class Connection(object):
         request = modify_operation(dn, changes, self.server.schema if self.server else None)
         response = self.post_send_single_response(self.send('modifyRequest', request, controls))
 
-        if isinstance(response, (int, str)):
+        if isinstance(response, STRING_TYPES + (int, )):
             return response
 
         return True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -591,7 +595,7 @@ class Connection(object):
         request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
         response = self.post_send_single_response(self.send('modDNRequest', request, controls))
 
-        if isinstance(response, (int, str)):
+        if isinstance(response, STRING_TYPES + (int, )):
             return response
 
         return True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
@@ -674,7 +678,7 @@ class Connection(object):
         if search_result is None:
             search_result = self.response
 
-        if isinstance(search_result, (list, tuple)):
+        if isinstance(search_result, SEQUENCE_TYPES):
             ldif_lines = operation_to_ldif('searchResponse', search_result, all_base64, sort_order=sort_order)
             ldif_lines = add_ldif_header(ldif_lines)
             line_separator = line_separator or linesep
@@ -698,7 +702,7 @@ class Connection(object):
         if search_result is None:
             search_result = self.response
 
-        if isinstance(search_result, (list, tuple)):
+        if isinstance(search_result, SEQUENCE_TYPES):
             json_dict = dict()
             json_dict['response'] = list()
 
@@ -723,13 +727,13 @@ class Connection(object):
             return json_output
 
     def response_to_file(self,
-                target,
-                raw=False,
-                indent=4,
-                sort=True):
+                         target,
+                         raw=False,
+                         indent=4,
+                         sort=True):
 
         if self.response:
-            if isinstance(target, str):
+            if isinstance(target, STRING_TYPES):
                 target = open(target, 'w+')
 
             target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))

@@ -27,7 +27,8 @@ import unittest
 
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
-from ldap3.protocol.convert import format_time, OffsetTzInfo
+from ldap3.protocol.formatters.formatters import format_time
+from ldap3.core.timezone import OffsetTzInfo
 
 
 class Test(unittest.TestCase):

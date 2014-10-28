@@ -26,7 +26,7 @@
 import socket
 from pyasn1.codec.ber import decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, SEQUENCE_TYPES
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
@@ -56,7 +56,6 @@ class SyncWaitStrategy(BaseStrategy):
             except LDAPOperationResult:  # catch errors from server if raise_exception = True
                 self.connection.server._dsa_info = None
                 self.connection.server._schema_info = None
-
 
     def _start_listen(self):
         if not self.connection.listening and not self.connection.closed:
@@ -128,7 +127,7 @@ class SyncWaitStrategy(BaseStrategy):
         Returns the result message and store in connection.response the objects found
         """
         responses, _ = self.get_response(message_id)
-        if isinstance(responses, (list, tuple)):
+        if isinstance(responses, SEQUENCE_TYPES):
             self.connection.response = responses[:]  # copy search result entries without result
             return responses
 

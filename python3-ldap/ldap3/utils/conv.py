@@ -79,6 +79,7 @@ def check_json_dict(json_dict):
 
 
 def json_hook(obj):
+    print(obj)
     if hasattr(obj, 'keys') and len(obj.keys()) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
         return b64decode(obj['encoded'])
 
@@ -101,6 +102,8 @@ def format_json(obj):
 
     try:
         if str != bytes:  # python3
+            if '\\' in obj:
+                print(obj)
             return str(obj, 'utf-8', errors='strict')
         else:  # python2
             if isinstance(obj, unicode):

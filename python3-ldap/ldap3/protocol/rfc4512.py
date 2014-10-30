@@ -167,6 +167,7 @@ class BaseServerInfo(object):
         json_dict['type'] = self.__class__.__name__
         json_dict['raw'] = self.raw
 
+        json_dict['raw']
         if isinstance(self, SchemaInfo):
             json_dict['schema_entry'] = self.schema_entry
         elif isinstance(self, DsaInfo):

@@ -21,9 +21,17 @@ After any operation, either synchronous or asynchronous, you'll find the followi
 * listening: True if the socket is listening to the server
 * closed: True if the socket is not open
 
-You can  have a LDIF representation of the response of a search with::
+You can have a LDIF representation of the response of a search with::
 
     connection.response_to_ldif()
+
+or you can save the response to a json string::
+
+    entries = connection.response_to_json()
+
+or have the response save to a file in json format:
+
+    connection.response_to_json('entries-found.json')
 
 Connections
 -----------
@@ -113,6 +121,7 @@ If the attribute is defined in the schema as 'multi_value' the attribute value i
 Formatted (following the schema and RFC indications) attributes are stored in the *attributes* dictionary of the search result entries in c.response. This is performed only if the schema is read in the server object and the check_names parameter is set to True else the unicode value is returned.
 
 Attributes key are case insensitive, this means that you can access c.response[0]['attributes']['postalAddress'] or c.response[0]['attributes']['postaladdress'] and get the same values back.
+
 Simple Paged search
 -------------------
 
@@ -182,3 +191,4 @@ Working with a list keeps all the found entries in a list and you can elaborate 
         print entry['attributes']
     total_entries = len(entry_list)
     print('Total entries retrieved:', total_entries)
+

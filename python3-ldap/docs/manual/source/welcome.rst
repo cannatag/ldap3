@@ -50,10 +50,12 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 Acknowledgements
 ----------------
 
-* I wish to thank **Ilya Etingof**, the author of the *pyasn1* package for his excellent work and support.
+* **Ilya Etingof**, the author of the *pyasn1* package for his excellent work and support.
 
-* I wish to thank **Mark Lutz** for his *Learning Python* and *Programming Python* excellent books series and **John Goerzen** and **Brandon Rhodes** for their book *Foundations of Python Network Programming*. These books are wonderful tools for learning Python and this project owes a lot to them.
+* **Mark Lutz** for his *Learning Python* and *Programming Python* excellent books series and **John Goerzen** and **Brandon Rhodes** for their book *Foundations of Python Network Programming*. These books are wonderful tools for learning Python and this project owes a lot to them.
 
-* I wish to thank **JetBrains** for donating to this project the Open Source license of *PyCharm 3 Professional*.
+* **JetBrains** for donating to this project the Open Source license of *PyCharm 3 Professional*.
 
-* I wish to thank **Bitbucket** for providing the *free source repository space and tools* I use to develop this project.
+* **Bitbucket** for providing the *free source repository space and tools* I use to develop this project.
+
+* **Python Software Foundation** for providing support for building the test lab infrastructure

@@ -1,9 +1,41 @@
 CHANGELOG
 =========
+* 0.9.6 2014.11.01
+    - New feature 'offline schema' to let the client have knowledge of schema and DSA info even if not returned by the server
+    - Offline schema for NetIQ eDirectory 8.8.8
+    - Offline schema for Microsoft Active Directory 2012 R2
+    - Offline schema for slapd 2.4 (Openldap)
+    - Added server.info.to_json() and server.info.to_file to JSON serialize schema and info from Server object
+    - Added Server.from_json() and Server.from_file() to create a Server object from a JSON definition
+    - Added response_to_json() and response_to_file() to Connection object to serialize search response entries in JSON as a string or as a file
+    - New exception hierarchy LDAPConfigurationError includes library configuration exceptions
+    - New exception LDAPInvalidConfigurationDefinitionError
+    - Dsa info and schema are not read twice when binding (thanks phobie)
+    - LDAPStartTLSError exception is merged with exception raised from ssl packaged
+    - Digest-MD5 SASL authentication accepts directives with list attributes (thanks John)
+    - Fixed caseInsensitiveDictionary for keys() and values() methods
+    - Fixed matching of certificate name in ssl with Python2
+    - Attributes names and formatters are checked even if schema is not read by the server
+    - Fixed fractional time when parsing generalized time
+    - Specific decoder for Active Directory ObjectGuid and ObjectSid
+    - Added additional checking for unicode in Python 2
+    - Tested against Python 3.4.2, 2.7.8, 2.6.6
+    - Updated setuptools to 7.0
+
+* 0.9.5.4 2014.09.22
+    - Fixed security issue in lazy connections (thanks Moritz)
+    - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514
+    - Added safe_dn(dn) to properly escape dn (if possible)
+    - Added ldap3.utils.uri with parse_uri(uri) to verify uri compliance with RFC4516
+    - Check for trailing slashes in hostname (thanks Dylan)
+    - Timeout for socket connect operation. Server.connect_timeout = seconds_to_wait_for_establishing_connection (thanks Florian)
+    - Closing socket error doesn't raise exception anymore
+    - ServerPool can be implicity defined with a list of server names (even when defining a connection)
+
 * 0.9.5.3 2014.08.24
     - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)
     - attributes name returned in searches are now case insensitive (can be changed in ldap3.CASE_INSENSITIVE_ATTRIBUTE_NAMES = True|False)
-    - change parameter name from separe_rdn to separate_rnd in ldap3.utils.conv.to_dn()
+    - change parameter name from separe_rdn to separate_rdn in ldap3.utils.conv.to_dn()
     - sync dev from Bitbucket to GitHub
     - schema attributes are explicitly read (useful for Active directory and 389 Directory Server)
     - new extended operation: list_replicas (Novell)
@@ -13,7 +45,7 @@ CHANGELOG
 
 * 0.9.5.2 2014.08.05
     - fixed LDAPOperationResult.__str__ (thanks David)
-    - added to_dn() in utils.conv to convert a dn string in a list of components (strings or tuples)
+    - added to_dn() in utils.conv to convert a dn string to a list of components (strings or tuples)
     - added __version__ in ldap3
     - don't raise exception if the schema cannot be read in unauthenticated state
     - server.address_info is now a property
@@ -43,7 +75,7 @@ CHANGELOG
     - Fixed import in core.tls package
     - Removed unneeded imports
 
- 0.9.4.1 2014.07.02
+* 0.9.4.1 2014.07.02
     - included missing extend package (thanks to debnet)
 
 * 0.9.4 2014.07.02

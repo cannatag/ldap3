@@ -90,7 +90,7 @@ def format_ad_timestamp(raw_value):
     """
     try:
         timestamp = int(raw_value)
-        return datetime.fromtimestamp(timestamp / 10000000 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))
+        return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
     except Exception:
         return raw_value
 

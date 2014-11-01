@@ -215,10 +215,10 @@ class Server(object):
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
         result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
-        self._dsa_info = None
+        # self._dsa_info = None
         with self.lock:
             if isinstance(result, bool):  # sync request
-                self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
+                self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
             elif result:  # async request, must check if attributes in response
                 results, _ = connection.get_response(result)
                 if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
@@ -283,30 +283,29 @@ class Server(object):
         read info from DSE and from subschema
         """
         if not connection.closed:
-            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO]:
-                self._get_dsa_info(connection)
-
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
                 self._get_schema_info(connection)
-
-            if self.get_info == OFFLINE_EDIR_8_8_8:
-                from ..protocol.schemas.edir888 import edir_8_8_8_schema
-                dsa_schema = SchemaInfo.from_json(edir_8_8_8_schema)
-                self.attach_schema(dsa_schema)
+            elif self.get_info == OFFLINE_EDIR_8_8_8:
+                from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
+                self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
+                self.attach_dsa_info(DsaInfo.from_json(edir_8_8_8_dsa_info))
             elif self.get_info == OFFLINE_AD_2012_R2:
-                from ..protocol.schemas.edir888 import edir_8_8_8_schema
-                dsa_schema = SchemaInfo.from_json(edir_8_8_8_schema)
-                self.attach_schema(dsa_schema)
+                from ..protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
+                self.attach_schema_info(SchemaInfo.from_json(ad_2012_r2_schema))
+                self.attach_dsa_info(DsaInfo.from_json(ad_2012_r2_dsa_info))
             elif self.get_info == OFFLINE_SLAPD_2_4:
-                from ..protocol.schemas.slapd24 import slapd_2_4_schema
-                dsa_schema = SchemaInfo.from_json(slapd_2_4_schema)
-                self.attach_schema(dsa_schema)
+                from ..protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
+                self.attach_schema_info(SchemaInfo.from_json(slapd_2_4_schema))
+                self.attach_dsa_info(DsaInfo.from_json(slapd_2_4_dsa_info))
 
-    def attach_info(self, dsa_info=None):
+            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4]:
+                self._get_dsa_info(connection)
+
+    def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):
             self._dsa_info = dsa_info
 
-    def attach_schema(self, dsa_schema=None):
+    def attach_schema_info(self, dsa_schema=None):
         if isinstance(dsa_schema, SchemaInfo):
             self._schema_info = dsa_schema
 

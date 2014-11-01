@@ -346,15 +346,15 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.3.4.13 NAME 'httpBindRestrictions' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )",
             "( 2.16.840.1.113719.1.1.4.1.295 NAME 'emboxConfig' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE )",
             "( 2.16.840.1.113719.1.54.4.1.1 NAME 'trusteesOfNewObject' SYNTAX 2.16.840.1.113719.1.1.5.1.17 X-NDS_NAME 'Trustees Of New Object' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
-            "( 2.16.840.1.113719.1.55.4.1.1 NAME 'newObjectSDSRights' SYNTAX 2.16.840.1.113719.1.1.5.1.17 X-NDS_NAME 'New Object\\27s DS Rights' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
-            "( 2.16.840.1.113719.1.56.4.1.1 NAME 'newObjectSFSRights' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} X-NDS_NAME 'New Object\\27s FS Rights' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
+            "( 2.16.840.1.113719.1.55.4.1.1 NAME 'newObjectSDSRights' SYNTAX 2.16.840.1.113719.1.1.5.1.17 X-NDS_NAME 'New Object's DS Rights' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
+            "( 2.16.840.1.113719.1.56.4.1.1 NAME 'newObjectSFSRights' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} X-NDS_NAME 'New Object's FS Rights' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.57.4.1.1 NAME 'setupScript' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE X-NDS_NAME 'Setup Script' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.58.4.1.1 NAME 'runSetupScript' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Run Setup Script' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.59.4.1.1 NAME 'membersOfTemplate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_NAME 'Members Of Template' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.60.4.1.1 NAME 'volumeSpaceRestrictions' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} X-NDS_NAME 'Volume Space Restrictions' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.61.4.1.1 NAME 'setPasswordAfterCreate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Set Password After Create' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.62.4.1.1 NAME 'homeDirectoryRights' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 X-NDS_NAME 'Home Directory Rights' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
-            "( 2.16.840.1.113719.1.63.4.1.1 NAME 'newObjectSSelfRights' SYNTAX 2.16.840.1.113719.1.1.5.1.17 X-NDS_NAME 'New Object\\27s Self Rights' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
+            "( 2.16.840.1.113719.1.63.4.1.1 NAME 'newObjectSSelfRights' SYNTAX 2.16.840.1.113719.1.1.5.1.17 X-NDS_NAME 'New Object's Self Rights' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.8.4.1 NAME 'digitalMeID' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} SINGLE-VALUE )",
             "( 2.16.840.1.113719.1.8.4.2 NAME 'assistant' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )",
             "( 2.16.840.1.113719.1.8.4.3 NAME 'assistantPhone' SYNTAX 1.3.6.1.4.1.1466.115.121.1.50{64512} )",
@@ -807,7 +807,7 @@ edir_8_8_8_schema = """
             "( 1.3.6.1.4.1.1466.115.121.1.53 X-NDS_SYNTAX '9' )"
         ],
         "modifyTimestamp": [
-            "20141011062116Z"
+            "20141014222353Z"
         ],
         "objectClass": [
             "top",
@@ -937,61 +937,67 @@ edir_8_8_8_dsa_info = """
             "0"
         ],
         "addEntryOps": [
-            "0"
+            "947"
+        ],
+        "altServer": [
+            "ldap://192.168.137.102:389/",
+            "ldaps://192.168.137.102:636/",
+            "ldap://192.168.137.103:389/",
+            "ldaps://192.168.137.103:636/"
         ],
         "bindSecurityErrors": [
-            "0"
+            "3"
         ],
         "chainings": [
             "0"
         ],
         "compareOps": [
-            "0"
+            "61"
         ],
         "directoryTreeName": [
-            "EDIR-LAB"
+            "EDIR-TEST"
         ],
         "dsaName": [
-            "cn=SLES1,o=resources"
+            "cn=edir1,o=services"
         ],
         "errors": [
-            "0"
+            "984"
         ],
         "extendedOps": [
-            "0"
+            "213"
         ],
         "inBytes": [
-            "45"
+            "1253717"
         ],
         "inOps": [
-            "1"
+            "14342"
         ],
         "listOps": [
             "0"
         ],
         "modifyEntryOps": [
-            "0"
+            "121"
         ],
         "modifyRDNOps": [
-            "0"
+            "63"
         ],
         "namingContexts": [
             ""
         ],
         "oneLevelSearchOps": [
-            "0"
+            "129"
         ],
         "outBytes": [
-            "0"
+            "547685251"
         ],
         "readOps": [
-            "1"
+            "7427"
         ],
         "referralsReturned": [
             "0"
         ],
         "removeEntryOps": [
-            "0"
+            "146"
         ],
         "repUpdatesIn": [
             "0"
@@ -1000,16 +1006,16 @@ edir_8_8_8_dsa_info = """
             "0"
         ],
         "searchOps": [
-            "1"
+            "8316"
         ],
         "securityErrors": [
-            "0"
+            "3"
         ],
         "simpleAuthBinds": [
-            "0"
+            "1654"
         ],
         "strongAuthBinds": [
-            "0"
+            "57"
         ],
         "subschemaSubentry": [
             "cn=schema"
@@ -1103,10 +1109,13 @@ edir_8_8_8_dsa_info = """
             "3"
         ],
         "supportedSASLMechanisms": [
-            "NMAS_LOGIN"
+            "NMAS_LOGIN",
+            "EXTERNAL",
+            "DIGEST-MD5",
+            "GSSAPI"
         ],
         "unAuthBinds": [
-            "1"
+            "1897"
         ],
         "vendorName": [
             "NetIQ Corporation"
@@ -1115,7 +1124,7 @@ edir_8_8_8_dsa_info = """
             "LDAP Agent for NetIQ eDirectory 8.8 SP8 (20804.04)"
         ],
         "wholeSubtreeSearchOps": [
-            "0"
+            "760"
         ]
     },
     "type": "DsaInfo"

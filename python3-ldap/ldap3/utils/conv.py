@@ -30,7 +30,6 @@ from .. import SEQUENCE_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
-
 def escape_bytes(bytes_value):
     if str != bytes:  # Python 3
         if isinstance(bytes_value, str):
@@ -49,6 +48,27 @@ def prepare_for_stream(value):
         return value
     else:  # Python 2
         return value.decode()
+
+
+def check_escape(raw_string):
+    if not '\\' in raw_string:
+        return raw_string
+
+    escaped = ''
+    i = 0
+    while i < len(raw_string):
+        if raw_string[i] == '\\' and i < len(raw_string) - 2:
+            try:
+                value = int(raw_string[i + 1: i + 3], 16)
+                escaped += chr(value)
+                i += 2
+            except ValueError:
+                escaped += '\\'
+        else:
+           escaped += raw_string[i]
+        i += 1
+
+    return escaped
 
 
 def json_encode_b64(obj):
@@ -79,7 +99,6 @@ def check_json_dict(json_dict):
 
 
 def json_hook(obj):
-    print(obj)
     if hasattr(obj, 'keys') and len(obj.keys()) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
         return b64decode(obj['encoded'])
 
@@ -97,23 +116,25 @@ def format_json(obj):
         return obj
 
     if str == bytes:
-        if isinstance(obj, long):  # long only in python2
+        if isinstance(obj, long):  # long exists only in python2
             return obj
 
     try:
         if str != bytes:  # python3
-            if '\\' in obj:
-                print(obj)
-            return str(obj, 'utf-8', errors='strict')
+            if isinstance(obj, bytes):
+                return check_escape(str(obj, 'utf-8', errors='strict'))
+            raise LDAPDefinitionError('unable to serialize ' + str(obj))
         else:  # python2
             if isinstance(obj, unicode):
                 return obj
             else:
-                return unicode(obj, 'utf-8', errors='strict')
+                return unicode(check_escape(obj), 'utf-8', errors='strict')
     except (TypeError, UnicodeDecodeError):
         pass
 
     try:
         return json_encode_b64(bytes(obj))
     except:
-        return 'unable to convert'
+        pass
+
+    raise LDAPDefinitionError('unable to serialize ' + str(obj))

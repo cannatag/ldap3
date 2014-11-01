@@ -4,22 +4,13 @@ ldap3.utils package
 Submodules
 ----------
 
-ldap3.utils.caseInsensitiveDictionary module
---------------------------------------------
+.. toctree::
 
-.. automodule:: ldap3.utils.caseInsensitiveDictionary
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ldap3.utils.conv module
------------------------
-
-.. automodule:: ldap3.utils.conv
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   ldap3.utils.ciDict
+   ldap3.utils.conv
+   ldap3.utils.dn
+   ldap3.utils.tls_backport
+   ldap3.utils.uri
 
 Module contents
 ---------------

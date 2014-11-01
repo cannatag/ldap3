@@ -13,14 +13,9 @@ Subpackages
 Submodules
 ----------
 
-ldap3.extend.operation module
------------------------------
+.. toctree::
 
-.. automodule:: ldap3.extend.operation
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   ldap3.extend.operation
 
 Module contents
 ---------------

@@ -86,7 +86,7 @@ def format_ad_timestamp(raw_value):
     """
     The Active Directory stores date/time values as the number of 100-nanosecond intervals
     that have elapsed since the 0 hour on January 1, 1601 till the date/time that is being stored.
-     The time is always stored in Greenwich Mean Time (GMT) in the Active Directory.
+    The time is always stored in Greenwich Mean Time (GMT) in the Active Directory.
     """
     try:
         timestamp = int(raw_value)
@@ -207,7 +207,10 @@ def format_time(raw_value):
 
 
 def format_sid(raw_value):
-    """SID= "S-1-" IdentifierAuthority 1*SubAuthority
+    """
+    """
+    '''
+    SID= "S-1-" IdentifierAuthority 1*SubAuthority
            IdentifierAuthority= IdentifierAuthorityDec / IdentifierAuthorityHex
               ; If the identifier authority is < 2^32, the
               ; identifier authority is represented as a decimal
@@ -232,8 +235,8 @@ def format_sid(raw_value):
     SubAuthorityCount (1 byte): An 8-bit unsigned integer that specifies the number of elements in the SubAuthority array. The maximum number of elements allowed is 15.
     IdentifierAuthority (6 bytes): A SID_IDENTIFIER_AUTHORITY structure that indicates the authority under which the SID was created. It describes the entity that created the SID. The Identifier Authority value {0,0,0,0,0,5} denotes SIDs created by the NT SID authority.
     SubAuthority (variable): A variable length array of unsigned 32-bit integers that uniquely identifies a principal relative to the IdentifierAuthority. Its length is determined by SubAuthorityCount.
+    '''
 
-  """
     if str != bytes:  # python 3
         revision = int(raw_value[0])
         sub_authority_count = int(raw_value[1])

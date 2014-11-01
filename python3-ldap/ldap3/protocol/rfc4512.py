@@ -73,6 +73,7 @@ def attribute_usage_to_constant(value):
     else:
         return 'unknown'
 
+
 def quoted_string_to_list(quoted_string):
     string = quoted_string.strip()
     if string[0] == '(' and string[-1] == ')':
@@ -469,17 +470,17 @@ class BaseObjectInfo(object):
                         raise LDAPSchemaError('malformed schema definition key:' + key)
                 object_def.raw_definition = object_definition
                 if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
-                    object_def.syntax = object_def.syntax[0]
                     object_def.min_length = None
-                    if object_def.syntax.endswith('}'):
+                    if object_def.syntax[0].endswith('}'):
                         try:
-                            object_def.min_length = int(object_def.syntax[object_def.syntax.index('{') + 1:-1])
-                            object_def.syntax = object_def.syntax[:object_def.syntax.index('{')]
+                            object_def.min_length = int(object_def.syntax[0][object_def.syntax[0].index('{') + 1:-1])
+                            object_def.syntax[0] = object_def.syntax[0][:object_def.syntax[0].index('{')]
                         except Exception:
                             pass
                     else:
                         object_def.min_length = None
-                    object_def.syntax = object_def.syntax.strip("'")
+                    object_def.syntax[0] = object_def.syntax[0].strip("'")
+                    object_def.syntax = object_def.syntax[0]
                 if hasattr(object_def, 'name') and object_def.name:
                     for name in object_def.name:
                         ret_dict[name] = object_def

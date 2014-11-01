@@ -23,7 +23,7 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SEQUENCE_TYPES, STRING_TYPES
+from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
 from .rfc4511 import Controls, Control
 

@@ -76,7 +76,7 @@ CHANGELOG
     - Fixed fractional time when parsing generalized time
     - Specific decoder for Active Directory ObjectGuid and ObjectSid
     - Added additional checking for unicode in Python 2
-    - Tested against python 3.4.2
+    - Tested against Python 3.4.2, 2.7.8, 2.6.6
     - Updated setuptools to 7.0
 
 * 0.9.5.4 2014.09.22

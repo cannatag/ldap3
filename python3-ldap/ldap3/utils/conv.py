@@ -30,6 +30,7 @@ from .. import SEQUENCE_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
+
 def escape_bytes(bytes_value):
     if str != bytes:  # Python 3
         if isinstance(bytes_value, str):
@@ -65,7 +66,7 @@ def check_escape(raw_string):
             except ValueError:
                 escaped += '\\'
         else:
-           escaped += raw_string[i]
+            escaped += raw_string[i]
         i += 1
 
     return escaped
@@ -134,7 +135,7 @@ def format_json(obj):
 
     try:
         return json_encode_b64(bytes(obj))
-    except:
+    except Exception:
         pass
 
     raise LDAPDefinitionError('unable to serialize ' + str(obj))

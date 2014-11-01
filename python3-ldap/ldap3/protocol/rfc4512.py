@@ -30,7 +30,7 @@ import json
 from .. import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, \
     ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, \
     CASE_INSENSITIVE_SCHEMA_NAMES, SEQUENCE_TYPES, STRING_TYPES
-from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json
+from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, check_escape
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.formatters.standard import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
@@ -73,13 +73,12 @@ def attribute_usage_to_constant(value):
     else:
         return 'unknown'
 
-
 def quoted_string_to_list(quoted_string):
     string = quoted_string.strip()
     if string[0] == '(' and string[-1] == ')':
         string = string[1:-1]
     elements = string.split("'")
-    return [element.strip("'").strip() for element in elements if element.strip()]
+    return [check_escape(element.strip("'").strip()) for element in elements if element.strip()]
 
 
 def oids_string_to_list(oid_string):
@@ -115,7 +114,7 @@ class BaseServerInfo(object):
     def from_json(cls, json_definition, schema=None, custom_formatter=None):
         definition = json.loads(json_definition, object_hook=json_hook)
         if not 'raw' in definition or not 'type' in definition:
-            raise LDAPDefinitionError('invalid JSON for server info')
+            raise LDAPDefinitionError('invalid JSON definition')
 
         if CASE_INSENSITIVE_SCHEMA_NAMES:
             attributes = CaseInsensitiveDict()
@@ -124,17 +123,20 @@ class BaseServerInfo(object):
 
         if schema:
             for attribute in definition['raw']:
-                attributes[attribute] = format_attribute_values(schema, attribute, definition['raw'][attribute], custom_formatter)
+                attributes[attribute] = format_attribute_values(schema, check_escape(attribute), check_escape(definition['raw'][attribute]), custom_formatter)
         else:
             for attribute in definition['raw']:
-                attributes[attribute] = definition['raw'][attribute]
+                attributes[attribute] = check_escape(definition['raw'][attribute])
+
+        if cls.__name__ != definition['type']:
+            raise LDAPDefinitionError('JSON info not of type ' + cls.__name__)
 
         if definition['type'] == 'DsaInfo':
-            return DsaInfo(attributes, definition)
+            return DsaInfo(attributes, definition['raw'])
         elif definition['type'] == 'SchemaInfo':
             if not 'schema_entry' in definition:
                 raise LDAPDefinitionError('invalid schema in JSON')
-            return SchemaInfo(definition['schema_entry'], attributes, definition)
+            return SchemaInfo(definition['schema_entry'], attributes, definition['raw'])
 
         raise LDAPDefinitionError('invalid Info type ' + str(definition['type']) + ' in JSON definition')
 
@@ -167,7 +169,6 @@ class BaseServerInfo(object):
         json_dict['type'] = self.__class__.__name__
         json_dict['raw'] = self.raw
 
-        json_dict['raw']
         if isinstance(self, SchemaInfo):
             json_dict['schema_entry'] = self.schema_entry
         elif isinstance(self, DsaInfo):

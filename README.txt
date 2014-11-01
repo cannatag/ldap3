@@ -57,20 +57,27 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.6 2014.10.09
+* 0.9.6 2014.11.01
+    - New feature 'offline schema' to let the client have knowledge of schema and DSA info even if not returned by the server
+    - Offline schema for Novell eDirectory 8.8.8
+    - Offline schema for Microsoft Active Directory 2012 R2
+    - Offline schema for slapd 2.4 (Openldap)
+    - Added server.info.to_json() and server.info.to_file to JSON serialize schema and info from Server object
+    - Added Server.from_json() and Server.from_file() to create a Server object from a JSON definition
+    - Added response_to_json() and response_to_file() to Connection object to serialize search response entries in JSON as a string or as a file
     - New exception hierarchy LDAPConfigurationError includes library configuration exceptions
     - New exception LDAPInvalidConfigurationDefinitionError
-    - info and schema are not read twice anymore when binding (thanks phobie)
+    - Dsa info and schema are not read twice when binding (thanks phobie)
     - LDAPStartTLSError exception is merged with exception raised from ssl packaged
     - Digest-MD5 SASL authentication accepts directives with list attributes (thanks John)
     - Fixed caseInsensitiveDictionary for keys() and values() methods
-    - Added to_json() method to attributes when using caseInsensitiveDict (default)
     - Fixed matching of certificate name in ssl with Python2
     - Attributes names and formatters are checked even if schema is not read by the server
     - Fixed fractional time when parsing generalized time
     - Specific decoder for Active Directory ObjectGuid and ObjectSid
-    - Added response_to_json() and response_to_file() to Connection object to have the search response serialized in JSON as a string or as a file
     - Added additional checking for unicode in Python 2
+    - Tested against python 3.4.2
+    - Updated setuptools to 7.0
 
 * 0.9.5.4 2014.09.22
     - Fixed security issue in lazy connections (thanks Moritz)

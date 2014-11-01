@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import collections
-import json
 
 from .. import SEQUENCE_TYPES
 
@@ -55,7 +54,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
         try:
             self.__getitem__(item)
             return True
-        except:
+        except Exception:
             return False
 
     def __delitem__(self, key):
@@ -105,6 +104,3 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
     def copy(self):
         return CaseInsensitiveDict(self._store)
-
-    def to_json(self):
-        return json.dumps(self._store, sort_keys=True, indent=4)

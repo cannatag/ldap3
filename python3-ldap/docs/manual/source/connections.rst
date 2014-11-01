@@ -183,7 +183,9 @@ Additional methods defined:
 
     * all_base64: converts all the value to base64 (defaults to False)
 
-* close: an alias for the unbind operation
+* response_to_json: this method returns the entries found in a search in a string with JSON format
+
+* response_to_file: this method saves to a file the entries found in a search with JSON format. You can specify if you want the raw attributes with the raw=True parameter. Entries are saved as a list in the 'entries' key.
 
 Connection attributes:
 

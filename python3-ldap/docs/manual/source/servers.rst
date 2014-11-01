@@ -30,6 +30,12 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
     * GET_ALL_INFO: server and schema information are gathered and stored in server.info and server.schema
 
+    * OFFLINE_EDIR_8_8_8: pre-built schema and info for NetIQ eDirectory 8.8.8
+
+    * OFFLINE_AD_2012_R2: pre-built schema and info for Microsoft Active Directory from Windows Server 2012 R2
+
+    * OFFLINE_SLAPD_2_4: pre-built schema and info for Openldap 2.4
+
 * tls: Tls object that contains information about the certificates and the trusted roots needed to establish a secure connection (defaults to None). If None any server certificate will be accepted.
 
 * formatter: a dictionary of custom formatter for attributes returned in search
@@ -90,3 +96,25 @@ Connections are notified of the change and can reopen the socket to the new serv
 Custom formatters can be used to specify how an attribute value must be returned in the 'attributes' attribute of the search entry object.
 A formatter must be a callable that receives a bytes value and return an object. The object will be returned in the 'attributes' if the schema is read and check_names connection parameter is True.
 If the attribute is defined in the schema as 'multi_value' the attribute value is returned as a list (even if only a single value is present) else it's returned as a single value.
+
+Offline Schema
+--------------
+
+In case your LDAP server doesn't return the DSA info or the Schema you can load pre-built schemas and infos with the get_info parameter. Are available schemas for eDirectory, Active Directory and Openldap.
+
+You can also save the schema and info in a json string::
+    json_info = server.info.to_json()
+    json_schema = server.schema.to_json('')
+
+or can have them saved on file:
+    server.info.to_file('server-info.json)
+    server.schema.to_file('server-schema.json')
+
+to build a new server object with the saved json files you can retrieve them with::
+
+    from ldap3 import DsaInfo, SchemaInfo
+    dsa_info = DsaInfo.from_file('server-info.json')
+    schema_info = SchemaInfo.from_file('server-schema.json')
+    server = Server('hostname', dsa_info, schema_info)
+
+and then you can use the server as usual. Hostname must resolve to a real server.

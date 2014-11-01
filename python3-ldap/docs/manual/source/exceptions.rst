@@ -68,6 +68,16 @@ LDAPException
 
 ------LDAPUnknownResponseError
 
+----LDAPConfigurationError
+
+------LDAPUnknownStrategyError
+
+------LDAPUnknownAuthenticationMethodError
+
+------LDAPSSLConfigurationError
+
+------LDAPDefinitionError
+
 ----LDAPConnectionIsReadOnlyError
 
 ----LDAPConnectionPoolNameIsMandatoryError
@@ -120,17 +130,11 @@ LDAPException
 
 ----LDAPServerPoolExhaustedError
 
-----LDAPSSLConfigurationError
-
 ----LDAPSSLNotSupportedError (inherits also from ImportError)
 
 ----LDAPStartTLSError
 
 ----LDAPTypeError
-
-----LDAPUnknownAuthenticationMethodError
-
-----LDAPUnknownStrategyError
 
 --LDAPOperationResult
 

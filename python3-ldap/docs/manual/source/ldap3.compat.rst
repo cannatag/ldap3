@@ -4,30 +4,11 @@ ldap3.compat package
 Submodules
 ----------
 
-ldap3.compat.connection module
-------------------------------
+.. toctree::
 
-.. automodule:: ldap3.compat.connection
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ldap3.compat.server module
---------------------------
-
-.. automodule:: ldap3.compat.server
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ldap3.compat.tls module
------------------------
-
-.. automodule:: ldap3.compat.tls
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   ldap3.compat.connection
+   ldap3.compat.server
+   ldap3.compat.tls
 
 Module contents
 ---------------

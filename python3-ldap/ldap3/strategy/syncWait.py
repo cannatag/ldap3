@@ -26,7 +26,7 @@
 import socket
 from pyasn1.codec.ber import decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL, SEQUENCE_TYPES
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
@@ -128,7 +128,7 @@ class SyncWaitStrategy(BaseStrategy):
         """
         responses, _ = self.get_response(message_id)
         if isinstance(responses, SEQUENCE_TYPES):
-            self.connection.response = responses[:]  # copy search result entries without result
+            self.connection.response = responses[:]  # copy search result entries
             return responses
 
         self.connection.last_error = 'error receiving response'
@@ -176,17 +176,19 @@ class SyncWaitStrategy(BaseStrategy):
 
         ldap_responses.append(RESPONSE_COMPLETE)
 
-        if ldap_responses[-2]['result'] == RESULT_REFERRAL:
-            if self.connection._usage:
-                self.connection._usage.referrals_received += 1
-            if self.connection.auto_referrals:
-                ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], ldap_responses[-2]['referrals'])
-                if ref_response is not None:
-                    ldap_responses = ref_response + [ref_result]
-                    ldap_responses.append(RESPONSE_COMPLETE)
-                elif ref_result is not None:
-                    ldap_responses = [ref_result, RESPONSE_COMPLETE]
-
-                self._referrals = []
+        # moved to base_strategy
+        #
+        # if ldap_responses[-2]['result'] == RESULT_REFERRAL:
+        #     if self.connection._usage:
+        #         self.connection._usage.referrals_received += 1
+        #     if self.connection.auto_referrals:
+        #         ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], ldap_responses[-2]['referrals'])
+        #         if ref_response is not None:
+        #             ldap_responses = ref_response + [ref_result]
+        #             ldap_responses.append(RESPONSE_COMPLETE)
+        #         elif ref_result is not None:
+        #             ldap_responses = [ref_result, RESPONSE_COMPLETE]
+        #
+        #         self._referrals = []
 
         return ldap_responses

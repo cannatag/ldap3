@@ -29,14 +29,17 @@ from random import choice
 
 from pyasn1.codec.ber import encoder, decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS, DO_NOT_RAISE_EXCEPTIONS
-from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer, LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS,\
+               DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE
+from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
+                              LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
+                              LDAPSocketSendError, LDAPExceptionError, LDAPControlsError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
-from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict, search_result_entry_response_to_dict, search_request_to_dict
+from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict,\
+                               search_result_entry_response_to_dict, search_request_to_dict
 from ..operation.bind import bind_response_to_dict, bind_request_to_dict
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
 from ..operation.extended import extended_request_to_dict, extended_response_to_dict, intermediate_response_to_dict
@@ -242,6 +245,7 @@ class BaseStrategy(object):
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
+
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     try:  # try to close the session but don't raise any error if server has already closed the session
                         self.close()
@@ -249,6 +253,21 @@ class BaseStrategy(object):
                         pass
                     self.connection.last_error = 'session terminated by server'
                     raise LDAPSessionTerminatedByServer(self.connection.last_error)
+
+                # if referral in response opens a new connection to resolve referrals if requested
+                if responses is not None and responses[-2]['result'] == RESULT_REFERRAL:
+                    if self.connection._usage:
+                        self.connection._usage.referrals_received += 1
+                    if self.connection.auto_referrals:
+                        ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
+                        if ref_response is not None:
+                            responses = ref_response + [ref_result]
+                            responses.append(RESPONSE_COMPLETE)
+                        elif ref_result is not None:
+                            responses = [ref_result, RESPONSE_COMPLETE]
+
+                        self._referrals = []
+
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
                     timeout -= RESPONSE_SLEEPTIME

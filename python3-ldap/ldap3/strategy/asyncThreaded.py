@@ -27,7 +27,7 @@ from threading import Thread, Lock
 
 from pyasn1.codec.ber import decoder
 
-from .. import RESPONSE_COMPLETE, SOCKET_SIZE, RESULT_REFERRAL
+from .. import RESPONSE_COMPLETE, SOCKET_SIZE
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.baseStrategy import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
@@ -182,18 +182,18 @@ class AsyncThreadedStrategy(BaseStrategy):
         """
         with self.lock:
             responses = self._responses.pop(message_id) if message_id in self._responses and self._responses[message_id][-1] == RESPONSE_COMPLETE else None
-
-        if responses is not None and responses[-2]['result'] == RESULT_REFERRAL:
-            if self.connection._usage:
-                self.connection._usage.referrals_followed += 1
-            if self.connection.auto_referrals:
-                ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
-                if ref_response is not None:
-                    responses = ref_response + [ref_result]
-                    responses.append(RESPONSE_COMPLETE)
-                elif ref_result is not None:
-                    responses = [ref_result, RESPONSE_COMPLETE]
-
-                self._referrals = []
-
+        # moved to base strategy
+        #
+        # if responses is not None and responses[-2]['result'] == RESULT_REFERRAL:
+        #     if self.connection._usage:
+        #         self.connection._usage.referrals_received += 1
+        #     if self.connection.auto_referrals:
+        #         ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
+        #         if ref_response is not None:
+        #             responses = ref_response + [ref_result]
+        #             responses.append(RESPONSE_COMPLETE)
+        #         elif ref_result is not None:
+        #             responses = [ref_result, RESPONSE_COMPLETE]
+        #
+        #         self._referrals = []
         return responses

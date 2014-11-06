@@ -412,7 +412,8 @@ class Connection(object):
                controls=None,
                paged_size=None,
                paged_criticality=False,
-               paged_cookie=None):
+               paged_cookie=None,
+               auto_range=False):
         """
         Perform an ldap search:
 

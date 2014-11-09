@@ -124,6 +124,7 @@ class Connection(object):
                  authentication=None,
                  client_strategy=STRATEGY_SYNC,
                  auto_referrals=True,
+                 auto_range=False,
                  sasl_mechanism=None,
                  sasl_credentials=None,
                  check_names=True,
@@ -186,6 +187,7 @@ class Connection(object):
         self.starting_tls = False
         self.check_names = check_names
         self.raise_exceptions = raise_exceptions
+        self.auto_range = True if auto_range else False
         self.extend = ExtendedOperationsRoot(self)
 
         if isinstance(server, STRING_TYPES):
@@ -412,8 +414,7 @@ class Connection(object):
                controls=None,
                paged_size=None,
                paged_criticality=False,
-               paged_cookie=None,
-               auto_range=False):
+               paged_cookie=None):
         """
         Perform an ldap search:
 

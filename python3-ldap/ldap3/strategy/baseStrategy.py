@@ -34,6 +34,7 @@ from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITIN
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
                               LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
                               LDAPSocketSendError, LDAPExceptionError, LDAPControlsError
+from ldap3 import SEARCH_SCOPE_BASE_OBJECT
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
@@ -245,6 +246,10 @@ class BaseStrategy(object):
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
+                if not responses:
+                    sleep(RESPONSE_SLEEPTIME)
+                    timeout -= RESPONSE_SLEEPTIME
+                    continue
 
                 if responses == SESSION_TERMINATED_BY_SERVER:
                     try:  # try to close the session but don't raise any error if server has already closed the session
@@ -255,7 +260,7 @@ class BaseStrategy(object):
                     raise LDAPSessionTerminatedByServer(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
-                if responses is not None and responses[-2]['result'] == RESULT_REFERRAL:
+                if responses[-2]['result'] == RESULT_REFERRAL:
                     if self.connection._usage:
                         self.connection._usage.referrals_received += 1
                     if self.connection.auto_referrals:
@@ -268,20 +273,31 @@ class BaseStrategy(object):
 
                         self._referrals = []
 
-                if not responses:
-                    sleep(RESPONSE_SLEEPTIME)
-                    timeout -= RESPONSE_SLEEPTIME
-                else:
-                    if responses:
-                        self._outstanding.pop(message_id)
-                        result = responses[-2]
-                        response = responses[:-2]
-                        self.connection.result = result
-                        self.connection.response = None
+                if responses:
+                    result = responses[-2]
+                    response = responses[:-2]
+                    self.connection.result = result
+                    self.connection.response = None
                     break
+
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 
+            # checks if any response has a range tag
+            # self._auto_range_searching is set as a flag do avoid recursive searches
+            if self.connection.auto_range and not hasattr(self, '_auto_range_searching') and any((True for resp in response for name in resp['raw_attributes'] if ';range=' in name)):
+                self._auto_range_searching = True
+                temp_response = response[:]  # copy
+                self.do_search_on_auto_range(self._outstanding[message_id], response)
+                for resp in temp_response:
+                    keys = [key for key in resp['raw_attributes'] if ';range=' in key]
+                    for key in keys:
+                        del resp['raw_attributes'][key]
+                        del resp['attributes'][key]
+                response = temp_response
+                del self._auto_range_searching
+
+            self._outstanding.pop(message_id)
         return response, result
 
     @classmethod
@@ -409,6 +425,40 @@ class BaseStrategy(object):
                             break
 
         return referral_list
+
+    def do_next_range_search(self, request, response, attr_name):
+        done = False
+        current_response = response
+        while not done:
+            attr_type, _, range = attr_name.partition(';range=')
+            _, _, high_range = range.partition('-')
+            response['raw_attributes'][attr_type] += current_response['raw_attributes'][attr_name]
+            response['attributes'][attr_type] += current_response['attributes'][attr_name]
+            if high_range != '*':
+                result = self.connection.search(search_base=response['dn'],
+                                          search_filter='(objectclass=*)',
+                                          search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                          dereference_aliases=request['dereferenceAlias'],
+                                          attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
+                if isinstance(result, bool):
+                    current_response = self.connection.response[0]
+                else:
+                    current_response, _ = self.get_response(result)
+                    current_response = current_response[0]
+
+                attr_name=list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
+                continue
+
+            done = True
+
+    def do_search_on_auto_range(self, request, response):
+        for resp in response:
+            for attr_name in resp['raw_attributes'].keys():
+                if ';range=' in attr_name:
+                    attr_type, _, _ = attr_name.partition(';range=')
+                    resp['raw_attributes'][attr_type] = list()
+                    resp['attributes'][attr_type] = list()
+                    self.do_next_range_search(request, resp, attr_name)
 
     def do_operation_on_referral(self, request, referrals):
         valid_referral_list = self.valid_referral_list(referrals)

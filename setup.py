@@ -20,11 +20,11 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 
 package_name = 'python3-ldap'
-package_folder = path.join(path.abspath(path.dirname(__file__)), 'python3-ldap')
+package_folder = path.join('.', package_name)
 version_file = open(path.join(package_folder, 'ldap3', '_version.py'))
 exec_local = dict()
 exec(version_file.read(), dict(), exec_local)

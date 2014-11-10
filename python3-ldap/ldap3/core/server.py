@@ -25,7 +25,8 @@
 
 import socket
 from threading import Lock
-from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT, CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, SEQUENCE_TYPES
+from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
+               CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
 from ..protocol.formatters.standard import format_attribute_values
@@ -297,8 +298,12 @@ class Server(object):
                 from ..protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(slapd_2_4_schema))
                 self.attach_dsa_info(DsaInfo.from_json(slapd_2_4_dsa_info))
+            elif self.get_info == OFFLINE_DS389_1_3_3:
+                from ..protocol.schemas.ds389 import ds389_1_3_3_schema, ds389_1_3_3_dsa_info
+                self.attach_schema_info(SchemaInfo.from_json(ds389_1_3_3_schema))
+                self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
 
-            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4]:
+            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
                 self._get_dsa_info(connection)
 
     def attach_dsa_info(self, dsa_info=None):

@@ -290,10 +290,11 @@ class BaseStrategy(object):
                 temp_response = response[:]  # copy
                 self.do_search_on_auto_range(self._outstanding[message_id], response)
                 for resp in temp_response:
-                    keys = [key for key in resp['raw_attributes'] if ';range=' in key]
-                    for key in keys:
-                        del resp['raw_attributes'][key]
-                        del resp['attributes'][key]
+                    if resp['type'] == 'searchResEntry':
+                        keys = [key for key in resp['raw_attributes'] if ';range=' in key]
+                        for key in keys:
+                            del resp['raw_attributes'][key]
+                            del resp['attributes'][key]
                 response = temp_response
                 del self._auto_range_searching
 
@@ -452,7 +453,7 @@ class BaseStrategy(object):
             done = True
 
     def do_search_on_auto_range(self, request, response):
-        for resp in response:
+        for resp in [r for r in response if r['type'] == 'searchResEntry']:
             for attr_name in resp['raw_attributes'].keys():
                 if ';range=' in attr_name:
                     attr_type, _, _ = attr_name.partition(';range=')

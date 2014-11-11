@@ -57,10 +57,11 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.6.1 2014.11.09
+* 0.9.6.1 2014.11.11
     - Added boolean parameter "auto_range" to catch the "range" ldap tag in searches. When true all needed search operation are made to fully obtain the whole range of result values
     - Fixed bug in sdist
     - Added offline schema for Fedora 389 Directory Server 1.3.3
+    - Fixed bug while reading DSA info
 
 * 0.9.6 2014.11.01
     - New feature 'offline schema' to let the client have knowledge of schema and DSA info even if not returned by the server

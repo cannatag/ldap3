@@ -27,7 +27,7 @@ ds389_1_3_3_schema = """
 {
     "raw": {
         "aci": [
-            "(target=\"ldap:///cn=schema\")(targetattr !=\"aci\")(version 3.0;acl \"anonymous, no acis\"; allow (read, search, compare) userdn = \"ldap:///anyone\";)"
+            "(target=\\"ldap:///cn=schema\\")(targetattr !=\\"aci\\")(version 3.0;acl \\"anonymous, no acis\\"; allow (read, search, compare) userdn = \\"ldap:///anyone\\";)"
         ],
         "attributeTypes": [
             "( 2.16.840.1.113730.3.1.582 NAME 'nsDS5ReplicaCredentials' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE X-ORIGIN 'Netscape Directory Server' )",
@@ -120,7 +120,7 @@ ds389_1_3_3_schema = """
             "( 2.16.840.1.113730.3.1.2246 NAME 'nsslapd-maxdescriptors' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-ORIGIN 'Netscape Directory Server' )",
             "( 2.16.840.1.113730.3.1.2113 NAME 'internalModifiersName' DESC 'plugin dn' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-ORIGIN '389 Directory Server' )",
             "( 2.16.840.1.113730.3.1.2094 NAME 'nsslapd-parent-suffix' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-ORIGIN 'Netscape' )",
-            "( 2.16.840.1.113730.3.1.692 NAME 'inetUserStatus' DESC '\"active\", \"inactive\", or \"deleted\" status of a user' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE X-ORIGIN 'Netscape subscriber interoperability' )",
+            "( 2.16.840.1.113730.3.1.692 NAME 'inetUserStatus' DESC '\\"active\\", \\"inactive\\", or \\"deleted\\" status of a user' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE X-ORIGIN 'Netscape subscriber interoperability' )",
             "( 1.3.18.0.2.4.1110 NAME 'printer-job-priority-supported' DESC 'Indicates the number of job priority levels supported by this printer.' EQUALITY integerMatch ORDERING integerOrderingMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-ORIGIN 'rfc3712' )",
             "( 2.16.840.1.113730.3.1.2183 NAME 'nsslapd-audit-logrotationsyncmin' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-ORIGIN 'Netscape Directory Server' )",
             "( 2.16.840.1.113730.3.1.2304 NAME 'nsslapd-dynamic-plugins' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE X-ORIGIN 'Netscape Directory Server' )",
@@ -651,7 +651,7 @@ ds389_1_3_3_schema = """
             "( 2.16.840.1.113730.3.1.95 NAME 'accountUnlockTime' DESC 'Netscape defined password policy attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE USAGE directoryOperation X-ORIGIN 'Netscape Directory Server' )",
             "( 2.16.840.1.113730.3.1.2245 NAME 'nsslapd-maxthreadsperconn' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-ORIGIN 'Netscape Directory Server' )",
             "( 2.16.840.1.113730.3.1.2112 NAME 'ntGroupType' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE X-ORIGIN 'Netscape NT Synchronization' )",
-            "( 2.16.840.1.113730.3.1.691 NAME 'inetDomainStatus' DESC '\"active\", \"inactive\", or \"deleted\" status of a domain' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE X-ORIGIN 'Netscape subscriber interoperability' )",
+            "( 2.16.840.1.113730.3.1.691 NAME 'inetDomainStatus' DESC '\\"active\\", \\"inactive\\", or \\"deleted\\" status of a domain' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE X-ORIGIN 'Netscape subscriber interoperability' )",
             "( 1.3.18.0.2.4.1111 NAME 'printer-job-k-octets-supported' DESC 'The maximum size in kilobytes (1,024 octets actually) incoming print job that this printer will accept.' EQUALITY integerMatch ORDERING integerOrderingMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-ORIGIN 'rfc3712' )",
             "( 2.16.840.1.113730.3.1.2182 NAME 'nsslapd-errorlog-logrotationsyncmin' DESC 'Netscape defined attribute type' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-ORIGIN 'Netscape Directory Server' )",
             "( 2.16.840.1.113730.3.1.788 NAME 'mgrpBroadcasterPolicy' DESC 'Netscape Messaging Server 4.x defined attribute' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 X-ORIGIN 'Netscape Messaging Server 4.x' )",
@@ -919,7 +919,7 @@ ds389_1_3_3_schema = """
             "( 2.5.13.16 NAME 'bitStringMatch' DESC 'The bitStringMatch rule compares an assertion value of the Bit String syntax to an attribute value of a syntax (e.g., the Bit String syntax) whose corresponding ASN.1 type is BIT STRING.  If the corresponding ASN.1 type of the attribute syntax does not have a named bit list [ASN.1] (which is the case for the Bit String syntax), then the rule evaluates to TRUE if and only if the attribute value has the same number of bits as the assertion value and the bits match on a bitwise basis.  If the corresponding ASN.1 type does have a named bit list, then bitStringMatch operates as above, except that trailing zero bits in the attribute and assertion values are treated as absent.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.6 )",
             "( 1.3.6.1.4.1.1466.109.114.1 NAME 'caseExactIA5Match' DESC 'The caseExactIA5Match rule compares an assertion value of the IA5 String syntax to an attribute value of a syntax (e.g., the IA5 String syntax) whose corresponding ASN.1 type is IA5String. The rule evaluates to TRUE if and only if the prepared attribute value character string and the prepared assertion value character string have the same number of characters and corresponding characters have the same code point. In preparing the attribute value and assertion value for comparison, characters are not case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )",
             "( 2.5.13.5 NAME 'caseExactMatch' DESC 'The caseExactMatch rule compares an assertion value of the Directory String syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of the alternative string types of DirectoryString, such as PrintableString (the other alternatives do not correspond to any syntax defined in this document). The rule evaluates to TRUE if and only if the prepared attribute value character string and the prepared assertion value character string have the same number of characters and corresponding characters have the same code point. In preparing the attribute value and assertion value for comparison, characters are not case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
-            "( 2.5.13.6 NAME 'caseExactOrderingMatch' DESC 'The caseExactOrderingMatch rule compares an assertion value of the Directory String syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of its alternative string types. The rule evaluates to TRUE if and only if, in the code point collation order, the prepared attribute value character string appears earlier than the prepared assertion value character string; i.e., the attribute value is \"less than\" the assertion value. In preparing the attribute value and assertion value for comparison, characters are not case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
+            "( 2.5.13.6 NAME 'caseExactOrderingMatch' DESC 'The caseExactOrderingMatch rule compares an assertion value of the Directory String syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of its alternative string types. The rule evaluates to TRUE if and only if, in the code point collation order, the prepared attribute value character string appears earlier than the prepared assertion value character string; i.e., the attribute value is \\"less than\\" the assertion value. In preparing the attribute value and assertion value for comparison, characters are not case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
             "( 2.5.13.7 NAME 'caseExactSubstringsMatch' DESC 'The caseExactSubstringsMatch rule compares an assertion value of the Substring Assertion syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of its alternative string types. The rule evaluates to TRUE if and only if (1) the prepared substrings of the assertion value match disjoint portions of the prepared attribute value character string in the order of the substrings in the assertion value, (2) an <initial> substring, if present, matches the beginning of the prepared attribute value character string, and (3) a <final> substring, if present, matches the end of the prepared attribute value character string.  A prepared substring matches a portion of the prepared attribute value character string if corresponding characters have the same code point. In preparing the attribute value and assertion value substrings for comparison, characters are not case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.58 )",
             "( 2.16.840.1.113730.3.3.1 NAME 'caseExactIA5SubstringsMatch' DESC 'The caseExactIA5SubstringsMatch rule compares an assertion value of the Substring Assertion syntax to an attribute value of a syntax (e.g., the IA5 syntax) whose corresponding ASN.1 type is IA5 String or one of its alternative string types. The rule evaluates to TRUE if and only if (1) the prepared substrings of the assertion value match disjoint portions of the prepared attribute value character string in the order of the substrings in the assertion value, (2) an <initial> substring, if present, matches the beginning of the prepared attribute value character string, and (3) a <final> substring, if present, matches the end of the prepared attribute value character string.  A prepared substring matches a portion of the prepared attribute value character string if corresponding characters have the same code point. In preparing the attribute value and assertion value substrings for comparison, characters are not case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.58 )",
             "( 2.5.13.27 NAME 'generalizedTimeMatch' DESC 'The rule evaluates to TRUE if and only if the attribute value represents the same universal coordinated time as the assertion value.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 )",
@@ -928,10 +928,10 @@ ds389_1_3_3_schema = """
             "( 1.3.6.1.4.1.1466.109.114.2 NAME 'caseIgnoreIA5Match' DESC 'The caseIgnoreIA5Match rule compares an assertion value of the IA5 String syntax to an attribute value of a syntax (e.g., the IA5 String syntax) whose corresponding ASN.1 type is IA5String.  The rule evaluates to TRUE if and only if the prepared attribute value character string and the prepared assertion value character string have the same number of characters and corresponding characters have the same code point.  In preparing the attribute value and assertion value for comparison, characters are case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )",
             "( 1.3.6.1.4.1.1466.109.114.3 NAME 'caseIgnoreIA5SubstringsMatch' DESC 'The caseIgnoreIA5SubstringsMatch rule compares an assertion value of the Substring Assertion syntax to an attribute value of a syntax (e.g., the IA5 String syntax) whose corresponding ASN.1 type is IA5String.  The rule evaluates to TRUE if and only if (1) the prepared substrings of the assertion value match disjoint portions of the prepared attribute value character string in the order of the substrings in the assertion value, (2) an <initial> substring, if present, matches the beginning of the prepared attribute value character string, and (3) a <final> substring, if present, matches the end of the prepared attribute value character string.  A prepared substring matches a portion of the prepared attribute value character string if corresponding characters have the same code point.  In preparing the attribute value and assertion value substrings for comparison, characters are case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.58 )",
             "( 2.5.13.2 NAME 'caseIgnoreMatch' DESC 'The caseIgnoreMatch rule compares an assertion value of the Directory String syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of its alternative string types.  The rule evaluates to TRUE if and only if the prepared attribute value character string and the prepared assertion value character string have the same number of characters and corresponding characters have the same code point. In preparing the attribute value and assertion value for comparison, characters are case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
-            "( 2.5.13.3 NAME 'caseIgnoreOrderingMatch' DESC 'The caseIgnoreOrderingMatch rule compares an assertion value of the Directory String syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of its alternative string types. The rule evaluates to TRUE if and only if, in the code point collation order, the prepared attribute value character string appears earlier than the prepared assertion value character string; i.e., the attribute value is \"less than\" the assertion value. In preparing the attribute value and assertion value for comparison, characters are case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
+            "( 2.5.13.3 NAME 'caseIgnoreOrderingMatch' DESC 'The caseIgnoreOrderingMatch rule compares an assertion value of the Directory String syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of its alternative string types. The rule evaluates to TRUE if and only if, in the code point collation order, the prepared attribute value character string appears earlier than the prepared assertion value character string; i.e., the attribute value is \\"less than\\" the assertion value. In preparing the attribute value and assertion value for comparison, characters are case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
             "( 2.5.13.4 NAME 'caseIgnoreSubstringsMatch' DESC 'The caseIgnoreSubstringsMatch rule compares an assertion value of the Substring Assertion syntax to an attribute value of a syntax (e.g., the Directory String, Printable String, Country String, or Telephone Number syntax) whose corresponding ASN.1 type is DirectoryString or one of its alternative string types. The rule evaluates to TRUE if and only if (1) the prepared substrings of the assertion value match disjoint portions of the prepared attribute value character string in the order of the substrings in the assertion value, (2) an <initial> substring, if present, matches the beginning of the prepared attribute value character string, and (3) a <final> substring, if present, matches the end of the prepared attribute value character string.  A prepared substring matches a portion of the prepared attribute value character string if corresponding characters have the same code point. In preparing the attribute value and assertion value substrings for comparison, characters are case folded in the Map preparation step, and only Insignificant Space Handling is applied in the Insignificant Character Handling step.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.58 )",
             "( 2.5.13.11 NAME 'caseIgnoreListMatch' DESC 'The caseIgnoreListMatch rule compares an assertion value that is a sequence of strings to an attribute value of a syntax (e.g., the Postal Address syntax) whose corresponding ASN.1 type is a SEQUENCE OF the DirectoryString ASN.1 type. The rule evaluates to TRUE if and only if the attribute value and the assertion value have the same number of strings and corresponding strings (by position) match according to the caseIgnoreMatch matching rule. In [X.520], the assertion syntax for this matching rule is defined to be:       SEQUENCE OF DirectoryString {ub-match} That is, it is different from the corresponding type for the Postal Address syntax.  The choice of the Postal Address syntax for the assertion syntax of the caseIgnoreListMatch in LDAP should not be seen as limiting the matching rule to apply only to attributes with the Postal Address syntax.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.41 )",
-            "( 2.5.13.12 NAME 'caseIgnoreListSubstringsMatch' DESC 'The caseIgnoreListSubstringsMatch rule compares an assertion value of the Substring Assertion syntax to an attribute value of a syntax (e.g., the Postal Address syntax) whose corresponding ASN.1 type is a SEQUENCE OF the DirectoryString ASN.1 type. The rule evaluates to TRUE if and only if the assertion value matches, per the caseIgnoreSubstringsMatch rule, the character string formed by concatenating the strings of the attribute value, except that none of the <initial>, <any>, or <final> substrings of the assertion value are considered to match a substring of the concatenated string which spans more than one of the original strings of the attribute value. Note that, in terms of the LDAP-specific encoding of the Postal Address syntax, the concatenated string omits the <DOLLAR> line separator and the escaping of \"\\\" and \"$\" characters.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.58 )",
+            "( 2.5.13.12 NAME 'caseIgnoreListSubstringsMatch' DESC 'The caseIgnoreListSubstringsMatch rule compares an assertion value of the Substring Assertion syntax to an attribute value of a syntax (e.g., the Postal Address syntax) whose corresponding ASN.1 type is a SEQUENCE OF the DirectoryString ASN.1 type. The rule evaluates to TRUE if and only if the assertion value matches, per the caseIgnoreSubstringsMatch rule, the character string formed by concatenating the strings of the attribute value, except that none of the <initial>, <any>, or <final> substrings of the assertion value are considered to match a substring of the concatenated string which spans more than one of the original strings of the attribute value. Note that, in terms of the LDAP-specific encoding of the Postal Address syntax, the concatenated string omits the <DOLLAR> line separator and the escaping of \\"\\\\\\" and \\"$\\" characters.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.58 )",
             "( 2.5.13.0 NAME 'objectIdentifierMatch' DESC 'The objectIdentifierMatch rule compares an assertion value of the OID syntax to an attribute value of a syntax (e.g., the OID syntax) whose corresponding ASN.1 type is OBJECT IDENTIFIER. The rule evaluates to TRUE if and only if the assertion value and the attribute value represent the same object identifier; that is, the same sequence of integers, whether represented explicitly in the <numericoid> form of <oid> or implicitly in the <descr> form (see [RFC4512]). If an LDAP client supplies an assertion value in the <descr> form and the chosen descriptor is not recognized by the server, then the objectIdentifierMatch rule evaluates to Undefined.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )",
             "( 2.5.13.31 NAME 'directoryStringFirstComponentMatch' DESC 'The directoryStringFirstComponentMatch rule compares an assertion value of the Directory String syntax to an attribute value of a syntax whose corresponding ASN.1 type is a SEQUENCE with a mandatory first component of the DirectoryString ASN.1 type. Note that the assertion syntax of this matching rule differs from the attribute syntax of attributes for which this is the equality matching rule. The rule evaluates to TRUE if and only if the assertion value matches the first component of the attribute value using the rules of caseIgnoreMatch.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
             "( 2.5.13.30 NAME 'objectIdentifierFirstComponentMatch' DESC 'The objectIdentifierFirstComponentMatch rule compares an assertion value of the OID syntax to an attribute value of a syntax (e.g., the Attribute Type Description, DIT Content Rule Description, LDAP Syntax Description, Matching Rule Description, Matching Rule Use Description, Name Form Description, or Object Class Description syntax) whose corresponding ASN.1 type is a SEQUENCE with a mandatory first component of the OBJECT IDENTIFIER ASN.1 type. Note that the assertion syntax of this matching rule differs from the attribute syntax of attributes for which this is the equality matching rule. The rule evaluates to TRUE if and only if the assertion value matches the first component of the attribute value using the rules of objectIdentifierMatch.' SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )",
@@ -1627,5 +1627,89 @@ ds389_1_3_3_schema = """
 """
 
 ds389_1_3_3_dsa_info = """
-
+{
+    "raw": {
+        "aci": [
+            "(targetattr != \\"aci\\")(version 3.0; aci \\"rootdse anon read access\\"; allow(read,search,compare) userdn=\\"ldap:///anyone\\";)"
+        ],
+        "dataversion": [
+            "020141110230816"
+        ],
+        "defaultnamingcontext": [
+            "dc=labldap06,dc=a3,dc=internal,dc=cloudapp,dc=net"
+        ],
+        "namingContexts": [
+            "dc=labldap06,dc=a3,dc=internal,dc=cloudapp,dc=net"
+        ],
+        "netscapemdsuffix": [
+            "cn=ldap://dc=DS3891,dc=labldap06,dc=a3,dc=internal,dc=cloudapp,dc=net:389"
+        ],
+        "objectClass": [
+            "top"
+        ],
+        "subschemaSubentry": [
+            "cn=schema"
+        ],
+        "supportedControl": [
+            "2.16.840.1.113730.3.4.2",
+            "2.16.840.1.113730.3.4.3",
+            "2.16.840.1.113730.3.4.4",
+            "2.16.840.1.113730.3.4.5",
+            "1.2.840.113556.1.4.473",
+            "2.16.840.1.113730.3.4.9",
+            "2.16.840.1.113730.3.4.16",
+            "2.16.840.1.113730.3.4.15",
+            "2.16.840.1.113730.3.4.17",
+            "2.16.840.1.113730.3.4.19",
+            "1.3.6.1.1.13.1",
+            "1.3.6.1.1.13.2",
+            "1.3.6.1.4.1.42.2.27.8.5.1",
+            "1.3.6.1.4.1.42.2.27.9.5.2",
+            "1.2.840.113556.1.4.319",
+            "1.3.6.1.4.1.42.2.27.9.5.8",
+            "1.3.6.1.4.1.4203.666.5.16",
+            "2.16.840.1.113730.3.4.14",
+            "2.16.840.1.113730.3.4.20",
+            "1.3.6.1.4.1.1466.29539.12",
+            "2.16.840.1.113730.3.4.12",
+            "2.16.840.1.113730.3.4.18",
+            "2.16.840.1.113730.3.4.13"
+        ],
+        "supportedExtension": [
+            "2.16.840.1.113730.3.5.7",
+            "2.16.840.1.113730.3.5.8",
+            "2.16.840.1.113730.3.5.3",
+            "2.16.840.1.113730.3.5.12",
+            "2.16.840.1.113730.3.5.5",
+            "2.16.840.1.113730.3.5.6",
+            "2.16.840.1.113730.3.5.9",
+            "2.16.840.1.113730.3.5.4",
+            "2.16.840.1.113730.3.6.5",
+            "2.16.840.1.113730.3.6.6",
+            "2.16.840.1.113730.3.6.7",
+            "2.16.840.1.113730.3.6.8",
+            "1.3.6.1.4.1.4203.1.11.3",
+            "1.3.6.1.4.1.4203.1.11.1"
+        ],
+        "supportedLdapVersion": [
+            "2",
+            "3"
+        ],
+        "supportedSASLMechanisms": [
+            "EXTERNAL",
+            "PLAIN",
+            "DIGEST-MD5",
+            "ANONYMOUS",
+            "GSSAPI",
+            "LOGIN"
+        ],
+        "vendorName": [
+            "389 Project"
+        ],
+        "vendorVersion": [
+            "389-Directory/1.3.3.0 B2014.289.2022"
+        ]
+    },
+    "type": "DsaInfo"
+}
 """

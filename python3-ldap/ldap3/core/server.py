@@ -215,7 +215,23 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
-        result = connection.search('', '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=ALL_ATTRIBUTES, get_operational_attributes=True)
+        result = connection.search(search_base='',
+                                   search_filter='(objectClass=*)',
+                                   search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                   attributes=['altServer',  # requests specific dsa info attributes
+                                               'namingContexts',
+                                               'supportedControl',
+                                               'supportedExtension',
+                                               'supportedFeatures',
+                                               'supportedCapabilities',
+                                               'supportedLdapVersion',
+                                               'supportedSASLMechanisms',
+                                               'vendorName',
+                                               'vendorVersion',
+                                               'subschemaSubentry',
+                                               '*'],  # requests all remaining attributes (other),
+                                   get_operational_attributes=True)
+
         # self._dsa_info = None
         with self.lock:
             if isinstance(result, bool):  # sync request

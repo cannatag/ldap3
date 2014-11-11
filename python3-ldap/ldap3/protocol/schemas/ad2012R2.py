@@ -2079,7 +2079,7 @@ ad_2012_r2_schema = """
             "20130521164433.0Z"
         ]
     },
-    "schema_entry": "CN=Aggregate,CN=Schema,CN=Configuration,DC=FOREST,DC=LAB",
+    "schema_entry": "CN=Aggregate,CN=Schema,CN=Configuration,DC=AD2012,DC=LAB",
     "type": "SchemaInfo"
 }
 """
@@ -2087,16 +2087,16 @@ ad_2012_r2_dsa_info = """
 {
     "raw": {
         "configurationNamingContext": [
-            "CN=Configuration,DC=FOREST,DC=LAB"
+            "CN=Configuration,DC=AD2012,DC=LAB"
         ],
         "currentTime": [
-            "20141031120855.0Z"
+            "20141111080100.0Z"
         ],
         "defaultNamingContext": [
-            "DC=FOREST,DC=LAB"
+            "DC=AD2012,DC=LAB"
         ],
         "dnsHostName": [
-            "WIN1.FOREST.LAB"
+            "WIN1.AD2012.LAB"
         ],
         "domainControllerFunctionality": [
             "6"
@@ -2105,13 +2105,13 @@ ad_2012_r2_dsa_info = """
             "6"
         ],
         "dsServiceName": [
-            "CN=NTDS Settings,CN=WIN1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=FOREST,DC=LAB"
+            "CN=NTDS Settings,CN=WIN1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=AD2012,DC=LAB"
         ],
         "forestFunctionality": [
             "6"
         ],
         "highestCommittedUSN": [
-            "32605"
+            "22591"
         ],
         "isGlobalCatalogReady": [
             "TRUE"
@@ -2120,26 +2120,26 @@ ad_2012_r2_dsa_info = """
             "TRUE"
         ],
         "ldapServiceName": [
-            "FOREST.LAB:win1$@FOREST.LAB"
+            "AD2012.LAB:win1$@AD2012.LAB"
         ],
         "namingContexts": [
-            "DC=FOREST,DC=LAB",
-            "CN=Configuration,DC=FOREST,DC=LAB",
-            "CN=Schema,CN=Configuration,DC=FOREST,DC=LAB",
-            "DC=DomainDnsZones,DC=FOREST,DC=LAB",
-            "DC=ForestDnsZones,DC=FOREST,DC=LAB"
+            "DC=AD2012,DC=LAB",
+            "CN=Configuration,DC=AD2012,DC=LAB",
+            "CN=Schema,CN=Configuration,DC=AD2012,DC=LAB",
+            "DC=DomainDnsZones,DC=AD2012,DC=LAB",
+            "DC=ForestDnsZones,DC=AD2012,DC=LAB"
         ],
         "rootDomainNamingContext": [
-            "DC=FOREST,DC=LAB"
+            "DC=AD2012,DC=LAB"
         ],
         "schemaNamingContext": [
-            "CN=Schema,CN=Configuration,DC=FOREST,DC=LAB"
+            "CN=Schema,CN=Configuration,DC=AD2012,DC=LAB"
         ],
         "serverName": [
-            "CN=WIN1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=FOREST,DC=LAB"
+            "CN=WIN1,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=AD2012,DC=LAB"
         ],
         "subschemaSubentry": [
-            "CN=Aggregate,CN=Schema,CN=Configuration,DC=FOREST,DC=LAB"
+            "CN=Aggregate,CN=Schema,CN=Configuration,DC=AD2012,DC=LAB"
         ],
         "supportedCapabilities": [
             "1.2.840.113556.1.4.800",
@@ -2187,6 +2187,13 @@ ad_2012_r2_dsa_info = """
             "1.2.840.113556.1.4.2239",
             "1.2.840.113556.1.4.2255",
             "1.2.840.113556.1.4.2256"
+        ],
+        "supportedExtension": [
+            "1.3.6.1.4.1.1466.20037",
+            "1.3.6.1.4.1.1466.101.119.1",
+            "1.2.840.113556.1.4.1781",
+            "1.3.6.1.4.1.4203.1.11.3",
+            "1.2.840.113556.1.4.2212"
         ],
         "supportedLDAPPolicies": [
             "MaxPoolThreads",

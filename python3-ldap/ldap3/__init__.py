@@ -55,7 +55,7 @@ NO_ATTRIBUTES = '1.1'  # as per RFC 4511
 ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
 
 #checks
-ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, 'ldapSyntaxes', 'matchingRules', 'matchingRuleUse', 'dITContentRules', 'dITStructureRules', 'nameForms']
+ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, 'ldapSyntaxes', 'matchingRules', 'matchingRuleUse', 'dITContentRules', 'dITStructureRules', 'nameForms', 'altServer', 'namingContexts', 'supportedControl', 'supportedExtension', 'supportedFeatures', 'supportedCapabilities', 'supportedLdapVersion', 'supportedSASLMechanisms', 'vendorName', 'vendorVersion', 'subschemaSubentry']
 CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
 CASE_INSENSITIVE_SCHEMA_NAMES = True
 

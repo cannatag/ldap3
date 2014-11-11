@@ -206,45 +206,45 @@ class DsaInfo(BaseServerInfo):
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
         if isinstance(self.supported_ldap_versions, SEQUENCE_TYPES):
-            r += ('  Supported LDAP Versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions]) + linesep) if self.supported_ldap_versions else ''
+            r += ('  Supported LDAP Versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions])) if self.supported_ldap_versions else ''
         else:
             r += ('  Supported LDAP Versions: ' + str(self.supported_ldap_versions))
-
+        r += linesep
         if isinstance(self.naming_contexts, SEQUENCE_TYPES):
-            r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts]) + linesep) if self.naming_contexts else ''
+            r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts])) if self.naming_contexts else ''
         else:
-            r += ('  Naming Contexts:' + str(self.naming_contexts)) + linesep
-
+            r += ('  Naming Contexts:' + str(self.naming_contexts))
+        r += linesep
         if isinstance(self.alt_servers, SEQUENCE_TYPES):
-            r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers]) + linesep) if self.alt_servers else ''
+            r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers])) if self.alt_servers else ''
         else:
-            r += ('  Alternative Servers:' + str(self.alt_servers)) + linesep
-
+            r += ('  Alternative Servers:' + str(self.alt_servers))
+        r += linesep
         if isinstance(self.supported_controls, SEQUENCE_TYPES):
-            r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls]) + linesep) if self.supported_controls else ''
+            r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls])) if self.supported_controls else ''
         else:
-            r += ('  Supported Controls:' + str(self.supported_controls)) + linesep
-
+            r += ('  Supported Controls:' + str(self.supported_controls))
+        r += linesep
         if isinstance(self.supported_extensions, SEQUENCE_TYPES):
-            r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions]) + linesep) if self.supported_extensions else ''
+            r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions])) if self.supported_extensions else ''
         else:
-            r += ('  Supported Extensions:' + str(self.supported_extensions)) + linesep
-
+            r += ('  Supported Extensions:' + str(self.supported_extensions))
+        r += linesep
         if isinstance(self.supported_features, SEQUENCE_TYPES):
-            r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features]) + linesep) if self.supported_features else ''
+            r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features])) if self.supported_features else ''
         else:
-            r += ('  Supported Features:' + str(self.supported_features)) + linesep
-
+            r += ('  Supported Features:' + str(self.supported_features))
+        r += linesep
         if isinstance(self.supported_sasl_mechanisms, SEQUENCE_TYPES):
-            r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms]) + linesep) if self.supported_sasl_mechanisms else ''
+            r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms])) if self.supported_sasl_mechanisms else ''
         else:
-            r += ('  Supported SASL Mechanisms:' + str(self.supported_sasl_mechanisms)) + linesep
-
+            r += ('  Supported SASL Mechanisms:' + str(self.supported_sasl_mechanisms))
+        r += linesep
         if isinstance(self.schema_entry, SEQUENCE_TYPES):
-            r += ('  Schema Entry:' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry]) + linesep) if self.schema_entry else ''
+            r += ('  Schema Entry:' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry])) if self.schema_entry else ''
         else:
-            r += ('  Schema Entry:' + str(self.schema_entry)) + linesep
-
+            r += ('  Schema Entry:' + str(self.schema_entry))
+        r += linesep
         r += 'Other:' + linesep
         for k, v in self.other.items():
             r += '  ' + str(k) + ': ' + linesep
@@ -278,47 +278,48 @@ class SchemaInfo(BaseServerInfo):
         self.other = attributes  # remaining schema definition attributes not in RFC4512
 
     def __repr__(self):
-        r = 'DSA Schema from: ' + self.schema_entry + linesep
+        r = 'DSA Schema from: ' + self.schema_entry
+        r += linesep
         if isinstance(self.attribute_types, SEQUENCE_TYPES):
-            r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attribute_types[s]) for s in self.attribute_types]) + linesep) if self.attribute_types else ''
+            r += ('  Attribute types:' + linesep + '    ' + ', '.join([str(self.attribute_types[s]) for s in self.attribute_types])) if self.attribute_types else ''
         else:
-            r += ('  Attribute types:' + str(self.attribute_types)) + linesep
-
+            r += ('  Attribute types:' + str(self.attribute_types))
+        r += linesep
         if isinstance(self.object_classes, SEQUENCE_TYPES):
-            r += ('  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes]) + linesep) if self.object_classes else ''
+            r += ('  Object classes:' + linesep + '    ' + ', '.join([str(self.object_classes[s]) for s in self.object_classes])) if self.object_classes else ''
         else:
-            r += ('  Object classes:' + str(self.object_classes)) + linesep
-
+            r += ('  Object classes:' + str(self.object_classes))
+        r += linesep
         if isinstance(self.matching_rules, SEQUENCE_TYPES):
-            r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules]) + linesep) if self.matching_rules else ''
+            r += ('  Matching rules:' + linesep + '    ' + ', '.join([str(self.matching_rules[s]) for s in self.matching_rules])) if self.matching_rules else ''
         else:
-            r += ('  Matching rules:' + str(self.matching_rules)) + linesep
-
+            r += ('  Matching rules:' + str(self.matching_rules))
+        r += linesep
         if isinstance(self.matching_rule_uses, SEQUENCE_TYPES):
-            r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matching_rule_uses[s]) for s in self.matching_rule_uses]) + linesep) if self.matching_rule_uses else ''
+            r += ('  Matching rule uses:' + linesep + '    ' + ', '.join([str(self.matching_rule_uses[s]) for s in self.matching_rule_uses])) if self.matching_rule_uses else ''
         else:
-            r += ('  Matching rule uses:' + str(self.matching_rule_uses)) + linesep
-
+            r += ('  Matching rule uses:' + str(self.matching_rule_uses))
+        r += linesep
         if isinstance(self.dit_content_rules, SEQUENCE_TYPES):
-            r += ('  DIT content rules:' + linesep + '    ' + ', '.join([str(self.dit_content_rules[s]) for s in self.dit_content_rules]) + linesep) if self.dit_content_rules else ''
+            r += ('  DIT content rules:' + linesep + '    ' + ', '.join([str(self.dit_content_rules[s]) for s in self.dit_content_rules])) if self.dit_content_rules else ''
         else:
-            r += ('  DIT content rules:' + str(self.dit_content_rules)) + linesep
-
+            r += ('  DIT content rules:' + str(self.dit_content_rules))
+        r += linesep
         if isinstance(self.dit_structure_rules, SEQUENCE_TYPES):
-            r += ('  DIT structure rules:' + linesep + '    ' + ', '.join([str(self.dit_structure_rules[s]) for s in self.dit_structure_rules]) + linesep) if self.dit_structure_rules else ''
+            r += ('  DIT structure rules:' + linesep + '    ' + ', '.join([str(self.dit_structure_rules[s]) for s in self.dit_structure_rules])) if self.dit_structure_rules else ''
         else:
-            r += ('  DIT structure rules:' + str(self.dit_structure_rules)) + linesep
-
+            r += ('  DIT structure rules:' + str(self.dit_structure_rules))
+        r += linesep
         if isinstance(self.name_forms, SEQUENCE_TYPES):
-            r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.name_forms[s]) for s in self.name_forms]) + linesep) if self.name_forms else ''
+            r += ('  Name forms:' + linesep + '    ' + ', '.join([str(self.name_forms[s]) for s in self.name_forms])) if self.name_forms else ''
         else:
-            r += ('  Name forms:' + str(self.name_forms)) + linesep
-
+            r += ('  Name forms:' + str(self.name_forms))
+        r += linesep
         if isinstance(self.ldap_syntaxes, SEQUENCE_TYPES):
-            r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldap_syntaxes[s]) for s in self.ldap_syntaxes]) + linesep) if self.ldap_syntaxes else ''
+            r += ('  LDAP syntaxes:' + linesep + '    ' + ', '.join([str(self.ldap_syntaxes[s]) for s in self.ldap_syntaxes])) if self.ldap_syntaxes else ''
         else:
-            r += ('  LDAP syntaxes:' + str(self.ldap_syntaxes)) + linesep
-
+            r += ('  LDAP syntaxes:' + str(self.ldap_syntaxes))
+        r += linesep
         r += 'Other:' + linesep
 
         for k, v in self.other.items():

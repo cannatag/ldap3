@@ -51,27 +51,22 @@ def prepare_for_stream(value):
         return value.decode()
 
 
-def check_escape(obj):
-    if '"' in obj:
-        obj = obj.replace('\\"', '\\\\"')  # replace double quote with single quote
-        return json_encode_b64(obj)
-    if isinstance(obj, bytes):
-        obj = str(obj, 'utf-8', errors='strict')
-    if not '\\' in obj:
-        return obj
+def check_escape(raw_string):
+    if not '\\' in raw_string:
+        return raw_string
 
     escaped = ''
     i = 0
-    while i < len(obj):
-        if obj[i] == '\\' and i < len(obj) - 2:
+    while i < len(raw_string):
+        if raw_string[i] == '\\' and i < len(raw_string) - 2:
             try:
-                value = int(obj[i + 1: i + 3], 16)
+                value = int(raw_string[i + 1: i + 3], 16)
                 escaped += chr(value)
                 i += 2
             except ValueError:
                 escaped += '\\\\'
         else:
-            escaped += obj[i]
+            escaped += raw_string[i]
         i += 1
 
     return escaped
@@ -128,13 +123,13 @@ def format_json(obj):
     try:
         if str != bytes:  # python3
             if isinstance(obj, bytes):
-                return check_escape(obj)
+                return check_escape(str(obj, 'utf-8', errors='strict'))
             raise LDAPDefinitionError('unable to serialize ' + str(obj))
         else:  # python2
             if isinstance(obj, unicode):
                 return obj
             else:
-                return unicode(check_escape(obj), 'utf-8', errors='strict')
+                return unicode(check_escape(obj))
     except (TypeError, UnicodeDecodeError):
         pass
 

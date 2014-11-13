@@ -75,9 +75,9 @@ STRATEGY_REUSABLE_THREADED = 4
 CLIENT_STRATEGIES = [STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED]
 
 # communication
-SESSION_TERMINATED_BY_SERVER = 0
+SESSION_TERMINATED_BY_SERVER = -2
 RESPONSE_COMPLETE = -1
-RESPONSE_SLEEPTIME = 0.02  # seconds to wait while waiting for a response in asynchronous strategies
+RESPONSE_SLEEPTIME = 0.03  # seconds to wait while waiting for a response in asynchronous strategies
 RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
 CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability

@@ -57,6 +57,12 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.6.2 2014.11.17
+    - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2
+    - Removed unneeded FORMAT_xxx variables in ldap3 namespace
+    - Fixed bug in auto_range when search operation returns search continuations
+    - Added infrastructure for MockDsatrategy (not functional yet)
+
 * 0.9.6.1 2014.11.11
     - Added boolean parameter "auto_range" to catch the "range" ldap tag in searches. When true all needed search operation are made to fully obtain the whole range of result values
     - Fixed bug in sdist

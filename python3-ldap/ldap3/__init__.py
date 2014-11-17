@@ -71,6 +71,8 @@ STRATEGY_ASYNC_THREADED = 1
 STRATEGY_LDIF_PRODUCER = 2
 STRATEGY_SYNC_RESTARTABLE = 3
 STRATEGY_REUSABLE_THREADED = 4
+STRATEGY_SYNC_MOCK_DSA = 5
+STRATEGY_ASYNC_MOCK_DSA = 6
 
 CLIENT_STRATEGIES = [STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED]
 
@@ -207,52 +209,6 @@ else:
     STRING_TYPES = (str, unicode)
 
 SEQUENCE_TYPES = (list, tuple)
-
-# ldap format conversion for syntaxes and attribute types
-FORMAT_UNICODE = ['1.3.6.1.4.1.1466.115.121.1.3',  # Attribute type description
-                  '1.3.6.1.4.1.1466.115.121.1.6',  # Bit String
-                  '1.3.6.1.4.1.1466.115.121.1.11',  # Country String
-                  '1.3.6.1.4.1.1466.115.121.1.12',  # Distinguished name (DN)
-                  '1.3.6.1.4.1.1466.115.121.1.14',  # Delivery method
-                  '1.3.6.1.4.1.1466.115.121.1.15',  # Directory string
-                  '1.3.6.1.4.1.1466.115.121.1.16',  # DIT Content Rule Description
-                  '1.3.6.1.4.1.1466.115.121.1.17',  # DIT Structure Rule Description
-                  '1.3.6.1.4.1.1466.115.121.1.21',  # Enhanced Guide
-                  '1.3.6.1.4.1.1466.115.121.1.22',  # Facsimile Telephone Number
-                  '1.3.6.1.4.1.1466.115.121.1.25',  # Guide (obsolete)
-                  '1.3.6.1.4.1.1466.115.121.1.26',  # IA5 string
-                  '1.3.6.1.4.1.1466.115.121.1.30',  # Matching rule description
-                  '1.3.6.1.4.1.1466.115.121.1.31',  # Matching rule use description
-                  '1.3.6.1.4.1.1466.115.121.1.34',  # Name and optional UID
-                  '1.3.6.1.4.1.1466.115.121.1.35',  # Name form description
-                  '1.3.6.1.4.1.1466.115.121.1.36',  # Numeric string
-                  '1.3.6.1.4.1.1466.115.121.1.37',  # Object class description
-                  '1.3.6.1.4.1.1466.115.121.1.38',  # OID
-                  '1.3.6.1.4.1.1466.115.121.1.39',  # Other mailbox
-                  '1.3.6.1.4.1.1466.115.121.1.41',  # Postal address
-                  '1.3.6.1.4.1.1466.115.121.1.44',  # Printable string
-                  '1.3.6.1.4.1.1466.115.121.1.50',  # Telephone number
-                  '1.3.6.1.4.1.1466.115.121.1.51',  # Teletex terminal identifier
-                  '1.3.6.1.4.1.1466.115.121.1.52',  # Teletex number
-                  '1.3.6.1.4.1.1466.115.121.1.54',  # LDAP syntax description
-                  '1.3.6.1.4.1.1466.115.121.1.58'  # Substring assertion
-                  ]
-FORMAT_INT = ['1.3.6.1.4.1.1466.115.121.1.27',  # Integer
-              '2.16.840.1.113719.1.1.5.1.22'  # Counter (Novell)
-              ]
-FORMAT_BINARY = ['1.3.6.1.4.1.1466.115.121.1.23',  # Fax
-                 '1.3.6.1.4.1.1466.115.121.1.28',  # JPEG
-                 '1.3.6.1.4.1.1466.115.121.1.40'  # Octet string
-                 ]
-FORMAT_UUID = ['1.3.6.1.1.16.1',  # UUID
-               '2.16.840.1.113719.1.1.4.1.501',  # GUID (Novell)
-               ]
-FORMAT_UUID_LE = []
-FORMAT_BOOLEAN = ['1.3.6.1.4.1.1466.115.121.1.7'  # Boolean
-                  ]
-FORMAT_TIME = ['1.3.6.1.4.1.1466.115.121.1.24',  # Generalized time
-               '1.3.6.1.4.1.1466.115.121.1.53'  # Utc time  (deprecated)
-               ]
 
 # centralized imports
 from ._version import __author__, __version__, __email__, __description__, __status__, __license__, __url__

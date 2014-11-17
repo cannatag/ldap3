@@ -33,7 +33,7 @@ from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
     STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, STRATEGY_REUSABLE_THREADED, \
     DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, STRATEGY_SYNC_MOCK_DSA, STRATEGY_ASYNC_MOCK_DSA
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -54,6 +54,8 @@ from ..strategy.asyncThreaded import AsyncThreadedStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.syncWait import SyncWaitStrategy
 from ..strategy.syncWaitRestartable import SyncWaitRestartableStrategy
+from ..strategy.syncMockDsa import SyncMockDsaStrategy
+from ..strategy.asyncMockDsa import AsyncMockDsaStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
@@ -213,6 +215,10 @@ class Connection(object):
             self.strategy = SyncWaitRestartableStrategy(self)
         elif self.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.strategy = ReusableThreadedStrategy(self)
+        elif self.strategy_type == STRATEGY_SYNC_MOCK_DSA:
+            self.strategy = SyncMockDsaStrategy(self)
+        elif self.strategy_type == STRATEGY_ASYNC_MOCK_DSA:
+            self.strategy = AsyncMockDsaStrategy(self)
         else:
             self.last_error = 'unknown strategy'
             raise LDAPUnknownStrategyError(self.last_error)

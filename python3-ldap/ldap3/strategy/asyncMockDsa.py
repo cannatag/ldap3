@@ -1,7 +1,7 @@
 """
 """
 
-# Created on 2013.07.15
+# Created on 2014.11.17
 #
 # Author: Giovanni Cannata
 #
@@ -35,7 +35,7 @@ import socket
 
 
 # noinspection PyProtectedMember
-class AsyncThreadedStrategy(BaseStrategy):
+class AsyncMockDsaStrategy(BaseStrategy):
     """
     This strategy is asynchronous. You send the request and get the messageId of the request sent
     Receiving data from socket is managed in a separated thread in a blocking mode
@@ -120,7 +120,7 @@ class AsyncThreadedStrategy(BaseStrategy):
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
-        self.no_real_dsa = False
+        self.no_real_dsa = True
         self.pooled = False
         self._responses = None
         self.can_stream = False
@@ -170,7 +170,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         Start thread in daemon mode
         """
         if not self.connection.listening:
-            self.receiver = AsyncThreadedStrategy.ReceiverSocketThread(self.connection)
+            self.receiver = AsyncMockDsaStrategy.ReceiverSocketThread(self.connection)
             self.connection.listening = True
             self.receiver.daemon = True
             self.receiver.start()

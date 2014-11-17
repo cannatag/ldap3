@@ -1,7 +1,7 @@
 """
 """
 
-# Created on 2013.07.15
+# Created on 2014.11.17
 #
 # Author: Giovanni Cannata
 #
@@ -28,28 +28,27 @@ from pyasn1.codec.ber import decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
-from ..strategy.baseStrategy import BaseStrategy
+from ..strategy.syncWait import SyncWaitStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
 
 # noinspection PyProtectedMember
-class SyncWaitStrategy(BaseStrategy):
+class SyncMockDsaStrategy(SyncWaitStrategy):
     """
-    This strategy is synchronous. You send the request and get the response
-    Requests return a boolean value to indicate the result of the requested Operation
-    Connection.response will contain the whole LDAP response for the messageId requested in a dict form
-    Connection.request will contain the result LDAP message in a dict form
+    This strategy create a mock LDAP server, with synchronous access
+    It can be useful to test LDAP without a real Server
     """
 
     def __init__(self, ldap_connection):
-        BaseStrategy.__init__(self, ldap_connection)
+        SyncWaitStrategy.__init__(self, ldap_connection)
         self.sync = True
-        self.no_real_dsa = False
+        self.no_real_dsa = True
         self.pooled = False
         self.can_stream = False
 
     def open(self, reset_usage=True, read_server_info=True):
-        BaseStrategy.open(self, reset_usage, read_server_info)
+        SyncWaitStrategy.open(self, reset_usage, read_server_info)
+
         if read_server_info:
             try:
                 self.connection.refresh_server_info()
@@ -89,7 +88,7 @@ class SyncWaitStrategy(BaseStrategy):
 
                 unprocessed += data
             if len(data) > 0:
-                length = BaseStrategy.compute_ldap_message_size(unprocessed)
+                length = SyncWaitStrategy.compute_ldap_message_size(unprocessed)
                 if length == -1:  # too few data to decode message length
                     get_more_data = True
                     continue

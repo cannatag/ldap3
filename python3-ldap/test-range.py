@@ -2,7 +2,7 @@ from ldap3 import Server, Connection, ALL_ATTRIBUTES, MODIFY_ADD
 from pprint import pprint
 
 s = Server('win1', get_info=3)
-c = Connection(s, 'cn=Administrator,cn=Users,dc=forest,dc=lab', 'Rc66pfop')
+c = Connection(s, 'cn=Administrator,cn=Users,dc=forest,dc=lab', 'Rc66pfop', auto_range=True)
 #s = Server('edir1', get_info=3)
 #c = Connection(s, 'cn=admin,o=services', 'password')
 c.bind()

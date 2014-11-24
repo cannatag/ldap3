@@ -112,6 +112,7 @@ class SyncWaitStrategy(BaseStrategy):
         Returns the result message or None
         """
         responses, result = self.get_response(message_id)
+        self.connection.result = result
         if result['type'] == 'intermediateResponse':  # checks that all responses are intermediates (there should be only one)
             for response in responses:
                 if response['type'] != 'intermediateResponse':
@@ -126,11 +127,11 @@ class SyncWaitStrategy(BaseStrategy):
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        responses, _ = self.get_response(message_id)
+        responses, result = self.get_response(message_id)
+        self.connection.result = result
         if isinstance(responses, SEQUENCE_TYPES):
             self.connection.response = responses[:]  # copy search result entries
             return responses
-
         self.connection.last_error = 'error receiving response'
         raise LDAPSocketReceiveError(self.connection.last_error)
 

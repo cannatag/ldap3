@@ -30,11 +30,10 @@ from random import choice
 from pyasn1.codec.ber import encoder, decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS,\
-               DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE
+               DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, SEARCH_SCOPE_BASE_OBJECT
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
                               LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
                               LDAPSocketSendError, LDAPExceptionError, LDAPControlsError
-from ldap3 import SEARCH_SCOPE_BASE_OBJECT
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
@@ -93,7 +92,18 @@ class BaseStrategy(object):
                         self.connection._usage.servers_from_pool += 1
 
             if not self.no_real_dsa:
-                self._open_socket(self.connection.server.ssl)
+                valid_address = False
+                for candidate_address in self.connection.server.candidate_addresses():
+                    try:
+                        self._open_socket(candidate_address, self.connection.server.ssl)
+                        valid_address = True
+                        break
+                    except:
+                        self.connection.server.current_address = candidate_address
+                        continue
+
+                if not valid_address:
+                    raise LDAPSocketOpenError('unable to open socket')
 
             self.connection._deferred_open = False
             self._start_listen()
@@ -120,14 +130,15 @@ class BaseStrategy(object):
         if self.connection._usage:
             self.connection._usage.stop()
 
-    def _open_socket(self, use_ssl=False):
+    def _open_socket(self, address, use_ssl=False):
         """
         Tries to open and connect a socket to a Server
         raise LDAPExceptionError if unable to open or connect socket
         """
         exc = None
         try:
-            self.connection.socket = socket.socket(*self.connection.server.address_info[0][:3])
+            self.connection.socket = socket.socket(*address[:3])
+            # self.connection.socket = socket.socket(self.connection.server.address_info[0][0], self.connection.server.address_info[0][1], self.connection.server.address_info[2])
         except Exception as e:
             self.connection.last_error = 'socket creation error: ' + str(e)
             exc = e
@@ -276,7 +287,7 @@ class BaseStrategy(object):
                 if responses:
                     result = responses[-2]
                     response = responses[:-2]
-                    self.connection.result = result
+                    self.connection.result = None
                     self.connection.response = None
                     break
 
@@ -284,9 +295,9 @@ class BaseStrategy(object):
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 
             # checks if any response has a range tag
-            # self._auto_range_searching is set as a flag do avoid recursive searches
-            if self.connection.auto_range and not hasattr(self, '_auto_range_searching') and any((True for resp in response for name in resp['raw_attributes'] if ';range=' in name)):
-                self._auto_range_searching = True
+            # self._auto_range_searching is set as a flag to avoid recursive searches
+            if self.connection.auto_range and not hasattr(self, '_auto_range_searching') and any((True for resp in response if 'raw_attributes' in resp for name in resp['raw_attributes'] if ';range=' in name)):
+                self._auto_range_searching = result.copy()
                 temp_response = response[:]  # copy
                 self.do_search_on_auto_range(self._outstanding[message_id], response)
                 for resp in temp_response:
@@ -296,6 +307,7 @@ class BaseStrategy(object):
                             del resp['raw_attributes'][key]
                             del resp['attributes'][key]
                 response = temp_response
+                result = self._auto_range_searching
                 del self._auto_range_searching
 
             self._outstanding.pop(message_id)
@@ -437,10 +449,10 @@ class BaseStrategy(object):
             response['attributes'][attr_type] += current_response['attributes'][attr_name]
             if high_range != '*':
                 result = self.connection.search(search_base=response['dn'],
-                                          search_filter='(objectclass=*)',
-                                          search_scope=SEARCH_SCOPE_BASE_OBJECT,
-                                          dereference_aliases=request['dereferenceAlias'],
-                                          attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
+                                                search_filter='(objectclass=*)',
+                                                search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                                dereference_aliases=request['dereferenceAlias'],
+                                                attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
                 if isinstance(result, bool):
                     current_response = self.connection.response[0]
                 else:

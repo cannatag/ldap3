@@ -38,6 +38,14 @@ AUTHZ_STATE_CLOSED = 0
 AUTHZ_STATE_ANONYMOUS = 1
 AUTHZ_STATE_UNAUTHENTICATED = 2
 
+# server IP dual stack mode
+SYSTEM_DEFAULT = 0
+IPV4_ONLY = 1
+IPV6_ONLY = 2
+PREFERE_IPV4 = 3
+PREFERE_IPV6 = 4
+ADDRESS_INFO_REFRESH_TIME = 60  # seconds to wait before refreshing address info from dns
+
 # search scope
 SEARCH_SCOPE_BASE_OBJECT = 0
 SEARCH_SCOPE_SINGLE_LEVEL = 1
@@ -54,10 +62,32 @@ ALL_ATTRIBUTES = '*'
 NO_ATTRIBUTES = '1.1'  # as per RFC 4511
 ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
 
-#checks
-ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES, 'ldapSyntaxes', 'matchingRules', 'matchingRuleUse', 'dITContentRules', 'dITStructureRules', 'nameForms', 'altServer', 'namingContexts', 'supportedControl', 'supportedExtension', 'supportedFeatures', 'supportedCapabilities', 'supportedLdapVersion', 'supportedSASLMechanisms', 'vendorName', 'vendorVersion', 'subschemaSubentry']
 CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
 CASE_INSENSITIVE_SCHEMA_NAMES = True
+
+#checks
+ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
+                                  ALL_OPERATIONAL_ATTRIBUTES,
+                                  NO_ATTRIBUTES,
+                                  'ldapSyntaxes',
+                                  'matchingRules',
+                                  'matchingRuleUse',
+                                  'dITContentRules',
+                                  'dITStructureRules',
+                                  'nameForms',
+                                  'altServer',
+                                  'namingContexts',
+                                  'supportedControl',
+                                  'supportedExtension',
+                                  'supportedFeatures',
+                                  'supportedCapabilities',
+                                  'supportedLdapVersion',
+                                  'supportedSASLMechanisms',
+                                  'vendorName',
+                                  'vendorVersion',
+                                  'subschemaSubentry'
+                                 ]
+
 
 # modify type
 MODIFY_ADD = 0
@@ -74,7 +104,11 @@ STRATEGY_REUSABLE_THREADED = 4
 STRATEGY_SYNC_MOCK_DSA = 5
 STRATEGY_ASYNC_MOCK_DSA = 6
 
-CLIENT_STRATEGIES = [STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED]
+CLIENT_STRATEGIES = [STRATEGY_SYNC,
+                     STRATEGY_ASYNC_THREADED,
+                     STRATEGY_LDIF_PRODUCER,
+                     STRATEGY_SYNC_RESTARTABLE,
+                     STRATEGY_REUSABLE_THREADED]
 
 # communication
 SESSION_TERMINATED_BY_SERVER = -2
@@ -90,10 +124,9 @@ RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy bef
 
 # reusable strategies (Threaded)
 TERMINATE_REUSABLE = -1
-REUSABLE_THREADED_POOL_SIZE = 10
+REUSABLE_THREADED_POOL_SIZE = 5
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'connection_threaded_pool'
-
 
 # LDAP protocol
 LDAP_MAX_INT = 2147483647
@@ -231,4 +264,3 @@ from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSA
     LDAPNoSuchOperationResult, LDAPNotAllowedOnNotLeafResult, LDAPNotAllowedOnRDNResult, LDAPObjectClassModsProhibitedResult, LDAPObjectClassViolationResult, LDAPOperationResult, LDAPOperationsErrorResult, LDAPOtherResult, LDAPProtocolErrorResult, \
     LDAPReferralResult, LDAPSASLBindInProgressResult, LDAPSizeLimitExceededResult, LDAPStrongerAuthRequiredResult, LDAPTimeLimitExceededResult, LDAPTooLateResult, LDAPUnavailableCriticalExtensionResult, LDAPUnavailableResult, \
     LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError
-

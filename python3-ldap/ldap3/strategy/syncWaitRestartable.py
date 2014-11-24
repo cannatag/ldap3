@@ -54,14 +54,14 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
     def open(self, reset_usage=False, read_server_info=True):
         SyncWaitStrategy.open(self, reset_usage, read_server_info)
 
-    def _open_socket(self, use_ssl=False):
+    def _open_socket(self, address, use_ssl=False):
         """
         Try to open and connect a socket to a Server
         raise LDAPExceptionError if unable to open or connect socket
         if connection is restartable tries for the number of restarting requested or forever
         """
         try:
-            SyncWaitStrategy._open_socket(self, use_ssl)  # try to open socket using SyncWait
+            SyncWaitStrategy._open_socket(self, address, use_ssl)  # try to open socket using SyncWait
             self._reset_exception_history()
             return
         except Exception:  # machinery for restartable connection
@@ -86,7 +86,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                             self.connection.server = new_server
                             if self.connection._usage:
                                 self.connection._usage.servers_from_pool += 1
-                    SyncWaitStrategy._open_socket(self, use_ssl)  # calls super (not restartable) _open_socket()
+                    SyncWaitStrategy._open_socket(self, address, use_ssl)  # calls super (not restartable) _open_socket()
                     if self.connection._usage:
                         self.connection._usage.restartable_successes += 1
                     self.connection.closed = False

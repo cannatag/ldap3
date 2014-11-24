@@ -57,6 +57,9 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
+* 0.9.6.3 2014.11.23
+    - Fixed bug for when auto_range is used in paged search
+
 * 0.9.6.2 2014.11.17
     - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2
     - Removed unneeded FORMAT_xxx variables in ldap3 namespace

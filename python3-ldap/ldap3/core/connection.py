@@ -372,8 +372,10 @@ class Connection(object):
 
             if not self.strategy.sync and self.authentication != AUTH_SASL:  # get response if async except for sasl that returns the bind result even for async
                 _, result = self.get_response(response)
-            else:
+            elif self.strategy.sync:
                 result = self.result
+            else:  # async SASL
+                result = response
 
             if result is None:
                 self.bound = True if self.strategy_type == STRATEGY_REUSABLE_THREADED else False

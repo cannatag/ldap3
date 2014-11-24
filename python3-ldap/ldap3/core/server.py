@@ -25,13 +25,15 @@
 
 import socket
 from threading import Lock
-from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, ALL_ATTRIBUTES, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
-               CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES
+from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
+               CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
+               SYSTEM_DEFAULT, IPV4_ONLY, IPV6_ONLY, PREFERE_IPV4, PREFERE_IPV6, ADDRESS_INFO_REFRESH_TIME
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
+from datetime import datetime
 
 
 class Server(object):
@@ -62,7 +64,8 @@ class Server(object):
                  get_info=GET_NO_INFO,
                  tls=None,
                  formatter=None,
-                 connect_timeout=None):
+                 connect_timeout=None,
+                 mode=SYSTEM_DEFAULT):
 
         url_given = False
         if host.startswith('ldap://'):
@@ -140,8 +143,10 @@ class Server(object):
         self.lock = Lock()
         self.custom_formatter = formatter
         self._address_info = None  # property self.address_info resolved at open time (or when you call check_availability)
+        self._address_info_resolved_time = None
+        self.current_address = None
         self.connect_timeout = connect_timeout
-
+        self.mode = mode
     @staticmethod
     def _is_ipv6(host):
         try:
@@ -168,8 +173,9 @@ class Server(object):
 
     @property
     def address_info(self):
-        if not self._address_info:
-            self._address_info = socket.getaddrinfo(self.host, self.port, 0, socket.SOCK_STREAM)
+        if not self._address_info or (self._address_info_resolved_time - datetime.now()).seconds > ADDRESS_INFO_REFRESH_TIME:
+            self._address_info = [address + (True, ) for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]  # add a 6th parameter for availability
+            self._address_info_resolved_time = datetime.now()
 
         return self._address_info
 
@@ -181,6 +187,7 @@ class Server(object):
         available = True
         try:
             temp_socket = socket.socket(*self.address_info[0][:3])
+            # temp_socket = socket.socket(self.address_info[0][0], self.address_info[0][1], self.address_info[2])
             if self.connect_timeout:
                 temp_socket.settimeout(self.connect_timeout)
             else:
@@ -352,3 +359,24 @@ class Server(object):
             raise LDAPDefinitionError('invalid schema info')
 
         return dummy
+
+    def candidate_addresses(self):
+        # selects server address based on server mode and avaibility (in address[5])
+        addresses = self.address_info.copy()  # to avoid refreshing while searching candidates
+        candidates = []
+        if self.mode == SYSTEM_DEFAULT:
+            candidates.append(addresses[0])
+        elif self.mode == IPV4_ONLY:
+            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5]]
+        elif self.mode == IPV6_ONLY:
+            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5]]
+        elif self.mode == PREFERE_IPV4:
+            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5]]
+            candidates += [address for address in addresses if address[0] == socket.AF_INET6 and addresses[5]]
+        elif self.mode == PREFERE_IPV6:
+            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5]]
+            candidates += [address for address in addresses if address[0] == socket.AF_INET and address[5]]
+        else:
+            raise LDAPInvalidServerError('invalid server definition')
+
+        return candidates

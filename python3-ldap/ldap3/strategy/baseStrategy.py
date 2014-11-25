@@ -24,8 +24,10 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+from sys import exc_info
 from time import sleep
 from random import choice
+from datetime import datetime
 
 from pyasn1.codec.ber import encoder, decoder
 
@@ -91,18 +93,21 @@ class BaseStrategy(object):
                     if self.connection._usage:
                         self.connection._usage.servers_from_pool += 1
 
+            exception_history = []
             if not self.no_real_dsa:
                 valid_address = False
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
                         self._open_socket(candidate_address, self.connection.server.ssl)
-                        valid_address = True
-                        break
-                    except:
                         self.connection.server.current_address = candidate_address
+                        self.connection.server.update_availability(candidate_address, True)
+                        break
+                    except Exception as e:
+                        self.connection.server.update_availability(candidate_address, False)
+                        exception_history.append((datetime.now(), exc_info()[0], exc_info()[1]))
                         continue
 
-                if not valid_address:
+                if not self.connection.server.current_address:
                     raise LDAPSocketOpenError('unable to open socket')
 
             self.connection._deferred_open = False
@@ -127,6 +132,7 @@ class BaseStrategy(object):
         self.connection.tls_started = False
         self._outstanding = dict()
         self._referrals = []
+        self.connection.server.current_address = None
         if self.connection._usage:
             self.connection._usage.stop()
 
@@ -172,7 +178,7 @@ class BaseStrategy(object):
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         if self.connection._usage:
-            self.connection._usage.opened_sockets += 1
+            self.connection._usage.open_sockets += 1
 
         self.connection.closed = False
 

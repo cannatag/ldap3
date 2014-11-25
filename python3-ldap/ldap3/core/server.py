@@ -173,11 +173,24 @@ class Server(object):
 
     @property
     def address_info(self):
-        if not self._address_info or (self._address_info_resolved_time - datetime.now()).seconds > ADDRESS_INFO_REFRESH_TIME:
-            self._address_info = [address + (True, ) for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]  # add a 6th parameter for availability
+        if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > ADDRESS_INFO_REFRESH_TIME:
+            # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
+            print('RESET')
+            self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]
             self._address_info_resolved_time = datetime.now()
 
         return self._address_info
+
+    def update_availability(self, address, available):
+        cont = 0
+        while cont < len(self._address_info):
+            if self.address_info[cont] == address:
+                print('FOUND')
+                self._address_info[cont][5] = True if available else False
+                self._address_info[cont][6] = datetime.now()
+                break
+            cont += 1
+
 
     def check_availability(self):
         """
@@ -367,15 +380,15 @@ class Server(object):
         if self.mode == SYSTEM_DEFAULT:
             candidates.append(addresses[0])
         elif self.mode == IPV4_ONLY:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5]]
+            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5] or address[5] is None]
         elif self.mode == IPV6_ONLY:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5]]
+            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5] or address[5] is None]
         elif self.mode == PREFERE_IPV4:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5]]
-            candidates += [address for address in addresses if address[0] == socket.AF_INET6 and addresses[5]]
+            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5] or address[5] is None]
+            candidates += [address for address in addresses if address[0] == socket.AF_INET6 and addresses[5] or address[5] is None]
         elif self.mode == PREFERE_IPV6:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5]]
-            candidates += [address for address in addresses if address[0] == socket.AF_INET and address[5]]
+            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5] or address[5] is None]
+            candidates += [address for address in addresses if address[0] == socket.AF_INET and address[5] or address[5] is None]
         else:
             raise LDAPInvalidServerError('invalid server definition')
 

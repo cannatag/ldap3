@@ -34,7 +34,7 @@ class ConnectionUsage(object):
     """
 
     def reset(self):
-        self.opened_sockets = 0
+        self.open_sockets = 0
         self.closed_sockets = 0
         self.wrapped_sockets = 0
         self.bytes_transmitted = 0
@@ -62,7 +62,7 @@ class ConnectionUsage(object):
         self.initial_connection_start_time = None
         self.open_socket_start_time = None
         self.connection_stop_time = None
-        self.opened_sockets = 0
+        self.open_sockets = 0
         self.closed_sockets = 0
         self.wrapped_sockets = 0
         self.bytes_transmitted = 0
@@ -94,7 +94,7 @@ class ConnectionUsage(object):
         r += '    Close socket time:   ' + (str(self.connection_stop_time.isoformat()) if self.connection_stop_time else '') + linesep
         r += '  Server:' + linesep
         r += '    Servers from pool:   ' + str(self.servers_from_pool) + linesep
-        r += '    Sockets opened:      ' + str(self.opened_sockets) + linesep
+        r += '    Sockets open:        ' + str(self.open_sockets) + linesep
         r += '    Sockets closed:      ' + str(self.closed_sockets) + linesep
         r += '    Sockets wrapped:     ' + str(self.wrapped_sockets) + linesep
         r += '  Bytes:                 ' + str(self.bytes_transmitted + self.bytes_received) + linesep
@@ -128,7 +128,7 @@ class ConnectionUsage(object):
         if not isinstance(other, ConnectionUsage):
             raise LDAPMetricsError('unable to add to ConnectionUsage')
 
-        self.opened_sockets += other.opened_sockets
+        self.open_sockets += other.open_sockets
         self.closed_sockets += other.closed_sockets
         self.wrapped_sockets += other.wrapped_sockets
         self.bytes_transmitted += other.bytes_transmitted

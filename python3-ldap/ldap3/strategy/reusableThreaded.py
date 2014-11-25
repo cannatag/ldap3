@@ -48,7 +48,7 @@ class ReusableThreadedStrategy(BaseStrategy):
     The strategy performs the requested operation on the first available connection.
     The pool of connections is instantiated at strategy initialization.
     Strategy has two customizable properties, the total number of connections in the pool and the lifetime of each connection.
-    When lifetime is expired the connection is closed and will be opened again when needed.
+    When lifetime is expired the connection is closed and will be open again when needed.
     """
     pools = dict()
 

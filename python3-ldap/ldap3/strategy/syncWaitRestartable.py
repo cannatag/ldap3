@@ -137,6 +137,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         self.connection.start_tls(read_server_info=False)
                     if message_type != 'bindRequest':
                         self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
+                    print('REFRESH1')
                     self.connection.refresh_server_info()
                 except Exception:
                     self._add_exception_to_history()

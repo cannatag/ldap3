@@ -82,7 +82,7 @@ class BaseStrategy(object):
                 self.close()
 
             self._outstanding = dict()
-            if self.connection._usage:
+            if self.connection.usage:
                 if reset_usage or not self.connection._usage.initial_connection_start_time:
                     self.connection._usage.start()
 
@@ -90,7 +90,7 @@ class BaseStrategy(object):
                 new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
                 if self.connection.server != new_server:
                     self.connection.server = new_server
-                    if self.connection._usage:
+                    if self.connection.usage:
                         self.connection._usage.servers_from_pool += 1
 
             exception_history = []
@@ -135,7 +135,7 @@ class BaseStrategy(object):
 
         if not self.connection.strategy.no_real_dsa:
             self.connection.server.current_address = None
-        if self.connection._usage:
+        if self.connection.usage:
             self.connection._usage.stop()
 
     def _open_socket(self, address, use_ssl=False):
@@ -169,7 +169,7 @@ class BaseStrategy(object):
         if use_ssl:
             try:
                 self.connection.server.tls.wrap_socket(self.connection, do_handshake=True)
-                if self.connection._usage:
+                if self.connection.usage:
                     self.connection._usage.wrapped_sockets += 1
             except Exception as e:
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
@@ -178,7 +178,7 @@ class BaseStrategy(object):
             if exc:
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        if self.connection._usage:
+        if self.connection.usage:
             self.connection._usage.open_sockets += 1
 
         self.connection.closed = False
@@ -202,7 +202,7 @@ class BaseStrategy(object):
         self.connection.socket = None
         self.connection.closed = True
 
-        if self.connection._usage:
+        if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
     def _stop_listen(self):
@@ -241,8 +241,8 @@ class BaseStrategy(object):
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
-            if self.connection._usage:
-                self.connection._usage.transmitted_message(self.connection.request, len(encoded_message))
+            if self.connection.usage:
+                self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
             raise LDAPSocketOpenError(self.connection.last_error)
@@ -280,7 +280,7 @@ class BaseStrategy(object):
 
                 # if referral in response opens a new connection to resolve referrals if requested
                 if responses[-2]['result'] == RESULT_REFERRAL:
-                    if self.connection._usage:
+                    if self.connection.usage:
                         self.connection._usage.referrals_received += 1
                     if self.connection.auto_referrals:
                         ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
@@ -510,7 +510,7 @@ class BaseStrategy(object):
                                              auto_referrals=True,
                                              read_only=self.connection.read_only)
 
-            if self.connection._usage:
+            if self.connection.usage:
                 self.connection._usage.referrals_followed += 1
 
             referral_connection.open()

@@ -73,6 +73,8 @@ class ReusableThreadedStrategy(BaseStrategy):
             if not hasattr(self, 'connections'):
                 self.name = connection.pool_name
                 self.master_connection = connection
+                self.master_schema = None
+                self.master_info = None
                 self.connections = []
                 self.pool_size = connection.pool_size or REUSABLE_THREADED_POOL_SIZE
                 self.lifetime = connection.pool_lifetime or REUSABLE_THREADED_LIFETIME
@@ -123,6 +125,8 @@ class ReusableThreadedStrategy(BaseStrategy):
 
         def terminate_pool(self):
             self.started = False
+            self.master_schema = None
+            self.master_info = None
             self.request_queue.join()  # wait for all queue pending operations
 
             for _ in range(len([connection for connection in self.connections if connection.thread.is_alive()])):  # put a TERMINATE signal on the queue for each active thread
@@ -134,51 +138,53 @@ class ReusableThreadedStrategy(BaseStrategy):
         def __init__(self, reusable_connection, master_connection):
             Thread.__init__(self)
             self.daemon = True
-            self.active_connection = reusable_connection
+            self.active_thread = reusable_connection
             self.master_connection = master_connection
 
         # noinspection PyProtectedMember
         def run(self):
-            self.active_connection.running = True
+            self.active_thread.running = True
             terminate = False
             pool = self.master_connection.strategy.pool
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
-                self.active_connection.busy = True
+                self.active_thread.busy = True
                 if counter == TERMINATE_REUSABLE:
                     terminate = True
-                    if self.active_connection.connection.bound:
+                    if self.active_thread.connection.bound:
                         try:
-                            self.active_connection.connection.unbind()
+                            self.active_thread.connection.unbind()
                         except LDAPExceptionError:
                             pass
                 else:
-                    if (datetime.now() - self.active_connection.creation_time).seconds >= self.master_connection.strategy.pool.lifetime:  # destroy and create a new connection
+                    if (datetime.now() - self.active_thread.creation_time).seconds >= self.master_connection.strategy.pool.lifetime:  # destroy and create a new connection
                         try:
-                            self.active_connection.connection.unbind()
+                            self.active_thread.connection.unbind()
                         except LDAPExceptionError:
                             pass
-                        self.active_connection.new_connection()
+                        self.active_thread.new_connection()
                     if message_type not in ['bindRequest', 'unbindRequest']:
-                        if pool.open_pool and self.active_connection.connection.closed:
-                            self.active_connection.connection.open(read_server_info=False)
-                            if pool.tls_pool and not self.active_connection.connection.tls_started:
-                                self.active_connection.connection.start_tls(read_server_info=False)
-                            if pool.bind_pool and not self.active_connection.connection.bound:
-                                self.active_connection.connection.bind(read_server_info=False)
+                        if pool.open_pool and self.active_thread.connection.closed:
+                            self.active_thread.connection.open(read_server_info=False)
+                            if pool.tls_pool and not self.active_thread.connection.tls_started:
+                                self.active_thread.connection.start_tls(read_server_info=False)
+                            if pool.bind_pool and not self.active_thread.connection.bound:
+                                self.active_thread.connection.bind(read_server_info=False)
                         # noinspection PyProtectedMember
-                        self.active_connection.connection._fire_deferred()  # force deferred operations
-
+                        self.active_thread.connection._fire_deferred()  # force deferred operations
+                        with self.master_connection.lock:
+                            pool.master_schema = self.active_thread.connection.server.schema
+                            pool.master_info = self.active_thread.connection.server.info
                         exc = None
                         response = None
                         result = None
                         print('CONN SEND', message_type)
                         try:
                             if message_type == 'searchRequest':
-                                response = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
+                                response = self.active_thread.connection.post_send_search(self.active_thread.connection.send(message_type, request, controls))
                             else:
-                                response = self.active_connection.connection.post_send_single_response(self.active_connection.connection.send(message_type, request, controls))
-                            result = self.active_connection.connection.result
+                                response = self.active_thread.connection.post_send_single_response(self.active_thread.connection.send(message_type, request, controls))
+                            result = self.active_thread.connection.result
                         except LDAPOperationResult as e:  # raise_exceptions has raise an exception. It must be redirected to the original connection thread
                             exc = e
 
@@ -187,12 +193,11 @@ class ReusableThreadedStrategy(BaseStrategy):
                                 pool._incoming[counter] = (exc, None)
                             else:
                                 pool._incoming[counter] = (response, result)
-
-                self.active_connection.busy = False
+                self.active_thread.busy = False
                 pool.request_queue.task_done()
             if self.master_connection.usage:
-                pool.terminated_usage += self.active_connection.connection.usage
-            self.active_connection.running = False
+                pool.terminated_usage += self.active_thread.connection.usage
+            self.active_thread.running = False
 
     class ReusableConnection(object):
         """
@@ -258,7 +263,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         self.pool.open_pool = True
         self.pool.start_pool()
         self.connection.closed = False
-        if self.connection._usage:
+        if self.connection.usage:
             if reset_usage or not self.connection._usage.initial_connection_start_time:
                 self.connection._usage.start()
 
@@ -276,7 +281,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         """
         self.connection.closed = True
 
-        if self.connection._usage:
+        if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
     def send(self, message_type, request, controls=None):

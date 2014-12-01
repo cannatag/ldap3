@@ -153,7 +153,7 @@ class ConnectionUsage(object):
         self.servers_from_pool += other.servers_from_pool
         return self
 
-    def transmitted_message(self, message, length):
+    def update_transmitted_message(self, message, length):
         self.bytes_transmitted += length
         self.operations += 1
         self.messages_transmitted += 1
@@ -180,7 +180,7 @@ class ConnectionUsage(object):
         else:
             raise LDAPMetricsError('unable to collect usage for unknown message type')
 
-    def received_message(self, length):
+    def update_received_message(self, length):
         self.bytes_received += length
         self.messages_received += 1
 

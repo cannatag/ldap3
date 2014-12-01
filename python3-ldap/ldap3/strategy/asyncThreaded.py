@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from threading import Thread, Lock
-
+from datetime import datetime
 from pyasn1.codec.ber import decoder
 
 from .. import RESPONSE_COMPLETE, SOCKET_SIZE
@@ -82,21 +82,21 @@ class AsyncThreadedStrategy(BaseStrategy):
                 if length == -1 or len(unprocessed) < length:
                     get_more_data = True
                 elif len(unprocessed) >= length:  # add message to message list
-                    if self.connection._usage:
-                        self.connection._usage.received_message(length)
+                    if self.connection.usage:
+                        self.connection._usage.update_received_message(length)
                     ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
                     message_id = int(ldap_resp['messageID'])
                     dict_response = self.connection.strategy.decode_response(ldap_resp)
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
                         print(1)
                         if dict_response['result'] == 0:  # StartTls in progress
-                            print(2)
+                            print(datetime.now(), 2)
                             if self.connection.server.tls:
-                                print(3)
+                                print(datetime.now(), 3)
                                 self.connection.server.tls._start_tls(self.connection)
-                                print('3a')
+                                print(datetime.now(), '3b')
                             else:
-                                print(4)
+                                print(datetime.now(), 4)
                                 self.connection.last_error = 'no Tls object defined in Server'
                                 raise LDAPSSLConfigurationError(self.connection.last_error)
                         else:
@@ -106,11 +106,13 @@ class AsyncThreadedStrategy(BaseStrategy):
                     if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
                         print(6)
                         with self.connection.strategy.lock:
+                            print('6b')
                             if message_id in self.connection.strategy._responses:
                                 print(7)
                                 self.connection.strategy._responses[message_id].append(dict_response)
                             else:
                                 print(8)
+                                print(datetime.now(), 'APPEND')
                                 self.connection.strategy._responses[message_id] = [dict_response]
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 self.connection.strategy._responses[message_id].append(RESPONSE_COMPLETE)

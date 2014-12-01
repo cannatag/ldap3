@@ -245,7 +245,10 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
-        print('REQUESTING_DSA_INFO')
+        print('REQUESTING_DSA_INFO', connection)
+        if connection.strategy.pooled:
+            self.dsa_info = connection.strategy.pool
+
         result = connection.search(search_base='',
                                    search_filter='(objectClass=*)',
                                    search_scope=SEARCH_SCOPE_BASE_OBJECT,

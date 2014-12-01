@@ -39,12 +39,12 @@ AUTHZ_STATE_ANONYMOUS = 1
 AUTHZ_STATE_UNAUTHENTICATED = 2
 
 # server IP dual stack mode
-SYSTEM_DEFAULT = 0
-IPV4_ONLY = 1
-IPV6_ONLY = 2
-PREFERE_IPV4 = 3
-PREFERE_IPV6 = 4
-ADDRESS_INFO_REFRESH_TIME = 60  # seconds to wait before refreshing address info from dns
+IP_SYSTEM_DEFAULT = 0
+IP_V4_ONLY = 1
+IP_V6_ONLY = 2
+IP_V4_PREFERRED = 3
+IP_V6_PREFERRED = 4
+ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
 
 # search scope
 SEARCH_SCOPE_BASE_OBJECT = 0
@@ -114,7 +114,7 @@ CLIENT_STRATEGIES = [STRATEGY_SYNC,
 SESSION_TERMINATED_BY_SERVER = -2
 RESPONSE_COMPLETE = -1
 RESPONSE_SLEEPTIME = 0.03  # seconds to wait while waiting for a response in asynchronous strategies
-RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
+RESPONSE_WAITING_TIMEOUT = 4  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
 CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 
@@ -124,7 +124,7 @@ RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy bef
 
 # reusable strategies (Threaded)
 TERMINATE_REUSABLE = -1
-REUSABLE_THREADED_POOL_SIZE = 5
+REUSABLE_THREADED_POOL_SIZE = 1
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'connection_threaded_pool'
 

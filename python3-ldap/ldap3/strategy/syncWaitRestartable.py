@@ -132,11 +132,12 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         self._add_exception_to_history()
                 failure = False
                 try:  # reopening connection
-                    self.connection.open(reset_usage=False)
+                    self.connection.open(reset_usage=False, read_server_info=False)
                     if self._restart_tls:  # restart tls if start_tls was previously used
-                        self.connection.start_tls()
+                        self.connection.start_tls(read_server_info=False)
                     if message_type != 'bindRequest':
-                        self.connection.bind(self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
+                        self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
+                    self.connection.refresh_server_info()
                 except Exception:
                     self._add_exception_to_history()
                     failure = True

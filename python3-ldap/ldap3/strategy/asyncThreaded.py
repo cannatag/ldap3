@@ -88,20 +88,29 @@ class AsyncThreadedStrategy(BaseStrategy):
                     message_id = int(ldap_resp['messageID'])
                     dict_response = self.connection.strategy.decode_response(ldap_resp)
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
+                        print(1)
                         if dict_response['result'] == 0:  # StartTls in progress
+                            print(2)
                             if self.connection.server.tls:
+                                print(3)
                                 self.connection.server.tls._start_tls(self.connection)
+                                print('3a')
                             else:
-                                self.connection.last_error = 'no Tls defined in Server'
+                                print(4)
+                                self.connection.last_error = 'no Tls object defined in Server'
                                 raise LDAPSSLConfigurationError(self.connection.last_error)
                         else:
+                            print(5)
                             self.connection.last_error = 'asynchronous StartTls failed'
                             raise LDAPStartTLSError(self.connection.last_error)
                     if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
+                        print(6)
                         with self.connection.strategy.lock:
                             if message_id in self.connection.strategy._responses:
+                                print(7)
                                 self.connection.strategy._responses[message_id].append(dict_response)
                             else:
+                                print(8)
                                 self.connection.strategy._responses[message_id] = [dict_response]
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 self.connection.strategy._responses[message_id].append(RESPONSE_COMPLETE)

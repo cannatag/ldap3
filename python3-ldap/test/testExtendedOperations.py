@@ -22,12 +22,13 @@
 
 import unittest
 from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED, GET_DSA_INFO, LDAPExtensionError
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection, test_server_context
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
+    test_lazy_connection, test_server_context, test_server_mode
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_DSA_INFO)
+        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_DSA_INFO, mode=test_server_mode)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
 
     def tearDown(self):

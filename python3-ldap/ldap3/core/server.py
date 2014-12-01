@@ -27,7 +27,7 @@ import socket
 from threading import Lock
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
                CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
-               SYSTEM_DEFAULT, IPV4_ONLY, IPV6_ONLY, PREFERE_IPV4, PREFERE_IPV6, ADDRESS_INFO_REFRESH_TIME
+               IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
 from ..protocol.formatters.standard import format_attribute_values
@@ -65,7 +65,7 @@ class Server(object):
                  tls=None,
                  formatter=None,
                  connect_timeout=None,
-                 mode=SYSTEM_DEFAULT):
+                 mode=IP_SYSTEM_DEFAULT):
 
         url_given = False
         if host.startswith('ldap://'):
@@ -142,11 +142,12 @@ class Server(object):
         self._schema_info = None
         self.lock = Lock()
         self.custom_formatter = formatter
-        self._address_info = None  # property self.address_info resolved at open time (or when you call check_availability)
+        self._address_info = []  # property self.address_info resolved at open time (or when you call check_availability)
         self._address_info_resolved_time = None
         self.current_address = None
         self.connect_timeout = connect_timeout
         self.mode = mode
+
     @staticmethod
     def _is_ipv6(host):
         try:
@@ -175,9 +176,12 @@ class Server(object):
     def address_info(self):
         if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > ADDRESS_INFO_REFRESH_TIME:
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
-            print('RESET')
-            self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]
-            self._address_info_resolved_time = datetime.now()
+
+            try:
+                self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]
+                self._address_info_resolved_time = datetime.now()
+            except:
+                self._address_info = []
 
         return self._address_info
 
@@ -185,7 +189,6 @@ class Server(object):
         cont = 0
         while cont < len(self._address_info):
             if self.address_info[cont] == address:
-                print('FOUND')
                 self._address_info[cont][5] = True if available else False
                 self._address_info[cont][6] = datetime.now()
                 break
@@ -195,28 +198,35 @@ class Server(object):
     def check_availability(self):
         """
         Tries to open, connect and close a socket to specified address
-        and port to check availability. Timeout is 2.5 seconds if not specified in the Server object
+        and port to check availability. Timeout in seconds is specified in CHECK_AVAILABITY_TIMEOUT if not specified in the Server object
         """
-        available = True
-        try:
-            temp_socket = socket.socket(*self.address_info[0][:3])
-            # temp_socket = socket.socket(self.address_info[0][0], self.address_info[0][1], self.address_info[2])
-            if self.connect_timeout:
-                temp_socket.settimeout(self.connect_timeout)
-            else:
-                temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to 2.5 seconds
+        available = False
+        for address in self.candidate_addresses():
+            available = True
             try:
-                temp_socket.connect(self.address_info[0][4])
-            except socket.error:
-                available = False
-            finally:
+                temp_socket = socket.socket(*address[:3])
+                if self.connect_timeout:
+                    temp_socket.settimeout(self.connect_timeout)
+                else:
+                    temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to 2.5 seconds
                 try:
-                    temp_socket.shutdown(socket.SHUT_RDWR)
-                    temp_socket.close()
+                    temp_socket.connect(address[4])
                 except socket.error:
                     available = False
-        except socket.gaierror:
-            available = False
+                finally:
+                    try:
+                        temp_socket.shutdown(socket.SHUT_RDWR)
+                        temp_socket.close()
+                    except socket.error:
+                        available = False
+            except socket.gaierror:
+                available = False
+
+            if available:
+                self.update_availability(address, True)
+                break  # if an available address is found exits immediately
+            else:
+                self.update_availability(address, False)
 
         return available
 
@@ -235,6 +245,7 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
+        print('REQUESTING_DSA_INFO')
         result = connection.search(search_base='',
                                    search_filter='(objectClass=*)',
                                    search_scope=SEARCH_SCOPE_BASE_OBJECT,
@@ -251,8 +262,7 @@ class Server(object):
                                                'subschemaSubentry',
                                                '*'],  # requests all remaining attributes (other),
                                    get_operational_attributes=True)
-
-        # self._dsa_info = None
+        print('DSA RESULT', result)
         with self.lock:
             if isinstance(result, bool):  # sync request
                 self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
@@ -273,7 +283,9 @@ class Server(object):
             else:
                 schema_entry = self._dsa_info.schema_entry if self._dsa_info.schema_entry else None
         else:
+            print('GET_SUBSCHEMA')
             result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
+            print('subschema', result)
             if isinstance(result, bool):  # sync request
                 schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
             else:  # async request, must check if subschemaSubentry in attributes
@@ -283,6 +295,7 @@ class Server(object):
 
         result = None
         if schema_entry:
+            print('REQUESTING SCHEMA')
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=SEARCH_SCOPE_BASE_OBJECT,
@@ -299,6 +312,7 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
+            print('SCHEMA RESULT', result)
         with self.lock:
             self._schema_info = None
             if result:
@@ -319,7 +333,11 @@ class Server(object):
         """
         read info from DSE and from subschema
         """
+        print('SERVER: GET_INFO', self.get_info)
         if not connection.closed:
+            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
+                self._get_dsa_info(connection)
+
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
                 self._get_schema_info(connection)
             elif self.get_info == OFFLINE_EDIR_8_8_8:
@@ -339,8 +357,7 @@ class Server(object):
                 self.attach_schema_info(SchemaInfo.from_json(ds389_1_3_3_schema))
                 self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
 
-            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
-                self._get_dsa_info(connection)
+
 
     def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):
@@ -375,21 +392,22 @@ class Server(object):
 
     def candidate_addresses(self):
         # selects server address based on server mode and avaibility (in address[5])
-        addresses = self.address_info.copy()  # to avoid refreshing while searching candidates
+        addresses = self.address_info[:]  # copy to avoid refreshing while searching candidates
         candidates = []
-        if self.mode == SYSTEM_DEFAULT:
-            candidates.append(addresses[0])
-        elif self.mode == IPV4_ONLY:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5] or address[5] is None]
-        elif self.mode == IPV6_ONLY:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5] or address[5] is None]
-        elif self.mode == PREFERE_IPV4:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET and address[5] or address[5] is None]
-            candidates += [address for address in addresses if address[0] == socket.AF_INET6 and addresses[5] or address[5] is None]
-        elif self.mode == PREFERE_IPV6:
-            candidates = [address for address in addresses if address[0] == socket.AF_INET6 and address[5] or address[5] is None]
-            candidates += [address for address in addresses if address[0] == socket.AF_INET and address[5] or address[5] is None]
-        else:
-            raise LDAPInvalidServerError('invalid server definition')
+        if addresses:
+            if self.mode == IP_SYSTEM_DEFAULT:
+                candidates.append(addresses[0])
+            elif self.mode == IP_V4_ONLY:
+                candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
+            elif self.mode == IP_V6_ONLY:
+                candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
+            elif self.mode == IP_V4_PREFERRED:
+                candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
+                candidates += [address for address in addresses if address[0] == socket.AF_INET6 and (addresses[5] or address[5] is None)]
+            elif self.mode == IP_V6_PREFERRED:
+                candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
+                candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
+            else:
+                raise LDAPInvalidServerError('invalid server definition')
 
         return candidates

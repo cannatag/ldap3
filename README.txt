@@ -57,8 +57,10 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.6.3 2014.11.23
-    - Fixed bug for when auto_range is used in paged search
+* 0.9.6.3 2014.11.30
+    - Fixed bug for auto_range used in paged search
+    - Added dual IP stack mode parameter in Server object, values are: IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V4_PREFERRED, IP_V6_ONLY, IP_V6_PREFERRED
+    - add read_server_info parameter to bind() and start_tls() to avoid multiple schema and info read operations with auto_bind
 
 * 0.9.6.2 2014.11.17
     - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2

@@ -84,10 +84,10 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
                         if self.connection.server != new_server:
                             self.connection.server = new_server
-                            if self.connection._usage:
+                            if self.connection.usage:
                                 self.connection._usage.servers_from_pool += 1
                     SyncWaitStrategy._open_socket(self, address, use_ssl)  # calls super (not restartable) _open_socket()
-                    if self.connection._usage:
+                    if self.connection.usage:
                         self.connection._usage.restartable_successes += 1
                     self.connection.closed = False
                     self._restarting = False
@@ -95,7 +95,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                     return
                 except Exception:
                     self._add_exception_to_history()
-                    if self.connection._usage:
+                    if self.connection.usage:
                         self.connection._usage.restartable_failures += 1
                 if not isinstance(self.restartable_tries, bool):
                     counter -= 1
@@ -145,7 +145,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                 if not failure:
                     try:  # reissuing same operation
                         ret_value = self.connection.send(message_type, request, controls)
-                        if self.connection._usage:
+                        if self.connection.usage:
                             self.connection._usage.restartable_successes += 1
                         self._restarting = False
                         self._reset_exception_history()
@@ -154,7 +154,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         self._add_exception_to_history()
                         failure = True
 
-                if failure and self.connection._usage:
+                if failure and self.connection.usage:
                     self.connection._usage.restartable_failures += 1
 
                 if not isinstance(self.restartable_tries, bool):

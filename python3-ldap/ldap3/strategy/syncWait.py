@@ -146,8 +146,8 @@ class SyncWaitStrategy(BaseStrategy):
             if responses:
                 for response in responses:
                     while len(response) > 0:
-                        if self.connection._usage:
-                            self.connection._usage.received_message(len(response))
+                        if self.connection.usage:
+                            self.connection._usage.update_received_message(len(response))
                         ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAPMessage())
                         if int(ldap_resp['messageID']) == message_id:
                             dict_response = self.decode_response(ldap_resp)

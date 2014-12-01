@@ -260,44 +260,41 @@ class Connection(object):
                 raise LDAPInvalidServerError(self.last_error)
 
     def __str__(self):
-        with self.lock:
-            s = [
-                str(self.server) if self.server else 'None',
-                'user: ' + str(self.user),
-                'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
-                'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
-                ('[local: ' + _format_socket_endpoint(self.socket.getsockname()) + ' - remote: ' + _format_socket_endpoint(self.socket.getpeername()) + ']') if self.socket else '[no socket]',
-                'tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'),
-                'listening' if self.listening else 'not listening',
-                self.strategy.__class__.__name__
-            ]
-
+        s = [
+            str(self.server) if self.server else 'None',
+            'user: ' + str(self.user),
+            'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
+            'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
+            ('[local: ' + _format_socket_endpoint(self.socket.getsockname()) + ' - remote: ' + _format_socket_endpoint(self.socket.getpeername()) + ']') if self.socket else '[no socket]',
+            'tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'),
+            'listening' if self.listening else 'not listening',
+            self.strategy.__class__.__name__
+        ]
         return ' - '.join(s)
 
     def __repr__(self):
-        with self.lock:
-            if self.server_pool:
-                r = 'Connection(server={0.server_pool!r}'.format(self)
-            else:
-                r = 'Connection(server={0.server!r}'.format(self)
-            r += '' if self.user is None else ', user={0.user!r}'.format(self)
-            r += '' if self.password is None else ', password={0.password!r}'.format(self)
-            r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
-            r += '' if self.version is None else ', version={0.version!r}'.format(self)
-            r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
-            r += '' if self.strategy_type is None else ', client_strategy={0.strategy_type!r}'.format(self)
-            r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
-            r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.auto_sasl_mechanism!r}'.format(self)
-            r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
-            r += '' if self.check_names is None else ', check_names={0.check_names!r}'.format(self)
-            r += '' if self.usage is None else (', collect_usage=' + 'True' if self.usage else 'False')
-            r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
-            r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
-            r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
-            r += '' if (self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(self)
-            r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
-            r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
-            r += ')'
+        if self.server_pool:
+            r = 'Connection(server={0.server_pool!r}'.format(self)
+        else:
+            r = 'Connection(server={0.server!r}'.format(self)
+        r += '' if self.user is None else ', user={0.user!r}'.format(self)
+        r += '' if self.password is None else ', password={0.password!r}'.format(self)
+        r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
+        r += '' if self.version is None else ', version={0.version!r}'.format(self)
+        r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
+        r += '' if self.strategy_type is None else ', client_strategy={0.strategy_type!r}'.format(self)
+        r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
+        r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.auto_sasl_mechanism!r}'.format(self)
+        r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
+        r += '' if self.check_names is None else ', check_names={0.check_names!r}'.format(self)
+        r += '' if self.usage is None else (', collect_usage=' + 'True' if self.usage else 'False')
+        r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
+        r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
+        r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
+        r += '' if (self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(self)
+        r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
+        r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
+        r += ')'
 
         return r
 
@@ -306,8 +303,7 @@ class Connection(object):
         """Used by the LDIFProducer strategy to accumulate the ldif-change operations with a single LDIF header
         :return: reference to the response stream if defined in the strategy.
         """
-        with self.lock:
-            return self.strategy.get_stream() if self.strategy.can_stream else None
+        return self.strategy.get_stream() if self.strategy.can_stream else None
 
     @stream.setter
     def stream(self, value):
@@ -320,15 +316,14 @@ class Connection(object):
         """Usage statistics for the connection.
         :return: Usage object
         """
-        with self.lock:
-            if not self._usage:
-                return None
-            if self.strategy.pooled:
-                self._usage.reset()
-                for connection in self.strategy.pool.connections:
-                    self._usage += connection.connection.usage
-                self._usage += self.strategy.pool.terminated_usage
-            return self._usage
+        if not self._usage:
+            return None
+        if self.strategy.pooled:  # update masterconnection usage from pooled connections
+            self._usage.reset()
+            for connection in self.strategy.pool.connections:
+                self._usage += connection.connection.usage
+            self._usage += self.strategy.pool.terminated_usage
+        return self._usage
 
     def __enter__(self):
         with self.lock:
@@ -794,7 +789,7 @@ class Connection(object):
         print('FIRE DEFERRED')
         with self.lock:
             if self.lazy and not self._executing_deferred:
-                print('EXECUTING DEFERRED')
+                print('EXECUTING DEFERRED', self)
                 self._executing_deferred = True
                 try:
                     if self._deferred_open:

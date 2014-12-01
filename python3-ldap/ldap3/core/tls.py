@@ -25,7 +25,7 @@
 
 from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
 from .. import SEQUENCE_TYPES
-
+from datetime import datetime
 
 try:
     # noinspection PyUnresolvedReferences
@@ -198,13 +198,14 @@ class Tls(object):
         exc = None
         try:
             self.wrap_socket(connection, do_handshake=True)
-            print('TLS ON')
+            print(datetime.now(), 'WRAPPED TLS ON')
         except Exception as e:
             print('TLS EXC:', e)
             connection.last_error = 'wrap socket error: ' + str(e)
             exc = e
 
         connection.starting_tls = False
+
         if exc:
             raise start_tls_exception_factory(LDAPStartTLSError, exc)(connection.last_error)
 
@@ -212,7 +213,7 @@ class Tls(object):
             connection._usage.wrapped_sockets += 1
 
         connection.tls_started = True
-        print('TLS-TRUE')
+        print(datetime.now(), 'TLS-TRUE')
         return True
 
 

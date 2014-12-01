@@ -82,8 +82,8 @@ class AsyncMockDsaStrategy(BaseStrategy):
                 if length == -1 or len(unprocessed) < length:
                     get_more_data = True
                 elif len(unprocessed) >= length:  # add message to message list
-                    if self.connection._usage:
-                        self.connection._usage.received_message(length)
+                    if self.connection.usage:
+                        self.connection._usage.update_received_message(length)
                     ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
                     message_id = int(ldap_resp['messageID'])
                     dict_response = self.connection.strategy.decode_response(ldap_resp)

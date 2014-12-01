@@ -95,7 +95,6 @@ class BaseStrategy(object):
 
             exception_history = []
             if not self.no_real_dsa:
-                valid_address = False
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
                         self._open_socket(candidate_address, self.connection.server.ssl)
@@ -104,11 +103,12 @@ class BaseStrategy(object):
                         break
                     except Exception as e:
                         self.connection.server.update_availability(candidate_address, False)
-                        exception_history.append((datetime.now(), exc_info()[0], exc_info()[1]))
-                        continue
+                        exception_history.append((datetime.now(), exc_info()[0], exc_info()[1], candidate_address[4]))
 
-                if not self.connection.server.current_address:
-                    raise LDAPSocketOpenError('unable to open socket')
+                if not self.connection.server.current_address and exception_history:
+                    raise LDAPSocketOpenError('unable to open socket', exception_history)
+                elif not self.connection.server.current_address:
+                    raise LDAPSocketOpenError('invalid server address')
 
             self.connection._deferred_open = False
             self._start_listen()
@@ -132,7 +132,9 @@ class BaseStrategy(object):
         self.connection.tls_started = False
         self._outstanding = dict()
         self._referrals = []
-        self.connection.server.current_address = None
+
+        if not self.connection.strategy.no_real_dsa:
+            self.connection.server.current_address = None
         if self.connection._usage:
             self.connection._usage.stop()
 
@@ -144,7 +146,6 @@ class BaseStrategy(object):
         exc = None
         try:
             self.connection.socket = socket.socket(*address[:3])
-            # self.connection.socket = socket.socket(self.connection.server.address_info[0][0], self.connection.server.address_info[0][1], self.connection.server.address_info[2])
         except Exception as e:
             self.connection.last_error = 'socket creation error: ' + str(e)
             exc = e
@@ -259,7 +260,8 @@ class BaseStrategy(object):
         """
         response = None
         result = None
-
+        print('GET_RESPONSE', message_id)
+        print(self._outstanding)
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
@@ -297,6 +299,8 @@ class BaseStrategy(object):
                     self.connection.response = None
                     break
 
+            if timeout <= 0:
+                print('TIMED-OUT', message_id)
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 

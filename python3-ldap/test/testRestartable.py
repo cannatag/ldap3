@@ -23,7 +23,8 @@
 
 import unittest
 
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, dn_for_test, test_base, test_lazy_connection
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
+    dn_for_test, test_base, test_lazy_connection, test_get_info, test_server_mode
 
 from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN,  SEARCH_SCOPE_SINGLE_LEVEL, ALL_ATTRIBUTES
 
@@ -32,7 +33,7 @@ class Test(unittest.TestCase):
     def test_restartable_invalid_server(self):
         hosts = [test_server, '127.0.0.1']
         search_results = []
-        servers = [Server(host=host, port=636, use_ssl=True) for host in hosts]
+        servers = [Server(host=host, port=636, use_ssl=True, get_info=test_get_info, mode=test_server_mode) for host in hosts]
 
         connection = Connection(ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True), user=test_user, password=test_password, client_strategy=STRATEGY_SYNC_RESTARTABLE, lazy=test_lazy_connection, pool_name='pool1')
 

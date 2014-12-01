@@ -72,7 +72,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         def __init__(self, connection):
             if not hasattr(self, 'connections'):
                 self.name = connection.pool_name
-                self.original_connection = connection
+                self.master_connection = connection
                 self.connections = []
                 self.pool_size = connection.pool_size or REUSABLE_THREADED_POOL_SIZE
                 self.lifetime = connection.pool_lifetime or REUSABLE_THREADED_LIFETIME
@@ -89,18 +89,20 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.started = False
 
         def __str__(self):
-            s = str(self.name) + ' - ' + ('started' if self.started else 'terminated') + linesep
-            s += 'original connection: ' + str(self.original_connection) + linesep
-            s += 'response pool length: ' + str(len(self._incoming))
+            s = 'POOL: ' + str(self.name) + ' - status: ' + ('started' if self.started else 'terminated')
+            s += ' - responses in queue: ' + str(len(self._incoming))
             s += ' - pool size: ' + str(self.pool_size)
             s += ' - lifetime: ' + str(self.lifetime)
             s += ' - open: ' + str(self.open_pool)
             s += ' - bind: ' + str(self.bind_pool)
-            s += ' - tls: ' + str(self.tls_pool)
-
-            for connection in self.connections:
-                s += linesep
-                s += str(connection)
+            s += ' - tls: ' + str(self.tls_pool) + linesep
+            s += 'MASTER CONN: ' + str(self.master_connection) + linesep
+            s += 'CONNECTIONS:'
+            if self.connections:
+                for i, connection in enumerate(self.connections):
+                    s += linesep + str(i).rjust(5) + ': ' + str(connection)
+            else:
+                s += linesep + '    no active connections in pool'
 
             return s
 
@@ -117,7 +119,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             return False
 
         def create_pool(self):
-            self.connections = [ReusableThreadedStrategy.ReusableConnection(self.original_connection, self.request_queue) for _ in range(self.pool_size)]
+            self.connections = [ReusableThreadedStrategy.ReusableConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
 
         def terminate_pool(self):
             self.started = False
@@ -129,17 +131,17 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.request_queue.join()  # wait for all queue terminate operations
 
     class PooledConnectionThread(Thread):
-        def __init__(self, reusable_connection, original_connection):
+        def __init__(self, reusable_connection, master_connection):
             Thread.__init__(self)
             self.daemon = True
             self.active_connection = reusable_connection
-            self.original_connection = original_connection
+            self.master_connection = master_connection
 
         # noinspection PyProtectedMember
         def run(self):
             self.active_connection.running = True
             terminate = False
-            pool = self.original_connection.strategy.pool
+            pool = self.master_connection.strategy.pool
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
                 self.active_connection.busy = True
@@ -151,7 +153,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                         except LDAPExceptionError:
                             pass
                 else:
-                    if (datetime.now() - self.active_connection.creation_time).seconds >= self.original_connection.strategy.pool.lifetime:  # destroy and create a new connection
+                    if (datetime.now() - self.active_connection.creation_time).seconds >= self.master_connection.strategy.pool.lifetime:  # destroy and create a new connection
                         try:
                             self.active_connection.connection.unbind()
                         except LDAPExceptionError:
@@ -159,17 +161,18 @@ class ReusableThreadedStrategy(BaseStrategy):
                         self.active_connection.new_connection()
                     if message_type not in ['bindRequest', 'unbindRequest']:
                         if pool.open_pool and self.active_connection.connection.closed:
-                            self.active_connection.connection.open()
-                        if pool.bind_pool and not self.active_connection.connection.bound:
-                            self.active_connection.connection.bind()
-                        if pool.tls_pool and not self.active_connection.connection.tls_started:
-                            self.active_connection.connection.start_tls()
+                            self.active_connection.connection.open(read_server_info=False)
+                            if pool.tls_pool and not self.active_connection.connection.tls_started:
+                                self.active_connection.connection.start_tls(read_server_info=False)
+                            if pool.bind_pool and not self.active_connection.connection.bound:
+                                self.active_connection.connection.bind(read_server_info=False)
                         # noinspection PyProtectedMember
                         self.active_connection.connection._fire_deferred()  # force deferred operations
 
                         exc = None
                         response = None
                         result = None
+                        print('CONN SEND', message_type)
                         try:
                             if message_type == 'searchRequest':
                                 response = self.active_connection.connection.post_send_search(self.active_connection.connection.send(message_type, request, controls))
@@ -185,9 +188,9 @@ class ReusableThreadedStrategy(BaseStrategy):
                             else:
                                 pool._incoming[counter] = (response, result)
 
-                self.original_connection.busy = False
+                self.active_connection.busy = False
                 pool.request_queue.task_done()
-            if self.original_connection.usage:
+            if self.master_connection.usage:
                 pool.terminated_usage += self.active_connection.connection.usage
             self.active_connection.running = False
 
@@ -197,7 +200,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         """
         def __init__(self, connection, request_queue):
 
-            self.original_connection = connection
+            self.master_connection = connection
             self.request_queue = request_queue
             self.running = False
             self.busy = False
@@ -207,34 +210,35 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.thread = ReusableThreadedStrategy.PooledConnectionThread(self, connection)
 
         def __str__(self):
-            s = str(self.connection) + linesep
-            s += 'running ' if self.running else '-halted'
-            s += ' - ' + ('busy' if self.busy else ' available')
-            s += ' - ' + ('creation time: ' + self.creation_time.isoformat())
+            s = 'CONN: ' + str(self.connection) + linesep + '       THREAD: '
+            s += 'running' if self.running else 'halted'
+            s += ' - ' + ('busy' if self.busy else 'available')
+            s += ' - ' + ('created at: ' + self.creation_time.isoformat())
 
             return s
 
         def new_connection(self):
             from ..core.connection import Connection
             # noinspection PyProtectedMember
-            self.connection = Connection(server=self.original_connection.server_pool if self.original_connection.server_pool else self.original_connection.server,
-                                         user=self.original_connection.user,
-                                         password=self.original_connection.password,
-                                         version=self.original_connection.version,
-                                         authentication=self.original_connection.authentication,
+            self.connection = Connection(server=self.master_connection.server_pool if self.master_connection.server_pool else self.master_connection.server,
+                                         user=self.master_connection.user,
+                                         password=self.master_connection.password,
+                                         auto_bind=self.master_connection.auto_bind,
+                                         version=self.master_connection.version,
+                                         authentication=self.master_connection.authentication,
                                          client_strategy=STRATEGY_SYNC_RESTARTABLE,
-                                         raise_exceptions=self.original_connection.raise_exceptions,
-                                         check_names=self.original_connection.check_names,
-                                         auto_referrals=self.original_connection.auto_referrals,
-                                         sasl_mechanism=self.original_connection.sasl_mechanism,
-                                         sasl_credentials=self.original_connection.sasl_credentials,
-                                         collect_usage=True if self.original_connection._usage else False,
-                                         read_only=self.original_connection.read_only,
-                                         auto_bind=self.original_connection.auto_bind,
+                                         auto_referrals=self.master_connection.auto_referrals,
+                                         auto_range=self.master_connection.auto_range,
+                                         sasl_mechanism=self.master_connection.sasl_mechanism,
+                                         sasl_credentials=self.master_connection.sasl_credentials,
+                                         check_names=self.master_connection.check_names,
+                                         collect_usage=True if self.master_connection._usage else False,
+                                         read_only=self.master_connection.read_only,
+                                         raise_exceptions=self.master_connection.raise_exceptions,
                                          lazy=True)
 
-            if self.original_connection.server_pool:
-                self.connection.server_pool = self.original_connection.server_pool
+            if self.master_connection.server_pool:
+                self.connection.server_pool = self.master_connection.server_pool
                 self.connection.server_pool.initialize(self.connection)
 
             self.creation_time = datetime.now()
@@ -276,6 +280,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.connection._usage.closed_sockets += 1
 
     def send(self, message_type, request, controls=None):
+        print('MASTER SEND', message_type)
         if self.pool.started:
             if message_type == 'bindRequest':
                 self.pool.bind_pool = True
@@ -319,7 +324,6 @@ class ReusableThreadedStrategy(BaseStrategy):
 
         if isinstance(response, LDAPOperationResult):
             raise response  # an exception has been raised with raise_connections
-
         return response, result
 
     def post_send_single_response(self, counter):

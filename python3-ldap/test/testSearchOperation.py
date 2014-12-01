@@ -23,13 +23,14 @@
 import unittest
 
 from ldap3.utils.conv import escape_bytes
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info, test_check_names
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
+    test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info, test_check_names, test_server_mode
 from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info)
+        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
         result = self.connection.add(dn_for_test(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)', 'loginGraceLimit': 10})
         if not isinstance(result, bool):

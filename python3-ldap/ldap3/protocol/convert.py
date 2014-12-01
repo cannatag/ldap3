@@ -150,9 +150,6 @@ def validate_attribute_value(schema, name, value):
             if value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
 
-    # if isinstance(value, STRING_TYPES):
-    #    return validate_assertion_value(None, name, value)  # schema already checked, no need to check again
-
     return value
 
 

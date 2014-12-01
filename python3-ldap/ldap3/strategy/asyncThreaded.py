@@ -148,6 +148,7 @@ class AsyncThreadedStrategy(BaseStrategy):
 
         if read_server_info:
             try:
+                print('REFRESH3')
                 self.connection.refresh_server_info()
             except LDAPOperationResult:  # catch errors from server if raise_exception = True
                 self.connection.server._dsa_info = None

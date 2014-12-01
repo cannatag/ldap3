@@ -404,6 +404,7 @@ class Connection(object):
                     self.last_error = result['description']
 
                 if read_server_info and self.bound and not self.strategy.pooled:
+                    print('REFRESH4')
                     self.refresh_server_info()
 
             return self.bound
@@ -682,8 +683,8 @@ class Connection(object):
                 print('START_TLS')
                 if self.server.tls.start_tls(self) and self.strategy.sync:  # for async connections _start_tls is run by the strategy
                     if read_server_info:
+                        print('REFRESH5')
                         self.refresh_server_info()  # refresh server info as per RFC4515 (3.1.5)
-                        print('REFRESHED_INFO')
                     return True
                 elif not self.strategy.sync:
                     return True
@@ -786,20 +787,26 @@ class Connection(object):
                 target.close()
 
     def _fire_deferred(self):
-        print('FIRE DEFERRED')
         with self.lock:
             if self.lazy and not self._executing_deferred:
-                print('EXECUTING DEFERRED', self)
                 self._executing_deferred = True
+                read_server_info = False
                 try:
                     if self._deferred_open:
                         self.open(read_server_info=False)
+                        read_server_info = True
                     if self._deferred_start_tls:
                         self.start_tls(read_server_info=False)
+                        read_server_info = True
                     if self._deferred_bind:
                         self.bind(read_server_info=False, controls=self._bind_controls)
-                    self.refresh_server_info()
+                        read_server_info = True
+
+                    if read_server_info:
+                        print('REFRESH6')
+                        self.refresh_server_info()
                 except LDAPExceptionError:
                     raise  # re-raise LDAPExceptionError
                 finally:
                     self._executing_deferred = False
+                    return read_server_info  # return True if info are read

@@ -54,6 +54,9 @@ class ReusableThreadedStrategy(BaseStrategy):
 
     # noinspection PyProtectedMember
     class ConnectionPool(object):
+        """
+        Container for the Connection Threads
+        """
         def __new__(cls, connection):
             if connection.pool_name in ReusableThreadedStrategy.pools:  # returns existing connection pool
                 pool = ReusableThreadedStrategy.pools[connection.pool_name]
@@ -114,14 +117,18 @@ class ReusableThreadedStrategy(BaseStrategy):
         def start_pool(self):
             if not self.started:
                 self.create_pool()
-                for connection in self.connections:
-                    connection.thread.start()
+                for inner_connection in self.connections:
+                    inner_connection.thread.start()
                 self.started = True
                 return True
             return False
 
+        def fire_deferred_in_pool(self):
+            for inner_connection in self.connections:
+                inner_connection.connection._fire_deferred()
+
         def create_pool(self):
-            self.connections = [ReusableThreadedStrategy.ReusableConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
+            self.connections = [ReusableThreadedStrategy.InnerConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
 
         def terminate_pool(self):
             self.started = False
@@ -135,11 +142,16 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.request_queue.join()  # wait for all queue terminate operations
 
     class PooledConnectionThread(Thread):
-        def __init__(self, reusable_connection, master_connection):
+        """
+        The thread that holds the Reusable connection and receive operation request via the queue
+        Result are sent back in the pool._incoming list when ready
+        """
+        def __init__(self, inner_connection, master_connection):
             Thread.__init__(self)
             self.daemon = True
-            self.active_thread = reusable_connection
+            self.active_thread = inner_connection
             self.master_connection = master_connection
+
 
         # noinspection PyProtectedMember
         def run(self):
@@ -171,10 +183,11 @@ class ReusableThreadedStrategy(BaseStrategy):
                             if pool.bind_pool and not self.active_thread.connection.bound:
                                 self.active_thread.connection.bind(read_server_info=False)
                         # noinspection PyProtectedMember
+                        #print('FIRE DEFERRED FROM INNER CONNECTION')
                         self.active_thread.connection._fire_deferred()  # force deferred operations
-                        with self.master_connection.lock:
-                            pool.master_schema = self.active_thread.connection.server.schema
-                            pool.master_info = self.active_thread.connection.server.info
+                        # with self.master_connection.lock:
+                        #    pool.master_schema = self.active_thread.connection.server.schema
+                        #    pool.master_info = self.active_thread.connection.server.info
                         exc = None
                         response = None
                         result = None
@@ -195,16 +208,16 @@ class ReusableThreadedStrategy(BaseStrategy):
                                 pool._incoming[counter] = (response, result)
                 self.active_thread.busy = False
                 pool.request_queue.task_done()
+                self.active_thread.task_counter += 1
             if self.master_connection.usage:
                 pool.terminated_usage += self.active_thread.connection.usage
             self.active_thread.running = False
 
-    class ReusableConnection(object):
+    class InnerConnection(object):
         """
-        Container for the Restartable connection. it includes a thread and a lock to execute the connection in the pool
+        Container for the restartable connection. it includes a thread and a lock to execute the connection in the pool
         """
         def __init__(self, connection, request_queue):
-
             self.master_connection = connection
             self.request_queue = request_queue
             self.running = False
@@ -212,6 +225,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.connection = None
             self.creation_time = None
             self.new_connection()
+            self.task_counter = 0
             self.thread = ReusableThreadedStrategy.PooledConnectionThread(self, connection)
 
         def __str__(self):
@@ -219,6 +233,8 @@ class ReusableThreadedStrategy(BaseStrategy):
             s += 'running' if self.running else 'halted'
             s += ' - ' + ('busy' if self.busy else 'available')
             s += ' - ' + ('created at: ' + self.creation_time.isoformat())
+            s += ' - time to live: ' + str(self.master_connection.strategy.pool.lifetime - (datetime.now() - self.creation_time).seconds)
+            s += ' - requests served: ' + str(self.task_counter)
 
             return s
 

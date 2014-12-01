@@ -361,7 +361,6 @@ class Server(object):
                 self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
 
 
-
     def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):
             self._dsa_info = dsa_info

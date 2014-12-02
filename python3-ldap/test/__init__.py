@@ -24,13 +24,13 @@ from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_
     POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO, IP_V4_PREFERRED, IP_SYSTEM_DEFAULT, IP_V6_PREFERRED, IP_V4_ONLY, IP_V6_ONLY
 
 test_server = ['edir1', 'edir2', 'edir3']  # the ldap server where tests executed, if a list is given a pool will be created
-test_server = 'edir1'
+test_server = 'sl10'
 # test_server = 'sl10'
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
 test_user = 'cn=admin,o=services'  # the user that performs the tests
-test_password = 'password'  # user password
-test_server_context = 'o=services'  # used in novell eDirectory extended operations
+test_password = 'camera'  # user password
+test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
 
 test_base = 'o=test'  # base context where test objects are created
 test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations

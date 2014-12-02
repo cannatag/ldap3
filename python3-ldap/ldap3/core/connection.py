@@ -34,7 +34,9 @@ from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
     STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, STRATEGY_REUSABLE_THREADED, \
     DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, STRATEGY_SYNC_MOCK_DSA, STRATEGY_ASYNC_MOCK_DSA
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, STRATEGY_SYNC_MOCK_DSA, STRATEGY_ASYNC_MOCK_DSA, \
+    SEARCH_SCOPE_BASE_OBJECT
+
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -403,7 +405,7 @@ class Connection(object):
                 if not self.bound and result and result['description']:
                     self.last_error = result['description']
 
-                if read_server_info and self.bound and not self.strategy.pooled:
+                if read_server_info and self.bound:
                     print('REFRESH4')
                     self.refresh_server_info()
 
@@ -787,24 +789,33 @@ class Connection(object):
                 target.close()
 
     def _fire_deferred(self):
+        print('ENTER FIRE', self)
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
                 read_server_info = False
                 try:
                     if self._deferred_open:
+                        print('EXECUTE DEFERRED OPEN', self)
                         self.open(read_server_info=False)
                         read_server_info = True
                     if self._deferred_start_tls:
+                        print('EXECUTE DEFERRED START_TLS', self)
                         self.start_tls(read_server_info=False)
                         read_server_info = True
                     if self._deferred_bind:
+                        print('EXECUTE DEFERRED BIND', self)
                         self.bind(read_server_info=False, controls=self._bind_controls)
                         read_server_info = True
 
                     if read_server_info:
                         print('REFRESH6')
                         self.refresh_server_info()
+                        #if self.strategy.pooled:  # executes a generic search to force read of info bacause of lazy connections in pool
+                        #    response = self.search(search_base='', search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_BASE_OBJECT)
+                        #    if not self.strategy.sync:
+                        #        self.get_response(response)
+
                 except LDAPExceptionError:
                     raise  # re-raise LDAPExceptionError
                 finally:

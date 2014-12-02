@@ -123,7 +123,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 return True
             return False
 
-        def fire_deferred_in_pool(self):
+        def fire_deferred(self):
             for inner_connection in self.connections:
                 inner_connection.connection._fire_deferred()
 
@@ -151,7 +151,6 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.daemon = True
             self.active_thread = inner_connection
             self.master_connection = master_connection
-
 
         # noinspection PyProtectedMember
         def run(self):
@@ -183,7 +182,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                             if pool.bind_pool and not self.active_thread.connection.bound:
                                 self.active_thread.connection.bind(read_server_info=False)
                         # noinspection PyProtectedMember
-                        #print('FIRE DEFERRED FROM INNER CONNECTION')
+                        print('FIRE DEFERRED FROM INNER CONNECTION')
                         self.active_thread.connection._fire_deferred()  # force deferred operations
                         # with self.master_connection.lock:
                         #    pool.master_schema = self.active_thread.connection.server.schema
@@ -324,15 +323,17 @@ class ReusableThreadedStrategy(BaseStrategy):
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
+        print('GET_RESPONSE (Reusable)', counter, self.connection)
         if counter == -1:  # send a bogus bindResponse
-            return list(), {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '', 'saslCreds': 'None'}
+            return list(), {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': 'None'}
         elif counter == -2:  # bogus unbind
             return None
         elif counter == -3:  # bogus startTls extended request
-            return list(), {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': ''}
+            return list(), {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': '<bogus StartTls response>'}
         response = None
         result = None
         while timeout >= 0:  # waiting for completed message to appear in _incoming
+            print('TIMEOUT (Reusable)', counter, timeout)
             try:
                 with self.connection.strategy.pool.lock:
                     response, result = self.connection.strategy.pool._incoming.pop(counter)
@@ -345,6 +346,7 @@ class ReusableThreadedStrategy(BaseStrategy):
 
         if isinstance(response, LDAPOperationResult):
             raise response  # an exception has been raised with raise_connections
+        print('RETURN RESPONSE (Reusable)', counter, result)
         return response, result
 
     def post_send_single_response(self, counter):

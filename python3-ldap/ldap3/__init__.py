@@ -114,7 +114,7 @@ CLIENT_STRATEGIES = [STRATEGY_SYNC,
 SESSION_TERMINATED_BY_SERVER = -2
 RESPONSE_COMPLETE = -1
 RESPONSE_SLEEPTIME = 0.03  # seconds to wait while waiting for a response in asynchronous strategies
-RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
+RESPONSE_WAITING_TIMEOUT = 2  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
 CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 
@@ -124,7 +124,7 @@ RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy bef
 
 # reusable strategies (Threaded)
 TERMINATE_REUSABLE = -1
-REUSABLE_THREADED_POOL_SIZE = 1
+REUSABLE_THREADED_POOL_SIZE = 2
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'reusable_default_pool'
 

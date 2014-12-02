@@ -260,10 +260,10 @@ class BaseStrategy(object):
         """
         response = None
         result = None
-        print('GET_RESPONSE', message_id)
-        print(self._outstanding)
+        print('GET_RESPONSE (Base)', message_id, self.connection)
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
+                print('TIMEOUT (Base)', timeout)
                 responses = self._get_response(message_id)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
@@ -301,6 +301,7 @@ class BaseStrategy(object):
 
             if timeout <= 0:
                 print('TIMED-OUT', message_id)
+
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 
@@ -321,6 +322,7 @@ class BaseStrategy(object):
                 del self._auto_range_searching
 
             self._outstanding.pop(message_id)
+        print('RETURN RESPONSE (Base)', message_id, result)
         return response, result
 
     @classmethod

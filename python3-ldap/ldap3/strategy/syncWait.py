@@ -52,7 +52,7 @@ class SyncWaitStrategy(BaseStrategy):
         BaseStrategy.open(self, reset_usage, read_server_info)
         if read_server_info:
             try:
-                print('REFRESH2')
+                print(threading.current_thread().name, 'REFRESH2')
                 self.connection.refresh_server_info()
             except LDAPOperationResult:  # catch errors from server if raise_exception = True
                 self.connection.server._dsa_info = None

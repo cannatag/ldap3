@@ -178,14 +178,14 @@ class Tls(object):
         result = connection.extended('1.3.6.1.4.1.1466.20037')
         if not connection.strategy.sync:
             # async - _start_tls must be executed by the strategy
-            print('WAITING FOR ASYNC RESPONSE')
+            print(threading.current_thread().name, 'WAITING FOR ASYNC RESPONSE')
             response = connection.get_response(result)
-            print("ASYNC RESPONSE:", response)
+            print(threading.current_thread().name, "ASYNC RESPONSE:", response)
             if response != (None, None):
-                print('ASYNC TRUE')
+                print(threading.current_thread().name, 'ASYNC TRUE')
                 return True
             else:
-                print('ASYNC FALSE')
+                print(threading.current_thread().name, 'ASYNC FALSE')
                 return False
         else:
             if connection.result['description'] not in ['success']:
@@ -198,9 +198,9 @@ class Tls(object):
         exc = None
         try:
             self.wrap_socket(connection, do_handshake=True)
-            print(datetime.now(), 'WRAPPED TLS ON')
+            print(threading.current_thread().name, datetime.now(), 'WRAPPED TLS ON')
         except Exception as e:
-            print('TLS EXC:', e)
+            print(threading.current_thread().name, 'TLS EXC:', e)
             connection.last_error = 'wrap socket error: ' + str(e)
             exc = e
 
@@ -213,7 +213,7 @@ class Tls(object):
             connection._usage.wrapped_sockets += 1
 
         connection.tls_started = True
-        print(datetime.now(), 'TLS-TRUE')
+        print(threading.current_thread().name, datetime.now(), 'TLS-TRUE')
         return True
 
 

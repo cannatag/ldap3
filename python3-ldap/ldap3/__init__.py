@@ -113,8 +113,8 @@ CLIENT_STRATEGIES = [STRATEGY_SYNC,
 # communication
 SESSION_TERMINATED_BY_SERVER = -2
 RESPONSE_COMPLETE = -1
-RESPONSE_SLEEPTIME = 0.03  # seconds to wait while waiting for a response in asynchronous strategies
-RESPONSE_WAITING_TIMEOUT = 2  # waiting timeout for receiving a response in asynchronous strategies
+RESPONSE_SLEEPTIME = 0.5  # seconds to wait while waiting for a response in asynchronous strategies 0.05
+RESPONSE_WAITING_TIMEOUT = 4  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
 CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 

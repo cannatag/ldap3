@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
+import threading
 from threading import RLock
 from pyasn1.codec.ber import encoder
 import json
@@ -406,7 +407,7 @@ class Connection(object):
                     self.last_error = result['description']
 
                 if read_server_info and self.bound:
-                    print('REFRESH4')
+                    print(threading.current_thread().name, 'REFRESH4')
                     self.refresh_server_info()
 
             return self.bound
@@ -682,10 +683,10 @@ class Connection(object):
                 return True
             else:
                 self._deferred_start_tls = False
-                print('START_TLS')
+                print(threading.current_thread().name, 'START_TLS')
                 if self.server.tls.start_tls(self) and self.strategy.sync:  # for async connections _start_tls is run by the strategy
                     if read_server_info:
-                        print('REFRESH5')
+                        print(threading.current_thread().name, 'REFRESH5')
                         self.refresh_server_info()  # refresh server info as per RFC4515 (3.1.5)
                     return True
                 elif not self.strategy.sync:
@@ -789,27 +790,27 @@ class Connection(object):
                 target.close()
 
     def _fire_deferred(self):
-        print('ENTER FIRE', self)
+        print(threading.current_thread().name, 'ENTER FIRE', self)
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
                 read_server_info = False
                 try:
                     if self._deferred_open:
-                        print('EXECUTE DEFERRED OPEN', self)
+                        print(threading.current_thread().name, 'EXECUTE DEFERRED OPEN', self)
                         self.open(read_server_info=False)
                         read_server_info = True
                     if self._deferred_start_tls:
-                        print('EXECUTE DEFERRED START_TLS', self)
+                        print(threading.current_thread().name, 'EXECUTE DEFERRED START_TLS', self)
                         self.start_tls(read_server_info=False)
                         read_server_info = True
                     if self._deferred_bind:
-                        print('EXECUTE DEFERRED BIND', self)
+                        print(threading.current_thread().name, 'EXECUTE DEFERRED BIND', self)
                         self.bind(read_server_info=False, controls=self._bind_controls)
                         read_server_info = True
 
                     if read_server_info:
-                        print('REFRESH6')
+                        print(threading.current_thread().name, 'REFRESH6')
                         self.refresh_server_info()
                         #if self.strategy.pooled:  # executes a generic search to force read of info bacause of lazy connections in pool
                         #    response = self.search(search_base='', search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_BASE_OBJECT)

@@ -23,6 +23,7 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+import threading
 from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
@@ -149,68 +150,71 @@ class ReusableThreadedStrategy(BaseStrategy):
         def __init__(self, inner_connection, master_connection):
             Thread.__init__(self)
             self.daemon = True
-            self.active_thread = inner_connection
+            self.worker = inner_connection
             self.master_connection = master_connection
 
         # noinspection PyProtectedMember
         def run(self):
-            self.active_thread.running = True
+            self.worker.running = True
             terminate = False
             pool = self.master_connection.strategy.pool
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
-                self.active_thread.busy = True
+                print(threading.current_thread().name, 'GOT JOB FOR WORKER', counter, request)
+                self.worker.busy = True
                 if counter == TERMINATE_REUSABLE:
                     terminate = True
-                    if self.active_thread.connection.bound:
+                    if self.worker.connection.bound:
                         try:
-                            self.active_thread.connection.unbind()
+                            self.worker.connection.unbind()
                         except LDAPExceptionError:
                             pass
                 else:
-                    if (datetime.now() - self.active_thread.creation_time).seconds >= self.master_connection.strategy.pool.lifetime:  # destroy and create a new connection
+                    if (datetime.now() - self.worker.creation_time).seconds >= self.master_connection.strategy.pool.lifetime:  # destroy and create a new connection
                         try:
-                            self.active_thread.connection.unbind()
+                            self.worker.connection.unbind()
                         except LDAPExceptionError:
                             pass
-                        self.active_thread.new_connection()
+                        self.worker.new_connection()
                     if message_type not in ['bindRequest', 'unbindRequest']:
-                        if pool.open_pool and self.active_thread.connection.closed:
-                            self.active_thread.connection.open(read_server_info=False)
-                            if pool.tls_pool and not self.active_thread.connection.tls_started:
-                                self.active_thread.connection.start_tls(read_server_info=False)
-                            if pool.bind_pool and not self.active_thread.connection.bound:
-                                self.active_thread.connection.bind(read_server_info=False)
+                        if pool.open_pool and self.worker.connection.closed:
+                            self.worker.connection.open(read_server_info=False)
+                            if pool.tls_pool and not self.worker.connection.tls_started:
+                                self.worker.connection.start_tls(read_server_info=False)
+                            if pool.bind_pool and not self.worker.connection.bound:
+                                self.worker.connection.bind(read_server_info=False)
                         # noinspection PyProtectedMember
-                        print('FIRE DEFERRED FROM INNER CONNECTION')
-                        self.active_thread.connection._fire_deferred()  # force deferred operations
+                        print(threading.current_thread().name, 'FIRE DEFERRED FROM INNER CONNECTION')
+                        self.worker.connection._fire_deferred()  # force deferred operations
                         # with self.master_connection.lock:
-                        #    pool.master_schema = self.active_thread.connection.server.schema
-                        #    pool.master_info = self.active_thread.connection.server.info
+                        #    pool.master_schema = self.worker.connection.server.schema
+                        #    pool.master_info = self.worker.connection.server.info
                         exc = None
                         response = None
                         result = None
-                        print('CONN SEND', message_type)
+                        print(threading.current_thread().name, 'WORKER SEND', message_type)
                         try:
                             if message_type == 'searchRequest':
-                                response = self.active_thread.connection.post_send_search(self.active_thread.connection.send(message_type, request, controls))
+                                response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
                             else:
-                                response = self.active_thread.connection.post_send_single_response(self.active_thread.connection.send(message_type, request, controls))
-                            result = self.active_thread.connection.result
+                                response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
+                            result = self.worker.connection.result
                         except LDAPOperationResult as e:  # raise_exceptions has raise an exception. It must be redirected to the original connection thread
+                            print(threading.current_thread().name, 'EXCEPTION IN THREAD', exc)
                             exc = e
 
                         with pool.lock:
+                            print(threading.current_thread().name, 'WORKER ADD RESPONSE TO INCOMING', counter)
                             if exc:
                                 pool._incoming[counter] = (exc, None)
                             else:
                                 pool._incoming[counter] = (response, result)
-                self.active_thread.busy = False
+                self.worker.busy = False
                 pool.request_queue.task_done()
-                self.active_thread.task_counter += 1
+                self.worker.task_counter += 1
             if self.master_connection.usage:
-                pool.terminated_usage += self.active_thread.connection.usage
-            self.active_thread.running = False
+                pool.terminated_usage += self.worker.connection.usage
+            self.worker.running = False
 
     class InnerConnection(object):
         """
@@ -300,7 +304,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.connection._usage.closed_sockets += 1
 
     def send(self, message_type, request, controls=None):
-        print('MASTER SEND', message_type)
+        print(threading.current_thread().name, 'MASTER SEND', message_type, request)
         if self.pool.started:
             if message_type == 'bindRequest':
                 self.pool.bind_pool = True
@@ -319,34 +323,39 @@ class ReusableThreadedStrategy(BaseStrategy):
                     counter = self.pool.counter
                 self.pool.request_queue.put((counter, message_type, request, controls))
 
+            print(threading.current_thread().name, 'MASTER SENT COUNTER', counter)
             return counter
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
-        print('GET_RESPONSE (Reusable)', counter, self.connection)
+        print(threading.current_thread().name, 'GET_RESPONSE (MASTER)', counter, self.connection)
         if counter == -1:  # send a bogus bindResponse
-            return list(), {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': 'None'}
+            response = list()
+            result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': 'None'}
         elif counter == -2:  # bogus unbind
-            return None
+            response = None
+            result = None
         elif counter == -3:  # bogus startTls extended request
-            return list(), {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': '<bogus StartTls response>'}
-        response = None
-        result = None
-        while timeout >= 0:  # waiting for completed message to appear in _incoming
-            print('TIMEOUT (Reusable)', counter, timeout)
-            try:
-                with self.connection.strategy.pool.lock:
-                    response, result = self.connection.strategy.pool._incoming.pop(counter)
-
-            except KeyError:
-                sleep(RESPONSE_SLEEPTIME)
-                timeout -= RESPONSE_SLEEPTIME
-                continue
-            break
+            response = list()
+            result = {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': '<bogus StartTls response>'}
+        else:
+            response = None
+            result = None
+            while timeout >= 0:  # waiting for completed message to appear in _incoming
+                print(threading.current_thread().name, 'TIMEOUT (MASTER)', counter, timeout, self.connection.strategy.pool._incoming, self.connection)
+                try:
+                    with self.connection.strategy.pool.lock:
+                        response, result = self.connection.strategy.pool._incoming.pop(counter)
+                except KeyError:
+                    sleep(RESPONSE_SLEEPTIME)
+                    timeout -= RESPONSE_SLEEPTIME
+                    continue
+                break
 
         if isinstance(response, LDAPOperationResult):
             raise response  # an exception has been raised with raise_connections
-        print('RETURN RESPONSE (Reusable)', counter, result)
+
+        print(threading.current_thread().name, 'RETURN RESPONSE (MASTER)', counter, result)
         return response, result
 
     def post_send_single_response(self, counter):

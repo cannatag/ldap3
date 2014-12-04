@@ -23,6 +23,7 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+import threading
 import socket
 from threading import Lock
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
@@ -245,7 +246,7 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
-        print('REQUESTING_DSA_INFO', connection)
+        print(threading.current_thread().name, 'REQUESTING_DSA_INFO', connection)
         if connection.strategy.pooled:
             self.dsa_info = connection.strategy.pool
 
@@ -265,7 +266,7 @@ class Server(object):
                                                'subschemaSubentry',
                                                '*'],  # requests all remaining attributes (other),
                                    get_operational_attributes=True)
-        print('DSA RESULT', result)
+        print(threading.current_thread().name, 'DSA RESULT', result)
         with self.lock:
             if isinstance(result, bool):  # sync request
                 self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
@@ -286,9 +287,9 @@ class Server(object):
             else:
                 schema_entry = self._dsa_info.schema_entry if self._dsa_info.schema_entry else None
         else:
-            print('GET_SUBSCHEMA')
+            print(threading.current_thread().name, 'GET_SUBSCHEMA')
             result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
-            print('subschema', result)
+            print(threading.current_thread().name, 'subschema', result)
             if isinstance(result, bool):  # sync request
                 schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
             else:  # async request, must check if subschemaSubentry in attributes
@@ -298,7 +299,7 @@ class Server(object):
 
         result = None
         if schema_entry:
-            print('REQUESTING SCHEMA')
+            print(threading.current_thread().name, 'REQUESTING SCHEMA')
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=SEARCH_SCOPE_BASE_OBJECT,
@@ -315,7 +316,7 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-            print('SCHEMA RESULT', result)
+            print(threading.current_thread().name, 'SCHEMA RESULT', result)
         with self.lock:
             self._schema_info = None
             if result:
@@ -336,7 +337,7 @@ class Server(object):
         """
         read info from DSE and from subschema
         """
-        print('SERVER: GET_INFO', self.get_info)
+        print(threading.current_thread().name, 'SERVER: GET_INFO', self.get_info)
         if not connection.closed:
             if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
                 self._get_dsa_info(connection)

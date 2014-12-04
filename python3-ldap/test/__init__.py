@@ -21,16 +21,16 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED,\
-    POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO, IP_V4_PREFERRED, IP_SYSTEM_DEFAULT, IP_V6_PREFERRED, IP_V4_ONLY, IP_V6_ONLY
+    POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO, IP_V4_PREFERRED, IP_SYSTEM_DEFAULT, IP_V6_PREFERRED, IP_V4_ONLY, IP_V6_ONLY, GET_NO_INFO, GET_DSA_INFO
 
 test_server = ['edir1', 'edir2', 'edir3']  # the ldap server where tests executed, if a list is given a pool will be created
-test_server = 'sl10'
+test_server = 'EDIR1'
 # test_server = 'sl10'
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
 test_user = 'cn=admin,o=services'  # the user that performs the tests
-test_password = 'camera'  # user password
-test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
+test_password = 'password'  # user password
+test_server_context = 'o=services'  # used in novell eDirectory extended operations
 
 test_base = 'o=test'  # base context where test objects are created
 test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
@@ -44,11 +44,11 @@ test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = AUTH_SIMPLE  # authentication type
 test_check_names = True  # check attribute names in operations
-test_get_info = GET_ALL_INFO  # get info from DSA
+test_get_info = GET_DSA_INFO  # get info from DSA
 test_lazy_connection = False  # connection lazy
 test_strategy = STRATEGY_SYNC  # strategy for executing tests
-test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
-test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+#test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+#test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
 test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
 
 

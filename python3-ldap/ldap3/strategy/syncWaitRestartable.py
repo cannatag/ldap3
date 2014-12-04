@@ -27,7 +27,7 @@ from sys import exc_info
 from time import sleep
 import socket
 from datetime import datetime
-
+import threading
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .syncWait import SyncWaitStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
@@ -114,6 +114,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
         try:
             message_id = SyncWaitStrategy.send(self, message_type, request, controls)  # try to send using SyncWait
+            print(threading.current_thread().name, 'RESTARTABLE SEND', message_id, request)
             self._reset_exception_history()
             return message_id
         except Exception:
@@ -137,7 +138,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                         self.connection.start_tls(read_server_info=False)
                     if message_type != 'bindRequest':
                         self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
-                    print('REFRESH1')
+                    print(threading.current_thread().name, 'REFRESH1')
                     self.connection.refresh_server_info()
                 except Exception:
                     self._add_exception_to_history()

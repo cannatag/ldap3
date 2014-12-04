@@ -143,7 +143,7 @@ def validate_assertion_value(schema, name, value):
 
 
 def validate_attribute_value(schema, name, value):
-    print('VALIDATE_ATTRIBUTE')
+    print(threading.current_thread().name, 'VALIDATE_ATTRIBUTE')
     if schema:
         if schema.attribute_types is not None and not name in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in attribute')

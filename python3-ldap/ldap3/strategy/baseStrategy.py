@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+import threading
 from sys import exc_info
 from time import sleep
 from random import choice
@@ -260,10 +261,10 @@ class BaseStrategy(object):
         """
         response = None
         result = None
-        print('GET_RESPONSE (Base)', message_id, self.connection)
+        print(threading.current_thread().name, 'GET_RESPONSE (Base)', message_id, self.connection)
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
-                print('TIMEOUT (Base)', timeout)
+                print(threading.current_thread().name, 'TIMEOUT (Base)', message_id, timeout, self.connection)
                 responses = self._get_response(message_id)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
@@ -300,7 +301,7 @@ class BaseStrategy(object):
                     break
 
             if timeout <= 0:
-                print('TIMED-OUT', message_id)
+                print(threading.current_thread().name, 'TIMED-OUT', message_id)
 
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
@@ -322,7 +323,7 @@ class BaseStrategy(object):
                 del self._auto_range_searching
 
             self._outstanding.pop(message_id)
-        print('RETURN RESPONSE (Base)', message_id, result)
+        print(threading.current_thread().name, 'RETURN RESPONSE (Base)', message_id, result)
         return response, result
 
     @classmethod

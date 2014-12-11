@@ -104,17 +104,18 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def send(self, message_type, request, controls=None):
+        print(threading.current_thread().name, 'RESTARTABLE SEND', request)
         self._current_message_type = message_type
         self._current_request = request
         self._current_controls = controls
         if not self._restart_tls:  # RFCs doesn't define how to stop tls once started
             self._restart_tls = self.connection.tls_started
-        if message_type == 'bindRequest':  # store controls used in bind to be used again when restarting the connection
+        if message_type == 'bindRequest':  # stores controls used in bind operation to be used again when restarting the connection
             self._last_bind_controls = controls
 
         try:
-            message_id = SyncWaitStrategy.send(self, message_type, request, controls)  # try to send using SyncWait
-            print(threading.current_thread().name, 'RESTARTABLE SEND', message_id, request)
+            message_id = SyncWaitStrategy.send(self, message_type, request, controls)  # tries to send using SyncWait
+            print(threading.current_thread().name, 'RESTARTABLE SENT', message_id, type(request))
             self._reset_exception_history()
             return message_id
         except Exception:

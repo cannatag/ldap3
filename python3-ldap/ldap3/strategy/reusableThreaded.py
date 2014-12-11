@@ -183,9 +183,10 @@ class ReusableThreadedStrategy(BaseStrategy):
                                 self.worker.connection.start_tls(read_server_info=False)
                             if pool.bind_pool and not self.worker.connection.bound:
                                 self.worker.connection.bind(read_server_info=False)
+                            #self.worker.connection.server.refresh_server_info()
                         # noinspection PyProtectedMember
-                        print(threading.current_thread().name, 'FIRE DEFERRED FROM INNER CONNECTION')
-                        self.worker.connection._fire_deferred()  # force deferred operations
+                        # print(threading.current_thread().name, 'FIRE DEFERRED FROM INNER CONNECTION')
+                        # self.worker.connection._fire_deferred()  # force deferred operations
                         # with self.master_connection.lock:
                         #    pool.master_schema = self.worker.connection.server.schema
                         #    pool.master_info = self.worker.connection.server.info
@@ -196,7 +197,8 @@ class ReusableThreadedStrategy(BaseStrategy):
                         try:
                             if message_type == 'searchRequest':
                                 response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
-                            else:
+                            elif \
+                                            message_type != 'bindRequest':
                                 response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
                             result = self.worker.connection.result
                         except LDAPOperationResult as e:  # raise_exceptions has raise an exception. It must be redirected to the original connection thread
@@ -259,7 +261,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                                          collect_usage=True if self.master_connection._usage else False,
                                          read_only=self.master_connection.read_only,
                                          raise_exceptions=self.master_connection.raise_exceptions,
-                                         lazy=True)
+                                         lazy=False)
 
             if self.master_connection.server_pool:
                 self.connection.server_pool = self.master_connection.server_pool

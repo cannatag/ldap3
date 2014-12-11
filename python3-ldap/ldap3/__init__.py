@@ -124,7 +124,7 @@ RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy bef
 
 # reusable strategies (Threaded)
 TERMINATE_REUSABLE = -1
-REUSABLE_THREADED_POOL_SIZE = 2
+REUSABLE_THREADED_POOL_SIZE = 10
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'reusable_default_pool'
 

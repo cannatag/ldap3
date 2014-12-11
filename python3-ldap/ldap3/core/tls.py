@@ -26,6 +26,7 @@
 from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
 from .. import SEQUENCE_TYPES
 from datetime import datetime
+import threading
 
 try:
     # noinspection PyUnresolvedReferences

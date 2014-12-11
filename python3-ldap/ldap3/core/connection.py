@@ -794,24 +794,24 @@ class Connection(object):
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
-                read_server_info = False
+                #read_server_info = False
                 try:
                     if self._deferred_open:
                         print(threading.current_thread().name, 'EXECUTE DEFERRED OPEN', self)
                         self.open(read_server_info=False)
-                        read_server_info = True
+                        #read_server_info = True
                     if self._deferred_start_tls:
                         print(threading.current_thread().name, 'EXECUTE DEFERRED START_TLS', self)
                         self.start_tls(read_server_info=False)
-                        read_server_info = True
+                        #read_server_info = True
                     if self._deferred_bind:
                         print(threading.current_thread().name, 'EXECUTE DEFERRED BIND', self)
                         self.bind(read_server_info=False, controls=self._bind_controls)
-                        read_server_info = True
+                        #read_server_info = True
 
-                    if read_server_info:
-                        print(threading.current_thread().name, 'REFRESH6')
-                        self.refresh_server_info()
+                    #if read_server_info:
+                    #    print(threading.current_thread().name, 'REFRESH6')
+                    self.refresh_server_info()
                         #if self.strategy.pooled:  # executes a generic search to force read of info bacause of lazy connections in pool
                         #    response = self.search(search_base='', search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_BASE_OBJECT)
                         #    if not self.strategy.sync:

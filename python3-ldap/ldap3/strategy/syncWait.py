@@ -25,7 +25,7 @@
 
 import socket
 from pyasn1.codec.ber import decoder
-
+import threading
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.baseStrategy import BaseStrategy

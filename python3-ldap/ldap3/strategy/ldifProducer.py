@@ -33,7 +33,7 @@ from ..utils.conv import prepare_for_stream
 from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.convert import build_controls_list
-from .baseStrategy import BaseStrategy
+from .base import BaseStrategy
 
 
 class LdifProducerStrategy(BaseStrategy):

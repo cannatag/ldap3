@@ -1,7 +1,7 @@
 """
 """
 
-# Created on 2013.07.15
+# Created on 2014.11.17
 #
 # Author: Giovanni Cannata
 #
@@ -24,18 +24,18 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from threading import Thread, Lock
-from datetime import datetime
+
 from pyasn1.codec.ber import decoder
 
 from .. import RESPONSE_COMPLETE, SOCKET_SIZE
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
-from ..strategy.baseStrategy import BaseStrategy
+from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 import socket
 
 
 # noinspection PyProtectedMember
-class AsyncThreadedStrategy(BaseStrategy):
+class mockAsync(BaseStrategy):
     """
     This strategy is asynchronous. You send the request and get the messageId of the request sent
     Receiving data from socket is managed in a separated thread in a blocking mode
@@ -88,31 +88,20 @@ class AsyncThreadedStrategy(BaseStrategy):
                     message_id = int(ldap_resp['messageID'])
                     dict_response = self.connection.strategy.decode_response(ldap_resp)
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
-                        print(threading.current_thread().name, 1)
                         if dict_response['result'] == 0:  # StartTls in progress
-                            print(threading.current_thread().name, datetime.now(), 2)
                             if self.connection.server.tls:
-                                print(threading.current_thread().name, datetime.now(), 3)
                                 self.connection.server.tls._start_tls(self.connection)
-                                print(threading.current_thread().name, datetime.now(), '3b')
                             else:
-                                print(threading.current_thread().name, datetime.now(), 4)
-                                self.connection.last_error = 'no Tls object defined in Server'
+                                self.connection.last_error = 'no Tls defined in Server'
                                 raise LDAPSSLConfigurationError(self.connection.last_error)
                         else:
-                            print(threading.current_thread().name, 5)
                             self.connection.last_error = 'asynchronous StartTls failed'
                             raise LDAPStartTLSError(self.connection.last_error)
                     if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-                        print(threading.current_thread().name, 6)
                         with self.connection.strategy.lock:
-                            print(threading.current_thread().name, '6b')
                             if message_id in self.connection.strategy._responses:
-                                print(threading.current_thread().name, 7)
                                 self.connection.strategy._responses[message_id].append(dict_response)
                             else:
-                                print(threading.current_thread().name, 8)
-                                print(threading.current_thread().name, datetime.now(), 'APPEND')
                                 self.connection.strategy._responses[message_id] = [dict_response]
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 self.connection.strategy._responses[message_id].append(RESPONSE_COMPLETE)
@@ -131,7 +120,7 @@ class AsyncThreadedStrategy(BaseStrategy):
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
-        self.no_real_dsa = False
+        self.no_real_dsa = True
         self.pooled = False
         self._responses = None
         self.can_stream = False
@@ -148,7 +137,6 @@ class AsyncThreadedStrategy(BaseStrategy):
 
         if read_server_info:
             try:
-                print(threading.current_thread().name, 'REFRESH3')
                 self.connection.refresh_server_info()
             except LDAPOperationResult:  # catch errors from server if raise_exception = True
                 self.connection.server._dsa_info = None
@@ -182,7 +170,7 @@ class AsyncThreadedStrategy(BaseStrategy):
         Start thread in daemon mode
         """
         if not self.connection.listening:
-            self.receiver = AsyncThreadedStrategy.ReceiverSocketThread(self.connection)
+            self.receiver = mockAsync.ReceiverSocketThread(self.connection)
             self.connection.listening = True
             self.receiver.daemon = True
             self.receiver.start()

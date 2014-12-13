@@ -29,14 +29,14 @@ import socket
 from datetime import datetime
 import threading
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
-from .syncWait import SyncWaitStrategy
+from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
 
 
 # noinspection PyBroadException,PyProtectedMember
-class SyncWaitRestartableStrategy(SyncWaitStrategy):
+class RestartableStrategy(SyncStrategy):
     def __init__(self, ldap_connection):
-        SyncWaitStrategy.__init__(self, ldap_connection)
+        SyncStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = False
         self.pooled = False
@@ -52,7 +52,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         self.exception_history = []
 
     def open(self, reset_usage=False, read_server_info=True):
-        SyncWaitStrategy.open(self, reset_usage, read_server_info)
+        SyncStrategy.open(self, reset_usage, read_server_info)
 
     def _open_socket(self, address, use_ssl=False):
         """
@@ -61,7 +61,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
         if connection is restartable tries for the number of restarting requested or forever
         """
         try:
-            SyncWaitStrategy._open_socket(self, address, use_ssl)  # try to open socket using SyncWait
+            SyncStrategy._open_socket(self, address, use_ssl)  # try to open socket using SyncWait
             self._reset_exception_history()
             return
         except Exception:  # machinery for restartable connection
@@ -86,7 +86,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
                             self.connection.server = new_server
                             if self.connection.usage:
                                 self.connection._usage.servers_from_pool += 1
-                    SyncWaitStrategy._open_socket(self, address, use_ssl)  # calls super (not restartable) _open_socket()
+                    SyncStrategy._open_socket(self, address, use_ssl)  # calls super (not restartable) _open_socket()
                     if self.connection.usage:
                         self.connection._usage.restartable_successes += 1
                     self.connection.closed = False
@@ -114,7 +114,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
             self._last_bind_controls = controls
 
         try:
-            message_id = SyncWaitStrategy.send(self, message_type, request, controls)  # tries to send using SyncWait
+            message_id = SyncStrategy.send(self, message_type, request, controls)  # tries to send using SyncWait
             print(threading.current_thread().name, 'RESTARTABLE SENT', message_id, type(request))
             self._reset_exception_history()
             return message_id
@@ -170,7 +170,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
     def post_send_single_response(self, message_id):
         try:
-            ret_value = SyncWaitStrategy.post_send_single_response(self, message_id)
+            ret_value = SyncStrategy.post_send_single_response(self, message_id)
             self._reset_exception_history()
             return ret_value
         except Exception:
@@ -178,7 +178,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
         # if an LDAPExceptionError is raised then resend the request
         try:
-            ret_value = SyncWaitStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
+            ret_value = SyncStrategy.post_send_single_response(self, self.send(self._current_message_type, self._current_request, self._current_controls))
             self._reset_exception_history()
             return ret_value
         except Exception as e:
@@ -192,7 +192,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
     def post_send_search(self, message_id):
         try:
-            ret_value = SyncWaitStrategy.post_send_search(self, message_id)
+            ret_value = SyncStrategy.post_send_search(self, message_id)
             self._reset_exception_history()
             return ret_value
         except Exception:
@@ -200,7 +200,7 @@ class SyncWaitRestartableStrategy(SyncWaitStrategy):
 
         # if an LDAPExceptionError is raised then resend the request
         try:
-            ret_value = SyncWaitStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
+            ret_value = SyncStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
             self._reset_exception_history()
             return ret_value
         except Exception as e:

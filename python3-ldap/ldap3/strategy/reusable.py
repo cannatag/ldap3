@@ -29,7 +29,7 @@ from os import linesep
 from threading import Thread, Lock
 from time import sleep
 from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
-from .baseStrategy import BaseStrategy
+from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError
 
@@ -41,7 +41,7 @@ except ImportError:  # Python 2
 
 
 # noinspection PyProtectedMember
-class ReusableThreadedStrategy(BaseStrategy):
+class ReusableStrategy(BaseStrategy):
     """
     A pool of reusable SyncWaitRestartable connections with lazy behaviour and limited lifetime.
     The connection using this strategy presents itself as a normal connection, but internally the strategy has a pool of
@@ -59,10 +59,10 @@ class ReusableThreadedStrategy(BaseStrategy):
         Container for the Connection Threads
         """
         def __new__(cls, connection):
-            if connection.pool_name in ReusableThreadedStrategy.pools:  # returns existing connection pool
-                pool = ReusableThreadedStrategy.pools[connection.pool_name]
+            if connection.pool_name in ReusableStrategy.pools:  # returns existing connection pool
+                pool = ReusableStrategy.pools[connection.pool_name]
                 if not pool.started:  # if pool is not started remove it from the pools singleton and create a new onw
-                    del ReusableThreadedStrategy.pools[connection.pool_name]
+                    del ReusableStrategy.pools[connection.pool_name]
                     return object.__new__(cls)
                 if connection.pool_lifetime and pool.lifetime != connection.pool_lifetime:  # change lifetime
                     pool.lifetime = connection.pool_lifetime
@@ -91,7 +91,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 self.terminated_usage = ConnectionUsage() if connection._usage else None
                 self.terminated = False
                 self.lock = Lock()
-                ReusableThreadedStrategy.pools[self.name] = self
+                ReusableStrategy.pools[self.name] = self
                 self.started = False
 
         def __str__(self):
@@ -129,7 +129,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                 inner_connection.connection._fire_deferred()
 
         def create_pool(self):
-            self.connections = [ReusableThreadedStrategy.InnerConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
+            self.connections = [ReusableStrategy.InnerConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
 
         def terminate_pool(self):
             self.started = False
@@ -197,8 +197,7 @@ class ReusableThreadedStrategy(BaseStrategy):
                         try:
                             if message_type == 'searchRequest':
                                 response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
-                            elif \
-                                            message_type != 'bindRequest':
+                            elif message_type != 'bindRequest':
                                 response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
                             result = self.worker.connection.result
                         except LDAPOperationResult as e:  # raise_exceptions has raise an exception. It must be redirected to the original connection thread
@@ -231,7 +230,7 @@ class ReusableThreadedStrategy(BaseStrategy):
             self.creation_time = None
             self.new_connection()
             self.task_counter = 0
-            self.thread = ReusableThreadedStrategy.PooledConnectionThread(self, connection)
+            self.thread = ReusableStrategy.PooledConnectionThread(self, connection)
 
         def __str__(self):
             s = 'CONN: ' + str(self.connection) + linesep + '       THREAD: '
@@ -276,7 +275,7 @@ class ReusableThreadedStrategy(BaseStrategy):
         self.pooled = True
         self.can_stream = False
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
-            self.pool = ReusableThreadedStrategy.ConnectionPool(ldap_connection)
+            self.pool = ReusableStrategy.ConnectionPool(ldap_connection)
         else:
             raise LDAPConnectionPoolNameIsMandatoryError('reusable connection must have a pool_name')
 

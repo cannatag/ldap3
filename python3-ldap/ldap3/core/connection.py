@@ -35,13 +35,12 @@ from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
     STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, STRATEGY_REUSABLE_THREADED, \
     DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, STRATEGY_SYNC_MOCK_DSA, STRATEGY_ASYNC_MOCK_DSA, \
-    SEARCH_SCOPE_BASE_OBJECT
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, STRATEGY_MOCK_SYNC, STRATEGY_MOCK_ASYNC
 
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
-from ..strategy.reusableThreaded import ReusableThreadedStrategy
+from ..strategy.reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
 from ..operation.bind import bind_operation
@@ -54,12 +53,12 @@ from ..operation.search import search_operation
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
-from ..strategy.asyncThreaded import AsyncThreadedStrategy
+from ..strategy.async import AsyncStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
-from ..strategy.syncWait import SyncWaitStrategy
-from ..strategy.syncWaitRestartable import SyncWaitRestartableStrategy
-from ..strategy.syncMockDsa import SyncMockDsaStrategy
-from ..strategy.asyncMockDsa import AsyncMockDsaStrategy
+from ..strategy.sync import SyncStrategy
+from ..strategy.restartable import RestartableStrategy
+from ..strategy.mockSync import mockSyncStrategy
+from ..strategy.mockAsync import mockAsync
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
@@ -218,19 +217,19 @@ class Connection(object):
                 self.server = server
 
             if self.strategy_type == STRATEGY_SYNC:
-                self.strategy = SyncWaitStrategy(self)
+                self.strategy = SyncStrategy(self)
             elif self.strategy_type == STRATEGY_ASYNC_THREADED:
-                self.strategy = AsyncThreadedStrategy(self)
+                self.strategy = AsyncStrategy(self)
             elif self.strategy_type == STRATEGY_LDIF_PRODUCER:
                 self.strategy = LdifProducerStrategy(self)
             elif self.strategy_type == STRATEGY_SYNC_RESTARTABLE:
-                self.strategy = SyncWaitRestartableStrategy(self)
+                self.strategy = RestartableStrategy(self)
             elif self.strategy_type == STRATEGY_REUSABLE_THREADED:
-                self.strategy = ReusableThreadedStrategy(self)
+                self.strategy = ReusableStrategy(self)
             elif self.strategy_type == STRATEGY_SYNC_MOCK_DSA:
-                self.strategy = SyncMockDsaStrategy(self)
+                self.strategy = mockSyncStrategy(self)
             elif self.strategy_type == STRATEGY_ASYNC_MOCK_DSA:
-                self.strategy = AsyncMockDsaStrategy(self)
+                self.strategy = mockAsync(self)
             else:
                 self.last_error = 'unknown strategy'
                 raise LDAPUnknownStrategyError(self.last_error)

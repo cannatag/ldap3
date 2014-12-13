@@ -48,14 +48,22 @@ ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address inf
 
 # search scope
 SEARCH_SCOPE_BASE_OBJECT = 0
+SCOPE_BASE = 0
 SEARCH_SCOPE_SINGLE_LEVEL = 1
+SCOPE_LEVEL = 1
 SEARCH_SCOPE_WHOLE_SUBTREE = 2
+SCOPE_SUBTREE = 2
 
 # search alias
 SEARCH_NEVER_DEREFERENCE_ALIASES = 0
+DEREF_NONE = 0
 SEARCH_DEREFERENCE_IN_SEARCHING = 1
+DEREF_SEARCH = 1
 SEARCH_DEREFERENCE_FINDING_BASE_OBJECT = 2
+DEREF_BASE = 2
 SEARCH_DEREFERENCE_ALWAYS = 3
+DEREF_ALWAYS = 3
+
 
 # search attributes
 ALL_ATTRIBUTES = '*'
@@ -98,32 +106,35 @@ MODIFY_INCREMENT = 3
 # client strategies
 STRATEGY_SYNC = 0
 STRATEGY_ASYNC_THREADED = 1
+STRATEGY_ASYNC = 1
 STRATEGY_LDIF_PRODUCER = 2
 STRATEGY_SYNC_RESTARTABLE = 3
+STRATEGY_RESTARTABLE = 3
 STRATEGY_REUSABLE_THREADED = 4
-STRATEGY_SYNC_MOCK_DSA = 5
-STRATEGY_ASYNC_MOCK_DSA = 6
+STRATEGY_REUSABLE = 4
+STRATEGY_MOCK_SYNC = 5
+STRATEGY_MOCK_ASYNC = 6
 
 CLIENT_STRATEGIES = [STRATEGY_SYNC,
-                     STRATEGY_ASYNC_THREADED,
+                     STRATEGY_ASYNC,
                      STRATEGY_LDIF_PRODUCER,
-                     STRATEGY_SYNC_RESTARTABLE,
-                     STRATEGY_REUSABLE_THREADED]
+                     STRATEGY_RESTARTABLE,
+                     STRATEGY_REUSABLE]
 
 # communication
 SESSION_TERMINATED_BY_SERVER = -2
 RESPONSE_COMPLETE = -1
-RESPONSE_SLEEPTIME = 0.5  # seconds to wait while waiting for a response in asynchronous strategies 0.05
-RESPONSE_WAITING_TIMEOUT = 4  # waiting timeout for receiving a response in asynchronous strategies
+RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies 0.05
+RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
 CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 
 # restartable strategy
 RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
-RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+RESTARTABLE_TRIES = 60  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 
 # reusable strategies (Threaded)
-TERMINATE_REUSABLE = -1
+TERMINATE_REUSABLE = -9
 REUSABLE_THREADED_POOL_SIZE = 10
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'reusable_default_pool'
@@ -231,9 +242,12 @@ ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OP_'
 
 # server pooling
 POOLING_STRATEGY_FIRST = 0
+POOLING_FIRST = 0
 POOLING_STRATEGY_ROUND_ROBIN = 1
+POOLING_ROUND_ROBIN = 1
 POOLING_STRATEGY_RANDOM = 2
-POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
+POOLING_RANDOM = 2
+POOLING_STRATEGIES = [POOLING_FIRST, POOLING_ROUND_ROBIN, POOLING_RANDOM]
 
 # types for string and sequence
 if str != bytes:

@@ -60,13 +60,19 @@ CHANGELOG
 * 0.9.6.3 2014.11.30
     - Fixed bug for auto_range used in paged search
     - Added dual IP stack mode parameter in Server object, values are: IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V4_PREFERRED, IP_V6_ONLY, IP_V6_PREFERRED
-    - add read_server_info parameter to bind() and start_tls() to avoid multiple schema and info read operations with auto_bind
+    - Added read_server_info parameter to bind() and start_tls() to avoid multiple schema and info read operations with auto_bind
+    - Redesigned Reusable (pooled) strategy
+    - Added shortened ldap3 scope parameters: SCOPE_BASE, SCOPE_LEVEL, SCOPE_SUBTREE
+    - Added shortened ldap3 alias dereferencing parameters: DEREF_NONE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS
+    - Added shortened ldap3 connection strategy parameters: STRATEGY_SYNC, STRATEGY_ASYNC, STRATEGY_RESTARTABLE, STRATEGY_REUSABLE
+    - Added shortened ldap3 pooling strategy parameters: POOLING_FIRST, POOLING_ROUND_ROBIN, POOLING_RANDOM
+    - Added reentrant lock to avoid race conditions in the Connection object
 
 * 0.9.6.2 2014.11.17
     - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2
     - Removed unneeded FORMAT_xxx variables in ldap3 namespace
     - Fixed bug in auto_range when search operation returns search continuations
-    - Added infrastructure for MockDsatrategy (not functional yet)
+    - Added infrastructure for Mock DSA (not functional yet)
 
 * 0.9.6.1 2014.11.11
     - Added boolean parameter "auto_range" to catch the "range" ldap tag in searches. When true all needed search operation are made to fully obtain the whole range of result values

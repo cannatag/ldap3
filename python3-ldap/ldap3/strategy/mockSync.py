@@ -1,7 +1,7 @@
 """
 """
 
-# Created on 2013.07.15
+# Created on 2014.11.17
 #
 # Author: Giovanni Cannata
 #
@@ -25,34 +25,32 @@
 
 import socket
 from pyasn1.codec.ber import decoder
-import threading
+
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
-from ..strategy.baseStrategy import BaseStrategy
+from ..strategy.sync import SyncStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
 
 # noinspection PyProtectedMember
-class SyncWaitStrategy(BaseStrategy):
+class mockSyncStrategy(SyncStrategy):
     """
-    This strategy is synchronous. You send the request and get the response
-    Requests return a boolean value to indicate the result of the requested Operation
-    Connection.response will contain the whole LDAP response for the messageId requested in a dict form
-    Connection.request will contain the result LDAP message in a dict form
+    This strategy create a mock LDAP server, with synchronous access
+    It can be useful to test LDAP without a real Server
     """
 
     def __init__(self, ldap_connection):
-        BaseStrategy.__init__(self, ldap_connection)
+        SyncStrategy.__init__(self, ldap_connection)
         self.sync = True
-        self.no_real_dsa = False
+        self.no_real_dsa = True
         self.pooled = False
         self.can_stream = False
 
     def open(self, reset_usage=True, read_server_info=True):
-        BaseStrategy.open(self, reset_usage, read_server_info)
+        SyncStrategy.open(self, reset_usage, read_server_info)
+
         if read_server_info:
             try:
-                print(threading.current_thread().name, 'REFRESH2')
                 self.connection.refresh_server_info()
             except LDAPOperationResult:  # catch errors from server if raise_exception = True
                 self.connection.server._dsa_info = None
@@ -90,7 +88,7 @@ class SyncWaitStrategy(BaseStrategy):
 
                 unprocessed += data
             if len(data) > 0:
-                length = BaseStrategy.compute_ldap_message_size(unprocessed)
+                length = SyncStrategy.compute_ldap_message_size(unprocessed)
                 if length == -1:  # too few data to decode message length
                     get_more_data = True
                     continue
@@ -113,7 +111,6 @@ class SyncWaitStrategy(BaseStrategy):
         Returns the result message or None
         """
         responses, result = self.get_response(message_id)
-        self.connection.result = result
         if result['type'] == 'intermediateResponse':  # checks that all responses are intermediates (there should be only one)
             for response in responses:
                 if response['type'] != 'intermediateResponse':
@@ -128,17 +125,17 @@ class SyncWaitStrategy(BaseStrategy):
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        responses, result = self.get_response(message_id)
-        self.connection.result = result
+        responses, _ = self.get_response(message_id)
         if isinstance(responses, SEQUENCE_TYPES):
             self.connection.response = responses[:]  # copy search result entries
             return responses
+
         self.connection.last_error = 'error receiving response'
         raise LDAPSocketReceiveError(self.connection.last_error)
 
     def _get_response(self, message_id):
         """
-        Performs the capture of LDAP response for SyncWaitStrategy
+        Performs the capture of LDAP response for SyncStrategy
         """
         ldap_responses = []
         response_complete = False

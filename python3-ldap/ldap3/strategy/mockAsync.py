@@ -35,7 +35,7 @@ import socket
 
 
 # noinspection PyProtectedMember
-class mockAsync(BaseStrategy):
+class MockAsyncStrategy(BaseStrategy):
     """
     This strategy is asynchronous. You send the request and get the messageId of the request sent
     Receiving data from socket is managed in a separated thread in a blocking mode
@@ -170,7 +170,7 @@ class mockAsync(BaseStrategy):
         Start thread in daemon mode
         """
         if not self.connection.listening:
-            self.receiver = mockAsync.ReceiverSocketThread(self.connection)
+            self.receiver = MockAsyncStrategy.ReceiverSocketThread(self.connection)
             self.connection.listening = True
             self.receiver.daemon = True
             self.receiver.start()

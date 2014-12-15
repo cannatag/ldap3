@@ -34,7 +34,7 @@ class Test(unittest.TestCase):
             server = ServerPool(test_server, pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
         else:
             server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
-        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
+        self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=False, pool_name='pool1', check_names=test_check_names)
 
     def tearDown(self):
         self.connection.unbind()

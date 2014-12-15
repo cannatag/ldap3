@@ -536,6 +536,7 @@ class LDAPMaximumRetriesError(LDAPExceptionError):
         else:
             LDAPExceptionError.__str__(self)
 
+
 # exception factories
 def communication_exception_factory(exc_to_raise, exc):
     """

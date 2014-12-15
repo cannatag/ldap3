@@ -43,12 +43,19 @@ class Test(unittest.TestCase):
         self.assertTrue(type(self.server.schema), SchemaInfo)
 
     def test_object_classes(self):
+        if not self.server.info:
+            self.connection.refresh_server_info()
         self.assertTrue(type(self.server.schema.object_classes['iNetOrgPerson']), ObjectClassInfo)
 
     def test_attributes_types(self):
+        if not self.server.info:
+            self.connection.refresh_server_info()
         self.assertTrue(type(self.server.schema.attribute_types['cn']), AttributeTypeInfo)
 
     def test_json_definition(self):
+        if not self.server.info:
+            self.connection.refresh_server_info()
+
         json_info = self.server.info.to_json()
         json_schema = self.server.schema.to_json()
         info = DsaInfo.from_json(json_info)

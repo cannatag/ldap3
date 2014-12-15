@@ -27,11 +27,10 @@ from sys import exc_info
 from time import sleep
 import socket
 from datetime import datetime
-import threading
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
-
+import threading
 
 # noinspection PyBroadException,PyProtectedMember
 class RestartableStrategy(SyncStrategy):
@@ -104,7 +103,6 @@ class RestartableStrategy(SyncStrategy):
             raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def send(self, message_type, request, controls=None):
-        print(threading.current_thread().name, 'RESTARTABLE SEND', request)
         self._current_message_type = message_type
         self._current_request = request
         self._current_controls = controls
@@ -115,7 +113,6 @@ class RestartableStrategy(SyncStrategy):
 
         try:
             message_id = SyncStrategy.send(self, message_type, request, controls)  # tries to send using SyncWait
-            print(threading.current_thread().name, 'RESTARTABLE SENT', message_id, type(request))
             self._reset_exception_history()
             return message_id
         except Exception:
@@ -139,7 +136,6 @@ class RestartableStrategy(SyncStrategy):
                         self.connection.start_tls(read_server_info=False)
                     if message_type != 'bindRequest':
                         self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
-                    print(threading.current_thread().name, 'REFRESH1')
                     self.connection.refresh_server_info()
                 except Exception:
                     self._add_exception_to_history()
@@ -191,6 +187,7 @@ class RestartableStrategy(SyncStrategy):
             raise exc
 
     def post_send_search(self, message_id):
+        print(' ' * 20, threading.current_thread().name, 'RESTARTABLE-POST-SEND-SEARCH', message_id, self.connection)
         try:
             ret_value = SyncStrategy.post_send_search(self, message_id)
             self._reset_exception_history()

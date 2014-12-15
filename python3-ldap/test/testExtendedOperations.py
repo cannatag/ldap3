@@ -39,6 +39,8 @@ class Test(unittest.TestCase):
 
     def test_who_am_i_extension(self):
         try:
+            if not self.connection.server.info:
+                self.connection.refresh_server_info()
             self.connection.extend.standard.who_am_i()
             result = self.connection.result
             self.assertTrue(result['description'] in ['success', 'protocolError'])

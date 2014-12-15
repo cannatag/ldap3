@@ -23,10 +23,10 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import threading
 from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
+import threading
 from time import sleep
 from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .base import BaseStrategy
@@ -124,10 +124,6 @@ class ReusableStrategy(BaseStrategy):
                 return True
             return False
 
-        def fire_deferred(self):
-            for inner_connection in self.connections:
-                inner_connection.connection._fire_deferred()
-
         def create_pool(self):
             self.connections = [ReusableStrategy.InnerConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
 
@@ -160,7 +156,6 @@ class ReusableStrategy(BaseStrategy):
             pool = self.master_connection.strategy.pool
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
-                print(threading.current_thread().name, 'GOT JOB FOR WORKER', counter, request)
                 self.worker.busy = True
                 if counter == TERMINATE_REUSABLE:
                     terminate = True
@@ -183,29 +178,27 @@ class ReusableStrategy(BaseStrategy):
                                 self.worker.connection.start_tls(read_server_info=False)
                             if pool.bind_pool and not self.worker.connection.bound:
                                 self.worker.connection.bind(read_server_info=False)
-                            #self.worker.connection.server.refresh_server_info()
-                        # noinspection PyProtectedMember
-                        # print(threading.current_thread().name, 'FIRE DEFERRED FROM INNER CONNECTION')
-                        # self.worker.connection._fire_deferred()  # force deferred operations
-                        # with self.master_connection.lock:
-                        #    pool.master_schema = self.worker.connection.server.schema
-                        #    pool.master_info = self.worker.connection.server.info
+                        print(' ' * 12, threading.current_thread().name, self.worker.connection)
+                        print(' ' * 2, threading.current_thread().name, 'WORKER-FIRE', counter, request, self.worker.connection)
+                        self.worker.connection._fire_deferred2()
+                        print(' ' * 2, threading.current_thread().name, 'WORKER-FIRE-DONE', counter, request, self.worker.connection)
+
                         exc = None
                         response = None
                         result = None
-                        print(threading.current_thread().name, 'WORKER SEND', message_type)
+                        print(' ' * 2, threading.current_thread().name, 'SENDING-REQUEST', counter, request, self.worker.connection)
                         try:
                             if message_type == 'searchRequest':
                                 response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
                             elif message_type != 'bindRequest':
                                 response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
                             result = self.worker.connection.result
-                        except LDAPOperationResult as e:  # raise_exceptions has raise an exception. It must be redirected to the original connection thread
-                            print(threading.current_thread().name, 'EXCEPTION IN THREAD', exc)
+                        except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
                             exc = e
 
                         with pool.lock:
-                            print(threading.current_thread().name, 'WORKER ADD RESPONSE TO INCOMING', counter)
+                            print(' ' * 2, threading.current_thread().name, 'SAVING-RESPONSE', counter, self.worker.connection)
+
                             if exc:
                                 pool._incoming[counter] = (exc, None)
                             else:
@@ -260,7 +253,7 @@ class ReusableStrategy(BaseStrategy):
                                          collect_usage=True if self.master_connection._usage else False,
                                          read_only=self.master_connection.read_only,
                                          raise_exceptions=self.master_connection.raise_exceptions,
-                                         lazy=False)
+                                         lazy=True)
 
             if self.master_connection.server_pool:
                 self.connection.server_pool = self.master_connection.server_pool
@@ -305,7 +298,6 @@ class ReusableStrategy(BaseStrategy):
             self.connection._usage.closed_sockets += 1
 
     def send(self, message_type, request, controls=None):
-        print(threading.current_thread().name, 'MASTER SEND', message_type, request)
         if self.pool.started:
             if message_type == 'bindRequest':
                 self.pool.bind_pool = True
@@ -324,12 +316,12 @@ class ReusableStrategy(BaseStrategy):
                     counter = self.pool.counter
                 self.pool.request_queue.put((counter, message_type, request, controls))
 
-            print(threading.current_thread().name, 'MASTER SENT COUNTER', counter)
             return counter
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
-        print(threading.current_thread().name, 'GET_RESPONSE (MASTER)', counter, self.connection)
+        print(' ' * 8, threading.current_thread().name, counter)
+
         if counter == -1:  # send a bogus bindResponse
             response = list()
             result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': 'None'}
@@ -343,7 +335,8 @@ class ReusableStrategy(BaseStrategy):
             response = None
             result = None
             while timeout >= 0:  # waiting for completed message to appear in _incoming
-                print(threading.current_thread().name, 'TIMEOUT (MASTER)', counter, timeout, self.connection.strategy.pool._incoming, self.connection)
+                print(' ' * 8, threading.current_thread().name, 'REUSABLE-RESPONSE', counter, timeout, self.connection)
+
                 try:
                     with self.connection.strategy.pool.lock:
                         response, result = self.connection.strategy.pool._incoming.pop(counter)
@@ -356,11 +349,14 @@ class ReusableStrategy(BaseStrategy):
         if isinstance(response, LDAPOperationResult):
             raise response  # an exception has been raised with raise_connections
 
-        print(threading.current_thread().name, 'RETURN RESPONSE (MASTER)', counter, result)
+        print(' ' * 8, threading.current_thread().name, response, result, self.connection.strategy.pool._incoming)
+
         return response, result
 
     def post_send_single_response(self, counter):
         return counter
 
     def post_send_search(self, counter):
+        print(' ' * 8, threading.current_thread().name, 'REUSABLE-POST-SEND-SEARCH', counter, self.connection)
+
         return counter

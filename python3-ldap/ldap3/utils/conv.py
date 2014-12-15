@@ -80,7 +80,7 @@ def json_encode_b64(obj):
 
 
 def check_json_dict(json_dict):
-    # needed only for python 2
+    # needed for python 2
 
     for k, v in json_dict.items():
         if isinstance(v, dict):

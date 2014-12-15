@@ -24,8 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
-import threading
 from threading import RLock
+import threading
 from pyasn1.codec.ber import encoder
 import json
 
@@ -57,8 +57,8 @@ from ..strategy.async import AsyncStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.sync import SyncStrategy
 from ..strategy.restartable import RestartableStrategy
-from ..strategy.mockSync import mockSyncStrategy
-from ..strategy.mockAsync import mockAsync
+from ..strategy.mockSync import MockSyncStrategy
+from ..strategy.mockAsync import MockAsyncStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
@@ -72,6 +72,7 @@ def _format_socket_endpoint(endpoint):
         return str(endpoint[0]) + ':' + str(endpoint[1])
     else:
         return endpoint
+
 
 # noinspection PyProtectedMember
 class Connection(object):
@@ -226,10 +227,10 @@ class Connection(object):
                 self.strategy = RestartableStrategy(self)
             elif self.strategy_type == STRATEGY_REUSABLE_THREADED:
                 self.strategy = ReusableStrategy(self)
-            elif self.strategy_type == STRATEGY_SYNC_MOCK_DSA:
-                self.strategy = mockSyncStrategy(self)
-            elif self.strategy_type == STRATEGY_ASYNC_MOCK_DSA:
-                self.strategy = mockAsync(self)
+            elif self.strategy_type == STRATEGY_MOCK_SYNC:
+                self.strategy = MockSyncStrategy(self)
+            elif self.strategy_type == STRATEGY_MOCK_ASYNC:
+                self.strategy = MockAsyncStrategy(self)
             else:
                 self.last_error = 'unknown strategy'
                 raise LDAPUnknownStrategyError(self.last_error)
@@ -245,6 +246,7 @@ class Connection(object):
                 if self.auto_bind:
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
+                        print(threading.current_thread().name, self)
                         self.bind(read_server_info=True)
                     elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
                         self.start_tls(read_server_info=False)
@@ -406,7 +408,6 @@ class Connection(object):
                     self.last_error = result['description']
 
                 if read_server_info and self.bound:
-                    print(threading.current_thread().name, 'REFRESH4')
                     self.refresh_server_info()
 
             return self.bound
@@ -460,7 +461,11 @@ class Connection(object):
           LDAP operation is performed
         """
         with self.lock:
+            print(' ' * 20, threading.current_thread().name, 'SEARCH-START', search_base, search_filter, self)
+
             self._fire_deferred()
+            print(' ' * 20, threading.current_thread().name, 'SEARCH-FIRED', search_base, search_filter, self)
+
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
             elif attributes == ALL_ATTRIBUTES:
@@ -480,12 +485,18 @@ class Connection(object):
                 controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
+            print(' ' * 20, threading.current_thread().name, 'SEARCH-REQUEST', search_base, search_filter, request)
             response = self.post_send_search(self.send('searchRequest', request, controls))
-            if isinstance(response, int):
-                return response
-            if self.result['type'] == 'searchResDone' and len(response) > 0:
-                return True
+            print(' ' * 20, threading.current_thread().name, 'SEARCH-RESPONSE', search_base, search_filter, response)
 
+            if isinstance(response, int):
+                print(' ' * 20, threading.current_thread().name, 'SEARCH-DONE1', search_base, search_filter, response)
+                return response
+
+            if self.result['type'] == 'searchResDone' and len(response) > 0:
+                print(' ' * 20, threading.current_thread().name, 'SEARCH-DONE2', search_base, search_filter, self)
+                return True
+            print(' ' * 20, threading.current_thread().name, 'SEARCH-FALSE', search_base, search_filter, self)
             return False
 
     def compare(self,
@@ -682,10 +693,8 @@ class Connection(object):
                 return True
             else:
                 self._deferred_start_tls = False
-                print(threading.current_thread().name, 'START_TLS')
                 if self.server.tls.start_tls(self) and self.strategy.sync:  # for async connections _start_tls is run by the strategy
                     if read_server_info:
-                        print(threading.current_thread().name, 'REFRESH5')
                         self.refresh_server_info()  # refresh server info as per RFC4515 (3.1.5)
                     return True
                 elif not self.strategy.sync:
@@ -789,35 +798,59 @@ class Connection(object):
                 target.close()
 
     def _fire_deferred(self):
-        print(threading.current_thread().name, 'ENTER FIRE', self)
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
-                #read_server_info = False
+                print(' ' * 12, threading.current_thread().name, 'EXEC-DEFR1', self)
+
                 try:
                     if self._deferred_open:
-                        print(threading.current_thread().name, 'EXECUTE DEFERRED OPEN', self)
+                        print(' ' * 12, threading.current_thread().name, 'EXEC-OPEN1', self)
                         self.open(read_server_info=False)
-                        #read_server_info = True
                     if self._deferred_start_tls:
-                        print(threading.current_thread().name, 'EXECUTE DEFERRED START_TLS', self)
+                        print(' ' * 12, threading.current_thread().name, 'EXEC-TLS1', self)
                         self.start_tls(read_server_info=False)
-                        #read_server_info = True
                     if self._deferred_bind:
-                        print(threading.current_thread().name, 'EXECUTE DEFERRED BIND', self)
+                        print(' ' * 12, threading.current_thread().name, 'EXEC-BIND1', self)
                         self.bind(read_server_info=False, controls=self._bind_controls)
-                        #read_server_info = True
 
-                    #if read_server_info:
-                    #    print(threading.current_thread().name, 'REFRESH6')
-                    self.refresh_server_info()
-                        #if self.strategy.pooled:  # executes a generic search to force read of info bacause of lazy connections in pool
-                        #    response = self.search(search_base='', search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_BASE_OBJECT)
-                        #    if not self.strategy.sync:
-                        #        self.get_response(response)
-
+                    print(' ' * 12, threading.current_thread().name, 'EXEC-DONE1', self)
                 except LDAPExceptionError:
-                    raise  # re-raise LDAPExceptionError
-                finally:
                     self._executing_deferred = False
-                    return read_server_info  # return True if info are read
+                    raise  # re-raise LDAPExceptionError
+
+                self.refresh_server_info()
+                print(' ' * 12, threading.current_thread().name, 'EXEC-FIN1', self)
+                self._executing_deferred = False
+
+
+    def _fire_deferred2(self):
+        print(' ' * 12, threading.current_thread().name, 'FIRE-ENTER2', self)
+        with self.lock:
+            print(' ' * 12, threading.current_thread().name, 'FIRE-LOCKED2', self)
+
+            if self.lazy and not self._executing_deferred:
+                self._executing_deferred = True
+                print(' ' * 12, threading.current_thread().name, 'EXEC-DEFR2', self)
+
+                try:
+                    if self._deferred_open:
+                        print(' ' * 12, threading.current_thread().name, 'EXEC-OPEN2', self)
+                        self.open(read_server_info=False)
+                    if self._deferred_start_tls:
+                        print(' ' * 12, threading.current_thread().name, 'EXEC-TLS2', self)
+                        self.start_tls(read_server_info=False)
+                    if self._deferred_bind:
+                        print(' ' * 12, threading.current_thread().name, 'EXEC-BIND2', self)
+                        self.bind(read_server_info=False, controls=self._bind_controls)
+
+                    print(' ' * 12, threading.current_thread().name, 'EXEC-DONE2', self)
+                except LDAPExceptionError:
+                    self._executing_deferred = False
+                    raise  # re-raise LDAPExceptionError
+
+
+                #self.refresh_server_info()
+                print(' ' * 12, threading.current_thread().name, 'EXEC-FIN2', self)
+                self._executing_deferred = False
+        print(' ' * 12, threading.current_thread().name, 'FIRE-EXIT2', self)

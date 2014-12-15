@@ -33,7 +33,7 @@ from ..protocol.rfc4511 import LDAPMessage
 
 
 # noinspection PyProtectedMember
-class mockSyncStrategy(SyncStrategy):
+class MockSyncStrategy(SyncStrategy):
     """
     This strategy create a mock LDAP server, with synchronous access
     It can be useful to test LDAP without a real Server

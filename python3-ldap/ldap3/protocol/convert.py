@@ -26,7 +26,7 @@
 from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
 from .rfc4511 import Controls, Control
-import threading
+
 
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
@@ -143,7 +143,6 @@ def validate_assertion_value(schema, name, value):
 
 
 def validate_attribute_value(schema, name, value):
-    print(threading.current_thread().name, 'VALIDATE_ATTRIBUTE')
     if schema:
         if schema.attribute_types is not None and not name in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in attribute')

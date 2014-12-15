@@ -23,12 +23,12 @@
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import threading
 import socket
 from threading import Lock
+import threading
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
-               CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
-               IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
+    CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
+    IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
 from .exceptions import LDAPInvalidPort
 from ..core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
 from ..protocol.formatters.standard import format_attribute_values
@@ -195,7 +195,6 @@ class Server(object):
                 break
             cont += 1
 
-
     def check_availability(self):
         """
         Tries to open, connect and close a socket to specified address
@@ -246,10 +245,9 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
-        print(threading.current_thread().name, 'REQUESTING_DSA_INFO', connection)
         if connection.strategy.pooled:
             self.dsa_info = connection.strategy.pool
-
+        print(' ' * 4, threading.current_thread().name, connection)
         result = connection.search(search_base='',
                                    search_filter='(objectClass=*)',
                                    search_scope=SEARCH_SCOPE_BASE_OBJECT,
@@ -266,12 +264,13 @@ class Server(object):
                                                'subschemaSubentry',
                                                '*'],  # requests all remaining attributes (other),
                                    get_operational_attributes=True)
-        print(threading.current_thread().name, 'DSA RESULT', result)
+        print(' ' * 4, threading.current_thread().name, result)
         with self.lock:
             if isinstance(result, bool):  # sync request
                 self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
             elif result:  # async request, must check if attributes in response
                 results, _ = connection.get_response(result)
+                print(' ' * 4, threading.current_thread().name, results)
                 if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                     self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
 
@@ -280,6 +279,8 @@ class Server(object):
         Retrieve schema from subschemaSubentry DSE attribute, per RFC
         4512 (4.4 and 5.1); entry = '' means DSE.
         """
+        print(' ' * 16, threading.current_thread().name, 'GET-SCHEMA', self)
+
         schema_entry = None
         if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
             if isinstance(self._dsa_info.schema_entry, SEQUENCE_TYPES):
@@ -287,9 +288,7 @@ class Server(object):
             else:
                 schema_entry = self._dsa_info.schema_entry if self._dsa_info.schema_entry else None
         else:
-            print(threading.current_thread().name, 'GET_SUBSCHEMA')
             result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
-            print(threading.current_thread().name, 'subschema', result)
             if isinstance(result, bool):  # sync request
                 schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
             else:  # async request, must check if subschemaSubentry in attributes
@@ -299,7 +298,6 @@ class Server(object):
 
         result = None
         if schema_entry:
-            print(threading.current_thread().name, 'REQUESTING SCHEMA')
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=SEARCH_SCOPE_BASE_OBJECT,
@@ -316,7 +314,6 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-            print(threading.current_thread().name, 'SCHEMA RESULT', result)
         with self.lock:
             self._schema_info = None
             if result:
@@ -332,12 +329,14 @@ class Server(object):
                     if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
                         for attribute in self._dsa_info.other:
                             self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
+        print(' ' * 16, threading.current_thread().name, 'SCHEMA-SET', self._schema_info)
 
     def get_info_from_server(self, connection):
         """
         read info from DSE and from subschema
         """
-        print(threading.current_thread().name, 'SERVER: GET_INFO', self.get_info)
+        print(' ' * 16, threading.current_thread().name, 'GET-INFO', self.get_info, self, connection)
+
         if not connection.closed:
             if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
                 self._get_dsa_info(connection)
@@ -360,7 +359,6 @@ class Server(object):
                 from ..protocol.schemas.ds389 import ds389_1_3_3_schema, ds389_1_3_3_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(ds389_1_3_3_schema))
                 self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
-
 
     def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):

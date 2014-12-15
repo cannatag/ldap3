@@ -24,25 +24,25 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
-import threading
 from sys import exc_info
 from time import sleep
 from random import choice
 from datetime import datetime
+import threading
 
 from pyasn1.codec.ber import encoder, decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS,\
-               DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, SEARCH_SCOPE_BASE_OBJECT
+    DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, SEARCH_SCOPE_BASE_OBJECT
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
-                              LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-                              LDAPSocketSendError, LDAPExceptionError, LDAPControlsError
+    LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
+    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
 from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict,\
-                               search_result_entry_response_to_dict, search_request_to_dict
+    search_result_entry_response_to_dict, search_request_to_dict
 from ..operation.bind import bind_response_to_dict, bind_request_to_dict
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
 from ..operation.extended import extended_request_to_dict, extended_response_to_dict, intermediate_response_to_dict
@@ -102,7 +102,7 @@ class BaseStrategy(object):
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
                         break
-                    except Exception as e:
+                    except Exception:
                         self.connection.server.update_availability(candidate_address, False)
                         exception_history.append((datetime.now(), exc_info()[0], exc_info()[1], candidate_address[4]))
 
@@ -259,12 +259,13 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         A tuple (responses, result) is returned
         """
+        print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE', message_id, self.connection)
+
         response = None
         result = None
-        print(threading.current_thread().name, 'GET_RESPONSE (Base)', message_id, self.connection)
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
-                print(threading.current_thread().name, 'TIMEOUT (Base)', message_id, timeout, self.connection)
+                print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE', message_id, timeout, self.connection)
                 responses = self._get_response(message_id)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
@@ -300,9 +301,6 @@ class BaseStrategy(object):
                     self.connection.response = None
                     break
 
-            if timeout <= 0:
-                print(threading.current_thread().name, 'TIMED-OUT', message_id)
-
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 
@@ -323,7 +321,7 @@ class BaseStrategy(object):
                 del self._auto_range_searching
 
             self._outstanding.pop(message_id)
-        print(threading.current_thread().name, 'RETURN RESPONSE (Base)', message_id, result)
+        print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE-DONE', message_id, self.connection, result, response)
         return response, result
 
     @classmethod
@@ -456,8 +454,8 @@ class BaseStrategy(object):
         done = False
         current_response = response
         while not done:
-            attr_type, _, range = attr_name.partition(';range=')
-            _, _, high_range = range.partition('-')
+            attr_type, _, returned_range = attr_name.partition(';range=')
+            _, _, high_range = returned_range.partition('-')
             response['raw_attributes'][attr_type] += current_response['raw_attributes'][attr_name]
             response['attributes'][attr_type] += current_response['attributes'][attr_name]
             if high_range != '*':
@@ -472,7 +470,7 @@ class BaseStrategy(object):
                     current_response, _ = self.get_response(result)
                     current_response = current_response[0]
 
-                attr_name=list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
+                attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
                 continue
 
             done = True

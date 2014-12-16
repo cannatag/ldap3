@@ -321,7 +321,7 @@ class BaseStrategy(object):
                 del self._auto_range_searching
 
             self._outstanding.pop(message_id)
-        print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE-DONE', message_id, self.connection, result, response)
+        print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE-DONE', message_id, self.connection, result)
         return response, result
 
     @classmethod

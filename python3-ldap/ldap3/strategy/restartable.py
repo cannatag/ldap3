@@ -32,6 +32,7 @@ from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
 import threading
 
+
 # noinspection PyBroadException,PyProtectedMember
 class RestartableStrategy(SyncStrategy):
     def __init__(self, ldap_connection):

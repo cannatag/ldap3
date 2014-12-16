@@ -61,7 +61,7 @@ class SyncStrategy(BaseStrategy):
         if not self.connection.listening and not self.connection.closed:
             self.connection.listening = True
 
-    def receiving_orig(self):
+    def receiving(self):
         """
         Receive data over the socket
         Checks if the socket is closed
@@ -106,7 +106,7 @@ class SyncStrategy(BaseStrategy):
 
         return messages
 
-    def receiving(self):
+    def receiving_test(self):
         """
         Receive data over the socket
         Checks if the socket is closed
@@ -182,11 +182,11 @@ class SyncStrategy(BaseStrategy):
         self.connection.result = result
         if isinstance(responses, SEQUENCE_TYPES):
             self.connection.response = responses[:]  # copy search result entries
-            print(' ' * 24, threading.current_thread().name, 'SYNC-POST-SEND-SEARCH-DONE', self.connection, result, responses)
+            print(' ' * 24, threading.current_thread().name, 'SYNC-POST-SEND-SEARCH-DONE', self.connection, result)
 
             return responses
         self.connection.last_error = 'error receiving response'
-        print(' ' * 24, threading.current_thread().name, 'SYNC-POST-SEND-SEARCH-EXC', self.connection, result, responses)
+        print(' ' * 24, threading.current_thread().name, 'SYNC-POST-SEND-SEARCH-EXC', self.connection, result)
         raise LDAPSocketReceiveError(self.connection.last_error)
 
     def _get_response(self, message_id):
@@ -243,5 +243,5 @@ class SyncStrategy(BaseStrategy):
         print(99)
         ldap_responses.append(RESPONSE_COMPLETE)
 
-        print(' ' * 28, threading.current_thread().name, 'SYNC-_GET_RESPONSE-DONE', self.connection, ldap_responses)
+        print(' ' * 28, threading.current_thread().name, 'SYNC-_GET_RESPONSE-DONE', self.connection)
         return ldap_responses

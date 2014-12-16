@@ -329,7 +329,7 @@ class Server(object):
                     if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
                         for attribute in self._dsa_info.other:
                             self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
-        print(' ' * 16, threading.current_thread().name, 'SCHEMA-SET', self._schema_info)
+        print(' ' * 16, threading.current_thread().name, 'SCHEMA-SET')
 
     def get_info_from_server(self, connection):
         """

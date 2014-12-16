@@ -487,10 +487,10 @@ class Connection(object):
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
             print(' ' * 20, threading.current_thread().name, 'SEARCH-REQUEST', search_base, search_filter, request)
             response = self.post_send_search(self.send('searchRequest', request, controls))
-            print(' ' * 20, threading.current_thread().name, 'SEARCH-RESPONSE', search_base, search_filter, response)
+            print(' ' * 20, threading.current_thread().name, 'SEARCH-RESPONSE', search_base, search_filter)
 
             if isinstance(response, int):
-                print(' ' * 20, threading.current_thread().name, 'SEARCH-DONE1', search_base, search_filter, response)
+                print(' ' * 20, threading.current_thread().name, 'SEARCH-DONE1', search_base, search_filter)
                 return response
 
             if self.result['type'] == 'searchResDone' and len(response) > 0:
@@ -822,7 +822,6 @@ class Connection(object):
                 self.refresh_server_info()
                 print(' ' * 12, threading.current_thread().name, 'EXEC-FIN1', self)
                 self._executing_deferred = False
-
 
     def _fire_deferred2(self):
         print(' ' * 12, threading.current_thread().name, 'FIRE-ENTER2', self)

@@ -26,12 +26,11 @@
 from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
-import threading
 from time import sleep
 from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
-from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError
+from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
 
 try:
     from queue import Queue
@@ -121,6 +120,7 @@ class ReusableStrategy(BaseStrategy):
                 for inner_connection in self.connections:
                     inner_connection.thread.start()
                 self.started = True
+                self.terminated = False
                 return True
             return False
 
@@ -128,15 +128,15 @@ class ReusableStrategy(BaseStrategy):
             self.connections = [ReusableStrategy.InnerConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
 
         def terminate_pool(self):
-            self.started = False
-            self.master_schema = None
-            self.master_info = None
-            self.request_queue.join()  # wait for all queue pending operations
-
-            for _ in range(len([connection for connection in self.connections if connection.thread.is_alive()])):  # put a TERMINATE signal on the queue for each active thread
-                self.request_queue.put((TERMINATE_REUSABLE, None, None, None))
-
-            self.request_queue.join()  # wait for all queue terminate operations
+            if not self.terminated:
+                self.started = False
+                self.master_schema = None
+                self.master_info = None
+                self.request_queue.join()  # wait for all queue pending operations
+                for _ in range(len([connection for connection in self.connections if connection.thread.is_alive()])):  # put a TERMINATE signal on the queue for each active thread
+                    self.request_queue.put((TERMINATE_REUSABLE, None, None, None))
+                self.request_queue.join()  # wait for all queue terminate operations
+                self.terminated = True
 
     class PooledConnectionThread(Thread):
         """
@@ -178,15 +178,11 @@ class ReusableStrategy(BaseStrategy):
                                 self.worker.connection.start_tls(read_server_info=False)
                             if pool.bind_pool and not self.worker.connection.bound:
                                 self.worker.connection.bind(read_server_info=False)
-                        print(' ' * 12, threading.current_thread().name, self.worker.connection)
-                        print(' ' * 2, threading.current_thread().name, 'WORKER-FIRE', counter, request, self.worker.connection)
-                        self.worker.connection._fire_deferred2()
-                        print(' ' * 2, threading.current_thread().name, 'WORKER-FIRE-DONE', counter, request, self.worker.connection)
+                        self.worker.connection._fire_deferred(refresh=False)
 
                         exc = None
                         response = None
                         result = None
-                        print(' ' * 2, threading.current_thread().name, 'SENDING-REQUEST', counter, request, self.worker.connection)
                         try:
                             if message_type == 'searchRequest':
                                 response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
@@ -197,8 +193,6 @@ class ReusableStrategy(BaseStrategy):
                             exc = e
 
                         with pool.lock:
-                            print(' ' * 2, threading.current_thread().name, 'SAVING-RESPONSE', counter, self.worker.connection)
-
                             if exc:
                                 pool._incoming[counter] = (exc, None)
                             else:
@@ -320,8 +314,6 @@ class ReusableStrategy(BaseStrategy):
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
-        print(' ' * 8, threading.current_thread().name, counter)
-
         if counter == -1:  # send a bogus bindResponse
             response = list()
             result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': 'None'}
@@ -335,8 +327,6 @@ class ReusableStrategy(BaseStrategy):
             response = None
             result = None
             while timeout >= 0:  # waiting for completed message to appear in _incoming
-                print(' ' * 8, threading.current_thread().name, 'REUSABLE-RESPONSE', counter, timeout, self.connection)
-
                 try:
                     with self.connection.strategy.pool.lock:
                         response, result = self.connection.strategy.pool._incoming.pop(counter)
@@ -346,10 +336,11 @@ class ReusableStrategy(BaseStrategy):
                     continue
                 break
 
+            if timeout <= 0:
+                raise LDAPResponseTimeoutError('no response from worker threads in Reusable connection')
+
         if isinstance(response, LDAPOperationResult):
             raise response  # an exception has been raised with raise_connections
-
-        print(' ' * 8, threading.current_thread().name, response, result, self.connection.strategy.pool._incoming)
 
         return response, result
 
@@ -357,6 +348,4 @@ class ReusableStrategy(BaseStrategy):
         return counter
 
     def post_send_search(self, counter):
-        print(' ' * 8, threading.current_thread().name, 'REUSABLE-POST-SEND-SEARCH', counter, self.connection)
-
         return counter

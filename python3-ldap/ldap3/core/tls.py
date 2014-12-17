@@ -33,7 +33,7 @@ except ImportError:
     raise LDAPSSLNotSupportedError('SSL not supported in this Python interpreter')
 
 try:
-    from ssl import match_hostname, CertificateError  # backport for python2 of missing ssl functionalities
+    from ssl import match_hostname, CertificateError  # backport for python2 missing ssl functionalities
 except ImportError:
     from ..utils.tls_backport import CertificateError
     from ..utils.tls_backport import match_hostname_backport as match_hostname
@@ -52,7 +52,7 @@ from os import path
 class Tls(object):
     """
     tls/ssl configuration for Server object
-    Starting from python 3-4 it uses the SSLContext object
+    Starting from python 2.7.9 and python 3.4 uses the SSLContext object
     that tries to read the CAs defined at system level
     ca_certs_path and ca_certs_data are valid only when using SSLContext
     local_private_key_password is valid only when using SSLContext

@@ -21,18 +21,23 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3 import Server, Connection, STRATEGY_REUSABLE_THREADED
+from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
 
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription,\
     AttributeValue, AssertionValue, Substrings, Initial, Any, Final, SubstringFilter, And, Or, Not,\
     Substring, SearchRequest, ValsAtLeast1, Scope, Integer0ToMax, TypesOnly, Filter, AttributeSelection, Selector, EqualityMatch
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, dn_for_test, \
-    test_lazy_connection, test_get_info, test_server_mode
+    test_lazy_connection, test_get_info, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(test_server, test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
+        if isinstance(test_server, (list, tuple)):
+            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+            for host in test_server:
+                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
+        else:
+            server = Server(test_server, test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
         self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=False, pool_name='pool1')
 
     def tearDown(self):
@@ -70,7 +75,7 @@ class Test(unittest.TestCase):
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
@@ -96,7 +101,7 @@ class Test(unittest.TestCase):
         search_req['attributes'] = attributes
 
         result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         self.assertTrue(True)
 
@@ -128,7 +133,7 @@ class Test(unittest.TestCase):
         add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-search-2'))
         add_req['attributes'] = attributes
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
 
         substrings = Substrings()
@@ -164,7 +169,7 @@ class Test(unittest.TestCase):
         search_req['attributes'] = attributes
 
         result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         self.assertTrue(True)
 
@@ -197,7 +202,7 @@ class Test(unittest.TestCase):
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
@@ -237,7 +242,7 @@ class Test(unittest.TestCase):
         search_req['attributes'] = attributes
 
         result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         self.assertTrue(True)
 
@@ -270,7 +275,7 @@ class Test(unittest.TestCase):
         add_req1['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req1))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
 
         attribute1 = Attribute()
@@ -301,7 +306,7 @@ class Test(unittest.TestCase):
         add_req2['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req2))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
@@ -341,7 +346,7 @@ class Test(unittest.TestCase):
         search_req['attributes'] = attributes
 
         result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             self.connection.get_response(result)
         self.assertTrue(True)
 
@@ -374,7 +379,7 @@ class Test(unittest.TestCase):
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
 
         assertion1 = EqualityMatch()
@@ -403,6 +408,6 @@ class Test(unittest.TestCase):
         search_req['attributes'] = attributes
 
         result = self.connection.post_send_search(self.connection.send('searchRequest', search_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         self.assertTrue(True)

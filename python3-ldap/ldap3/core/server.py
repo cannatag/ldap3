@@ -25,7 +25,6 @@
 
 import socket
 from threading import Lock
-import threading
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
     CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
     IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
@@ -247,7 +246,6 @@ class Server(object):
         """
         if connection.strategy.pooled:
             self.dsa_info = connection.strategy.pool
-        print(' ' * 4, threading.current_thread().name, connection)
         result = connection.search(search_base='',
                                    search_filter='(objectClass=*)',
                                    search_scope=SEARCH_SCOPE_BASE_OBJECT,
@@ -264,13 +262,11 @@ class Server(object):
                                                'subschemaSubentry',
                                                '*'],  # requests all remaining attributes (other),
                                    get_operational_attributes=True)
-        print(' ' * 4, threading.current_thread().name, result)
         with self.lock:
             if isinstance(result, bool):  # sync request
                 self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
             elif result:  # async request, must check if attributes in response
                 results, _ = connection.get_response(result)
-                print(' ' * 4, threading.current_thread().name, results)
                 if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                     self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
 
@@ -279,8 +275,6 @@ class Server(object):
         Retrieve schema from subschemaSubentry DSE attribute, per RFC
         4512 (4.4 and 5.1); entry = '' means DSE.
         """
-        print(' ' * 16, threading.current_thread().name, 'GET-SCHEMA', self)
-
         schema_entry = None
         if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
             if isinstance(self._dsa_info.schema_entry, SEQUENCE_TYPES):
@@ -329,14 +323,11 @@ class Server(object):
                     if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
                         for attribute in self._dsa_info.other:
                             self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
-        print(' ' * 16, threading.current_thread().name, 'SCHEMA-SET')
 
     def get_info_from_server(self, connection):
         """
         read info from DSE and from subschema
         """
-        print(' ' * 16, threading.current_thread().name, 'GET-INFO', self.get_info, self, connection)
-
         if not connection.closed:
             if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
                 self._get_dsa_info(connection)
@@ -378,7 +369,10 @@ class Server(object):
 
     @classmethod
     def from_definition(cls, host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
-        dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter)
+        if isinstance(host, SEQUENCE_TYPES):
+            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter)  # for ServerPool object
+        else:
+            dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter)
         if isinstance(dsa_info, DsaInfo):
             dummy._dsa_info = dsa_info
         else:

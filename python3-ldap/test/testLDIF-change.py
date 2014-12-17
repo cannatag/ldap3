@@ -28,7 +28,6 @@ from test import test_base, dn_for_test, test_name_attr, test_moved
 
 class Test(unittest.TestCase):
     def setUp(self):
-        # server = Server(host = test_server, port = test_port, allowed_referral_hosts = ('*', True))
         self.connection = Connection(server=None, client_strategy=STRATEGY_LDIF_PRODUCER)
         self.connection.open()
 
@@ -68,7 +67,7 @@ class Test(unittest.TestCase):
 
     def test_modify_dn_request_to_ldif(self):
         result = self.connection.modify_dn(dn_for_test(test_base, 'test-modify-dn-operation'), test_name_attr + '=test-modified-dn-operation')
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
@@ -79,7 +78,7 @@ class Test(unittest.TestCase):
 
     def test_move_dn_request_to_ldif(self):
         result = self.connection.modify_dn(dn_for_test(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', delete_old_dn=False, new_superior=test_moved)
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
@@ -91,7 +90,7 @@ class Test(unittest.TestCase):
 
     def test_modify_add_to_ldif(self):
         result = self.connection.modify(dn_for_test(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
@@ -103,7 +102,7 @@ class Test(unittest.TestCase):
 
     def test_modify_replace_to_ldif(self):
         result = self.connection.modify(dn_for_test(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
@@ -115,7 +114,7 @@ class Test(unittest.TestCase):
 
     def test_modify_delete_to_ldif(self):
         result = self.connection.modify(dn_for_test(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
@@ -130,7 +129,7 @@ class Test(unittest.TestCase):
         result = self.connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
                                         {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']), 'description': (MODIFY_DELETE, []), 'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),
                                          'facsimiletelephonenumber': (MODIFY_DELETE, ['+1 408 555 9876'])})
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)

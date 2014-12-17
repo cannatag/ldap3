@@ -89,6 +89,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(parsed), 2)
         self.assertEqual(parsed[0], ('cn', 'us\\=er1', ','))
         self.assertEqual(parsed[1], ('o', 'us\\,ers', ''))
+
     def test_parse_dn_unescaped_multi(self):
         parsed = p('cn=us,er1,ou=use<rs,dc=br+anch,dc=company,c=IT', escape=True)
         self.assertEqual(len(parsed), 5)

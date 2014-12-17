@@ -474,6 +474,9 @@ class LDAPInvalidDnError(LDAPExceptionError):
     pass
 
 
+class LDAPResponseTimeoutError(LDAPExceptionError):
+    pass
+
 # communication exceptions
 class LDAPCommunicationError(LDAPExceptionError):
     pass

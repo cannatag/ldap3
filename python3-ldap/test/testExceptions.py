@@ -22,9 +22,10 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3 import Server, Connection, GET_ALL_INFO
+from ldap3 import Server, Connection, ServerPool, GET_ALL_INFO
 from ldap3.core.exceptions import LDAPException, LDAPOperationsErrorResult, LDAPOperationResult, LDAPNoSuchObjectResult
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_lazy_connection, test_get_info, test_check_names
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_server_mode,\
+    test_lazy_connection, test_get_info, test_check_names, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 
 
 class Test(unittest.TestCase):
@@ -37,12 +38,17 @@ class Test(unittest.TestCase):
         self.assertTrue(isinstance(e, LDAPOperationsErrorResult))
 
     def test_raise_exceptions(self):
-        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info)
+        if isinstance(test_server, (list, tuple)):
+            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+            for host in test_server:
+                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
+        else:
+            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
         connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names, raise_exceptions=True)
         ok = False
         try:
             result = connection.search('xxx=xxx', '(cn=*)')
-            if not isinstance(result, bool):
+            if not connection.strategy.sync:
                 connection.get_response(result)
         except LDAPNoSuchObjectResult:
             ok = True

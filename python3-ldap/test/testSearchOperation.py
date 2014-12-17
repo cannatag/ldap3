@@ -24,16 +24,22 @@ import unittest
 
 from ldap3.utils.conv import escape_bytes
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
-    test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info, test_check_names, test_server_mode
-from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
+    test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info, test_check_names,\
+    test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
+        if isinstance(test_server, (list, tuple)):
+            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+            for host in test_server:
+                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
+        else:
+            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
         result = self.connection.add(dn_for_test(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)', 'loginGraceLimit': 10})
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             self.connection.get_response(result)
 
     def tearDown(self):
@@ -44,7 +50,7 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=test-add-operation)', attributes=[test_name_attr, 'givenName', 'jpegPhoto'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -54,7 +60,7 @@ class Test(unittest.TestCase):
 
     def test_search_extensible_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -64,7 +70,7 @@ class Test(unittest.TestCase):
 
     def test_search_present(self):
         result = self.connection.search(search_base=test_base, search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName', 'jpegPhoto'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -74,7 +80,7 @@ class Test(unittest.TestCase):
 
     def test_search_substring_many(self):
         result = self.connection.search(search_base=test_base, search_filter='(sn=t*)', attributes=[test_name_attr, 'givenName', 'sn'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -85,7 +91,7 @@ class Test(unittest.TestCase):
 
     def test_search_substring_one(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*y)', attributes=[test_name_attr, 'givenName', 'sn'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -96,7 +102,7 @@ class Test(unittest.TestCase):
 
     def test_search_raw(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName', 'photo'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -107,7 +113,7 @@ class Test(unittest.TestCase):
 
     def test_search_with_operational_attributes(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=test-add-operation)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName', 'photo'], get_operational_attributes=True)
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -119,7 +125,7 @@ class Test(unittest.TestCase):
         paged_size = 1
         total_entries = 0
         result = self.connection.search(search_base=test_base, search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size)
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -131,20 +137,20 @@ class Test(unittest.TestCase):
         while cookie:
             paged_size += 1
             result = self.connection.search(search_base=test_base, search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size, paged_cookie=cookie)
-            if not isinstance(result, bool):
+            if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
             else:
                 response = self.connection.response
                 result = self.connection.result
-            self.assertEqual(result['description'], 'success')
+            self.assertTrue(result['description'] in ['success', 'unwillingToPerform'])
             total_entries += len(response)
             self.assertTrue(len(response) <= paged_size)
             cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-        self.assertTrue(total_entries > 9)
+        self.assertTrue(total_entries > 9 or (total_entries == 1 and result['description'] == 'unwillingToPerform'))
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -155,7 +161,7 @@ class Test(unittest.TestCase):
 
     def test_search_integer_exact_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit=10)', attributes=[test_name_attr, 'loginGraceLimit'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -165,7 +171,7 @@ class Test(unittest.TestCase):
 
     def test_search_integer_less_than(self):
         result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit<=11)', attributes=[test_name_attr, 'loginGraceLimit'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -175,7 +181,7 @@ class Test(unittest.TestCase):
 
     def test_search_integer_greater_than(self):
         result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit>=9)', attributes=[test_name_attr, 'loginGraceLimit'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response

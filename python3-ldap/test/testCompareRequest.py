@@ -31,7 +31,9 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         if isinstance(test_server, (list, tuple)):
-            server = ServerPool(test_server, pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+            for host in test_server:
+                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
         else:
             server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
         self.connection = Connection(server, auto_bind=True, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=False, pool_name='pool1')
@@ -70,7 +72,7 @@ class Test(unittest.TestCase):
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
 
         ava = AttributeValueAssertion()
@@ -81,6 +83,6 @@ class Test(unittest.TestCase):
         compare_req['ava'] = ava
 
         result = self.connection.post_send_single_response(self.connection.send('compareRequest', compare_req))
-        if not isinstance(result, bool):
+        if isinstance(result, int):
             self.connection.get_response(result)
         self.assertTrue(True)

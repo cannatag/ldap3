@@ -28,7 +28,6 @@ from sys import exc_info
 from time import sleep
 from random import choice
 from datetime import datetime
-import threading
 
 from pyasn1.codec.ber import encoder, decoder
 
@@ -36,7 +35,7 @@ from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITIN
     DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, SEARCH_SCOPE_BASE_OBJECT
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError
+    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
@@ -259,13 +258,10 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         A tuple (responses, result) is returned
         """
-        print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE', message_id, self.connection)
-
         response = None
         result = None
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
-                print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE', message_id, timeout, self.connection)
                 responses = self._get_response(message_id)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)
@@ -301,6 +297,9 @@ class BaseStrategy(object):
                     self.connection.response = None
                     break
 
+            if timeout <= 0:
+                raise LDAPResponseTimeoutError('no response from server')
+
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
 
@@ -321,7 +320,9 @@ class BaseStrategy(object):
                 del self._auto_range_searching
 
             self._outstanding.pop(message_id)
-        print(' ' * 24, threading.current_thread().name, 'BASE-GET-RESPONSE-DONE', message_id, self.connection, result)
+        else:
+            raise(LDAPResponseTimeoutError('message id not in outstanding queue'))
+
         return response, result
 
     @classmethod

@@ -178,7 +178,7 @@ class ReusableStrategy(BaseStrategy):
                                 self.worker.connection.start_tls(read_server_info=False)
                             if pool.bind_pool and not self.worker.connection.bound:
                                 self.worker.connection.bind(read_server_info=False)
-                        self.worker.connection._fire_deferred(refresh=False)
+                        self.worker.connection._fire_deferred_2(refresh=True)
 
                         exc = None
                         response = None

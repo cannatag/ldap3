@@ -488,6 +488,72 @@ class Connection(object):
                 return True
             return False
 
+    def search_2(self,
+               search_base,
+               search_filter,
+               search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
+               dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
+               attributes=None,
+               size_limit=0,
+               time_limit=0,
+               types_only=False,
+               get_operational_attributes=False,
+               controls=None,
+               paged_size=None,
+               paged_criticality=False,
+               paged_cookie=None):
+        """
+        Perform an ldap search:
+
+        - If attributes is empty no attribute is returned
+        - If attributes is ALL_ATTRIBUTES all attributes are returned
+        - If paged_size is an int greater than 0 a simple paged search
+          is tried as described in RFC2696 with the specified size
+        - If paged is 0 and cookie is present the search is abandoned on
+          server
+        - Cookie is an opaque string received in the last paged search
+          and must be used on the next paged search response
+        - If lazy = True open and bind will be deferred until another
+          LDAP operation is performed
+        """
+        print(' ' * 8, 80)
+        with self.lock:
+            print(' ' * 8, 81)
+            self._fire_deferred()
+            print(' ' * 8, 82)
+            if not attributes:
+                attributes = [NO_ATTRIBUTES]
+            elif attributes == ALL_ATTRIBUTES:
+                attributes = ['*']
+
+            if get_operational_attributes and isinstance(attributes, list):
+                attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
+            elif get_operational_attributes and isinstance(attributes, tuple):
+                attributes += (ALL_OPERATIONAL_ATTRIBUTES, )  # concatenate tuple
+            print(' ' * 8, 83)
+            if isinstance(paged_size, int):
+                print(' ' * 8, 84)
+                real_search_control_value = RealSearchControlValue()
+                real_search_control_value['size'] = Size(paged_size)
+                real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
+                if controls is None:
+                    controls = []
+                controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
+            request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
+            print(' ' * 8, 85)
+            print(self.strategy)
+            response = self.strategy.post_send_search_2(self.strategy.send_2('searchRequest', request, controls))
+            print(' ' * 8, 86)
+            if isinstance(response, int):
+                print(' ' * 8, 87)
+                return response
+
+            if self.result['type'] == 'searchResDone' and len(response) > 0:
+                print(' ' * 8, 88)
+                return True
+            print(' ' * 8, 89)
+            return False
+
     def compare(self,
                 dn,
                 attribute,
@@ -711,10 +777,24 @@ class Connection(object):
             if not self.closed:
                 previous_response = self.response
                 previous_result = self.result
-                self.server.get_info_from_server(self)
+                self.server.get_info_from_server_2(self)
                 self.response = previous_response
                 self.result = previous_result
 
+    def refresh_server_info_2(self):
+        print(' ' * 2, 20)
+        with self.lock:
+            print(' ' * 2, 21)
+            if not self.closed:
+                print(' ' * 2, 22)
+                previous_response = self.response
+                previous_result = self.result
+                print(' ' * 2, 23)
+                self.server.get_info_from_server_2(self)
+                print(' ' * 2, 24)
+                self.response = previous_response
+                self.result = previous_result
+                print(' ' * 2, 25)
     def response_to_ldif(self,
                          search_result=None,
                          all_base64=False,
@@ -805,3 +885,38 @@ class Connection(object):
                 if refresh:
                     self.refresh_server_info()
                 self._executing_deferred = False
+
+
+    def _fire_deferred_2(self, refresh=True):
+        print(1)
+        with self.lock:
+            print(2)
+            if self.lazy and not self._executing_deferred:
+                print(3)
+                self._executing_deferred = True
+                print(4)
+                try:
+                    print(5)
+                    if self._deferred_open:
+                        print(6)
+                        self.open(read_server_info=False)
+                        print(7)
+                    if self._deferred_start_tls:
+                        print(8)
+                        self.start_tls(read_server_info=False)
+                        print(9)
+                    if self._deferred_bind:
+                        print(10)
+                        self.bind(read_server_info=False, controls=self._bind_controls)
+                        print(11)
+                except LDAPExceptionError:
+                    print(12)
+                    self._executing_deferred = False
+                    raise  # re-raise LDAPExceptionError
+                print(13)
+                if refresh:
+                    print(14)
+                    self.refresh_server_info_2()
+                    print(15)
+                self._executing_deferred = False
+                print(16)

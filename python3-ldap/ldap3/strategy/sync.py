@@ -169,6 +169,24 @@ class SyncStrategy(BaseStrategy):
         self.connection.last_error = 'error receiving response'
         raise LDAPSocketReceiveError(self.connection.last_error)
 
+    def post_send_search_2(self, message_id):
+        """
+        Executed after a search request
+        Returns the result message and store in connection.response the objects found
+        """
+        print(' ' * 14, 140)
+        responses, result = self.get_response_2(message_id)
+        print(' ' * 14, 141)
+        self.connection.result = result
+        if isinstance(responses, SEQUENCE_TYPES):
+            print(' ' * 14, 142)
+            self.connection.response = responses[:]  # copy search result entries
+            return responses
+        print(' ' * 14, 143)
+        self.connection.last_error = 'error receiving response'
+        raise LDAPSocketReceiveError(self.connection.last_error)
+
+
     def _get_response(self, message_id):
         """
         Performs the capture of LDAP response for SyncStrategy

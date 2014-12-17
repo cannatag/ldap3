@@ -24,11 +24,19 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
     * GET_NO_INFO: no information is gathered from the server
 
+    * NONE: alias for GET_NO_INFO
+
     * GET_DSA_INFO: server information is stored in server.info
+
+    * DSA: alias for GET_DSA_INFO
 
     * GET_SCHEMA_INFO: schema information is stored in server.schema
 
+    * SCHEMA: alias for GET_SCHEMA_INFO
+
     * GET_ALL_INFO: server and schema information are gathered and stored in server.info and server.schema
+
+    * ALL: alias for GET_ALL_INFO
 
     * OFFLINE_EDIR_8_8_8: pre-built schema and info for NetIQ eDirectory 8.8.8
 
@@ -36,11 +44,25 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
     * OFFLINE_SLAPD_2_4: pre-built schema and info for Openldap 2.4
 
+    * OFFLINE_DS389_1_3_3: pre-built schema and info for DS389 1.3.3
+
+* mode: specifies dual IP stack behaviour for resolving LDAP server names in dns: Possible values are:
+
+    * IP_SYSTEM_DEFAULT: disable dual stack feature. Use system default
+
+    * IP_V4_ONLY: use only IPV4 names
+
+    * IP_V6_ONLY: use only IPV6 names
+
+    * IP_V4_PREFERRED: tries IPV4 names and if connection fails tries IPV6
+
+    * IP_V6_PREFERRED: tries IPV6 names and if connection fails tries IPV4
+
 * tls: Tls object that contains information about the certificates and the trusted roots needed to establish a secure connection (defaults to None). If None any server certificate will be accepted.
 
 * formatter: a dictionary of custom formatter for attributes returned in search
 
-* connect_timeout: timeout in seconds for socket connect operation
+* connect_timeout: timeout in seconds for the connect operation
 
 Example::
 
@@ -59,9 +81,15 @@ The pool can have different HA strategies:
 
 * POOLING_STRATEGY_FIRST: gets the first server in the pool, if 'active' is set to True gets the first available server
 
+* FIRST: alias for POOLING_STRATEGY_FIRST
+
 * POOLING_STRATEGY_ROUND_ROBIN: each time the connection is open the subsequent server in the pool is used. If active is set to True unavailable servers will be discarded
 
+* ROUND_ROBIN: alias for POOLING_STRATEGY_ROUND_ROBIN
+
 * POOLING_STRATEGY_RANDOM: each time the connection is open a random server is chosen in the pool. If active is set to True unavailable servers will be discarded
+
+* RANDOM: alias for POOLING_STRATEGY_RANDOM
 
 A server pool can be defined in different ways::
 
@@ -100,7 +128,7 @@ If the attribute is defined in the schema as 'multi_value' the attribute value i
 Offline Schema
 --------------
 
-In case your LDAP server doesn't return the DSA info or the Schema you can load pre-built schemas and infos with the get_info parameter. Are available schemas for eDirectory, Active Directory and Openldap.
+If your LDAP server doesn't return the DSA info or the Schema you can load pre-built schemas and infos with the get_info parameter. Are available schemas for eDirectory, Active Directory and Openldap.
 
 You can also save the schema and info in a json string::
     json_info = server.info.to_json()

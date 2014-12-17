@@ -41,13 +41,13 @@ class ServerPoolState(object):
         self.last_used_server = randint(0, len(self.servers) - 1)
 
     def __str__(self):
-        s = 'servers: '
+        s = 'servers: ' + linesep
         if self.servers:
             for server in self.servers:
                 s += str(server) + linesep
         else:
-            s += 'None'
-        s += 'Pool strategy: ' + str(self.strategy)
+            s += 'None' + linesep
+        s += 'Pool strategy: ' + str(self.strategy) + linesep
         s += ' - Last used server: ' + ('None' if self.last_used_server == -1 else str(self.servers[self.last_used_server]))
 
         return s
@@ -150,12 +150,12 @@ class ServerPool(object):
         self.strategy = pool_strategy
 
     def __str__(self):
-            s = 'servers: '
+            s = 'servers: ' + linesep
             if self.servers:
                 for server in self.servers:
                     s += str(server) + linesep
             else:
-                s += 'None'
+                s += 'None' + linesep
             s += 'Pool strategy: ' + str(self.strategy)
             s += ' - ' + 'active only: ' + ('True' if self.active else 'False')
             s += ' - ' + 'exhaust pool: ' + ('True' if self.exhaust else 'False')

@@ -115,7 +115,7 @@ class Test(unittest.TestCase):
             cid[3]
         except KeyError:
             self.assertTrue(True)
-        except:
+        except Exception:
             self.assertTrue(False)
 
     def test_delete_item_in_case_insentitive_dict_same_case_key(self):
@@ -134,14 +134,14 @@ class Test(unittest.TestCase):
             cid['oNe']
         except KeyError:
             self.assertTrue(True)
-        except:
+        except Exception:
             self.assertTrue(False)
 
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
-        except:
+        except Exception:
             self.assertTrue(False)
 
     def test_delete_item_in_case_insentitive_dict_different_case_key(self):
@@ -159,14 +159,14 @@ class Test(unittest.TestCase):
             cid['oNe']
         except KeyError:
             self.assertTrue(True)
-        except:
+        except Exception:
             self.assertTrue(False)
 
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
-        except:
+        except Exception:
             self.assertTrue(False)
 
     def test_len_empty_case_insensitive_dict(self):
@@ -260,7 +260,6 @@ class Test(unittest.TestCase):
         dic[3] = 3
 
         self.assertTrue(cid == dic)
-
 
     def test_equality_case_insensitive_dict_with_different_case_dict(self):
         cid = CaseInsensitiveDict()

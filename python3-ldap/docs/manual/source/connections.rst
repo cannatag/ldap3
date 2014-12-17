@@ -8,17 +8,27 @@ The following strategies are available:
 
 * STRATEGY_SYNC: the request is sent and the connection waits until the response is received. You get the response in the return value of the connection
 
+* SYNC: alias for STRATEGY_SYNC
+
 * STRATEGY_ASYNC_THREADED: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response
+
+* ASYNC: alias for STRATEGY_ASYNC_THREADED
+
+* STRATEGY_LDIF_PRODUCER: the request is transformed in a *ldif-change* format and an LDIF output is returned
+
+* LDIF: alias for STRATEGY_LDIF_PRODUCER
 
 * STRATEGY_SYNC_RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times of forever
 
-* STRATEGY_LDIF_PRODUCER: the request is transformed in a *ldif-change* format and an LDIF output is returned
+* RESTARTABLE: alias for STRATEGY_SYNC_RESTARTABLE
 
 .. sidebar:: Lazy connections
 
    * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation will be necessary.
 
 * STRATEGY_REUSABLE_THREADED: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
+
+* REUSABLE: alias for STRATEGY_REUSABLE_THREADED
 
 When using an asynchronous strategy each operation returns immediately an operation_id. You can call the get_response method of the connection object to obtain the response received from the server.
 
@@ -34,7 +44,7 @@ Connection parameters are:
 
 * version: LDAP protocol version (defaults to 3)
 
-* authentication: authentication method, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL. Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE
+* authentication: authentication method, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL (aliased with ANONYMOUS, SIMPLE, SASL). Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE
 
 * client_strategy: communication strategy used by the client (defaults to STRATEGY_SYNC)
 
@@ -46,7 +56,7 @@ Connection parameters are:
 
 * collect_usage: binds a ConnectionUsage object to the connection to store metrics of connection usage (see later)
 
-* read_only: inhibit modify, delete, add and modifyDn (move) operations
+* read_only: when True inhibits modify, delete, add and modifyDn (move) operations, defaults to False
 
 * lazy: when True connection will defer open and bind until another LDAP operation is requested
 
@@ -122,19 +132,33 @@ With the connection you can perform all the standard LDAP operations:
 
         * SEARCH_SCOPE_BASE_OBJECT: retrieves attributes of the entry specified in the search_base
 
+        * SCOPE_BASE: alias for SEARCH_SCOPE_BASE_OBJECT
+
         * SEARCH_SCOPE_SINGLE_LEVEL: retrieves attributes of the entries specified in the search_base. The base must reference a container object
 
-        *  SEARCH_SCOPE_WHOLE_SUBTREE: retrieves attributes of the entries specified in the search_base and all subordinate containers downward.
+        * SCOPE_LEVEL: alias for SEARCH_SCOPE_SINGLE_LEVEL
+
+        * SEARCH_SCOPE_WHOLE_SUBTREE: retrieves attributes of the entries specified in the search_base and all subordinate containers downward.
+
+        * SCOPE_SUBTREE = alias for SEARCH_SCOPE_WHOLE_SUBTREE
 
     * dereference_aliases: specifies how the server must treat references to other entries:
 
         * SEARCH_NEVER_DEREFERENCE_ALIASES: never dereferences entries, returns alias objects instead. The alias contains the reference to the real entry
 
+        * DEREF_NONE: alias for SEARCH_NEVER_DEREFERENCE_ALIASES
+
         * SEARCH_DEREFERENCE_IN_SEARCHING: while searching subordinates of the base object, dereferences any alias within the search scope. Dereferenced objects become the vertices of further search scopes where the       Search operation is also applied. The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
+
+        * DEREF_SEARCH: alias for SEARCH_DEREFERENCE_IN_SEARCHING
 
         * SEARCH_DEREFERENCE_FINDING_BASE_OBJECT: dereferences aliases in locating the base object of the search, but not when searching subordinates of the base object.
 
+        * DEREF_BASE: alias for SEARCH_DEREFERENCE_FINDING_BASE_OBJECT
+
         * SEARCH_DEREFERENCE_ALWAYS: always returns the referenced entries, not the alias object
+
+        * DEREF_ALWAYS: alias for SEARCH_DEREFERENCE_ALWAYS
 
     * attributes: a single attribute or a list of attributes to be returned by the search (defaults to None). If attributes is None  no attribute is returned. If attributes is ALL_ATTRIBUTES all attributes are returned
 

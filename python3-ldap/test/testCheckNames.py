@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with python3-ldap in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+
 from time import sleep
 
 import unittest
@@ -32,7 +33,9 @@ from test import test_server, test_port, test_user, test_password, test_authenti
 class Test(unittest.TestCase):
     def setUp(self):
         if isinstance(test_server, (list, tuple)):
-            server = ServerPool(test_server, pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+            for host in test_server:
+                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
         else:
             server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=True)
@@ -71,7 +74,7 @@ class Test(unittest.TestCase):
 
     def test_valid_assertion(self):
         result = self.connection.search(search_base=test_base, search_filter='(cn=test*)', attributes=[test_name_attr])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -81,7 +84,7 @@ class Test(unittest.TestCase):
 
     def test_valid_attribute(self):
         result = self.connection.search(search_base=test_base, search_filter='(cn=test*)', attributes=[test_name_attr, 'givenName'])
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
@@ -91,7 +94,7 @@ class Test(unittest.TestCase):
 
     def test_valid_object_class_add(self):
         result = self.connection.add(dn_for_test(test_base, 'test-add-operation-check-names'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'Person'], 'sn': 'test-add', test_name_attr: 'test-add-operation-check-names'})
-        if not isinstance(result, bool):
+        if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response

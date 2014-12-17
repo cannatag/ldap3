@@ -57,16 +57,22 @@ For information and suggestions you can contact me at python3ldap@gmail.com or y
 
 CHANGELOG
 =========
-* 0.9.6.3 2014.11.30
+* 0.9.7 2014.12.17
     - Fixed bug for auto_range used in paged search
     - Added dual IP stack mode parameter in Server object, values are: IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V4_PREFERRED, IP_V6_ONLY, IP_V6_PREFERRED
     - Added read_server_info parameter to bind() and start_tls() to avoid multiple schema and info read operations with auto_bind
     - Redesigned Reusable (pooled) strategy
-    - Added shortened ldap3 scope parameters: SCOPE_BASE, SCOPE_LEVEL, SCOPE_SUBTREE
-    - Added shortened ldap3 alias dereferencing parameters: DEREF_NONE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS
-    - Added shortened ldap3 connection strategy parameters: STRATEGY_SYNC, STRATEGY_ASYNC, STRATEGY_RESTARTABLE, STRATEGY_REUSABLE
-    - Added shortened ldap3 pooling strategy parameters: POOLING_FIRST, POOLING_ROUND_ROBIN, POOLING_RANDOM
+    - Added LDAPResponseTimeoutError exception raised when get_response() doesn't receive any response in the allowed timeout period
+    - Added shortened authentication parameters in ldap3 namespace: ANONYMOUS, SIMPLE, SASL
+    - Added shortened scope parameters in ldap3 namespace: BASE, LEVEL, SUBTREE
+    - Added shortened get_info parameters in ldap3 namespace: NONE, DSA, SCHEMA, ALL
+    - Added shortened alias dereferencing parameters in ldap3 namespace: DEREF_NONE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS
+    - Added shortened connection strategy parameters in ldap3 namespace: SYNC, ASYNC, LDIF, RESTARTABLE, REUSABLE
+    - Added shortened pooling strategy parameters in ldap3 namespace: FIRST, ROUND_ROBIN, RANDOM
     - Added reentrant lock to avoid race conditions in the Connection object
+    - When run in Python 2.7.9 uses SSLContext
+    - Tested against Python 2.7.9, PyPy 2.4.0 and PyPy3 2.4.0
+    - setuptools updated to 8.0.4
 
 * 0.9.6.2 2014.11.17
     - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2

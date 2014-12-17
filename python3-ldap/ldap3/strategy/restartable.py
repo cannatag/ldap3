@@ -30,7 +30,6 @@ from datetime import datetime
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
-import threading
 
 
 # noinspection PyBroadException,PyProtectedMember
@@ -188,7 +187,6 @@ class RestartableStrategy(SyncStrategy):
             raise exc
 
     def post_send_search(self, message_id):
-        print(' ' * 20, threading.current_thread().name, 'RESTARTABLE-POST-SEND-SEARCH', message_id, self.connection)
         try:
             ret_value = SyncStrategy.post_send_search(self, message_id)
             self._reset_exception_history()

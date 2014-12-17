@@ -25,7 +25,6 @@
 
 from os import linesep
 from threading import RLock
-import threading
 from pyasn1.codec.ber import encoder
 import json
 
@@ -246,7 +245,6 @@ class Connection(object):
                 if self.auto_bind:
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
-                        print(threading.current_thread().name, self)
                         self.bind(read_server_info=True)
                     elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
                         self.start_tls(read_server_info=False)
@@ -288,7 +286,7 @@ class Connection(object):
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
         r += '' if self.strategy_type is None else ', client_strategy={0.strategy_type!r}'.format(self)
         r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
-        r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.auto_sasl_mechanism!r}'.format(self)
+        r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.sasl_mechanism!r}'.format(self)
         r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
         r += '' if self.check_names is None else ', check_names={0.check_names!r}'.format(self)
         r += '' if self.usage is None else (', collect_usage=' + 'True' if self.usage else 'False')
@@ -461,11 +459,7 @@ class Connection(object):
           LDAP operation is performed
         """
         with self.lock:
-            print(' ' * 20, threading.current_thread().name, 'SEARCH-START', search_base, search_filter, self)
-
             self._fire_deferred()
-            print(' ' * 20, threading.current_thread().name, 'SEARCH-FIRED', search_base, search_filter, self)
-
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
             elif attributes == ALL_ATTRIBUTES:
@@ -485,18 +479,13 @@ class Connection(object):
                 controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
-            print(' ' * 20, threading.current_thread().name, 'SEARCH-REQUEST', search_base, search_filter, request)
             response = self.post_send_search(self.send('searchRequest', request, controls))
-            print(' ' * 20, threading.current_thread().name, 'SEARCH-RESPONSE', search_base, search_filter)
 
             if isinstance(response, int):
-                print(' ' * 20, threading.current_thread().name, 'SEARCH-DONE1', search_base, search_filter)
                 return response
 
             if self.result['type'] == 'searchResDone' and len(response) > 0:
-                print(' ' * 20, threading.current_thread().name, 'SEARCH-DONE2', search_base, search_filter, self)
                 return True
-            print(' ' * 20, threading.current_thread().name, 'SEARCH-FALSE', search_base, search_filter, self)
             return False
 
     def compare(self,
@@ -797,59 +786,22 @@ class Connection(object):
                 target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
                 target.close()
 
-    def _fire_deferred(self):
+    def _fire_deferred(self, refresh=True):
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
-                print(' ' * 12, threading.current_thread().name, 'EXEC-DEFR1', self)
 
                 try:
                     if self._deferred_open:
-                        print(' ' * 12, threading.current_thread().name, 'EXEC-OPEN1', self)
                         self.open(read_server_info=False)
                     if self._deferred_start_tls:
-                        print(' ' * 12, threading.current_thread().name, 'EXEC-TLS1', self)
                         self.start_tls(read_server_info=False)
                     if self._deferred_bind:
-                        print(' ' * 12, threading.current_thread().name, 'EXEC-BIND1', self)
                         self.bind(read_server_info=False, controls=self._bind_controls)
-
-                    print(' ' * 12, threading.current_thread().name, 'EXEC-DONE1', self)
                 except LDAPExceptionError:
                     self._executing_deferred = False
                     raise  # re-raise LDAPExceptionError
 
-                self.refresh_server_info()
-                print(' ' * 12, threading.current_thread().name, 'EXEC-FIN1', self)
+                if refresh:
+                    self.refresh_server_info()
                 self._executing_deferred = False
-
-    def _fire_deferred2(self):
-        print(' ' * 12, threading.current_thread().name, 'FIRE-ENTER2', self)
-        with self.lock:
-            print(' ' * 12, threading.current_thread().name, 'FIRE-LOCKED2', self)
-
-            if self.lazy and not self._executing_deferred:
-                self._executing_deferred = True
-                print(' ' * 12, threading.current_thread().name, 'EXEC-DEFR2', self)
-
-                try:
-                    if self._deferred_open:
-                        print(' ' * 12, threading.current_thread().name, 'EXEC-OPEN2', self)
-                        self.open(read_server_info=False)
-                    if self._deferred_start_tls:
-                        print(' ' * 12, threading.current_thread().name, 'EXEC-TLS2', self)
-                        self.start_tls(read_server_info=False)
-                    if self._deferred_bind:
-                        print(' ' * 12, threading.current_thread().name, 'EXEC-BIND2', self)
-                        self.bind(read_server_info=False, controls=self._bind_controls)
-
-                    print(' ' * 12, threading.current_thread().name, 'EXEC-DONE2', self)
-                except LDAPExceptionError:
-                    self._executing_deferred = False
-                    raise  # re-raise LDAPExceptionError
-
-
-                #self.refresh_server_info()
-                print(' ' * 12, threading.current_thread().name, 'EXEC-FIN2', self)
-                self._executing_deferred = False
-        print(' ' * 12, threading.current_thread().name, 'FIRE-EXIT2', self)

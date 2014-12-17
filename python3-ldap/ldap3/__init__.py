@@ -25,8 +25,14 @@
 
 # authentication
 AUTH_ANONYMOUS = 0
+ANONYMOUS = 0
+
 AUTH_SIMPLE = 1
+SIMPLE = 1
+
 AUTH_SASL = 2
+SASL = 2
+
 SASL_AVAILABLE_MECHANISMS = ['EXTERNAL', 'DIGEST-MD5']
 
 AUTO_BIND_NONE = 0
@@ -48,19 +54,24 @@ ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address inf
 
 # search scope
 SEARCH_SCOPE_BASE_OBJECT = 0
-SCOPE_BASE = 0
+BASE = 0
+
 SEARCH_SCOPE_SINGLE_LEVEL = 1
-SCOPE_LEVEL = 1
+LEVEL = 1
+
 SEARCH_SCOPE_WHOLE_SUBTREE = 2
-SCOPE_SUBTREE = 2
+SUBTREE = 2
 
 # search alias
 SEARCH_NEVER_DEREFERENCE_ALIASES = 0
 DEREF_NONE = 0
+
 SEARCH_DEREFERENCE_IN_SEARCHING = 1
 DEREF_SEARCH = 1
+
 SEARCH_DEREFERENCE_FINDING_BASE_OBJECT = 2
 DEREF_BASE = 2
+
 SEARCH_DEREFERENCE_ALWAYS = 3
 DEREF_ALWAYS = 3
 
@@ -104,21 +115,28 @@ MODIFY_INCREMENT = 3
 
 # client strategies
 STRATEGY_SYNC = 0
+SYNC = 0
+
 STRATEGY_ASYNC_THREADED = 1
-STRATEGY_ASYNC = 1
+ASYNC = 1
+
 STRATEGY_LDIF_PRODUCER = 2
+LDIF = 2
+
 STRATEGY_SYNC_RESTARTABLE = 3
-STRATEGY_RESTARTABLE = 3
+RESTARTABLE = 3
+
 STRATEGY_REUSABLE_THREADED = 4
-STRATEGY_REUSABLE = 4
+REUSABLE = 4
+
 STRATEGY_MOCK_SYNC = 5
 STRATEGY_MOCK_ASYNC = 6
 
 CLIENT_STRATEGIES = [STRATEGY_SYNC,
-                     STRATEGY_ASYNC,
+                     STRATEGY_ASYNC_THREADED,
                      STRATEGY_LDIF_PRODUCER,
-                     STRATEGY_RESTARTABLE,
-                     STRATEGY_REUSABLE]
+                     STRATEGY_SYNC_RESTARTABLE,
+                     STRATEGY_REUSABLE_THREADED]
 
 # communication
 SESSION_TERMINATED_BY_SERVER = -2
@@ -202,9 +220,17 @@ DO_NOT_RAISE_EXCEPTIONS = [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_
 
 # get rootDSE info
 GET_NO_INFO = 0
+NONE = 0
+
 GET_DSA_INFO = 1
+DSA=1
+
 GET_SCHEMA_INFO = 2
+SCHEMA = 2
+
 GET_ALL_INFO = 3
+ALL = 3
+
 OFFLINE_EDIR_8_8_8 = 4
 OFFLINE_AD_2012_R2 = 5
 OFFLINE_SLAPD_2_4 = 6
@@ -241,12 +267,15 @@ ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OP_'
 
 # server pooling
 POOLING_STRATEGY_FIRST = 0
-POOLING_FIRST = 0
+FIRST = 0
+
 POOLING_STRATEGY_ROUND_ROBIN = 1
-POOLING_ROUND_ROBIN = 1
+ROUND_ROBIN = 1
+
 POOLING_STRATEGY_RANDOM = 2
-POOLING_RANDOM = 2
-POOLING_STRATEGIES = [POOLING_FIRST, POOLING_ROUND_ROBIN, POOLING_RANDOM]
+RANDOM = 2
+
+POOLING_STRATEGIES = [POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM]
 
 # types for string and sequence
 if str != bytes:
@@ -268,7 +297,7 @@ from .core.exceptions import LDAPException, LDAPExceptionError, LDAPSocketCloseE
     LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPControlsError, LDAPEntryError, LDAPInvalidDereferenceAliasesError, LDAPInvalidFilterError, LDAPInvalidScopeError, LDAPInvalidServerError, LDAPKeyError, LDAPLDIFError, \
     LDAPMetricsError, LDAPObjectClassError, LDAPObjectError, LDAPPasswordIsMandatoryError, LDAPReaderError, LDAPSASLBindInProgressError, LDAPSASLMechanismNotSupportedError, LDAPSASLPrepError, LDAPSchemaError, LDAPServerPoolError, \
     LDAPServerPoolExhaustedError, LDAPSocketOpenError, LDAPSocketReceiveError, LDAPSocketSendError, LDAPSSLConfigurationError, LDAPSSLNotSupportedError, LDAPStartTLSError, LDAPTypeError, LDAPUnknownAuthenticationMethodError, LDAPUnknownRequestError, \
-    LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError
+    LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError, LDAPResponseTimeoutError
 
 from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSASResult, LDAPAliasDereferencingProblemResult, LDAPAliasProblemResult, LDAPAssertionFailedResult, LDAPAttributeOrValueExistsResult, LDAPAuthMethodNotSupportedResult, \
     LDAPAuthorizationDeniedResult, LDAPBusyResult, LDAPCanceledResult, LDAPCannotCancelResult, LDAPConfidentialityRequiredResult, LDAPConstraintViolationResult, LDAPEntryAlreadyExistsResult, LDAPESyncRefreshRequiredResult, \

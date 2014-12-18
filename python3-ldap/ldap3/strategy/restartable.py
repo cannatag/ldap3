@@ -30,7 +30,7 @@ from datetime import datetime
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
-
+import threading
 
 # noinspection PyBroadException,PyProtectedMember
 class RestartableStrategy(SyncStrategy):
@@ -165,7 +165,7 @@ class RestartableStrategy(SyncStrategy):
         raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def send_2(self, message_type, request, controls=None):
-        print(' ' * 12, 110)
+        print(threading.current_thread().name, ' ' * 12, 110)
         self._current_message_type = message_type
         self._current_request = request
         self._current_controls = controls
@@ -175,78 +175,78 @@ class RestartableStrategy(SyncStrategy):
             self._last_bind_controls = controls
 
         try:
-            print(' ' * 12, 111)
+            print(threading.current_thread().name, ' ' * 12, 111)
             message_id = SyncStrategy.send(self, message_type, request, controls)  # tries to send using SyncWait
-            print(' ' * 12, 112)
+            print(threading.current_thread().name, ' ' * 12, 112)
             self._reset_exception_history()
-            print(' ' * 12, 113)
+            print(threading.current_thread().name, ' ' * 12, 113)
             return message_id
         except Exception:
-            print(' ' * 12, 114)
+            print(threading.current_thread().name, ' ' * 12, 114)
             self._add_exception_to_history()
         if not self._restarting:  # machinery for restartable connection
-            print(' ' * 12, 115)
+            print(threading.current_thread().name, ' ' * 12, 115)
             self._restarting = True
             counter = self.restartable_tries
             while counter > 0:
-                print(' ' * 12, 116)
+                print(threading.current_thread().name, ' ' * 12, 116)
                 sleep(self.restartable_sleep_time)
-                print(' ' * 12, 117)
+                print(threading.current_thread().name, ' ' * 12, 117)
                 if not self.connection.closed:
-                    print(' ' * 12, 118)
+                    print(threading.current_thread().name, ' ' * 12, 118)
                     try:  # resetting connection
                         self.connection.close()
-                        print(' ' * 12, 119)
+                        print(threading.current_thread().name, ' ' * 12, 119)
                     except (socket.error, LDAPSocketOpenError):  # don't trace socket errors because socket could already be closed
-                        print(' ' * 12, 120)
+                        print(threading.current_thread().name, ' ' * 12, 120)
                     except Exception:
                         self._add_exception_to_history()
-                print(' ' * 12, 121)
+                print(threading.current_thread().name, ' ' * 12, 121)
                 failure = False
                 try:  # reopening connection
-                    print(' ' * 12, 122)
+                    print(threading.current_thread().name, ' ' * 12, 122)
                     self.connection.open(reset_usage=False, read_server_info=False)
-                    print(' ' * 12, 123)
+                    print(threading.current_thread().name, ' ' * 12, 123)
                     if self._restart_tls:  # restart tls if start_tls was previously used
-                        print(' ' * 12, 124)
+                        print(threading.current_thread().name, ' ' * 12, 124)
                         self.connection.start_tls(read_server_info=False)
                     if message_type != 'bindRequest':
-                        print(' ' * 12, 125)
+                        print(threading.current_thread().name, ' ' * 12, 125)
                         self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
-                        print(' ' * 12, 126)
-                    print(' ' * 12, 127)
+                        print(threading.current_thread().name, ' ' * 12, 126)
+                    print(threading.current_thread().name, ' ' * 12, 127)
                     self.connection.refresh_server_info()
-                    print(' ' * 12, 128)
+                    print(threading.current_thread().name, ' ' * 12, 128)
                 except Exception:
-                    print(' ' * 12, 129)
+                    print(threading.current_thread().name, ' ' * 12, 129)
                     self._add_exception_to_history()
                     failure = True
 
                 if not failure:
-                    print(' ' * 12, 130)
+                    print(threading.current_thread().name, ' ' * 12, 130)
                     try:  # reissuing same operation
                         ret_value = self.connection.send(message_type, request, controls)
-                        print(' ' * 12, 131)
+                        print(threading.current_thread().name, ' ' * 12, 131)
                         if self.connection.usage:
                             self.connection._usage.restartable_successes += 1
                         self._restarting = False
                         self._reset_exception_history()
-                        print(' ' * 12, 132)
+                        print(threading.current_thread().name, ' ' * 12, 132)
                         return ret_value  # successful send
                     except Exception:
-                        print(' ' * 12, 133)
+                        print(threading.current_thread().name, ' ' * 12, 133)
                         self._add_exception_to_history()
-                        print(' ' * 12, 134)
+                        print(threading.current_thread().name, ' ' * 12, 134)
                         failure = True
-                print(' ' * 12, 135)
+                print(threading.current_thread().name, ' ' * 12, 135)
                 if failure and self.connection.usage:
                     self.connection._usage.restartable_failures += 1
 
                 if not isinstance(self.restartable_tries, bool):
                     counter -= 1
-            print(' ' * 12, 136)
+            print(threading.current_thread().name, ' ' * 12, 136)
             self._restarting = False
-        print(' ' * 12, 137)
+        print(threading.current_thread().name, ' ' * 12, 137)
         self.connection.last_error = 'restartable connection failed to send'
         raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
@@ -296,38 +296,38 @@ class RestartableStrategy(SyncStrategy):
 
     def post_send_search_2(self, message_id):
         try:
-            print(' ' * 10, 90)
+            print(threading.current_thread().name, ' ' * 10, 90)
             ret_value = SyncStrategy.post_send_search_2(self, message_id)
-            print(' ' * 10, 91)
+            print(threading.current_thread().name, ' ' * 10, 91)
             self._reset_exception_history()
-            print(' ' * 10, 92)
+            print(threading.current_thread().name, ' ' * 10, 92)
             return ret_value
         except Exception:
-            print(' ' * 10, 93)
+            print(threading.current_thread().name, ' ' * 10, 93)
             self._add_exception_to_history()
 
         # if an LDAPExceptionError is raised then resend the request
         try:
-            print(' ' * 10, 94)
+            print(threading.current_thread().name, ' ' * 10, 94)
             ret_value = SyncStrategy.post_send_search(self, self.connection.send(self._current_message_type, self._current_request, self._current_controls))
-            print(' ' * 10, 95)
+            print(threading.current_thread().name, ' ' * 10, 95)
             self._reset_exception_history()
-            print(' ' * 10, 96)
+            print(threading.current_thread().name, ' ' * 10, 96)
             return ret_value
         except Exception as e:
-            print(' ' * 10, 97)
+            print(threading.current_thread().name, ' ' * 10, 97)
             self._add_exception_to_history()
             exc = e
 
-        print(' ' * 10, 98)
+        print(threading.current_thread().name, ' ' * 10, 98)
         if exc:
-            print(' ' * 10, 99)
+            print(threading.current_thread().name, ' ' * 10, 99)
             if not isinstance(exc, LDAPOperationResult):
-                print(' ' * 10, 100)
+                print(threading.current_thread().name, ' ' * 10, 100)
                 self.connection.last_error = exc.args
             raise exc
 
-        print(' ' * 10, 101)
+        print(threading.current_thread().name, ' ' * 10, 101)
 
     def _add_exception_to_history(self):
         if not isinstance(self.restartable_tries, bool):  # doesn't accumulate when restarting forever

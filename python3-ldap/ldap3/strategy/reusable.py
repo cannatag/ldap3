@@ -27,11 +27,11 @@ from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
 from time import sleep
-from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME, GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
-
+import threading
 try:
     from queue import Queue
 except ImportError:  # Python 2
@@ -114,18 +114,22 @@ class ReusableStrategy(BaseStrategy):
         def __repr__(self):
             return self.__str__()
 
+        def refresh_server_info(self, get_info):
+            for pooled_connection_worker in self.connections:
+                pooled_connection_worker.refresh_server_info = get_info
+
         def start_pool(self):
             if not self.started:
                 self.create_pool()
-                for inner_connection in self.connections:
-                    inner_connection.thread.start()
+                for pooled_connection_worker in self.connections:
+                    pooled_connection_worker.thread.start()
                 self.started = True
                 self.terminated = False
                 return True
             return False
 
         def create_pool(self):
-            self.connections = [ReusableStrategy.InnerConnection(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
+            self.connections = [ReusableStrategy.PooledConnectionWorker(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
 
         def terminate_pool(self):
             if not self.terminated:
@@ -143,10 +147,10 @@ class ReusableStrategy(BaseStrategy):
         The thread that holds the Reusable connection and receive operation request via the queue
         Result are sent back in the pool._incoming list when ready
         """
-        def __init__(self, inner_connection, master_connection):
+        def __init__(self, pooled_connection_worker, master_connection):
             Thread.__init__(self)
             self.daemon = True
-            self.worker = inner_connection
+            self.worker = pooled_connection_worker
             self.master_connection = master_connection
 
         # noinspection PyProtectedMember
@@ -178,7 +182,9 @@ class ReusableStrategy(BaseStrategy):
                                 self.worker.connection.start_tls(read_server_info=False)
                             if pool.bind_pool and not self.worker.connection.bound:
                                 self.worker.connection.bind(read_server_info=False)
-                        self.worker.connection._fire_deferred_2(refresh=True)
+                    if self.worker.refresh_server_info:
+                        self.worker.connection._fire_deferred_2()
+                        self.worker.refresh_server_info = False
 
                         exc = None
                         response = None
@@ -204,7 +210,7 @@ class ReusableStrategy(BaseStrategy):
                 pool.terminated_usage += self.worker.connection.usage
             self.worker.running = False
 
-    class InnerConnection(object):
+    class PooledConnectionWorker(object):
         """
         Container for the restartable connection. it includes a thread and a lock to execute the connection in the pool
         """
@@ -213,6 +219,7 @@ class ReusableStrategy(BaseStrategy):
             self.request_queue = request_queue
             self.running = False
             self.busy = False
+            self.refresh_server_info = False
             self.connection = None
             self.creation_time = None
             self.new_connection()

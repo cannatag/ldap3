@@ -70,7 +70,7 @@ class AsyncStrategy(BaseStrategy):
                     except (OSError, socket.error):
                         listen = False
                     except Exception:
-                        raise  # unexpected exception - reraise
+                        raise  # unexpected exception - re-raise
                     if len(data) > 0:
                         unprocessed += data
                         data = b''

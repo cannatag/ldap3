@@ -29,7 +29,7 @@ from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQ
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-
+import threading
 
 # noinspection PyProtectedMember
 class SyncStrategy(BaseStrategy):
@@ -174,15 +174,15 @@ class SyncStrategy(BaseStrategy):
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        print(' ' * 14, 140)
+        print(threading.current_thread().name, ' ' * 14, 140)
         responses, result = self.get_response_2(message_id)
-        print(' ' * 14, 141)
+        print(threading.current_thread().name, ' ' * 14, 141)
         self.connection.result = result
         if isinstance(responses, SEQUENCE_TYPES):
-            print(' ' * 14, 142)
+            print(threading.current_thread().name, ' ' * 14, 142)
             self.connection.response = responses[:]  # copy search result entries
             return responses
-        print(' ' * 14, 143)
+        print(threading.current_thread().name, ' ' * 14, 143)
         self.connection.last_error = 'error receiving response'
         raise LDAPSocketReceiveError(self.connection.last_error)
 

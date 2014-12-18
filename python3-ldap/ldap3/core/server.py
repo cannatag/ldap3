@@ -34,7 +34,7 @@ from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from datetime import datetime
-
+import threading
 
 class Server(object):
     """
@@ -234,10 +234,13 @@ class Server(object):
         """
         messageId is unique for all connections
         """
+        print(threading.current_thread().name, 'Server LOCKING', 1)
         with Server._message_id_lock:
+            print(threading.current_thread().name, 'Server LOCKED', 1)
             Server._message_counter += 1
             if Server._message_counter >= LDAP_MAX_INT:
                 Server._message_counter = 1
+        print(threading.current_thread().name, 'Server UNLOCKED', 1)
         return Server._message_counter
 
     def _get_dsa_info(self, connection):
@@ -262,21 +265,26 @@ class Server(object):
                                                'subschemaSubentry',
                                                '*'],  # requests all remaining attributes (other),
                                    get_operational_attributes=True)
-        with self.lock:
-            if isinstance(result, bool):  # sync request
-                self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
-            elif result:  # async request, must check if attributes in response
-                results, _ = connection.get_response(result)
-                if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
-                    self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
+
+        print(threading.current_thread().name, 'Server LOCKING', 2)
+        if not connection.strategy.pooled:  # in pooled strategies get_dsa_info is performed by the worker threads
+            with self.lock:
+                print(threading.current_thread().name, 'Server LOCKED', 2)
+                if isinstance(result, bool):  # sync request
+                    self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
+                elif result:  # async request, must check if attributes in response
+                    results, _ = connection.get_response(result)
+                    if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
+                        self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
+            print(threading.current_thread().name, 'Server UNLOCKED', 2)
 
     def _get_dsa_info_2(self, connection):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
-        print(' ' * 6, 91)
+        print(threading.current_thread().name, ' ' * 6, 91)
         if connection.strategy.pooled:
-            print(' ' * 6, 92)
+            print(threading.current_thread().name, ' ' * 6, 92)
             self.dsa_info = connection.strategy.pool
         result = connection.search(search_base='',
                                    search_filter='(objectClass=*)',
@@ -294,23 +302,26 @@ class Server(object):
                                                'subschemaSubentry',
                                                '*'],  # requests all remaining attributes (other),
                                    get_operational_attributes=True)
-        print(' ' * 6, 93)
+        print(threading.current_thread().name, ' ' * 6, 93)
+        print(threading.current_thread().name, 'Server LOCKING', 3)
         with self.lock:
-            print(' ' * 6, 94)
+            print(threading.current_thread().name, 'Server LOCKED', 3)
+            print(threading.current_thread().name, ' ' * 6, 94)
             if isinstance(result, bool):  # sync request
-                print(' ' * 6, 95)
+                print(threading.current_thread().name, ' ' * 6, 95)
                 self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
-                print(' ' * 6, 96)
+                print(threading.current_thread().name, ' ' * 6, 96)
             elif result:  # async request, must check if attributes in response
-                print(' ' * 6, 97)
+                print(threading.current_thread().name, ' ' * 6, 97)
                 results, _ = connection.get_response(result)
-                print(' ' * 6, 98)
+                print(threading.current_thread().name, ' ' * 6, 98)
                 if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
-                    print(' ' * 6, 99)
+                    print(threading.current_thread().name, ' ' * 6, 99)
                     self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
-                    print(' ' * 6, 100)
+                    print(threading.current_thread().name, ' ' * 6, 100)
+        print(threading.current_thread().name, 'Server UNLOCKED', 3)
+        print(threading.current_thread().name, ' ' * 6, 101)
 
-        print(' ' * 6, 101)
     def _get_schema_info(self, connection, entry=''):
         """
         Retrieve schema from subschemaSubentry DSE attribute, per RFC
@@ -349,59 +360,62 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-        with self.lock:
-            self._schema_info = None
-            if result:
-                if isinstance(result, bool):  # sync request
-                    self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
-                else:  # async request, must check if attributes in response
-                    results, _ = connection.get_response(result)
-                    if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
-                        self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
-                if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
-                    for attribute in self._schema_info.other:
-                        self._schema_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._schema_info.raw[attribute], self.custom_formatter)
-                    if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
-                        for attribute in self._dsa_info.other:
-                            self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
-
+        print(threading.current_thread().name, 'Server LOCKING', 4)
+        if not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
+            with self.lock:
+                print(threading.current_thread().name, 'Server LOCKED', 4)
+                self._schema_info = None
+                if result:
+                    if isinstance(result, bool):  # sync request
+                        self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
+                    else:  # async request, must check if attributes in response
+                        results, _ = connection.get_response(result)
+                        if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
+                            self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
+                    if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
+                        for attribute in self._schema_info.other:
+                            self._schema_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._schema_info.raw[attribute], self.custom_formatter)
+                        if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
+                            for attribute in self._dsa_info.other:
+                                self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
+            print(threading.current_thread().name, 'Server UNLOCKED', 4)
 
     def _get_schema_info_2(self, connection, entry=''):
         """
         Retrieve schema from subschemaSubentry DSE attribute, per RFC
         4512 (4.4 and 5.1); entry = '' means DSE.
         """
-        print(' ' * 6, 60)
+        print(threading.current_thread().name, ' ' * 6, 60)
         schema_entry = None
         if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
-            print(' ' * 6, 61)
+            print(threading.current_thread().name, ' ' * 6, 61)
             if isinstance(self._dsa_info.schema_entry, SEQUENCE_TYPES):
-                print(' ' * 6, 62)
+                print(threading.current_thread().name, ' ' * 6, 62)
                 schema_entry = self._dsa_info.schema_entry[0] if self._dsa_info.schema_entry else None
-                print(' ' * 6, 63)
+                print(threading.current_thread().name, ' ' * 6, 63)
             else:
-                print(' ' * 6, 64)
+                print(threading.current_thread().name, ' ' * 6, 64)
                 schema_entry = self._dsa_info.schema_entry if self._dsa_info.schema_entry else None
-                print(' ' * 6, 65)
+                print(threading.current_thread().name, ' ' * 6, 65)
         else:
-            print(' ' * 6, 66)
+            print(threading.current_thread().name, ' ' * 6, 66)
             result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
-            print(' ' * 6, 67)
+            print(threading.current_thread().name, ' ' * 6, 67)
             if isinstance(result, bool):  # sync request
-                print(' ' * 6, 68)
+                print(threading.current_thread().name, ' ' * 6, 68)
                 schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
-                print(' ' * 6, 69)
+                print(threading.current_thread().name, ' ' * 6, 69)
             else:  # async request, must check if subschemaSubentry in attributes
-                print(' ' * 6, 70)
+                print(threading.current_thread().name, ' ' * 6, 70)
                 results, _ = connection.get_response(result)
-                print(' ' * 6, 71)
+                print(threading.current_thread().name, ' ' * 6, 71)
                 if len(results) == 1 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
-                    print(' ' * 6, 72)
+                    print(threading.current_thread().name, ' ' * 6, 72)
                     schema_entry = results[0]['attributes']['subschemaSubentry'][0]
-        print(' ' * 6, 73)
+        print(threading.current_thread().name, ' ' * 6, 73)
         result = None
         if schema_entry:
-            print(' ' * 6, 74)
+            print(threading.current_thread().name, ' ' * 6, 74)
             print(connection)
             result = connection.search_2(schema_entry,
                                        search_filter='(objectClass=subschema)',
@@ -419,37 +433,40 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
             )
-            print(' ' * 6, 75)
+            print(threading.current_thread().name, ' ' * 6, 75)
+        print(threading.current_thread().name, 'Server LOCKING', 5)
         with self.lock:
-            print(' ' * 6, 76)
+            print(threading.current_thread().name, 'Server LOCKED', 5)
+            print(threading.current_thread().name, ' ' * 6, 76)
             self._schema_info = None
-            print(' ' * 6, 77)
+            print(threading.current_thread().name, ' ' * 6, 77)
             if result:
-                print(' ' * 6, 78)
+                print(threading.current_thread().name, ' ' * 6, 78)
                 if isinstance(result, bool):  # sync request
-                    print(' ' * 6, 79)
+                    print(threading.current_thread().name, ' ' * 6, 79)
                     self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
-                    print(' ' * 6, 80)
+                    print(threading.current_thread().name, ' ' * 6, 80)
                 else:  # async request, must check if attributes in response
-                    print(' ' * 6, 81)
+                    print(threading.current_thread().name, ' ' * 6, 81)
                     results, _ = connection.get_response(result)
-                    print(' ' * 6, 82)
+                    print(threading.current_thread().name, ' ' * 6, 82)
                     if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
-                        print(' ' * 6, 83)
+                        print(threading.current_thread().name, ' ' * 6, 83)
                         self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
-                        print(' ' * 6, 84)
+                        print(threading.current_thread().name, ' ' * 6, 84)
                 if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
-                    print(' ' * 6, 85)
+                    print(threading.current_thread().name, ' ' * 6, 85)
                     for attribute in self._schema_info.other:
-                        print(' ' * 6, 86)
+                        print(threading.current_thread().name, ' ' * 6, 86)
                         self._schema_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._schema_info.raw[attribute], self.custom_formatter)
-                        print(' ' * 6, 87)
+                        print(threading.current_thread().name, ' ' * 6, 87)
                     if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
-                        print(' ' * 6, 88)
+                        print(threading.current_thread().name, ' ' * 6, 88)
                         for attribute in self._dsa_info.other:
-                            print(' ' * 6, 89)
+                            print(threading.current_thread().name, ' ' * 6, 89)
                             self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
-        print(' ' * 6, 90)
+        print(threading.current_thread().name, 'Server UNLOCKED', 5)
+        print(threading.current_thread().name, ' ' * 6, 90)
 
     def get_info_from_server(self, connection):
         """
@@ -457,10 +474,14 @@ class Server(object):
         """
         if not connection.closed:
             if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
-                self._get_dsa_info(connection)
+                if not connection.strategy.pooled:  # in pooled strategies get_dsa_info is performed by the worker threads
+                    self._get_dsa_info(connection)
+                else:
+
 
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
-                self._get_schema_info(connection)
+                if not connection.strategy.pooled:  # in pooled strategies the get_schema_info is performed by the worker threads
+                    self._get_schema_info(connection)
             elif self.get_info == OFFLINE_EDIR_8_8_8:
                 from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
@@ -482,50 +503,50 @@ class Server(object):
         """
         read info from DSE and from subschema
         """
-        print(' ' * 4, 30)
+        print(threading.current_thread().name, ' ' * 4, 30)
         if not connection.closed:
-            print(' ' * 4, 31)
+            print(threading.current_thread().name, ' ' * 4, 31)
             if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
-                print(' ' * 4, 32)
+                print(threading.current_thread().name, ' ' * 4, 32)
                 self._get_dsa_info_2(connection)
-                print(' ' * 4, 33)
-            print(' ' * 4, 34)
+                print(threading.current_thread().name, ' ' * 4, 33)
+            print(threading.current_thread().name, ' ' * 4, 34)
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
-                print(' ' * 4, 35)
+                print(threading.current_thread().name, ' ' * 4, 35)
                 self._get_schema_info_2(connection)
-                print(' ' * 4, 36)
+                print(threading.current_thread().name, ' ' * 4, 36)
             elif self.get_info == OFFLINE_EDIR_8_8_8:
-                print(' ' * 4, 37)
+                print(threading.current_thread().name, ' ' * 4, 37)
                 from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
-                print(' ' * 4, 38)
+                print(threading.current_thread().name, ' ' * 4, 38)
                 self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
-                print(' ' * 4, 39)
+                print(threading.current_thread().name, ' ' * 4, 39)
                 self.attach_dsa_info(DsaInfo.from_json(edir_8_8_8_dsa_info))
-                print(' ' * 4, 40)
+                print(threading.current_thread().name, ' ' * 4, 40)
             elif self.get_info == OFFLINE_AD_2012_R2:
-                print(' ' * 4, 41)
+                print(threading.current_thread().name, ' ' * 4, 41)
                 from ..protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
-                print(' ' * 4, 42)
+                print(threading.current_thread().name, ' ' * 4, 42)
                 self.attach_schema_info(SchemaInfo.from_json(ad_2012_r2_schema))
-                print(' ' * 4, 43)
+                print(threading.current_thread().name, ' ' * 4, 43)
                 self.attach_dsa_info(DsaInfo.from_json(ad_2012_r2_dsa_info))
-                print(' ' * 4, 44)
+                print(threading.current_thread().name, ' ' * 4, 44)
             elif self.get_info == OFFLINE_SLAPD_2_4:
-                print(' ' * 4, 45)
+                print(threading.current_thread().name, ' ' * 4, 45)
                 from ..protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
-                print(' ' * 4, 46)
+                print(threading.current_thread().name, ' ' * 4, 46)
                 self.attach_schema_info(SchemaInfo.from_json(slapd_2_4_schema))
-                print(' ' * 4, 47)
+                print(threading.current_thread().name, ' ' * 4, 47)
                 self.attach_dsa_info(DsaInfo.from_json(slapd_2_4_dsa_info))
-                print(' ' * 4, 48)
+                print(threading.current_thread().name, ' ' * 4, 48)
             elif self.get_info == OFFLINE_DS389_1_3_3:
-                print(' ' * 4, 49)
+                print(threading.current_thread().name, ' ' * 4, 49)
                 from ..protocol.schemas.ds389 import ds389_1_3_3_schema, ds389_1_3_3_dsa_info
-                print(' ' * 4, 50)
+                print(threading.current_thread().name, ' ' * 4, 50)
                 self.attach_schema_info(SchemaInfo.from_json(ds389_1_3_3_schema))
-                print(' ' * 4, 51)
+                print(threading.current_thread().name, ' ' * 4, 51)
                 self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
-                print(' ' * 4, 52)
+                print(threading.current_thread().name, ' ' * 4, 52)
 
     def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):

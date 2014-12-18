@@ -53,7 +53,7 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-
+import threading
 
 # noinspection PyProtectedMember
 class BaseStrategy(object):
@@ -334,13 +334,13 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         A tuple (responses, result) is returned
         """
-        print(' ' * 16, 150)
+        print(threading.current_thread().name, ' ' * 16, 150)
         response = None
         result = None
         if self._outstanding and message_id in self._outstanding:
-            print(' ' * 16, 151)
+            print(threading.current_thread().name, ' ' * 16, 151)
             while timeout >= 0:  # waiting for completed message to appear in responses
-                print(' ' * 16, 152)
+                print(threading.current_thread().name, ' ' * 16, 152)
                 responses = self._get_response(message_id)
                 if not responses:
                     sleep(RESPONSE_SLEEPTIME)

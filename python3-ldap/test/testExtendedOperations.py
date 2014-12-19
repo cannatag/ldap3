@@ -43,19 +43,19 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_who_am_i_extension(self):
-        try:
-            if not self.connection.server.info:
-                self.connection.refresh_server_info()
-            self.connection.extend.standard.who_am_i()
-            result = self.connection.result
-            self.assertTrue(result['description'] in ['success', 'protocolError'])
-        except LDAPExtensionError as e:
-            if not e.args[0] == 'extension not in DSA list of supported extensions':
-                raise
+        if not self.connection.strategy.pooled:
+            try:
+                if not self.connection.server.info:
+                    self.connection.refresh_server_info()
+                self.connection.extend.standard.who_am_i()
+                result = self.connection.result
+                self.assertTrue(result['description'] in ['success', 'protocolError'])
+            except LDAPExtensionError as e:
+                if not e.args[0] == 'extension not in DSA list of supported extensions':
+                    raise
 
     def test_get_bind_dn_extension(self):
         result = self.connection.extend.novell.get_bind_dn()
-        # result = self.connection.result
         self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):

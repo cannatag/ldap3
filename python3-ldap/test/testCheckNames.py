@@ -42,35 +42,39 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if self.connection.strategy.pooled:
             self.connection.strategy.terminate()
         self.assertFalse(self.connection.bound)
 
     def test_wrong_assertion(self):
-        ok = False
-        try:
-            result = self.connection.search(search_base=test_base, search_filter='(xxx=yyy)', attributes=[test_name_attr])
-        except LDAPException:
-            ok = True
+        if not self.connection.strategy.pooled:
+            ok = False
+            try:
+                result = self.connection.search(search_base=test_base, search_filter='(xxx=yyy)', attributes=[test_name_attr])
+            except LDAPException:
+                ok = True
 
-        self.assertTrue(ok)
+            self.assertTrue(ok)
 
     def test_wrong_attribute(self):
-        ok = False
-        try:
-            result = self.connection.search(search_base=test_base, search_filter='(cn=yyy)', attributes=[test_name_attr, 'xxx'])
-        except LDAPException:
-            ok = True
+        if not self.connection.strategy.pooled:
+            ok = False
+            try:
+                result = self.connection.search(search_base=test_base, search_filter='(cn=yyy)', attributes=[test_name_attr, 'xxx'])
+            except LDAPException:
+                ok = True
 
-        self.assertTrue(ok)
+            self.assertTrue(ok)
 
     def test_wrong_object_class_add(self):
-        ok = False
-        try:
-            result = self.connection.add(dn_for_test(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
-        except LDAPException:
-            ok = True
-        self.assertTrue(ok)
+        if not self.connection.strategy.pooled:
+            ok = False
+            try:
+                result = self.connection.add(dn_for_test(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+            except LDAPException:
+                ok = True
+
+            self.assertTrue(ok)
 
     def test_valid_assertion(self):
         result = self.connection.search(search_base=test_base, search_filter='(cn=test*)', attributes=[test_name_attr])

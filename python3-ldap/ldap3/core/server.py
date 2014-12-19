@@ -474,13 +474,9 @@ class Server(object):
         """
         if not connection.closed:
             if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
-                if not connection.strategy.pooled:  # in pooled strategies get_dsa_info is performed by the worker threads
-                    self._get_dsa_info(connection)
-                else:
-
+                self._get_dsa_info(connection)
 
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
-                if not connection.strategy.pooled:  # in pooled strategies the get_schema_info is performed by the worker threads
                     self._get_schema_info(connection)
             elif self.get_info == OFFLINE_EDIR_8_8_8:
                 from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info

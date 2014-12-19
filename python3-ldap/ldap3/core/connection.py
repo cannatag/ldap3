@@ -774,28 +774,35 @@ class Connection(object):
             return response
 
     def refresh_server_info(self):
-        with self.lock:
-            if not self.closed:
-                previous_response = self.response
-                previous_result = self.result
-                self.server.get_info_from_server(self)
-                self.response = previous_response
-                self.result = previous_result
+        if not self.strategy.pooled:
+            with self.lock:
+                if not self.closed:
+                    previous_response = self.response
+                    previous_result = self.result
+                    self.server.get_info_from_server(self)
+                    self.response = previous_response
+                    self.result = previous_result
+        else:
+            self.strategy.pool.get_info_from_server()
 
     def refresh_server_info_2(self):
         print(threading.current_thread().name, ' ' * 2, 20)
-        with self.lock:
-            print(threading.current_thread().name, ' ' * 2, 21)
-            if not self.closed:
-                print(threading.current_thread().name, ' ' * 2, 22)
-                previous_response = self.response
-                previous_result = self.result
-                print(threading.current_thread().name, ' ' * 2, 23)
-                self.server.get_info_from_server_2(self)
-                print(threading.current_thread().name, ' ' * 2, 24)
-                self.response = previous_response
-                self.result = previous_result
-                print(threading.current_thread().name, ' ' * 2, 25)
+        if not self.strategy.pooled:
+            with self.lock:
+                print(threading.current_thread().name, ' ' * 2, 21)
+                if not self.closed:
+                    print(threading.current_thread().name, ' ' * 2, 22)
+                    previous_response = self.response
+                    previous_result = self.result
+                    print(threading.current_thread().name, ' ' * 2, 23)
+                    self.server.get_info_from_server_2(self)
+                    print(threading.current_thread().name, ' ' * 2, 24)
+                    self.response = previous_response
+                    self.result = previous_result
+                    print(threading.current_thread().name, ' ' * 2, 25)
+        else:
+            self.strategy.pool.get_info_from_server()
+
 
     def response_to_ldif(self,
                          search_result=None,
@@ -868,7 +875,7 @@ class Connection(object):
                 target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
                 target.close()
 
-    def _fire_deferred(self, refresh=True):
+    def _fire_deferred(self):
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
@@ -880,15 +887,14 @@ class Connection(object):
                         self.start_tls(read_server_info=False)
                     if self._deferred_bind:
                         self.bind(read_server_info=False, controls=self._bind_controls)
-                except LDAPExceptionError:
-                    self._executing_deferred = False
-                    raise  # re-raise LDAPExceptionError
-
-                if refresh:
                     self.refresh_server_info()
-                self._executing_deferred = False
+                except LDAPExceptionError:
+                    raise  # re-raise LDAPExceptionError
+                finally:
+                    self._executing_deferred = False
 
-    def _fire_deferred_2(self, refresh=True):
+
+    def _fire_deferred_2(self):
         print(threading.current_thread().name, ' ' * 0, 1)
         with self.lock:
             print(threading.current_thread().name, ' ' * 0, 2)
@@ -910,14 +916,13 @@ class Connection(object):
                         print(threading.current_thread().name, ' ' * 0, 10)
                         self.bind(read_server_info=False, controls=self._bind_controls)
                         print(threading.current_thread().name, ' ' * 0, 11)
-                except LDAPExceptionError:
-                    print(threading.current_thread().name, ' ' * 0, 12)
-                    self._executing_deferred = False
-                    raise  # re-raise LDAPExceptionError
-                    print(threading.current_thread().name, ' ' * 0, 13)
-                if refresh:
-                    print(threading.current_thread().name, ' ' * 0, 14)
                     self.refresh_server_info_2()
-                    print(threading.current_thread().name, ' ' * 0, 15)
-                self._executing_deferred = False
-                print(threading.current_thread().name, ' ' * 0, 16)
+                    print(threading.current_thread().name, ' ' * 0, 12)
+                except LDAPExceptionError:
+                    print(threading.current_thread().name, ' ' * 0, 13)
+                    raise  # re-raise LDAPExceptionError
+                finally:
+                    self._executing_deferred = False
+                    print(threading.current_thread().name, ' ' * 0, 14)
+
+        print(threading.current_thread().name, ' ' * 0, 15)

@@ -119,7 +119,8 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(response[0]['attributes']['entryDN'], dn_for_test(test_base, 'test-add-operation'))
+        if self.connection.check_names:
+            self.assertEqual(response[0]['attributes']['entryDN'], dn_for_test(test_base, 'test-add-operation'))
 
     def test_search_simple_paged(self):
         paged_size = 1

@@ -72,7 +72,7 @@ CHANGELOG
     - Added reentrant lock to avoid race conditions in the Connection object
     - When run in Python 2.7.9 uses SSLContext
     - Tested against Python 2.7.9, PyPy 2.4.0 and PyPy3 2.4.0
-    - setuptools updated to 8.0.4
+    - setuptools updated to 8.2.1
 
 * 0.9.6.2 2014.11.17
     - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2

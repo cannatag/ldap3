@@ -29,7 +29,7 @@ from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQ
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-import threading
+
 
 # noinspection PyProtectedMember
 class SyncStrategy(BaseStrategy):
@@ -105,40 +105,6 @@ class SyncStrategy(BaseStrategy):
 
         return messages
 
-    def receiving_test(self):
-        """
-        Receive data over the socket
-        Checks if the socket is closed
-        """
-        messages = []
-        receiving = True
-        unprocessed = b''
-        data = b''
-        get_more_data = True
-        exc = None
-        while receiving:
-            if get_more_data:
-                data = self.connection.socket.recv(SOCKET_SIZE)
-                unprocessed += data
-
-            if len(data) > 0:
-                length = BaseStrategy.compute_ldap_message_size(unprocessed)
-                if length == -1:  # too few data to decode message length
-                    get_more_data = True
-                    continue
-                if len(unprocessed) < length:
-                    get_more_data = True
-                else:
-                    messages.append(unprocessed[:length])
-                    unprocessed = unprocessed[length:]
-                    get_more_data = False
-                    if len(unprocessed) == 0:
-                        receiving = False
-            else:
-                receiving = False
-
-        return messages
-
     def post_send_single_response(self, message_id):
         """
         Executed after an Operation Request (except Search)
@@ -168,24 +134,6 @@ class SyncStrategy(BaseStrategy):
 
         self.connection.last_error = 'error receiving response'
         raise LDAPSocketReceiveError(self.connection.last_error)
-
-    def post_send_search_2(self, message_id):
-        """
-        Executed after a search request
-        Returns the result message and store in connection.response the objects found
-        """
-        print(threading.current_thread().name, ' ' * 14, 140)
-        responses, result = self.get_response_2(message_id)
-        print(threading.current_thread().name, ' ' * 14, 141)
-        self.connection.result = result
-        if isinstance(responses, SEQUENCE_TYPES):
-            print(threading.current_thread().name, ' ' * 14, 142)
-            self.connection.response = responses[:]  # copy search result entries
-            return responses
-        print(threading.current_thread().name, ' ' * 14, 143)
-        self.connection.last_error = 'error receiving response'
-        raise LDAPSocketReceiveError(self.connection.last_error)
-
 
     def _get_response(self, message_id):
         """

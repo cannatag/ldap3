@@ -55,8 +55,9 @@ class Test(unittest.TestCase):
                     raise
 
     def test_get_bind_dn_extension(self):
-        result = self.connection.extend.novell.get_bind_dn()
-        self.assertTrue(test_user in result)
+        if not self.connection.strategy.pooled:
+            result = self.connection.extend.novell.get_bind_dn()
+            self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):
         responses = self.connection.extend.standard.paged_search('o=test', '(&(cn=*)(!(cn=*move*)))', generator=False)

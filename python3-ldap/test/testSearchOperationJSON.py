@@ -138,7 +138,8 @@ class Test(unittest.TestCase):
             json_response = self.connection.response_to_json()
 
         json_entries = json.loads(json_response)['entries']
-        self.assertEqual(json_entries[0]['attributes']['entryDN'], dn_for_test(test_base, 'test-add-operation'))
+        if self.connection.check_names:
+            self.assertEqual(json_entries[0]['attributes']['entryDN'], dn_for_test(test_base, 'test-add-operation'))
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])

@@ -53,7 +53,6 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-import threading
 
 # noinspection PyProtectedMember
 class BaseStrategy(object):
@@ -322,85 +321,6 @@ class BaseStrategy(object):
             self._outstanding.pop(message_id)
         else:
             raise(LDAPResponseTimeoutError('message id not in outstanding queue'))
-
-        return response, result
-
-    def get_response_2(self, message_id, timeout=RESPONSE_WAITING_TIMEOUT):
-        """
-        Get response LDAP messages
-        Responses are returned by the underlying connection strategy
-        Check if message_id LDAP message is still outstanding and wait for timeout to see if it appears in _get_response
-        Result is stored in connection.result
-        Responses without result is stored in connection.response
-        A tuple (responses, result) is returned
-        """
-        print(threading.current_thread().name, ' ' * 16, 150)
-        response = None
-        result = None
-        if self._outstanding and message_id in self._outstanding:
-            print(threading.current_thread().name, ' ' * 16, 151)
-            while timeout >= 0:  # waiting for completed message to appear in responses
-                print(threading.current_thread().name, ' ' * 16, 152)
-                responses = self._get_response(message_id)
-                if not responses:
-                    sleep(RESPONSE_SLEEPTIME)
-                    timeout -= RESPONSE_SLEEPTIME
-                    continue
-
-                if responses == SESSION_TERMINATED_BY_SERVER:
-                    try:  # try to close the session but don't raise any error if server has already closed the session
-                        self.close()
-                    except (socket.error, LDAPExceptionError):
-                        pass
-                    self.connection.last_error = 'session terminated by server'
-                    raise LDAPSessionTerminatedByServer(self.connection.last_error)
-
-                # if referral in response opens a new connection to resolve referrals if requested
-                if responses[-2]['result'] == RESULT_REFERRAL:
-                    if self.connection.usage:
-                        self.connection._usage.referrals_received += 1
-                    if self.connection.auto_referrals:
-                        ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
-                        if ref_response is not None:
-                            responses = ref_response + [ref_result]
-                            responses.append(RESPONSE_COMPLETE)
-                        elif ref_result is not None:
-                            responses = [ref_result, RESPONSE_COMPLETE]
-
-                        self._referrals = []
-
-                if responses:
-                    result = responses[-2]
-                    response = responses[:-2]
-                    self.connection.result = None
-                    self.connection.response = None
-                    break
-
-            if timeout <= 0:
-                raise LDAPResponseTimeoutError('no response from server')
-
-            if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
-                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
-
-            # checks if any response has a range tag
-            # self._auto_range_searching is set as a flag to avoid recursive searches
-            if self.connection.auto_range and not hasattr(self, '_auto_range_searching') and any((True for resp in response if 'raw_attributes' in resp for name in resp['raw_attributes'] if ';range=' in name)):
-                self._auto_range_searching = result.copy()
-                temp_response = response[:]  # copy
-                self.do_search_on_auto_range(self._outstanding[message_id], response)
-                for resp in temp_response:
-                    if resp['type'] == 'searchResEntry':
-                        keys = [key for key in resp['raw_attributes'] if ';range=' in key]
-                        for key in keys:
-                            del resp['raw_attributes'][key]
-                            del resp['attributes'][key]
-                response = temp_response
-                result = self._auto_range_searching
-                del self._auto_range_searching
-
-            self._outstanding.pop(message_id)
-        else:
-            raise (LDAPResponseTimeoutError('message id not in outstanding queue'))
 
         return response, result
 

@@ -27,11 +27,10 @@ from datetime import datetime
 from os import linesep
 from threading import Thread, Lock
 from time import sleep
-from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME, GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO
+from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
-import threading
 try:
     from queue import Queue
 except ImportError:  # Python 2
@@ -118,7 +117,6 @@ class ReusableStrategy(BaseStrategy):
             for pooled_connection_worker in self.connections:
                 with pooled_connection_worker.lock:
                     pooled_connection_worker.get_info_from_server = True
-
 
         def start_pool(self):
             if not self.started:
@@ -208,7 +206,6 @@ class ReusableStrategy(BaseStrategy):
                                     pool._incoming[counter] = (exc, None)
                                 else:
                                     pool._incoming[counter] = (response, result)
-                    print('yyyy', self.worker.get_info_from_server)
                     self.worker.busy = False
                     pool.request_queue.task_done()
                     self.worker.task_counter += 1

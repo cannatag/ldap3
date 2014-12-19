@@ -27,7 +27,6 @@ from os import linesep
 from threading import RLock
 from pyasn1.codec.ber import encoder
 import json
-import threading
 
 from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, \
     SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, \
@@ -489,72 +488,6 @@ class Connection(object):
                 return True
             return False
 
-    def search_2(self,
-               search_base,
-               search_filter,
-               search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
-               dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
-               attributes=None,
-               size_limit=0,
-               time_limit=0,
-               types_only=False,
-               get_operational_attributes=False,
-               controls=None,
-               paged_size=None,
-               paged_criticality=False,
-               paged_cookie=None):
-        """
-        Perform an ldap search:
-
-        - If attributes is empty no attribute is returned
-        - If attributes is ALL_ATTRIBUTES all attributes are returned
-        - If paged_size is an int greater than 0 a simple paged search
-          is tried as described in RFC2696 with the specified size
-        - If paged is 0 and cookie is present the search is abandoned on
-          server
-        - Cookie is an opaque string received in the last paged search
-          and must be used on the next paged search response
-        - If lazy = True open and bind will be deferred until another
-          LDAP operation is performed
-        """
-        print(threading.current_thread().name, ' ' * 8, 80)
-        with self.lock:
-            print(threading.current_thread().name, ' ' * 8, 81)
-            self._fire_deferred()
-            print(threading.current_thread().name, ' ' * 8, 82)
-            if not attributes:
-                attributes = [NO_ATTRIBUTES]
-            elif attributes == ALL_ATTRIBUTES:
-                attributes = ['*']
-
-            if get_operational_attributes and isinstance(attributes, list):
-                attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
-            elif get_operational_attributes and isinstance(attributes, tuple):
-                attributes += (ALL_OPERATIONAL_ATTRIBUTES, )  # concatenate tuple
-            print(threading.current_thread().name, ' ' * 8, 83)
-            if isinstance(paged_size, int):
-                print(threading.current_thread().name, ' ' * 8, 84)
-                real_search_control_value = RealSearchControlValue()
-                real_search_control_value['size'] = Size(paged_size)
-                real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
-                if controls is None:
-                    controls = []
-                controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
-            request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
-            print(threading.current_thread().name, ' ' * 8, 85)
-            print(self.strategy)
-            response = self.strategy.post_send_search_2(self.strategy.send_2('searchRequest', request, controls))
-            print(threading.current_thread().name, ' ' * 8, 86)
-            if isinstance(response, int):
-                print(threading.current_thread().name, ' ' * 8, 87)
-                return response
-
-            if self.result['type'] == 'searchResDone' and len(response) > 0:
-                print(threading.current_thread().name, ' ' * 8, 88)
-                return True
-            print(threading.current_thread().name, ' ' * 8, 89)
-            return False
-
     def compare(self,
                 dn,
                 attribute,
@@ -785,25 +718,6 @@ class Connection(object):
         else:
             self.strategy.pool.get_info_from_server()
 
-    def refresh_server_info_2(self):
-        print(threading.current_thread().name, ' ' * 2, 20)
-        if not self.strategy.pooled:
-            with self.lock:
-                print(threading.current_thread().name, ' ' * 2, 21)
-                if not self.closed:
-                    print(threading.current_thread().name, ' ' * 2, 22)
-                    previous_response = self.response
-                    previous_result = self.result
-                    print(threading.current_thread().name, ' ' * 2, 23)
-                    self.server.get_info_from_server_2(self)
-                    print(threading.current_thread().name, ' ' * 2, 24)
-                    self.response = previous_response
-                    self.result = previous_result
-                    print(threading.current_thread().name, ' ' * 2, 25)
-        else:
-            self.strategy.pool.get_info_from_server()
-
-
     def response_to_ldif(self,
                          search_result=None,
                          all_base64=False,
@@ -892,37 +806,3 @@ class Connection(object):
                     raise  # re-raise LDAPExceptionError
                 finally:
                     self._executing_deferred = False
-
-
-    def _fire_deferred_2(self):
-        print(threading.current_thread().name, ' ' * 0, 1)
-        with self.lock:
-            print(threading.current_thread().name, ' ' * 0, 2)
-            if self.lazy and not self._executing_deferred:
-                print(threading.current_thread().name, ' ' * 0, 3)
-                self._executing_deferred = True
-                print(threading.current_thread().name, ' ' * 0, 4)
-                try:
-                    print(threading.current_thread().name, ' ' * 0, 5)
-                    if self._deferred_open:
-                        print(threading.current_thread().name, ' ' * 0, 6)
-                        self.open(read_server_info=False)
-                        print(threading.current_thread().name, ' ' * 0, 7)
-                    if self._deferred_start_tls:
-                        print(threading.current_thread().name, ' ' * 0, 8)
-                        self.start_tls(read_server_info=False)
-                        print(threading.current_thread().name, ' ' * 0, 9)
-                    if self._deferred_bind:
-                        print(threading.current_thread().name, ' ' * 0, 10)
-                        self.bind(read_server_info=False, controls=self._bind_controls)
-                        print(threading.current_thread().name, ' ' * 0, 11)
-                    self.refresh_server_info_2()
-                    print(threading.current_thread().name, ' ' * 0, 12)
-                except LDAPExceptionError:
-                    print(threading.current_thread().name, ' ' * 0, 13)
-                    raise  # re-raise LDAPExceptionError
-                finally:
-                    self._executing_deferred = False
-                    print(threading.current_thread().name, ' ' * 0, 14)
-
-        print(threading.current_thread().name, ' ' * 0, 15)

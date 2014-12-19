@@ -141,14 +141,14 @@ CLIENT_STRATEGIES = [STRATEGY_SYNC,
 # communication
 SESSION_TERMINATED_BY_SERVER = -2
 RESPONSE_COMPLETE = -1
-RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies 0.05
+RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies
 RESPONSE_WAITING_TIMEOUT = 10  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
 CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 
 # restartable strategy
 RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
-RESTARTABLE_TRIES = 60  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 
 # reusable strategies (Threaded)
 TERMINATE_REUSABLE = -9
@@ -223,7 +223,7 @@ GET_NO_INFO = 0
 NONE = 0
 
 GET_DSA_INFO = 1
-DSA=1
+DSA = 1
 
 GET_SCHEMA_INFO = 2
 SCHEMA = 2

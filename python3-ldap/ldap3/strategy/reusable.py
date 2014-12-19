@@ -114,15 +114,18 @@ class ReusableStrategy(BaseStrategy):
         def __repr__(self):
             return self.__str__()
 
-        def refresh_server_info(self, get_info):
+        def get_info_from_server(self):
             for pooled_connection_worker in self.connections:
-                pooled_connection_worker.refresh_server_info = get_info
+                with pooled_connection_worker.lock:
+                    pooled_connection_worker.get_info_from_server = True
+
 
         def start_pool(self):
             if not self.started:
                 self.create_pool()
                 for pooled_connection_worker in self.connections:
-                    pooled_connection_worker.thread.start()
+                    with pooled_connection_worker.lock:
+                        pooled_connection_worker.thread.start()
                 self.started = True
                 self.terminated = False
                 return True
@@ -160,52 +163,55 @@ class ReusableStrategy(BaseStrategy):
             pool = self.master_connection.strategy.pool
             while not terminate:
                 counter, message_type, request, controls = pool.request_queue.get()
-                self.worker.busy = True
-                if counter == TERMINATE_REUSABLE:
-                    terminate = True
-                    if self.worker.connection.bound:
-                        try:
-                            self.worker.connection.unbind()
-                        except LDAPExceptionError:
-                            pass
-                else:
-                    if (datetime.now() - self.worker.creation_time).seconds >= self.master_connection.strategy.pool.lifetime:  # destroy and create a new connection
-                        try:
-                            self.worker.connection.unbind()
-                        except LDAPExceptionError:
-                            pass
-                        self.worker.new_connection()
-                    if message_type not in ['bindRequest', 'unbindRequest']:
-                        if pool.open_pool and self.worker.connection.closed:
-                            self.worker.connection.open(read_server_info=False)
-                            if pool.tls_pool and not self.worker.connection.tls_started:
-                                self.worker.connection.start_tls(read_server_info=False)
-                            if pool.bind_pool and not self.worker.connection.bound:
-                                self.worker.connection.bind(read_server_info=False)
-                    if self.worker.refresh_server_info:
-                        self.worker.connection._fire_deferred_2()
-                        self.worker.refresh_server_info = False
+                with self.worker.lock:
+                    self.worker.busy = True
+                    if counter == TERMINATE_REUSABLE:
+                        terminate = True
+                        if self.worker.connection.bound:
+                            try:
+                                self.worker.connection.unbind()
+                            except LDAPExceptionError:
+                                pass
+                    else:
+                        if (datetime.now() - self.worker.creation_time).seconds >= self.master_connection.strategy.pool.lifetime:  # destroy and create a new connection
+                            try:
+                                self.worker.connection.unbind()
+                            except LDAPExceptionError:
+                                pass
+                            self.worker.new_connection()
+                        if message_type not in ['bindRequest', 'unbindRequest']:
+                            if pool.open_pool and self.worker.connection.closed:
+                                self.worker.connection.open(read_server_info=False)
+                                if pool.tls_pool and not self.worker.connection.tls_started:
+                                    self.worker.connection.start_tls(read_server_info=False)
+                                if pool.bind_pool and not self.worker.connection.bound:
+                                    self.worker.connection.bind(read_server_info=False)
 
-                        exc = None
-                        response = None
-                        result = None
-                        try:
-                            if message_type == 'searchRequest':
-                                response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
-                            elif message_type != 'bindRequest':
-                                response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
-                            result = self.worker.connection.result
-                        except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
-                            exc = e
+                            if self.worker.get_info_from_server:
+                                self.worker.connection._fire_deferred()
+                                self.worker.get_info_from_server = False
 
-                        with pool.lock:
-                            if exc:
-                                pool._incoming[counter] = (exc, None)
-                            else:
-                                pool._incoming[counter] = (response, result)
-                self.worker.busy = False
-                pool.request_queue.task_done()
-                self.worker.task_counter += 1
+                            exc = None
+                            response = None
+                            result = None
+                            try:
+                                if message_type == 'searchRequest':
+                                    response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
+                                elif message_type != 'bindRequest':
+                                    response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
+                                result = self.worker.connection.result
+                            except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
+                                exc = e
+
+                            with pool.lock:
+                                if exc:
+                                    pool._incoming[counter] = (exc, None)
+                                else:
+                                    pool._incoming[counter] = (response, result)
+                    print('yyyy', self.worker.get_info_from_server)
+                    self.worker.busy = False
+                    pool.request_queue.task_done()
+                    self.worker.task_counter += 1
             if self.master_connection.usage:
                 pool.terminated_usage += self.worker.connection.usage
             self.worker.running = False
@@ -219,12 +225,13 @@ class ReusableStrategy(BaseStrategy):
             self.request_queue = request_queue
             self.running = False
             self.busy = False
-            self.refresh_server_info = False
+            self.get_info_from_server = False
             self.connection = None
             self.creation_time = None
             self.new_connection()
             self.task_counter = 0
             self.thread = ReusableStrategy.PooledConnectionThread(self, connection)
+            self.lock = Lock()
 
         def __str__(self):
             s = 'CONN: ' + str(self.connection) + linesep + '       THREAD: '

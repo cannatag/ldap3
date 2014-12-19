@@ -48,24 +48,27 @@ class Test(unittest.TestCase):
         self.assertTrue(type(self.connection.server.schema), SchemaInfo)
 
     def test_object_classes(self):
-        if not self.connection.server.info:
-            self.connection.refresh_server_info()
-        self.assertTrue(type(self.connection.server.schema.object_classes['iNetOrgPerson']), ObjectClassInfo)
+        if not self.connection.strategy.pooled:
+            if not self.connection.server.info:
+                self.connection.refresh_server_info()
+            self.assertTrue(type(self.connection.server.schema.object_classes['iNetOrgPerson']), ObjectClassInfo)
 
     def test_attributes_types(self):
-        if not self.connection.server.info:
-            self.connection.refresh_server_info()
-        self.assertTrue(type(self.connection.server.schema.attribute_types['cn']), AttributeTypeInfo)
+        if not self.connection.strategy.pooled:
+            if not self.connection.server.info:
+                self.connection.refresh_server_info()
+            self.assertTrue(type(self.connection.server.schema.attribute_types['cn']), AttributeTypeInfo)
 
     def test_json_definition(self):
-        if not self.connection.server.info:
-            self.connection.refresh_server_info()
-        json_info = self.connection.server.info.to_json()
-        json_schema = self.connection.server.schema.to_json()
-        info = DsaInfo.from_json(json_info)
-        schema = SchemaInfo.from_json(json_schema)
-        server1 = Server.from_definition(test_server, info, schema)
-        json_info1 = server1.info.to_json()
-        json_schema1 = server1.schema.to_json()
-        self.assertEqual(json_info, json_info1)
-        self.assertEqual(json_schema, json_schema1)
+        if not self.connection.strategy.pooled:
+            if not self.connection.server.info:
+                self.connection.refresh_server_info()
+            json_info = self.connection.server.info.to_json()
+            json_schema = self.connection.server.schema.to_json()
+            info = DsaInfo.from_json(json_info)
+            schema = SchemaInfo.from_json(json_schema)
+            server1 = Server.from_definition(test_server, info, schema)
+            json_info1 = server1.info.to_json()
+            json_schema1 = server1.schema.to_json()
+            self.assertEqual(json_info, json_info1)
+            self.assertEqual(json_schema, json_schema1)

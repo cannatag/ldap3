@@ -88,7 +88,7 @@ CHANGELOG
 
 * 0.9.6 2014.11.01
     - New feature 'offline schema' to let the client have knowledge of schema and DSA info even if not returned by the server
-    - Offline schema for Novell eDirectory 8.8.8
+    - Offline schema for Novell eDirectory 8.8.8 (Novell nds)
     - Offline schema for Microsoft Active Directory 2012 R2
     - Offline schema for slapd 2.4 (Openldap)
     - Added server.info.to_json() and server.info.to_file to JSON serialize schema and info from Server object

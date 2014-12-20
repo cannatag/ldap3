@@ -1,8 +1,37 @@
 CHANGELOG
 =========
+* 0.9.7 2014.12.17
+    - Fixed bug for auto_range used in paged search
+    - Added dual IP stack mode parameter in Server object, values are: IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V4_PREFERRED, IP_V6_ONLY, IP_V6_PREFERRED
+    - Added read_server_info parameter to bind() and start_tls() to avoid multiple schema and info read operations with auto_bind
+    - Redesigned Reusable (pooled) strategy
+    - Added LDAPResponseTimeoutError exception raised when get_response() doesn't receive any response in the allowed timeout period
+    - Added shortened authentication parameters in ldap3 namespace: ANONYMOUS, SIMPLE, SASL
+    - Added shortened scope parameters in ldap3 namespace: BASE, LEVEL, SUBTREE
+    - Added shortened get_info parameters in ldap3 namespace: NONE, DSA, SCHEMA, ALL
+    - Added shortened alias dereferencing parameters in ldap3 namespace: DEREF_NONE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS
+    - Added shortened connection strategy parameters in ldap3 namespace: SYNC, ASYNC, LDIF, RESTARTABLE, REUSABLE
+    - Added shortened pooling strategy parameters in ldap3 namespace: FIRST, ROUND_ROBIN, RANDOM
+    - Added reentrant lock to avoid race conditions in the Connection object
+    - When run in Python 2.7.9 uses SSLContext
+    - Tested against Python 2.7.9, PyPy 2.4.0 and PyPy3 2.4.0
+    - setuptools updated to 8.2.1
+
+* 0.9.6.2 2014.11.17
+    - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2
+    - Removed unneeded FORMAT_xxx variables in ldap3 namespace
+    - Fixed bug in auto_range when search operation returns search continuations
+    - Added infrastructure for Mock DSA (not functional yet)
+
+* 0.9.6.1 2014.11.11
+    - Added boolean parameter "auto_range" to catch the "range" ldap tag in searches. When true all needed search operation are made to fully obtain the whole range of result values
+    - Fixed bug in sdist
+    - Added offline schema for Fedora 389 Directory Server 1.3.3
+    - Fixed bug while reading DSA info
+
 * 0.9.6 2014.11.01
     - New feature 'offline schema' to let the client have knowledge of schema and DSA info even if not returned by the server
-    - Offline schema for NetIQ eDirectory 8.8.8
+    - Offline schema for NetIQ eDirectory 8.8.8 (Novell nds)
     - Offline schema for Microsoft Active Directory 2012 R2
     - Offline schema for slapd 2.4 (Openldap)
     - Added server.info.to_json() and server.info.to_file to JSON serialize schema and info from Server object

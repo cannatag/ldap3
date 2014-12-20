@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'python3-ldap'
-copyright = '2014 - ' + __author__
+copyright = '2013 - ' + __author__
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -105,7 +105,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'bizstyle'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -271,7 +271,7 @@ texinfo_documents = [
 epub_title = 'python3-ldap'
 epub_author = __author__
 epub_publisher = __author__
-epub_copyright = '2014 - ' + __author__
+epub_copyright = '2013 - ' + __author__
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = 'python3-ldap'

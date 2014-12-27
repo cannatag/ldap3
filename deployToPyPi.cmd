@@ -1,4 +1,4 @@
-rd dist build python3-ldap\python3_ldap.egg-info /S /Q
+rd dist build pureLDAP\python3_ldap.egg-info /S /Q
 \Python\Python34\python.exe setup.py clean
 \Python\Python34\python.exe setup.py build sdist --format=gztar upload
 \Python\Python34\python.exe setup.py build bdist_wininst upload

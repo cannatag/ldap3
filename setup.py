@@ -2,28 +2,28 @@
 #
 # @author: Giovanni Cannata
 #
-# Copyright 2013 Giovanni Cannata
+# Copyright 2015 Giovanni Cannata
 #
-# This file is part of python3-ldap.
+# This file is part of pureLDAP.
 #
-# python3-ldap is free software: you can redistribute it and/or modify
+# pureLDAP is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# python3-ldap is distributed in the hope that it will be useful,
+# pureLDAP is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with python3-ldap in the COPYING and COPYING.LESSER files.
+# along with pureLDAP in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
 from os import path
 
-package_name = 'python3-ldap'
+package_name = 'pureLDAP'
 package_folder = path.join('.', package_name)
 version_file = open(path.join(package_folder, 'ldap3', '_version.py'))
 exec_local = dict()

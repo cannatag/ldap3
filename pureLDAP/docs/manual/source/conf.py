@@ -17,6 +17,12 @@ import sys
 import os
 from ldap3 import __version__, __author__, __description__
 
+
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
+    os.system("sphinx-apidoc --force --separate --output-dir=. ../ldap3")
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.

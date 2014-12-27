@@ -2,20 +2,23 @@
 Quick tour
 ##########
 
-To use pureLDAP import the library from the ldap3 namespace. You can choose the strategy that the client will use to connect to the server. There are 4 strategies that can be used for establishing a connection: STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER and STRATEGY_SYNC_RESTARTABLE
+To use pureLDAP import the library from the ldap3 namespace. You can choose the strategy that the client will use to connect to the server.
+ here are 5 strategies that can be used for establishing a connection: SYNC, ASYNC, LDIF, RESTARTABLE and REUSABLE.
 
-With synchronous strategy (STRATEGY_SYNC and STRATEGY_SYNC_RESTARTABLE) all LDAP operation requests return a boolean: True if they're successful, False if they fail.
+With synchronous strategy (SYNC, RESTARTABLE) all LDAP operation requests return a boolean: True if they're successful, False if they fail.
 
-With asynchronous strategies (STRATEGY_ASYNC_THREADED) all LDAP operation requests (except Bind) return an integer, the 'message_id' of the request. You can send multiple request without waiting for responses.
+With asynchronous strategies (ASYNC, REUSABLE) all LDAP operation requests (except Bind that returns a boolean) return an integer,
+ the 'message_id' of the request. You can send multiple request without waiting for responses.
 
-You can get each response with the get_response(message_id) method of the Connection object. If you get None the response has not yet arrived. A timeout can be specified (get_response(message_id, timeout = 20)) to set the number of seconds to wait for the response to appear or the default value will be used.
+You can get each response with the get_response(message_id) method of the Connection object.If you get an exception the response has not yet arrived.
+A timeout value can be specified (get_response(message_id, timeout = 20)) to set the number of seconds to wait for the response to appear (defaults is 10 seconds).
 
-Library raises LDAPException to signal errors, the last exception message is stored in the last_error attribute of the Connection object when available.
+Library raises an exception in the LDAPExceptionError hierarchy to signal errors, the last exception message is stored in the last_error attribute of the Connection object when available.
 
-After any operation, either synchronous or asynchronous, you'll find the following attributes populated in the Connection object:
+After any operation, you'll find the following attributes populated in the Connection object:
 
-* result: the result of the last operation
-* response: the response of the last operation (for example, the entries found in a search)
+* result: the result of the last operation (only synchronous strategies).
+* response: the entries found if the last operation is a search operation (only for synchronous strategies).
 * last_error: any error occurred in the last operation
 * bound: True if bound else False
 * listening: True if the socket is listening to the server
@@ -25,11 +28,11 @@ You can have a LDIF representation of the response of a search with::
 
     connection.response_to_ldif()
 
-or you can save the response to a json string::
+or you can save the response to a JSON string::
 
     entries = connection.response_to_json()
 
-or have the response save to a file in json format:
+or have the response saved to a file in JSON format:
 
     connection.response_to_json('entries-found.json')
 
@@ -66,6 +69,7 @@ To get operational attributes (createStamp, modifiedStamp, ...) for response obj
 
     c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attribute = True)
 
+
 Connection context manager
 --------------------------
 
@@ -90,6 +94,7 @@ if the connection was open or bound its state will be restored when exiting the 
 
 Using the context manager connections will be opened and bound as you enter the Connection context and will be unbound when you leave the context.
 Unbind will be tried even if the operations in context raise an exception.
+
 
 Searching
 ---------
@@ -121,6 +126,7 @@ If the attribute is defined in the schema as 'multi_value' the attribute value i
 Formatted (following the schema and RFC indications) attributes are stored in the *attributes* dictionary of the search result entries in c.response. This is performed only if the schema is read in the server object and the check_names parameter is set to True else the unicode value is returned.
 
 Attributes key are case insensitive, this means that you can access c.response[0]['attributes']['postalAddress'] or c.response[0]['attributes']['postaladdress'] and get the same values back.
+
 
 Simple Paged search
 -------------------

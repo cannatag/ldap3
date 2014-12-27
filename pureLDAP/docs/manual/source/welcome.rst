@@ -1,13 +1,13 @@
 pureLDAP project info
 #########################
 
-pureLDAP is a strictly RFC 4511 conforming LDAP V3 pure Python client. Its codebase works with Python 2 and Python 3
+pureLDAP is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3
 
 
 License
 =======
 
-The pureLDAP project is open source and released under the LGPL v3 license.
+The pureLDAP project is **open source software** and released under the LGPL v3 license.
 
 
 PEP8 Compliance
@@ -31,7 +31,7 @@ Project home page is https://github.com/cannatag/pureLDAP
 Documentation
 -------------
 
-Documentation is available at http://pythonhosted.org/pureLDAP
+Documentation is available at http://pureldap.readthedocs.org
 
 
 Download
@@ -65,6 +65,6 @@ Acknowledgements
 
 * **JetBrains** for donating to this project the Open Source license of *PyCharm 3 Professional*.
 
-* **Bitbucket** for providing the *free source repository space and tools* I use to develop this project.
+* **GitHub** for providing the *free source repository space and tools* I use to develop this project.
 
-* **Python Software Foundation** for providing support for building the test lab infrastructure
+* **Python Software Foundation** for providing support for building the test lab infrastructure.

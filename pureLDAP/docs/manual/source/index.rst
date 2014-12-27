@@ -6,13 +6,13 @@
 Welcome to pureLDAP's documentation
 =======================================
 
-pureLDAP is a pure Python 3 LDAP version 3 strictly conforming to RFC4511 released under the LGPL v3 open source license.
+pureLDAP is a pure Python LDAP 3 client library strictly conforming to RFC4511 released under the LGPL v3 open source license.
 RFC4511 is the current LDAP specification (June 2006) from IETF and obsoletes the previous LDAP RFCs 2251, 2830, 3771 (December 1997)
 
-pureLDAP can be used on Python 3 and Python 2 (starting from python 2.6).
+pureLDAP can be used on Python 3 and Python 2 (starting from python 2.6). It works on PyPy and PyPy3.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    welcome
    goals

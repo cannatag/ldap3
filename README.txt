@@ -1,4 +1,4 @@
-pureLDAP is a strictly RFC 4511 conforming LDAP V3 pure Python client. Its codebase works with Python 2 and Python 3
+pureLDAP is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3
 
 License
 -------

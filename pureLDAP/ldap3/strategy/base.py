@@ -191,11 +191,13 @@ class BaseStrategy(object):
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)
         except Exception:
+            print('ERROR1')
             pass
 
         try:
             self.connection.socket.close()
         except Exception:
+            print('ERROR2')
             pass
 
         self.connection.socket = None

@@ -108,5 +108,5 @@ print('Python version:', version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names)
 
 
-def dn_for_test(base, name):
+def generate_dn(base, name):
     return test_name_attr + '=' + name + ',' + base

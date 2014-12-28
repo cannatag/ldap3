@@ -25,7 +25,7 @@ from ldap3 import STRATEGY_REUSABLE_THREADED, Server, Connection, ServerPool
 from ldap3.protocol.rfc4511 import LDAPDN, DelRequest, Attribute, ValsAtLeast1, \
     AttributeDescription, AttributeValue, AttributeList, AddRequest
 from test import test_server, test_port, test_user, test_password, test_authentication, \
-    test_strategy, test_base, dn_for_test, test_lazy_connection, test_get_info, test_server_mode, \
+    test_strategy, test_base, generate_dn, test_lazy_connection, test_get_info, test_server_mode, \
     test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 
 
@@ -70,13 +70,13 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-delete'))
+        add_req['entry'] = LDAPDN(generate_dn(test_base, 'test-delete'))
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
         if isinstance(result, int):
             self.connection.get_response(result)
-        del_req = DelRequest(LDAPDN(dn_for_test(test_base, 'test-delete')))
+        del_req = DelRequest(LDAPDN(generate_dn(test_base, 'test-delete')))
 
         result = self.connection.post_send_single_response(self.connection.send('delRequest', del_req))
         if isinstance(result, int):

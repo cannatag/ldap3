@@ -25,7 +25,7 @@ import json
 
 from ldap3.utils.conv import escape_bytes
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
-    test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info,\
+    test_base, generate_dn, test_name_attr, test_lazy_connection, test_get_info,\
     test_check_names, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
 
@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         else:
             server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
         self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
-        result = self.connection.add(dn_for_test(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)', 'loginGraceLimit': 10})
+        result = self.connection.add(generate_dn(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)', 'loginGraceLimit': 10})
         if not self.connection.strategy.sync:
             self.connection.get_response(result)
 
@@ -139,7 +139,7 @@ class Test(unittest.TestCase):
 
         json_entries = json.loads(json_response)['entries']
         if self.connection.check_names:
-            self.assertEqual(json_entries[0]['attributes']['entryDN'], dn_for_test(test_base, 'test-add-operation'))
+            self.assertEqual(json_entries[0]['attributes']['entryDN'], generate_dn(test_base, 'test-add-operation'))
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])

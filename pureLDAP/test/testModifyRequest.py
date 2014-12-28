@@ -25,7 +25,7 @@ from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription, \
     AttributeValue, ModifyRequest, ValsAtLeast1, Changes, Change, Operation, PartialAttribute, Vals
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
-    test_base, dn_for_test, test_lazy_connection, test_get_info, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+    test_base, generate_dn, test_lazy_connection, test_get_info, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 
 
 class Test(unittest.TestCase):
@@ -69,7 +69,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-modify'))
+        add_req['entry'] = LDAPDN(generate_dn(test_base, 'test-modify'))
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
@@ -86,7 +86,7 @@ class Test(unittest.TestCase):
         changes = Changes()
         changes[0] = change1
         modify_req = ModifyRequest()
-        modify_req['object'] = LDAPDN(dn_for_test(test_base, 'test-modify'))
+        modify_req['object'] = LDAPDN(generate_dn(test_base, 'test-modify'))
         modify_req['changes'] = changes
         result = self.connection.post_send_single_response(self.connection.send('modifyRequest', modify_req))
         if isinstance(result, int):

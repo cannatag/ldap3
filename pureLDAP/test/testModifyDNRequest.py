@@ -25,7 +25,7 @@ from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
 from ldap3.protocol.rfc4511 import LDAPDN, AddRequest, AttributeList, Attribute, AttributeDescription,\
     AttributeValue, ValsAtLeast1, ModifyDNRequest, RelativeLDAPDN, DeleteOldRDN
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
-    test_base, dn_for_test, test_name_attr, test_lazy_connection, test_get_info, test_server_mode, \
+    test_base, generate_dn, test_name_attr, test_lazy_connection, test_get_info, test_server_mode, \
     test_pooling_strategy, test_pooling_active, test_pooling_exhaust
 
 
@@ -70,7 +70,7 @@ class Test(unittest.TestCase):
         attributes[2] = attribute3
 
         add_req = AddRequest()
-        add_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-modify-dn'))
+        add_req['entry'] = LDAPDN(generate_dn(test_base, 'test-modify-dn'))
         add_req['attributes'] = attributes
 
         result = self.connection.post_send_single_response(self.connection.send('addRequest', add_req))
@@ -78,7 +78,7 @@ class Test(unittest.TestCase):
             self.connection.get_response(result)
 
         mod_dn_req = ModifyDNRequest()
-        mod_dn_req['entry'] = LDAPDN(dn_for_test(test_base, 'test-modify-dn'))
+        mod_dn_req['entry'] = LDAPDN(generate_dn(test_base, 'test-modify-dn'))
         mod_dn_req['newrdn'] = RelativeLDAPDN(test_name_attr + '=test-modified-dn')
         mod_dn_req['deleteoldrdn'] = DeleteOldRDN(True)
 

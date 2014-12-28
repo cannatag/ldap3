@@ -26,7 +26,7 @@ import unittest
 from ldap3.core.exceptions import LDAPException
 from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
-    test_base, dn_for_test, test_lazy_connection, test_name_attr, test_get_info, test_pooling_strategy, \
+    test_base, generate_dn, test_lazy_connection, test_name_attr, test_get_info, test_pooling_strategy, \
     test_pooling_active, test_pooling_exhaust, test_server_mode
 
 
@@ -70,7 +70,7 @@ class Test(unittest.TestCase):
         if not self.connection.strategy.pooled:
             ok = False
             try:
-                result = self.connection.add(dn_for_test(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+                result = self.connection.add(generate_dn(test_base, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
             except LDAPException:
                 ok = True
 
@@ -97,7 +97,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(response) > 1)
 
     def test_valid_object_class_add(self):
-        result = self.connection.add(dn_for_test(test_base, 'test-add-operation-check-names'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'Person'], 'sn': 'test-add', test_name_attr: 'test-add-operation-check-names'})
+        result = self.connection.add(generate_dn(test_base, 'test-add-operation-check-names'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'Person'], 'sn': 'test-add', test_name_attr: 'test-add-operation-check-names'})
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:

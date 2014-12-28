@@ -74,8 +74,8 @@ elif location == 'CAMERA':
 else:
     raise('testing location' + location + 'not valid')
 
-if location.startswith('TRAVIS:'):
-    _, strategy, lazy = location.split(':')
+if location.startswith('TRAVIS;'):
+    _, strategy, lazy = location.split(';')
     test_strategy = int(strategy)
     test_lazy_connection = bool(lazy)
 else:

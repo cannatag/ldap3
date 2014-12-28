@@ -1,22 +1,7 @@
-pureLDAP is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3
 
-License
--------
+pureLDAP is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3.
 
-The pureLDAP project is open source and released under the LGPL v3 license.
-
-
-PEP8 Compliance
----------------
-
-pureLDAP is PEP8 compliant (except for line length) starting from version 0.9.0.
-
-
-Mailing List
-------------
-
-You can join the pureLDAP mailing list at http://mail.python.org/mailman/listinfo/python3-ldap
-
+This project was formerly named **python3-ldap**. The name has changed to avoid confusion with the python-ldap library.
 
 Home Page
 ---------
@@ -27,7 +12,25 @@ Project home page is https://github.com/cannatag/pureLDAP
 Documentation
 -------------
 
-Documentation is available at http://pythonhosted.org/pureLDAP
+Documentation is available at http://pureLDAP.readthedocs.org
+
+
+License
+-------
+
+The pureLDAP project is open source software released under the **LGPL v3 license**.
+
+
+PEP8 Compliance
+---------------
+
+pureLDAP is PEP8 compliant, except for line length
+
+
+Mailing List
+------------
+
+You can join the pureLDAP mailing list at http://mail.python.org/mailman/listinfo/python3-ldap
 
 
 Download
@@ -61,10 +64,14 @@ Acknowledgements
 Contact me
 ----------
 
-For information and suggestions you can contact me at cannatag@gmail.com or you can join the pureLDAP mailing list at http://mail.python.org/mailman/listinfo/pureLDAP. You can also open a support ticket on https://bitbucket.org/python3ldap/pureLDAP/issues/new
+For information and suggestions you can contact me at cannatag@gmail.com or you can join the pureLDAP mailing list at http://mail.python.org/mailman/listinfo/python3-ldap. You can also open a support ticket on https://github.com/cannatag/pureLDAP/issues/new
 
 CHANGELOG
 =========
-* 0.9.8 2014-12-27
+* 0.9.7.1 2014.12.27
     - Moved to Github
+    - Moved to Travis-CI for continuous integration
+    - Moved testing servers in the cloud, to allow testing from Travis-CI
     - Project renamed from python3-ldap to pureLDAP to avoid name clashing with the existing python-ldap library
+
+Previous versions changelog is available at http://pythonhosted.org//python3-ldap/changelog.html

@@ -1,8 +1,10 @@
 CHANGELOG
 =========
-* 0.9.8 2014-12-27
+* 0.9.7.1 2014.12.27
     - Moved to Github
-    - Project renamed to pureLDAP to avoid name clashing with the existing python-ldap library
+    - Moved to Travis-CI for continuous integration
+    - Moved testing servers in the cloud, to allow testing from Travis-CI
+    - Project renamed from python3-ldap to pureLDAP to avoid name clashing with the existing python-ldap library
 
 * 0.9.7 2014.12.17
     - Fixed bug for auto_range used in paged search

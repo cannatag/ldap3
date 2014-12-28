@@ -41,42 +41,42 @@ class Test(unittest.TestCase):
 
     def test_open_connection(self):
         self.connection.open()
-        self.assertEquals(self.connection.closed, False)
+        self.assertEqual(self.connection.closed, False)
         self.connection.unbind()
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.connection.strategy.terminate()
-        self.assertEquals(self.connection.closed, True)
-        self.assertEquals(self.connection.bound, False)
+        self.assertEqual(self.connection.closed, True)
+        self.assertEqual(self.connection.bound, False)
 
     def test_bind_connection(self):
         self.connection.open()
-        self.assertEquals(self.connection.closed, False)
+        self.assertEqual(self.connection.closed, False)
         self.connection.bind()
-        self.assertEquals(self.connection.bound, True)
+        self.assertEqual(self.connection.bound, True)
         self.connection.unbind()
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.connection.strategy.terminate()
-        self.assertEquals(self.connection.closed, True)
-        self.assertEquals(self.connection.bound, False)
+        self.assertEqual(self.connection.closed, True)
+        self.assertEqual(self.connection.bound, False)
 
     def test_connection_in_context(self):
         with self.connection:
-            self.assertEquals(self.connection.closed, False)
-            self.assertEquals(self.connection.bound, True)
+            self.assertEqual(self.connection.closed, False)
+            self.assertEqual(self.connection.bound, True)
 
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.connection.strategy.terminate()
 
-        self.assertEquals(self.connection.closed, True)
-        self.assertEquals(self.connection.bound, False)
+        self.assertEqual(self.connection.closed, True)
+        self.assertEqual(self.connection.bound, False)
 
     def test_connection_in_context_with_as(self):
         with self.connection as c:
-            self.assertEquals(c.closed, False)
-            self.assertEquals(c.bound, True)
+            self.assertEqual(c.closed, False)
+            self.assertEqual(c.bound, True)
 
         if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             self.connection.strategy.terminate()
 
-        self.assertEquals(self.connection.closed, True)
-        self.assertEquals(self.connection.bound, False)
+        self.assertEqual(self.connection.closed, True)
+        self.assertEqual(self.connection.bound, False)

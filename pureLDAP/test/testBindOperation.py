@@ -24,7 +24,8 @@ import unittest
 
 from ldap3 import Server, Connection, ServerPool, AUTH_ANONYMOUS, AUTH_SASL, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_port_ssl,\
-    test_lazy_connection, test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_get_info, test_server_mode
+    test_lazy_connection, test_pooling_strategy, test_pooling_active, test_pooling_exhaust,\
+    test_get_info, test_server_mode, test_sasl_user, test_sasl_password
 
 class Test(unittest.TestCase):
     def test_bind_clear_text(self):
@@ -82,7 +83,7 @@ class Test(unittest.TestCase):
                 server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
         else:
             server = Server(host=test_server, port=test_port, get_info=test_get_info, mode=test_server_mode)
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(None, 'testSasl.test', 'password', None), pool_name='pool1')
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(None, test_sasl_user, test_sasl_password, None), pool_name='pool1')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)

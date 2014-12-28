@@ -28,6 +28,7 @@ from test import test_server, test_port, test_user, test_password, test_authenti
     test_lazy_connection, test_server_context, test_get_info, test_server_mode, test_pooling_strategy, \
     test_pooling_active, test_pooling_exhaust
 
+
 class Test(unittest.TestCase):
     def setUp(self):
         if isinstance(test_server, (list, tuple)):

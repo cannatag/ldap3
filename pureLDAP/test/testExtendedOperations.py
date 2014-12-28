@@ -23,7 +23,8 @@
 import unittest
 from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED, GET_DSA_INFO, LDAPExtensionError
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
-    test_lazy_connection, test_server_context, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+    test_lazy_connection, test_server_context, test_server_mode, test_pooling_strategy, test_pooling_active, \
+    test_pooling_exhaust, test_server_edir_name
 
 
 class Test(unittest.TestCase):
@@ -71,21 +72,15 @@ class Test(unittest.TestCase):
 
 
     def test_novell_list_replicas(self):
-        if isinstance(test_server, (list, tuple)):
-            result = self.connection.extend.novell.list_replicas('cn=' + test_server[0] + ',' + test_server_context)
-        else:
-            result = self.connection.extend.novell.list_replicas('cn=' + test_server + ',' + test_server_context)
+        result = self.connection.extend.novell.list_replicas('cn=' + test_server_edir_name + ',' + test_server_context)
 
-        self.assertEquals(result, None)
+        self.assertEqual(result, None)
 
     def test_novell_replica_info(self):
-        if isinstance(test_server, (list, tuple)):
-            result = self.connection.extend.novell.replica_info('cn=' + test_server[0] + ',' + test_server_context, '')
-        else:
-            result = self.connection.extend.novell.replica_info('cn=' + test_server + ',' + test_server_context, '')
+        result = self.connection.extend.novell.replica_info('cn=' + test_server_edir_name + ',' + test_server_context, '')
 
-        self.assertEquals(result, '')
+        self.assertEqual(result, '')
 
     def test_novell_partition_entry_count(self):
         result = self.connection.extend.novell.partition_entry_count('o=test')
-        self.assertTrue(result > 200)
+        self.assertTrue(result > 60)

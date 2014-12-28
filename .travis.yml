@@ -3,10 +3,10 @@ python:
   #- "2.6"
   #- "2.7"
   - "3.4"
-# command to install dependencies
+env:
+  - USERDOMAIN=TRAVIS
 install:
   - "pip install ."
-# command to run tests
 script:
   - cd pureLDAP
   - python -m unittest discover -v

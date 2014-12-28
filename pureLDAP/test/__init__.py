@@ -24,50 +24,53 @@ from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_
     STRATEGY_REUSABLE_THREADED, POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO, IP_V4_PREFERRED, \
     IP_SYSTEM_DEFAULT, IP_V6_PREFERRED, IP_V4_ONLY, IP_V6_ONLY, GET_NO_INFO, GET_DSA_INFO
 from sys import version
+from os import environ
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
-"""
-# test in the cloud
-test_server = 'labldap02.cloudapp.net'
-test_server_context = 'o=resources'  # used in novell eDirectory extended operations
-test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
-test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
-test_password = 'Rc1234pfop'  # user password
-test_sasl_user = 'testLAB.resources'
-test_sasl_password = 'Rc1234pfop'
-test_ca_cert_file = 'ca-edir-lab.pem'
-test_user_cert_file = 'testlab-cert.pem'
-test_user_key_file = 'testlab-key.pem'
-"""
+location = environ['USERDOMAIN']
 
-# test elitebook
-# test_server = 'edir1.hyperv'
-test_server = ['edir1', 'edir2', 'edir3']  # the ldap server where tests are executed, if a list is given a pool will be created
-test_server = 'edir1.hyperv'
-test_server_context = 'o=services'  # used in novell eDirectory extended operations
-test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
-test_user = 'cn=admin,o=services'  # the user that performs the tests
-test_password = 'password'  # user password
-test_sasl_user = 'testsasl.test'
-test_sasl_password = 'password'
-test_ca_cert_file = 'ca-cert.pem'
-test_user_cert_file = 'admin-cert.pem'
-test_user_key_file = 'admin-key.pem'
 
-"""
-# test camera
-test_server = 'sl10'
-test_server_context = 'o=services'  # used in novell eDirectory extended operations
-test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
-test_user = 'cn=admin,o=services'  # the user that performs the tests
-test_password = 'camera'  # user password
-test_sasl_user = 'testsasl.services'
-test_sasl_password = 'password'
-test_ca_cert_file = 'ca-cert.pem'
-test_user_cert_file = 'admin-cert.pem'
-test_user_key_file = 'admin-key.pem'
-"""
+if location == 'TRAVIS':
+    # test in the cloud
+    test_server = 'labldap02.cloudapp.net'
+    test_server_context = 'o=resources'  # used in novell eDirectory extended operations
+    test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
+    test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
+    test_password = 'Rc1234pfop'  # user password
+    test_sasl_user = 'testLAB.resources'
+    test_sasl_password = 'Rc1234pfop'
+    test_ca_cert_file = 'ca-edir-lab.pem'
+    test_user_cert_file = 'testlab-cert.pem'
+    test_user_key_file = 'testlab-key.pem'
+elif location == 'GCNBHPW8':
+    # test elitebook
+    # test_server = 'edir1.hyperv'
+    test_server = ['edir1', 'edir2', 'edir3']  # the ldap server where tests are executed, if a list is given a pool will be created
+    test_server = 'edir1.hyperv'
+    test_server_context = 'o=services'  # used in novell eDirectory extended operations
+    test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
+    test_user = 'cn=admin,o=services'  # the user that performs the tests
+    test_password = 'password'  # user password
+    test_sasl_user = 'testsasl.test'
+    test_sasl_password = 'password'
+    test_ca_cert_file = 'ca-cert.pem'
+    test_user_cert_file = 'admin-cert.pem'
+    test_user_key_file = 'admin-key.pem'
+elif location == 'CAMERA':
+    # test camera
+    test_server = 'sl10'
+    test_server_context = 'o=services'  # used in novell eDirectory extended operations
+    test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
+    test_user = 'cn=admin,o=services'  # the user that performs the tests
+    test_password = 'camera'  # user password
+    test_sasl_user = 'testsasl.services'
+    test_sasl_password = 'password'
+    test_ca_cert_file = 'ca-cert.pem'
+    test_user_cert_file = 'admin-cert.pem'
+    test_user_key_file = 'admin-key.pem'
+else:
+    raise('testing location not found')
 
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED

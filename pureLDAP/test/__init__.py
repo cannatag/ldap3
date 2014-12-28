@@ -42,9 +42,9 @@ if location.startswith('TRAVIS'):
     test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'testLAB.resources'
     test_sasl_password = 'Rc1234pfop'
-    test_ca_cert_file = 'ca-edir-lab.pem'
-    test_user_cert_file = 'testlab-cert.pem'
-    test_user_key_file = 'testlab-key.pem'
+    test_ca_cert_file = 'test/ca-edir-lab.pem'
+    test_user_cert_file = 'test/testlab-cert.pem'
+    test_user_key_file = 'test/testlab-key.pem'
 elif location == 'GCNBHPW8':
     # test elitebook
     # test_server = 'edir1.hyperv'

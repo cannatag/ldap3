@@ -33,7 +33,7 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
-if location == 'TRAVIS':
+if location.startswith('TRAVIS'):
     # test in the cloud
     test_server = 'labldap02.cloudapp.net'
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations

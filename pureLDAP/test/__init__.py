@@ -28,8 +28,10 @@ from os import environ
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
-location = environ['USERDOMAIN']
-
+try:
+    location = environ['USERDOMAIN']
+except:
+    location = 'UNKNOWN'
 
 if location == 'TRAVIS':
     # test in the cloud
@@ -70,7 +72,7 @@ elif location == 'CAMERA':
     test_user_cert_file = 'admin-cert.pem'
     test_user_key_file = 'admin-key.pem'
 else:
-    raise('testing location not found')
+    raise('testing location' + location + 'not valid')
 
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
@@ -93,7 +95,10 @@ test_strategy = STRATEGY_SYNC  # sync strategy for executing tests
 # test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
 # test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
 
-print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:' , test_check_names, '- Version:', version)
+print('Testing location:', location)
+print('Test server:', test_server)
+print('Python version:', version)
+print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names)
 
 
 def dn_for_test(base, name):

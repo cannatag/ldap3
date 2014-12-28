@@ -1,2 +1,2 @@
 call build-dist.cmd
-\Python\Python34\Scripts\twine upload dist/*
+call upload-to-pypi.cmd

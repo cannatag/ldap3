@@ -185,19 +185,17 @@ class BaseStrategy(object):
     def _close_socket(self):
         """
         Try to close a socket
-        don't raise exception if unable to close socket, assume socket is already close
+        don't raise exception if unable to close socket, assume socket is already closed
         """
 
         try:
             self.connection.socket.shutdown(socket.SHUT_RDWR)
         except Exception:
-            print('ERROR1')
             pass
 
         try:
             self.connection.socket.close()
         except Exception:
-            print('ERROR2')
             pass
 
         self.connection.socket = None

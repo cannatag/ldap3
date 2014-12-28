@@ -5,8 +5,12 @@ python:
   - "3.4"
 env:
   - USERDOMAIN=TRAVIS
+  - STRATEGY=0
+  - STRATEGY=1
+  - LAZY=0
+  - LAZY=1
 install:
   - "pip install ."
 script:
   - cd pureLDAP
-  - python -m unittest discover -v
+  - python -m unittest discover

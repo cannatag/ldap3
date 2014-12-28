@@ -30,7 +30,7 @@ from os import environ
 
 try:
     location = environ['USERDOMAIN']
-except:
+except KeyError:
     location = 'UNKNOWN'
 
 if location == 'TRAVIS':
@@ -74,6 +74,16 @@ elif location == 'CAMERA':
 else:
     raise('testing location' + location + 'not valid')
 
+if location == 'TRAVIS':
+    test_strategy = int(environ['STRATEGY'])
+    test_lazy_connection = bool(environ['LAZY'])
+else:
+    test_strategy = STRATEGY_SYNC  # sync strategy for executing tests
+    # test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+    # test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+    # test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
+    test_lazy_connection = False  # connection lazy
+
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
 test_base = 'o=test'  # base context where test objects are created
@@ -89,11 +99,7 @@ test_port_ssl = 636  # ldap secure port
 test_authentication = AUTH_SIMPLE  # authentication type
 test_check_names = False  # check attribute names in operations
 test_get_info = GET_ALL_INFO  # get info from DSA
-test_lazy_connection = False  # connection lazy
-test_strategy = STRATEGY_SYNC  # sync strategy for executing tests
-# test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
-# test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
-# test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
+
 
 print('Testing location:', location)
 print('Test server:', test_server)

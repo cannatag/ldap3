@@ -9,4 +9,4 @@ install:
 # command to run tests
 script:
   - cd pureLDAP
-  - python -m unittest -v discover
+  - python -m unittest discover -v

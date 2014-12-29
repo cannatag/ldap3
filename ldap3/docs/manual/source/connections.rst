@@ -292,9 +292,13 @@ Responses
 =========
 
 Responses are received and stored in the connection.response as a list of dictionaries.
-You can get the search result entries of a Search operation iterating over the response attribute. Each entry is a dictionary with the following field:
+You can get the search result entries of a Search operation iterating over the response attribute.
+Each entry is a dictionary with the following field:
+
 * dn: the distinguished name of the entry
-* attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format.
+
+* attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format
+
 * raw_attributes: same as 'attributes' but not encoded (bytearray)
 
 Result
@@ -302,10 +306,15 @@ Result
 
 Each operation has a result stored as a dictionary in the connection.result attribute.
 You can check the result value to know if the operation has been sucessful. The dictionary has the following field:
+
 * result: the numeric result code of the operation as specified in RFC4511
+
 * description: extended description of the result code, as specified in RFC4511
+
 * message: a diagnostic message sent by the server (optional)
+
 * dn: a distinguish name of an entry related to the request (optional)
+
 * referrals: a list of referrals where the operation can be continued (optional)
 
 
@@ -319,20 +328,32 @@ Furthermore for attributes defined as single valued in schema you will get the v
 To activate checked attributes you must read the schema with the get_info parameter in the Server definition and set the check_names parameter to True (default) in the Connection definition.
 
 There are a few of standard formatters defined in the library, most of them are defined in the relevants RFCs:
-format_unicode  # returns an unicode object in Python 2 and a string in Python 3
-format_integer  # returns an integer
-format_binary  # returns a bytes() sequence
-format_uuid  # returns a GUID (UUID) as specified in RFC 4122 - byte order is big endian
-format_uuid_le  # same as above but byte order is little endian
-format_boolean  # returns a boolean
-format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as defined in RFC 4517
+
+* format_unicode  # returns an unicode object in Python 2 and a string in Python 3
+
+* format_integer  # returns an integer
+
+* format_binary  # returns a bytes() sequence
+
+* format_uuid  # returns a GUID (UUID) as specified in RFC 4122 - byte order is big endian
+
+* format_uuid_le  # same as above but byte order is little endian
+
+* format_boolean  # returns a boolean
+
+* format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as defined in RFC 4517
 
 You can even define your custom formatter for specific purposes. Just pass a dictionary in the format {'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte value and convert it the relevant object or class instance.
 
 The resolution order of the format feature is the following:
 Custom formatters have precedence over standard formatter. In each category (from highest to lowest):
+
 1. attribute name
+
 2. attribute oid(from schema)
+
 3. attribute names (from oid_info)
+
 4. attribute syntax (from schema)
-If a suitable formatter is not found the value will be rendered as bytes
+
+If a suitable formatter is not found the value will be rendered as bytes.

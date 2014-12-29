@@ -58,4 +58,4 @@ Exceptions are defined in the **ldap3.core.exceptions** package.
 
 PEP8 compliance
 ---------------
-Starting from version 0.9.0 ldap3 is PEP8 compliant. To use the previous signature for the Server, Connection and Tls object you can import them from the ldap3.compat package.
+ldap3 is PEP8 compliant, except for line length.

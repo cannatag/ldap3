@@ -17,11 +17,16 @@ Library raises an exception in the LDAPExceptionError hierarchy to signal errors
 
 After any operation, you'll find the following attributes populated in the Connection object:
 
-* result: the result of the last operation (only synchronous strategies).
-* response: the entries found if the last operation is a search operation (only for synchronous strategies).
+* result: the result of the last operation (only synchronous strategies)
+
+* response: the entries found if the last operation is a search operation (only for synchronous strategies)
+
 * last_error: any error occurred in the last operation
+
 * bound: True if bound else False
+
 * listening: True if the socket is listening to the server
+
 * closed: True if the socket is not open
 
 You can have a LDIF representation of the response of a search with::

@@ -1,7 +1,7 @@
 ldap3 Features
 #################
 
-1. ldap3 strictly conforms to the current RFCs for LDAP version 3 (from 4510 to 4519)
+1. ldap3 strictly conforms to the current RFCs for the version 3 of the LDAP protocol (from 4510 to 4519)
 
     * The **Latest RFCs for LDAP** v3 (dated 2006) obsolete the previous RFCs specified in RFC3377 (2251-2256, 2829, 2830, 3371) for LDAP v3 and amend and clarify the LDAP protocol.
 
@@ -31,9 +31,9 @@ ldap3 Features
 
     * The library is **compatible with Python 2** (2.6 and 2.7)
 
-    * Testing is done on Python 3 (3.4) Python 2 (2.6, 2.7), PyPy 2,4,0 and PyPy3 2.4.0
+    * Testing is done in Python 3 (3.4) Python 2 (2.6, 2.7), PyPy 2,4,0 and PyPy3 2.4.0
 
-    * Unicode strings are appropriately managed.
+    * Unicode strings are properly managed.
 
 5. Multiple *connection strategies* to choose from, either synchronous or asynchronous
 
@@ -44,4 +44,4 @@ ldap3 Features
 
 6. Simplified query construction language
 
-    * The library includesan  **abstraction layer** for LDAP queries.
+    * The library includes an  **abstraction layer** for LDAP queries.

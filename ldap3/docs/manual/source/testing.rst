@@ -23,4 +23,4 @@ in that context.
 
 To execute the test_tls unit test you must supply your own certificates or tests will fail.
 
-The test package is available in the svn repository.
+The test package is available in the git repository.

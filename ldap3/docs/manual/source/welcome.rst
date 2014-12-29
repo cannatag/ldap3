@@ -13,13 +13,7 @@ The ldap3 project is open source software released under the **LGPL v3 license**
 PEP8 Compliance
 ---------------
 
-ldap3 is PEP8 compliant, except for lines length.
-
-
-Mailing List
-------------
-
-You can join the ldap3 mailing list at http://mail.python.org/mailman/listinfo/python3-ldap
+ldap3 is PEP8 compliant, except for line length.
 
 
 Home Page
@@ -37,8 +31,13 @@ Documentation is available at http://ldap3.readthedocs.org
 Download
 --------
 
-Package download is available at https://pypi.python.org/pypi/ldap3 or via **pip install ldap3**
+Package download is available at https://pypi.python.org/pypi/ldap3
 
+
+Install
+-------
+
+Install with **pip install ldap3**
 
 GIT repository
 --------------
@@ -53,7 +52,7 @@ You can submit support tickets on https://github.com/cannatag/ldap3/issues/new
 Contact me
 ----------
 
-For information and suggestions you can contact me at cannatag@gmail.com or you can join the ldap3 mailing list at http://mail.python.org/mailman/listinfo/python3. You can also open a support ticket on https://github.com/cannatag/ldap3/issues/new
+For information and suggestions you can contact me at cannatag@gmail.com. You can also open a support ticket on https://github.com/cannatag/ldap3/issues/new
 
 
 Thanks to

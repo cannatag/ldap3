@@ -30,7 +30,9 @@ class Test(unittest.TestCase):
     def test_create_query_dict(self):
         query_text = 'Common Name:=|john;Bob, Surname:=smith'
         query_dict = _create_query_dict(query_text)
-        self.assertDictEqual({'Common Name': '=|john;Bob', 'Surname': '=smith'}, query_dict)
+        self.assertEqual(query_dict['Common Name'], '=|john;Bob')
+        self.assertEqual(query_dict['Surname'], '=smith')
+        self.assertEqual(len(query_dict), 2)
 
     def test_validate_query_filter(self):
         o = ObjectDef()

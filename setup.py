@@ -20,12 +20,11 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from setuptools import setup, find_packages
+from setuptools import setup
 from os import path
 
-package_name = 'ldap3'
-package_folder = path.join('.', package_name)
-version_file = open(path.join(package_folder, 'ldap3', '_version.py'))
+
+version_file = open('_version.py')
 exec_local = dict()
 exec(version_file.read(), dict(), exec_local)
 __version__ = exec_local['__version__']
@@ -34,9 +33,27 @@ __email__ = exec_local['__email__']
 __license__ = exec_local['__license__']
 __url__ = exec_local['__url__']
 __description__ = exec_local['__description__']
+__long_description__ = exec_local['__long_description__']
+__package_name__ = exec_local['__package_name__']
+__package_folder__ = exec_local['__package_folder__']
+__status__ = exec_local['__status__']
+
 version_file.close()
 
-setup(name=package_name,
+project_version_file = open(path.join(__package_folder__, __package_name__, 'version.py'), 'w+')
+project_version_file.write('\n'.join([
+    '__version__ = ' + "'" + __version__ + "'",
+    '__author__ = ' + "'" + __author__ + "'",
+    '__email__ = ' + "'" + __email__ + "'",
+    '__url__ = ' + "'" + __url__ + "'",
+    '__description__ = ' + "'" + __description__ + "'",
+    '__status__ = ' + "'" + __status__ + "'",
+    '__license__ = ' + "'" + __license__ + "'"
+    ]))
+
+project_version_file.close()
+
+setup(name=__package_name__,
       version=__version__,
       packages=['ldap3',
                 'ldap3.core',
@@ -54,12 +71,13 @@ setup(name=package_name,
                 'ldap3.extend.microsoft',
                 'ldap3.extend.standard'
                ],
-      package_dir={ '': package_folder },
+      package_dir={'': __package_folder__},
       install_requires=['pyasn1 >= 0.1.7'],
       license=__license__,
       author=__author__,
       author_email=__email__,
       description=__description__,
+      long_description=__long_description__,
       keywords='python3 python2 ldap',
       url=__url__,
       classifiers=['Development Status :: 4 - Beta',

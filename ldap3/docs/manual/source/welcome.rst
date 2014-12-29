@@ -1,5 +1,5 @@
-ldap3 project info
-#########################
+The ldap3 project
+#################
 
 ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3
 
@@ -7,13 +7,13 @@ ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same cod
 License
 =======
 
-The ldap3 project is **open source software** and released under the LGPL v3 license.
+The ldap3 project is open source software released under the **LGPL v3 license**.
 
 
 PEP8 Compliance
 ---------------
 
-ldap3 is PEP8 compliant (except for line length) starting from version 0.9.0.
+ldap3 is PEP8 compliant, except for lines length.
 
 
 Mailing List
@@ -56,8 +56,8 @@ Contact me
 For information and suggestions you can contact me at cannatag@gmail.com or you can join the ldap3 mailing list at http://mail.python.org/mailman/listinfo/python3. You can also open a support ticket on https://github.com/cannatag/ldap3/issues/new
 
 
-Acknowledgements
-----------------
+Thanks to
+---------
 
 * **Ilya Etingof**, the author of the *pyasn1* package for his excellent work and support.
 

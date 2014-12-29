@@ -242,11 +242,11 @@ class Connection(object):
             self.post_send_search = self.strategy.post_send_search
 
             if not self.strategy.no_real_dsa:
-                if self.auto_bind:
+                if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
                         self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
+                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND or auto_bind == True:
                         self.start_tls(read_server_info=False)
                         self.bind(read_server_info=True)
                     elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:

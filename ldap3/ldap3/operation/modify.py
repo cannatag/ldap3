@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from .. import SEQUENCE_TYPES
+from .. import SEQUENCE_TYPES, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
 from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import changes_to_list, validate_attribute_value
@@ -37,6 +37,11 @@ from ..protocol.convert import changes_to_list, validate_attribute_value
 #            replace (2),
 #            ...  },
 #    modification    PartialAttribute } }
+
+change_table = dict(MODIFY_ADD=0,
+                    MODIFY_DELETE=1,
+                    MODIFY_REPLACE=2,
+                    MODIFY_INCREMENT=3)
 
 
 def modify_operation(dn,
@@ -58,7 +63,7 @@ def modify_operation(dn,
             partial_attribute['vals'].setComponentByPosition(0, validate_attribute_value(schema, attribute, changes[attribute][1]))
 
         change = Change()
-        change['operation'] = Operation(changes[attribute][0])
+        change['operation'] = Operation(change_table[changes[attribute][0]])
         change['modification'] = partial_attribute
 
         change_list[pos] = change

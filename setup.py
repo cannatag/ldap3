@@ -4,26 +4,26 @@
 #
 # Copyright 2015 Giovanni Cannata
 #
-# This file is part of pureLDAP.
+# This file is part of ldap3.
 #
-# pureLDAP is free software: you can redistribute it and/or modify
+# ldap3 is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# pureLDAP is distributed in the hope that it will be useful,
+# ldap3 is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with pureLDAP in the COPYING and COPYING.LESSER files.
+# along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
 from os import path
 
-package_name = 'pureLDAP'
+package_name = 'ldap3'
 package_folder = path.join('.', package_name)
 version_file = open(path.join(package_folder, 'ldap3', '_version.py'))
 exec_local = dict()

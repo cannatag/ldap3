@@ -16,5 +16,5 @@ env:
 install:
   - "pip install ."
 script:
-  - cd pureLDAP
+  - cd ldap3
   - nosetests test

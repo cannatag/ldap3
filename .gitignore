@@ -56,8 +56,6 @@ docs/build/
 # PyBuilder
 target/
 
-
 # PyCharm
 .idea/
 
-external_packages/

@@ -76,7 +76,7 @@ else:
 
 if location.startswith('TRAVIS,'):
     _, strategy, lazy = location.split(',')
-    test_strategy = int(strategy)
+    test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
 else:
     test_strategy = STRATEGY_SYNC  # sync strategy for executing tests

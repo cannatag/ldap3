@@ -75,5 +75,6 @@ CHANGELOG
     - Moved to Travis-CI for continuous integration
     - Moved testing servers in the cloud, to allow testing from Travis-CI
     - Project renamed from python3-ldap to ldap3 to avoid name clashing with the existing python-ldap library
+    - Constant values in ldap3 are now strings. This is helpful in testing and debugging
 
 Previous versions changelog is available at http://pythonhosted.org//python3-ldap/changelog.html

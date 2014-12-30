@@ -24,41 +24,38 @@ import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader
 from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, generate_dn, test_lazy_connection, \
-    test_get_info, test_check_names, test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_server_mode
+from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base,\
+    generate_dn, test_lazy_connection, test_get_info, test_check_names, test_pooling_strategy, test_pooling_active,\
+    test_pooling_exhaust, test_server_mode, add_user, add_group, get_connection, drop_connection, random_id
+
+testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        if isinstance(test_server, (list, tuple)):
-            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
-            for host in test_server:
-                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
-        else:
-            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
-        result = self.connection.add(generate_dn(test_base, 'test-group'), [], {'objectClass': 'groupOfNames', 'member': ['cn=test-add,o=test', 'cn=test-compare,o=test', 'cn=test-modify,o=test', 'cn=test-modify-dn,o=test']})
-        if not self.connection.strategy.sync:
-            self.connection.get_response(result)
+        self.connection = get_connection()
+        self.delete_at_teardown = []
 
     def tearDown(self):
-        self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
-            self.connection.strategy.terminate()
+        drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_search_filter_with_object_class(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-3'))
+        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
         reverse = lambda a, e: e[::-1]
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
         o += AttrDef('givenName', 'Given Name', post_query=reverse)
 
-        query_text = 'Common Name:=test-search*'
+        query_text = 'Common Name:=' + testcase_id + 'abstract-member-*'
         r = Reader(self.connection, o, query_text, 'o=test')
 
         results = r.search()
-        self.assertEqual(len(results), 7)
+        self.assertEqual(len(results), 3)
 
     def test_search_with_dereference(self):
         reverse = lambda a, e: e[::-1]
@@ -74,32 +71,41 @@ class Test(unittest.TestCase):
 
             return r
 
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-3'))
+        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'Common Name', post_query=reverse)
         ou += AttrDef('sn', 'Surname')
         ou += AttrDef('givenName', 'Given Name', post_query=raise_parentheses_rank)
         ou += AttrDef('ACL')
-        qu = 'Common Name: test-search*'
+        qu = 'Common Name: ' + testcase_id + 'abstract-member-*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 7)
+        self.assertEqual(len(lu), 3)
 
         og = ObjectDef('groupOfNames')
         og += AttrDef('member', dereference_dn=ou)
         og += 'cn'
-        qg = 'cn := test-group'
+        qg = 'cn := ' + testcase_id + 'abstract-group*'
         rg = Reader(self.connection, og, qg, test_base)
         lg = rg.search()
         self.assertEqual(len(lg), 1)
 
         eg = lg[0]
         mg = eg.member
-        self.assertEqual(len(mg), 4)
+        self.assertEqual(len(mg), 3)
         ug = eg.member[0]
-        self.assertEqual(str(ug.surname), 'tost')
+        self.assertEqual(str(ug.surname), 'abstract-member-1')
 
     def test_search_with_pre_query(self):
-        change = lambda attr, value: 'test-search*'
+        change = lambda attr, value: testcase_id + 'abstract-member*'
+
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-3'))
+        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
 
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'Common Name', pre_query=change)
@@ -109,24 +115,29 @@ class Test(unittest.TestCase):
         qu = 'Common Name := bug'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(len(lu), 7)
+        self.assertEqual(len(lu), 3)
 
     def test_search_with_default(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
+
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='not employed')
-        qu = 'CommonName := test-add*'
+        qu = 'CommonName := ' + testcase_id + 'abstract-member-1*'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
         self.assertEqual(str(lu[0].employee), 'not employed')
 
-    def test_refresh_entry(self):  # require manual modification of attribute value
-        ou = ObjectDef('iNetOrgPerson')
-        ou += AttrDef('cn', 'CommonName')
-        ou += AttrDef('sn', 'Surname')
-        qu = 'CommonName := test-add*'
-        ru = Reader(self.connection, ou, qu, test_base)
-        lu = ru.search()
-        eu = lu[0]
-        eu.refresh()
-        self.assertEqual(str(eu.surname), 'tost')
+    # require manual modification of attribute value
+    # def test_refresh_entry(self):
+    #     self.delete_at_teardown.append(add_user(self.connection, testcase_uuid, 'abstract-member-1'))
+    #
+    #     ou = ObjectDef('iNetOrgPerson')
+    #     ou += AttrDef('cn', 'CommonName')
+    #     ou += AttrDef('sn', 'Surname')
+    #     qu = 'CommonName := ' + testcase_id + 'abstract-member-1*'
+    #     ru = Reader(self.connection, ou, qu, test_base)
+    #     lu = ru.search()
+    #     eu = lu[0]
+    #     eu.refresh()
+    #     self.assertEqual(str(eu.surname), 'changed')

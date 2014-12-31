@@ -24,23 +24,26 @@ import unittest
 from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED, GET_DSA_INFO, LDAPExtensionError
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
     test_lazy_connection, test_server_context, test_server_mode, test_pooling_strategy, test_pooling_active, \
-    test_pooling_exhaust, test_server_edir_name
+    test_pooling_exhaust, test_server_edir_name, random_id, get_connection, drop_connection, add_user
+
+testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        if isinstance(test_server, (list, tuple)):
-            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
-            for host in test_server:
-                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_DSA_INFO, mode=test_server_mode))
-        else:
-            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=GET_DSA_INFO, mode=test_server_mode)
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
+        self.connection = get_connection(check_names=True)
+        self.delete_at_teardown = []
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-3'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-4'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-5'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-6'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-7'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-8'))
 
     def tearDown(self):
-        self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
-            self.connection.strategy.terminate()
+        drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_who_am_i_extension(self):
@@ -61,15 +64,14 @@ class Test(unittest.TestCase):
             self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):
-        responses = self.connection.extend.standard.paged_search('o=test', '(&(cn=*)(!(cn=*move*)))', generator=False)
-        self.assertTrue(len(responses) > 15)
+        responses = self.connection.extend.standard.paged_search('o=test', '(cn=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
+        self.assertTrue(len(responses) == 8)
 
     def test_paged_search_generator(self):
         responses = []
-        for response in self.connection.extend.standard.paged_search('o=test', '(&(cn=*)(!(cn=*move*)))'):
+        for response in self.connection.extend.standard.paged_search('o=test', '(cn=' + testcase_id + 'paged_search-*)'):
             responses.append(response)
-        self.assertTrue(len(responses) > 15)
-
+        self.assertTrue(len(responses) == 8)
 
     def test_novell_list_replicas(self):
         result = self.connection.extend.novell.list_replicas('cn=' + test_server_edir_name + ',' + test_server_context)

@@ -24,33 +24,26 @@ import unittest
 from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
     test_base, generate_dn, test_lazy_connection, test_get_info, test_server_mode, \
-    test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+    test_pooling_strategy, test_pooling_active, test_pooling_exhaust, random_id, get_connection, drop_connection, \
+    add_user
+
+testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        if isinstance(test_server, (list, tuple)):
-            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
-            for host in test_server:
-                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
-        else:
-            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
-        result = self.connection.add(generate_dn(test_base, 'test-add-for-delete'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add'})
-        if not self.connection.strategy.sync:
-            self.connection.get_response(result)
+        self.connection = get_connection(check_names=True)
+        self.delete_at_teardown = []
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'delete-1'))
 
     def tearDown(self):
-        self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
-            self.connection.strategy.terminate()
+        drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_delete(self):
-        result = self.connection.delete(generate_dn(test_base, 'test-add-for-delete'))
+        result = self.connection.delete(self.delete_at_teardown[0][0])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['success', 'noSuchObject'])
+        self.assertEqual(result['description'], 'success')

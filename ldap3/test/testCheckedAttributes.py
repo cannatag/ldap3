@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
                          '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000  # integer syntax incremented by 1000
             }
         self.connection.server.custom_formatter = formatter
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=test-checked-attributes)', attributes=[test_name_attr, 'sn', 'jpegPhoto', 'loginGraceLimit'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'checked-attributes-1*)', attributes=[test_name_attr, 'sn', 'jpegPhoto', 'loginGraceLimit'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -85,6 +85,6 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
-        self.assertEqual(response[0]['attributes']['cn'][0], 'TEST-CHECKED-ATTRIBUTES')
-        self.assertEqual(response[0]['attributes']['sn'][0], 'setubirtta-dekcehc-tset')
+        self.assertTrue('CHECKED-ATTRIBUTES-1' in response[0]['attributes']['cn'][0])
+        self.assertEqual(response[0]['attributes']['sn'][0], '1-setubirtta-dekcehc')
         self.assertEqual(response[0]['attributes']['loginGraceLimit'], 1010)

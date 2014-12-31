@@ -181,7 +181,8 @@ Working with a generator is better when you deal with very long list of entries 
                                                      search_filter = '(objectClass=inetOrgPerson)',
                                                      search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
                                                      attributes = ['cn', 'givenName'],
-                                                     paged_size = 5)
+                                                     paged_size = 5,
+                                                     generator=True)
     for entry in entry_generator:
         total_entries += 1
         print(entry['dn'], entry['attributes])
@@ -197,7 +198,8 @@ Working with a list keeps all the found entries in a list and you can elaborate 
                                                 search_filter = '(objectClass=inetOrgPerson)',
                                                 search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
                                                 attributes = ['cn', 'givenName'],
-                                                paged_size = 5)
+                                                paged_size = 5,
+                                                generator=False)
     for entry in entry_list:
         print entry['attributes']
     total_entries = len(entry_list)

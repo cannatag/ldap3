@@ -23,7 +23,10 @@
 import unittest
 
 from ldap3 import Connection, STRATEGY_LDIF_PRODUCER, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
-from test import test_base, generate_dn, test_name_attr, test_moved
+from test import test_base, generate_dn, test_name_attr, test_moved, random_id
+
+
+testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
@@ -44,84 +47,85 @@ class Test(unittest.TestCase):
         else:
             controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(unicode('\xe0\xe0', encoding='latin1'), encoding='UTF-8')))  # for python2 compatability
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'trailingspace '))
-        self.connection.add(generate_dn(test_base, 'test-add-operation'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', test_name_attr: 'test-add-operation'}, controls=controls)
+        self.connection.add(generate_dn(test_base, testcase_id, 'ldif-1'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'ldif-1', test_name_attr: 'ldif-1'}, controls=controls)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=test-add-operation,o=test' in response)
+        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in response)
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 true: givenName' in response)
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false: sn' in response)
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: w6DDoA==' in response)
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: dHJhaWxpbmdzcGFjZSA=' in response)
         self.assertTrue('changetype: add' in response)
         self.assertTrue('objectClass: iNetOrgPerson' in response)
-        self.assertTrue('sn: test-add' in response)
-        self.assertTrue('cn: test-add-operation' in response)
+        self.assertTrue('sn: ldif-1' in response)
+        self.assertTrue('cn: ldif-1' in response)
 
     def test_delete_request_to_ldif(self):
         self.connection.strategy.order = dict(delRequest=['dn:', 'changetype', 'vers'])
-        self.connection.delete(generate_dn(test_base, 'test-del-operation'))
+        self.connection.delete(generate_dn(test_base, testcase_id, 'ldif-1'))
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=test-del-operation,o=test' in response)
+        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in response)
         self.assertTrue('changetype: delete' in response)
 
     def test_modify_dn_request_to_ldif(self):
-        result = self.connection.modify_dn(generate_dn(test_base, 'test-modify-dn-operation'), test_name_attr + '=test-modified-dn-operation')
+        result = self.connection.modify_dn(generate_dn(test_base, testcase_id, 'ldif-1'), test_name_attr + '=' + testcase_id + 'ldif-2,' + test_base)
         if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=test-modify-dn-operation,o=test' in response)
+        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in response)
         self.assertTrue('changetype: moddn' in response)
-        self.assertTrue('newrdn: cn=test-modified-dn-operation' in response)
+        self.assertTrue('newrdn: cn=' + testcase_id + 'ldif-2,' + test_base in response)
         self.assertTrue('deleteoldrdn: 1' in response)
 
     def test_move_dn_request_to_ldif(self):
-        result = self.connection.modify_dn(generate_dn(test_base, 'test-move-dn-operation'), test_name_attr + '=test-move-dn-operation', delete_old_dn=False, new_superior=test_moved)
+        result = self.connection.modify_dn(generate_dn(test_base, testcase_id, 'ldif-1'), test_name_attr + '=' + testcase_id + 'ldif-1', delete_old_dn=False, new_superior=test_moved)
         if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=test-move-dn-operation,o=test' in response)
+        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in response)
         self.assertTrue('changetype: modrdn' in response)
-        self.assertTrue('newrdn: cn=test-move-dn-operation' in response)
+        self.assertTrue('newrdn: cn=' + testcase_id + 'ldif-1' in response)
         self.assertTrue('deleteoldrdn: 0' in response)
-        self.assertTrue('newsuperior: ou=moved,o=test' in response)
+        self.assertTrue('newsuperior: ' + test_moved in response)
 
     def test_modify_add_to_ldif(self):
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
+        result = self.connection.modify(generate_dn(test_base, testcase_id, 'ldif-1'), {'givenName': (MODIFY_ADD, ['givenname-1-modified'])})
         if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
+        print(response)
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
+        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in response)
         self.assertTrue('changetype: modify' in response)
         self.assertTrue('add: givenName' in response)
-        self.assertTrue('givenName: test-modified-added' in response)
+        self.assertTrue('givenName: givenname-1-modified' in response)
         self.assertEqual('-', response[-1])
 
     def test_modify_replace_to_ldif(self):
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace'])})
+        result = self.connection.modify(generate_dn(test_base, testcase_id, 'ldif-1'), {'givenName': (MODIFY_REPLACE, ['givenname-1-replaced'])})
         if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
+        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in response)
         self.assertTrue('changetype: modify' in response)
         self.assertTrue('replace: givenName' in response)
-        self.assertTrue('givenName: test-modified-replace' in response)
+        self.assertTrue('givenName: givenname-1-replaced' in response)
         self.assertEqual('-', response[-1])
 
     def test_modify_delete_to_ldif(self):
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
+        result = self.connection.modify(generate_dn(test_base, testcase_id, 'ldif-1'), {'givenName': (MODIFY_DELETE, ['givenname-1-deleted'])})
         if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=test-add-for-modify,o=test' in response)
+        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in response)
         self.assertTrue('changetype: modify' in response)
         self.assertTrue('delete: givenName' in response)
-        self.assertTrue('givenName: test-modified-added2' in response)
+        self.assertTrue('givenName: givenname-1-deleted' in response)
         self.assertEqual('-', response[-1])
 
     def test_multiple_modify_to_ldif(self):

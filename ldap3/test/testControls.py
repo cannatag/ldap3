@@ -21,10 +21,9 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
-    test_base, test_lazy_connection, test_get_info, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust, \
-    random_id, get_connection, drop_connection, add_user
+
+from test import test_base, random_id, get_connection, drop_connection, add_user, test_server_type
+
 
 testcase_id = random_id()
 
@@ -42,13 +41,13 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_search_with_controls(self):
-        controls = list()
-        controls.append(('2.16.840.1.113719.1.27.103.7', True, 'givenName'))  # grouping [Novell]
-        result = self.connection.search(test_base, '(cn=' + testcase_id + 'controls-*)', attributes=['sn', 'givenName'], size_limit=0, controls=controls)
-        if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        if test_server_type == 'EDIR':
+            controls = list()
+            controls.append(('2.16.840.1.113719.1.27.103.7', True, 'sn'))  # grouping [Novell]
+            result = self.connection.search(test_base, '(cn=' + testcase_id + 'controls-*)', attributes=['sn', 'givenName'], controls=controls)
+            if not self.connection.strategy.sync:
+                _, result = self.connection.get_response(result)
+            else:
+                result = self.connection.result
 
-        self.assertTrue(result['description'] in ['success', 'operationsError'])
+            self.assertTrue(result['description'] in ['success', 'operationsError'])

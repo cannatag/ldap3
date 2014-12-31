@@ -23,10 +23,8 @@
 import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader
-from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base,\
-    generate_dn, test_lazy_connection, test_get_info, test_check_names, test_pooling_strategy, test_pooling_active,\
-    test_pooling_exhaust, test_server_mode, add_user, add_group, get_connection, drop_connection, random_id
+from test import test_base, \
+    add_user, add_group, get_connection, drop_connection, random_id
 
 testcase_id = random_id()
 
@@ -88,7 +86,7 @@ class Test(unittest.TestCase):
         og = ObjectDef('groupOfNames')
         og += AttrDef('member', dereference_dn=ou)
         og += 'cn'
-        qg = 'cn := ' + testcase_id + 'abstract-group*'
+        qg = 'cn := ' + testcase_id + 'abstract-group'
         rg = Reader(self.connection, og, qg, test_base)
         lg = rg.search()
         self.assertEqual(len(lg), 1)
@@ -100,7 +98,7 @@ class Test(unittest.TestCase):
         self.assertEqual(str(ug.surname), 'abstract-member-1')
 
     def test_search_with_pre_query(self):
-        change = lambda attr, value: testcase_id + 'abstract-member*'
+        change = lambda attr, value: testcase_id + 'abstract-member-*'
 
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-2'))
@@ -123,21 +121,8 @@ class Test(unittest.TestCase):
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='not employed')
-        qu = 'CommonName := ' + testcase_id + 'abstract-member-1*'
+        qu = 'CommonName := ' + testcase_id + 'abstract-member-1'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
         self.assertEqual(str(lu[0].employee), 'not employed')
 
-    # require manual modification of attribute value
-    # def test_refresh_entry(self):
-    #     self.delete_at_teardown.append(add_user(self.connection, testcase_uuid, 'abstract-member-1'))
-    #
-    #     ou = ObjectDef('iNetOrgPerson')
-    #     ou += AttrDef('cn', 'CommonName')
-    #     ou += AttrDef('sn', 'Surname')
-    #     qu = 'CommonName := ' + testcase_id + 'abstract-member-1*'
-    #     ru = Reader(self.connection, ou, qu, test_base)
-    #     lu = ru.search()
-    #     eu = lu[0]
-    #     eu.refresh()
-    #     self.assertEqual(str(eu.surname), 'changed')

@@ -21,70 +21,52 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3 import Server, Connection, ServerPool, MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
-    test_base, generate_dn, test_lazy_connection, test_get_info, test_check_names, test_server_mode, \
-    test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+
+from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
+from test import random_id, get_connection, add_user, \
+    drop_connection
+
+
+testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        if isinstance(test_server, (list, tuple)):
-            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
-            for host in test_server:
-                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
-        else:
-            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
-        result = self.connection.add(generate_dn(test_base, 'test-add-for-modify'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-add-for-modify'})
-        if not self.connection.strategy.sync:
-            self.connection.get_response(result)
+        self.connection = get_connection()
+        self.delete_at_teardown = []
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-1', attributes={'givenName': 'givenname-1'}))
 
     def tearDown(self):
-        self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
-            self.connection.strategy.terminate()
+        drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_modify_replace(self):
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_REPLACE, ['test-modified-replace']), 'sn': (MODIFY_REPLACE, ['test-modified-sn-replace'])})
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_REPLACE, ['givenname-1-replaced']), 'sn': (MODIFY_REPLACE, ['sn-replaced'])})
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            _, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
 
     def test_modify_add(self):
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added'])})
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_ADD, ['givenname-2-added'])})
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            _, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['success', 'attributeOrValueExists'])
+        self.assertEqual(result['description'], 'success')
 
     def test_modify_deleted(self):
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added2'])})
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_ADD, ['givenname-3-added'])})
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            _, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['success', 'attributeOrValueExists'])
+        self.assertEqual(result['description'], 'success')
 
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_ADD, ['test-modified-added3'])})
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_DELETE, ['givenname-3-added'])})
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            _, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
             result = self.connection.result
-        self.assertTrue(result['description'] in ['attributeOrValueExists', 'success'])
-
-        result = self.connection.modify(generate_dn(test_base, 'test-add-for-modify'), {'givenName': (MODIFY_DELETE, ['test-modified-added2'])})
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-        self.assertTrue(result['description'] in ['success', 'noSuchAttribute'])
+        self.assertEqual(result['description'], 'success')

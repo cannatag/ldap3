@@ -21,11 +21,10 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
-    test_base, generate_dn, test_lazy_connection, test_get_info, test_server_mode, \
-    test_pooling_strategy, test_pooling_active, test_pooling_exhaust, random_id, get_connection, drop_connection, \
+
+from test import random_id, get_connection, drop_connection, \
     add_user
+
 
 testcase_id = random_id()
 

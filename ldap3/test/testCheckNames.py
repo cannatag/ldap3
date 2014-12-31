@@ -20,21 +20,19 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from time import sleep
-
 import unittest
-from ldap3.core.exceptions import LDAPException, LDAPAttributeError, LDAPObjectClassError
-from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy,\
-    test_base, generate_dn, test_lazy_connection, test_name_attr, test_get_info, test_pooling_strategy, \
-    test_pooling_active, test_pooling_exhaust, test_server_mode, random_id, get_connection, add_user, drop_connection
+from ldap3 import GET_ALL_INFO
+
+from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
+from test import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
+
 
 testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(check_names=True)
+        self.connection = get_connection(check_names=True, get_info=GET_ALL_INFO)
         self.delete_at_teardown = []
 
     def tearDown(self):
@@ -56,25 +54,25 @@ class Test(unittest.TestCase):
     def test_valid_assertion(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-1'))
 
-        result = self.connection.search(search_base=test_base, search_filter='(cn=' + testcase_id + 'check-names-1*)', attributes=[test_name_attr])
+        result = self.connection.search(search_base=test_base, search_filter='(cn=' + testcase_id + 'check-names-1)', attributes=[test_name_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue(len(response) == 1)
+        self.assertEqual(len(response), 1)
 
     def test_valid_attribute(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-2', attributes={'givenName': 'given-name-2'}))
-        result = self.connection.search(search_base=test_base, search_filter='(cn=' + testcase_id + 'check-names-2*)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(cn=' + testcase_id + 'check-names-2)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue(len(response) == 1)
+        self.assertEqual(len(response), 1)
 
     def test_valid_object_class_add(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-3', attributes={'objectClass': ['iNetOrgPerson', 'Person']}))

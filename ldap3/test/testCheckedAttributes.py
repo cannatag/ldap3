@@ -21,21 +21,18 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-
 import unittest
+from ldap3 import GET_ALL_INFO
 
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base,\
-    generate_dn, test_name_attr, test_lazy_connection, test_get_info, test_pooling_strategy, test_pooling_active,\
-    test_pooling_exhaust, test_server_mode, random_id, get_connection, add_user, drop_connection
-from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
+from test import test_base, \
+    test_name_attr, random_id, get_connection, add_user, drop_connection
 
 testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(check_names=True)
+        self.connection = get_connection(check_names=True, get_info=GET_ALL_INFO)
         self.delete_at_teardown = []
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1', attributes={'loginGraceLimit': 10}))
 
@@ -69,13 +66,11 @@ class Test(unittest.TestCase):
         if str != bytes:  # python3
             formatter = {'cn': to_upper,  # name to upper
                          '2.5.4.4': lambda v: str(v, encoding='UTF-8')[::-1],  # sn reversed
-                         '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000  # integer syntax incremented by 1000
-            }
+                         '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000}  # integer syntax incremented by 1000
         else:
             formatter = {'cn': to_upper,  # name to upper
                          '2.5.4.4': lambda v: unicode(v, encoding='UTF-8')[::-1],  # sn reversed
-                         '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000  # integer syntax incremented by 1000
-            }
+                         '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000}  # integer syntax incremented by 1000
         self.connection.server.custom_formatter = formatter
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'checked-attributes-1*)', attributes=[test_name_attr, 'sn', 'jpegPhoto', 'loginGraceLimit'])
         if not self.connection.strategy.sync:

@@ -22,42 +22,35 @@
 
 import unittest
 
-from ldap3 import Server, Connection, ServerPool, GET_ALL_INFO, STRATEGY_REUSABLE_THREADED, OFFLINE_EDIR_8_8_8, SchemaInfo, DsaInfo
+from ldap3 import Server, OFFLINE_EDIR_8_8_8, SchemaInfo, DsaInfo
 from ldap3.protocol.rfc4512 import ObjectClassInfo, AttributeTypeInfo
-from test import test_server, test_port, test_user, test_password, test_authentication,\
-    test_strategy, test_lazy_connection, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
+from test import test_server, get_connection, drop_connection
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        if isinstance(test_server, (list, tuple)):
-            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
-            for host in test_server:
-                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=OFFLINE_EDIR_8_8_8, mode=test_server_mode))
-        else:
-            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=OFFLINE_EDIR_8_8_8, mode=test_server_mode)
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
+        self.connection = get_connection(get_info=OFFLINE_EDIR_8_8_8)
 
     def tearDown(self):
-        self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
-            self.connection.strategy.terminate()
+        drop_connection(self.connection)
         self.assertFalse(self.connection.bound)
 
     def test_offline_schema(self):
-        self.assertTrue(type(self.connection.server.schema), SchemaInfo)
+        if not self.connection.server.schema:
+            self.connection.refresh_server_info()
+        self.assertEqual(type(self.connection.server.schema), SchemaInfo)
 
     def test_object_classes(self):
         if not self.connection.strategy.pooled:
             if not self.connection.server.info:
                 self.connection.refresh_server_info()
-            self.assertTrue(type(self.connection.server.schema.object_classes['iNetOrgPerson']), ObjectClassInfo)
+            self.assertEqual(type(self.connection.server.schema.object_classes['iNetOrgPerson']), ObjectClassInfo)
 
     def test_attributes_types(self):
         if not self.connection.strategy.pooled:
             if not self.connection.server.info:
                 self.connection.refresh_server_info()
-            self.assertTrue(type(self.connection.server.schema.attribute_types['cn']), AttributeTypeInfo)
+            self.assertEqual(type(self.connection.server.schema.attribute_types['cn']), AttributeTypeInfo)
 
     def test_json_definition(self):
         if not self.connection.strategy.pooled:

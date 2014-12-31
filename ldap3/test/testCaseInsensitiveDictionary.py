@@ -21,6 +21,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+
 from ldap3.utils.ciDict import CaseInsensitiveDict
 
 
@@ -233,7 +234,7 @@ class Test(unittest.TestCase):
         cid2['two'] = 2
         cid2[3] = 3
 
-        self.assertTrue(cid == cid2)
+        self.assertEqual(cid, cid2)
 
     def test_equality_case_insensitive_dict_with_different_case(self):
         cid = CaseInsensitiveDict()
@@ -246,7 +247,7 @@ class Test(unittest.TestCase):
         cid2['TWO'] = 2
         cid2[3] = 3
 
-        self.assertTrue(cid == cid2)
+        self.assertEqual(cid, cid2)
 
     def test_equality_case_insensitive_dict_with_same_case_dict(self):
         cid = CaseInsensitiveDict()
@@ -259,7 +260,7 @@ class Test(unittest.TestCase):
         dic['two'] = 2
         dic[3] = 3
 
-        self.assertTrue(cid == dic)
+        self.assertEqual(cid, dic)
 
     def test_equality_case_insensitive_dict_with_different_case_dict(self):
         cid = CaseInsensitiveDict()
@@ -272,7 +273,7 @@ class Test(unittest.TestCase):
         dic['TWO'] = 2
         dic[3] = 3
 
-        self.assertTrue(cid == dic)
+        self.assertEqual(cid, dic)
 
     def test_preserve_key_case_case_insensitive_dict(self):
         cid = CaseInsensitiveDict()

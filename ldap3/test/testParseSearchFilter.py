@@ -79,8 +79,3 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['value'], b'Dino')
         self.assertEqual(f.elements[0].assertion['matchingRule'], '2.4.6.8.''10')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
-
-
-    # def test_parse_search_filter_bytes(self):
-    #     bytes_filter = b'(cn=' + bytes([201,202,203,204,205]) + b')'
-    #     f = parse_filter_bytes(bytes_filter)

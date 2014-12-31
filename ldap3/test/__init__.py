@@ -19,15 +19,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
-from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, \
-    STRATEGY_REUSABLE_THREADED, POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO, IP_V4_PREFERRED, \
-    IP_SYSTEM_DEFAULT, IP_V6_PREFERRED, IP_V4_ONLY, IP_V6_ONLY, GET_NO_INFO, GET_DSA_INFO, \
-    Server, Connection, ServerPool, AUTH_SASL
-
+from time import sleep
 from sys import version
 from os import environ
 from random import SystemRandom
+
+from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC_RESTARTABLE, \
+    STRATEGY_REUSABLE_THREADED, POOLING_STRATEGY_ROUND_ROBIN, GET_ALL_INFO, IP_V6_PREFERRED, Server, Connection, ServerPool, AUTH_SASL, \
+    GET_NO_INFO
+
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
@@ -41,6 +41,7 @@ if location.startswith('TRAVIS'):
     test_server = 'labldap02.cloudapp.net'
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
+    test_server_type = 'EDIR'
     test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
     test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'testLAB.resources'
@@ -51,9 +52,11 @@ if location.startswith('TRAVIS'):
 elif location == 'GCNBHPW8':
     # test elitebook
     # test_server = 'edir1.hyperv'
-    test_server = ['edir1', 'edir2',
+    test_server = ['edir1',
+                   'edir2',
                    'edir3']  # the ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
+    test_server_type = 'EDIR'
     test_server_context = 'o=services'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
@@ -66,6 +69,7 @@ elif location == 'GCNBHPW8':
 elif location == 'CAMERA':
     # test camera
     test_server = 'sl10'
+    test_server_type = 'EDIR'
     test_server_context = 'o=services'  # used in novell eDirectory extended operations
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
@@ -84,10 +88,10 @@ if location.startswith('TRAVIS,'):
     test_lazy_connection = bool(int(lazy))
 else:
     test_strategy = STRATEGY_SYNC  # sync strategy for executing tests
-    # test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+    test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
     # test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
-    test_lazy_connection = False  # connection lazy
+    test_lazy_connection = True  # connection lazy
 
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
@@ -103,7 +107,7 @@ test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = AUTH_SIMPLE  # authentication type
 test_check_names = False  # check attribute names in operations
-test_get_info = GET_ALL_INFO  # get info from DSA
+test_get_info = GET_NO_INFO  # get info from DSA
 
 print('Testing location:', location)
 print('Test server:', test_server)
@@ -116,7 +120,7 @@ def random_id():
 
 
 def generate_dn(base, batch_id, name):
-    return test_name_attr + '=' + batch_id + name + random_id() + ',' + base
+    return test_name_attr + '=' + batch_id + name + ',' + base
 
 
 def get_connection(bind=None,
@@ -124,7 +128,8 @@ def get_connection(bind=None,
                    lazy_connection=None,
                    authentication=None,
                    sasl_mechanism=None,
-                   sasl_credentials=None):
+                   sasl_credentials=None,
+                   get_info=None):
     if bind is None:
         bind = True
     if check_names is None:
@@ -133,6 +138,8 @@ def get_connection(bind=None,
         lazy_connection = test_lazy_connection
     if authentication is None:
         authentication = test_authentication
+    if get_info is None:
+        get_info = test_get_info
 
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
@@ -142,13 +149,13 @@ def get_connection(bind=None,
             server.add(Server(host=host,
                               port=test_port,
                               allowed_referral_hosts=('*', True),
-                              get_info=test_get_info,
+                              get_info=get_info,
                               mode=test_server_mode))
     else:
         server = Server(host=test_server,
                         port=test_port,
                         allowed_referral_hosts=('*', True),
-                        get_info=test_get_info,
+                        get_info=get_info,
                         mode=test_server_mode)
 
     if authentication == AUTH_SASL:
@@ -175,23 +182,36 @@ def get_connection(bind=None,
                           check_names=check_names)
 
 
-def drop_connection(connection, dn_to_delete = None):
+def drop_connection(connection, dn_to_delete=None):
     if dn_to_delete:
         for dn in dn_to_delete:
-            connection.delete(dn[0])
+            done = False
+            counter = 10
+            while not done:  # wait at maximum for 30 seconds
+                operation_result = connection.delete(dn[0])
+                result = get_operation_result(connection, operation_result)
+                if result['description'] == 'success':
+                    done = True
+                elif result['description'] == 'busy':
+                    counter -= 1
+                    if counter >= 0:
+                        sleep(3)  # wait and retry
+                    else:
+                        print('unable to delete object ' + dn[0] + ': ' + result['description'])
+                        done = True
+                else:
+                    print('unable to delete object ' + dn[0] + ': ' + result['description'])
+                    break
     connection.unbind()
     if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
         connection.strategy.terminate()
 
 
-def check_operation_result(connection, operation_result):
+def get_operation_result(connection, operation_result):
     if not connection.strategy.sync:
         _, result = connection.get_response(operation_result)
     else:
         result = connection.result
-
-    if not result['description'] == 'success':
-        raise Exception('unable to create object: ' + result['description'])
 
     return result
 
@@ -203,7 +223,10 @@ def add_user(connection, batch_id, username, attributes=None):
     attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)
     operation_result = connection.add(dn, 'iNetOrgPerson', attributes)
-    result = check_operation_result(connection, operation_result)
+    result = get_operation_result(connection, operation_result)
+    if not result['description'] == 'success':
+        raise Exception('unable to create user ' + username + ': ' + result['description'])
+
     return dn, result
 
 
@@ -212,5 +235,9 @@ def add_group(connection, batch_id, groupname, members=None):
         members = list()
     dn = generate_dn(test_base, batch_id, groupname)
     operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
-    result = check_operation_result(connection, operation_result)
+    result = get_operation_result(connection, operation_result)
+    if not result['description'] == 'success':
+        raise Exception('unable to create group ' + groupname + ': ' + result['description'])
+
     return dn, result
+

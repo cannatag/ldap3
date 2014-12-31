@@ -21,10 +21,9 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from ldap3 import Server, Connection, ServerPool, STRATEGY_REUSABLE_THREADED, GET_ALL_INFO
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, test_base, \
-    generate_dn, test_lazy_connection, test_check_names, test_get_info, test_pooling_strategy, test_pooling_active,\
-    test_pooling_exhaust, test_server_mode, random_id, get_connection, drop_connection, add_user
+
+from test import random_id, get_connection, drop_connection, add_user
+
 
 testcase_id = random_id()
 
@@ -42,9 +41,8 @@ class Test(unittest.TestCase):
     def test_compare_true(self):
         result = self.connection.compare(self.delete_at_teardown[0][0], 'givenName', 'compare')
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            _, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
             result = self.connection.result
 
         self.assertEqual(result['description'], 'compareTrue')
@@ -52,9 +50,8 @@ class Test(unittest.TestCase):
     def test_compare_false(self):
         result = self.connection.compare(self.delete_at_teardown[0][0], 'givenName', 'error')
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            _, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
             result = self.connection.result
 
         self.assertEqual(result['description'], 'compareFalse')

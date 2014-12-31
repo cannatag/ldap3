@@ -20,43 +20,57 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+# Created on 2013.06.06
+#
+# @author: Giovanni Cannata
+#
+# Copyright 2015 Giovanni Cannata
+#
+# This file is part of ldap3.
+#
+# ldap3 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ldap3 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with ldap3 in the COPYING and COPYING.LESSER files.
+# If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
 import json
 
 from ldap3.utils.conv import escape_bytes
-from test import test_server, test_port, test_user, test_password, test_authentication, test_strategy, \
-    test_base, generate_dn, test_name_attr, test_lazy_connection, test_get_info,\
-    test_check_names, test_server_mode, test_pooling_strategy, test_pooling_active, test_pooling_exhaust
-from ldap3 import Server, Connection, ServerPool, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_REUSABLE_THREADED
+from test import test_base, test_name_attr, random_id, get_connection, \
+    add_user, drop_connection
+from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
+
+
+testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        if isinstance(test_server, (list, tuple)):
-            server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
-            for host in test_server:
-                server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
-        else:
-            server = Server(host=test_server, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode)
-        self.connection = Connection(server, auto_bind=True, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1', check_names=test_check_names)
-        result = self.connection.add(generate_dn(test_base, 'test-search-(parentheses)'), [], {'objectClass': 'iNetOrgPerson', 'sn': 'test-search-(parentheses)', 'loginGraceLimit': 10})
-        if not self.connection.strategy.sync:
-            self.connection.get_response(result)
+        self.connection = get_connection()
+        self.delete_at_teardown = []
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):
-        self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
-            self.connection.strategy.terminate()
+        drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_search_exact_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=test-add-operation)', attributes=[test_name_attr, 'givenName', 'jpegPhoto'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
 
         json_entries = json.loads(json_response)['entries']
@@ -65,131 +79,91 @@ class Test(unittest.TestCase):
     def test_search_extensible_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
 
         json_entries = json.loads(json_response)['entries']
-        self.assertTrue(len(json_entries) > 8)
+        self.assertTrue(len(json_entries) >= 2)
 
     def test_search_present(self):
-        result = self.connection.search(search_base=test_base, search_filter='(objectClass=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName', 'jpegPhoto'])
+        result = self.connection.search(search_base=test_base, search_filter='(cn=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
-
         json_entries = json.loads(json_response)['entries']
-        self.assertTrue(len(json_entries) > 9)
+        self.assertTrue(len(json_entries) >= 2)
 
     def test_search_substring_many(self):
-        result = self.connection.search(search_base=test_base, search_filter='(sn=t*)', attributes=[test_name_attr, 'givenName', 'sn'])
+        result = self.connection.search(search_base=test_base, search_filter='(cn=' + testcase_id + '*)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
-
         json_entries = json.loads(json_response)['entries']
-        self.assertTrue(len(json_entries) > 8)
-
-    def test_search_substring_one(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*y)', attributes=[test_name_attr, 'givenName', 'sn'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-            json_response = self.connection.response_to_json()
-
-        json_entries = json.loads(json_response)['entries']
-        self.assertTrue(len(json_entries) > 1)
-
-    def test_search_raw(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName', 'photo'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-            json_response = self.connection.response_to_json()
-
-        json_entries = json.loads(json_response)['entries']
-        self.assertTrue(len(json_entries) > 8)
+        self.assertEqual(len(json_entries), 2)
 
     def test_search_with_operational_attributes(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=test-add-operation)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName', 'photo'], get_operational_attributes=True)
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
-
         json_entries = json.loads(json_response)['entries']
+
         if self.connection.check_names:
-            self.assertEqual(json_entries[0]['attributes']['entryDN'], generate_dn(test_base, 'test-add-operation'))
+            self.assertEqual(json_entries[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
 
     def test_search_exact_match_with_parentheses_in_filter(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-3', attributes={'givenName': 'givenname-3'}))
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
-
         json_entries = json.loads(json_response)['entries']
+
         self.assertEqual(len(json_entries), 1)
-        self.assertEqual(json_entries[0]['attributes']['cn'][0], 'test-search-(parentheses)')
+        self.assertEqual(json_entries[0]['attributes']['cn'][0], testcase_id + '(search)-3')
 
     def test_search_integer_exact_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit=10)', attributes=[test_name_attr, 'loginGraceLimit'])
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-4', attributes={'givenName': 'givenname-4', 'loginGraceLimit': 10}))
+        result = self.connection.search(search_base=test_base, search_filter='(&(cn=' + testcase_id + '*)(loginGraceLimit=10))', attributes=[test_name_attr, 'loginGraceLimit'])
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
-
         json_entries = json.loads(json_response)['entries']
-        self.assertEqual(len(json_entries), 2)
+
+        self.assertEqual(len(json_entries), 1)
 
     def test_search_integer_less_than(self):
-        result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit<=11)', attributes=[test_name_attr, 'loginGraceLimit'])
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-5', 'loginGraceLimit': 10}))
+        result = self.connection.search(search_base=test_base, search_filter='(&(cn=' + testcase_id + '*)(loginGraceLimit<=11))', attributes=[test_name_attr, 'loginGraceLimit'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
-
         json_entries = json.loads(json_response)['entries']
-        self.assertEqual(len(json_entries), 2)
+
+        self.assertEqual(len(json_entries), 1)
 
     def test_search_integer_greater_than(self):
-        result = self.connection.search(search_base=test_base, search_filter='(loginGraceLimit>=9)', attributes=[test_name_attr, 'loginGraceLimit'])
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-6', attributes={'givenName': 'givenname-6', 'loginGraceLimit': 10}))
+        result = self.connection.search(search_base=test_base, search_filter='(&(cn=' + testcase_id + '*)(loginGraceLimit>=9))', attributes=[test_name_attr, 'loginGraceLimit'])
         if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
+            response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
         else:
-            response = self.connection.response
-            result = self.connection.result
             json_response = self.connection.response_to_json()
-
         json_entries = json.loads(json_response)['entries']
-        self.assertEqual(len(json_entries), 2)
+
+        self.assertEqual(len(json_entries), 1)

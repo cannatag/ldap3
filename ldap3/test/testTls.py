@@ -25,7 +25,7 @@ import ssl
 
 from ldap3 import Server, Connection, ServerPool, Tls, AUTH_SASL, STRATEGY_REUSABLE_THREADED
 from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, \
-    test_strategy, test_base, test_lazy_connection, test_get_info, test_server_mode, \
+    test_strategy, test_lazy_connection, test_get_info, test_server_mode, \
     test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_ca_cert_file, test_user_cert_file, test_user_key_file
 
 
@@ -59,7 +59,7 @@ class Test(unittest.TestCase):
         if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             connection.strategy.terminate()
 
-    def test_search_with_tls_before_bind(self):
+    def test_open_with_tls_before_bind(self):
         if isinstance(test_server, (list, tuple)):
             server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
             for host in test_server:
@@ -70,20 +70,13 @@ class Test(unittest.TestCase):
         connection.open()
         connection.start_tls()
         connection.bind()
-        result = connection.search(test_base, '(objectClass=*)', attributes='sn')
-        if not connection.strategy.sync:
-            response, result = connection.get_response(result)
-        else:
-            response = connection.response
-            result = connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertTrue(len(response) > 15)
+        self.assertTrue(connection.bound)
         connection.unbind()
         if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
-    def test_search_with_tls_after_bind(self):
+    def test_open_with_tls_after_bind(self):
         if isinstance(test_server, (list, tuple)):
             server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
             for host in test_server:
@@ -94,14 +87,7 @@ class Test(unittest.TestCase):
         connection.open()
         connection.bind()
         connection.start_tls()
-        result = connection.search(test_base, '(objectClass=*)', attributes='sn')
-        if not connection.strategy.sync:
-            response, result = connection.get_response(result)
-        else:
-            response = connection.response
-            result = connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertTrue(len(response) > 15)
+        self.assertTrue(connection.bound)
         connection.unbind()
         if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
             connection.strategy.terminate()

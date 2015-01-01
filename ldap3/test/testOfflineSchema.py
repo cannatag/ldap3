@@ -36,9 +36,10 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_offline_schema(self):
-        if not self.connection.server.schema:
-            self.connection.refresh_server_info()
-        self.assertEqual(type(self.connection.server.schema), SchemaInfo)
+        if not self.connection.strategy.pooled:
+            if not self.connection.server.schema:
+                self.connection.refresh_server_info()
+            self.assertEqual(type(self.connection.server.schema), SchemaInfo)
 
     def test_object_classes(self):
         if not self.connection.strategy.pooled:

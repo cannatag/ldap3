@@ -67,14 +67,16 @@ class Test(unittest.TestCase):
                 self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):
-        responses = self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
-        self.assertEqual(len(responses), 8)
+        if not self.connection.strategy.pooled:
+            responses = self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
+            self.assertEqual(len(responses), 8)
 
     def test_paged_search_generator(self):
-        responses = []
-        for response in self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)'):
-            responses.append(response)
-        self.assertEqual(len(responses), 8)
+        if not self.connection.strategy.pooled:
+            responses = []
+            for response in self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)'):
+                responses.append(response)
+            self.assertEqual(len(responses), 8)
 
     def test_novell_list_replicas(self):
         if test_server_type == 'EDIR':

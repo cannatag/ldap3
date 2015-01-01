@@ -94,38 +94,39 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
 
     def test_search_simple_paged(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-3', attributes={'givenName': 'givenname-3'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-4', attributes={'givenName': 'givenname-4'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-5'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-6', attributes={'givenName': 'givenname-6'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-7', attributes={'givenName': 'givenname-7'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-8', attributes={'givenName': 'givenname-8'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-9', attributes={'givenName': 'givenname-9'}))
+        if not self.connection.strategy.pooled:
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-3', attributes={'givenName': 'givenname-3'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-4', attributes={'givenName': 'givenname-4'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-5'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-6', attributes={'givenName': 'givenname-6'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-7', attributes={'givenName': 'givenname-7'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-8', attributes={'givenName': 'givenname-8'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-9', attributes={'givenName': 'givenname-9'}))
 
-        paged_size = 4
-        total_entries = 0
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size)
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), paged_size)
-        total_entries += len(response)
-        cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-        while cookie:
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size, paged_cookie=cookie)
+            paged_size = 4
+            total_entries = 0
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size)
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
             else:
                 response = self.connection.response
                 result = self.connection.result
             self.assertEqual(result['description'], 'success')
+            self.assertEqual(len(response), paged_size)
             total_entries += len(response)
-            self.assertTrue(len(response) <= paged_size)
             cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-        self.assertEqual(total_entries, 9)
+            while cookie:
+                result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size, paged_cookie=cookie)
+                if not self.connection.strategy.sync:
+                    response, result = self.connection.get_response(result)
+                else:
+                    response = self.connection.response
+                    result = self.connection.result
+                self.assertEqual(result['description'], 'success')
+                total_entries += len(response)
+                self.assertTrue(len(response) <= paged_size)
+                cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+            self.assertEqual(total_entries, 9)
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-3', attributes={'givenName': 'givenname-3'}))

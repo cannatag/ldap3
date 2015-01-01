@@ -37,7 +37,8 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_schema(self):
-        self.assertEqual(type(self.connection.server.schema), SchemaInfo)
+        if not self.connection.strategy.pooled:
+            self.assertEqual(type(self.connection.server.schema), SchemaInfo)
 
     def test_object_classes(self):
         if not self.connection.strategy.pooled:

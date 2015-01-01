@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_single_search_result_to_ldif(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-1)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-1)', attributes=[test_name_attr, 'givenName', 'objectClass', 'sn'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:

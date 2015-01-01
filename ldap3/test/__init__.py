@@ -88,10 +88,10 @@ if location.startswith('TRAVIS,'):
     test_lazy_connection = bool(int(lazy))
 else:
     test_strategy = STRATEGY_SYNC  # sync strategy for executing tests
-    test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
+    # test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
     # test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
-    test_lazy_connection = True  # connection lazy
+    test_lazy_connection = False  # connection lazy
 
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED

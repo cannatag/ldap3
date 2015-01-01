@@ -1,6 +1,8 @@
 LDAP3
 =====
-
+.. image:: https://travis-ci.org/cannatag/ldap3.svg?branch=master["Build Status"
+    :target: https://travis-ci.org/cannatag/ldap3
+    
 ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3.
 
 This project was formerly named **python3-ldap**. The name has been changed to avoid confusion with the python-ldap library.

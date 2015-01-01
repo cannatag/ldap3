@@ -22,7 +22,7 @@
 
 import unittest
 
-from test import test_base, random_id, get_connection, drop_connection, add_user, test_server_type
+from test import test_base, random_id, get_connection, drop_connection, add_user, test_server_type, test_name_attr
 
 
 testcase_id = random_id()
@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
         if test_server_type == 'EDIR':
             controls = list()
             controls.append(('2.16.840.1.113719.1.27.103.7', True, 'sn'))  # grouping [Novell]
-            result = self.connection.search(test_base, '(cn=' + testcase_id + 'controls-*)', attributes=['sn', 'givenName'], controls=controls)
+            result = self.connection.search(test_base, '(' + test_name_attr + '=' + testcase_id + 'controls-*)', attributes=['sn', 'givenName'], controls=controls)
             if not self.connection.strategy.sync:
                 _, result = self.connection.get_response(result)
             else:

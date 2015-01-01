@@ -23,7 +23,8 @@
 import unittest
 
 from ldap3 import LDAPExtensionError
-from test import test_user, test_server_context, test_server_edir_name, random_id, get_connection, drop_connection, add_user, test_server_type
+from test import test_user, test_server_context, test_server_edir_name, random_id, get_connection, drop_connection, add_user, test_server_type, \
+    test_name_attr
 
 
 testcase_id = random_id()
@@ -66,12 +67,12 @@ class Test(unittest.TestCase):
                 self.assertTrue(test_user in result)
 
     def test_paged_search_accumulator(self):
-        responses = self.connection.extend.standard.paged_search('o=test', '(cn=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
+        responses = self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
         self.assertEqual(len(responses), 8)
 
     def test_paged_search_generator(self):
         responses = []
-        for response in self.connection.extend.standard.paged_search('o=test', '(cn=' + testcase_id + 'paged_search-*)'):
+        for response in self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)'):
             responses.append(response)
         self.assertEqual(len(responses), 8)
 

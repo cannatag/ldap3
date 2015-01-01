@@ -88,7 +88,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(json_entries) >= 2)
 
     def test_search_present(self):
-        result = self.connection.search(search_base=test_base, search_filter='(cn=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
@@ -98,7 +98,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(json_entries) >= 2)
 
     def test_search_substring_many(self):
-        result = self.connection.search(search_base=test_base, search_filter='(cn=' + testcase_id + '*)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
@@ -121,7 +121,7 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-3', attributes={'givenName': 'givenname-3'}))
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
+        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_name_attr + '=*' + escape_bytes(')') + '*))', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
             response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
@@ -130,11 +130,11 @@ class Test(unittest.TestCase):
         json_entries = json.loads(json_response)['entries']
 
         self.assertEqual(len(json_entries), 1)
-        self.assertEqual(json_entries[0]['attributes']['cn'][0], testcase_id + '(search)-3')
+        self.assertEqual(json_entries[0]['attributes'][test_name_attr][0], testcase_id + '(search)-3')
 
     def test_search_integer_exact_match(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-4', attributes={'givenName': 'givenname-4', 'loginGraceLimit': 10}))
-        result = self.connection.search(search_base=test_base, search_filter='(&(cn=' + testcase_id + '*)(loginGraceLimit=10))', attributes=[test_name_attr, 'loginGraceLimit'])
+        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(loginGraceLimit=10))', attributes=[test_name_attr, 'loginGraceLimit'])
         if not self.connection.strategy.sync:
             response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
@@ -146,7 +146,7 @@ class Test(unittest.TestCase):
 
     def test_search_integer_less_than(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-5', 'loginGraceLimit': 10}))
-        result = self.connection.search(search_base=test_base, search_filter='(&(cn=' + testcase_id + '*)(loginGraceLimit<=11))', attributes=[test_name_attr, 'loginGraceLimit'])
+        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(loginGraceLimit<=11))', attributes=[test_name_attr, 'loginGraceLimit'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
@@ -158,7 +158,7 @@ class Test(unittest.TestCase):
 
     def test_search_integer_greater_than(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-6', attributes={'givenName': 'givenname-6', 'loginGraceLimit': 10}))
-        result = self.connection.search(search_base=test_base, search_filter='(&(cn=' + testcase_id + '*)(loginGraceLimit>=9))', attributes=[test_name_attr, 'loginGraceLimit'])
+        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(loginGraceLimit>=9))', attributes=[test_name_attr, 'loginGraceLimit'])
         if not self.connection.strategy.sync:
             response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)

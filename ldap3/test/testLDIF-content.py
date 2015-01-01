@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_single_search_result_to_ldif(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-1)', attributes=[test_name_attr, 'givenName', 'jpegPhoto', 'sn', 'cn', 'objectClass'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -49,10 +49,10 @@ class Test(unittest.TestCase):
 
         l = self.connection.response_to_ldif(response)
         self.assertTrue('version: 1' in l)
-        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in l)
+        self.assertTrue('dn: ' + test_name_attr + '=' + testcase_id + 'ldif-1,' + test_base in l)
         self.assertTrue('objectClass: inetOrgPerson' in l)
         self.assertTrue('objectClass: Top' in l)
-        self.assertTrue('cn: ' + testcase_id + 'ldif-1' in l)
+        self.assertTrue(test_name_attr + ': ' + testcase_id + 'ldif-1' in l)
         self.assertTrue('sn: ldif-1' in l)
         self.assertTrue('total number of entries: 1' in l)
 
@@ -66,12 +66,12 @@ class Test(unittest.TestCase):
         l = self.connection.response_to_ldif(response)
         print(l)
         self.assertTrue('version: 1' in l)
-        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in l)
+        self.assertTrue('dn: ' + test_name_attr + '=' + testcase_id + 'ldif-1,' + test_base in l)
         self.assertTrue('objectClass: inetOrgPerson' in l)
         self.assertTrue('objectClass: Top' in l)
-        self.assertTrue('cn: ' + testcase_id + 'ldif-1' in l)
+        self.assertTrue(test_name_attr + ': ' + testcase_id + 'ldif-1' in l)
         self.assertTrue('sn: ldif-1' in l)
-        self.assertTrue('dn: cn=' + testcase_id + 'ldif-1,' + test_base in l)
-        self.assertTrue('cn: ' + testcase_id + 'ldif-2' in l)
+        self.assertTrue('dn: ' + test_name_attr + '=' + testcase_id + 'ldif-1,' + test_base in l)
+        self.assertTrue(test_name_attr + ': ' + testcase_id + 'ldif-2' in l)
         self.assertTrue('sn: ldif-2' in l)
         self.assertTrue('# total number of entries: 2' in l)

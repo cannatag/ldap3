@@ -212,8 +212,8 @@ def drop_connection(connection, dn_to_delete=None):
     if dn_to_delete:
         for dn in dn_to_delete:
             done = False
-            counter = 10
-            while not done:  # wait at maximum for 30 seconds
+            counter = 30
+            while not done:  # wait at maximum for 120 seconds
                 operation_result = connection.delete(dn[0])
                 result = get_operation_result(connection, operation_result)
                 if result['description'] == 'success':
@@ -221,7 +221,7 @@ def drop_connection(connection, dn_to_delete=None):
                 elif result['description'] == 'busy':
                     counter -= 1
                     if counter >= 0:
-                        sleep(3)  # wait and retry
+                        sleep(4)  # wait and retry
                     else:
                         print('unable to delete object ' + dn[0] + ': ' + str(result))
                         done = True

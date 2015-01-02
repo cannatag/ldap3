@@ -1,1 +1,1 @@
-include COPYING.txt COPYING.LESSER.txt LICENSE.txt README.txt requirements.txt
+include COPYING.txt COPYING.LESSER.txt LICENSE.txt README.rst requirements.txt

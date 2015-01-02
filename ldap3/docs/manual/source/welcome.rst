@@ -1,7 +1,7 @@
 The ldap3 project
 #################
 
-ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3
+ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2, Python 3, PyPy and PyPy3.
 
 
 License

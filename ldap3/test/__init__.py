@@ -42,6 +42,9 @@ if location.startswith('TRAVIS'):
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
     test_server_type = 'EDIR'
+    test_base = 'o=test'  # base context where test objects are created
+    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
     test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
     test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'testLAB.resources'
@@ -49,7 +52,7 @@ if location.startswith('TRAVIS'):
     test_ca_cert_file = 'test/ca-edir-lab.pem'
     test_user_cert_file = 'test/testlab-cert.pem'
     test_user_key_file = 'test/testlab-key.pem'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-EDIR':
     # test elitebook
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -57,6 +60,9 @@ elif location == 'GCNBHPW8':
                    'edir3']  # the ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
+    test_base = 'o=test'  # base context where test objects are created
+    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
     test_server_context = 'o=services'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
@@ -66,10 +72,33 @@ elif location == 'GCNBHPW8':
     test_ca_cert_file = 'ca-cert.pem'
     test_user_cert_file = 'admin-cert.pem'
     test_user_key_file = 'admin-key.pem'
+elif location == 'GCNBHPW8':
+    test_server = ['win1',
+                   'win2']
+    test_server = 'win1.hyperv'
+    test_server_type = 'AD'
+    test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,DC=FOREST,DC=LAB'  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_server_context = ''  # used in novell eDirectory extended operations
+    test_server_edir_name = ''  # used in novell eDirectory extended operations
+    test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
+    test_password = 'Rc66pfop'  # user password
+    test_sasl_user = ''
+    test_sasl_password = ''
+    test_ca_cert_file = 'ca-cert.pem'
+    test_user_cert_file = 'admin-cert.pem'
+    test_user_key_file = 'admin-key.pem'
 elif location == 'CAMERA':
     # test camera
+    test_server = ['sl08',
+                   'sl09',
+                   'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'sl10'
     test_server_type = 'EDIR'
+    test_base = 'o=test'  # base context where test objects are created
+    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
     test_server_context = 'o=services'  # used in novell eDirectory extended operations
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
@@ -95,9 +124,6 @@ else:
 
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
-test_base = 'o=test'  # base context where test objects are created
-test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
-test_name_attr = 'cn'  # naming attribute for test objects
 
 test_pooling_strategy = POOLING_STRATEGY_ROUND_ROBIN
 test_pooling_active = True
@@ -197,10 +223,10 @@ def drop_connection(connection, dn_to_delete=None):
                     if counter >= 0:
                         sleep(3)  # wait and retry
                     else:
-                        print('unable to delete object ' + dn[0] + ': ' + result['description'])
+                        print('unable to delete object ' + dn[0] + ': ' + str(result))
                         done = True
                 else:
-                    print('unable to delete object ' + dn[0] + ': ' + result['description'])
+                    print('unable to delete object ' + dn[0] + ': ' + str(result))
                     break
     connection.unbind()
     if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
@@ -225,7 +251,7 @@ def add_user(connection, batch_id, username, attributes=None):
     operation_result = connection.add(dn, 'iNetOrgPerson', attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        raise Exception('unable to create user ' + username + ': ' + result['description'])
+        raise Exception('unable to create user ' + username + ': ' + str(result))
 
     return dn, result
 
@@ -237,7 +263,7 @@ def add_group(connection, batch_id, groupname, members=None):
     operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        raise Exception('unable to create group ' + groupname + ': ' + result['description'])
+        raise Exception('unable to create group ' + groupname + ': ' + str(result))
 
     return dn, result
 

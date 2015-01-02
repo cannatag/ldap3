@@ -24,7 +24,7 @@ import unittest
 
 from ldap3.utils.conv import escape_bytes
 from test import test_base, test_name_attr, random_id, get_connection, \
-    add_user, drop_connection
+    add_user, drop_connection, test_server_type
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
 
 testcase_id = random_id()
@@ -53,14 +53,15 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-1')
 
     def test_search_extensible_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
-        self.assertEqual(result['description'], 'success')
-        self.assertTrue(len(response) >= 2)
+        if test_server_type == 'EDIR':
+            result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
+            if not self.connection.strategy.sync:
+                response, result = self.connection.get_response(result)
+            else:
+                response = self.connection.response
+                result = self.connection.result
+            self.assertEqual(result['description'], 'success')
+            self.assertTrue(len(response) >= 2)
 
     def test_search_present(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'])

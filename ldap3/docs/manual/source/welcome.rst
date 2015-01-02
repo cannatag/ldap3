@@ -44,6 +44,11 @@ GIT repository
 
 You can download the latest source at https://github.com/cannatag/ldap3
 
+Continuous integration
+----------------------
+
+Continuous integration for testing is at https://travis-ci.org/cannatag/ldap3
+
 Support
 -------
 

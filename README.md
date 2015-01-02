@@ -1,7 +1,10 @@
 LDAP3
 =====
-.. image:: https://travis-ci.org/cannatag/ldap3.svg?branch=master["Build Status"
+.. image:: https://travis-ci.org/cannatag/ldap3.svg?branch=master
     :target: https://travis-ci.org/cannatag/ldap3
+    :alt: TRAVIS-CI build status for master branch
+    
+    
     
 ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3.
 
@@ -48,6 +51,11 @@ Git repository
 
 You can download the latest source at https://github.com/cannatag/ldap3
 
+
+Continuous integration
+----------------------
+
+Continuous integration for testing is at https://travis-ci.org/cannatag/ldap3
 
 Support
 -------

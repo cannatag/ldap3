@@ -86,7 +86,7 @@ elif location == 'GCNBHPW8':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
-    test_password = 'Rc66pfop'  # user password
+    test_password = 'Rc99pfop'  # user password
     test_sasl_user = ''
     test_sasl_password = ''
     test_ca_cert_file = 'ca-cert.pem'

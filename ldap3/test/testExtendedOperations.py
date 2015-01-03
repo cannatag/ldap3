@@ -24,7 +24,7 @@ import unittest
 
 from ldap3 import LDAPExtensionError
 from test import test_user, test_server_context, test_server_edir_name, random_id, get_connection, drop_connection, add_user, test_server_type, \
-    test_name_attr
+    test_name_attr, test_base
 
 
 testcase_id = random_id()
@@ -68,13 +68,13 @@ class Test(unittest.TestCase):
 
     def test_paged_search_accumulator(self):
         if not self.connection.strategy.pooled:
-            responses = self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
+            responses = self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
             self.assertEqual(len(responses), 8)
 
     def test_paged_search_generator(self):
         if not self.connection.strategy.pooled:
             responses = []
-            for response in self.connection.extend.standard.paged_search('o=test', '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)'):
+            for response in self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)'):
                 responses.append(response)
             self.assertEqual(len(responses), 8)
 
@@ -90,5 +90,5 @@ class Test(unittest.TestCase):
 
     def test_novell_partition_entry_count(self):
         if test_server_type == 'EDIR':
-            result = self.connection.extend.novell.partition_entry_count('o=test')
-            self.assertTrue(result > 10)
+            result = self.connection.extend.novell.partition_entry_count(test_base)
+            self.assertTrue(result > 0)

@@ -24,7 +24,8 @@ import unittest
 
 from ldap3.utils.conv import escape_bytes
 from test import test_base, test_name_attr, random_id, get_connection, \
-    add_user, drop_connection, test_server_type
+    add_user, drop_connection, test_server_type, test_int_attr
+
 from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
 
 testcase_id = random_id()
@@ -142,34 +143,32 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + '(search)-3')
 
     def test_search_integer_exact_match(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-4', attributes={'givenName': 'givenname-4', 'loginGraceLimit': 10}))
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(loginGraceLimit=10))', attributes=[test_name_attr, 'loginGraceLimit'])
+        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '=0))', attributes=[test_name_attr, test_int_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 1)
+        print(response)
+        self.assertEqual(len(response), 2)
 
     def test_search_integer_less_than(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-5', 'loginGraceLimit': 10}))
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(loginGraceLimit<=11))', attributes=[test_name_attr, 'loginGraceLimit'])
+        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' <=1))', attributes=[test_name_attr, test_int_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 1)
+        self.assertEqual(len(response), 2)
 
     def test_search_integer_greater_than(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-6', attributes={'givenName': 'givenname-6', 'loginGraceLimit': 10}))
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(loginGraceLimit>=9))', attributes=[test_name_attr, 'loginGraceLimit'])
+        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' >=-1))', attributes=[test_name_attr, test_int_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 1)
+        self.assertEqual(len(response), 2)

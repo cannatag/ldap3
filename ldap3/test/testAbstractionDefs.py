@@ -24,7 +24,7 @@ import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader
 from ldap3.abstract.reader import _create_query_dict
-
+from test import test_base
 
 class Test(unittest.TestCase):
     def test_create_query_dict(self):
@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base='o=test')
+        r = Reader(None, o, query_text, base=test_base)
 
         r._validate_query()
 
@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base='o=test')
+        r = Reader(None, o, query_text, base=test_base)
 
         r._create_query_filter()
 
@@ -65,7 +65,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = 'Common Name:John'
-        r = Reader(None, o, query_text, base='o=test')
+        r = Reader(None, o, query_text, base=test_base)
 
         r._create_query_filter()
 
@@ -76,7 +76,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = '|Common Name:=john;=Bob'
-        r = Reader(None, o, query_text, base='o=test')
+        r = Reader(None, o, query_text, base=test_base)
 
         r._create_query_filter()
 
@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base='o=test')
+        r = Reader(None, o, query_text, base=test_base)
 
         r._create_query_filter()
 

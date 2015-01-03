@@ -50,7 +50,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name', post_query=reverse)
 
         query_text = 'Common Name:=' + testcase_id + 'abstract-member-*'
-        r = Reader(self.connection, o, query_text, 'o=test')
+        r = Reader(self.connection, o, query_text, test_base)
 
         results = r.search()
         self.assertEqual(len(results), 3)
@@ -95,7 +95,7 @@ class Test(unittest.TestCase):
         mg = eg.member
         self.assertEqual(len(mg), 3)
         ug = eg.member[0]
-        self.assertEqual(str(ug.surname), 'abstract-member-1')
+        self.assertTrue(str(ug.surname) in ['abstract-member-1', 'abstract-member-2', 'abstract-member-3'])
 
     def test_search_with_pre_query(self):
         change = lambda attr, value: testcase_id + 'abstract-member-*'

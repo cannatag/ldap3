@@ -45,6 +45,7 @@ if location.startswith('TRAVIS'):
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'loginGraceLimit'
     test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
     test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'testLAB.resources'
@@ -63,6 +64,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'loginGraceLimit'
     test_server_context = 'o=services'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
@@ -80,6 +82,7 @@ elif location == 'GCNBHPW8':
     test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
     test_moved = 'ou=moved,OU=test,DC=FOREST,DC=LAB'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'logonCount'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
@@ -99,6 +102,7 @@ elif location == 'CAMERA':
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'logonCount'
     test_server_context = 'o=services'  # used in novell eDirectory extended operations
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests

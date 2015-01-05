@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
 
     def test_modify_add(self):
-        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_ADD, ['givenname-2-added'])})
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_ADD, ['businessCategory-2-added'])})
         if not self.connection.strategy.sync:
             _, result = self.connection.get_response(result)
         else:
@@ -57,14 +57,14 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
 
     def test_modify_deleted(self):
-        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_ADD, ['givenname-3-added'])})
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_ADD, ['businessCategory-3-added'])})
         if not self.connection.strategy.sync:
             _, result = self.connection.get_response(result)
         else:
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
 
-        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_DELETE, ['givenname-3-added'])})
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_DELETE, ['businessCategory-3-added'])})
         if not self.connection.strategy.sync:
             _, result = self.connection.get_response(result)
         else:

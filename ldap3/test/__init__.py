@@ -45,15 +45,16 @@ if location.startswith('TRAVIS'):
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
-    test_int_attr = 'loginGraceLimit'
+    test_int_attr = 'entryFlags'
     test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
     test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'testLAB.resources'
     test_sasl_password = 'Rc1234pfop'
-    test_ca_cert_file = 'test/ca-edir-lab.pem'
-    test_user_cert_file = 'test/testlab-cert.pem'
-    test_user_key_file = 'test/testlab-key.pem'
-elif location == 'GCNBHPW8-EDIR':
+    test_sasl_realm = None
+    test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
+    test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
+    test_user_key_file = 'test/lab-edir-testlab-key.pem'
+elif location == 'GCNBHPW8':
     # test elitebook
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -64,17 +65,18 @@ elif location == 'GCNBHPW8-EDIR':
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
-    test_int_attr = 'loginGraceLimit'
+    test_int_attr = 'entryFlags'
     test_server_context = 'o=services'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'password'  # user password
     test_sasl_user = 'testSASL.resources'
     test_sasl_password = 'password'
-    test_ca_cert_file = 'ca-cert.pem'
-    test_user_cert_file = 'admin-cert.pem'
-    test_user_key_file = 'admin-key.pem'
-elif location == 'GCNBHPW8':
+    test_sasl_realm = None
+    test_ca_cert_file = 'local-edir-ca-cert.pem'
+    test_user_cert_file = 'local-edir-admin-cert.pem'
+    test_user_key_file = 'local-edir-admin-key.pem'
+elif location == 'GCNBHPW8-AD':
     test_server = ['win1',
                    'win2']
     test_server = 'win1.hyperv'
@@ -87,11 +89,12 @@ elif location == 'GCNBHPW8':
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
     test_password = 'Rc99pfop'  # user password
-    test_sasl_user = ''
-    test_sasl_password = ''
-    test_ca_cert_file = 'ca-cert.pem'
-    test_user_cert_file = 'admin-cert.pem'
-    test_user_key_file = 'admin-key.pem'
+    test_sasl_user = 'CN=testLAB,CN=Users,DC=FOREST,DC=LAB'
+    test_sasl_password = 'Rc1234pfop'
+    test_sasl_realm = None
+    test_ca_cert_file = 'local-forest-lab-ca.pem'
+    test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+    test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
 elif location == 'CAMERA':
     # test camera
     test_server = ['sl08',
@@ -109,6 +112,7 @@ elif location == 'CAMERA':
     test_password = 'camera'  # user password
     test_sasl_user = 'testsasl.services'
     test_sasl_password = 'password'
+    test_sasl_realm = None
     test_ca_cert_file = 'ca-cert.pem'
     test_user_cert_file = 'admin-cert.pem'
     test_user_key_file = 'admin-key.pem'

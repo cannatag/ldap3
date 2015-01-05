@@ -694,17 +694,17 @@ class Connection(object):
     def do_sasl_bind(self,
                      controls):
         with self.lock:
-            response = None
+            result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True
                 if self.sasl_mechanism == 'EXTERNAL':
-                    response = sasl_external(self, controls)
+                    result = sasl_external(self, controls)
                 elif self.sasl_mechanism == 'DIGEST-MD5':
-                    response = sasl_digest_md5(self, controls)
+                    result = sasl_digest_md5(self, controls)
 
                 self.sasl_in_progress = False
 
-            return response
+            return result
 
     def refresh_server_info(self):
         if not self.strategy.pooled:

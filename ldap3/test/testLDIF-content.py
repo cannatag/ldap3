@@ -33,15 +33,15 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.connection = get_connection()
         self.delete_at_teardown = []
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'ldif-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'ldif-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'ldif-content-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'ldif-content-2'))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_single_search_result_to_ldif(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-1)', attributes=[test_name_attr, 'givenName', 'objectClass', 'sn'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-content-1)', attributes=[test_name_attr, 'givenName', 'objectClass', 'sn'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -49,29 +49,29 @@ class Test(unittest.TestCase):
 
         l = self.connection.response_to_ldif(response).lower()
         self.assertTrue('version: 1' in l)
-        self.assertTrue('dn: ' + test_name_attr.lower() + '=' + testcase_id.lower() + 'ldif-1,' + test_base.lower() in l)
+        self.assertTrue('dn: ' + test_name_attr.lower() + '=' + testcase_id.lower() + 'ldif-content-1,' + test_base.lower() in l)
         self.assertTrue('objectclass: inetorgperson' in l)
         self.assertTrue('objectclass: top' in l)
-        self.assertTrue(test_name_attr.lower() + ': ' + testcase_id.lower() + 'ldif-1' in l)
-        self.assertTrue('sn: ldif-1' in l)
+        self.assertTrue(test_name_attr.lower() + ': ' + testcase_id.lower() + 'ldif-content-1' in l)
+        self.assertTrue('sn: ldif-content-1' in l)
         self.assertTrue('total number of entries: 1' in l)
 
     def test_multiple_search_result_to_ldif(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-*)', attributes=[test_name_attr, 'givenName', 'sn', 'objectClass'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'ldif-content-*)', attributes=[test_name_attr, 'givenName', 'sn', 'objectClass'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
             response = self.connection.response
 
         l = self.connection.response_to_ldif(response).lower()
-        print(l)
+
         self.assertTrue('version: 1' in l)
-        self.assertTrue('dn: ' + test_name_attr.lower() + '=' + testcase_id.lower() + 'ldif-1,' + test_base.lower() in l)
+        self.assertTrue('dn: ' + test_name_attr.lower() + '=' + testcase_id.lower() + 'ldif-content-1,' + test_base.lower() in l)
         self.assertTrue('objectclass: inetorgperson' in l)
         self.assertTrue('objectclass: top' in l)
-        self.assertTrue(test_name_attr.lower() + ': ' + testcase_id + 'ldif-1' in l)
-        self.assertTrue('sn: ldif-1' in l)
-        self.assertTrue('dn: ' + test_name_attr.lower() + '=' + testcase_id.lower() + 'ldif-1,' + test_base.lower() in l)
-        self.assertTrue(test_name_attr.lower() + ': ' + testcase_id.lower() + 'ldif-2' in l)
-        self.assertTrue('sn: ldif-2' in l)
+        self.assertTrue(test_name_attr.lower() + ': ' + testcase_id + 'ldif-content-1' in l)
+        self.assertTrue('sn: ldif-content-1' in l)
+        self.assertTrue('dn: ' + test_name_attr.lower() + '=' + testcase_id.lower() + 'ldif-content-1,' + test_base.lower() in l)
+        self.assertTrue(test_name_attr.lower() + ': ' + testcase_id.lower() + 'ldif-content-2' in l)
+        self.assertTrue('sn: ldif-content-2' in l)
         self.assertTrue('# total number of entries: 2' in l)

@@ -69,9 +69,9 @@ class Test(unittest.TestCase):
 
             return r
 
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-2'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-3'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-4'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-5'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-6'))
         self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'Common Name', post_query=reverse)
@@ -95,14 +95,14 @@ class Test(unittest.TestCase):
         mg = eg.member
         self.assertEqual(len(mg), 3)
         ug = eg.member[0]
-        self.assertTrue(str(ug.surname) in ['abstract-member-1', 'abstract-member-2', 'abstract-member-3'])
+        self.assertTrue(str(ug.surname) in ['abstract-member-4', 'abstract-member-5', 'abstract-member-6'])
 
     def test_search_with_pre_query(self):
         change = lambda attr, value: testcase_id + 'abstract-member-*'
 
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-2'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-3'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-7'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-8'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-9'))
         self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
 
         ou = ObjectDef('iNetOrgPerson')
@@ -116,12 +116,12 @@ class Test(unittest.TestCase):
         self.assertEqual(len(lu), 3)
 
     def test_search_with_default(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-10'))
 
         ou = ObjectDef('iNetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='not employed')
-        qu = 'CommonName := ' + testcase_id + 'abstract-member-1'
+        qu = 'CommonName := ' + testcase_id + 'abstract-member-10'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
         self.assertEqual(str(lu[0].employee), 'not employed')

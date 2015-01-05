@@ -34,7 +34,12 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.connection = get_connection(check_names=True, get_info=GET_ALL_INFO)
         self.delete_at_teardown = []
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1'))
+        if test_server_type == 'EDIR':
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1', attributes={'loginGraceLimit': 0}))
+        elif test_server_type == 'AD':
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1'))
+        else:
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1'))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)

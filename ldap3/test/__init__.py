@@ -59,7 +59,7 @@ if location.startswith('TRAVIS'):
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
-    test_int_attr = 'entryFlags'
+    test_int_attr = 'loginGraceLimit'
     test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
     test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'testLAB.resources'

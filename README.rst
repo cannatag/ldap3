@@ -70,21 +70,23 @@ Thanks to
 * **Mark Lutz** for his *Learning Python* and *Programming Python* excellent books series and **John Goerzen** and **Brandon Rhodes** for their book *Foundations of Python Network Programming*. These books are wonderful tools for learning Python and this project owes a lot to them.
 * **JetBrains** for donating to this project the Open Source license of *PyCharm 3 Professional*.
 * **GitHub** for providing the *free source repository space and the tools* I use to develop this project.
-* **Python Software Foundation** for providing support for the test lab infrastructure.
+* The **Python Software Foundation** for providing support for the test lab infrastructure.
 
 
 Contact me
 ----------
 
-For information and suggestions you can contact me at cannatag@gmail.com or you can join the ldap3 mailing list at http://mail.python.org/mailman/listinfo/python3-ldap. You can also open a support ticket on https://github.com/cannatag/ldap3/issues/new
+For information and suggestions you can contact me at cannatag@gmail.com or you can also a support ticket on https://github.com/cannatag/ldap3/issues/new
 
-CHANGELOG
----------
-* 0.9.7.1 2014.12.27
+* 0.9.7.1 2015.01.05
     - Moved to Github
     - Moved to Travis-CI for continuous integration
+    - Moved to ReadTheDocs for documentation
     - Moved testing servers in the cloud, to allow testing from Travis-CI
     - Project renamed from python3-ldap to ldap3 to avoid name clashing with the existing python-ldap library
     - Constant values in ldap3 are now strings. This is helpful in testing and debugging
+    - Test suite fully refactored to be used in cloud lab and local development lab
+    - Test suite includes options for testing against eDirectory, Active Directory and OpenLDAP
+
 
 Previous versions changelog is available at http://pythonhosted.org//python3-ldap/changelog.html

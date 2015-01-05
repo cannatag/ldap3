@@ -40,10 +40,6 @@ AUTO_BIND_NO_TLS = 'NO_TLS'
 AUTO_BIND_TLS_BEFORE_BIND = 'TLS_BEFORE_BIND'
 AUTO_BIND_TLS_AFTER_BIND = 'TLS_AFTER_BIND'
 
-AUTHZ_STATE_CLOSED = 0
-AUTHZ_STATE_ANONYMOUS = 1
-AUTHZ_STATE_UNAUTHENTICATED = 2
-
 # server IP dual stack mode
 IP_SYSTEM_DEFAULT = 'SYSTEM_DEFAULT'
 IP_V4_ONLY = 'V4_ONLY'
@@ -106,7 +102,6 @@ ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
                                   'vendorVersion',
                                   'subschemaSubentry']
 
-
 # modify type
 MODIFY_ADD = 'MODIFY_ADD'
 MODIFY_DELETE = 'MODIFY_DELETE'
@@ -139,8 +134,8 @@ CLIENT_STRATEGIES = [STRATEGY_SYNC,
                      STRATEGY_REUSABLE_THREADED]
 
 # communication
-SESSION_TERMINATED_BY_SERVER = -2
-RESPONSE_COMPLETE = -1
+SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
+RESPONSE_COMPLETE = 'RESPONSE_FROM_SERVER_COMPLETE'
 RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies
 RESPONSE_WAITING_TIMEOUT = 20  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
@@ -151,7 +146,7 @@ RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retry
 RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 
 # reusable strategies (Threaded)
-TERMINATE_REUSABLE = -9
+TERMINATE_REUSABLE = 'TERMINATE_REUSABLE_CONNECTION'
 REUSABLE_THREADED_POOL_SIZE = 10
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'reusable_default_pool'
@@ -263,7 +258,7 @@ ATTRIBUTE_DISTRIBUTED_OPERATION = 'DISTRIBUTED_OPERATION'
 ATTRIBUTE_DSA_OPERATION = 'DSA_OPERATION'
 
 # abstraction layer
-ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OP_'
+ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OPER_'
 
 # server pooling
 POOLING_STRATEGY_FIRST = 'FIRST'
@@ -293,6 +288,7 @@ from .core.tls import Tls
 from .core.pooling import ServerPool
 from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalAttribute
 from .protocol.rfc4512 import DsaInfo, SchemaInfo
+
 from .core.exceptions import LDAPException, LDAPExceptionError, LDAPSocketCloseError, LDAPReferralError, \
     LDAPAttributeError, LDAPBindError, LDAPCertificateError, LDAPChangesError, LDAPCommunicationError, LDAPConnectionIsReadOnlyError, \
     LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPControlsError, LDAPEntryError, \

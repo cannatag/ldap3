@@ -1,11 +1,14 @@
 CHANGELOG
 =========
-* 0.9.7.1 2014.12.27
+* 0.9.7.1 2015.01.05
     - Moved to Github
     - Moved to Travis-CI for continuous integration
+    - Moved to ReadTheDocs for documentation
     - Moved testing servers in the cloud, to allow testing from Travis-CI
     - Project renamed from python3-ldap to ldap3 to avoid name clashing with the existing python-ldap library
     - Constant values in ldap3 are now strings. This is helpful in testing and debugging
+    - Test suite fully refactored to be used in cloud lab and local development lab
+    - Test suite includes options for testing against eDirectory, Active Directory and OpenLDAP
 
 * 0.9.7 2014.12.17
     - Fixed bug for auto_range used in paged search

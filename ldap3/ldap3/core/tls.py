@@ -145,7 +145,7 @@ class Tls(object):
                 ssl_context.load_cert_chain(self.certificate_file, keyfile=self.private_key_file, password=self.private_key_password)
             ssl_context.check_hostname = False
             ssl_context.verify_mode = self.validate
-            if not self.version is None:  # if version is present overrides the default context version
+            if self.version is not None:  # if version is present overrides the default context version
                 ssl_context.protocol = self.version
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
         else:

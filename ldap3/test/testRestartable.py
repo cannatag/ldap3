@@ -23,7 +23,7 @@
 
 import unittest
 
-from test import test_server, test_user, test_password, test_lazy_connection, test_get_info, test_server_mode
+from test import test_server, test_user, test_password, test_lazy_connection, test_get_info, test_server_mode, test_base
 from ldap3 import Server, Connection, ServerPool, STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, \
     SEARCH_SCOPE_BASE_OBJECT
 
@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         connection = Connection(ServerPool(servers, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True), user=test_user, password=test_password, client_strategy=STRATEGY_SYNC_RESTARTABLE, lazy=test_lazy_connection, pool_name='pool1')
 
         with connection as c:
-            c.search(search_base='o=test', search_filter='(o=test)', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes='*')
+            c.search(search_base=test_base, search_filter='(' + test_base.split(',')[0] + ')', search_scope=SEARCH_SCOPE_BASE_OBJECT, attributes='*')
 
             for resp in connection.response:
                 if resp['type'] == 'searchResEntry':
@@ -57,7 +57,7 @@ class Test(unittest.TestCase):
         connection = Connection(server_pool, user=test_user, password=test_password, client_strategy=STRATEGY_SYNC_RESTARTABLE, lazy=False)
         connection.open()
         connection.bind()
-        connection.search(search_base='o=test', search_filter='(o=test)', search_scope=SEARCH_SCOPE_BASE_OBJECT)
+        connection.search(search_base=test_base, search_filter='(' + test_base.split(',')[0] + ')', search_scope=SEARCH_SCOPE_BASE_OBJECT)
         if connection.response:
             for resp in connection.response:
                 if resp['type'] == 'searchResEntry':

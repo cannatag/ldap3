@@ -1,9 +1,11 @@
 LDAP3
 =====
+.. image:: https://travis-ci.org/cannatag/ldap3.svg?branch=master
+    :target: https://travis-ci.org/cannatag/ldap3
+    :alt: TRAVIS-CI build status for master branch
 
-[![Build Status](https://travis-ci.org/cannatag/ldap3.svg?branch=master)](https://travis-ci.org/cannatag/ldap3)
-    
-    
+
+
 ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python, Python 3, PyPy and PyPy3.
 
 This project was formerly named **python3-ldap**. The name has been changed to avoid confusion with the python-ldap library.
@@ -74,10 +76,8 @@ Thanks to
 Contact me
 ----------
 
-For information and suggestions you can contact me at cannatag@gmail.com or you can open a support ticket on https://github.com/cannatag/ldap3/issues/new
+For information and suggestions you can contact me at cannatag@gmail.com or you can also a support ticket on https://github.com/cannatag/ldap3/issues/new
 
-CHANGELOG
----------
 * 0.9.7.1 2015.01.05
     - Moved to Github
     - Moved to Travis-CI for continuous integration
@@ -87,5 +87,6 @@ CHANGELOG
     - Constant values in ldap3 are now strings. This is helpful in testing and debugging
     - Test suite fully refactored to be used in cloud lab and local development lab
     - Test suite includes options for testing against eDirectory, Active Directory and OpenLDAP
+
 
 Previous versions changelog is available at http://pythonhosted.org//python3-ldap/changelog.html

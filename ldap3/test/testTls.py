@@ -94,7 +94,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_bind_ssl_with_certificate(self):
-        tls = Tls(local_private_key_file=test_user_key_file, local_certificate_file=test_user_cert_file, validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file=test_ca_cert_file, valid_names=['EDIR-TEST', 'edir1.hyperv', 'edir1'])
+        tls = Tls(local_private_key_file=test_user_key_file, local_certificate_file=test_user_cert_file, validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file=test_ca_cert_file, valid_names=['EDIR-TEST', 'WIN1.FOREST.LAB', 'sles11sp3-template.hyperv'])
         if isinstance(test_server, (list, tuple)):
             server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
             for host in test_server:
@@ -111,7 +111,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_sasl_with_external_certificate(self):
-        tls = Tls(local_private_key_file=test_user_key_file, local_certificate_file=test_user_cert_file, validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file=test_ca_cert_file, valid_names=['EDIR-TEST', 'edir1.hyperv', 'edir2.hyperv', 'edir3.hyperv', 'edir1', 'edir2', 'edir3', 'labldap02.cloudapp.net'])
+        tls = Tls(local_private_key_file=test_user_key_file, local_certificate_file=test_user_cert_file, validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file=test_ca_cert_file, valid_names=['EDIR-TEST', '2.hyperv', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB'])
         if isinstance(test_server, (list, tuple)):
             server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
             for host in test_server:

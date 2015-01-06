@@ -1,7 +1,7 @@
 The ldap3 project
 #################
 
-ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2 and Python 3
+ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python 2, Python 3, PyPy and PyPy3.
 
 
 License
@@ -43,6 +43,11 @@ GIT repository
 --------------
 
 You can download the latest source at https://github.com/cannatag/ldap3
+
+Continuous integration
+----------------------
+
+Continuous integration for testing is at https://travis-ci.org/cannatag/ldap3
 
 Support
 -------

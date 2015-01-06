@@ -157,7 +157,6 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        print(response)
         self.assertEqual(len(response), 2)
 
     def test_search_integer_less_than(self):

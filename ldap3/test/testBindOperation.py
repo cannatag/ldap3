@@ -49,7 +49,6 @@ class Test(unittest.TestCase):
         connection = get_connection(bind=False, authentication=AUTH_SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))
         connection.open()
         connection.bind()
-        print(connection.result)
         self.assertTrue(connection.bound)
         drop_connection(connection)
         self.assertFalse(connection.bound)

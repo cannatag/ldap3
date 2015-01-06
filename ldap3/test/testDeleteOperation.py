@@ -46,3 +46,4 @@ class Test(unittest.TestCase):
         else:
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
+        self.delete_at_teardown = []  # remove object from delete list if delete is successful

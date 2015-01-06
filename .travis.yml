@@ -20,4 +20,4 @@ install:
   - "pip install ."
 script:
   - cd ldap3
-  - nosetests test
+  - nosetests -s test

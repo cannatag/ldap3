@@ -96,7 +96,6 @@ class Test(unittest.TestCase):
         if isinstance(result, int):
             self.connection.get_response(result)
         response = self.connection.response
-        print(response)
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: ' + test_name_attr + '=' + testcase_id + 'ldif-change-6,' + test_base in response)
         self.assertTrue('changetype: modify' in response)

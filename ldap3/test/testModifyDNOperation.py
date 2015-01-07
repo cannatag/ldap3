@@ -55,6 +55,6 @@ class Test(unittest.TestCase):
             _, result = self.connection.get_response(result)
         else:
             result = self.connection.result
-            print(result)
+        print(result)
         self.assertEqual(result['description'], 'success')
         self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace(test_base, test_moved), self.delete_at_teardown[0][1])

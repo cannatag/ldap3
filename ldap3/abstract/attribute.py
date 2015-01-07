@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from ldap3.core.exceptions import LDAPAttributeError
+from ..core.exceptions import LDAPAttributeError
 
 
 # noinspection PyUnresolvedReferences

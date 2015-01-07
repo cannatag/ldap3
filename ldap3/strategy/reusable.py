@@ -31,7 +31,7 @@ from time import sleep
 from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
-from ldap3.core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
+from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
 
 
 try:
@@ -244,7 +244,7 @@ class ReusableStrategy(BaseStrategy):
             return s
 
         def new_connection(self):
-            from ldap3.core.connection import Connection
+            from ..core.connection import Connection
             # noinspection PyProtectedMember
             self.connection = Connection(server=self.master_connection.server_pool if self.master_connection.server_pool else self.master_connection.server,
                                          user=self.master_connection.user,

@@ -28,7 +28,7 @@ from os import linesep
 import random
 
 from .. import LDAP_MAX_INT
-from ldap3.core.exceptions import LDAPLDIFError
+from ..core.exceptions import LDAPLDIFError
 from ..utils.conv import prepare_for_stream
 from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header

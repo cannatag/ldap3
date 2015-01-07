@@ -25,7 +25,7 @@
 
 # implements RFC4532
 
-from ldap3.extend.operation import ExtendedOperation
+from ...extend.operation import ExtendedOperation
 
 
 class WhoAmI(ExtendedOperation):

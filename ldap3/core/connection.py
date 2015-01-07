@@ -62,7 +62,7 @@ from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
-from ldap3.core.exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError
+from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError
 from ..utils.conv import prepare_for_stream, check_json_dict, format_json
 
 
@@ -246,7 +246,7 @@ class Connection(object):
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
                         self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND or auto_bind == True:
+                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND or auto_bind is True:
                         self.start_tls(read_server_info=False)
                         self.bind(read_server_info=True)
                     elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
@@ -350,7 +350,7 @@ class Connection(object):
             if not context_closed and self.closed:
                 self.open()
 
-            if not exc_type is None:
+            if exc_type is not None:
                 return False  # re-raise LDAPExceptionError
 
     def bind(self,

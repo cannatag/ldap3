@@ -34,7 +34,7 @@ from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, 
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.formatters.standard import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax
-from ldap3.core.exceptions import LDAPSchemaError, LDAPDefinitionError
+from ..core.exceptions import LDAPSchemaError, LDAPDefinitionError
 
 
 def constant_to_class_kind(value):
@@ -114,7 +114,7 @@ class BaseServerInfo(object):
     @classmethod
     def from_json(cls, json_definition, schema=None, custom_formatter=None):
         definition = json.loads(json_definition, object_hook=json_hook)
-        if not 'raw' in definition or not 'type' in definition:
+        if 'raw' not in definition or 'type' not in definition:
             raise LDAPDefinitionError('invalid JSON definition')
 
         if CASE_INSENSITIVE_SCHEMA_NAMES:
@@ -135,7 +135,7 @@ class BaseServerInfo(object):
         if definition['type'] == 'DsaInfo':
             return DsaInfo(attributes, definition['raw'])
         elif definition['type'] == 'SchemaInfo':
-            if not 'schema_entry' in definition:
+            if 'schema_entry' not in definition:
                 raise LDAPDefinitionError('invalid schema in JSON')
             return SchemaInfo(definition['schema_entry'], attributes, definition['raw'])
 

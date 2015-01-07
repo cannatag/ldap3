@@ -26,7 +26,7 @@
 from os import linesep
 
 from .attrDef import AttrDef
-from ldap3.core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError
+from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError
 from .. import STRING_TYPES, SEQUENCE_TYPES
 
 

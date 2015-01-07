@@ -26,7 +26,7 @@
 from pyasn1.codec.ber import decoder
 from pyasn1.type.univ import Integer
 
-from ldap3.core.exceptions import LDAPExtensionError
+from ...core.exceptions import LDAPExtensionError
 from ..operation import ExtendedOperation
 from ...protocol.rfc4511 import LDAPDN
 

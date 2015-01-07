@@ -27,7 +27,7 @@ from binascii import hexlify
 from uuid import UUID
 from datetime import datetime
 
-from ldap3.core.timezone import OffsetTzInfo
+from ...core.timezone import OffsetTzInfo
 
 
 def format_unicode(raw_value):
@@ -247,7 +247,7 @@ def format_sid(raw_value):
         sub_authority = ''
         i = 0
         while i < sub_authority_count:
-            sub_authority += '-' + str(int.from_bytes(raw_value[8 + (i*4): 12 + (i*4)], byteorder='little'))  # little endian
+            sub_authority += '-' + str(int.from_bytes(raw_value[8 + (i * 4): 12 + (i * 4)], byteorder='little'))  # little endian
             i += 1
     else:  # python 2
         revision = int(ord(raw_value[0]))

@@ -26,7 +26,7 @@
 from datetime import datetime, timedelta
 from os import linesep
 
-from ldap3.core.exceptions import LDAPMetricsError
+from .exceptions import LDAPMetricsError
 
 
 class ConnectionUsage(object):

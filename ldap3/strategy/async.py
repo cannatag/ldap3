@@ -29,10 +29,9 @@ import socket
 from pyasn1.codec.ber import decoder
 
 from .. import RESPONSE_COMPLETE, SOCKET_SIZE
-from ldap3.core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
+from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-
 
 
 # noinspection PyProtectedMember

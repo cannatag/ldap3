@@ -23,9 +23,9 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.abstract.attribute import Attribute
-from ldap3.abstract.operationalAttribute import OperationalAttribute
-from ldap3.abstract.attrDef import AttrDef
-from ldap3.abstract.objectDef import ObjectDef
-from ldap3.abstract.entry import Entry
-from ldap3.abstract.reader import Reader
+from .attribute import Attribute
+from .operationalAttribute import OperationalAttribute
+from .attrDef import AttrDef
+from .objectDef import ObjectDef
+from .entry import Entry
+from .reader import Reader

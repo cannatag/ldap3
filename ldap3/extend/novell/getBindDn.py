@@ -23,8 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.protocol.novell import Identity
-from ldap3.extend.operation import ExtendedOperation
+from ...protocol.novell import Identity
+from ...extend.operation import ExtendedOperation
 
 
 class GetBindDn(ExtendedOperation):

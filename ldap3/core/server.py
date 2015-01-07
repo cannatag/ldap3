@@ -30,8 +30,8 @@ from datetime import datetime
 from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
     CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
     IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
-from ldap3.core.exceptions import LDAPInvalidPort
-from ldap3.core.exceptions import LDAPInvalidServerError, LDAPDefinitionError
+from .exceptions import LDAPInvalidPort
+from .exceptions import LDAPInvalidServerError, LDAPDefinitionError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
@@ -339,19 +339,19 @@ class Server(object):
             if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
                     self._get_schema_info(connection)
             elif self.get_info == OFFLINE_EDIR_8_8_8:
-                from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
+                from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
                 self.attach_dsa_info(DsaInfo.from_json(edir_8_8_8_dsa_info))
             elif self.get_info == OFFLINE_AD_2012_R2:
-                from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
+                from ..protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(ad_2012_r2_schema))
                 self.attach_dsa_info(DsaInfo.from_json(ad_2012_r2_dsa_info))
             elif self.get_info == OFFLINE_SLAPD_2_4:
-                from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
+                from ..protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(slapd_2_4_schema))
                 self.attach_dsa_info(DsaInfo.from_json(slapd_2_4_dsa_info))
             elif self.get_info == OFFLINE_DS389_1_3_3:
-                from ldap3.protocol.schemas.ds389 import ds389_1_3_3_schema, ds389_1_3_3_dsa_info
+                from ..protocol.schemas.ds389 import ds389_1_3_3_schema, ds389_1_3_3_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(ds389_1_3_3_schema))
                 self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
 

@@ -28,7 +28,7 @@ from datetime import datetime
 from pyasn1.type.univ import Integer
 from pyasn1.codec.ber import decoder
 
-from ldap3.core.exceptions import LDAPExtensionError
+from ...core.exceptions import LDAPExtensionError
 from ...protocol.novell import LDAPDN, ReplicaInfoRequestValue
 from ..operation import ExtendedOperation
 

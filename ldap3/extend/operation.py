@@ -26,7 +26,7 @@
 from pyasn1.codec.ber import decoder
 
 from .. import RESULT_SUCCESS
-from ldap3.core.exceptions import LDAPExtensionError
+from ..core.exceptions import LDAPExtensionError
 
 
 class ExtendedOperation(object):

@@ -23,9 +23,9 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.extend.operation import ExtendedOperation
-from ldap3.protocol.novell import ReplicaList
-from ldap3.protocol.rfc4511 import LDAPDN
+from ...extend.operation import ExtendedOperation
+from ...protocol.novell import ReplicaList
+from ...protocol.rfc4511 import LDAPDN
 
 
 class ListReplicas(ExtendedOperation):

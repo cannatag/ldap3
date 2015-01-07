@@ -25,7 +25,7 @@
 
 from string import hexdigits, ascii_letters, digits
 
-from ldap3.core.exceptions import LDAPInvalidDnError
+from ..core.exceptions import LDAPInvalidDnError
 
 
 STATE_ANY = 0
@@ -169,7 +169,7 @@ def validate_attribute_value(attribute_value):
 
     if attribute_value[0] == '#':  # only hex characters are valid
         for c in attribute_value:
-            if not 'c' in hexdigits:  # allowed only hex digits as per RFC 4514
+            if 'c' not in hexdigits:  # allowed only hex digits as per RFC 4514
                 raise LDAPInvalidDnError('character ' + c + ' not allowed in hex representation of attribute value')
         if len(attribute_value) % 2 == 0:  # string must be # + HEX HEX (an odd number of chars)
             raise LDAPInvalidDnError('hex representation must be in the form of <HEX><HEX> pairs')
@@ -216,7 +216,7 @@ def escape_attribute_value(attribute_value):
 
         if valid_hex:
             for c in attribute_value:
-                if not c in hexdigits:  # allowed only hex digits as per RFC 4514
+                if c not in hexdigits:  # allowed only hex digits as per RFC 4514
                     valid_hex = False
                     break
 

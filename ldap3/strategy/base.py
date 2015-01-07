@@ -33,7 +33,7 @@ from pyasn1.codec.ber import encoder, decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS,\
     DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, SEARCH_SCOPE_BASE_OBJECT
-from ldap3.core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
+from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
 from ..utils.uri import parse_uri
@@ -53,7 +53,6 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-
 
 
 # noinspection PyProtectedMember
@@ -502,7 +501,7 @@ class BaseStrategy(object):
                                              version=self.connection.server.tls.version,
                                              ca_certs_file=self.connection.server.tls.ca_certs_file) if selected_referral['ssl'] else None)
 
-            from ldap3.core.connection import Connection
+            from ..core.connection import Connection
 
             referral_connection = Connection(server=referral_server,
                                              user=self.connection.user if not selected_referral['anonymousBindOnly'] else None,
@@ -571,7 +570,7 @@ class BaseStrategy(object):
         return response, result
 
     def _start_listen(self):
-        #overridden on strategy class
+        # overridden on strategy class
         raise NotImplementedError
 
     def _get_response(self, message_id):

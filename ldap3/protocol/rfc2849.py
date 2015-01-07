@@ -26,7 +26,7 @@
 from base64 import b64encode
 
 from .. import LDIF_LINE_LENGTH, STRING_TYPES
-from ldap3.core.exceptions import LDAPLDIFError
+from ..core.exceptions import LDAPLDIFError
 
 # LDIF converter RFC 2849 compliant
 

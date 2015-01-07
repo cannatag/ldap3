@@ -23,8 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.extend.operation import ExtendedOperation
-from ldap3.protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
+from ...extend.operation import ExtendedOperation
+from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
 
 # implements RFC3062
 

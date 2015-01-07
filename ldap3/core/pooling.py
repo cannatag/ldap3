@@ -28,7 +28,7 @@ from os import linesep
 from random import randint
 
 from .. import POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES
-from ldap3.core.exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError
+from .exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError
 from .server import Server
 
 

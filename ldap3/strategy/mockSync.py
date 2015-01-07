@@ -28,12 +28,11 @@ import socket
 from pyasn1.codec.ber import decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
-from ldap3.core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError
+from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..strategy.base import BaseStrategy
 from ..strategy.sync import SyncStrategy
 from ..protocol.rfc4511 import LDAPMessage
-
 
 
 # noinspection PyProtectedMember
@@ -152,7 +151,7 @@ class MockSyncStrategy(SyncStrategy):
                         elif int(ldap_resp['messageID']) != message_id and self.decode_response(ldap_resp)['type'] == 'extendedResp':
                             self.connection.last_error = 'multiple extended responses to a single extended request'
                             raise LDAPExtensionError(self.connection.last_error)
-                            #pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
+                            # pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
                         else:
                             self.connection.last_error = 'invalid messageId received'
                             raise LDAPSocketReceiveError(self.connection.last_error)

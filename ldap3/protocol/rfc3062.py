@@ -27,9 +27,9 @@ from pyasn1.type.univ import OctetString, Sequence
 from pyasn1.type.namedtype import NamedTypes, OptionalNamedType
 from pyasn1.type.tag import Tag, tagClassContext, tagFormatSimple
 
-#Modify password extended operation
-#passwdModifyOID OBJECT IDENTIFIER ::= 1.3.6.1.4.1.4203.1.11.1
-#PasswdModifyRequestValue ::= SEQUENCE {
+# Modify password extended operation
+# passwdModifyOID OBJECT IDENTIFIER ::= 1.3.6.1.4.1.4203.1.11.1
+# PasswdModifyRequestValue ::= SEQUENCE {
 #    userIdentity [0] OCTET STRING OPTIONAL
 #     oldPasswd [1] OCTET STRING OPTIONAL
 #     newPasswd [2] OCTET STRING OPTIONAL }

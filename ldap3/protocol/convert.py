@@ -24,8 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import SEQUENCE_TYPES
-from ldap3.core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
-from ldap3.protocol.rfc4511 import Controls, Control
+from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
+from ..protocol.rfc4511 import Controls, Control
 
 
 def attribute_to_dict(attribute):
@@ -119,9 +119,9 @@ def build_controls_list(controls):
 
 def validate_assertion_value(schema, name, value):
     if schema and schema.attribute_types is not None:
-        if not name in schema.attribute_types:
+        if name not in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in assertion: ' + name)
-    if not '\\' in value:
+    if '\\' not in value:
         return value.encode('utf-8')
 
     validated_value = bytearray()
@@ -144,7 +144,7 @@ def validate_assertion_value(schema, name, value):
 
 def validate_attribute_value(schema, name, value):
     if schema:
-        if schema.attribute_types is not None and not name in schema.attribute_types:
+        if schema.attribute_types is not None and name not in schema.attribute_types:
             raise LDAPAttributeError('invalid attribute type in attribute')
         if schema.object_classes is not None and name == 'objectClass':
             if value not in schema.object_classes:

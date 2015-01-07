@@ -29,7 +29,7 @@ from os import urandom
 from binascii import hexlify
 
 from ... import AUTH_SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED
-from ldap3.core.exceptions import LDAPSASLPrepError, LDAPPasswordIsMandatoryError
+from ...core.exceptions import LDAPSASLPrepError, LDAPPasswordIsMandatoryError
 
 
 def sasl_prep(data):
@@ -146,7 +146,7 @@ def validate_simple_password(password):
 
 
 def abort_sasl_negotiation(connection, controls):
-    from ldap3.operation.bind import bind_operation
+    from ...operation.bind import bind_operation
 
     request = bind_operation(connection.version, AUTH_SASL, None, None, '', None)
     response = connection.post_send_single_response(connection.send('bindRequest', request, controls))
@@ -155,13 +155,11 @@ def abort_sasl_negotiation(connection, controls):
     else:
         result = connection.get_response(response)[0][0]
 
-    #result = connection.get_response(response)[0][0] if isinstance(response, int) else connection.result
-
     return True if result['result'] == RESULT_AUTH_METHOD_NOT_SUPPORTED else False
 
 
 def send_sasl_negotiation(connection, controls, payload):
-    from ldap3.operation.bind import bind_operation
+    from ...operation.bind import bind_operation
 
     request = bind_operation(connection.version, AUTH_SASL, None, None, connection.sasl_mechanism, payload)
     response = connection.post_send_single_response(connection.send('bindRequest', request, controls))

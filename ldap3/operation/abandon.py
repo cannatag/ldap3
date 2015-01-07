@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.protocol.rfc4511 import AbandonRequest, MessageID
+from ..protocol.rfc4511 import AbandonRequest, MessageID
 
 
 # AbandonRequest ::= [APPLICATION 16] MessageID

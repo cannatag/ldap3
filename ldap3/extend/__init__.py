@@ -26,7 +26,7 @@
 from os import linesep
 
 from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS
-from ldap3.extend.novell.partition_entry_count import PartitionEntryCount
+from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
 from .novell.getBindDn import GetBindDn

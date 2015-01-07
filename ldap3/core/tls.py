@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.core.exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
+from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
 from .. import SEQUENCE_TYPES
 
 try:
@@ -35,8 +35,8 @@ except ImportError:
 try:
     from ssl import match_hostname, CertificateError  # backport for python2 missing ssl functionalities
 except ImportError:
-    from ldap3.utils.tls_backport import CertificateError
-    from ldap3.utils.tls_backport import match_hostname_backport as match_hostname
+    from ..utils.tls_backport import CertificateError
+    from ..utils.tls_backport import match_hostname_backport as match_hostname
 
 try:  # try to use SSLContext
     # noinspection PyUnresolvedReferences

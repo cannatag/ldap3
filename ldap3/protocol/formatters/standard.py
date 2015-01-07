@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from ... import SEQUENCE_TYPES
-from ldap3.protocol.formatters.formatters import format_ad_timestamp, format_binary, format_boolean, format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
+from ...protocol.formatters.formatters import format_ad_timestamp, format_binary, format_boolean, format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
 
 standard_formatter = {
     '1.2.840.113556.1.4.903': format_binary,  # Object (DN-binary) - Microsoft

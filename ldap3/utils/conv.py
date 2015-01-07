@@ -28,7 +28,7 @@ import datetime
 
 from .. import SEQUENCE_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
-from ldap3.core.exceptions import LDAPDefinitionError
+from ..core.exceptions import LDAPDefinitionError
 
 
 def escape_bytes(bytes_value):
@@ -52,7 +52,7 @@ def prepare_for_stream(value):
 
 
 def check_escape(raw_string):
-    if not '\\' in raw_string:
+    if '\\' not in raw_string:
         return raw_string
 
     escaped = ''

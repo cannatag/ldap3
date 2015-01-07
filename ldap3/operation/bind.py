@@ -24,10 +24,10 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL
-from ldap3.core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
-from ldap3.protocol.sasl.sasl import validate_simple_password
-from ldap3.protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
-from ldap3.protocol.convert import authentication_choice_to_dict, referrals_to_list
+from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
+from ..protocol.sasl.sasl import validate_simple_password
+from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
+from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
 
 # BindRequest ::= [APPLICATION 0] SEQUENCE {
 #     version                 INTEGER (1 ..  127),

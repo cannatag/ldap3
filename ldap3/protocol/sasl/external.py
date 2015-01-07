@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.protocol.sasl.sasl import send_sasl_negotiation
+from ...protocol.sasl.sasl import send_sasl_negotiation
 
 
 def sasl_external(connection, controls):

@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from ldap3.abstract.attribute import Attribute
+from .attribute import Attribute
 
 
 # noinspection PyUnresolvedReferences,PyMissingConstructor

@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.core.exceptions import LDAPKeyError
+from ..core.exceptions import LDAPKeyError
 
 
 class AttrDef(object):

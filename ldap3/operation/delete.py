@@ -23,8 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3.protocol.rfc4511 import DelRequest, LDAPDN, ResultCode
-from ldap3.operation.bind import referrals_to_list
+from ..protocol.rfc4511 import DelRequest, LDAPDN, ResultCode
+from ..operation.bind import referrals_to_list
 
 # DelRequest ::= [APPLICATION 10] LDAPDN
 

@@ -29,7 +29,7 @@ from os import linesep
 from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, STRING_TYPES, SEQUENCE_TYPES
 from .attribute import Attribute
 from .entry import Entry
-from ldap3.core.exceptions import LDAPReaderError
+from ..core.exceptions import LDAPReaderError
 from .operationalAttribute import OperationalAttribute
 
 

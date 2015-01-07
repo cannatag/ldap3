@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+from time import sleep
 
 import unittest
 
@@ -62,6 +63,7 @@ class Test(unittest.TestCase):
                 counter -= 1
                 print(result)
                 if counter > 0:
+                    sleep(2)
                     continue
             done = True
         self.assertEqual(result['description'], 'success')

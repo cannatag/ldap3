@@ -23,9 +23,9 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 from .. import SEQUENCE_TYPES
-from ldap3.protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode
-from ldap3.operation.bind import referrals_to_list
-from ldap3.protocol.convert import changes_to_list, validate_attribute_value
+from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode
+from ..operation.bind import referrals_to_list
+from ..protocol.convert import changes_to_list, validate_attribute_value
 
 
 # ModifyRequest ::= [APPLICATION 6] SEQUENCE {

@@ -28,7 +28,7 @@ import hashlib
 import hmac
 
 from ... import SEQUENCE_TYPES
-from ldap3.protocol.sasl.sasl import abort_sasl_negotiation, send_sasl_negotiation, random_hex_string
+from ...protocol.sasl.sasl import abort_sasl_negotiation, send_sasl_negotiation, random_hex_string
 
 
 STATE_KEY = 0

@@ -29,7 +29,7 @@ from os import linesep
 from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, \
     SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, \
     SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, CASE_INSENSITIVE_ATTRIBUTE_NAMES, SEQUENCE_TYPES
-from ldap3.core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
+from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
     AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, \
@@ -38,7 +38,6 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 from ..protocol.formatters.standard import format_attribute_values
-
 
 
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
@@ -321,7 +320,7 @@ def build_attribute_selection(attribute_list, schema):
                 if not attribute[0:attribute.index(';')] in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
                     raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
             else:
-                if not attribute in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
+                if attribute not in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
                     raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
         attribute_selection[index] = Selector(attribute)
 

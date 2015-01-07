@@ -17,7 +17,6 @@ env:
   - USERDOMAIN=TRAVIS,REUSABLE,0
   - USERDOMAIN=TRAVIS,REUSABLE,1
 install:
-  - "pip install ldap3"
+  - "pip install ."
 script:
-  - cd ldap3
   - nosetests -s test

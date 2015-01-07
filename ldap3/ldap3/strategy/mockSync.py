@@ -27,7 +27,9 @@ import socket
 from pyasn1.codec.ber import decoder
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
-from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
+from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError
+from ..utils.ciDict import CaseInsensitiveDict
+from ..strategy.base import BaseStrategy
 from ..strategy.sync import SyncStrategy
 from ..protocol.rfc4511 import LDAPMessage
 
@@ -38,27 +40,13 @@ class MockSyncStrategy(SyncStrategy):
     This strategy create a mock LDAP server, with synchronous access
     It can be useful to test LDAP without a real Server
     """
-
     def __init__(self, ldap_connection):
-        SyncStrategy.__init__(self, ldap_connection)
+        BaseStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = True
         self.pooled = False
         self.can_stream = False
-
-    def open(self, reset_usage=True, read_server_info=True):
-        SyncStrategy.open(self, reset_usage, read_server_info)
-
-        if read_server_info:
-            try:
-                self.connection.refresh_server_info()
-            except LDAPOperationResult:  # catch errors from server if raise_exception = True
-                self.connection.server._dsa_info = None
-                self.connection.server._schema_info = None
-
-    def _start_listen(self):
-        if not self.connection.listening and not self.connection.closed:
-            self.connection.listening = True
+        self.database = CaseInsensitiveDict()
 
     def receiving(self):
         """

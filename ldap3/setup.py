@@ -25,6 +25,7 @@ from os import path
 from datetime import datetime
 from platform import uname, python_version, python_build, python_compiler
 
+
 version_file = open('_version.py')
 exec_local = dict()
 exec(version_file.read(), dict(), exec_local)
@@ -58,6 +59,20 @@ project_version_file.write('\n'.join([
 
 project_version_file.close()
 
+"""
+
+__package_name__ = 'ldap3'
+__package_folder__ = path.join('.', __package_name__)
+__version__ = '0.9.7.1'
+__author__ = 'Giovanni Cannata'
+__email__ = 'cannatag@gmail.com'
+__license__ = 'LGPL v3'
+__description__ = 'A strictly RFC 4511 conforming LDAP V3 pure Python client. Same codebase for Python 2, Python3, PyPy and PyPy 3'
+__url__ = 'https://github.com/cannatag/ldap3'
+__status__ = 'development - beta'
+__long_description__ = open('README.rst').read()
+"""
+
 setup(name=__package_name__,
       version=__version__,
       packages=['ldap3',
@@ -82,7 +97,6 @@ setup(name=__package_name__,
       author=__author__,
       author_email=__email__,
       description=__description__,
-      long_description=__long_description__,
       keywords='python3 python2 ldap',
       url=__url__,
       classifiers=['Development Status :: 4 - Beta',

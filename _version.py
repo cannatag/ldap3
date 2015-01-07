@@ -1,7 +1,7 @@
 from os import path
 
 __package_name__ = 'ldap3'
-__package_folder__ = 'ldap3'
+__package_folder__ = '.'
 __version__ = '0.9.7.1'
 __author__ = 'Giovanni Cannata'
 __email__ = 'cannatag@gmail.com'

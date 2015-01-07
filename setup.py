@@ -25,6 +25,7 @@ from os import path
 from datetime import datetime
 from platform import uname, python_version, python_build, python_compiler
 
+
 version_file = open('_version.py')
 exec_local = dict()
 exec(version_file.read(), dict(), exec_local)

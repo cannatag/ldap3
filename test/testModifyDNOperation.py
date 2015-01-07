@@ -51,14 +51,14 @@ class Test(unittest.TestCase):
     def test_move_dn(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-2'))
         done = False
-        counter = 30
-        while not done:  # wait at maximum for 120 seconds - partition may be busy while moving (at least on eDirectory)
+        counter = 20
+        while not done:  # tries move operation for at maximum 20 times - partition may be busy while moving (at least on eDirectory)
             result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modify-dn-2', new_superior=test_moved)
             if not self.connection.strategy.sync:
                 _, result = self.connection.get_response(result)
             else:
                 result = self.connection.result
-            if result['description'] == 'other':
+            if result['description'] == 'other' and counter > 0:
                 counter -= 1
                 print(result)
                 if counter > 0:

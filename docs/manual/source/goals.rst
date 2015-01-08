@@ -1,5 +1,5 @@
 ldap3 Features
-#################
+##############
 
 1. ldap3 strictly conforms to the current RFCs for the version 3 of the LDAP protocol (from 4510 to 4519)
 

@@ -46,9 +46,8 @@ import unittest
 import json
 
 from ldap3.utils.conv import escape_bytes
-from test import test_base, test_name_attr, random_id, get_connection, \
-    add_user, drop_connection, test_int_attr, test_server_type
-from ldap3 import SEARCH_SCOPE_WHOLE_SUBTREE
+from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
+from ldap3 import SUBTREE
 
 
 testcase_id = random_id()
@@ -96,7 +95,7 @@ class Test(unittest.TestCase):
             self.assertTrue(len(json_entries) >= 2)
 
     def test_search_present(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
@@ -116,7 +115,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(json_entries), 2)
 
     def test_search_with_operational_attributes(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)

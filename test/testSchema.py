@@ -22,14 +22,14 @@
 
 import unittest
 
-from ldap3 import Server, GET_ALL_INFO, SchemaInfo, DsaInfo
+from ldap3 import Server, ALL, SchemaInfo, DsaInfo
 from ldap3.protocol.rfc4512 import ObjectClassInfo, AttributeTypeInfo
 from test import test_server, get_connection, drop_connection
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(get_info=GET_ALL_INFO, lazy_connection=False)
+        self.connection = get_connection(get_info=ALL, lazy_connection=False)
         self.delete_at_teardown = []
 
     def tearDown(self):

@@ -29,13 +29,11 @@ import json
 
 from pyasn1.codec.ber import encoder
 
-from .. import AUTH_ANONYMOUS, AUTH_SIMPLE, AUTH_SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, \
-    SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_WHOLE_SUBTREE, STRATEGY_ASYNC_THREADED, STRATEGY_SYNC, \
-    CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
-    ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, STRATEGY_LDIF_PRODUCER, SASL_AVAILABLE_MECHANISMS, \
-    STRATEGY_SYNC_RESTARTABLE, POOLING_STRATEGY_ROUND_ROBIN, STRATEGY_REUSABLE_THREADED, \
-    DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, STRATEGY_MOCK_SYNC, STRATEGY_MOCK_ASYNC
+from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, \
+    DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
+    ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -133,7 +131,7 @@ class Connection(object):
                  auto_bind=AUTO_BIND_NONE,
                  version=3,
                  authentication=None,
-                 client_strategy=STRATEGY_SYNC,
+                 client_strategy=SYNC,
                  auto_referrals=True,
                  auto_range=False,
                  sasl_mechanism=None,
@@ -157,10 +155,10 @@ class Connection(object):
             self.user = user
             self.password = password
             if self.user and self.password and not authentication:
-                self.authentication = AUTH_SIMPLE
+                self.authentication = SIMPLE
             elif not authentication:
-                self.authentication = AUTH_ANONYMOUS
-            elif authentication in [AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL]:
+                self.authentication = ANONYMOUS
+            elif authentication in [SIMPLE, ANONYMOUS, SASL]:
                 self.authentication = authentication
             else:
                 self.last_error = 'unknown authentication method'
@@ -206,7 +204,7 @@ class Connection(object):
             if isinstance(server, STRING_TYPES):
                 server = Server(server)
             if isinstance(server, SEQUENCE_TYPES):
-                server = ServerPool(server, POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
+                server = ServerPool(server, ROUND_ROBIN, active=True, exhaust=True)
 
             if isinstance(server, ServerPool):
                 self.server_pool = server
@@ -216,19 +214,19 @@ class Connection(object):
                 self.server_pool = None
                 self.server = server
 
-            if self.strategy_type == STRATEGY_SYNC:
+            if self.strategy_type == SYNC:
                 self.strategy = SyncStrategy(self)
-            elif self.strategy_type == STRATEGY_ASYNC_THREADED:
+            elif self.strategy_type == ASYNC:
                 self.strategy = AsyncStrategy(self)
-            elif self.strategy_type == STRATEGY_LDIF_PRODUCER:
+            elif self.strategy_type == LDIF:
                 self.strategy = LdifProducerStrategy(self)
-            elif self.strategy_type == STRATEGY_SYNC_RESTARTABLE:
+            elif self.strategy_type == RESTARTABLE:
                 self.strategy = RestartableStrategy(self)
-            elif self.strategy_type == STRATEGY_REUSABLE_THREADED:
+            elif self.strategy_type == REUSABLE:
                 self.strategy = ReusableStrategy(self)
-            elif self.strategy_type == STRATEGY_MOCK_SYNC:
+            elif self.strategy_type == MOCK_SYNC:
                 self.strategy = MockSyncStrategy(self)
-            elif self.strategy_type == STRATEGY_MOCK_ASYNC:
+            elif self.strategy_type == MOCK_ASYNC:
                 self.strategy = MockAsyncStrategy(self)
             else:
                 self.last_error = 'unknown strategy'
@@ -374,13 +372,13 @@ class Connection(object):
                 self._bind_controls = None
                 if self.closed:  # try to open connection if closed
                     self.open(read_server_info=False)
-                if self.authentication == AUTH_ANONYMOUS:
+                if self.authentication == ANONYMOUS:
                     request = bind_operation(self.version, self.authentication, '', '')
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
-                elif self.authentication == AUTH_SIMPLE:
+                elif self.authentication == SIMPLE:
                     request = bind_operation(self.version, self.authentication, self.user, self.password)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
-                elif self.authentication == AUTH_SASL:
+                elif self.authentication == SASL:
                     if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
                         response = self.do_sasl_bind(controls)
                     else:
@@ -390,7 +388,7 @@ class Connection(object):
                     self.last_error = 'unknown authentication method'
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and self.authentication != AUTH_SASL:  # get response if async except for sasl that returns the bind result even for async
+                if not self.strategy.sync and self.authentication != SASL:  # get response if async except for sasl that returns the bind result even for async
                     _, result = self.get_response(response)
                 elif self.strategy.sync:
                     result = self.result
@@ -398,7 +396,7 @@ class Connection(object):
                     result = response
 
                 if result is None:
-                    self.bound = True if self.strategy_type == STRATEGY_REUSABLE_THREADED else False
+                    self.bound = True if self.strategy_type == REUSABLE else False
                 else:
                     self.bound = True if result['result'] == RESULT_SUCCESS else False
 
@@ -433,8 +431,8 @@ class Connection(object):
     def search(self,
                search_base,
                search_filter,
-               search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
-               dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
+               search_scope=SUBTREE,
+               dereference_aliases=DEREF_ALWAYS,
                attributes=None,
                size_limit=0,
                time_limit=0,

@@ -22,7 +22,7 @@
 
 import unittest
 
-from ldap3 import STRATEGY_REUSABLE_THREADED
+from ldap3 import REUSABLE
 from test import get_connection, drop_connection
 
 
@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         self.connection.open()
         self.assertEqual(self.connection.closed, False)
         self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if self.connection.strategy.pooled:
             self.connection.strategy.terminate()
         self.assertEqual(self.connection.closed, True)
         self.assertEqual(self.connection.bound, False)
@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         self.connection.bind()
         self.assertEqual(self.connection.bound, True)
         self.connection.unbind()
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if self.connection.strategy.pooled:
             self.connection.strategy.terminate()
         self.assertEqual(self.connection.closed, True)
         self.assertEqual(self.connection.bound, False)
@@ -59,7 +59,7 @@ class Test(unittest.TestCase):
             self.assertEqual(self.connection.closed, False)
             self.assertEqual(self.connection.bound, True)
 
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if self.connection.strategy.pooled:
             self.connection.strategy.terminate()
 
         self.assertEqual(self.connection.closed, True)
@@ -70,7 +70,7 @@ class Test(unittest.TestCase):
             self.assertEqual(c.closed, False)
             self.assertEqual(c.bound, True)
 
-        if self.connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if self.connection.strategy.pooled:
             self.connection.strategy.terminate()
 
         self.assertEqual(self.connection.closed, True)

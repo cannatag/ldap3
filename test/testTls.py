@@ -23,7 +23,7 @@
 import unittest
 import ssl
 
-from ldap3 import Server, Connection, ServerPool, Tls, AUTH_SASL, STRATEGY_REUSABLE_THREADED
+from ldap3 import Server, Connection, ServerPool, Tls, SASL, REUSABLE
 from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, \
     test_strategy, test_lazy_connection, test_get_info, test_server_mode, \
     test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_ca_cert_file, test_user_cert_file, test_user_key_file
@@ -42,7 +42,7 @@ class Test(unittest.TestCase):
         connection.start_tls()
         self.assertFalse(connection.closed)
         connection.unbind()
-        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if connection.strategy.pooled:
             connection.strategy.terminate()
 
     def test_open_ssl_with_defaults(self):
@@ -56,7 +56,7 @@ class Test(unittest.TestCase):
         connection.open()
         self.assertFalse(connection.closed)
         connection.unbind()
-        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if connection.strategy.pooled:
             connection.strategy.terminate()
 
     def test_open_with_tls_before_bind(self):
@@ -72,7 +72,7 @@ class Test(unittest.TestCase):
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
-        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if connection.strategy.pooled:
             connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
         connection.start_tls()
         self.assertTrue(connection.bound)
         connection.unbind()
-        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if connection.strategy.pooled:
             connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
@@ -106,7 +106,7 @@ class Test(unittest.TestCase):
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
-        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if connection.strategy.pooled:
             connection.strategy.terminate()
         self.assertFalse(connection.bound)
 
@@ -118,11 +118,11 @@ class Test(unittest.TestCase):
                 server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
         else:
             server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=AUTH_SASL, sasl_mechanism='EXTERNAL')
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=SASL, sasl_mechanism='EXTERNAL')
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         connection.unbind()
-        if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+        if connection.strategy.pooled:
             connection.strategy.terminate()
         self.assertFalse(connection.bound)

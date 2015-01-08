@@ -31,8 +31,8 @@ from datetime import datetime
 
 from pyasn1.codec.ber import encoder, decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, STRATEGY_SYNC, AUTH_ANONYMOUS,\
-    DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, SEARCH_SCOPE_BASE_OBJECT
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS,\
+    DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
@@ -462,7 +462,7 @@ class BaseStrategy(object):
             if high_range != '*':
                 result = self.connection.search(search_base=response['dn'],
                                                 search_filter='(objectclass=*)',
-                                                search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                                search_scope=BASE,
                                                 dereference_aliases=request['dereferenceAlias'],
                                                 attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
                 if isinstance(result, bool):
@@ -507,8 +507,8 @@ class BaseStrategy(object):
                                              user=self.connection.user if not selected_referral['anonymousBindOnly'] else None,
                                              password=self.connection.password if not selected_referral['anonymousBindOnly'] else None,
                                              version=self.connection.version,
-                                             authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else AUTH_ANONYMOUS,
-                                             client_strategy=STRATEGY_SYNC,
+                                             authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else ANONYMOUS,
+                                             client_strategy=SYNC,
                                              auto_referrals=True,
                                              read_only=self.connection.read_only)
 

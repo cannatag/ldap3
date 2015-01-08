@@ -28,7 +28,7 @@ from os import linesep
 from threading import Thread, Lock
 from time import sleep
 
-from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, STRATEGY_SYNC_RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
@@ -252,7 +252,7 @@ class ReusableStrategy(BaseStrategy):
                                          auto_bind=self.master_connection.auto_bind,
                                          version=self.master_connection.version,
                                          authentication=self.master_connection.authentication,
-                                         client_strategy=STRATEGY_SYNC_RESTARTABLE,
+                                         client_strategy=RESTARTABLE,
                                          auto_referrals=self.master_connection.auto_referrals,
                                          auto_range=self.master_connection.auto_range,
                                          sasl_mechanism=self.master_connection.sasl_mechanism,

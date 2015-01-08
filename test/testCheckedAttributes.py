@@ -23,7 +23,7 @@
 
 import unittest
 
-from ldap3 import GET_ALL_INFO
+from ldap3 import ALL
 from test import test_base, \
     test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
 
@@ -33,7 +33,7 @@ testcase_id = random_id()
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(check_names=True, get_info=GET_ALL_INFO)
+        self.connection = get_connection(check_names=True, get_info=ALL)
         self.delete_at_teardown = []
         if test_server_type == 'EDIR':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1', attributes={'loginGraceLimit': 0}))

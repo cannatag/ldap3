@@ -26,6 +26,7 @@ from ldap3.abstract import ObjectDef, AttrDef, Reader
 from ldap3.abstract.reader import _create_query_dict
 from test import test_base
 
+
 class Test(unittest.TestCase):
     def test_create_query_dict(self):
         query_text = 'Common Name:=|john;Bob, Surname:=smith'

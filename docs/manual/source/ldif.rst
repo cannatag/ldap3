@@ -15,7 +15,7 @@ You can use the LDIF-CONTENT flavour with any search result::
 
     ...
     # request a few objects from the ldap server
-    result = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
+    result = c.search('o=test','(cn=test-ldif*)', SUBTREE, attributes = ['sn', 'objectClass'])
     ldif_output = c.response_to_ldif()
     ...
 
@@ -45,8 +45,8 @@ ldif_output will contain::
 you can even request a LDIF-CONTENT for a response you saved early::
 
         # request a few objects from the ldap server
-        response1 = c.search('o=test','(cn=test-ldif*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
-        response2 = c.search('o=test','(!(cn=test-ldif*))', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
+        response1 = c.search('o=test','(cn=test-ldif*)', SUBTREE, attributes = ['sn', 'objectClass'])
+        response2 = c.search('o=test','(!(cn=test-ldif*))', SUBTREE, attributes = ['sn', 'objectClass'])
         ldif_output = c.response_to_ldif(response1)
 
 ldif_output will contain the LDIF representation of the response entries.
@@ -59,12 +59,13 @@ not executed on an LDAP server but are converted to an LDIF-CHANGE format that c
 
 For example::
 
-    from ldap3 import Connection, STRATEGY_LDIF_PRODUCER
-    connection = Connection(server = None, client_strategy = STRATEGY_LDIF_PRODUCER)  # no need of real LDAP server
+    from ldap3 import Connection, LDIF
+    connection = Connection(server = None, client_strategy = LDIF)  # no need of real LDAP server
     connection.add('cn=test-add-operation,o=test'), 'iNetOrgPerson',
                    {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
 
-    in connection.response you will find:
+
+in connection.response you will find::
 
     version: 1
     dn: cn=test-add-operation,o=test
@@ -106,12 +107,12 @@ Streaming the output to a file
 When producing LDIF-CONTENT output you can have all operation results in a single stream. To get this simply set the stream attribute of the Connection to a stream object (for example to a file) and  *open* the connection.
 If you don't specify the stream object a StringIO will be used. You can get the value with the c.stream.getvalue() method::
 
-    from ldap3 import Connection, STRATEGY_LDIF_PRODUCER
-    c = Connection(None, client_strategy=STRATEGY_LDIF_PRODUCER)
+    from ldap3 import Connection, LDIF
+    c = Connection(None, client_strategy=LDIF)
     with c:
         c.delete('cn=test1, o=test')
         c.delete('cn=test2, o=test')
-        result = c.stjream.getvalue()  # needed because the stream is closed when the connection exits the context
+        result = c.stream.getvalue()  # needed because the stream is closed when the connection exits the context
 
 result will be::
 
@@ -126,7 +127,7 @@ result will be::
 
 If you just define a file object as stream you'll find the output in the file::
 
-    c = Connection(None, client_strategy=STRATEGY_LDIF_PRODUCER)
+    c = Connection(None, client_strategy=LDIF)
     c.stream = open('output.ldif', 'w')
     with c:
         c.delete('cn=test1, o= test')
@@ -168,4 +169,4 @@ you will get::
 
 The possible operation names are: addRequest, delRequest, modifyRequest, modDNRequest.
 
-To change the order of a searchRequest just pass the list
+To change the order of a searchRequest just pass the list in the requested order.

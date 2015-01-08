@@ -22,21 +22,13 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
 * get_info: specifies if the server schema and info must be read (defaults to GET_NO_INFO). Possible values are:
 
-    * GET_NO_INFO: no information is gathered from the server
+    * NONE: no information is gathered from the server
 
-    * NONE: alias for GET_NO_INFO
+    * DSA: server information is stored in server.info
 
-    * GET_DSA_INFO: server information is stored in server.info
+    * SCHEMA: schema information is stored in server.schema
 
-    * DSA: alias for GET_DSA_INFO
-
-    * GET_SCHEMA_INFO: schema information is stored in server.schema
-
-    * SCHEMA: alias for GET_SCHEMA_INFO
-
-    * GET_ALL_INFO: server and schema information are gathered and stored in server.info and server.schema
-
-    * ALL: alias for GET_ALL_INFO
+    * ALL: server and schema information are gathered and stored in server.info and server.schema
 
     * OFFLINE_EDIR_8_8_8: pre-built schema and info for NetIQ eDirectory 8.8.8
 
@@ -77,7 +69,7 @@ Server Pool
 
 Different Server objects can be grouped in a Server pool object. A Server pool object can be specified in the Connection object to obtain an high availability (HA) connection. This is useful for long standing connections (for example an LDAP authenticator module in an application server) or when you have a multi replica LDAP server infrastructure. If you set the 'active' attribute to True while defining the ServerPool the strategy will check for server availability. With active ServerPool you can set an additional attribute 'exhaust' to raise an exception if no server is active in the pool. If 'exhaust' is set to False the pool may cycle forever and you must have an alternate way to check exhaustion of the pool.
 
-The pool can have different HA strategies: 
+The pool can have different HA strategies:
 
 * POOLING_STRATEGY_FIRST: gets the first server in the pool, if 'active' is set to True gets the first available server
 
@@ -131,10 +123,12 @@ Offline Schema
 If your LDAP server doesn't return the DSA info or the Schema you can load pre-built schemas and infos with the get_info parameter. Are available schemas for eDirectory, Active Directory and Openldap.
 
 You can also save the schema and info in a json string::
+
     json_info = server.info.to_json()
     json_schema = server.schema.to_json('')
 
-or can have them saved on file:
+or can have them saved on file::
+
     server.info.to_file('server-info.json)
     server.schema.to_file('server-schema.json')
 

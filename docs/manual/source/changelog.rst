@@ -19,7 +19,7 @@ CHANGELOG
     - Added shortened authentication parameters in ldap3 namespace: ANONYMOUS, SIMPLE, SASL
     - Added shortened scope parameters in ldap3 namespace: BASE, LEVEL, SUBTREE
     - Added shortened get_info parameters in ldap3 namespace: NONE, DSA, SCHEMA, ALL
-    - Added shortened alias dereferencing parameters in ldap3 namespace: DEREF_NONE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS
+    - Added shortened alias dereferencing parameters in ldap3 namespace: DEREF_NEVER, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS
     - Added shortened connection strategy parameters in ldap3 namespace: SYNC, ASYNC, LDIF, RESTARTABLE, REUSABLE
     - Added shortened pooling strategy parameters in ldap3 namespace: FIRST, ROUND_ROBIN, RANDOM
     - Added reentrant lock to avoid race conditions in the Connection object

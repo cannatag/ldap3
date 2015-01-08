@@ -37,7 +37,7 @@ or you can save the response to a JSON string::
 
     entries = connection.response_to_json()
 
-or have the response saved to a file in JSON format:
+or have the response saved to a file in JSON format::
 
     connection.response_to_json('entries-found.json')
 
@@ -47,15 +47,15 @@ Connections
 You can create a connection with::
 
     # import class and constants
-    from ldap3 import Server, Connection, AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, SEARCH_SCOPE_WHOLE_SUBTREE, GET_ALL_INFO
+    from ldap3 import Server, Connection, SIMPLE, SYNC, ASYNC, SUBTREE, ALL
 
     # define the server and the connection
-    s = Server('servername', port = 389, get_info = GET_ALL_INFO)  # define an unsecure LDAP server, requesting info on DSE and schema
-    c = Connection(s, auto_bind = True, client_strategy = STRATEGY_SYNC, user='username', password='password', authentication=AUTH_SIMPLE, check_names=True)
+    s = Server('servername', port = 389, get_info = ALL)  # define an unsecure LDAP server, requesting info on DSE and schema
+    c = Connection(s, auto_bind = True, client_strategy = SYNC, user='username', password='password', authentication=SIMPLE, check_names=True)
     print(s.info) # display info from the DSE. OID are decoded when recognized by the library
 
     # request a few objects from the LDAP server
-    c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
+    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])
     response = c.response
     result = c.result
     for r in response:
@@ -64,7 +64,7 @@ You can create a connection with::
     print(result)
     c.unbind()
 
-To move from synchronous to asynchronous connection you have just to change the 'client_strategy' parameter to 'STRATEGY_ASYNC_THREADED' and substitute the *response* and *result* assignments with::
+To move from synchronous to asynchronous connection you have just to change the 'client_strategy' parameter to 'ASYNC' and substitute the *response* and *result* assignments with::
 
     response, result = c.get_response(result)
 
@@ -72,7 +72,7 @@ That's all you have to do to have an asynchronous threaded LDAP client connectio
 
 To get operational attributes (createStamp, modifiedStamp, ...) for response objects add 'get_operational_attribute = True' in the search request::
 
-    c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attribute = True)
+    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attribute = True)
 
 
 Connection context manager
@@ -80,18 +80,18 @@ Connection context manager
 
 Connections respond to the context manager protocol, so you can have automatic open, bind and unbind with the following syntax::
 
-    from ldap3 import Server, Connection
+    from ldap3 import Server, Connection, SUBTREE
     s = Server('servername')
-    c = Connection(s, user = 'username', password = 'password')
+    c = Connection(s, user='username', password='password')
     with c:
-        c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])
+        c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])
     print(c.response)
 
 or, even shorter::
 
-    from ldap3 import Server, Connection
+    from ldap3 import Server, Connection, SUBTREE
     with Connection(Server('servername'), user = 'username', password = 'password') as c
-        c.search('o=test','(objectClass=*)', SEARCH_SCOPE_WHOLE_SUBTREE, attributes = ['sn', 'objectClass'])  # connection is opened, bound, searched and closed
+        c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])  # connection is opened, bound, searched and closed
     print(c.response)
 
 The Connection object retains its state when entering the context, that is if the connection was closed and unbound it will remain closed and unbound when leaving the context,
@@ -144,13 +144,13 @@ You can change the paged_size in any subsequent search request.
 
 Example::
 
-    from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE
+    from ldap3 import Server, Connection, SUBTREE
     total_entries = 0
     server = Server('test-server')
-    c = Connection(server, user = 'username', password = 'password')
+    c = Connection(server, user='username', password='password')
     c.search(search_base = 'o=test',
              search_filter = '(objectClass=inetOrgPerson)',
-             search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+             search_scope = SUBTREE,
              attributes = ['cn', 'givenName'],
              paged_size = 5)
     total_entries += len(c.response)
@@ -160,7 +160,7 @@ Example::
     while cookie:
         c.search(search_base = 'o=test',
                  search_filter = '(object_class=inetOrgPerson)',
-                 search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                 search_scope = SUBTREE,
                  attributes = ['cn', 'givenName'],
                  paged_size = 5,
                  paged_cookie = cookie)
@@ -179,7 +179,7 @@ Working with a generator is better when you deal with very long list of entries 
     total_entries = 0
     entry_generator = c.extend.standard.paged_search(search_base = 'o=test',
                                                      search_filter = '(objectClass=inetOrgPerson)',
-                                                     search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                                     search_scope = SUBTREE,
                                                      attributes = ['cn', 'givenName'],
                                                      paged_size = 5,
                                                      generator=True)
@@ -196,7 +196,7 @@ Working with a list keeps all the found entries in a list and you can elaborate 
     # whole result list
     entry_list = c.extend.standard.paged_search(search_base = 'o=test',
                                                 search_filter = '(objectClass=inetOrgPerson)',
-                                                search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+                                                search_scope = SUBTREE,
                                                 attributes = ['cn', 'givenName'],
                                                 paged_size = 5,
                                                 generator=False)
@@ -204,4 +204,3 @@ Working with a list keeps all the found entries in a list and you can elaborate 
         print entry['attributes']
     total_entries = len(entry_list)
     print('Total entries retrieved:', total_entries)
-

@@ -26,7 +26,7 @@
 from string import whitespace
 from os import linesep
 
-from .. import DEREF_NONE, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, \
+from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, \
     CASE_INSENSITIVE_ATTRIBUTE_NAMES, SEQUENCE_TYPES
 
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
@@ -348,7 +348,7 @@ def search_operation(search_base,
     else:
         raise LDAPInvalidScopeError('invalid scope type')
 
-    if dereference_aliases == DEREF_NONE:
+    if dereference_aliases == DEREF_NEVER:
         request['derefAliases'] = DerefAliases('neverDerefAliases')
     elif dereference_aliases == DEREF_SEARCH:
         request['derefAliases'] = DerefAliases('derefInSearching')

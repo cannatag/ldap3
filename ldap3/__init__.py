@@ -49,7 +49,7 @@ LEVEL = 'LEVEL'
 SUBTREE = 'SUBTREE'
 
 # search alias
-DEREF_NONE = 'NONE'
+DEREF_NEVER = 'NEVER'
 DEREF_SEARCH = 'SEARCH'
 DEREF_BASE = 'FINDING_BASE'
 DEREF_ALWAYS = 'ALWAYS'
@@ -214,7 +214,6 @@ else:  # python 2
 
 SEQUENCE_TYPES = (list, tuple)
 
-"""
 # older and longer constants
 AUTH_ANONYMOUS = ANONYMOUS
 AUTH_SIMPLE = SIMPLE
@@ -224,7 +223,7 @@ SEARCH_SCOPE_BASE_OBJECT = BASE
 SEARCH_SCOPE_SINGLE_LEVEL = LEVEL
 SEARCH_SCOPE_WHOLE_SUBTREE = SUBTREE
 
-SEARCH_NEVER_DEREFERENCE_ALIASES = DEREF_NONE
+SEARCH_NEVER_DEREFERENCE_ALIASES = DEREF_NEVER
 SEARCH_DEREFERENCE_IN_SEARCHING = DEREF_SEARCH
 SEARCH_DEREFERENCE_FINDING_BASE_OBJECT = DEREF_BASE
 SEARCH_DEREFERENCE_ALWAYS = DEREF_ALWAYS
@@ -245,7 +244,7 @@ GET_NO_INFO = NONE
 GET_DSA_INFO = DSA
 GET_SCHEMA_INFO = SCHEMA
 GET_ALL_INFO = ALL
-"""
+
 
 # centralized imports
 from .version import __author__, __version__, __email__, __description__, __status__, __license__, __url__
@@ -256,6 +255,7 @@ from .core.pooling import ServerPool
 from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalAttribute
 from .protocol.rfc4512 import DsaInfo, SchemaInfo
 
+"""
 from .core.exceptions import LDAPException, LDAPExceptionError, LDAPSocketCloseError, LDAPReferralError, \
     LDAPAttributeError, LDAPBindError, LDAPCertificateError, LDAPChangesError, LDAPCommunicationError, LDAPConnectionIsReadOnlyError, \
     LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPControlsError, LDAPEntryError, \
@@ -279,3 +279,4 @@ from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSA
     LDAPReferralResult, LDAPSASLBindInProgressResult, LDAPSizeLimitExceededResult, LDAPStrongerAuthRequiredResult, \
     LDAPTimeLimitExceededResult, LDAPTooLateResult, LDAPUnavailableCriticalExtensionResult, LDAPUnavailableResult, \
     LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError
+"""

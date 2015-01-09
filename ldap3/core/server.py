@@ -27,7 +27,7 @@ import socket
 from threading import Lock
 from datetime import datetime
 
-from .. import GET_NO_INFO, GET_DSA_INFO, GET_SCHEMA_INFO, GET_ALL_INFO, SEARCH_SCOPE_BASE_OBJECT, LDAP_MAX_INT,\
+from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT,\
     CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
     IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
 from .exceptions import LDAPInvalidPort
@@ -62,7 +62,7 @@ class Server(object):
                  port=None,
                  use_ssl=False,
                  allowed_referral_hosts=None,
-                 get_info=GET_NO_INFO,
+                 get_info=NONE,
                  tls=None,
                  formatter=None,
                  connect_timeout=None,
@@ -181,7 +181,7 @@ class Server(object):
             try:
                 self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]
                 self._address_info_resolved_time = datetime.now()
-            except:
+            except Exception:
                 self._address_info = []
 
         return self._address_info
@@ -249,7 +249,7 @@ class Server(object):
             self.dsa_info = connection.strategy.pool
         result = connection.search(search_base='',
                                    search_filter='(objectClass=*)',
-                                   search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                   search_scope=BASE,
                                    attributes=['altServer',  # requests specific dsa info attributes
                                                'namingContexts',
                                                'supportedControl',
@@ -285,7 +285,7 @@ class Server(object):
             else:
                 schema_entry = self._dsa_info.schema_entry if self._dsa_info.schema_entry else None
         else:
-            result = connection.search(entry, '(objectClass=*)', SEARCH_SCOPE_BASE_OBJECT, attributes=['subschemaSubentry'], get_operational_attributes=True)
+            result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
                 schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
             else:  # async request, must check if subschemaSubentry in attributes
@@ -297,7 +297,7 @@ class Server(object):
         if schema_entry:
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
-                                       search_scope=SEARCH_SCOPE_BASE_OBJECT,
+                                       search_scope=BASE,
                                        attributes=['objectClasses',  # requests specific subschema attributes
                                                    'attributeTypes',
                                                    'ldapSyntaxes',
@@ -333,10 +333,10 @@ class Server(object):
         read info from DSE and from subschema
         """
         if not connection.closed:
-            if self.get_info in [GET_DSA_INFO, GET_ALL_INFO, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
+            if self.get_info in [DSA, ALL, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
                 self._get_dsa_info(connection)
 
-            if self.get_info in [GET_SCHEMA_INFO, GET_ALL_INFO]:
+            if self.get_info in [SCHEMA, ALL]:
                     self._get_schema_info(connection)
             elif self.get_info == OFFLINE_EDIR_8_8_8:
                 from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
@@ -373,6 +373,16 @@ class Server(object):
 
     @classmethod
     def from_definition(cls, host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
+        """
+        Define a dummy server with preloaded schema and info
+        :param host: host name
+        :param dsa_info: DsaInfo preloaded object
+        :param dsa_schema: SchemaInfo preloaded object
+        :param port: dummy port
+        :param use_ssl: use_ssl
+        :param formatter: custom formatter
+        :return: Server object
+        """
         if isinstance(host, SEQUENCE_TYPES):
             dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter)  # for ServerPool object
         else:

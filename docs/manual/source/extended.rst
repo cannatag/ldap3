@@ -4,30 +4,32 @@ Extended Operations
 
 In the connection object are defined a set of extended operations in the 'extend' attribute.
 
-Extended operations are logically grouped in by their use and vendor:
+Extended operations are logically grouped in by their use and vendor::
 
-extend.standard
-  extend.standard.who_am_i()
-  extend.standard.modify_password(user, old_password, new_password)
-  extend.standard.paged_search(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality, generator)
-extend.novell
-  extend.novell.get_bind_dn()
-  extend.novell.get_universal_password(user)
-  extend.novell.set_universal_password(user, new_password)
-extend.microsoft
-  [None for now]
+    extend.standard
+      extend.standard.who_am_i()
+      extend.standard.modify_password(user, old_password, new_password)
+      extend.standard.paged_search(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality, generator)
+    extend.novell
+      extend.novell.get_bind_dn()
+      extend.novell.get_universal_password(user)
+      extend.novell.set_universal_password(user, new_password)
+    extend.microsoft
+      [None for now]
 
 You can call the requested operation and get the extended result back as specified in the relevant rfc or documentation. The result dictionary is augmented with the specific keys of the extendedResponse.
 
 
 Just call the extend operation in the usual way, for example::
+
     c = Connection(....)
     c.bind()
     i_am = c.extend.standard.who_am_i()
 
 The payload of these extended operation is properly encoded and decoded. When available you should get the response value as the return value of the function and as an additional field of the result dictionary
 
- For example::
+For example::
+
     s = Server(...)
     c = Connection(s, ...)
     c.bind()

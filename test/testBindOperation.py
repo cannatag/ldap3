@@ -22,7 +22,7 @@
 
 import unittest
 
-from ldap3 import AUTH_ANONYMOUS, AUTH_SASL
+from ldap3 import ANONYMOUS, SASL
 from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm
 
 testcase_id = random_id()
@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_bind_anonymous(self):
-        connection = get_connection(bind=False, lazy_connection=False, authentication=AUTH_ANONYMOUS)
+        connection = get_connection(bind=False, lazy_connection=False, authentication=ANONYMOUS)
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_bind_sasl_digest_md5(self):
-        connection = get_connection(bind=False, authentication=AUTH_SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))
+        connection = get_connection(bind=False, authentication=SASL, sasl_mechanism='DIGEST-MD5', sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)

@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS
+from .. import SUBTREE, DEREF_ALWAYS
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
@@ -61,8 +61,8 @@ class StandardExtendedOperations(ExtendedOperationContainer):
     def paged_search(self,
                      search_base,
                      search_filter,
-                     search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
-                     dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
+                     search_scope=SUBTREE,
+                     dereference_aliases=DEREF_ALWAYS,
                      attributes=None,
                      size_limit=0,
                      time_limit=0,

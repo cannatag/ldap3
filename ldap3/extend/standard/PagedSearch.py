@@ -23,14 +23,14 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ... import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_ALWAYS
+from ... import SUBTREE, DEREF_ALWAYS
 
 
 def paged_search_generator(connection,
                            search_base,
                            search_filter,
-                           search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
-                           dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
+                           search_scope=SUBTREE,
+                           dereference_aliases=DEREF_ALWAYS,
                            attributes=None,
                            size_limit=0,
                            time_limit=0,
@@ -74,8 +74,8 @@ def paged_search_generator(connection,
 def paged_search_accumulator(connection,
                              search_base,
                              search_filter,
-                             search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
-                             dereference_aliases=SEARCH_DEREFERENCE_ALWAYS,
+                             search_scope=SUBTREE,
+                             dereference_aliases=DEREF_ALWAYS,
                              attributes=None,
                              size_limit=0,
                              time_limit=0,

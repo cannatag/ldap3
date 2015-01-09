@@ -28,7 +28,7 @@ from unicodedata import ucd_3_2_0 as unicode32
 from os import urandom
 from binascii import hexlify
 
-from ... import AUTH_SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED
+from ... import SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED
 from ...core.exceptions import LDAPSASLPrepError, LDAPPasswordIsMandatoryError
 
 
@@ -148,7 +148,7 @@ def validate_simple_password(password):
 def abort_sasl_negotiation(connection, controls):
     from ...operation.bind import bind_operation
 
-    request = bind_operation(connection.version, AUTH_SASL, None, None, '', None)
+    request = bind_operation(connection.version, SASL, None, None, '', None)
     response = connection.post_send_single_response(connection.send('bindRequest', request, controls))
     if connection.strategy.sync:
         result = connection.result
@@ -161,7 +161,7 @@ def abort_sasl_negotiation(connection, controls):
 def send_sasl_negotiation(connection, controls, payload):
     from ...operation.bind import bind_operation
 
-    request = bind_operation(connection.version, AUTH_SASL, None, None, connection.sasl_mechanism, payload)
+    request = bind_operation(connection.version, SASL, None, None, connection.sasl_mechanism, payload)
     response = connection.post_send_single_response(connection.send('bindRequest', request, controls))
 
     if connection.strategy.sync:

@@ -24,8 +24,8 @@ from sys import version
 from os import environ
 from random import SystemRandom
 
-from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_REUSABLE_THREADED, POOLING_STRATEGY_ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, AUTH_SASL, \
-    GET_NO_INFO
+from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
+    NONE
 
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -33,15 +33,15 @@ from ldap3 import AUTH_SIMPLE, STRATEGY_SYNC, STRATEGY_REUSABLE_THREADED, POOLIN
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
 
-test_pooling_strategy = POOLING_STRATEGY_ROUND_ROBIN
+test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True
 test_pooling_exhaust = False
 
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
-test_authentication = AUTH_SIMPLE  # authentication type
+test_authentication = SIMPLE  # authentication type
 test_check_names = False  # check attribute names in operations
-test_get_info = GET_NO_INFO  # get info from DSA
+test_get_info = NONE  # get info from DSA
 
 
 try:
@@ -157,10 +157,10 @@ if location.startswith('TRAVIS,'):
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
 else:
-    test_strategy = STRATEGY_SYNC  # sync strategy for executing tests
-    # test_strategy = STRATEGY_ASYNC_THREADED  # uncomment this line to test the async strategy
-    # test_strategy = STRATEGY_SYNC_RESTARTABLE  # uncomment this line to test the sync_restartable strategy
-    # test_strategy = STRATEGY_REUSABLE_THREADED  # uncomment this line to test the sync_reusable_threaded strategy
+    test_strategy = SYNC  # sync strategy for executing tests
+    # test_strategy = ASYNC  # uncomment this line to test the async strategy
+    # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+    # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
 
 print('Testing location:', location)
@@ -212,12 +212,12 @@ def get_connection(bind=None,
                         get_info=get_info,
                         mode=test_server_mode)
 
-    if authentication == AUTH_SASL:
+    if authentication == SASL:
         return Connection(server,
                           auto_bind=bind,
                           version=3,
                           client_strategy=test_strategy,
-                          authentication=AUTH_SASL,
+                          authentication=SASL,
                           sasl_mechanism=sasl_mechanism,
                           sasl_credentials=sasl_credentials,
                           lazy=lazy_connection,
@@ -257,7 +257,7 @@ def drop_connection(connection, dn_to_delete=None):
                     print('unable to delete object ' + dn[0] + ': ' + str(result))
                     break
     connection.unbind()
-    if connection.strategy_type == STRATEGY_REUSABLE_THREADED:
+    if connection.strategy.pooled:
         connection.strategy.terminate()
 
 

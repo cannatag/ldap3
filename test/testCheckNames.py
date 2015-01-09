@@ -22,7 +22,7 @@
 
 import unittest
 
-from ldap3 import GET_ALL_INFO
+from ldap3 import ALL
 from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
 from test import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
 
@@ -32,7 +32,7 @@ testcase_id = random_id()
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(check_names=True, get_info=GET_ALL_INFO)
+        self.connection = get_connection(check_names=True, get_info=ALL)
         self.delete_at_teardown = []
 
     def tearDown(self):

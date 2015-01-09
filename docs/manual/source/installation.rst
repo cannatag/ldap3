@@ -41,7 +41,7 @@ Importing classes and constants
 
 All classes and constants needed to use the ldap3 library can be imported from the **ldap3** namespace::
 
-    from ldap3 import Connection, Server, AUTH_ANONYMOUS, AUTH_SIMPLE
+    from ldap3 import Connection, Server, ANONYMOUS, SIMPLE, SYNC, ASYNC
 
 Library errors
 --------------

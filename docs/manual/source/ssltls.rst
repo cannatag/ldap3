@@ -70,7 +70,7 @@ server trust the credential provided when establishing the secure channel::
      tls = Tls(local_private_key_file = 'key.pem', local_certificate_file = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1,
                ca_certs_file = 'cacert.b64')
      server = Server(host = test_server, port = test_port_ssl, use_ssl = True, tls = tls)
-     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = AUTH_SASL,
+     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
                              sasl_mechanism = 'EXTERNAL', sasl_credentials = 'username')
 
 Digest-MD5
@@ -79,7 +79,7 @@ Digest-MD5
 To use the DIGEST-MD5 you must pass a 4-value tuple as sasl_credentials: (realm, user, password, authz_id). You can pass None for 'realm' and 'authz_id' if not used. Quality of Protection is always 'auth'::
 
      server = Server(host = test_server, port = test_port)
-     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = AUTH_SASL,
+     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
                              sasl_mechanism = 'DIGEST-MD5', sasl_credentials = (None, 'username', 'password', None))
 
 Username is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...). If

@@ -26,7 +26,7 @@
 from datetime import datetime
 from os import linesep
 
-from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_SINGLE_LEVEL, SEARCH_DEREFERENCE_ALWAYS, SEARCH_SCOPE_BASE_OBJECT, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, STRING_TYPES, SEQUENCE_TYPES
+from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, STRING_TYPES, SEQUENCE_TYPES
 from .attribute import Attribute
 from .entry import Entry
 from ..core.exceptions import LDAPReaderError
@@ -83,7 +83,7 @@ class Reader(object):
         self.controls = controls
         self.sub_tree = sub_tree
         self._query = query
-        self.dereference_aliases = SEARCH_DEREFERENCE_ALWAYS
+        self.dereference_aliases = DEREF_ALWAYS
         self.size_limit = 0
         self.time_limit = 0
         self.types_only = False
@@ -149,7 +149,7 @@ class Reader(object):
         """Clear the Reader search parameters
 
         """
-        self.dereference_aliases = SEARCH_DEREFERENCE_ALWAYS
+        self.dereference_aliases = DEREF_ALWAYS
         self.size_limit = 0
         self.time_limit = 0
         self.types_only = False
@@ -393,7 +393,7 @@ class Reader(object):
 
         """
         self.clear()
-        query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
+        query_scope = SUBTREE if self.sub_tree else LEVEL
         self._execute_query(query_scope)
 
         return self.entries
@@ -405,7 +405,7 @@ class Reader(object):
 
         """
         self.clear()
-        self._execute_query(SEARCH_SCOPE_SINGLE_LEVEL)
+        self._execute_query(LEVEL)
 
         return self.entries
 
@@ -416,7 +416,7 @@ class Reader(object):
 
         """
         self.clear()
-        self._execute_query(SEARCH_SCOPE_WHOLE_SUBTREE)
+        self._execute_query(SUBTREE)
 
         return self.entries
 
@@ -430,10 +430,10 @@ class Reader(object):
         if entry_dn:
             old_base = self.base
             self.base = entry_dn
-            self._execute_query(SEARCH_SCOPE_BASE_OBJECT)
+            self._execute_query(BASE)
             self.base = old_base
         else:
-            self._execute_query(SEARCH_SCOPE_BASE_OBJECT)
+            self._execute_query(BASE)
 
         return self.entries[0] if len(self.entries) > 0 else None
 
@@ -447,7 +447,7 @@ class Reader(object):
 
         self.clear()
         self.size_limit = size_limit
-        query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
+        query_scope = SUBTREE if self.sub_tree else LEVEL
         self._execute_query(query_scope)
 
         return self.entries
@@ -461,7 +461,7 @@ class Reader(object):
         """
         self.clear()
         self.time_limit = time_limit
-        query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
+        query_scope = SUBTREE if self.sub_tree else LEVEL
         self._execute_query(query_scope)
 
         return self.entries
@@ -474,7 +474,7 @@ class Reader(object):
         """
         self.clear()
         self.types_only = True
-        query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
+        query_scope = SUBTREE if self.sub_tree else LEVEL
         self._execute_query(query_scope)
 
         return self.entries
@@ -495,7 +495,7 @@ class Reader(object):
 
         self.paged_size = paged_size
         self.paged_criticality = paged_criticality
-        query_scope = SEARCH_SCOPE_WHOLE_SUBTREE if self.sub_tree else SEARCH_SCOPE_SINGLE_LEVEL
+        query_scope = SUBTREE if self.sub_tree else LEVEL
 
         self._execute_query(query_scope)
 

@@ -6,29 +6,19 @@ Connection object is used to send operation requests to the LDAP Server. It can 
 
 The following strategies are available:
 
-* STRATEGY_SYNC: the request is sent and the connection waits until the response is received. You get the response in the return value of the connection
+* SYNC: the request is sent and the connection waits until the response is received. You get the response in the return value of the connection
 
-* SYNC: alias for STRATEGY_SYNC
+* ASYNC: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response
 
-* STRATEGY_ASYNC_THREADED: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response
+* LDIF: the request is transformed in a *ldif-change* format and an LDIF output is returned
 
-* ASYNC: alias for STRATEGY_ASYNC_THREADED
-
-* STRATEGY_LDIF_PRODUCER: the request is transformed in a *ldif-change* format and an LDIF output is returned
-
-* LDIF: alias for STRATEGY_LDIF_PRODUCER
-
-* STRATEGY_SYNC_RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times of forever
-
-* RESTARTABLE: alias for STRATEGY_SYNC_RESTARTABLE
+* RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times of forever
 
 .. sidebar:: Lazy connections
 
    * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation will be necessary.
 
-* STRATEGY_REUSABLE_THREADED: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
-
-* REUSABLE: alias for STRATEGY_REUSABLE_THREADED
+* REUSABLE: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
 
 When using an asynchronous strategy each operation returns immediately an operation_id. You can call the get_response method of the connection object to obtain the response received from the server.
 
@@ -130,35 +120,21 @@ With the connection you can perform all the standard LDAP operations:
 
     * search_scope: specifies how broad the search context is:
 
-        * SEARCH_SCOPE_BASE_OBJECT: retrieves attributes of the entry specified in the search_base
+        * BASE: retrieves attributes of the entry specified in the search_base
 
-        * SCOPE_BASE: alias for SEARCH_SCOPE_BASE_OBJECT
+        * LEVEL: retrieves attributes of the entries specified in the search_base. The base must reference a container object
 
-        * SEARCH_SCOPE_SINGLE_LEVEL: retrieves attributes of the entries specified in the search_base. The base must reference a container object
-
-        * SCOPE_LEVEL: alias for SEARCH_SCOPE_SINGLE_LEVEL
-
-        * SEARCH_SCOPE_WHOLE_SUBTREE: retrieves attributes of the entries specified in the search_base and all subordinate containers downward.
-
-        * SCOPE_SUBTREE = alias for SEARCH_SCOPE_WHOLE_SUBTREE
+        * SUBTREE: retrieves attributes of the entries specified in the search_base and all subordinate containers downward.
 
     * dereference_aliases: specifies how the server must treat references to other entries:
 
-        * SEARCH_NEVER_DEREFERENCE_ALIASES: never dereferences entries, returns alias objects instead. The alias contains the reference to the real entry
+        * DEREF_NEVER: never dereferences entries, returns alias objects instead. The alias contains the reference to the real entry
 
-        * DEREF_NONE: alias for SEARCH_NEVER_DEREFERENCE_ALIASES
+        * DEREF_SEARCH: while searching subordinates of the base object, dereferences any alias within the search scope. Dereferenced objects become the vertices of further search scopes where the       Search operation is also applied. The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
 
-        * SEARCH_DEREFERENCE_IN_SEARCHING: while searching subordinates of the base object, dereferences any alias within the search scope. Dereferenced objects become the vertices of further search scopes where the       Search operation is also applied. The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
+        * DEREF_BASE: dereferences aliases in locating the base object of the search, but not when searching subordinates of the base object.
 
-        * DEREF_SEARCH: alias for SEARCH_DEREFERENCE_IN_SEARCHING
-
-        * SEARCH_DEREFERENCE_FINDING_BASE_OBJECT: dereferences aliases in locating the base object of the search, but not when searching subordinates of the base object.
-
-        * DEREF_BASE: alias for SEARCH_DEREFERENCE_FINDING_BASE_OBJECT
-
-        * SEARCH_DEREFERENCE_ALWAYS: always returns the referenced entries, not the alias object
-
-        * DEREF_ALWAYS: alias for SEARCH_DEREFERENCE_ALWAYS
+        * DEREF_ALWAYS: always returns the referenced entries, not the alias object
 
     * attributes: a single attribute or a list of attributes to be returned by the search (defaults to None). If attributes is None  no attribute is returned. If attributes is ALL_ATTRIBUTES all attributes are returned
 
@@ -267,16 +243,16 @@ Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['
 
 Example::
 
-    from ldap3 import Server, Connection, SEARCH_SCOPE_WHOLE_SUBTREE
+    from ldap3 import Server, Connection, SUBTREE
     total_entries = 0
     server = Server('test-server')
     connection = Connection(server, user='test-user', password='test-password', auto_bind=True)
-    connection.search(search_base='o=test', search_filter='(objectClass=inetOrgPerson)', search_scope=SEARCH_SCOPE_WHOLE_SUBTREE,
+    connection.search(search_base='o=test', search_filter='(objectClass=inetOrgPerson)', search_scope=SUBTREE,
                       attributes=['cn', 'givenName'], paged_size=5)
     total_entries += len(connection.response)
     cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
-        connection.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SEARCH_SCOPE_WHOLE_SUBTREE,
+        connection.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SUBTREE,
                           attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
         total_entries += len(connection.response)
         cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
@@ -285,7 +261,9 @@ Example::
 
 Controls
 ========
-Controls, if used, must be a list of tuples. Each tuple must have 3 elements: the control OID, a boolean to specify if the control is critical, and a value. If the boolean is set to True the server must honorate the control or refuse the operation. Mixing controls must be defined in controls specification (as per RFC4511)
+Controls, if used, must be a list of tuples. Each tuple must have 3 elements: the control OID, a boolean to specify if the control is critical,
+ and a value. If the boolean is set to True the server must honorate the control or refuse the operation. Mixing controls must be defined
+ in controls specification (as per RFC4511)
 
 
 Responses

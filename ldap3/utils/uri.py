@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL
+from .. import SUBTREE, BASE, LEVEL
 
 
 def parse_uri(uri):
@@ -96,11 +96,11 @@ def parse_uri(uri):
     uri_components['attributes'] = parts[1].split(',') if len(parts) > 1 else None
     uri_components['scope'] = parts[2] if len(parts) > 2 else None
     if uri_components['scope'] == 'base':
-        uri_components['scope'] = SEARCH_SCOPE_BASE_OBJECT
+        uri_components['scope'] = BASE
     elif uri_components['scope'] == 'sub':
-        uri_components['scope'] = SEARCH_SCOPE_WHOLE_SUBTREE
+        uri_components['scope'] = SUBTREE
     elif uri_components['scope'] == 'one':
-        uri_components['scope'] = SEARCH_SCOPE_SINGLE_LEVEL
+        uri_components['scope'] = LEVEL
     elif uri_components['scope']:
         return None
 

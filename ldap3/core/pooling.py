@@ -27,7 +27,7 @@ from datetime import datetime
 from os import linesep
 from random import randint
 
-from .. import POOLING_STRATEGY_FIRST, POOLING_STRATEGY_ROUND_ROBIN, POOLING_STRATEGY_RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES
+from .. import FIRST, ROUND_ROBIN, RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES
 from .exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError
 from .server import Server
 
@@ -64,21 +64,21 @@ class ServerPoolState(object):
 
     def get_server(self):
         if self.servers:
-            if self.server_pool.strategy == POOLING_STRATEGY_FIRST:
+            if self.server_pool.strategy == FIRST:
                 if self.server_pool.active:
                     # returns the first active server
                     self.last_used_server = self.find_active_server(starting=0, exhaust=self.server_pool.exhaust)
                 else:
                     # returns always the first server - no pooling
                     self.last_used_server = 0
-            elif self.server_pool.strategy == POOLING_STRATEGY_ROUND_ROBIN:
+            elif self.server_pool.strategy == ROUND_ROBIN:
                 if self.server_pool.active:
                     # returns the next active server in a circular range
                     self.last_used_server = self.find_active_server(self.last_used_server + 1, exhaust=self.server_pool.exhaust)
                 else:
                     # returns the next server in a circular range
                     self.last_used_server = self.last_used_server + 1 if (self.last_used_server + 1) < len(self.servers) else 0
-            elif self.server_pool.strategy == POOLING_STRATEGY_RANDOM:
+            elif self.server_pool.strategy == RANDOM:
                 if self.server_pool.active:
                     self.last_used_server = self.find_active_random_server(exhaust=self.server_pool.exhaust)
                 else:
@@ -132,7 +132,7 @@ class ServerPoolState(object):
 class ServerPool(object):
     def __init__(self,
                  servers=None,
-                 pool_strategy=POOLING_STRATEGY_ROUND_ROBIN,
+                 pool_strategy=ROUND_ROBIN,
                  active=True,
                  exhaust=False):
 

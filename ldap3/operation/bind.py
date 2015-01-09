@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import AUTH_SIMPLE, AUTH_ANONYMOUS, AUTH_SASL
+from .. import SIMPLE, ANONYMOUS, SASL
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
@@ -46,18 +46,18 @@ def bind_operation(version,
     if name is None:
         name = ''
     request['name'] = name
-    if authentication == AUTH_SIMPLE:
+    if authentication == SIMPLE:
         if password:
             request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(validate_simple_password(password)))
         else:
             raise LDAPPasswordIsMandatoryError('password is mandatory')
-    elif authentication == AUTH_SASL:
+    elif authentication == SASL:
         sasl_creds = SaslCredentials()
         sasl_creds['mechanism'] = sasl_mechanism
         if sasl_credentials:
             sasl_creds['credentials'] = sasl_credentials
         request['authentication'] = AuthenticationChoice().setComponentByName('sasl', sasl_creds)
-    elif authentication == AUTH_ANONYMOUS:
+    elif authentication == ANONYMOUS:
         request['name'] = ''
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
     else:

@@ -26,9 +26,9 @@
 from string import whitespace
 from os import linesep
 
-from .. import SEARCH_NEVER_DEREFERENCE_ALIASES, SEARCH_SCOPE_BASE_OBJECT, SEARCH_SCOPE_SINGLE_LEVEL, \
-    SEARCH_SCOPE_WHOLE_SUBTREE, SEARCH_DEREFERENCE_IN_SEARCHING, SEARCH_DEREFERENCE_FINDING_BASE_OBJECT, \
-    SEARCH_DEREFERENCE_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, CASE_INSENSITIVE_ATTRIBUTE_NAMES, SEQUENCE_TYPES
+from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, \
+    CASE_INSENSITIVE_ATTRIBUTE_NAMES, SEQUENCE_TYPES
+
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
@@ -339,22 +339,22 @@ def search_operation(search_base,
     request = SearchRequest()
     request['baseObject'] = LDAPDN(search_base)
 
-    if search_scope == SEARCH_SCOPE_BASE_OBJECT:
+    if search_scope == BASE:
         request['scope'] = Scope('baseObject')
-    elif search_scope == SEARCH_SCOPE_SINGLE_LEVEL:
+    elif search_scope == LEVEL:
         request['scope'] = Scope('singleLevel')
-    elif search_scope == SEARCH_SCOPE_WHOLE_SUBTREE:
+    elif search_scope == SUBTREE:
         request['scope'] = Scope('wholeSubtree')
     else:
         raise LDAPInvalidScopeError('invalid scope type')
 
-    if dereference_aliases == SEARCH_NEVER_DEREFERENCE_ALIASES:
+    if dereference_aliases == DEREF_NEVER:
         request['derefAliases'] = DerefAliases('neverDerefAliases')
-    elif dereference_aliases == SEARCH_DEREFERENCE_IN_SEARCHING:
+    elif dereference_aliases == DEREF_SEARCH:
         request['derefAliases'] = DerefAliases('derefInSearching')
-    elif dereference_aliases == SEARCH_DEREFERENCE_FINDING_BASE_OBJECT:
+    elif dereference_aliases == DEREF_BASE:
         request['derefAliases'] = DerefAliases('derefFindingBaseObj')
-    elif dereference_aliases == SEARCH_DEREFERENCE_ALWAYS:
+    elif dereference_aliases == DEREF_ALWAYS:
         request['derefAliases'] = DerefAliases('derefAlways')
     else:
         raise LDAPInvalidDereferenceAliasesError('invalid dereference aliases type')

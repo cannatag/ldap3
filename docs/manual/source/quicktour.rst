@@ -204,3 +204,4 @@ Working with a list keeps all the found entries in a list and you can elaborate 
         print entry['attributes']
     total_entries = len(entry_list)
     print('Total entries retrieved:', total_entries)
+

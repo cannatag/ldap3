@@ -22,7 +22,6 @@
 
 import unittest
 
-from ldap3 import REUSABLE
 from test import get_connection, drop_connection
 
 

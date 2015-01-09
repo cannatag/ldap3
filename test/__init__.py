@@ -24,7 +24,7 @@ from sys import version
 from os import environ
 from random import SystemRandom
 
-from ldap3 import SIMPLE, SYNC, REUSABLE, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
+from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
     NONE
 
 

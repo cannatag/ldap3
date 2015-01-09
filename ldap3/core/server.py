@@ -181,7 +181,7 @@ class Server(object):
             try:
                 self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]
                 self._address_info_resolved_time = datetime.now()
-            except:
+            except Exception:
                 self._address_info = []
 
         return self._address_info

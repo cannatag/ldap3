@@ -23,7 +23,7 @@
 import unittest
 import ssl
 
-from ldap3 import Server, Connection, ServerPool, Tls, SASL, REUSABLE
+from ldap3 import Server, Connection, ServerPool, Tls, SASL
 from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, \
     test_strategy, test_lazy_connection, test_get_info, test_server_mode, \
     test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_ca_cert_file, test_user_cert_file, test_user_key_file

@@ -96,6 +96,7 @@ class BaseStrategy(object):
             exception_history = []
             if not self.no_real_dsa:
                 for candidate_address in self.connection.server.candidate_addresses():
+                    print('CANDIDATE_ADDRESS', candidate_address, self.connection.server.ssl)
                     try:
                         self._open_socket(candidate_address, self.connection.server.ssl)
                         self.connection.server.current_address = candidate_address

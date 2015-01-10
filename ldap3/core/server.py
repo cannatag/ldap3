@@ -174,7 +174,7 @@ class Server(object):
         return r
 
     @property
-    def address_info(self, exception=Exception, Exception=Exception):
+    def address_info(self):
         if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > ADDRESS_INFO_REFRESH_TIME:
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
             try:

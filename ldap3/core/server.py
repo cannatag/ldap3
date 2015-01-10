@@ -174,12 +174,11 @@ class Server(object):
         return r
 
     @property
-    def address_info(self):
+    def address_info(self, exception=Exception, Exception=Exception):
         if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > ADDRESS_INFO_REFRESH_TIME:
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
-
             try:
-                self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.IPPROTO_IP)]
+                self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP)]
                 self._address_info_resolved_time = datetime.now()
             except Exception:
                 self._address_info = []

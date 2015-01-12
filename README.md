@@ -78,6 +78,10 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 
 CHANGELOG
 ---------
+
+* 0.9.7.2 2015.01.11
+    - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection.
+
 * 0.9.7.1 2015.01.05
     - Moved to Github
     - Moved to Travis-CI for continuous integration

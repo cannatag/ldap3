@@ -128,7 +128,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''
     test_user_key_file = ''
-elif location == 'CAMERA':
+elif location == 'GCW89227':
     # test camera
     test_server = ['sl08',
                    'sl09',
@@ -138,8 +138,8 @@ elif location == 'CAMERA':
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
-    test_int_attr = 'logonCount'
-    test_server_context = 'o=services'  # used in novell eDirectory extended operations
+    test_int_attr = 'loginGraceLimit'
+    test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'camera'  # user password
@@ -150,7 +150,7 @@ elif location == 'CAMERA':
     test_user_cert_file = 'admin-cert.pem'
     test_user_key_file = 'admin-key.pem'
 else:
-    raise ('testing location' + location + 'not valid')
+    raise Exception('testing location ' + location + ' is not valid')
 
 if location.startswith('TRAVIS,'):
     _, strategy, lazy = location.split(',')

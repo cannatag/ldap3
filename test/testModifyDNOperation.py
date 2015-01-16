@@ -62,7 +62,6 @@ class Test(unittest.TestCase):
                 result = self.connection.result
             if result['description'] == 'other' and counter > 0:
                 counter -= 1
-                print(result)
                 if counter > 0:
                     sleep(2)
                     continue

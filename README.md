@@ -1,8 +1,8 @@
 LDAP3
 =====
 
-[![Build Status](https://travis-ci.org/cannatag/ldap3.svg?branch=master)](https://travis-ci.org/cannatag/ldap3)
-    
+[![Build Status](https://travis-ci.org/cannatag/ldap3.svg?branch=master)](https://travis-ci.org/cannatag/ldap3) 
+[![License](https://pypip.in/license/ldap3/badge.svg)](https://pypi.python.org/pypi/ldap3/)
     
 ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python, Python 3, PyPy and PyPy3.
 
@@ -78,6 +78,10 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 
 CHANGELOG
 ---------
+
+* 0.9.7.2 2015.01.11
+    - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection.
+
 * 0.9.7.1 2015.01.05
     - Moved to Github
     - Moved to Travis-CI for continuous integration

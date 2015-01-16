@@ -105,7 +105,9 @@ Binding
 -------
 
 You can bind (authenticate) to the server with any of the authentication method defined in the LDAP v3 protocol: Anonymous, Simple and SASL.
+
 You can perform an automatic bind with the auto_bind=True parameter of the connection object or performing a bind() operation that returns a boolean to indicate if bind was succcesful.
+
 You can read the result of the bind operation in the 'result' attribute of the connection object. If auto_bind is not succesful the library will raise an LDAPBindError exception.
 
 Searching

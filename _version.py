@@ -22,7 +22,7 @@
 
 __package_name__ = 'ldap3'
 __package_folder__ = '.'
-__version__ = '0.9.7.1'
+__version__ = '0.9.7.2'
 __author__ = 'Giovanni Cannata'
 __email__ = 'cannatag@gmail.com'
 __license__ = 'LGPL v3'

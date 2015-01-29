@@ -78,7 +78,9 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 
 CHANGELOG
 ---------
-
+* 0.9.7.3 2015.01.25
+    - Modify operation type can also be passed as integer
+    
 * 0.9.7.2 2015.01.11
     - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection.
 

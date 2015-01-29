@@ -596,7 +596,7 @@ class Connection(object):
                 if len(changes[change]) != 2:
                     self.last_error = 'malformed change'
                     raise LDAPChangesError(self.last_error)
-                elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT]:
+                elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
                     self.last_error = 'unknown change type'
                     raise LDAPChangesError(self.last_error)
 

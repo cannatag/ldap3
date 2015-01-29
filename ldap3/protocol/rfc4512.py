@@ -76,6 +76,9 @@ def attribute_usage_to_constant(value):
 
 def quoted_string_to_list(quoted_string):
     string = quoted_string.strip()
+    if not string:
+        return list()
+
     if string[0] == '(' and string[-1] == ')':
         string = string[1:-1]
     elements = string.split("'")

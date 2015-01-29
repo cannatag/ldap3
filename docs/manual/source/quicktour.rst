@@ -70,9 +70,9 @@ To move from synchronous to asynchronous connection you have just to change the 
 
 That's all you have to do to have an asynchronous threaded LDAP client connection.
 
-To get operational attributes (createStamp, modifiedStamp, ...) for response objects add 'get_operational_attribute = True' in the search request::
+To get operational attributes (createStamp, modifiedStamp, ...) for response objects add 'get_operational_attributes = True' in the search request::
 
-    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attribute = True)
+    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attributes = True)
 
 
 Connection context manager
@@ -105,7 +105,9 @@ Binding
 -------
 
 You can bind (authenticate) to the server with any of the authentication method defined in the LDAP v3 protocol: Anonymous, Simple and SASL.
+
 You can perform an automatic bind with the auto_bind=True parameter of the connection object or performing a bind() operation that returns a boolean to indicate if bind was succcesful.
+
 You can read the result of the bind operation in the 'result' attribute of the connection object. If auto_bind is not succesful the library will raise an LDAPBindError exception.
 
 Searching

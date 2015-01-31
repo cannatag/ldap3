@@ -53,7 +53,8 @@ class Attribute(object):
         elif len(self.values) > 1:
             r = self.key + ': ' + str(self.values[0])
             filler = ' ' * (len(self.key) + 6)
-            for value in sorted(self.values[1:]):
+            #for value in sorted(self.values[1:]):
+            for value in self.values[1:]:
                 r += linesep + filler + str(value)
         else:
             r = ''

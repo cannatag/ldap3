@@ -27,8 +27,8 @@ from os import linesep
 import json
 from .. import STRING_TYPES
 from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
-from ..utils.conv import check_json_dict, format_json
-
+from ..utils.conv import check_json_dict, format_json, prepare_for_stream
+from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 
 class Entry(object):
     """The Entry object contains a single entry from the result of an LDAP
@@ -144,6 +144,9 @@ class Entry(object):
     def entry_get_attribute_names(self):
         return list(self._raw_attributes.keys())
 
+    def entry_get_attributes_dict(self):
+        return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._attributes.items())
+
     # noinspection PyProtectedMember
     def entry_refresh_from_reader(self):
         """Re-read the entry from the LDAP Server
@@ -159,19 +162,37 @@ class Entry(object):
                       indent=4,
                       sort=True,
                       stream=None):
-            json_entry = dict()
-            json_entry['dn'] = self.entry_get_dn()
-            json_entry['attributes'] = self._attributes
-            if raw:
-                json_entry['raw'] = dict(self.entry_get_raw_attributes())
 
-            if str == bytes:
-                check_json_dict(json_entry)
+        json_entry = dict()
+        json_entry['dn'] = self.entry_get_dn()
+        json_entry['attributes'] = self.entry_get_attributes_dict()
+        if raw:
+            json_entry['raw'] = dict(self.entry_get_raw_attributes())
 
-            json_output = json.dumps(json_entry, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True,
-                                     default=format_json, separators=(',', ': '))
+        if str == bytes:
+            check_json_dict(json_entry)
 
-            if stream:
-                stream.write(json_output)
+        json_output = json.dumps(json_entry, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True,
+                                 default=format_json, separators=(',', ': '))
 
-            return json_output
+        if stream:
+            stream.write(json_output)
+
+        return json_output
+
+    def entry_to_ldif(self,
+                      all_base64=False,
+                      line_separator=None,
+                      sort_order=None,
+                      stream=None):
+
+        ldif_lines = operation_to_ldif('searchResponse', [self._response], all_base64, sort_order=sort_order)
+        ldif_lines = add_ldif_header(ldif_lines)
+        line_separator = line_separator or linesep
+        ldif_output = line_separator.join(ldif_lines)
+        if stream:
+            if stream.tell() == 0:
+                header = add_ldif_header(['-'])[0]
+                stream.write(prepare_for_stream(header + line_separator + line_separator))
+            stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
+        return ldif_output

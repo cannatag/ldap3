@@ -816,52 +816,54 @@ class Connection(object):
     @property
     def entries(self):
         if self.response:
-            if self._entries:
-                return self._entries
-
-            with self.lock:
-                from ..abstract import Entry, ObjectDef, Reader
-
-                # build a table of ObjectDefs, grouping the entries found in self.response for their attributes set, subset will be included in superset
-                attr_sets = []
-                for response in self.response:
-                    resp_attr_set = set(response['attributes'].keys())
-                    if resp_attr_set not in attr_sets:
-                        attr_sets.append(resp_attr_set)
-                attr_sets.sort(key = lambda x: -len(x))  # sorts the list in descending length order
-                unique_attr_sets = []
-                for attr_set in attr_sets:
-                    for unique_set in unique_attr_sets:
-                        if unique_set >= attr_set:  # checks if unique set is a superset of attr_set
-                            break
-                    else:  # the attr_set is not a subset of any element in unique_attr_sets
-                        unique_attr_sets.append(attr_set)
-                object_defs = []
-                for attr_set in unique_attr_sets:
-                    object_def = ObjectDef()
-                    object_def += list(attr_set)  # convert the set in a list to be added to the object definition
-                    object_defs.append((attr_set, object_def))  # objects_defs contains a tuple with the set and the ObjectDef
-
-                self._entries = []
-                for response in self.response:
-                    resp_attr_set = set(response['attributes'].keys())
-                    for object_def in object_defs:
-                        if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
-                            if response['type'] == 'searchResEntry':
-                                entry = Entry(response['dn'], self)
-                                try:
-                                    entry.__dict__['_attributes'] = Reader._get_attributes(None, response, object_def[1], entry)
-                                except TypeError:  # patch for python 2 - unbound method
-                                    entry.__dict__['_attributes'] = Reader._get_attributes.__func__(None, response, object_def[1], entry)
-                                entry.__dict__['_raw_attributes'] = response['raw_attributes']
-                                entry.__dict__['_response'] = response
-                                for attr in entry:  # returns the whole attribute object
-                                    attr_name = attr.key
-                                    entry.__dict__[attr_name] = attr
-                                entry.__dict__['_reader'] = None  # not used
-                                self._entries.append(entry)
-                            break
-                    else:
-                        raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
-
+            if not self._entries:
+                self._entries = self._get_entries(self.response)
         return self._entries
+
+    def _get_entries(self, search_response):
+        with self.lock:
+            from ..abstract import Entry, ObjectDef, Reader
+
+            # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset
+            attr_sets = []
+            for response in search_response:
+                resp_attr_set = set(response['attributes'].keys())
+                if resp_attr_set not in attr_sets:
+                    attr_sets.append(resp_attr_set)
+            attr_sets.sort(key = lambda x: -len(x))  # sorts the list in descending length order
+            unique_attr_sets = []
+            for attr_set in attr_sets:
+                for unique_set in unique_attr_sets:
+                    if unique_set >= attr_set:  # checks if unique set is a superset of attr_set
+                        break
+                else:  # the attr_set is not a subset of any element in unique_attr_sets
+                    unique_attr_sets.append(attr_set)
+            object_defs = []
+            for attr_set in unique_attr_sets:
+                object_def = ObjectDef()
+                object_def += list(attr_set)  # convert the set in a list to be added to the object definition
+                object_defs.append((attr_set, object_def))  # objects_defs contains a tuple with the set and the ObjectDef
+
+            entries = []
+            for response in search_response:
+                resp_attr_set = set(response['attributes'].keys())
+                for object_def in object_defs:
+                    if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
+                        if response['type'] == 'searchResEntry':
+                            entry = Entry(response['dn'], self)
+                            try:
+                                entry.__dict__['_attributes'] = Reader._get_attributes(None, response, object_def[1], entry)
+                            except TypeError:  # patch for python 2 - unbound method
+                                entry.__dict__['_attributes'] = Reader._get_attributes.__func__(None, response, object_def[1], entry)
+                            entry.__dict__['_raw_attributes'] = response['raw_attributes']
+                            entry.__dict__['_response'] = response
+                            for attr in entry:  # returns the whole attribute object
+                                attr_name = attr.key
+                                entry.__dict__[attr_name] = attr
+                            entry.__dict__['_reader'] = None  # not used
+                            entries.append(entry)
+                        break
+                else:
+                    raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
+
+        return entries

@@ -51,52 +51,62 @@ class Test(unittest.TestCase):
     def test_search_exact_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(self.connection.entries), 1)
-        self.assertEqual(self.connection.entries[0].givenName.value, 'givenname-1')
-        self.assertEqual(self.connection.entries[0].givenname.value, 'givenname-1')
-        self.assertEqual(self.connection.entries[0].GIVENNAME.value, 'givenname-1')
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].givenName.value, 'givenname-1')
+        self.assertEqual(entries[0].givenname.value, 'givenname-1')
+        self.assertEqual(entries[0].GIVENNAME.value, 'givenname-1')
 
     def test_search_extensible_match(self):
         if test_server_type == 'EDIR':
             result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
             if not self.connection.strategy.sync:
-                _, result = self.connection.get_response(result)
+                response, result = self.connection.get_response(result)
+                entries = self.connection._get_entries(response)
             else:
                 result = self.connection.result
+                entries = self.connection.entries
             self.assertEqual(result['description'], 'success')
-            self.assertTrue(len(self.connection.entries) >= 2)
+            self.assertTrue(len(entries) >= 2)
 
     def test_search_present(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
-        self.assertTrue(len(self.connection.entries) >= 2)
+        self.assertTrue(len(entries) >= 2)
 
     def test_search_substring_many(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(self.connection.entries), 2)
+        self.assertEqual(len(entries), 2)
 
     def test_search_with_operational_attributes(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
         if self.connection.check_names:
-            self.assertEqual(self.connection.entries[0].entry_get_dn(), self.delete_at_teardown[0][0])
+            self.assertEqual(entries[0].entry_get_dn(), self.delete_at_teardown[0][0])
 
     def test_search_simple_paged(self):
         if not self.connection.strategy.pooled:
@@ -112,22 +122,26 @@ class Test(unittest.TestCase):
             total_entries = 0
             result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size)
             if not self.connection.strategy.sync:
-                _, result = self.connection.get_response(result)
+                response, result = self.connection.get_response(result)
+                entries = self.connection._get_entries(response)
             else:
                 result = self.connection.result
+                entries = self.connection.entries
             self.assertEqual(result['description'], 'success')
-            self.assertEqual(len(self.connection.entries), paged_size)
-            total_entries += len(self.connection.entries)
+            self.assertEqual(len(entries), paged_size)
+            total_entries += len(entries)
             cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
             while cookie:
                 result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size, paged_cookie=cookie)
                 if not self.connection.strategy.sync:
-                    _, result = self.connection.get_response(result)
+                    response, result = self.connection.get_response(result)
+                    entries = self.connection._get_entries(response)
                 else:
                     result = self.connection.result
+                    entries = self.connection.entries
                 self.assertEqual(result['description'], 'success')
-                total_entries += len(self.connection.entries)
-                self.assertTrue(len(self.connection.entries) <= paged_size)
+                total_entries += len(entries)
+                self.assertTrue(len(entries) <= paged_size)
                 cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
             self.assertEqual(total_entries, 9)
 
@@ -135,36 +149,44 @@ class Test(unittest.TestCase):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-10', attributes={'givenName': 'givenname-10'}))
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(self.connection.entries), 1)
-        self.assertEqual(self.connection.entries[0][test_name_attr][0], testcase_id + '(search)-10')
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0][test_name_attr][0], testcase_id + '(search)-10')
 
     def test_search_integer_exact_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '=0))', attributes=[test_name_attr, test_int_attr])
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(self.connection.entries), 2)
+        self.assertEqual(len(entries), 2)
 
     def test_search_integer_less_than(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' <=1))', attributes=[test_name_attr, test_int_attr])
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(self.connection.entries), 2)
+        self.assertEqual(len(entries), 2)
 
     def test_search_integer_greater_than(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' >=-1))', attributes=[test_name_attr, test_int_attr])
         if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
         else:
             result = self.connection.result
+            entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(self.connection.entries), 2)
+        self.assertEqual(len(entries), 2)

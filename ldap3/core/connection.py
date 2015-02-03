@@ -256,11 +256,11 @@ class Connection(object):
                     if not self.bound:
                         self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                         raise LDAPBindError(self.last_error)
-            elif self.strategy.no_real_dsa:
-                self.server = None
-            else:
-                self.last_error = 'invalid LDAP server'
-                raise LDAPInvalidServerError(self.last_error)
+            # elif self.strategy.no_real_dsa:
+            #     self.server = None
+            # else:
+            #    self.last_error = 'invalid LDAP server'
+            #    raise LDAPInvalidServerError(self.last_error)
 
     def __str__(self):
         s = [

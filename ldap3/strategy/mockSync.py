@@ -23,76 +23,75 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import socket
 
-from pyasn1.codec.ber import decoder
-
+from pyasn1.codec.ber import decoder, encoder
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
-from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError
+from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, \
+    LDAPSASLBindInProgressError, LDAPSocketOpenError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..strategy.base import BaseStrategy
 from ..strategy.sync import SyncStrategy
-from ..protocol.rfc4511 import LDAPMessage
+from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
+from ..protocol.convert import prepare_changes_for_request, build_controls_list
 
 
 # noinspection PyProtectedMember
+def server_bind_response(request, database):
+    result = None
+    return result
+
+def server_add_response(request, database):
+    result = None
+    return result
+
 class MockSyncStrategy(SyncStrategy):
     """
     This strategy create a mock LDAP server, with synchronous access
     It can be useful to test LDAP without a real Server
     """
     def __init__(self, ldap_connection):
-        BaseStrategy.__init__(self, ldap_connection)
+        SyncStrategy.__init__(self, ldap_connection)
         self.sync = True
         self.no_real_dsa = True
         self.pooled = False
         self.can_stream = False
         self.database = CaseInsensitiveDict()
+        self._ready_to_send = dict()
 
-    def receiving(self):
+    def send(self, message_type, request, controls=None):
         """
-        Receive data over the socket
-        Checks if the socket is closed
+        Send an LDAP message
+        Returns the message_id
         """
-        messages = []
-        receiving = True
-        unprocessed = b''
-        data = b''
-        get_more_data = True
         exc = None
-        while receiving:
-            if get_more_data:
-                try:
-                    data = self.connection.socket.recv(SOCKET_SIZE)
-                except (OSError, socket.error, AttributeError) as e:
-                    self.connection.last_error = 'error receiving data: ' + str(e)
-                    exc = e
+        self.connection.request = None
+        if self.connection.listening:
+            if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per RFC4511 (4.2.1)
+                self.connection.last_error = 'cannot send operation requests while SASL bind is in progress'
+                raise LDAPSASLBindInProgressError(self.connection.last_error)
+            message_id = self.connection.server.next_message_id()
+            print('server request: ', request)
+            ldap_message = LDAPMessage()
+            ldap_message['messageID'] = MessageID(message_id)
+            ldap_message['protocolOp'] = ProtocolOp().setComponentByName(message_type, request)
+            message_controls = build_controls_list(controls)
+            if message_controls is not None:
+                ldap_message['controls'] = message_controls
 
-                if exc:
-                    try:  # try to close the connection before raising exception
-                        self.close()
-                    except (socket.error, LDAPExceptionError):
-                        pass
-                    raise communication_exception_factory(LDAPSocketReceiveError, exc)(self.connection.last_error)
+            encoded_message = encoder.encode(ldap_message)
 
-                unprocessed += data
-            if len(data) > 0:
-                length = SyncStrategy.compute_ldap_message_size(unprocessed)
-                if length == -1:  # too few data to decode message length
-                    get_more_data = True
-                    continue
-                if len(unprocessed) < length:
-                    get_more_data = True
-                else:
-                    messages.append(unprocessed[:length])
-                    unprocessed = unprocessed[length:]
-                    get_more_data = False
-                    if len(unprocessed) == 0:
-                        receiving = False
-            else:
-                receiving = False
+            self.connection.request = BaseStrategy.decode_request(ldap_message)
+            self.connection.request['controls'] = controls
+            self._outstanding[message_id] = self.connection.request
+            if self.connection.usage:
+                self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
 
-        return messages
+            process_server_request(message_id, self.connection.request)
+        else:
+            self.connection.last_error = 'unable to send message, socket is not open'
+            raise LDAPSocketOpenError(self.connection.last_error)
+
+        return message_id
 
     def post_send_single_response(self, message_id):
         """
@@ -100,6 +99,7 @@ class MockSyncStrategy(SyncStrategy):
         Returns the result message or None
         """
         responses, result = self.get_response(message_id)
+        self.connection.result = result
         if result['type'] == 'intermediateResponse':  # checks that all responses are intermediates (there should be only one)
             for response in responses:
                 if response['type'] != 'intermediateResponse':
@@ -114,7 +114,8 @@ class MockSyncStrategy(SyncStrategy):
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        responses, _ = self.get_response(message_id)
+        responses, result = self.get_response(message_id)
+        self.connection.result = result
         if isinstance(responses, SEQUENCE_TYPES):
             self.connection.response = responses[:]  # copy search result entries
             return responses
@@ -124,44 +125,84 @@ class MockSyncStrategy(SyncStrategy):
 
     def _get_response(self, message_id):
         """
-        Performs the capture of LDAP response for SyncStrategy
+        Performs the capture of LDAP response for MockSyncStrategy
         """
         ldap_responses = []
         response_complete = False
         while not response_complete:
-            responses = self.receiving()
+            responses = self.process_server_response(message_id)
             if responses:
-                for response in responses:
-                    while len(response) > 0:
-                        if self.connection.usage:
-                            self.connection._usage.update_received_message(len(response))
-                        ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAPMessage())
-                        if int(ldap_resp['messageID']) == message_id:
-                            dict_response = self.decode_response(ldap_resp)
-                            ldap_responses.append(dict_response)
-                            if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
-                                response_complete = True
-                        elif int(ldap_resp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-                            dict_response = self.decode_response(ldap_resp)
-                            if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
-                                return SESSION_TERMINATED_BY_SERVER
-                            else:
-                                self.connection.last_error = 'unknown unsolicited notification from server'
-                                raise LDAPSocketReceiveError(self.connection.last_error)
-                        elif int(ldap_resp['messageID']) != message_id and self.decode_response(ldap_resp)['type'] == 'extendedResp':
-                            self.connection.last_error = 'multiple extended responses to a single extended request'
-                            raise LDAPExtensionError(self.connection.last_error)
-                            # pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
+                for returned_message_id, dict_response in responses:
+                    if self.connection.usage:
+                        self.connection._usage.update_received_message(len(dict_response))
+                    if returned_message_id == message_id:
+                        ldap_responses.append(dict_response)
+                        if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
+                            response_complete = True
+                    elif returned_message_id == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
+                        if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
+                            return SESSION_TERMINATED_BY_SERVER
                         else:
-                            self.connection.last_error = 'invalid messageId received'
+                            self.connection.last_error = 'unknown unsolicited notification from server'
                             raise LDAPSocketReceiveError(self.connection.last_error)
-                        response = unprocessed
-                        if response:  # if this statement is removed unprocessed data will be processed as another message
-                            self.connection.last_error = 'unprocessed substrate error'
-                            raise LDAPSocketReceiveError(self.connection.last_error)
+                    elif returned_message_id != message_id and self.decode_response(dict_response)['type'] == 'extendedResp':
+                        self.connection.last_error = 'multiple extended responses to a single extended request'
+                        raise LDAPExtensionError(self.connection.last_error)
+                        # pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
+                    else:
+                        self.connection.last_error = 'invalid messageId received'
+                        raise LDAPSocketReceiveError(self.connection.last_error)
             else:
                 return SESSION_TERMINATED_BY_SERVER
 
         ldap_responses.append(RESPONSE_COMPLETE)
 
         return ldap_responses
+
+    def _start_listen(self):
+        self.connection.listening = True
+        self.connection.closed = False
+        self._header_added = False
+        print('start listening')
+
+    def _stop_listen(self):
+        self.connection.listening = False
+        self.connection.closed = True
+        print('stop listening')
+
+    def process_server_response(self, message_id):
+        print('SERVER: processing response', message_id)
+        if message_id in self._ready_to_send:
+            return message_id, self._ready_to_send.pop(message_id)
+        else:
+            raise LDAPExceptionError('response not ready in mock server')
+
+    def process_server_request(self, message_id, request):
+        print('SERVER: processing request', message_id, request)
+
+        if request['type'] == 'bindRequest':
+            result = server_bind_response(request, self.database)
+        elif request['type'] == 'unbindRequest':
+            result = dict()
+        elif request['type'] == 'addRequest':
+            result = server_add_response(request, self.database)
+        elif request['type'] == 'compareRequest':
+            result = compare_request_to_dict(component)
+        elif request['type'] == 'delRequest':
+            result = delete_request_to_dict(component)
+        elif request['type'] == 'extendedReq':
+            result = extended_request_to_dict(component)
+        elif request['type'] == 'modifyRequest':
+            result = modify_request_to_dict(component)
+        elif request['type'] == 'modDNRequest':
+            result = modify_dn_request_to_dict(component)
+        elif request['type'] == 'searchRequest':
+            result = search_request_to_dict(component)
+        elif request['type'] == 'abandonRequest':
+            result = abandon_request_to_dict(component)
+        else:
+            raise LDAPUnknownRequestError('unknown request')
+        result['type'] = message_type
+
+        response = None
+        self._ready_to_send[message_id] = response

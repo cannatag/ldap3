@@ -92,7 +92,7 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
     - Modify operation type can also be passed as integer
 
 * 0.9.7.2 2015.01.16
-    - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection.
+    - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection (thanks Hiroshi).
 
 * 0.9.7.1 2015.01.05
     - Moved to Github

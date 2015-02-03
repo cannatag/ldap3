@@ -82,7 +82,7 @@ After a search operation you can  access the connection.entries property, to get
         print(entry.entry_get_dn())
         print(entry.givenName, entry.sn)
 
-    Look at 'Entry' in the 'abstraction layer' chapter for the description of the Entry object)
+Look at 'Entry' in the 'abstraction layer' chapter for the description of the Entry object)
 
 Connection context manager
 --------------------------

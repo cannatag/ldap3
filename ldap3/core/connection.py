@@ -60,7 +60,9 @@ from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
-from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError
+from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, \
+    LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
+    LDAPObjectError
 from ..utils.conv import prepare_for_stream, check_json_dict, format_json
 
 
@@ -200,6 +202,7 @@ class Connection(object):
             self.raise_exceptions = raise_exceptions
             self.auto_range = True if auto_range else False
             self.extend = ExtendedOperationsRoot(self)
+            self._entries = None
 
             if isinstance(server, STRING_TYPES):
                 server = Server(server)
@@ -405,7 +408,7 @@ class Connection(object):
 
                 if read_server_info and self.bound:
                     self.refresh_server_info()
-
+            self._entries = None
             return self.bound
 
     def unbind(self,
@@ -478,7 +481,7 @@ class Connection(object):
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
             response = self.post_send_search(self.send('searchRequest', request, controls))
-
+            self._entries = None
             if isinstance(response, int):
                 return response
 
@@ -498,6 +501,7 @@ class Connection(object):
             self._fire_deferred()
             request = compare_operation(dn, attribute, value, self.server.schema if self.server else None)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
+            self._entries = None
             if isinstance(response, int):
                 return response
             return True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
@@ -541,7 +545,7 @@ class Connection(object):
 
             request = add_operation(dn, attributes, self.server.schema if self.server else None)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
-
+            self._entries = None
             if isinstance(response, STRING_TYPES + (int, )):
                 return response
 
@@ -561,7 +565,7 @@ class Connection(object):
 
             request = delete_operation(dn)
             response = self.post_send_single_response(self.send('delRequest', request, controls))
-
+            self._entries = None
             if isinstance(response, STRING_TYPES + (int, )):
                 return response
 
@@ -602,7 +606,7 @@ class Connection(object):
 
             request = modify_operation(dn, changes, self.server.schema if self.server else None)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))
-
+            self._entries = None
             if isinstance(response, STRING_TYPES + (int, )):
                 return response
 
@@ -630,7 +634,7 @@ class Connection(object):
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
             response = self.post_send_single_response(self.send('modDNRequest', request, controls))
-
+            self._entries = None
             if isinstance(response, STRING_TYPES + (int, )):
                 return response
 
@@ -648,8 +652,9 @@ class Connection(object):
                 if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
                     request = abandon_operation(message_id)
                     self.send('abandonRequest', request, controls)
-                    self.response = None
                     self.result = None
+                    self.response = None
+                    self._entries = None
                     return True
 
             return False
@@ -665,6 +670,7 @@ class Connection(object):
             self._fire_deferred()
             request = extended_operation(request_name, request_value)
             response = self.post_send_single_response(self.send('extendedReq', request, controls))
+            self._entries = None
             if isinstance(response, int):
                 return response
             return True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
@@ -710,9 +716,11 @@ class Connection(object):
                 if not self.closed:
                     previous_response = self.response
                     previous_result = self.result
+                    previous_entries = self._entries
                     self.server.get_info_from_server(self)
                     self.response = previous_response
                     self.result = previous_result
+                    self._entries = previous_entries
         else:
             self.strategy.pool.get_info_from_server()
 
@@ -804,3 +812,58 @@ class Connection(object):
                     raise  # re-raise LDAPExceptionError
                 finally:
                     self._executing_deferred = False
+
+    @property
+    def entries(self):
+        if self.response:
+            if not self._entries:
+                self._entries = self._get_entries(self.response)
+        return self._entries
+
+    def _get_entries(self, search_response):
+        with self.lock:
+            from ..abstract import Entry, ObjectDef, Reader
+
+            # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset
+            attr_sets = []
+            for response in search_response:
+                resp_attr_set = set(response['attributes'].keys())
+                if resp_attr_set not in attr_sets:
+                    attr_sets.append(resp_attr_set)
+            attr_sets.sort(key = lambda x: -len(x))  # sorts the list in descending length order
+            unique_attr_sets = []
+            for attr_set in attr_sets:
+                for unique_set in unique_attr_sets:
+                    if unique_set >= attr_set:  # checks if unique set is a superset of attr_set
+                        break
+                else:  # the attr_set is not a subset of any element in unique_attr_sets
+                    unique_attr_sets.append(attr_set)
+            object_defs = []
+            for attr_set in unique_attr_sets:
+                object_def = ObjectDef()
+                object_def += list(attr_set)  # convert the set in a list to be added to the object definition
+                object_defs.append((attr_set, object_def))  # objects_defs contains a tuple with the set and the ObjectDef
+
+            entries = []
+            for response in search_response:
+                resp_attr_set = set(response['attributes'].keys())
+                for object_def in object_defs:
+                    if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
+                        if response['type'] == 'searchResEntry':
+                            entry = Entry(response['dn'], self)
+                            try:
+                                entry.__dict__['_attributes'] = Reader._get_attributes(None, response, object_def[1], entry)
+                            except TypeError:  # patch for python 2 - unbound method
+                                entry.__dict__['_attributes'] = Reader._get_attributes.__func__(None, response, object_def[1], entry)
+                            entry.__dict__['_raw_attributes'] = response['raw_attributes']
+                            entry.__dict__['_response'] = response
+                            for attr in entry:  # returns the whole attribute object
+                                attr_name = attr.key
+                                entry.__dict__[attr_name] = attr
+                            entry.__dict__['_reader'] = None  # not used
+                            entries.append(entry)
+                        break
+                else:
+                    raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
+
+        return entries

@@ -75,6 +75,15 @@ To get operational attributes (createStamp, modifiedStamp, ...) for response obj
     c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attributes = True)
 
 
+After a search operation you can  access the connection.entries property, to get the search result in a more object oriented representation::
+
+    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'givenName', 'objectClass'], get_operational_attributes = True)
+    for entry in c.entries:
+        print(entry.entry_get_dn())
+        print(entry.givenName, entry.sn)
+
+    Look at 'Entry' in the 'abstraction layer' chapter for the description of the Entry object)
+
 Connection context manager
 --------------------------
 

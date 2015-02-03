@@ -85,6 +85,9 @@ Contact me
 
 For information and suggestions you can contact me at cannatag@gmail.com or you can also a support ticket on https://github.com/cannatag/ldap3/issues/new
 
+* 0.9.7.4 2015.02.02
+    - Added connection.entries property for storing response from search operations as and abstract.Entry collection.
+
 * 0.9.7.3 2015.01.25
     - Modify operation type can also be passed as integer
 

@@ -214,13 +214,14 @@ Entry
 -----
 
 Entry objects contain the result of the search. You can access entry attributes either as a dictionary or as properties using the AttrDef key you specified in
-the ObjectDef. entry['CommonName'] is the same of entry.CommonName and of entry.commonName.
+the ObjectDef. entry['CommonName'] is the same of entry.CommonName and of entry.commonName or entry.commonname.
 
-Each Entry has a get_entry_dn() method that returns the distinguished name of the LDAP entry, and a get_entry_reader() method that returns  a reference
+Each Entry has a entry_get_dn() method that returns the distinguished name of the LDAP entry, and a entry_get_reader() method that returns  a reference
 to the Reader used to read the entry.
 
 Attributes are stored in an internal dictionary with case insensitive access by the key defined in the AttrDef. You can even access the raw attribute with
 the get_raw_attribute(attribute_name) to get an attribute raw value, or get_raw_attributes() to get the whole raw attributes dictionary.
+You can get the whole attribute name list with entry_get_attribute_names(), and the attributes dictionary with entry_get_attributes_dict()
 
 Entry is a read only object, you cannot modify or add any property to it. It's an iterable object that returns an attribute object at each iteration. Note that
 you get back the whole attribute object, not only the key as in a standard dictionary::
@@ -228,6 +229,52 @@ you get back the whole attribute object, not only the key as in a standard dicti
     person_entry = person_reader.entries[0]
     for attr in person_entry:
         print(attr.key)
+
+An Entry can be converted to ldif with the entry.entry_to_ldif() method and to json with the entry.entry_to_json() method.
+Entries can be easily printed at the interactive prompt::
+
+    >>> c.entries[0]
+    DN: o=services
+        ACL: 2#entry#o=services#loginScript
+             2#entry#o=services#printJobConfiguration
+             32#subtree#cn=edir1,o=services#[All Attributes Rights]
+             16#subtree#cn=edir1,o=services#[Entry Rights]
+             32#subtree#cn=edir2,o=services#[All Attributes Rights]
+             16#subtree#cn=edir2,o=services#[Entry Rights]
+             32#subtree#cn=edir3,o=services#[All Attributes Rights]
+             16#subtree#cn=edir3,o=services#[Entry Rights]
+        GUID: fd9a0d90-15be-2841-fd82-fd9a0d9015be
+        backLink: 32860#cn=edir3,o=services
+        createTimestamp: 2014-06-20 13:19:14+00:00
+        entryDN: o=services
+        entryFlags: 4
+        localEntryID: 32787
+        modifiersName: cn=admin,o=services
+        modifyTimestamp: 2014-11-07 08:17:43+00:00
+        name: services
+        o: services
+        objectClass: Organization
+                     ndsLoginProperties
+                     ndsContainerLoginProperties
+                     Top
+        revision: 6
+        structuralObjectClass: Organization
+        subordinateCount: 33
+        subschemaSubentry: cn=schema
+
+and each attribute of the entry can be accessed as a dictionary or as a namespace::
+
+    >>> c.entries[0].GUID
+        GUID: fd9a0d90-15be-2841-fd82-fd9a0d9015be
+    >>> c.entries[0].GUID.value
+        'fd9a0d90-15be-2841-fd82-fd9a0d9015be'
+    >>> c.entries[0].GUID.raw_values
+        [b'\xfd\x9a\r\x90\x15\xbe(A\xfd\x82\xfd\x9a\r\x90\x15\xbe']
+    >>> c.entries[0].GUID.values
+        ['fd9a0d90-15be-2841-fd82-fd9a0d9015be']
+
+you can obtain already formatted values when requesting the schema in the Server object.
+
 
 Attribute
 ---------

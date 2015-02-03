@@ -24,10 +24,11 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
-
-from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
+import json
 from .. import STRING_TYPES
-
+from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
+from ..utils.conv import check_json_dict, format_json, prepare_for_stream
+from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 
 class Entry(object):
     """The Entry object contains a single entry from the result of an LDAP
@@ -47,6 +48,7 @@ class Entry(object):
         self.__dict__['_attributes'] = dict()
         self.__dict__['_dn'] = dn
         self.__dict__['_raw_attributes'] = None
+        self.__dict__['_response'] = None
         self.__dict__['_reader'] = reader
 
     def __repr__(self):
@@ -93,38 +95,45 @@ class Entry(object):
 
     def __eq__(self, other):
         if isinstance(other, Entry):
-            return self._dn == other.get_entry_dn()
+            return self._dn == other.entry_get_dn()
 
         return False
 
     def __lt__(self, other):
         if isinstance(other, Entry):
-            return self._dn <= other.get_entry_dn()
+            return self._dn <= other.entry_get_dn()
 
         return False
 
-    def get_entry_dn(self):
+    def entry_get_dn(self):
         """
 
         :return: The distinguished name of the Entry
         """
         return self._dn
 
-    def get_entry_reader(self):
+    def entry_get_response(self):
+        """
+
+        :return: The origininal search response for the Entry
+        """
+        return self._dn
+
+    def entry_get_reader(self):
         """
 
         :return: the Reader object of the Entry
         """
         return self._reader
 
-    def get_raw_attributes(self):
+    def entry_get_raw_attributes(self):
         """
 
         :return: The raw (unencoded) attributes of the Entry as bytes
         """
         return self._raw_attributes
 
-    def get_raw_attribute(self, name):
+    def entry_get_raw_attribute(self, name):
         """
 
         :param name: name of the attribute
@@ -132,14 +141,58 @@ class Entry(object):
         """
         return self._raw_attributes[name] if name in self._raw_attributes else None
 
-    # noinspection PyProtectedMember
-    def refresh(self):
-        """Re-read the entry from the LDAP Server
+    def entry_get_attribute_names(self):
+        return list(self._raw_attributes.keys())
 
-        :return: the updated Entry attributes values
+    def entry_get_attributes_dict(self):
+        return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._attributes.items())
+
+    # noinspection PyProtectedMember
+    def entry_refresh_from_reader(self):
+        """Re-read the entry from the LDAP Server
         """
-        temp_entry = self.get_entry_reader().search_object(self.get_entry_dn())
-        self.__dict__['_attributes'] = temp_entry._attributes
-        self.__dict__['_raw_attributes'] = temp_entry._raw_attributes
-        del temp_entry
-        return self
+        if self.entry_get_reader():
+            temp_entry = self.entry_get_reader().search_object(self.entry_get_dn())
+            self.__dict__['_attributes'] = temp_entry._attributes
+            self.__dict__['_raw_attributes'] = temp_entry._raw_attributes
+            del temp_entry
+
+    def entry_to_json(self,
+                      raw=False,
+                      indent=4,
+                      sort=True,
+                      stream=None):
+
+        json_entry = dict()
+        json_entry['dn'] = self.entry_get_dn()
+        json_entry['attributes'] = self.entry_get_attributes_dict()
+        if raw:
+            json_entry['raw'] = dict(self.entry_get_raw_attributes())
+
+        if str == bytes:
+            check_json_dict(json_entry)
+
+        json_output = json.dumps(json_entry, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True,
+                                 default=format_json, separators=(',', ': '))
+
+        if stream:
+            stream.write(json_output)
+
+        return json_output
+
+    def entry_to_ldif(self,
+                      all_base64=False,
+                      line_separator=None,
+                      sort_order=None,
+                      stream=None):
+
+        ldif_lines = operation_to_ldif('searchResponse', [self._response], all_base64, sort_order=sort_order)
+        ldif_lines = add_ldif_header(ldif_lines)
+        line_separator = line_separator or linesep
+        ldif_output = line_separator.join(ldif_lines)
+        if stream:
+            if stream.tell() == 0:
+                header = add_ldif_header(['-'])[0]
+                stream.write(prepare_for_stream(header + line_separator + line_separator))
+            stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
+        return ldif_output

@@ -25,7 +25,7 @@ from os import environ
 from random import SystemRandom
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
-    NONE
+    NONE, ASYNC, REUSABLE, RESTARTABLE
 
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created

@@ -289,9 +289,9 @@ class Reader(object):
             self.query_filter += ')'
 
         if not self._definition.object_class and attr_counter == 1:  # remove unneeded starting filter
-            self.query_filter = self.query_filter[2:-1]
+            self.query_filter = self.query_filter[2: -1]
 
-    def _get_attributes(self, result, attr_defs, entry):
+    def _get_attributes(self, response, attr_defs, entry):
         """Assign the result of the LDAP query to the Entry object dictionary.
 
         If the optional 'post_query' callable is present in the AttrDef it is called with each value of the attribute and the callable result is stored in the attribute.
@@ -304,18 +304,21 @@ class Reader(object):
         used_attribute_names = []
         for attr_def in attr_defs:
             name = None
-            for attr_name in result['attributes']:
+            for attr_name in response['attributes']:
                 if attr_def.name.lower() == attr_name.lower():
                     name = attr_name
                     break
 
             if name or attr_def.default:  # attribute value found in result or default value present
                 attribute = Attribute(attr_def, entry)
-                attribute.__dict__['raw_values'] = result['raw_attributes'][name] if name else None
-                if attr_def.post_query and attr_def.name in result['attributes']:
-                    attribute.__dict__['values'] = attr_def.post_query(attr_def.key, result['attributes'][name])
+                attribute.__dict__['_response'] = response
+                attribute.__dict__['raw_values'] = response['raw_attributes'][name] if name else None
+                if attr_def.post_query and attr_def.name in response['attributes']:
+                    attribute.__dict__['values'] = attr_def.post_query(attr_def.key, response['attributes'][name])
                 else:
-                    attribute.__dict__['values'] = result['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
+                    attribute.__dict__['values'] = response['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
+                if not isinstance(attribute.__dict__['values'], list):  # force attribute values to list (if attribute is single-valued)
+                    attribute.__dict__['values'] = [attribute.__dict__['values']]
                 if attr_def.dereference_dn:  # try to get object referenced in value
                     if attribute.values:
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, query='', base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
@@ -331,23 +334,23 @@ class Reader(object):
                 attributes[attribute.key] = attribute
                 used_attribute_names.append(name)
 
-        for name in result['attributes']:
+        for name in response['attributes']:
             if name not in used_attribute_names:
                 attribute = OperationalAttribute(ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name, entry)
-                attribute.__dict__['raw_values'] = result['raw_attributes'][name]
-                attribute.__dict__['values'] = result['attributes'][name]
+                attribute.__dict__['raw_values'] = response['raw_attributes'][name]
+                attribute.__dict__['values'] = response['attributes'][name]
                 if (ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name) not in attributes:
                     attributes[ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name] = attribute
 
         return attributes
 
-    def _get_entry(self, result):
-        if not result['type'] == 'searchResEntry':
+    def _get_entry(self, response):
+        if not response['type'] == 'searchResEntry':
             return None
 
-        entry = Entry(result['dn'], self)
-        entry.__dict__['_attributes'] = self._get_attributes(result, self._definition, entry)
-        entry.__dict__['_raw_attributes'] = result['raw_attributes']
+        entry = Entry(response['dn'], self)
+        entry.__dict__['_attributes'] = self._get_attributes(response, self._definition, entry)
+        entry.__dict__['_raw_attributes'] = response['raw_attributes']
         for attr in entry:  # returns the whole attribute object
             attr_name = attr.key
             entry.__dict__[attr_name] = attr

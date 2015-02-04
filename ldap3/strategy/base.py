@@ -216,7 +216,6 @@ class BaseStrategy(object):
         Send an LDAP message
         Returns the message_id
         """
-        exc = None
         self.connection.request = None
         if self.connection.listening:
             if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per RFC4511 (4.2.1)
@@ -230,22 +229,11 @@ class BaseStrategy(object):
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
 
-            try:
-                encoded_message = encoder.encode(ldap_message)
-                self.connection.socket.sendall(encoded_message)
-            except socket.error as e:
-                self.connection.last_error = 'socket sending error' + str(e)
-                encoded_message = None
-                exc = e
-
-            if exc:
-                raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)
+            self.sending(ldap_message)
 
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
-            if self.connection.usage:
-                self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
             raise LDAPSocketOpenError(self.connection.last_error)
@@ -571,6 +559,22 @@ class BaseStrategy(object):
             result = None
 
         return response, result
+
+    def sending(self, ldap_message):
+        exc = None
+        try:
+            encoded_message = encoder.encode(ldap_message)
+            self.connection.socket.sendall(encoded_message)
+        except socket.error as e:
+            self.connection.last_error = 'socket sending error' + str(e)
+            exc = e
+            encoded_message = None
+
+        if exc:
+            raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)
+
+        if self.connection.usage:
+            self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
 
     def _start_listen(self):
         # overridden on strategy class

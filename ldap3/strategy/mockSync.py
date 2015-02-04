@@ -22,12 +22,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
+from threading import Lock
 
 from pyasn1.codec.ber import decoder, encoder
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, \
-    LDAPSASLBindInProgressError, LDAPSocketOpenError
+    LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPUnknownRequestError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..strategy.base import BaseStrategy
 from ..strategy.sync import SyncStrategy
@@ -35,16 +35,104 @@ from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
 from ..protocol.convert import prepare_changes_for_request, build_controls_list
 
 
+class Dsa(object):
+    def __init__(self):
+        self.database = CaseInsensitiveDict()
+        self.connections = list()
+        self.ready_to_send = dict()
+        self.lock = Lock()
+
+    def produce_response(self, message_id):
+        print('SERVER: processing response', message_id)
+        if message_id in self.ready_to_send:
+            with self.lock:
+                return message_id, self.ready_to_send.pop(message_id)
+        else:
+            raise LDAPExceptionError('response not ready in mock server')
+
+    def accept_request(self, message_id, request):
+        print('SERVER: processing request', message_id, request)
+
+        response = None
+        if request['type'] == 'bindRequest':
+            result = self.do_bind(request)
+        elif request['type'] == 'unbindRequest':
+            result = self.do_unbind(request)
+            result = dict()  # unbind doesn't return anything
+        elif request['type'] == 'addRequest':
+            result = self.do_add(request)
+        elif request['type'] == 'compareRequest':
+            result = self.do_compare(request)
+        elif request['type'] == 'delRequest':
+            result = self.do_delete(request)
+        elif request['type'] == 'extendedReq':
+            result = self.do_extended(request)
+        elif request['type'] == 'modifyRequest':
+            result = self.do_modify(request)
+        elif request['type'] == 'modDNRequest':
+            result = self.do_modify_dn(request)
+        elif request['type'] == 'searchRequest':
+            response, result = self.do_search(request)
+        elif request['type'] == 'abandonRequest':
+            result = self.do_abandon(request)
+        else:
+            raise LDAPUnknownRequestError('unknown request')
+
+        self.ready_to_send[message_id] = [(response, result)]
+
+    def do_bind(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_unbind(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_add(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_compare(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_delete(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_modify(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_modify_dn(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_search(self, request):
+        with self.lock:
+            response = None
+            result = None
+            return response, result
+
+    def do_abandon(self, request):
+        with self.lock:
+            result = None
+            return result
+
+    def do_extended(self, request):
+        with self.lock:
+            result = None
+            return result
+
+
 # noinspection PyProtectedMember
-def server_bind_response(request, database):
-    result = None
-    return result
-
-
-def server_add_response(request, database):
-    result = None
-    return result
-
 class MockSyncStrategy(SyncStrategy):
     """
     This strategy create a mock LDAP server, with synchronous access
@@ -56,8 +144,7 @@ class MockSyncStrategy(SyncStrategy):
         self.no_real_dsa = True
         self.pooled = False
         self.can_stream = False
-        self.database = CaseInsensitiveDict()
-        self._ready_to_send = dict()
+        self.dsa = Dsa()
 
     def send(self, message_type, request, controls=None):
         """
@@ -87,7 +174,7 @@ class MockSyncStrategy(SyncStrategy):
             if self.connection.usage:
                 self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
 
-            self.process_server_request(message_id, self.connection.request)
+            self.dsa.accept_request(message_id, self.connection.request)
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
             raise LDAPSocketOpenError(self.connection.last_error)
@@ -131,7 +218,7 @@ class MockSyncStrategy(SyncStrategy):
         ldap_responses = []
         response_complete = False
         while not response_complete:
-            responses = self.process_server_response(message_id)
+            responses = self.dsa.produce_response(message_id)
             if responses:
                 for returned_message_id, dict_response in responses:
                     if self.connection.usage:
@@ -171,39 +258,3 @@ class MockSyncStrategy(SyncStrategy):
         self.connection.closed = True
         print('stop listening')
 
-    def process_server_response(self, message_id):
-        print('SERVER: processing response', message_id)
-        if message_id in self._ready_to_send:
-            return message_id, self._ready_to_send.pop(message_id)
-        else:
-            raise LDAPExceptionError('response not ready in mock server')
-
-    def process_server_request(self, message_id, request):
-        print('SERVER: processing request', message_id, request)
-
-        if request['type'] == 'bindRequest':
-            result = server_bind_response(request, self.database)
-        elif request['type'] == 'unbindRequest':
-            result = dict()
-        elif request['type'] == 'addRequest':
-            result = server_add_response(request, self.database)
-        elif request['type'] == 'compareRequest':
-            result = compare_request_to_dict(component)
-        elif request['type'] == 'delRequest':
-            result = delete_request_to_dict(component)
-        elif request['type'] == 'extendedReq':
-            result = extended_request_to_dict(component)
-        elif request['type'] == 'modifyRequest':
-            result = modify_request_to_dict(component)
-        elif request['type'] == 'modDNRequest':
-            result = modify_dn_request_to_dict(component)
-        elif request['type'] == 'searchRequest':
-            result = search_request_to_dict(component)
-        elif request['type'] == 'abandonRequest':
-            result = abandon_request_to_dict(component)
-        else:
-            raise LDAPUnknownRequestError('unknown request')
-        result['type'] = message_type
-
-        response = None
-        self._ready_to_send[message_id] = response

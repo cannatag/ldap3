@@ -46,3 +46,8 @@ class Test(unittest.TestCase):
     def test_open(self):
         self.connection.open()
         self.assertFalse(self.connection.closed)
+
+    def test_bind(self):
+        self.connection.open()
+        self.connection.bind()
+        self.assertTrue(self.connection.bound)

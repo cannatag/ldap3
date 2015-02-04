@@ -40,6 +40,7 @@ def server_bind_response(request, database):
     result = None
     return result
 
+
 def server_add_response(request, database):
     result = None
     return result
@@ -86,7 +87,7 @@ class MockSyncStrategy(SyncStrategy):
             if self.connection.usage:
                 self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
 
-            process_server_request(message_id, self.connection.request)
+            self.process_server_request(message_id, self.connection.request)
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
             raise LDAPSocketOpenError(self.connection.last_error)

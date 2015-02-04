@@ -101,12 +101,15 @@ class BaseStrategy(object):
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
                         break
-                    except Exception:
+                    except Exception as e:
                         self.connection.server.update_availability(candidate_address, False)
                         exception_history.append((datetime.now(), exc_info()[0], exc_info()[1], candidate_address[4]))
 
                 if not self.connection.server.current_address and exception_history:
-                    raise LDAPSocketOpenError('unable to open socket', exception_history)
+                    if len(exception_history) == 1:  # only one exception, reraise
+                        raise exception_history[0][1](exception_history[0][2])
+                    else:
+                        raise LDAPSocketOpenError('unable to open socket', exception_history)
                 elif not self.connection.server.current_address:
                     raise LDAPSocketOpenError('invalid server address')
 

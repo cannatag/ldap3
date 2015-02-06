@@ -37,7 +37,7 @@ class Test(unittest.TestCase):
         schema = SchemaInfo.from_json(edir_8_8_8_schema)
         info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
         server = Server.from_definition('MockSyncServer', info, schema)
-        self.connection = Connection(server, client_strategy=MOCK_SYNC)
+        self.connection = Connection(server, user='mock_user', password='mock_password', client_strategy=MOCK_SYNC)
 
     def tearDown(self):
         self.connection.unbind()
@@ -51,3 +51,10 @@ class Test(unittest.TestCase):
         self.connection.open()
         self.connection.bind()
         self.assertTrue(self.connection.bound)
+
+    def test_unbind(self):
+        self.connection.open()
+        self.connection.bind()
+        self.assertTrue(self.connection.bound)
+        self.connection.unbind()
+        self.assertFalse(self.connection.bound)

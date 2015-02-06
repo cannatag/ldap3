@@ -76,7 +76,7 @@ SEARCH_MATCH_OR_CLOSE = 22
 SEARCH_MATCH_OR_CONTROL = 23
 
 
-class FilterNode():
+class FilterNode(object):
     def __init__(self, tag=None, assertion=None):
         self.tag = tag
         self.parent = None

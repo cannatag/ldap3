@@ -1,5 +1,11 @@
 CHANGELOG
 =========
+* 0.9.7.5 2015.02.08
+    - Fixed exception raised when opening a connection to a server. If there is only one candidate address and there is an error it returns the specific Exception, not a generic LDAPException error
+    - Address_info filters out any impossible address to reach
+    - Address_info include an IPV4MAPPED address for IPV6 host that try to reach an IPV4 only server
+    - Added SyncMock strategy (needs the ldap3server module)
+
 * 0.9.7.4 2015.02.02
     - Added connection.entries property for storing response from search operations as and abstract.Entry collection.
 

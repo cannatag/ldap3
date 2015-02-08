@@ -44,6 +44,7 @@ version_file.close()
 
 project_version_file = open(path.join(__package_folder__, __package_name__, 'version.py'), 'w+')
 project_version_file.write('\n'.join([
+    '# THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY IT!!!'
     '# version file for ' + __package_name__,
     '# generated on ' + datetime.now().__str__(),
     '# on system ' + str(uname()),

@@ -92,7 +92,7 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.56': format_binary,  # LDAP Schema Definition [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.57': format_unicode,  # LDAP Schema Description [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.58': format_unicode,  # Substring assertion
-    '1.3.6.1.1.16.1': format_uuid,  # UUID
+    '1.3.6.1.1.16.1': format_unicode,  # UUID
     '2.16.840.1.113719.1.1.4.1.501': format_uuid,  # GUID (Novell)
     '2.16.840.1.113719.1.1.5.1.0': format_binary,  # Unknown (Novell)
     '2.16.840.1.113719.1.1.5.1.6': format_unicode,  # Case Ignore List (Novell)

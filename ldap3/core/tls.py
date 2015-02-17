@@ -140,7 +140,10 @@ class Tls(object):
         """
 
         if use_ssl_context:
-            ssl_context = create_default_context(purpose=Purpose.SERVER_AUTH, cafile=self.ca_certs_file, capath=self.ca_certs_path, cadata=self.ca_certs_data)
+            ssl_context = create_default_context(purpose=Purpose.SERVER_AUTH,
+                                                 cafile=self.ca_certs_file,
+                                                 capath=self.ca_certs_path,
+                                                 cadata=self.ca_certs_data)
             if self.private_key_file:
                 ssl_context.load_cert_chain(self.certificate_file, keyfile=self.private_key_file, password=self.private_key_password)
             ssl_context.check_hostname = False

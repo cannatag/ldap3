@@ -105,7 +105,7 @@ def evaluate_match(match, schema):
     match = match.strip()
     if '~=' in match:
         tag = MATCH_APPROX
-        left_part, _, right_part = match.split('~=')
+        left_part, _, right_part = match.partition('~=')
         left_part = left_part.strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}

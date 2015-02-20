@@ -13,7 +13,7 @@ LDAP3
     :target: https://pypi.python.org/pypi/ldap3/
     :alt: License
 
-ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The same codebase works with Python, Python 3, PyPy and PyPy3.
+ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python **client**. The same codebase works with Python, Python 3, PyPy and PyPy3.
 
 This project was formerly named **python3-ldap**. The name has been changed to avoid confusion with the python-ldap library.
 
@@ -88,13 +88,13 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 Changelog
 ---------
 
-* 0.9.7.5 2015.02.08
+* 0.9.7.5 2015.02.20
     - Fixed exception raised when opening a connection to a server. If there is only one candidate address and there is an error it returns the specific Exception, not a generic LDAPException error
     - Address_info filters out any impossible address to reach
     - Address_info include an IPV4MAPPED address for IPV6 host that try to reach an IPV4 only server
     - Added SyncMock strategy (needs the serverldap3 module)
     - Fixed bug when using the aproximation operation in ldap search operations (thanks Laurent)
-    -
+    - Removed response from exception raised with raise_exceptions=True to avoid very long exceptions message
 
 * 0.9.7.4 2015.02.02
     - Added connection.entries property for storing response from search operations as and abstract.Entry collection.

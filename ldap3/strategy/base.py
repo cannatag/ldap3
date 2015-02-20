@@ -292,7 +292,7 @@ class BaseStrategy(object):
                 raise LDAPResponseTimeoutError('no response from server')
 
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
-                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
+                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
 
             # checks if any response has a range tag
             # self._auto_range_searching is set as a flag to avoid recursive searches

@@ -27,34 +27,38 @@ from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MOD
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_dsa_info, edir_8_8_8_schema
 from test import test_base, generate_dn, test_name_attr, test_moved, random_id
+try:
+    from ldap3.strategy.mockSync import Dsa
+
+    testcase_id = random_id()
 
 
-testcase_id = random_id()
+    class Test(unittest.TestCase):
+        def setUp(self):
+            schema = SchemaInfo.from_json(edir_8_8_8_schema)
+            info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
+            server = Server.from_definition('MockSyncServer', info, schema)
+            self.connection = Connection(server, user='mock_user', password='mock_password', client_strategy=MOCK_SYNC)
 
+        def tearDown(self):
+            self.connection.unbind()
+            self.assertFalse(self.connection.bound)
 
-class Test(unittest.TestCase):
-    def setUp(self):
-        schema = SchemaInfo.from_json(edir_8_8_8_schema)
-        info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
-        server = Server.from_definition('MockSyncServer', info, schema)
-        self.connection = Connection(server, user='mock_user', password='mock_password', client_strategy=MOCK_SYNC)
+        def test_open(self):
+            self.connection.open()
+            self.assertFalse(self.connection.closed)
 
-    def tearDown(self):
-        self.connection.unbind()
-        self.assertFalse(self.connection.bound)
+        def test_bind(self):
+            self.connection.open()
+            self.connection.bind()
+            self.assertTrue(self.connection.bound)
 
-    def test_open(self):
-        self.connection.open()
-        self.assertFalse(self.connection.closed)
+        def test_unbind(self):
+            self.connection.open()
+            self.connection.bind()
+            self.assertTrue(self.connection.bound)
+            self.connection.unbind()
+            self.assertFalse(self.connection.bound)
 
-    def test_bind(self):
-        self.connection.open()
-        self.connection.bind()
-        self.assertTrue(self.connection.bound)
-
-    def test_unbind(self):
-        self.connection.open()
-        self.connection.bind()
-        self.assertTrue(self.connection.bound)
-        self.connection.unbind()
-        self.assertFalse(self.connection.bound)
+except ImportError:
+    pass

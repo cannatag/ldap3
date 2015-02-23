@@ -1,7 +1,7 @@
-# version file for ldap3
-# generated on 2015-02-08 19:12:24.309000
-# on system ('Windows', 'GCNBHPW8', '8', '6.2.9200', 'AMD64', 'Intel64 Family 6 Model 58 Stepping 9, GenuineIntel')
-# with Python 2.7.9 - ('default', 'Dec 10 2014 12:28:03') - MSC v.1500 64 bit (AMD64)
+# THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY IT!!!# version file for ldap3
+# generated on 2015-02-21 08:07:12.485936
+# on system uname_result(system='Windows', node='GCNBHPW8', release='8', version='6.2.9200', machine='AMD64', processor='Intel64 Family 6 Model 58 Stepping 9, GenuineIntel')
+# with Python 3.4.2 - ('v3.4.2:ab2c023a9432', 'Oct  6 2014 22:16:31') - MSC v.1600 64 bit (AMD64)
 #
 __version__ = '0.9.7.5'
 __author__ = 'Giovanni Cannata'

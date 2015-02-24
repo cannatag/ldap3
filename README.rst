@@ -87,6 +87,8 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 
 Changelog
 ---------
+* 0.9.7.6
+    - Fixed bug in PagedSearch when server has a hard limit on the number of entries returned (thanks Reimar)
 
 * 0.9.7.5 2015.02.20
     - Fixed exception raised when opening a connection to a server. If there is only one candidate address and there is an error it returns the specific Exception, not a generic LDAPException error

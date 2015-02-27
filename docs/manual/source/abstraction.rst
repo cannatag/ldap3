@@ -230,6 +230,7 @@ you get back the whole attribute object, not only the key as in a standard dicti
     for attr in person_entry:
         print(attr.key)
 
+
 An Entry can be converted to ldif with the entry.entry_to_ldif() method and to json with the entry.entry_to_json() method.
 Entries can be easily printed at the interactive prompt::
 
@@ -262,6 +263,7 @@ Entries can be easily printed at the interactive prompt::
         subordinateCount: 33
         subschemaSubentry: cn=schema
 
+
 and each attribute of the entry can be accessed as a dictionary or as a namespace::
 
     >>> c.entries[0].GUID
@@ -272,6 +274,7 @@ and each attribute of the entry can be accessed as a dictionary or as a namespac
         [b'\xfd\x9a\r\x90\x15\xbe(A\xfd\x82\xfd\x9a\r\x90\x15\xbe']
     >>> c.entries[0].GUID.values
         ['fd9a0d90-15be-2841-fd82-fd9a0d9015be']
+
 
 you can obtain already formatted values when requesting the schema in the Server object.
 

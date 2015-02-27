@@ -64,7 +64,11 @@ def paged_search_generator(connection,
             response = connection.response
             result = connection.result
         responses.extend(response)
-        cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        try:
+            cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        except KeyError:
+            cookie = None
+
         while responses:
             yield responses.pop()
 

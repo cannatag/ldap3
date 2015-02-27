@@ -54,8 +54,6 @@ from ..strategy.async import AsyncStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.sync import SyncStrategy
 from ..strategy.restartable import RestartableStrategy
-from ..strategy.mockSync import MockSyncStrategy
-from ..strategy.mockAsync import MockAsyncStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
@@ -64,6 +62,13 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import prepare_for_stream, check_json_dict, format_json
+
+try:
+    from ..strategy.mockSync import MockSyncStrategy
+    from ..strategy.mockAsync import MockAsyncStrategy
+except ImportError:
+    MockSyncStrategy = NotImplemented
+    MockAsyncStrategy = NotImplemented
 
 
 def _format_socket_endpoint(endpoint):
@@ -256,11 +261,11 @@ class Connection(object):
                     if not self.bound:
                         self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                         raise LDAPBindError(self.last_error)
-            elif self.strategy.no_real_dsa:
-                self.server = None
-            else:
-                self.last_error = 'invalid LDAP server'
-                raise LDAPInvalidServerError(self.last_error)
+            # elif self.strategy.no_real_dsa:
+            #     self.server = None
+            # else:
+            #    self.last_error = 'invalid LDAP server'
+            #    raise LDAPInvalidServerError(self.last_error)
 
     def __str__(self):
         s = [

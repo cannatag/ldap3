@@ -1,5 +1,5 @@
 # THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY# version file for ldap3
-# generated on 2015-02-27 19:01:18.700157
+# generated on 2015-02-27 19:35:39.692989
 # on system uname_result(system='Windows', node='GCNBHPW8', release='8', version='6.2.9200', machine='AMD64', processor='Intel64 Family 6 Model 58 Stepping 9, GenuineIntel')
 # with Python 3.4.2 - ('v3.4.2:ab2c023a9432', 'Oct  6 2014 22:16:31') - MSC v.1600 64 bit (AMD64)
 #

@@ -45,4 +45,5 @@ with open(path.join('README.rst'), 'r+') as project_readme_file, \
     changelog_position = readme.find(changelog_identifier)
     if changelog_position > 0:
         updated_readme = readme[0: changelog_position + len(changelog_identifier)] + project_changelog_file.read()
+        project_readme_file.seek(0, 0)
         project_readme_file.write(updated_readme)

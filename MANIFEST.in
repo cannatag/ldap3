@@ -1,1 +1,1 @@
-include COPYING.txt COPYING.LESSER.txt LICENSE.txt README.rst requirements.txt _version.py
+include COPYING.txt COPYING.LESSER.txt LICENSE.txt README.rst requirements.txt _version.py _version.json

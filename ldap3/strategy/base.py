@@ -101,12 +101,15 @@ class BaseStrategy(object):
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
                         break
-                    except Exception:
+                    except Exception as e:
                         self.connection.server.update_availability(candidate_address, False)
                         exception_history.append((datetime.now(), exc_info()[0], exc_info()[1], candidate_address[4]))
 
                 if not self.connection.server.current_address and exception_history:
-                    raise LDAPSocketOpenError('unable to open socket', exception_history)
+                    if len(exception_history) == 1:  # only one exception, reraise
+                        raise exception_history[0][1](exception_history[0][2])
+                    else:
+                        raise LDAPSocketOpenError('unable to open socket', exception_history)
                 elif not self.connection.server.current_address:
                     raise LDAPSocketOpenError('invalid server address')
 
@@ -213,7 +216,6 @@ class BaseStrategy(object):
         Send an LDAP message
         Returns the message_id
         """
-        exc = None
         self.connection.request = None
         if self.connection.listening:
             if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per RFC4511 (4.2.1)
@@ -227,22 +229,11 @@ class BaseStrategy(object):
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
 
-            try:
-                encoded_message = encoder.encode(ldap_message)
-                self.connection.socket.sendall(encoded_message)
-            except socket.error as e:
-                self.connection.last_error = 'socket sending error' + str(e)
-                encoded_message = None
-                exc = e
-
-            if exc:
-                raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)
+            self.sending(ldap_message)
 
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
-            if self.connection.usage:
-                self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
             raise LDAPSocketOpenError(self.connection.last_error)
@@ -301,7 +292,7 @@ class BaseStrategy(object):
                 raise LDAPResponseTimeoutError('no response from server')
 
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
-                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'], response=response)
+                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
 
             # checks if any response has a range tag
             # self._auto_range_searching is set as a flag to avoid recursive searches
@@ -568,6 +559,22 @@ class BaseStrategy(object):
             result = None
 
         return response, result
+
+    def sending(self, ldap_message):
+        exc = None
+        try:
+            encoded_message = encoder.encode(ldap_message)
+            self.connection.socket.sendall(encoded_message)
+        except socket.error as e:
+            self.connection.last_error = 'socket sending error' + str(e)
+            exc = e
+            encoded_message = None
+
+        if exc:
+            raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)
+
+        if self.connection.usage:
+            self.connection._usage.update_transmitted_message(self.connection.request, len(encoded_message))
 
     def _start_listen(self):
         # overridden on strategy class

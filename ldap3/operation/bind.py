@@ -25,14 +25,16 @@
 
 from .. import SIMPLE, ANONYMOUS, SASL
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
+from ..protocol.rfc4511 import Referral, ServerSaslCreds
 from ..protocol.sasl.sasl import validate_simple_password
-from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials
+from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, LDAPResult, BindResponse, \
+    LDAPDN, LDAPString
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
 
 # BindRequest ::= [APPLICATION 0] SEQUENCE {
-#     version                 INTEGER (1 ..  127),
-#     name                    LDAPDN,
-#     authentication          AuthenticationChoice }
+#                                           version        INTEGER (1 ..  127),
+#                                           name           LDAPDN,
+#                                           authentication AuthenticationChoice }
 
 
 def bind_operation(version,
@@ -70,6 +72,29 @@ def bind_request_to_dict(request):
     return {'version': int(request['version']),
             'name': str(request['name']),
             'authentication': authentication_choice_to_dict(request['authentication'])}
+
+# BindResponse ::= [APPLICATION 1] SEQUENCE {
+#                                            COMPONENTS OF LDAPResult,
+#                                            serverSaslCreds    [7] OCTET STRING OPTIONAL }
+
+
+def bind_response_operation(result_code,
+                            matched_dn='',
+                            diagnostic_message='',
+                            referral=None,
+                            server_sasl_credentials=None):
+
+    response = BindResponse()
+    response['resultCode'] = ResultCode(result_code)
+    response['matchedDN'] = LDAPDN(matched_dn)
+    response['diagnosticMessage'] = LDAPString(diagnostic_message)
+    if referral:
+        response['referral'] = Referral(referral)
+
+    if server_sasl_credentials:
+        response['serverSaslCreds'] = ServerSaslCreds(server_sasl_credentials)
+
+    return response
 
 
 def bind_response_to_dict(response):

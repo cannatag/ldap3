@@ -22,9 +22,8 @@ any unsuccesful LDAP operation will throw an exception of this class, subclassed
 to the specific LDAP result code exception. For example if you get an
 INVALID_DN_SYNTAX (result code 34) the connection will raise the
 LDAPInvalidDNSyntaxResult exception, with the following parameter:
-result, description, dn, message, response_type, and the whole
-response filled with the values received in the response of the LDAP
-operation. You can specify which result codes you don't want to raise
+result, description, dn, message and the response_type.
+You can specify which result codes you don't want to raise
 exceptions, the default is : RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE,
 RESULT_REFERRAL (and of course RESULT_SUCCESS). You can change this
 behaviour in the ldap3 __init__.py package or at runtime modifying the

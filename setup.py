@@ -26,41 +26,23 @@ from datetime import datetime
 from platform import uname, python_version, python_build, python_compiler
 
 
-version_file = open('_version.py')
-exec_local = dict()
-exec(version_file.read(), dict(), exec_local)
-__version__ = exec_local['__version__']
-__author__ = exec_local['__author__']
-__email__ = exec_local['__email__']
-__license__ = exec_local['__license__']
-__url__ = exec_local['__url__']
-__description__ = exec_local['__description__']
-__long_description__ = exec_local['__long_description__']
-__package_name__ = exec_local['__package_name__']
-__package_folder__ = exec_local['__package_folder__']
-__status__ = exec_local['__status__']
+from json import load
 
-version_file.close()
+version_dict = load(open('_version.json', 'r'))
+version = str(version_dict['version'])
+author = str(version_dict['author'])
+email = str(version_dict['email'])
+license = str(version_dict['license'])
+url = str(version_dict['url'])
+description = str(version_dict['description'])
+package_name = str(version_dict['package_name'])
+package_folder = str(version_dict['package_folder'])
+status = str(version_dict['status'])
 
-project_version_file = open(path.join(__package_folder__, __package_name__, 'version.py'), 'w+')
-project_version_file.write('\n'.join([
-    '# version file for ' + __package_name__,
-    '# generated on ' + datetime.now().__str__(),
-    '# on system ' + str(uname()),
-    '# with Python ' + python_version() + ' - ' + str(python_build()) + ' - ' + python_compiler(),
-    '#',
-    '__version__ = ' + "'" + __version__ + "'",
-    '__author__ = ' + "'" + __author__ + "'",
-    '__email__ = ' + "'" + __email__ + "'",
-    '__url__ = ' + "'" + __url__ + "'",
-    '__description__ = ' + "'" + __description__ + "'",
-    '__status__ = ' + "'" + __status__ + "'",
-    '__license__ = ' + "'" + __license__ + "'"]))
+long_description = str(open('README.rst').read())
 
-project_version_file.close()
-
-setup(name=__package_name__,
-      version=__version__,
+setup(name=package_name,
+      version=version,
       packages=['ldap3',
                 'ldap3.core',
                 'ldap3.abstract',
@@ -76,18 +58,19 @@ setup(name=__package_name__,
                 'ldap3.extend.novell',
                 'ldap3.extend.microsoft',
                 'ldap3.extend.standard'],
-      package_dir={'': __package_folder__},
+      package_dir={'': package_folder},
       install_requires=['pyasn1 >= 0.1.7'],
-      license=__license__,
-      author=__author__,
-      author_email=__email__,
-      description=__description__,
-      long_description=__long_description__,
+      license=license,
+      author=author,
+      author_email=email,
+      description=description,
+      long_description=long_description,
       keywords='python3 python2 ldap',
-      url=__url__,
+      url=url,
       classifiers=['Development Status :: 4 - Beta',
                    'Intended Audience :: Developers',
                    'Intended Audience :: System Administrators',
+                   'Operating System :: MacOS :: MacOS X',
                    'Operating System :: Microsoft :: Windows',
                    'Operating System :: POSIX :: Linux',
                    'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',

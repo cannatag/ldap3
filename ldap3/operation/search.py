@@ -76,7 +76,7 @@ SEARCH_MATCH_OR_CLOSE = 22
 SEARCH_MATCH_OR_CONTROL = 23
 
 
-class FilterNode():
+class FilterNode(object):
     def __init__(self, tag=None, assertion=None):
         self.tag = tag
         self.parent = None
@@ -105,7 +105,7 @@ def evaluate_match(match, schema):
     match = match.strip()
     if '~=' in match:
         tag = MATCH_APPROX
-        left_part, _, right_part = match.split('~=')
+        left_part, _, right_part = match.partition('~=')
         left_part = left_part.strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}

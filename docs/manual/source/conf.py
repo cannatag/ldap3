@@ -277,7 +277,7 @@ texinfo_documents = [
 epub_title = 'ldap3'
 epub_author = __author__
 epub_publisher = __author__
-epub_copyright = '2013 - ' + __author__
+epub_copyright = '2015 - ' + __author__
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = 'ldap3'

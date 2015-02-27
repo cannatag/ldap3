@@ -103,7 +103,8 @@ CLIENT_STRATEGIES = [SYNC,
                      ASYNC,
                      LDIF,
                      RESTARTABLE,
-                     REUSABLE]
+                     REUSABLE,
+                     MOCK_SYNC]
 
 # get rootDSE info
 NONE = 'NO_INFO'

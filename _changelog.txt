@@ -1,0 +1,35 @@
+* 0.9.7.9 2015.02.27
+    - Fixed bug in PagedSearch when server has a hard limit on the number of entries returned (thanks Reimar)
+    - 0.9.7.6 not working for pypi problems
+    - 0.9.7.7 not working for pypi problems
+    - 0.9.7.8 not working for pypi problems
+
+* 0.9.7.5 2015.02.20
+    - Fixed exception raised when opening a connection to a server. If there is only one candidate address and there is an error it returns the specific Exception, not a generic LDAPException error
+    - Address_info filters out any impossible address to reach
+    - Address_info include an IPV4MAPPED address for IPV6 host that try to reach an IPV4 only server
+    - Added SyncMock strategy (needs the sldap3 package)
+    - Fixed bug when using the aproximation operation in ldap search operations (thanks Laurent)
+    - Removed response from exception raised with raise_exceptions=True to avoid very long exceptions message
+
+* 0.9.7.4 2015.02.02
+    - Added connection.entries property for storing response from search operations as and abstract.Entry collection.
+
+* 0.9.7.3 2015.01.25
+    - Modify operation type can also be passed as integer
+
+* 0.9.7.2 2015.01.16
+    - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection (thanks Hiroshi).
+
+* 0.9.7.1 2015.01.05
+    - Moved to Github
+    - Moved to Travis-CI for continuous integration
+    - Moved to ReadTheDocs for documentation
+    - Moved testing servers in the cloud, to allow testing from Travis-CI
+    - Project renamed from python3-ldap to ldap3 to avoid name clashing with the existing python-ldap library
+    - Constant values in ldap3 are now strings. This is helpful in testing and debugging
+    - Test suite fully refactored to be used in cloud lab and local development lab
+    - Test suite includes options for testing against eDirectory, Active Directory and OpenLDAP
+
+
+Previous versions changelog is available at http://pythonhosted.org//python3-ldap/changelog.html

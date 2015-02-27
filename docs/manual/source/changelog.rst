@@ -1,23 +1,6 @@
 CHANGELOG
 =========
-* 0.9.7.4 2015.02.02
-    - Added connection.entries property for storing response from search operations as and abstract.Entry collection.
-
-* 0.9.7.3 2015.01.25
-    - Modify operation type can also be passed as integer
-
-* 0.9.7.2 2015.01.16
-    - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection.
-
-* 0.9.7.1 2015.01.05
-    - Moved to Github
-    - Moved to Travis-CI for continuous integration
-    - Moved to ReadTheDocs for documentation
-    - Moved testing servers in the cloud, to allow testing from Travis-CI
-    - Project renamed from python3-ldap to ldap3 to avoid name clashing with the existing python-ldap library
-    - Constant values in ldap3 are now strings. This is helpful in testing and debugging
-    - Test suite fully refactored to be used in cloud lab and local development lab
-    - Test suite includes options for testing against eDirectory, Active Directory and OpenLDAP
+.. include:: ../../../_changelog.txt
 
 * 0.9.7 2014.12.17
     - Fixed bug for auto_range used in paged search

@@ -61,18 +61,23 @@ def format_binary(raw_value):
 def format_uuid(raw_value):
     try:
         return str(UUID(bytes=raw_value))
-    except TypeError:
+    except (TypeError, ValueError):
+        return format_unicode(raw_value)
+    except Exception:
         pass
+
     return raw_value
 
 
 def format_uuid_le(raw_value):
     try:
         return str(UUID(bytes_le=raw_value))
-    except TypeError:
+    except (TypeError, ValueError):
+        return format_unicode(raw_value)
+    except Exception:
         pass
-    return raw_value
 
+    return raw_value
 
 def format_boolean(raw_value):
     if raw_value in [b'TRUE', b'true', b'True']:

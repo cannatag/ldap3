@@ -898,6 +898,9 @@ RFC 4511                         LDAPv3                        June 2006
 Sermersheim                 Standards Track                    [Page 16]
 
 RFC 4511                         LDAPv3                        June 2006
+     Textual passwords (consisting of a character sequence with a known
+     character set and encoding) transferred to the server using the
+     simple AuthenticationChoice SHALL be transferred as UTF-8 [RFC3629]
      encoded [Unicode].  Prior to transfer, clients SHOULD prepare text
      passwords as "query" strings by applying the SASLprep [RFC4013]
      profile of the stringprep [RFC3454] algorithm.  Passwords

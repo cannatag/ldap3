@@ -25,7 +25,7 @@
 
 from .. import SIMPLE, ANONYMOUS, SASL
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
-from ldap3.protocol.rfc4511 import Referral, ServerSaslCreds
+from ..protocol.rfc4511 import Referral, ServerSaslCreds
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, LDAPResult, BindResponse, \
     LDAPDN, LDAPString

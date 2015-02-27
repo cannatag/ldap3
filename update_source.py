@@ -20,7 +20,7 @@ long_description = str(open('README.rst').read())
 
 # creates version.py from _version.json
 
-with open(path.join(package_folder, 'version.py'), 'w+') as project_version_file:
+with open(path.join(package_name, 'version.py'), 'w+') as project_version_file:
     project_version_file.write('\n'.join([
         '# THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY'
         '# version file for ' + package_name,

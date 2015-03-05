@@ -19,14 +19,15 @@ You can customize the Tls object with references to keys, certificates and CAs. 
 
 * local_private_key_file: the file with the private key of the client
 * local_certificate_file: the certificate of the server
-* validate: speficies if the server certificate must be validated, values can be: CERT_NONE (certificates are ignored), CERT_OPTIONAL (not required, but validated if provided) and CERT_REQUIRED (required and validated)
-* version: SSL or TLS version to use, can be one of the following: SSLv2, SSLv3, SSLv23, TLSv1 (as per Python 3.3. The version list can be different in another Python versions)
+* validate: specifies if the server certificate must be validated, values can be: CERT_NONE (certificates are ignored), CERT_OPTIONAL (not required, but validated if provided) and CERT_REQUIRED (required and validated)
+* version: SSL or TLS version to use, can be one of the following: SSLv2, SSLv3, SSLv23, TLSv1 (as per Python 3.3. The version list can be different in other Python versions)
 * ca_certs_file: the file containing the certificates of the certification authorities
 
 Tls object uses the ssl module of the Python standard library with additional checking functions that are missing from the Python 2 standard library.
 
 The needed constants are defined in the ssl package.
 
+IF you don't use a specific Tls object and set use_tls=True in the Server definition, a default Tls object will be used, it has no certificate files, uses the ssl.PROTOCOL_SSLv23 (if available in your Python interpreter) and performs no validation of the server certificate. It's recommended to set validate=ssl.CERT_REQUIRED to verify the certificate server.
 Example::
 
     tls = Tls(local_private_key_file='client_private_key.pem', local_certificate_file='client_cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='ca_certs.b64')

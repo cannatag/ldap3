@@ -152,7 +152,7 @@ class Tls(object):
                 ssl_context.protocol = self.version
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
         else:
-            if self.version is None:
+            if self.version is None and hasattr(ssl, 'PROTOCOL_SSLv23'):
                 self.version = ssl.PROTOCOL_SSLv23
             wrapped_socket = ssl.wrap_socket(connection.socket,
                                              keyfile=self.private_key_file,

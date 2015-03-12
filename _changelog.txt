@@ -1,4 +1,7 @@
-* 0.9.7.11 - 2015.03.12
+* 0.9.7.12 2015.03.13
+    - Fixed missing optional authzid in digestMD5 sasl mechanism (thanks Damiano)
+
+* 0.9.7.11 2015.03.12
     - Fixed address_info resolution on systems without the IPV4MAPPED flag (thanks Andryi)
 
 * 0.9.7.10 2015.02.28

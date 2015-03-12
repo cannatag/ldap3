@@ -88,6 +88,9 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 Changelog
 ---------
 
+* 0.9.7.11 - 2015.03.12
+    - Fixed address_info resolution on systems without the IPV4MAPPED flag (thanks Andryi)
+
 * 0.9.7.10 2015.02.28
     - Fixed bug in PagedSearch when server has a hard limit on the number of entries returned (thanks Reimar)
     - 0.9.7.6 not working for pypi problems

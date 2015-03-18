@@ -316,8 +316,8 @@ class BaseStrategy(object):
 
         return response, result
 
-    @classmethod
-    def compute_ldap_message_size(cls, data):
+    @staticmethod
+    def compute_ldap_message_size(data):
         """
         Compute LDAP Message size according to BER definite length rules
         Returns -1 if too few data to compute message length
@@ -380,8 +380,8 @@ class BaseStrategy(object):
                 result['controls'][decoded_control[0]] = decoded_control[1]
         return result
 
-    @classmethod
-    def decode_control(cls, control):
+    @staticmethod
+    def decode_control(control):
         """
         decode control, return a 2-element tuple where the first element is the control oid
         and the second element is a dictionary with description (from Oids), criticality and decoded control value
@@ -399,8 +399,8 @@ class BaseStrategy(object):
 
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
-    @classmethod
-    def decode_request(cls, ldap_message):
+    @staticmethod
+    def decode_request(ldap_message):
         message_type = ldap_message.getComponentByName('protocolOp').getName()
         component = ldap_message['protocolOp'].getComponent()
         if message_type == 'bindRequest':

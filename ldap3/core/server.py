@@ -383,8 +383,8 @@ class Server(object):
     def schema(self):
         return self._schema_info
 
-    @classmethod
-    def from_definition(cls, host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
+    @staticmethod
+    def from_definition(host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
         """
         Define a dummy server with preloaded schema and info
         :param host: host name

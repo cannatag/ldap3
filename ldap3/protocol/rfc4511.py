@@ -182,8 +182,8 @@ class Credentials(OctetString):
 
 class SaslCredentials(Sequence):
     # SaslCredentials ::= SEQUENCE {
-    #  mechanism               LDAPString,
-    #  credentials             OCTET STRING OPTIONAL }
+    #     mechanism               LDAPString,
+    #     credentials             OCTET STRING OPTIONAL }
     tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatConstructed, 3))
     componentType = NamedTypes(NamedType('mechanism', LDAPString()),
                                OptionalNamedType('credentials', Credentials()))

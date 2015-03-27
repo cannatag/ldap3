@@ -101,7 +101,7 @@ class BaseStrategy(object):
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
                         break
-                    except Exception as e:
+                    except Exception:
                         self.connection.server.update_availability(candidate_address, False)
                         exception_history.append((datetime.now(), exc_info()[0], exc_info()[1], candidate_address[4]))
 

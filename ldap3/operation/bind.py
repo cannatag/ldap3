@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SIMPLE, ANONYMOUS, SASL, NTLM
+from .. import SIMPLE, ANONYMOUS, SASL
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
@@ -121,7 +121,7 @@ def bind_response_to_dict(response):
 
 
 def sicily_bind_response_to_dict(response):
-    print (response)
+    print(response)
     return {'result': int(response['resultCode']),
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'error_message': str(response['errorMessage']),

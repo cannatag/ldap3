@@ -79,6 +79,7 @@ def format_uuid_le(raw_value):
 
     return raw_value
 
+
 def format_boolean(raw_value):
     if raw_value in [b'TRUE', b'true', b'True']:
         return True

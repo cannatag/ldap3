@@ -59,7 +59,7 @@ from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
-from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, \
+from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import prepare_for_stream, check_json_dict, format_json
@@ -878,7 +878,7 @@ class Connection(object):
                 resp_attr_set = set(response['attributes'].keys())
                 if resp_attr_set not in attr_sets:
                     attr_sets.append(resp_attr_set)
-            attr_sets.sort(key = lambda x: -len(x))  # sorts the list in descending length order
+            attr_sets.sort(key=lambda x: -len(x))  # sorts the list in descending length order
             unique_attr_sets = []
             for attr_set in attr_sets:
                 for unique_set in unique_attr_sets:

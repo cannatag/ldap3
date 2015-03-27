@@ -39,10 +39,10 @@
 #
 #     serverCreds  OCTET STRING,
 #     errorMessage LDAPString }
-from pyasn1.type.namedtype import NamedTypes, NamedType, OptionalNamedType
+from pyasn1.type.namedtype import NamedTypes, NamedType
 from pyasn1.type.tag import Tag, tagClassApplication, tagFormatConstructed
 from pyasn1.type.univ import Sequence, OctetString
-from protocol.rfc4511 import ResultCode, LDAPString
+from .rfc4511 import ResultCode, LDAPString
 
 
 class SicilyBindResponse(Sequence):

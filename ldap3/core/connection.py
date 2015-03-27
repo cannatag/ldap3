@@ -33,14 +33,14 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
 from ..strategy.reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation
 from ..operation.add import add_operation
-from ..operation.bind import bind_operation
+from ..operation.bind import bind_operation, bind_response_dict_to_sicily_bind_response_dict
 from ..operation.compare import compare_operation
 from ..operation.delete import delete_operation
 from ..operation.extended import extended_operation
@@ -165,7 +165,7 @@ class Connection(object):
                 self.authentication = SIMPLE
             elif not authentication:
                 self.authentication = ANONYMOUS
-            elif authentication in [SIMPLE, ANONYMOUS, SASL]:
+            elif authentication in [SIMPLE, ANONYMOUS, SASL, NTLM]:
                 self.authentication = authentication
             else:
                 self.last_error = 'unknown authentication method'
@@ -179,7 +179,7 @@ class Connection(object):
             self.listening = False
             self.closed = True
             self.last_error = None
-            if auto_bind is False:  # compatibility with older versione where auto_bind was a boolean
+            if auto_bind is False:  # compatibility with older version where auto_bind was a boolean
                 self.auto_bind = AUTO_BIND_NONE
             elif auto_bind is True:
                 self.auto_bind = AUTO_BIND_NO_TLS
@@ -392,16 +392,36 @@ class Connection(object):
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
+                elif self.authentication == NTLM:
+                    # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
+                    # send a sicilyPackageDiscovery request (in the bindRequest)
+                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', name=self.user)
+                    response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    response = bind_response_dict_to_sicily_bind_response_dict(response[0])
+                    sicily_packages = response['server_creds'].split(';')
+                    if 'NTLM' in sicily_packages:
+                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', self.user, self.password)
+                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                        response = bind_response_dict_to_sicily_bind_response_dict(response[0])
+                        if response['result'] == RESULT_SUCCESS:
+                            request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', self.user, self.password, response['server_creds'][20:24], response['server_creds'][24:32])
+                            response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                            response = bind_response_dict_to_sicily_bind_response_dict(response[0])
                 else:
                     self.last_error = 'unknown authentication method'
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and self.authentication != SASL:  # get response if async except for sasl that returns the bind result even for async
+                if not self.strategy.sync and self.authentication != SASL:  # get response if async except for SASL and NTLM that return the bind result even for async
                     _, result = self.get_response(response)
                 elif self.strategy.sync:
                     result = self.result
-                else:  # async SASL
+                elif self.authentication == SASL:  # async SASL
                     result = response
+                elif self.authentication == NTLM:  # async NTLM
+                    result = response
+                else:
+                    self.last_error = 'unknown authentication method'
+                    raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if result is None:
                     self.bound = True if self.strategy_type == REUSABLE else False

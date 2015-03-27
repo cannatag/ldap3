@@ -23,13 +23,13 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SIMPLE, ANONYMOUS, SASL
+from .. import SIMPLE, ANONYMOUS, SASL, NTLM
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
-from ..protocol.rfc4511 import Referral, ServerSaslCreds
 from ..protocol.sasl.sasl import validate_simple_password
-from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, LDAPResult, BindResponse, \
-    LDAPDN, LDAPString
+from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
+    LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
+from ..utils.sicily import ntlm_generate_negotiate, ntlm_generate_response
 
 # BindRequest ::= [APPLICATION 0] SEQUENCE {
 #                                           version        INTEGER (1 ..  127),
@@ -62,6 +62,20 @@ def bind_operation(version,
     elif authentication == ANONYMOUS:
         request['name'] = ''
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
+    elif authentication == 'SICILY_PACKAGE_DISCOVERY':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
+        request['name'] = ''
+        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyPackageDiscovery', SicilyPackageDiscovery())
+    elif authentication == 'SICILY_NEGOTIATE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
+        request['name'] = 'NTLM'
+        # request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(b'\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x02\x02\x00\x00'))  # minimal valid ntlm type 1 message
+        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(ntlm_generate_negotiate(name)))  # minimal valid ntlm type 1 message
+    elif authentication == 'SICILY_RESPONSE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
+        server_creds = ntlm_generate_response(name, password, sasl_mechanism, sasl_credentials)  # in sasl_mechanism must be present the flags and in sasl_credentials the challenge from server
+        if server_creds:
+            request['name'] = ''
+            request['authentication'] = AuthenticationChoice().setComponentByName('sicilyResponse', SicilyResponse(b'\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x02\x02\x00\x00'))  # minimal valid ntlm type 1 message
+        else:
+            request = None
     else:
         raise LDAPUnknownAuthenticationMethodError('unknown authentication method')
 
@@ -104,3 +118,20 @@ def bind_response_to_dict(response):
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral']),
             'saslCreds': str(response['serverSaslCreds'])}
+
+
+def sicily_bind_response_to_dict(response):
+    print (response)
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
+            'error_message': str(response['errorMessage']),
+            'server_creds': str(response['serverCreds'])}
+
+
+def bind_response_dict_to_sicily_bind_response_dict(response):
+    sicily_bind_response_dict = dict()
+    sicily_bind_response_dict['result'] = response['result']
+    sicily_bind_response_dict['description'] = response['description']
+    sicily_bind_response_dict['server_creds'] = response['dn']
+    sicily_bind_response_dict['error_message'] = response['message']
+    return sicily_bind_response_dict

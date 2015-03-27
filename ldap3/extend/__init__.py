@@ -100,7 +100,8 @@ class NovellExtendedOperations(ExtendedOperationContainer):
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):
-    pass
+    def sicily_ntlm_authentication(self, username):
+        return
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

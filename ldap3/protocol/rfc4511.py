@@ -189,14 +189,42 @@ class SaslCredentials(Sequence):
                                OptionalNamedType('credentials', Credentials()))
 
 
+class SicilyPackageDiscovery(OctetString):
+    # sicilyPackageDiscovery  [9] OCTET STRING,
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 9))
+    encoding = 'utf-8'
+
+
+class SicilyNegotiate(OctetString):
+    # sicilyNegotiate  [10] OCTET STRING,
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 10))
+    encoding = 'utf-8'
+
+
+class SicilyResponse(OctetString):
+    # sicilyResponse  [11] OCTET STRING,
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 11))
+    encoding = 'utf-8'
+
+
 class AuthenticationChoice(Choice):
     # AuthenticationChoice ::= CHOICE {
     #     simple                  [0] OCTET STRING,
     #                             -- 1 and 2 reserved
     #     sasl                    [3] SaslCredentials,
     # ... }
+
+    # from https://msdn.microsoft.com/en-us/library/cc223498.aspx  # legacy NTLM authentication for Windows Active Directory
+    # sicilyPackageDiscovery [9]    OCTET STRING
+    # sicilyNegotiate        [10]   OCTET STRING
+    # sicilyResponse         [11]   OCTET STRING  }
+
     componentType = NamedTypes(NamedType('simple', Simple()),
-                               NamedType('sasl', SaslCredentials()))
+                               NamedType('sasl', SaslCredentials()),
+                               NamedType('sicilyPackageDiscovery', SicilyPackageDiscovery()),
+                               NamedType('sicilyNegotiate', SicilyNegotiate()),
+                               NamedType('sicilyResponse', SicilyResponse()),
+                               )
 
 
 class Version(Integer):

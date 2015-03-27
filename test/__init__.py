@@ -143,7 +143,7 @@ elif location == 'GCW89227':
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'camera'  # user password
-    test_sasl_user = 'testsasl.services'
+    test_sasl_user = 'testSASL.services'
     test_sasl_password = 'password'
     test_sasl_realm = None
     test_ca_cert_file = 'ca-cert.pem'

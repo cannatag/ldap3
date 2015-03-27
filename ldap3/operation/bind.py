@@ -64,7 +64,7 @@ def bind_operation(version,
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
     elif authentication == 'SICILY_PACKAGE_DISCOVERY':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
         request['name'] = ''
-        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyPackageDiscovery', SicilyPackageDiscovery())
+        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyPackageDiscovery', SicilyPackageDiscovery(''))
     elif authentication == 'SICILY_NEGOTIATE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
         request['name'] = 'NTLM'
         # request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(b'\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x02\x02\x00\x00'))  # minimal valid ntlm type 1 message
@@ -73,7 +73,7 @@ def bind_operation(version,
         server_creds = ntlm_generate_response(name, password, sasl_mechanism, sasl_credentials)  # in sasl_mechanism must be present the flags and in sasl_credentials the challenge from server
         if server_creds:
             request['name'] = ''
-            request['authentication'] = AuthenticationChoice().setComponentByName('sicilyResponse', SicilyResponse(b'\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x02\x02\x00\x00'))  # minimal valid ntlm type 1 message
+            request['authentication'] = AuthenticationChoice().setComponentByName('sicilyResponse', SicilyResponse(server_creds))
         else:
             request = None
     else:
@@ -132,6 +132,9 @@ def bind_response_dict_to_sicily_bind_response_dict(response):
     sicily_bind_response_dict = dict()
     sicily_bind_response_dict['result'] = response['result']
     sicily_bind_response_dict['description'] = response['description']
-    sicily_bind_response_dict['server_creds'] = response['dn']
+    print('DN', response['dn'])
+    print('DN', len(response['dn']))
+    print('DN', type(response['dn']))
+    sicily_bind_response_dict['server_creds'] = bytes(response['dn'], encoding='ascii')
     sicily_bind_response_dict['error_message'] = response['message']
     return sicily_bind_response_dict

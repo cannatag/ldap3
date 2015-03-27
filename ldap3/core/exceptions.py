@@ -354,6 +354,7 @@ class LDAPDefinitionError(LDAPConfigurationError):
 class LDAPPackageUnavailableError(LDAPConfigurationError):
     pass
 
+
 # abstract layer exceptions
 class LDAPKeyError(LDAPExceptionError, KeyError):
     pass

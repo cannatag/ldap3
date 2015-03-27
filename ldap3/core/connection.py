@@ -35,6 +35,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     RESTARTABLE, ROUND_ROBIN, REUSABLE, DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
     AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM
 from ..extend import ExtendedOperationsRoot
+from ldap3.core.exceptions import LDAPPackageUnavailableError
 from .pooling import ServerPool
 from .server import Server
 from ..strategy.reusable import ReusableStrategy
@@ -393,6 +394,13 @@ class Connection(object):
                         self.last_error = 'requested SASL mechanism not supported'
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
                 elif self.authentication == NTLM:
+                    from ..utils.sicily import ntlm_support
+                    if not ntlm_support:
+                        if str == bytes:
+                            raise LDAPPackageUnavailableError('package ntlm not present')
+                        else:
+                            raise LDAPPackageUnavailableError('package ntlm3 not present')
+
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                     # send a sicilyPackageDiscovery request (in the bindRequest)
                     request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', name=self.user)

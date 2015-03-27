@@ -1,13 +1,14 @@
-if str == bytes:
+ntlm_support = True
+if str == bytes:  # python 3
     try:
         from ntlm3 import create_NTLM_NEGOTIATE_MESSAGE, parse_NTLM_CHALLENGE_MESSAGE, create_NTLM_AUTHENTICATE_MESSAGE
     except ImportError:
-        pass
-else:
+        ntlm_support = False
+else:  # python 2
     try:
         from ntlm import create_NTLM_NEGOTIATE_MESSAGE, parse_NTLM_CHALLENGE_MESSAGE, create_NTLM_AUTHENTICATE_MESSAGE
     except ImportError:
-        pass
+        ntlm_support = False
 
 
 def ntlm_generate_negotiate(user):

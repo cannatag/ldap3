@@ -396,36 +396,36 @@ class Connection(object):
                 elif self.authentication == NTLM and self.user and self.password:
                     # additional import for NTLM
                     from ..utils.sicily import ntlm_support
+                    from ..utils.ntlm2 import NTLM2Client
+                    from socket import gethostname
+                    domain_name, user_name = self.user.split('\\', 1)
+                    ntlm_client = NTLM2Client(username=user_name, domain=domain_name, password=self.password, workstation=gethostname().upper().encode('ascii'))
                     if not ntlm_support:
                         if str == bytes:
                             raise LDAPPackageUnavailableError('package ntlm not present')
                         else:
                             raise LDAPPackageUnavailableError('package ntlm3 not present')
-                    from struct import unpack
 
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                     # send a sicilyPackageDiscovery request (in the bindRequest)
-                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY')
+                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
                     response = bind_response_dict_to_sicily_bind_response_dict(response[0])
                     sicily_packages = response['server_creds'].decode('ascii').split(';')
                     if 'NTLM' in sicily_packages:
-                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', self.user)
+                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
                         response = bind_response_dict_to_sicily_bind_response_dict(response[0])
-                        print(type(response['server_creds'][20:24]))
                         if response['result'] == RESULT_SUCCESS:
                             request = bind_operation(self.version,
                                                      'SICILY_RESPONSE_NTLM',
-                                                     self.user,
-                                                     self.password,
-                                                     response['server_creds'][20:24],
-                                                     response['server_creds'][24:32])
+                                                     ntlm_client,
+                                                     response['server_creds'])
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
                             response = bind_response_dict_to_sicily_bind_response_dict(response[0])
                             print('RESPONSE:', response)
                 elif self.authentication == NTLM:  # user or password missing
-                    self.last_error = 'NTLM needs domain\\username and password'
+                    self.last_error = 'NTLM needs domain\\username and a password'
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
                 else:
                     self.last_error = 'unknown authentication method'

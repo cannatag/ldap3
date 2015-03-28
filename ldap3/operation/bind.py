@@ -68,9 +68,10 @@ def bind_operation(version,
     elif authentication == 'SICILY_NEGOTIATE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
         request['name'] = 'NTLM'
         # request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(b'\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x02\x02\x00\x00'))  # minimal valid ntlm type 1 message
-        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(ntlm_generate_negotiate(name)))  # minimal valid ntlm type 1 message
+        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(name.make_ntlm_negotiate()))  # ntlm client in self.name
     elif authentication == 'SICILY_RESPONSE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
-        server_creds = ntlm_generate_response(name, password, sasl_mechanism, sasl_credentials)  # in sasl_mechanism must be present the flags and in sasl_credentials the challenge from server
+        name.parse_ntlm_challenge(password)  # server_creds returned by server in password
+        server_creds = name.make_ntlm_authenticate()
         if server_creds:
             request['name'] = ''
             request['authentication'] = AuthenticationChoice().setComponentByName('sicilyResponse', SicilyResponse(server_creds))

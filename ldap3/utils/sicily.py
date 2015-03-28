@@ -11,7 +11,7 @@ else:  # python 3
         from ntlm3.ntlm import create_NTLM_NEGOTIATE_MESSAGE, parse_NTLM_CHALLENGE_MESSAGE, create_NTLM_AUTHENTICATE_MESSAGE, \
             NTLM_NegotiateUnicode, NTLM_NegotiateOEM, NTLM_RequestTarget, NTLM_NegotiateNTLM, NTLM_NegotiateAlwaysSign, \
             NTLM_NegotiateExtendedSecurity, NTLM_NegotiateVersion, NTLM_Negotiate128, NTLM_Negotiate56, calc_resp, \
-            create_NT_hashed_password_v1, ntlm2sr_calc_resp, create_LM_hashed_password_v1
+            create_NT_hashed_password_v1, ntlm2sr_calc_resp, create_LM_hashed_password_v1, NTLM_TYPE2_FLAGS
 
     except ImportError:
         ntlm_support = False
@@ -37,6 +37,8 @@ def windows_version():
         major_release = 5
         minor_release = 1
         build = 2600
+
+    print("VERSION:", major_release, minor_release, build)
     return major_release, minor_release, build
 
 
@@ -136,7 +138,6 @@ def ntlm_generate_response(user, password, flags, challenge):
 
     MIC = struct.pack('<IIII', 0, 0, 0, 0)  # noqa
 
-
     message = b'NTLMSSP\0'  # signature
     message += struct.pack('<I', 3)  # message type 3
     message += lm_challenge_response_len + lm_challenge_response_len + lm_challenge_response_offset
@@ -145,7 +146,7 @@ def ntlm_generate_response(user, password, flags, challenge):
     message += username_len + username_len + username_offset
     message += workstation_len + workstation_len + workstation_offset
     message += encrypted_random_session_key_len + encrypted_random_session_key_len + encrypted_random_session_key_offset
-    message += flags
+    message += struct.pack('<I', NTLM_TYPE2_FLAGS)
     major_release, minor_release, build = windows_version()
     message += struct.pack('<B', major_release)  # major version
     message += struct.pack('<B', minor_release)  # minor version

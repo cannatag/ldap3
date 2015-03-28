@@ -45,16 +45,40 @@
 import os
 import hmac
 import hashlib
-
+import time
+from math import floor
+from platform import system, version
 from struct import pack, unpack
 
 
 # def tuc(s):
 #     return s.encode('utf-16-le')
 
+def windows_version():
+    if system().lower() == 'windows':
+        try:
+            major_release, minor_release, build = version().split('.')
+            major_release = int(major_release)
+            minor_release = int(minor_release)
+            build = int(build)
+        except Exception:
+            major_release = 5
+            minor_release = 1
+            build = 2600
+    else:
+        major_release = 5
+        minor_release = 1
+        build = 2600
+
+    return major_release, minor_release, build
+
 
 class NTLMParseException(Exception):
     pass
+
+
+def get_nt_timestamp():
+    return (floor(time.time()) + 11644473600) * 10000000
 
 
 class NTLM2Client:
@@ -91,14 +115,14 @@ class NTLM2Client:
     }
 
     def __init__(self, username, domain, password, workstation=b'python'):
-        self.username = username
-        self.domain = domain
-        self.password = password
+        self.username = username.upper().encode('utf-16-le')
+        self.domain = domain.upper().encode('utf-16-le')
+        self.password = password.encode('utf-16-le')
         self.workstation = workstation
 
-    def create_av_pairs(self, listAVs):
+    def create_av_pairs(self, list_avs):
         avs = ''
-        for av in listAVs:
+        for av in list_avs:
             if self.avids[av[0]][1]:
                 avvalue = av[1].encode('utf_16_le')
             else:
@@ -107,33 +131,27 @@ class NTLM2Client:
         avs += b'\x00' * 4
         return avs
 
-    def get_nt_timestamp(self):
-        import time
-        from math import floor
-
-        return (floor(time.time()) + 11644473600) * 10000000
-
     def ntowfv2(self):
-        hashed = hashlib.new('md4', self.password.encode('ascii')).digest()
+        hashed = hashlib.new('md4', self.password).digest()
 
         # return hmac.new(MD4.new(tuc(self.password)).digest(), tuc(self.username.upper() + self.domain)).digest()
-        return hmac.new(hash, self.username.upper().encode('ascii') + self.domain.encode('ascii')).digest()
+        return hmac.new(hashed, self.username + self.domain).digest()
 
     def lmowfv2(self):
         return self.ntowfv2()
 
-    def lmntchallengeresponse(self):
-        responseKeyNT = self.ntowfv2()
-        responseKeyLM = self.lmowfv2()
-        ## LMv2
-        lmchallengeresp = hmac.new(responseKeyLM, self.serverChallenge + self.clientChallenge).digest() + self.clientChallenge
-        ## NTv2
-        timestamp = self.get_nt_timestamp()
+    def lm_nt_challenge_response(self):
+        response_key_nt = self.ntowfv2()
+        response_key_lm = self.lmowfv2()
+        # LMv2
+        lm_challenge_response = hmac.new(response_key_lm, self.server_challenge + self.clientChallenge).digest() + self.clientChallenge
+        # NTv2
+        timestamp = get_nt_timestamp()
         temp = b'\x01\x01' + b'\x00' * 6 + pack('<Q', timestamp) + self.clientChallenge + b'\x00' * 4 + self.targetInfo + b'\x00' * 4
-        ntproofstr = hmac.new(responseKeyNT, self.serverChallenge + temp).digest()
+        ntproofstr = hmac.new(response_key_nt, self.server_challenge + temp).digest()
         ntchallengeresp = ntproofstr + temp
-        # sessionKey = HMAC.new(responseKeyNT, ntproofstr).digest()
-        return lmchallengeresp, ntchallengeresp
+        # sessionKey = HMAC.new(response_key_nt, ntproofstr).digest()
+        return lm_challenge_response, ntchallengeresp
 
     def make_ntlm_negotiate(self):
         msg = b'NTLMSSP\x00'  # Signature
@@ -147,7 +165,7 @@ class NTLM2Client:
             self.NTLMSSP_NEGOTIATE_LM_KEY |
             self.NTLMSSP_NEGOTIATE_NTLM |
             self.NTLMSSP_NEGOTIATE_ALWAYS_SIGN |
-            # self.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY |
+            self.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY |
             self.NTLMSSP_NEGOTIATE_VERSION
         )
         msg += pack('<I', self.flags)
@@ -158,16 +176,16 @@ class NTLM2Client:
         msg += pack('<HHI', 0, 0, 0)
         # Version (to be removed)
         if self.flags & self.NTLMSSP_NEGOTIATE_VERSION:
-            msg += b'\x05'  # Product Major: Win XP SP2
-            msg += b'\x01'  # Product Minor: Win XP SP2
-            msg += pack('<H', 2600)  # ProductBuild
+            major, minor, build = windows_version()
+            msg += pack('<B', major)  # Product Major: Win XP SP2
+            msg += pack('<B', minor) # Product Minor: Win XP SP2
+            msg += pack('<H', build)  # ProductBuild
             msg += b'\x00\x00\x00'  # Reserved
             msg += b'\x0F'  # NTLMRevisionCurrent
 
         return msg
 
     def parse_ntlm_challenge(self, msg):
-        print(msg)
         # Signature
         idx = 0
         if msg[idx:idx + 8] != b'NTLMSSP\x00':
@@ -186,11 +204,11 @@ class NTLM2Client:
         self.flags = unpack('<I', msg[idx:idx + 4])[0]
         # TargetNameFields (again)
         if self.flags and self.NTLMSSP_REQUEST_TARGET and targetNameLen > 0:
-            targetName = msg[targetNameOffset:targetNameOffset + targetNameLen]
+            self.targetName = msg[targetNameOffset:targetNameOffset + targetNameLen]
         # TODO: verify Unicode, since this affects DomainName in Type3
         # Server challenge
         idx += 4
-        self.serverChallenge = msg[idx:idx + 8]
+        self.server_challenge = msg[idx:idx + 8]
         # TargetInfoFields
         idx += 16
         self.targetInfo = b''
@@ -201,25 +219,24 @@ class NTLM2Client:
 
     def make_ntlm_authenticate(self):
         self.clientChallenge = os.urandom(8)
-        # print "Selected client challenge is", hexlify(self.clientChallenge)
 
         # Pre-compute LmChallengeResponse and NtChallengeResponse
         # see 3.3.2 in MS-NLMP
-        lmchallengeresp, ntchallengeresp = self.lmntchallengeresponse()
+        lm_challenge_response, nt_challenge_response = self.lm_nt_challenge_response()
 
         msg = b'NTLMSSP\x00'  # Signature
         msg += pack('<I', 3)  # Message Type 3
 
         fixup = []
 
-        for f in lmchallengeresp, ntchallengeresp, self.domain.encode('ascii'), self.username.encode('ascii'), self.workstation:
+        for f in lm_challenge_response, nt_challenge_response, self.domain, self.username, self.workstation:
             msg += pack('<H', len(f))
             msg += pack('<H', len(f))
             fixup.append((len(msg), f))
             msg += b' ' * 4  # Fake offset
 
         # EncryptedRandomSessionKeyFields
-        assert not (self.flags & self.NTLMSSP_NEGOTIATE_KEY_EXCH)
+        # assert not (self.flags & self.NTLMSSP_NEGOTIATE_KEY_EXCH)
         msg += pack('<HHI', 0, 0, 0)
 
         # NegotiateFlags
@@ -233,9 +250,10 @@ class NTLM2Client:
 
         # Version
         if self.flags & self.NTLMSSP_NEGOTIATE_VERSION:
-            msg += b'\x05'  # Product Major: Win XP SP2
-            msg += b'\x01'  # Product Minor: Win XP SP2
-            msg += pack('<H', 2600)  # ProductBuild
+            major, minor, build = windows_version()
+            msg += pack('<B', major)  # Product Major: Win XP SP2
+            msg += pack('<B', minor) # Product Minor: Win XP SP2
+            msg += pack('<H', build)  # ProductBuild
             msg += b'\x00\x00\x00'  # Reserved
             msg += b'\x0F'  # NTLMRevisionCurrent
 
@@ -243,12 +261,12 @@ class NTLM2Client:
         msg += pack('<IIII', 0, 0, 0, 0)
 
         # Fix up offsets
-        msg = list(msg)
-        payload = ''
+        msg = bytearray(msg)
+        payload = b''
         for offset, entry in fixup:
             msg[offset:offset + 4] = pack('<I', len(msg) + len(payload))
             payload += entry
-        msg = b''.join(msg) + payload
+        msg = bytes(msg) + payload
         return msg
 
 # def print_help():

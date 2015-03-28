@@ -411,22 +411,19 @@ class Connection(object):
                     sicily_packages = response['server_creds'].decode('ascii').split(';')
                     if 'NTLM' in sicily_packages:
                         request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', self.user)
-                        print('REQUEST2', request)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
                         response = bind_response_dict_to_sicily_bind_response_dict(response[0])
-                        print('RESPONSE2', response)
-                        print(type(response['server_creds'][24:32]))
+                        print(type(response['server_creds'][20:24]))
                         if response['result'] == RESULT_SUCCESS:
                             request = bind_operation(self.version,
                                                      'SICILY_RESPONSE_NTLM',
                                                      self.user,
                                                      self.password,
-                                                     unpack("<I", response['server_creds'][20:24])[0],
+                                                     response['server_creds'][20:24],
                                                      response['server_creds'][24:32])
-                            print('REQUEST3', request)
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
                             response = bind_response_dict_to_sicily_bind_response_dict(response[0])
-                            print('RESPONSE3', response)
+                            print('RESPONSE:', response)
                 elif self.authentication == NTLM:  # user or password missing
                     self.last_error = 'NTLM needs domain\\username and password'
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)

@@ -121,7 +121,6 @@ def bind_response_to_dict(response):
 
 
 def sicily_bind_response_to_dict(response):
-    print(response)
     return {'result': int(response['resultCode']),
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'error_message': str(response['errorMessage']),
@@ -132,9 +131,6 @@ def bind_response_dict_to_sicily_bind_response_dict(response):
     sicily_bind_response_dict = dict()
     sicily_bind_response_dict['result'] = response['result']
     sicily_bind_response_dict['description'] = response['description']
-    print('DN', response['dn'])
-    print('DN', len(response['dn']))
-    print('DN', type(response['dn']))
-    sicily_bind_response_dict['server_creds'] = bytes(response['dn'], encoding='ascii')
+    sicily_bind_response_dict['server_creds'] = bytes(response['dn'], encoding='utf-8')
     sicily_bind_response_dict['error_message'] = response['message']
     return sicily_bind_response_dict

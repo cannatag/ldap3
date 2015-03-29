@@ -165,7 +165,7 @@ class NTLM2Client:
             self.NTLMSSP_NEGOTIATE_LM_KEY |
             self.NTLMSSP_NEGOTIATE_NTLM |
             self.NTLMSSP_NEGOTIATE_ALWAYS_SIGN |
-            self.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY |
+            # self.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY |
             self.NTLMSSP_NEGOTIATE_VERSION
         )
         msg += pack('<I', self.flags)
@@ -201,7 +201,7 @@ class NTLM2Client:
         target_name_offset = unpack('<I', msg[idx + 4:idx + 8])[0]
         # Flags
         idx += 8
-        self.flags = unpack('<I', msg[idx:idx + 4])[0]
+        # self.flags = unpack('<I', msg[idx:idx + 4])[0]
         # TargetNameFields (again)
         if self.flags and self.NTLMSSP_REQUEST_TARGET and target_name_len > 0:
             self.target_name = msg[target_name_offset:target_name_offset + target_name_len]

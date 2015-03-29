@@ -144,10 +144,10 @@ class NTLM2Client:
         response_key_nt = self.ntowfv2()
         response_key_lm = self.lmowfv2()
         # LMv2
-        lm_challenge_response = hmac.new(response_key_lm, self.server_challenge + self.clientChallenge).digest() + self.clientChallenge
+        lm_challenge_response = hmac.new(response_key_lm, self.server_challenge + self.client_challenge).digest() + self.client_challenge
         # NTv2
         timestamp = get_nt_timestamp()
-        temp = b'\x01\x01' + b'\x00' * 6 + pack('<Q', timestamp) + self.clientChallenge + b'\x00' * 4 + self.targetInfo + b'\x00' * 4
+        temp = b'\x01\x01' + b'\x00' * 6 + pack('<Q', timestamp) + self.client_challenge + b'\x00' * 4 + self.target_info + b'\x00' * 4
         ntproofstr = hmac.new(response_key_nt, self.server_challenge + temp).digest()
         ntchallengeresp = ntproofstr + temp
         # sessionKey = HMAC.new(response_key_nt, ntproofstr).digest()
@@ -178,7 +178,7 @@ class NTLM2Client:
         if self.flags & self.NTLMSSP_NEGOTIATE_VERSION:
             major, minor, build = windows_version()
             msg += pack('<B', major)  # Product Major: Win XP SP2
-            msg += pack('<B', minor) # Product Minor: Win XP SP2
+            msg += pack('<B', minor)  # Product Minor: Win XP SP2
             msg += pack('<H', build)  # ProductBuild
             msg += b'\x00\x00\x00'  # Reserved
             msg += b'\x0F'  # NTLMRevisionCurrent
@@ -197,28 +197,28 @@ class NTLM2Client:
             raise NTLMParseException("Not a Type 2 NTLM message (%d)." % typex)
         # TargetNameFields
         idx += 4
-        targetNameLen = unpack('<H', msg[idx:idx + 2])[0]
-        targetNameOffset = unpack('<I', msg[idx + 4:idx + 8])[0]
+        target_name_len = unpack('<H', msg[idx:idx + 2])[0]
+        target_name_offset = unpack('<I', msg[idx + 4:idx + 8])[0]
         # Flags
         idx += 8
         self.flags = unpack('<I', msg[idx:idx + 4])[0]
         # TargetNameFields (again)
-        if self.flags and self.NTLMSSP_REQUEST_TARGET and targetNameLen > 0:
-            self.targetName = msg[targetNameOffset:targetNameOffset + targetNameLen]
+        if self.flags and self.NTLMSSP_REQUEST_TARGET and target_name_len > 0:
+            self.target_name = msg[target_name_offset:target_name_offset + target_name_len]
         # TODO: verify Unicode, since this affects DomainName in Type3
         # Server challenge
         idx += 4
         self.server_challenge = msg[idx:idx + 8]
         # TargetInfoFields
         idx += 16
-        self.targetInfo = b''
-        targetInfoLen = unpack('<H', msg[idx:idx + 2])[0]
-        targetInfoOffset = unpack('<I', msg[idx + 4:idx + 8])[0]
-        if self.flags and self.NTLMSSP_NEGOTIATE_TARGET_INFO and targetInfoLen > 0:
-            self.targetInfo = msg[targetInfoOffset:targetInfoOffset + targetInfoLen]
+        self.target_info = b''
+        target_info_len = unpack('<H', msg[idx:idx + 2])[0]
+        target_info_offset = unpack('<I', msg[idx + 4:idx + 8])[0]
+        if self.flags and self.NTLMSSP_NEGOTIATE_TARGET_INFO and target_info_len > 0:
+            self.target_info = msg[target_info_offset:target_info_offset + target_info_len]
 
     def make_ntlm_authenticate(self):
-        self.clientChallenge = os.urandom(8)
+        self.client_challenge = os.urandom(8)
 
         # Pre-compute LmChallengeResponse and NtChallengeResponse
         # see 3.3.2 in MS-NLMP
@@ -236,7 +236,7 @@ class NTLM2Client:
             msg += b' ' * 4  # Fake offset
 
         # EncryptedRandomSessionKeyFields
-        # assert not (self.flags & self.NTLMSSP_NEGOTIATE_KEY_EXCH)
+        assert not (self.flags & self.NTLMSSP_NEGOTIATE_KEY_EXCH)
         msg += pack('<HHI', 0, 0, 0)
 
         # NegotiateFlags

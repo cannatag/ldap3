@@ -423,7 +423,6 @@ class Connection(object):
                                                      response['server_creds'])
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
                             response = bind_response_dict_to_sicily_bind_response_dict(response[0])
-                            print('RESPONSE:', response)
                 elif self.authentication == NTLM:  # user or password missing
                     self.last_error = 'NTLM needs domain\\username and a password'
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)

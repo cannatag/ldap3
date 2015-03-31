@@ -25,7 +25,7 @@ from os import environ
 from random import SystemRandom
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, REUSABLE, RESTARTABLE
+    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM
 
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -67,7 +67,7 @@ if location.startswith('TRAVIS'):
     test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
     test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-EDIR':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -89,7 +89,7 @@ elif location == 'GCNBHPW8':
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
     test_user_key_file = 'local-edir-admin-key.pem'
-elif location == 'GCNBHPW8-AD':
+elif location == 'GCNBHPW8':
     # test elitebook - Active Directory (AD)
     test_server = ['win1',
                    'win2']
@@ -102,7 +102,7 @@ elif location == 'GCNBHPW8-AD':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
-    test_password = 'Rc99pfop'  # user password
+    test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,DC=FOREST,DC=LAB'
     test_sasl_password = 'Rc1234pfop'
     test_sasl_realm = None
@@ -158,7 +158,7 @@ if location.startswith('TRAVIS,'):
     test_lazy_connection = bool(int(lazy))
 else:
     test_strategy = SYNC  # sync strategy for executing tests
-    test_strategy = ASYNC  # uncomment this line to test the async strategy
+    # test_strategy = ASYNC  # uncomment this line to test the async strategy
     # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
@@ -183,6 +183,7 @@ def get_connection(bind=None,
                    authentication=None,
                    sasl_mechanism=None,
                    sasl_credentials=None,
+                   ntlm_credentials=None,
                    get_info=None):
     if bind is None:
         bind = True
@@ -220,6 +221,17 @@ def get_connection(bind=None,
                           authentication=SASL,
                           sasl_mechanism=sasl_mechanism,
                           sasl_credentials=sasl_credentials,
+                          lazy=lazy_connection,
+                          pool_name='pool1',
+                          check_names=check_names)
+    elif authentication == NTLM:
+        return Connection(server,
+                          auto_bind=bind,
+                          version=3,
+                          client_strategy=test_strategy,
+                          user=ntlm_credentials[0],
+                          password=ntlm_credentials[1],
+                          authentication=NTLM,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names)

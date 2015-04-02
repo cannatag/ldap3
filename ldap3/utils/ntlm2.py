@@ -116,7 +116,7 @@ class NTLM2Client:
 
     def __init__(self, username, domain, password, workstation=b'python'):
         self.username = username.upper().encode('utf-16-le')
-        self.domain = domain.upper().encode('utf-16-le')
+        self.domain = domain.encode('utf-16-le')
         self.password = password.encode('utf-16-le')
         self.workstation = workstation
 
@@ -165,7 +165,7 @@ class NTLM2Client:
             self.NTLMSSP_NEGOTIATE_LM_KEY |
             self.NTLMSSP_NEGOTIATE_NTLM |
             self.NTLMSSP_NEGOTIATE_ALWAYS_SIGN |
-            # self.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY |
+            self.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY |
             self.NTLMSSP_NEGOTIATE_VERSION
         )
         msg += pack('<I', self.flags)

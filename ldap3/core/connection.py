@@ -400,11 +400,6 @@ class Connection(object):
                     from socket import gethostname
                     domain_name, user_name = self.user.split('\\', 1)
                     ntlm_client = NTLM2Client(username=user_name, domain=domain_name, password=self.password, workstation=gethostname().upper().encode('ascii'))
-                    if not ntlm_support:
-                        if str == bytes:
-                            raise LDAPPackageUnavailableError('package ntlm not present')
-                        else:
-                            raise LDAPPackageUnavailableError('package ntlm3 not present')
 
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                     # send a sicilyPackageDiscovery request (in the bindRequest)

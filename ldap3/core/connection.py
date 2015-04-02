@@ -395,11 +395,9 @@ class Connection(object):
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
                 elif self.authentication == NTLM and self.user and self.password:
                     # additional import for NTLM
-                    from ..utils.sicily import ntlm_support
-                    from ..utils.ntlm2 import NTLM2Client
-                    from socket import gethostname
+                    from ..utils.ntlm import NtlmClient
                     domain_name, user_name = self.user.split('\\', 1)
-                    ntlm_client = NTLM2Client(username=user_name, domain=domain_name, password=self.password, workstation=gethostname().upper().encode('ascii'))
+                    ntlm_client = NtlmClient(username=user_name, domain=domain_name, password=self.password)
 
                     # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                     # send a sicilyPackageDiscovery request (in the bindRequest)
@@ -411,6 +409,7 @@ class Connection(object):
                         request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
                         response = bind_response_dict_to_sicily_bind_response_dict(response[0])
+                        print(response)
                         if response['result'] == RESULT_SUCCESS:
                             request = bind_operation(self.version,
                                                      'SICILY_RESPONSE_NTLM',

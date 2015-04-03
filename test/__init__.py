@@ -109,6 +109,8 @@ elif location == 'GCNBHPW8':
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+    test_ntlm_user = 'WIN1\\Administrator'
+    test_ntlm_password = 'Rc1234pfop'
 elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
     # test_server = 'edir1.hyperv'
@@ -151,6 +153,8 @@ elif location == 'GCW89227':
     test_ca_cert_file = 'ca-cert.pem'
     test_user_cert_file = 'admin-cert.pem'
     test_user_key_file = 'admin-key.pem'
+    test_ntlm_user = 'AMM\\Administrator'
+    test_ntlm_password = 'xxx'
 else:
     raise Exception('testing location ' + location + ' is not valid')
 

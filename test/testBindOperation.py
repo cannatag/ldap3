@@ -23,7 +23,7 @@
 import unittest
 
 from ldap3 import ANONYMOUS, SASL, NTLM
-from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm
+from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type
 
 testcase_id = random_id()
 
@@ -54,9 +54,13 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_ntlm(self):
-        connection = get_connection(bind=False, authentication=NTLM, ntlm_credentials=('FOREST.LAB\\Administrator', 'Rc1234pfop'))
-        connection.open()
-        connection.bind()
-        self.assertTrue(connection.bound)
-        drop_connection(connection)
-        self.assertFalse(connection.bound)
+        if test_server_type == 'AD':
+            connection = get_connection(bind=False, authentication=NTLM, ntlm_credentials=('FOREST.LAB\\Administrator', 'Rc1234pfop'))
+            connection.open()
+            connection.bind()
+            self.assertTrue(connection.bound)
+            connected_user = connection.extend.standard.who_am_i()
+            print('connected user:', connected_user)
+            drop_connection(connection)
+            self.assertFalse(connection.bound)
+

@@ -27,7 +27,16 @@
 
 from struct import pack, unpack
 from platform import system, version
-import binascii
+from socket import gethostname
+from time import time
+
+try:
+    from locale import getpreferredencoding
+    oem_encoding = getpreferredencoding()
+except Exception:
+    oem_encoding = 'utf-8'
+
+from ..protocol.formatters.formatters import format_ad_timestamp
 
 NTLM_SIGNATURE = b'NTLMSSP\x00'
 NTLM_MESSAGE_TYPE_NTLM_NEGOTIATE = 1
@@ -55,9 +64,9 @@ FLAG_NEGOTIATE_SEAL = 5  # E
 FLAG_NEGOTIATE_SIGN = 4  # D
 FLAG_REQUEST_TARGET = 2  # C
 FLAG_NEGOTIATE_OEM = 1  # B
-FLAG_NEGOTIATE_UNICODE = 0
+FLAG_NEGOTIATE_UNICODE = 0  # A
 
-FLAGS = [FLAG_NEGOTIATE_56,
+FLAG_TYPES = [FLAG_NEGOTIATE_56,
          FLAG_NEGOTIATE_KEY_EXCH,
          FLAG_NEGOTIATE_128,
          FLAG_NEGOTIATE_VERSION,
@@ -80,44 +89,82 @@ FLAGS = [FLAG_NEGOTIATE_56,
          FLAG_NEGOTIATE_OEM,
          FLAG_NEGOTIATE_UNICODE]
 
+AV_END_OF_LIST = 0
+AV_NETBIOS_COMPUTER_NAME = 1
+AV_NETBIOS_DOMAIN_NAME = 2
+AV_DNS_COMPUTER_NAME = 3
+AV_DNS_DOMAIN_NAME = 4
+AV_DNS_TREE_NAME = 5
+AV_FLAGS = 6
+AV_TIMESTAMP = 7
+AV_SINGLE_HOST_DATA = 8
+AV_TARGET_NAME = 9
+AV_CHANNEL_BINDINGS = 10
 
-def pack_windows_version():
-    if system().lower() == 'windows':
-        try:
-            major_release, minor_release, build = version().split('.')
-            major_release = int(major_release)
-            minor_release = int(minor_release)
-            build = int(build)
-        except Exception:
+AV_TYPES = [AV_END_OF_LIST,
+            AV_NETBIOS_COMPUTER_NAME,
+            AV_NETBIOS_DOMAIN_NAME,
+            AV_DNS_COMPUTER_NAME,
+            AV_DNS_DOMAIN_NAME,
+            AV_DNS_TREE_NAME,
+            AV_FLAGS,
+            AV_TIMESTAMP,
+            AV_SINGLE_HOST_DATA,
+            AV_TARGET_NAME,
+            AV_CHANNEL_BINDINGS]
+
+AV_FLAG_CONSTRAINED = 0
+AV_FLAG_INTEGRITY = 1
+AV_FLAG_TARGET_SPN_UNTRUSTED = 2
+
+AV_FLAG_TYPES = [AV_FLAG_CONSTRAINED,
+                  AV_FLAG_INTEGRITY,
+                  AV_FLAG_TARGET_SPN_UNTRUSTED]
+
+
+def pack_windows_version(debug=False):
+    if debug:
+        if system().lower() == 'windows':
+            try:
+                major_release, minor_release, build = version().split('.')
+                major_release = int(major_release)
+                minor_release = int(minor_release)
+                build = int(build)
+            except Exception:
+                major_release = 5
+                minor_release = 1
+                build = 2600
+        else:
             major_release = 5
             minor_release = 1
             build = 2600
     else:
-        major_release = 5
-        minor_release = 1
-        build = 2600
+        major_release = 0
+        minor_release = 0
+        build = 0
 
-    return pack('<B', major_release) + pack('<B', minor_release) + pack('<H', build)
+    return pack('<B', major_release) +\
+           pack('<B', minor_release) +\
+           pack('<H', build) +\
+           pack('<B', 0) +\
+           pack('<B', 0) +\
+           pack('<B', 0) +\
+           pack('<B', 15)
 
 
 def unpack_version(version_message):
-    print("version", binascii.hexlify(version_message))
     if len(version_message) != 8:
         raise ValueError('version field must be 8 bytes long')
 
-    unpack('<B', version_message[0])[0]
-    unpack('<B', version_message[1])[0]
-    unpack('<H', version_message[2:4])[0]
-    unpack('<B', version_message[7])[0]
-    return unpack('<B', version_message[0])[0], unpack('<B', version_message[1])[0], unpack('<H', version_message[2:4])[0], unpack('<B', version_message[7])[0]
+    return int(version_message[0]), int(version_message[1]), int(unpack('<H', version_message[2:4])[0]), int(version_message[7])
 
 
 class NtlmClient(object):
-    def __init__(self, domain, username, password):
+    def __init__(self, domain, user_name, password):
         self.client_config_flags = 0
         self.exported_session_key = None
         self.negotiated_flags = None
-        self.user = username
+        self.user_name = user_name
         self.user_domain = domain
         self.no_lm_response_ntlm_v1 = None
         self.client_blocked = False
@@ -139,41 +186,79 @@ class NtlmClient(object):
         self.client_channel_binding_unhashed = None
         self.unverified_target_name = None
         self._password = password
-        self.from_server_challenge = None
-        self.from_server_target_name = None
-        self.from_server_target_info = None
-        self.from_server_version = None
+        self.server_challenge = None
+        self.server_target_name = None
+        self.server_target_info = None
+        self.server_version = None
+        self.server_av_netbios_computer_name = None
+        self.server_av_netbios_domain_name = None
+        self.server_av_dns_computer_name = None
+        self.server_av_dns_domain_name = None
+        self.server_av_dns_forest_name = None
+        self.server_av_target_name = None
+        self.server_av_flags = None
+        self.server_av_timestamp = None
+        self.server_av_single_host_data = None
+        self.server_av_channel_bindings = None
+        self.server_av_flag_constrained = None
+        self.server_av_flag_integrity = None
+        self.server_av_flag_target_spn_untrusted = None
+        self.current_encoding = None
 
-    def get_flag(self, flag):
-        if flag in FLAGS:
+    def get_client_flag(self, flag):
+        if not self.client_config_flags:
+            return False
+
+        if flag in FLAG_TYPES:
             return True if self.client_config_flags & (1 << flag) else False
 
         raise ValueError('invalid flag')
 
-    def set_flag(self, flags):
+    def get_negotiated_flag(self, flag):
+        if not self.negotiated_flags:
+            return False
+
+        if flag not in FLAG_TYPES:
+            raise ValueError('invalid flag')
+
+        return True if self.negotiated_flags & (1 << flag) else False
+
+    def get_server_av_flag(self, flag):
+        if not self.server_av_flags:
+            return False
+
+        if flag not in AV_FLAG_TYPES:
+            raise ValueError('invalid AV flag')
+
+        return True if self.server_av_flags & (1 << flag) else False
+
+    def set_client_flag(self, flags):
         if type(flags) == int:
             flags = [flags]
         for flag in flags:
-            if flag in FLAGS:
+            if flag in FLAG_TYPES:
                 self.client_config_flags |= (1 << flag)
             else:
                 raise ValueError('invalid flag')
 
-    def reset_flags(self):
+    def reset_client_flags(self):
         self.client_config_flags = 0
 
-    def unset_flag(self, flags):
+    def unset_client_flag(self, flags):
         if type(flags) == int:
             flags = [flags]
         for flag in flags:
-            if flag in FLAGS:
+            if flag in FLAG_TYPES:
                 self.client_config_flags &= ~(1 << flag)
             else:
                 raise ValueError('invalid flag')
 
     def create_negotiate_message(self):
-        self.reset_flags()
-        self.set_flag([FLAG_REQUEST_TARGET,
+        """
+        Microsoft MS-NLMP 2.2.1.1
+        """
+        self.reset_client_flags()
+        self.set_client_flag([FLAG_REQUEST_TARGET,
                        FLAG_NEGOTIATE_NTLM,
                        FLAG_NEGOTIATE_ALWAYS_SIGN,
                        FLAG_NEGOTIATE_UNICODE,
@@ -183,44 +268,96 @@ class NtlmClient(object):
         message += pack('<I', NTLM_MESSAGE_TYPE_NTLM_NEGOTIATE)  # 4 bytes
         message += pack('<I', self.client_config_flags)  # 4 bytes
         message += self.pack_field('', 40)  # domain name field  # 8 bytes
-        message += self.pack_field('', 40)  # workstation field  # 8 bytes
-        if self.get_flag(FLAG_NEGOTIATE_VERSION):  # version 8 bytes - used for debug in ntlm
-            message += pack_windows_version()
+        if self.get_client_flag(FLAG_NEGOTIATE_VERSION):  # version 8 bytes - used for debug in ntlm
+            message += pack_windows_version(True)
         else:
-            message += pack('<I', 0)  # no version
-
-        message += pack('<B', 15)  # revision
-
+            message += pack_windows_version(False)
         return message
 
     def parse_challenge_message(self, message):
-        print(len(message))
+        """
+        Microsoft MS-NLMP 2.2.1.2
+        """
         if len(message) < 56:  # minimum size of challenge message
             return False
 
         if message[0:8] != NTLM_SIGNATURE:  # NTLM signature - 8 bytes
-            print('SIGNATURE ERROR')
             return False
 
         if int(unpack('<I', message[8:12])[0]) != NTLM_MESSAGE_TYPE_NTLM_CHALLENGE:  # type of message - 4 bytes
-            print('MESSAGE TYPE ERROR', message[8:12])
             return False
 
         target_name_len, _, target_name_offset = self.unpack_field(message[12:20])  # targetNameFields - 8 bytes
         self.negotiated_flags = unpack('<I', message[20:24])[0]  # negotiated flags - 4 bytes
-        self.from_server_challenge = message[24:32]  # server challenge - 8 bytes
-        target_info_len, _, target_info_offset = self.unpack_field(message[40:48])  # targetInfoFields - 8 bytes
-        self.from_server_version = unpack_version(message[40:48])
-        if target_name_len:
-            self.from_server_target_name = message[target_name_offset: target_name_offset + target_name_len]
-        if target_info_len:
-            self.from_server_target_info = message[target_info_offset: target_info_offset + target_info_len]
+        self.current_encoding = 'utf-16-le' if self.get_negotiated_flag(FLAG_NEGOTIATE_UNICODE) else oem_encoding  # set encoding
 
-        print(self.negotiated_flags)
-        print(self.from_server_challenge)
-        print(self.from_server_version)
-        print(self.from_server_target_name)
-        print(self.from_server_target_info)
+        self.server_challenge = message[24:32]  # server challenge - 8 bytes
+        target_info_len, _, target_info_offset = self.unpack_field(message[40:48])  # targetInfoFields - 8 bytes
+        self.server_version = unpack_version(message[48:56])
+        if target_name_len:
+            self.server_target_name = message[target_name_offset: target_name_offset + target_name_len].decode(self.current_encoding)
+        if target_info_len:
+            self.server_target_info = self.unpack_av_info(message[target_info_offset: target_info_offset + target_info_len])
+            for attribute, value in self.server_target_info:
+                if attribute == AV_NETBIOS_COMPUTER_NAME:
+                    self.server_av_netbios_computer_name = value.decode('utf-16-le')  # always unicode
+                elif attribute == AV_NETBIOS_DOMAIN_NAME:
+                    self.server_av_netbios_domain_name = value.decode('utf-16-le')  # always unicode
+                elif attribute == AV_DNS_COMPUTER_NAME:
+                    self.server_av_dns_computer_name = value.decode('utf-16-le')  # always unicode
+                elif attribute == AV_DNS_DOMAIN_NAME:
+                    self.server_av_dns_domain_name = value.decode('utf-16-le')  # always unicode
+                elif attribute == AV_DNS_TREE_NAME:
+                    self.server_av_dns_forest_name = value.decode('utf-16-le')  # always unicode
+                elif attribute == AV_FLAGS:
+                    if self.get_server_av_flag(AV_FLAG_CONSTRAINED):
+                        self.server_av_flag_constrained = True
+                    if self.get_server_av_flag(AV_FLAG_INTEGRITY):
+                        self.server_av_flag_integrity = True
+                    if self.get_server_av_flag(AV_FLAG_TARGET_SPN_UNTRUSTED):
+                        self.server_av_flag_target_spn_untrusted = True
+                elif attribute == AV_TIMESTAMP:
+                    self.server_av_timestamp = format_ad_timestamp(unpack('<Q', value)[0])
+                elif attribute == AV_SINGLE_HOST_DATA:
+                    self.server_av_single_host_data = value
+                elif attribute == AV_TARGET_NAME:
+                    self.server_av_target_name = value.decode('utf-16-le')  # always unicode
+                elif attribute == AV_CHANNEL_BINDINGS:
+                    self.server_av_channel_bindings = value
+                else:
+                    raise ValueError('unknown AV type')
+
+    def create_authenticate_message(self):
+        """
+        Microsoft MS-NLMP 2.2.1.3
+        """
+        if not self.client_config_flags and not self.negotiated_flags:
+            return False
+
+        if self.get_client_flag(FLAG_NEGOTIATE_128) and not self.get_negotiated_flag(FLAG_NEGOTIATE_128):
+            return False
+
+
+        message = NTLM_SIGNATURE  # 8 bytes
+        message += pack('<I', NTLM_MESSAGE_TYPE_NTLM_AUTHENTICATE)  # 4 bytes
+        message += self.pack_field('', 0)  # LmChallengeResponseField field  # 8 bytes
+        message += self.pack_field('', 0)  # NtChallengeResponseField field  # 8 bytes
+        message += self.pack_field(self.user_domain.encode(self.current_encoding), 0)  # DomainNameField field  # 8 bytes
+        message += self.pack_field(self.user_name.encode(self.current_encoding), 0)  # UserNameField field  # 8 bytes
+        if self.get_negotiated_flag(FLAG_NEGOTIATE_OEM_WORKSTATION_SUPPLIED) or self.get_negotiated_flag(FLAG_NEGOTIATE_VERSION):
+            message += self.pack_field(gethostname().encode(oem_encoding), 0)  # WorkstationField field  # 8 bytes
+        else:
+            message += self.pack_field('', 0)  # empty WorkstationField field  # 8 bytes
+        message += self.pack_field('', 0)  # EncryptedRandomSessionKeyField field  # 8 bytes
+        message += pack('<I', self.negotiated_flags)  # negotiated flags - 4 bytes
+        if self.get_negotiated_flag(FLAG_NEGOTIATE_VERSION):
+            message += pack_windows_version(True)  # windows version - 8 bytes
+        else:
+            message += pack_windows_version()  # empty windows version - 8 bytes
+        message += pack('<Q', 0)  # mic
+        message += pack('<Q', 0)  # mic - total of 16 bytes
+
+        return message
 
     @staticmethod
     def pack_field(value, offset):
@@ -230,6 +367,30 @@ class NtlmClient(object):
     def unpack_field(field_message):
         if len(field_message) != 8:
             raise ValueError('ntlm field must be 8 bytes long')
-        print('field', binascii.hexlify(field_message))
         return unpack('<H', field_message[0:2])[0], unpack('<H', field_message[2:4])[0], unpack('<I', field_message[4:8])[0]
 
+    @staticmethod
+    def unpack_av_info(info):
+        if info:
+            avs = list()
+            done = False
+            pos = 0
+            while not done:
+                av_type = unpack('<H', info[pos: pos + 2])[0]
+                if av_type not in AV_TYPES:
+                    raise ValueError('unknown AV type')
+                av_len = unpack('<H', info[pos + 2: pos + 4])[0]
+                av_value = info[pos + 4: pos + 4 + av_len]
+                pos += av_len + 4
+                if av_type == AV_END_OF_LIST:
+                    done = True
+                else:
+                    avs.append((av_type, av_value))
+        else:
+            return list()
+
+        return avs
+
+    @staticmethod
+    def pack_windows_timestamp():
+        return pack('<Q', (int(time()) + 11644473600) * 10000000)

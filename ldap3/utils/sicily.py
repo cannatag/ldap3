@@ -1,4 +1,4 @@
-from _socket import gethostname
+from socket import gethostname
 
 ntlm_support = True
 if str == bytes:  # python 2

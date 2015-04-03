@@ -29,7 +29,7 @@ from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
-from ..utils.sicily import ntlm_generate_negotiate, ntlm_generate_response
+
 
 # BindRequest ::= [APPLICATION 0] SEQUENCE {
 #                                           version        INTEGER (1 ..  127),
@@ -67,12 +67,10 @@ def bind_operation(version,
         request['authentication'] = AuthenticationChoice().setComponentByName('sicilyPackageDiscovery', SicilyPackageDiscovery(''))
     elif authentication == 'SICILY_NEGOTIATE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
         request['name'] = 'NTLM'
-        # request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(b'\x4e\x54\x4c\x4d\x53\x53\x50\x00\x01\x00\x00\x00\x02\x02\x00\x00'))  # minimal valid ntlm type 1 message
         request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(name.create_negotiate_message()))  # ntlm client in self.name
     elif authentication == 'SICILY_RESPONSE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
-        print('type', type(password))
         name.parse_challenge_message(password)  # server_creds returned by server in password
-        server_creds = name.make_ntlm_authenticate()
+        server_creds = name.create_authenticate_message()
         if server_creds:
             request['name'] = ''
             request['authentication'] = AuthenticationChoice().setComponentByName('sicilyResponse', SicilyResponse(server_creds))
@@ -125,8 +123,8 @@ def bind_response_to_dict(response):
 def sicily_bind_response_to_dict(response):
     return {'result': int(response['resultCode']),
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
-            'error_message': str(response['errorMessage']),
-            'server_creds': str(response['serverCreds'])}
+            'server_creds': bytes(response['matchedDN']),
+            'error_message': str(response['diagnosticMessage'])}
 
 
 def bind_response_dict_to_sicily_bind_response_dict(response):

@@ -130,11 +130,13 @@ elif location == 'GCNBHPW8-SLAPD':
     test_user_key_file = ''
 elif location == 'GCW89227':
     # test camera
-    test_server = ['sl08',
-                   'sl09',
-                   'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
-    test_server = 'sl10'
-    test_server_type = 'EDIR'
+    # test_server = ['sl08',
+    #               'sl09',
+    #               'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
+    # test_server = 'sl10'
+    # test_server_type = 'EDIR'
+    test_server = 'nova01.amm.intra.camera.it'
+    test_server_type = 'AD'
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects

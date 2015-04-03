@@ -29,6 +29,9 @@ from struct import pack, unpack
 from platform import system, version
 from socket import gethostname
 from time import time
+import hmac
+import hashlib
+from os import urandom
 
 try:
     from locale import getpreferredencoding
@@ -204,6 +207,8 @@ class NtlmClient(object):
         self.server_av_flag_integrity = None
         self.server_av_flag_target_spn_untrusted = None
         self.current_encoding = None
+        self.client_challenge = None
+        self.server_target_info_raw = None
 
     def get_client_flag(self, flag):
         if not self.client_config_flags:
@@ -259,8 +264,11 @@ class NtlmClient(object):
         """
         self.reset_client_flags()
         self.set_client_flag([FLAG_REQUEST_TARGET,
+                       FLAG_NEGOTIATE_56,
+                       FLAG_NEGOTIATE_128,
                        FLAG_NEGOTIATE_NTLM,
                        FLAG_NEGOTIATE_ALWAYS_SIGN,
+                       FLAG_NEGOTIATE_OEM,
                        FLAG_NEGOTIATE_UNICODE,
                        FLAG_NEGOTIATE_EXTENDED_SESSIONSECURITY])
 
@@ -294,10 +302,11 @@ class NtlmClient(object):
         self.server_challenge = message[24:32]  # server challenge - 8 bytes
         target_info_len, _, target_info_offset = self.unpack_field(message[40:48])  # targetInfoFields - 8 bytes
         self.server_version = unpack_version(message[48:56])
-        if target_name_len:
+        if self.get_negotiated_flag(FLAG_REQUEST_TARGET) and  target_name_len:
             self.server_target_name = message[target_name_offset: target_name_offset + target_name_len].decode(self.current_encoding)
-        if target_info_len:
-            self.server_target_info = self.unpack_av_info(message[target_info_offset: target_info_offset + target_info_len])
+        if self.get_negotiated_flag(FLAG_NEGOTIATE_TARGET_INFO) and target_info_len:
+            self.server_target_info_raw = message[target_info_offset: target_info_offset + target_info_len]
+            self.server_target_info = self.unpack_av_info(self.server_target_info_raw)
             for attribute, value in self.server_target_info:
                 if attribute == AV_NETBIOS_COMPUTER_NAME:
                     self.server_av_netbios_computer_name = value.decode('utf-16-le')  # always unicode
@@ -331,24 +340,48 @@ class NtlmClient(object):
         """
         Microsoft MS-NLMP 2.2.1.3
         """
+        # 3.1.5.2
         if not self.client_config_flags and not self.negotiated_flags:
             return False
 
+        # 3.1.5.2
         if self.get_client_flag(FLAG_NEGOTIATE_128) and not self.get_negotiated_flag(FLAG_NEGOTIATE_128):
             return False
 
+        # 3.1.5.2
+        if (not self.server_av_netbios_computer_name or not self.server_av_netbios_domain_name) and self.server_av_flag_integrity:
+            return False
 
         message = NTLM_SIGNATURE  # 8 bytes
         message += pack('<I', NTLM_MESSAGE_TYPE_NTLM_AUTHENTICATE)  # 4 bytes
-        message += self.pack_field('', 0)  # LmChallengeResponseField field  # 8 bytes
-        message += self.pack_field('', 0)  # NtChallengeResponseField field  # 8 bytes
-        message += self.pack_field(self.user_domain.encode(self.current_encoding), 0)  # DomainNameField field  # 8 bytes
-        message += self.pack_field(self.user_name.encode(self.current_encoding), 0)  # UserNameField field  # 8 bytes
-        if self.get_negotiated_flag(FLAG_NEGOTIATE_OEM_WORKSTATION_SUPPLIED) or self.get_negotiated_flag(FLAG_NEGOTIATE_VERSION):
-            message += self.pack_field(gethostname().encode(oem_encoding), 0)  # WorkstationField field  # 8 bytes
+        pos = 88  # payload starts at 88
+        # 3.1.5.2
+        if self.server_target_info:
+            lm_challenge_response = b''
         else:
-            message += self.pack_field('', 0)  # empty WorkstationField field  # 8 bytes
-        message += self.pack_field('', 0)  # EncryptedRandomSessionKeyField field  # 8 bytes
+            # computed LmChallengeResponse - todo
+            lm_challenge_response = b''
+
+        message += self.pack_field(lm_challenge_response, pos)  # LmChallengeResponseField field  # 8 bytes
+        pos += len(lm_challenge_response)
+        nt_challenge_response = self.compute_nt_response()
+        message += self.pack_field(nt_challenge_response, pos)  # NtChallengeResponseField field  # 8 bytes
+        pos += len(nt_challenge_response)
+        domain_name = self.user_domain.encode(self.current_encoding)
+        message += self.pack_field(domain_name, pos)  # DomainNameField field  # 8 bytes
+        pos += len(domain_name)
+        user_name = self.user_name.encode(self.current_encoding)
+        message += self.pack_field(user_name, pos)  # UserNameField field  # 8 bytes
+        pos += len(user_name)
+        if self.get_negotiated_flag(FLAG_NEGOTIATE_OEM_WORKSTATION_SUPPLIED) or self.get_negotiated_flag(FLAG_NEGOTIATE_VERSION):
+            workstation = gethostname().encode(self.current_encoding)
+        else:
+            workstation = b''
+        message += self.pack_field(workstation, pos)  # empty WorkstationField field  # 8 bytes
+        pos += len(workstation)
+        encrypted_random_session_key = b''
+        message += self.pack_field(encrypted_random_session_key, pos)  # EncryptedRandomSessionKeyField field  # 8 bytes
+        pos += len(encrypted_random_session_key)
         message += pack('<I', self.negotiated_flags)  # negotiated flags - 4 bytes
         if self.get_negotiated_flag(FLAG_NEGOTIATE_VERSION):
             message += pack_windows_version(True)  # windows version - 8 bytes
@@ -356,6 +389,13 @@ class NtlmClient(object):
             message += pack_windows_version()  # empty windows version - 8 bytes
         message += pack('<Q', 0)  # mic
         message += pack('<Q', 0)  # mic - total of 16 bytes
+        # payload starts at 88
+        message += lm_challenge_response
+        message += nt_challenge_response
+        message += domain_name
+        message += user_name
+        message += workstation
+        message += encrypted_random_session_key
 
         return message
 
@@ -392,5 +432,46 @@ class NtlmClient(object):
         return avs
 
     @staticmethod
+    def pack_av_info(avs):
+        # avs is a list of tuples, each tuple is made of av_type and av_value
+        info = b''
+        for av_type, av_value in avs:
+            if av(0) == AV_END_OF_LIST:
+                continue
+            info += pack('<H', av_type)
+            info += pack('<H', len(av_value))
+            info += av_value
+
+        # add AV_END_OF_LIST
+        info += pack('<H', AV_END_OF_LIST)
+        info += pack('<H', 0)
+
+        return info
+
+    @staticmethod
     def pack_windows_timestamp():
         return pack('<Q', (int(time()) + 11644473600) * 10000000)
+
+    def compute_nt_response(self):
+        if not self.user_name and not self._password:  # anonymous authentication
+            return b''
+
+        self.client_challenge = urandom(8)
+        temp = b''
+        temp += pack('<B', 1)  # ResponseVersion - 1 byte
+        temp += pack('<B', 1)  # HiResponseVersion - 1 byte
+        temp += pack('<H', 0)  # Z(2)
+        temp += pack('<I', 0)  # Z(4) - total Z(6)
+        temp += self.pack_windows_timestamp()  # time - 8 bytes
+        temp += self.client_challenge  # random client challenge - 8 bytes
+        temp += pack('<I', 0)  # Z(4)
+        temp += self.server_target_info_raw
+        temp += pack('<I', 0)  # Z(4)
+        response_key_nt = self.ntowf_v2()
+        nt_proof_str = hmac.new(response_key_nt, self.server_challenge + temp).digest()
+        nt_challenge_response = nt_proof_str + temp
+        return nt_challenge_response
+
+    def ntowf_v2(self):
+        password_digest = hashlib.new('MD4', self._password.encode('utf-16-le')).digest()
+        return hmac.new(password_digest, (self.user_name.upper() + self.user_domain).encode('utf-16-le')).digest()

@@ -32,7 +32,6 @@ try:
 
     testcase_id = random_id()
 
-
     class Test(unittest.TestCase):
         def setUp(self):
             schema = SchemaInfo.from_json(edir_8_8_8_schema)

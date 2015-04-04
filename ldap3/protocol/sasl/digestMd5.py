@@ -77,7 +77,7 @@ def sasl_digest_md5(connection, controls):
 
     # step One of RFC2831
     result = send_sasl_negotiation(connection, controls, None)
-    if 'saslCreds' in result and result['saslCreds'] != 'None':
+    if 'saslCreds' in result and result['saslCreds'] is not None:
         server_directives = decode_directives(result['saslCreds'])
     else:
         return None
@@ -129,7 +129,7 @@ def decode_directives(directives_string):
     quoting = False
     key = ''
     directives = dict()
-    for c in directives_string:
+    for c in directives_string.decode():
         if state == STATE_KEY and c == '=':
             key = tmp_buffer
             tmp_buffer = ''

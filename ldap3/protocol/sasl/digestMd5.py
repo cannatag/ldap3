@@ -99,6 +99,7 @@ def sasl_digest_md5(connection, controls):
 
     digest_response = b'username="' + user + b'",'
     digest_response += b'realm="' + realm + b'",'
+    digest_response += (b'authzid="' + authz_id + b'",') if authz_id else b''
     digest_response += b'nonce="' + nonce + b'",'
     digest_response += b'cnonce="' + cnonce + b'",'
     digest_response += b'digest-uri="' + uri + b'",'

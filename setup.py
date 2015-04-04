@@ -21,11 +21,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
-from os import path
-from datetime import datetime
-from platform import uname, python_version, python_build, python_compiler
-
-
 from json import load
 
 version_dict = load(open('_version.json', 'r'))

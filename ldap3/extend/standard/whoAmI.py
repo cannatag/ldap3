@@ -35,6 +35,6 @@ class WhoAmI(ExtendedOperation):
 
     def populate_result(self):
         try:
-            self.result['authzid'] = self.decoded_response if self.decoded_response else None
+            self.result['authzid'] = self.decoded_response.decode('utf-8') if self.decoded_response else None
         except TypeError:
-            self.result['authzid'] = None
+            self.result['authzid'] = self.decoded_response if self.decoded_response else None

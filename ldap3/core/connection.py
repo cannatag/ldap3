@@ -33,7 +33,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -58,7 +58,7 @@ from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
 from .usage import ConnectionUsage
 from .tls import Tls
-from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, LDAPInvalidServerError, \
+from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import prepare_for_stream, check_json_dict, format_json
@@ -165,7 +165,7 @@ class Connection(object):
                 self.authentication = SIMPLE
             elif not authentication:
                 self.authentication = ANONYMOUS
-            elif authentication in [SIMPLE, ANONYMOUS, SASL]:
+            elif authentication in [SIMPLE, ANONYMOUS, SASL, NTLM]:
                 self.authentication = authentication
             else:
                 self.last_error = 'unknown authentication method'
@@ -179,7 +179,7 @@ class Connection(object):
             self.listening = False
             self.closed = True
             self.last_error = None
-            if auto_bind is False:  # compatibility with older versione where auto_bind was a boolean
+            if auto_bind is False:  # compatibility with older version where auto_bind was a boolean
                 self.auto_bind = AUTO_BIND_NONE
             elif auto_bind is True:
                 self.auto_bind = AUTO_BIND_NO_TLS
@@ -392,16 +392,27 @@ class Connection(object):
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
+                elif self.authentication == NTLM:
+                    if self.user and self.password:
+                        response = self.do_ntlm_bind(controls)
+                    else:  # user or password missing
+                        self.last_error = 'NTLM needs domain\\username and a password'
+                        raise LDAPUnknownAuthenticationMethodError(self.last_error)
                 else:
                     self.last_error = 'unknown authentication method'
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and self.authentication != SASL:  # get response if async except for sasl that returns the bind result even for async
+                if not self.strategy.sync and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
                     _, result = self.get_response(response)
                 elif self.strategy.sync:
                     result = self.result
-                else:  # async SASL
+                elif self.authentication == SASL:  # async SASL
                     result = response
+                elif self.authentication == NTLM:  # async NTLM
+                    result = response
+                else:
+                    self.last_error = 'unknown authentication method'
+                    raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if result is None:
                     self.bound = True if self.strategy_type == REUSABLE else False
@@ -715,6 +726,50 @@ class Connection(object):
 
             return result
 
+    def do_ntlm_bind(self,
+                     controls):
+        with self.lock:
+            result = None
+            if not self.sasl_in_progress:
+                self.sasl_in_progress = True  # ntlm is same of sasl authentication
+                # additional import for NTLM
+                from ..utils.ntlm import NtlmClient
+                domain_name, user_name = self.user.split('\\', 1)
+                ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
+
+                # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
+                # send a sicilyPackageDiscovery request (in the bindRequest)
+                request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
+                response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                if not self.strategy.sync:
+                    _, result = self.get_response(response)
+                else:
+                    result = response[0]
+                if 'server_creds' in result:
+                    sicily_packages = result['server_creds'].decode('ascii').split(';')
+                    if 'NTLM' in sicily_packages:  # NTLM available on server
+                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
+                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                        if not self.strategy.sync:
+                            _, result = self.get_response(response)
+                        else:
+                            result = response[0]
+
+                        if result['result'] == RESULT_SUCCESS:
+                            request = bind_operation(self.version,
+                                                     'SICILY_RESPONSE_NTLM',
+                                                     ntlm_client,
+                                                     result['server_creds'])
+                            response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                            if not self.strategy.sync:
+                                _, result = self.get_response(response)
+                            else:
+                                result = response[0]
+                else:
+                    result = None
+                self.sasl_in_progress = False
+            return result
+
     def refresh_server_info(self):
         if not self.strategy.pooled:
             with self.lock:
@@ -835,7 +890,7 @@ class Connection(object):
                 resp_attr_set = set(response['attributes'].keys())
                 if resp_attr_set not in attr_sets:
                     attr_sets.append(resp_attr_set)
-            attr_sets.sort(key = lambda x: -len(x))  # sorts the list in descending length order
+            attr_sets.sort(key=lambda x: -len(x))  # sorts the list in descending length order
             unique_attr_sets = []
             for attr_set in attr_sets:
                 for unique_set in unique_attr_sets:

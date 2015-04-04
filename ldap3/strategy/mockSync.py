@@ -28,7 +28,6 @@ try:
     from random import SystemRandom
     from ..strategy.sync import SyncStrategy
 
-
     # noinspection PyProtectedMember
     class MockSyncStrategy(SyncStrategy):
         """

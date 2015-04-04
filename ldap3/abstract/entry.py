@@ -30,6 +30,7 @@ from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 
+
 class Entry(object):
     """The Entry object contains a single entry from the result of an LDAP
     search.  Attributes can be accessed either by sequence, by assignment

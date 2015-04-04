@@ -42,7 +42,7 @@ from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
 from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict,\
     search_result_entry_response_to_dict, search_request_to_dict
-from ..operation.bind import bind_response_to_dict, bind_request_to_dict
+from ..operation.bind import bind_response_to_dict, bind_request_to_dict, sicily_bind_response_to_dict
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
 from ..operation.extended import extended_request_to_dict, extended_response_to_dict, intermediate_response_to_dict
 from ..core.server import Server
@@ -101,7 +101,7 @@ class BaseStrategy(object):
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
                         break
-                    except Exception as e:
+                    except Exception:
                         self.connection.server.update_availability(candidate_address, False)
                         exception_history.append((datetime.now(), exc_info()[0], exc_info()[1], candidate_address[4]))
 
@@ -316,8 +316,8 @@ class BaseStrategy(object):
 
         return response, result
 
-    @classmethod
-    def compute_ldap_message_size(cls, data):
+    @staticmethod
+    def compute_ldap_message_size(data):
         """
         Compute LDAP Message size according to BER definite length rules
         Returns -1 if too few data to compute message length
@@ -349,7 +349,10 @@ class BaseStrategy(object):
         component = ldap_message['protocolOp'].getComponent()
         controls = ldap_message['controls']
         if message_type == 'bindResponse':
-            result = bind_response_to_dict(component)
+            if not bytes(component['matchedDN']).startswith(b'NTLM'):  # patch for microsoft ntlm authentication
+                result = bind_response_to_dict(component)
+            else:
+                result = sicily_bind_response_to_dict(component)
         elif message_type == 'searchResEntry':
             result = search_result_entry_response_to_dict(component, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
         elif message_type == 'searchResDone':
@@ -380,8 +383,8 @@ class BaseStrategy(object):
                 result['controls'][decoded_control[0]] = decoded_control[1]
         return result
 
-    @classmethod
-    def decode_control(cls, control):
+    @staticmethod
+    def decode_control(control):
         """
         decode control, return a 2-element tuple where the first element is the control oid
         and the second element is a dictionary with description (from Oids), criticality and decoded control value
@@ -399,8 +402,8 @@ class BaseStrategy(object):
 
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
-    @classmethod
-    def decode_request(cls, ldap_message):
+    @staticmethod
+    def decode_request(ldap_message):
         message_type = ldap_message.getComponentByName('protocolOp').getName()
         component = ldap_message['protocolOp'].getComponent()
         if message_type == 'bindRequest':

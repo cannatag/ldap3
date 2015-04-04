@@ -66,5 +66,5 @@ class Test(unittest.TestCase):
                     sleep(2)
                     continue
             done = True
-        self.assertEqual(result['description'], 'success')
+        self.assertEqual('success', result['description'])
         self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace(test_base, test_moved), self.delete_at_teardown[0][1])

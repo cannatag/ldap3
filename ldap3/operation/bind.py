@@ -117,7 +117,8 @@ def bind_response_to_dict(response):
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral']),
-            'saslCreds': str(response['serverSaslCreds'])}
+            'saslCreds': str(response['serverSaslCreds']),
+            'raw_saslCreds': bytes(response['serverSaslCreds'])}
 
 
 def sicily_bind_response_to_dict(response):

@@ -55,7 +55,6 @@ class Test(unittest.TestCase):
             connected_user = connection.extend.novell.get_bind_dn()
         else:
             connected_user = str(connection.extend.standard.who_am_i())
-        print('connected user:', connected_user)
         self.assertEqual(connected_user, test_sasl_user)
         drop_connection(connection)
         self.assertFalse(connection.bound)

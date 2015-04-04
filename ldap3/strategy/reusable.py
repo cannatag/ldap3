@@ -185,7 +185,6 @@ class ReusableStrategy(BaseStrategy):
                                 self.worker.connection.open(read_server_info=False)
                                 if pool.tls_pool and not self.worker.connection.tls_started:
                                     self.worker.connection.start_tls(read_server_info=False)
-                                print(pool.bind_pool, self.worker.connection.bound)
                                 if pool.bind_pool and not self.worker.connection.bound:
                                     self.worker.connection.bind(read_server_info=False)
 
@@ -308,7 +307,6 @@ class ReusableStrategy(BaseStrategy):
 
     def send(self, message_type, request, controls=None):
         if self.pool.started:
-            print(message_type)
             if message_type == 'bindRequest':
                 self.pool.bind_pool = True
                 counter = -1  # -1 stands for bind request

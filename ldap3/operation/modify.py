@@ -49,7 +49,6 @@ change_table = {MODIFY_ADD: 0,  # accepts direct values too
                 3: 3}
 
 
-
 def modify_operation(dn,
                      changes,
                      schema=None):

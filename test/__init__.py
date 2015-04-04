@@ -25,7 +25,7 @@ from os import environ
 from random import SystemRandom
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, REUSABLE, RESTARTABLE
+    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -67,7 +67,9 @@ if location.startswith('TRAVIS'):
     test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
     test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
-elif location == 'GCNBHPW8':
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
+elif location == 'GCNBHPW8-EDIR':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -89,10 +91,12 @@ elif location == 'GCNBHPW8':
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
     test_user_key_file = 'local-edir-admin-key.pem'
-elif location == 'GCNBHPW8-AD':
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
+elif location == 'GCNBHPW8':
     # test elitebook - Active Directory (AD)
-    test_server = ['win1',
-                   'win2']
+    # test_server = ['win1',
+    #                'win2']
     test_server = 'win1.hyperv'
     test_server_type = 'AD'
     test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
@@ -102,13 +106,15 @@ elif location == 'GCNBHPW8-AD':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
-    test_password = 'Rc99pfop'  # user password
+    test_password = 'Rc1234pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,DC=FOREST,DC=LAB'
     test_sasl_password = 'Rc1234pfop'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+    test_ntlm_user = 'FOREST\\Administrator'
+    test_ntlm_password = 'Rc1234pfop'
 elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
     # test_server = 'edir1.hyperv'
@@ -128,13 +134,17 @@ elif location == 'GCNBHPW8-SLAPD':
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''
     test_user_key_file = ''
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
 elif location == 'GCW89227':
     # test camera
-    test_server = ['sl08',
-                   'sl09',
-                   'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
-    test_server = 'sl10'
-    test_server_type = 'EDIR'
+    # test_server = ['sl08',
+    #               'sl09',
+    #               'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
+    # test_server = 'sl10'
+    # test_server_type = 'EDIR'
+    test_server = 'nova01.amm.intra.camera.it'
+    test_server_type = 'AD'
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -143,12 +153,14 @@ elif location == 'GCW89227':
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'camera'  # user password
-    test_sasl_user = 'testsasl.services'
+    test_sasl_user = 'testSASL.services'
     test_sasl_password = 'password'
     test_sasl_realm = None
-    test_ca_cert_file = 'ca-cert.pem'
+    test_ca_cert_file = 'local-edir-.pem'
     test_user_cert_file = 'admin-cert.pem'
     test_user_key_file = 'admin-key.pem'
+    test_ntlm_user = 'AMM\\Administrator'
+    test_ntlm_password = 'xxx'
 else:
     raise Exception('testing location ' + location + ' is not valid')
 
@@ -158,7 +170,7 @@ if location.startswith('TRAVIS,'):
     test_lazy_connection = bool(int(lazy))
 else:
     test_strategy = SYNC  # sync strategy for executing tests
-    test_strategy = ASYNC  # uncomment this line to test the async strategy
+    # test_strategy = ASYNC  # uncomment this line to test the async strategy
     # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
@@ -183,9 +195,13 @@ def get_connection(bind=None,
                    authentication=None,
                    sasl_mechanism=None,
                    sasl_credentials=None,
+                   ntlm_credentials=None,
                    get_info=None):
     if bind is None:
-        bind = True
+        if test_server_type == 'AD':
+            bind = AUTO_BIND_TLS_BEFORE_BIND
+        else:
+            bind = True
     if check_names is None:
         check_names = test_check_names
     if lazy_connection is None:
@@ -220,6 +236,17 @@ def get_connection(bind=None,
                           authentication=SASL,
                           sasl_mechanism=sasl_mechanism,
                           sasl_credentials=sasl_credentials,
+                          lazy=lazy_connection,
+                          pool_name='pool1',
+                          check_names=check_names)
+    elif authentication == NTLM:
+        return Connection(server,
+                          auto_bind=bind,
+                          version=3,
+                          client_strategy=test_strategy,
+                          user=ntlm_credentials[0],
+                          password=ntlm_credentials[1],
+                          authentication=NTLM,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names)
@@ -277,7 +304,7 @@ def add_user(connection, batch_id, username, attributes=None):
     if test_server_type == 'EDIR':
         attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username})
     elif test_server_type == 'AD':
-        attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username})
+        attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username, 'unicodePwd': '"Rc1234abcd"'.encode('utf-16-le'), 'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
         attributes.update({'objectClass': ['iNetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:

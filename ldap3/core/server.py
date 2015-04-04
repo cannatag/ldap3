@@ -25,7 +25,7 @@
 
 import socket
 from threading import Lock
-from datetime import datetime
+from datetime import datetime, MINYEAR
 
 from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT,\
     CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
@@ -144,7 +144,7 @@ class Server(object):
         self.lock = Lock()
         self.custom_formatter = formatter
         self._address_info = []  # property self.address_info resolved at open time (or when you call check_availability)
-        self._address_info_resolved_time = None
+        self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date
         self.current_address = None
         self.connect_timeout = connect_timeout
         self.mode = mode
@@ -177,11 +177,24 @@ class Server(object):
     def address_info(self):
         if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > ADDRESS_INFO_REFRESH_TIME:
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
+            addresses = None
             try:
-                self._address_info = [list(address) + [None, None] for address in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)]
+                addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
+            except socket.gaierror:
+                pass
+
+            if not addresses:  # if addresses not found or raised an exception (for example for bad flags) tries again without flags
+                try:
+                    addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+                except socket.gaierror:
+                    pass
+
+            if addresses:
+                self._address_info = [list(address) + [None, None] for address in addresses]
                 self._address_info_resolved_time = datetime.now()
-            except Exception:
+            else:
                 self._address_info = []
+                self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date
 
         return self._address_info
 
@@ -370,8 +383,8 @@ class Server(object):
     def schema(self):
         return self._schema_info
 
-    @classmethod
-    def from_definition(cls, host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
+    @staticmethod
+    def from_definition(host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
         """
         Define a dummy server with preloaded schema and info
         :param host: host name

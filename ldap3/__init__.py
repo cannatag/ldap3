@@ -27,6 +27,7 @@
 ANONYMOUS = 'ANONYMOUS'
 SIMPLE = 'SIMPLE'
 SASL = 'SASL'
+NTLM = 'NTLM'
 
 SASL_AVAILABLE_MECHANISMS = ['EXTERNAL', 'DIGEST-MD5']
 
@@ -278,4 +279,5 @@ from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSA
     LDAPObjectClassViolationResult, LDAPOperationResult, LDAPOperationsErrorResult, LDAPOtherResult, LDAPProtocolErrorResult, \
     LDAPReferralResult, LDAPSASLBindInProgressResult, LDAPSizeLimitExceededResult, LDAPStrongerAuthRequiredResult, \
     LDAPTimeLimitExceededResult, LDAPTooLateResult, LDAPUnavailableCriticalExtensionResult, LDAPUnavailableResult, \
-    LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError
+    LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError, \
+    LDAPPackageUnavailableError

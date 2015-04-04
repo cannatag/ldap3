@@ -34,7 +34,7 @@ Connection parameters are:
 
 * version: LDAP protocol version (defaults to 3)
 
-* authentication: authentication method, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL (aliased with ANONYMOUS, SIMPLE, SASL). Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE
+* authentication: authentication method, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL (aliased with ANONYMOUS, SIMPLE, SASL) and NTLM. Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE. NTLM uses NTLMv2 authentication. Username must be in the form of domain\user.
 
 * client_strategy: communication strategy used by the client (defaults to STRATEGY_SYNC)
 

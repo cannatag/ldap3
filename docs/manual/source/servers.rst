@@ -8,7 +8,7 @@ The Server object specify the DSA (Directory Server Agent) LDAP server that will
 
 * host: name or ip or the complete url in the scheme://hostname:hostport format of the server (required) - port and scheme defined here have precedence over the parameters port and use_tls
 
-* port: the port where the DSA server is listening (defaults to 386, for a cleartext connection)
+* port: the port where the DSA server is listening (defaults to 389, for a cleartext connection)
 
 * use_ssl: specifies if the connection is on a secure port (defaults to False). When True the secure port is usually set to 636
 

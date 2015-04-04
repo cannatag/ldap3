@@ -1,9 +1,22 @@
+* 0.9.8.1 2015.04.04
+    - Added NTLMv2 authentication method
+    - extend.standard.who_am_i() now try to decode the authzid as unicode
+    - tests for AD (Active Directory) now use tls_before_bind when opening a connection
+    - 0.9.8 not working for pypi problems
+
+* 0.9.7.12 2015.03.18
+    - Fixed missing optional authzid in digestMD5 sasl mechanism (thanks Damiano)
+    - Changed unneeded classmethods to staticmethods
+
+* 0.9.7.11 2015.03.12
+    - Fixed address_info resolution on systems without the IPV4MAPPED flag (thanks Andryi)
+
 * 0.9.7.10 2015.02.28
     - Fixed bug in PagedSearch when server has a hard limit on the number of entries returned (thanks Reimar)
-    - 0.9.7.6 not working for pypi problems
-    - 0.9.7.7 not working for pypi problems
-    - 0.9.7.8 not working for pypi problems
     - 0.9.7.9 not working for pypi problems
+    - 0.9.7.8 not working for pypi problems
+    - 0.9.7.7 not working for pypi problems
+    - 0.9.7.6 not working for pypi problems
 
 * 0.9.7.5 2015.02.20
     - Fixed exception raised when opening a connection to a server. If there is only one candidate address and there is an error it returns the specific Exception, not a generic LDAPException error

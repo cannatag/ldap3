@@ -25,11 +25,11 @@
 
 from .. import SIMPLE, ANONYMOUS, SASL
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
-from ..protocol.rfc4511 import Referral, ServerSaslCreds
 from ..protocol.sasl.sasl import validate_simple_password
-from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, LDAPResult, BindResponse, \
-    LDAPDN, LDAPString
+from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
+    LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
+
 
 # BindRequest ::= [APPLICATION 0] SEQUENCE {
 #                                           version        INTEGER (1 ..  127),
@@ -62,6 +62,20 @@ def bind_operation(version,
     elif authentication == ANONYMOUS:
         request['name'] = ''
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
+    elif authentication == 'SICILY_PACKAGE_DISCOVERY':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
+        request['name'] = ''
+        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyPackageDiscovery', SicilyPackageDiscovery(''))
+    elif authentication == 'SICILY_NEGOTIATE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
+        request['name'] = 'NTLM'
+        request['authentication'] = AuthenticationChoice().setComponentByName('sicilyNegotiate', SicilyNegotiate(name.create_negotiate_message()))  # ntlm client in self.name
+    elif authentication == 'SICILY_RESPONSE_NTLM':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx
+        name.parse_challenge_message(password)  # server_creds returned by server in password
+        server_creds = name.create_authenticate_message()
+        if server_creds:
+            request['name'] = ''
+            request['authentication'] = AuthenticationChoice().setComponentByName('sicilyResponse', SicilyResponse(server_creds))
+        else:
+            request = None
     else:
         raise LDAPUnknownAuthenticationMethodError('unknown authentication method')
 
@@ -104,3 +118,19 @@ def bind_response_to_dict(response):
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral']),
             'saslCreds': str(response['serverSaslCreds'])}
+
+
+def sicily_bind_response_to_dict(response):
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
+            'server_creds': bytes(response['matchedDN']),
+            'error_message': str(response['diagnosticMessage'])}
+
+
+def bind_response_dict_to_sicily_bind_response_dict(response):
+    sicily_bind_response_dict = dict()
+    sicily_bind_response_dict['result'] = response['result']
+    sicily_bind_response_dict['description'] = response['description']
+    sicily_bind_response_dict['server_creds'] = bytes(response['dn'], encoding='utf-8')
+    sicily_bind_response_dict['error_message'] = response['message']
+    return sicily_bind_response_dict

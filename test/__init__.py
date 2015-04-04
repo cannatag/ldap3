@@ -25,7 +25,7 @@ from os import environ
 from random import SystemRandom
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM
+    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -95,8 +95,8 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_password = 'zzz'
 elif location == 'GCNBHPW8':
     # test elitebook - Active Directory (AD)
-    test_server = ['win1',
-                   'win2']
+    # test_server = ['win1',
+    #                'win2']
     test_server = 'win1.hyperv'
     test_server_type = 'AD'
     test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
@@ -171,7 +171,7 @@ if location.startswith('TRAVIS,'):
 else:
     test_strategy = SYNC  # sync strategy for executing tests
     # test_strategy = ASYNC  # uncomment this line to test the async strategy
-    test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+    # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
 
@@ -198,7 +198,10 @@ def get_connection(bind=None,
                    ntlm_credentials=None,
                    get_info=None):
     if bind is None:
-        bind = True
+        if test_server_type == 'AD':
+            bind = AUTO_BIND_TLS_BEFORE_BIND
+        else:
+            bind = True
     if check_names is None:
         check_names = test_check_names
     if lazy_connection is None:
@@ -301,7 +304,7 @@ def add_user(connection, batch_id, username, attributes=None):
     if test_server_type == 'EDIR':
         attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username})
     elif test_server_type == 'AD':
-        attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username})
+        attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username, 'unicodePwd': '"Rc1234abcd"'.encode('utf-16-le'), 'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
         attributes.update({'objectClass': ['iNetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:

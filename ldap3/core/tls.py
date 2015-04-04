@@ -73,7 +73,6 @@ class Tls(object):
             self.validate = validate
         elif validate:
             raise LDAPSSLConfigurationError('invalid validate parameter')
-        open('ciaociao', 'w').close()
         if ca_certs_file and path.exists(ca_certs_file):
             self.ca_certs_file = ca_certs_file
         elif ca_certs_file:

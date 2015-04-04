@@ -70,27 +70,27 @@ FLAG_NEGOTIATE_OEM = 1  # B
 FLAG_NEGOTIATE_UNICODE = 0  # A
 
 FLAG_TYPES = [FLAG_NEGOTIATE_56,
-         FLAG_NEGOTIATE_KEY_EXCH,
-         FLAG_NEGOTIATE_128,
-         FLAG_NEGOTIATE_VERSION,
-         FLAG_NEGOTIATE_TARGET_INFO,
-         FLAG_REQUEST_NOT_NT_SESSION_KEY,
-         FLAG_NEGOTIATE_IDENTIFY,
-         FLAG_NEGOTIATE_EXTENDED_SESSIONSECURITY,
-         FLAG_TARGET_TYPE_SERVER,
-         FLAG_TARGET_TYPE_DOMAIN,
-         FLAG_NEGOTIATE_ALWAYS_SIGN,
-         FLAG_NEGOTIATE_OEM_WORKSTATION_SUPPLIED,
-         FLAG_NEGOTIATE_OEM_DOMAIN_SUPPLIED,
-         FLAG_NEGOTIATE_ANONYMOUS,
-         FLAG_NEGOTIATE_NTLM,
-         FLAG_NEGOTIATE_LM_KEY,
-         FLAG_NEGOTIATE_DATAGRAM,
-         FLAG_NEGOTIATE_SEAL,
-         FLAG_NEGOTIATE_SIGN,
-         FLAG_REQUEST_TARGET,
-         FLAG_NEGOTIATE_OEM,
-         FLAG_NEGOTIATE_UNICODE]
+              FLAG_NEGOTIATE_KEY_EXCH,
+              FLAG_NEGOTIATE_128,
+              FLAG_NEGOTIATE_VERSION,
+              FLAG_NEGOTIATE_TARGET_INFO,
+              FLAG_REQUEST_NOT_NT_SESSION_KEY,
+              FLAG_NEGOTIATE_IDENTIFY,
+              FLAG_NEGOTIATE_EXTENDED_SESSIONSECURITY,
+              FLAG_TARGET_TYPE_SERVER,
+              FLAG_TARGET_TYPE_DOMAIN,
+              FLAG_NEGOTIATE_ALWAYS_SIGN,
+              FLAG_NEGOTIATE_OEM_WORKSTATION_SUPPLIED,
+              FLAG_NEGOTIATE_OEM_DOMAIN_SUPPLIED,
+              FLAG_NEGOTIATE_ANONYMOUS,
+              FLAG_NEGOTIATE_NTLM,
+              FLAG_NEGOTIATE_LM_KEY,
+              FLAG_NEGOTIATE_DATAGRAM,
+              FLAG_NEGOTIATE_SEAL,
+              FLAG_NEGOTIATE_SIGN,
+              FLAG_REQUEST_TARGET,
+              FLAG_NEGOTIATE_OEM,
+              FLAG_NEGOTIATE_UNICODE]
 
 AV_END_OF_LIST = 0
 AV_NETBIOS_COMPUTER_NAME = 1
@@ -121,8 +121,8 @@ AV_FLAG_INTEGRITY = 1
 AV_FLAG_TARGET_SPN_UNTRUSTED = 2
 
 AV_FLAG_TYPES = [AV_FLAG_CONSTRAINED,
-                  AV_FLAG_INTEGRITY,
-                  AV_FLAG_TARGET_SPN_UNTRUSTED]
+                AV_FLAG_INTEGRITY,
+                AV_FLAG_TARGET_SPN_UNTRUSTED]
 
 
 def pack_windows_version(debug=False):
@@ -155,11 +155,20 @@ def pack_windows_version(debug=False):
            pack('<B', 15)
 
 
-def unpack_version(version_message):
+def unpack_windows_version(version_message):
     if len(version_message) != 8:
         raise ValueError('version field must be 8 bytes long')
 
-    return int(version_message[0]), int(version_message[1]), int(unpack('<H', version_message[2:4])[0]), int(version_message[7])
+    if str == bytes:  # python 2
+        return (unpack('<B', version_message[0])[0],
+                unpack('<B', version_message[1])[0],
+                unpack('<H', version_message[2:4])[0],
+                unpack('<B', version_message[7])[0])
+    else:  # python 3
+        return (int(version_message[0]),
+                int(version_message[1]),
+                int(unpack('<H', version_message[2:4])[0]),
+                int(version_message[7]))
 
 
 class NtlmClient(object):
@@ -264,13 +273,13 @@ class NtlmClient(object):
         """
         self.reset_client_flags()
         self.set_client_flag([FLAG_REQUEST_TARGET,
-                       FLAG_NEGOTIATE_56,
-                       FLAG_NEGOTIATE_128,
-                       FLAG_NEGOTIATE_NTLM,
-                       FLAG_NEGOTIATE_ALWAYS_SIGN,
-                       FLAG_NEGOTIATE_OEM,
-                       FLAG_NEGOTIATE_UNICODE,
-                       FLAG_NEGOTIATE_EXTENDED_SESSIONSECURITY])
+                              FLAG_NEGOTIATE_56,
+                              FLAG_NEGOTIATE_128,
+                              FLAG_NEGOTIATE_NTLM,
+                              FLAG_NEGOTIATE_ALWAYS_SIGN,
+                              FLAG_NEGOTIATE_OEM,
+                              FLAG_NEGOTIATE_UNICODE,
+                              FLAG_NEGOTIATE_EXTENDED_SESSIONSECURITY])
 
         message = NTLM_SIGNATURE  # 8 bytes
         message += pack('<I', NTLM_MESSAGE_TYPE_NTLM_NEGOTIATE)  # 4 bytes
@@ -301,7 +310,7 @@ class NtlmClient(object):
 
         self.server_challenge = message[24:32]  # server challenge - 8 bytes
         target_info_len, _, target_info_offset = self.unpack_field(message[40:48])  # targetInfoFields - 8 bytes
-        self.server_version = unpack_version(message[48:56])
+        self.server_version = unpack_windows_version(message[48:56])
         if self.get_negotiated_flag(FLAG_REQUEST_TARGET) and  target_name_len:
             self.server_target_name = message[target_name_offset: target_name_offset + target_name_len].decode(self.current_encoding)
         if self.get_negotiated_flag(FLAG_NEGOTIATE_TARGET_INFO) and target_info_len:

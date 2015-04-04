@@ -51,6 +51,12 @@ class Test(unittest.TestCase):
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
+        if test_server_type == 'EDIR':
+            connected_user = connection.extend.novell.get_bind_dn()
+        else:
+            connected_user = str(connection.extend.standard.who_am_i())
+        print('connected user:', connected_user)
+        self.assertEqual(connected_user, test_sasl_user)
         drop_connection(connection)
         self.assertFalse(connection.bound)
 
@@ -60,8 +66,8 @@ class Test(unittest.TestCase):
             connection.open()
             connection.bind()
             self.assertTrue(connection.bound)
-            connected_user = connection.extend.standard.who_am_i()
-            print('connected user:', connected_user)
+            connected_user = str(connection.extend.standard.who_am_i())[2:]
+            self.assertEqual(connected_user, test_ntlm_user)
             drop_connection(connection)
             self.assertFalse(connection.bound)
 

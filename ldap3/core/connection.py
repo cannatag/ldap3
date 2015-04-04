@@ -392,35 +392,17 @@ class Connection(object):
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
-                elif self.authentication == NTLM and self.user and self.password:
-                    # additional import for NTLM
-                    from ..utils.ntlm import NtlmClient
-                    domain_name, user_name = self.user.split('\\', 1)
-                    ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
-
-                    # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
-                    # send a sicilyPackageDiscovery request (in the bindRequest)
-                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
-                    response = self.post_send_single_response(self.send('bindRequest', request, controls))[0]
-                    sicily_packages = response['server_creds'].decode('ascii').split(';')
-                    if 'NTLM' in sicily_packages:
-                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
-                        response = self.post_send_single_response(self.send('bindRequest', request, controls))[0]
-                        if response['result'] == RESULT_SUCCESS:
-                            request = bind_operation(self.version,
-                                                     'SICILY_RESPONSE_NTLM',
-                                                     ntlm_client,
-                                                     response['server_creds'])
-                            response = self.post_send_single_response(self.send('bindRequest', request, controls))[0]
-                            print(response)
-                elif self.authentication == NTLM:  # user or password missing
-                    self.last_error = 'NTLM needs domain\\username and a password'
-                    raise LDAPUnknownAuthenticationMethodError(self.last_error)
+                elif self.authentication == NTLM:
+                    if self.user and self.password:
+                        response = self.do_ntlm_bind(controls)
+                    else:  # user or password missing
+                        self.last_error = 'NTLM needs domain\\username and a password'
+                        raise LDAPUnknownAuthenticationMethodError(self.last_error)
                 else:
                     self.last_error = 'unknown authentication method'
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and self.authentication != SASL:  # get response if async except for SASL and NTLM that return the bind result even for async
+                if not self.strategy.sync and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
                     _, result = self.get_response(response)
                 elif self.strategy.sync:
                     result = self.result
@@ -742,6 +724,50 @@ class Connection(object):
 
                 self.sasl_in_progress = False
 
+            return result
+
+    def do_ntlm_bind(self,
+                     controls):
+        with self.lock:
+            result = None
+            if not self.sasl_in_progress:
+                self.sasl_in_progress = True  # ntlm is same of sasl authentication
+                # additional import for NTLM
+                from ..utils.ntlm import NtlmClient
+                domain_name, user_name = self.user.split('\\', 1)
+                ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
+
+                # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
+                # send a sicilyPackageDiscovery request (in the bindRequest)
+                request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
+                response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                if not self.strategy.sync:
+                    _, result = self.get_response(response)
+                else:
+                    result = response[0]
+                if 'server_creds' in result:
+                    sicily_packages = result['server_creds'].decode('ascii').split(';')
+                    if 'NTLM' in sicily_packages:  # NTLM available on server
+                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
+                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                        if not self.strategy.sync:
+                            _, result = self.get_response(response)
+                        else:
+                            result = response[0]
+
+                        if result['result'] == RESULT_SUCCESS:
+                            request = bind_operation(self.version,
+                                                     'SICILY_RESPONSE_NTLM',
+                                                     ntlm_client,
+                                                     result['server_creds'])
+                            response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                            if not self.strategy.sync:
+                                _, result = self.get_response(response)
+                            else:
+                                result = response[0]
+                else:
+                    result = None
+                self.sasl_in_progress = False
             return result
 
     def refresh_server_info(self):

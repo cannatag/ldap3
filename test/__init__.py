@@ -67,6 +67,8 @@ if location.startswith('TRAVIS'):
     test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
     test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
 elif location == 'GCNBHPW8-EDIR':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
@@ -89,6 +91,8 @@ elif location == 'GCNBHPW8-EDIR':
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
     test_user_key_file = 'local-edir-admin-key.pem'
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
 elif location == 'GCNBHPW8':
     # test elitebook - Active Directory (AD)
     test_server = ['win1',
@@ -109,7 +113,7 @@ elif location == 'GCNBHPW8':
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
-    test_ntlm_user = 'WIN1\\Administrator'
+    test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc1234pfop'
 elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
@@ -130,6 +134,8 @@ elif location == 'GCNBHPW8-SLAPD':
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''
     test_user_key_file = ''
+    test_ntlm_user = 'xxx\\yyy'
+    test_ntlm_password = 'zzz'
 elif location == 'GCW89227':
     # test camera
     # test_server = ['sl08',
@@ -150,7 +156,7 @@ elif location == 'GCW89227':
     test_sasl_user = 'testSASL.services'
     test_sasl_password = 'password'
     test_sasl_realm = None
-    test_ca_cert_file = 'ca-cert.pem'
+    test_ca_cert_file = 'local-edir-.pem'
     test_user_cert_file = 'admin-cert.pem'
     test_user_key_file = 'admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
@@ -165,7 +171,7 @@ if location.startswith('TRAVIS,'):
 else:
     test_strategy = SYNC  # sync strategy for executing tests
     # test_strategy = ASYNC  # uncomment this line to test the async strategy
-    # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
+    test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
 

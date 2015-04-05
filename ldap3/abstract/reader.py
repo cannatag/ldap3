@@ -376,6 +376,13 @@ class Reader(object):
                                             paged_size=self.paged_size,
                                             paged_criticality=self.paged_criticality,
                                             paged_cookie=self.paged_cookie)
+
+            result = self.connection.result
+            try:
+                self.paged_cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+            except KeyError:
+                self.paged_cookie = None
+
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
             else:
@@ -483,26 +490,32 @@ class Reader(object):
         return self.entries
 
     def search_paged(self, paged_size, paged_criticality=True):
-        """Perform a paged search, can be called as an Iterator
+        """Call as an iterator to perform a paged search and receive each entry.
+        This is a simple example::
+            >>> for e in reader.search_paged(10):
+            >>>     print(e)
 
         :param paged_size: number of entries returned in each search
         :type paged_size: int
         :param paged_criticality: specify if server must not execute the search if it is not capable of paging searches
         :type paged_criticality: bool
-        :return: Entries found in search
+        :return: Each iteration yields an Entry found in search.
 
         """
 
-        if not self.paged_cookie:
-            self.clear()
+        self.clear()
 
         self.paged_size = paged_size
         self.paged_criticality = paged_criticality
         query_scope = SUBTREE if self.sub_tree else LEVEL
 
-        self._execute_query(query_scope)
+        while True:
+            self._execute_query(query_scope)
 
-        if self.entries:
-            yield self.entries
-        else:
-            raise StopIteration
+            for entry in self.entries:
+                yield entry
+
+            if not self.paged_cookie:
+                break
+
+        raise StopIteration

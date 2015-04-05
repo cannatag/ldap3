@@ -102,7 +102,7 @@ class Test(unittest.TestCase):
         json_entries = json.loads(json_response)['entries']
 
         if self.connection.check_names:
-            self.assertEqual(json_entries[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
+            self.assertEqual(json_entries[0]['attributes']['entryDN'][0], self.delete_at_teardown[0][0])
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-3', attributes={'givenName': 'givenname-3'}))

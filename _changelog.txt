@@ -1,3 +1,6 @@
+* 0.9.8.2 2015.04.05
+    - SaslCred returned as raw bytes (thanks Peter)
+
 * 0.9.8.1 2015.04.04
     - Added NTLMv2 authentication method
     - extend.standard.who_am_i() now try to decode the authzid as unicode

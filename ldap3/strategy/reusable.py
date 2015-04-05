@@ -330,7 +330,7 @@ class ReusableStrategy(BaseStrategy):
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
         if counter == -1:  # send a bogus bindResponse
             response = list()
-            result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': 'None'}
+            result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': None}
         elif counter == -2:  # bogus unbind
             response = None
             result = None

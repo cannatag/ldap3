@@ -189,18 +189,21 @@ class SaslCredentials(Sequence):
                                OptionalNamedType('credentials', Credentials()))
 
 
+# not in RFC4511 but used by Microsoft to embed the NTLM protocol in the BindRequest (Sicily Protocol)
 class SicilyPackageDiscovery(OctetString):
     # sicilyPackageDiscovery  [9] OCTET STRING,
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 9))
     encoding = 'utf-8'
 
 
+# not in RFC4511 but used by Microsoft to embed the NTLM protocol in the BindRequest (Sicily Protocol)
 class SicilyNegotiate(OctetString):
     # sicilyNegotiate  [10] OCTET STRING,
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 10))
     encoding = 'utf-8'
 
 
+# not in RFC4511 but used by Microsoft to embed the NTLM protocol in the BindRequest (Sicily Protocol)
 class SicilyResponse(OctetString):
     # sicilyResponse  [11] OCTET STRING,
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 11))
@@ -367,7 +370,7 @@ class Referral(SequenceOf):
 class ServerSaslCreds(OctetString):
     # serverSaslCreds    [7] OCTET STRING OPTIONAL
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 7))
-    encoding = 'utf-8'
+    # encoding = 'utf-8'
 
 
 class LDAPResult(Sequence):

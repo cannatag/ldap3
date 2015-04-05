@@ -53,9 +53,11 @@ class Test(unittest.TestCase):
         self.assertTrue(connection.bound)
         if test_server_type == 'EDIR':
             connected_user = connection.extend.novell.get_bind_dn()
+            for component in test_sasl_user.split('.'):
+                self.assertTrue(component in connected_user)
         else:
             connected_user = str(connection.extend.standard.who_am_i())
-        self.assertEqual(connected_user, test_sasl_user)
+            self.assertEqual(connected_user, test_sasl_user)
         drop_connection(connection)
         self.assertFalse(connection.bound)
 

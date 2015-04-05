@@ -117,7 +117,7 @@ def bind_response_to_dict(response):
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral']),
-            'saslCreds': str(response['serverSaslCreds'])}
+            'saslCreds': bytes(response['serverSaslCreds']) if response['serverSaslCreds'] is not None else None}
 
 
 def sicily_bind_response_to_dict(response):

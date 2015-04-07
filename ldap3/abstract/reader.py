@@ -87,15 +87,12 @@ class Reader(object):
         self.size_limit = 0
         self.time_limit = 0
         self.types_only = False
-        self.paged_size = None
-        self.paged_criticality = False
         self.validated_query = None
         self._query_dict = dict()
         self._validated_query_dict = dict()
         self.execution_time = None
         self.query_filter = None
         self.entries = []
-        self.paged_cookie = None
         self.last_sub_tree = None
         self.reset()
 
@@ -153,8 +150,6 @@ class Reader(object):
         self.size_limit = 0
         self.time_limit = 0
         self.types_only = False
-        self.paged_size = None
-        self.paged_criticality = False
 
     def reset(self):
         """Clear all the Reader parameters
@@ -166,7 +161,6 @@ class Reader(object):
         self.execution_time = None
         self.query_filter = None
         self.entries = []
-        self.paged_cookie = None
         self.last_sub_tree = None
         self._create_query_filter()
 
@@ -372,10 +366,7 @@ class Reader(object):
                                             time_limit=self.time_limit,
                                             types_only=self.types_only,
                                             get_operational_attributes=self.get_operational_attributes,
-                                            controls=self.controls,
-                                            paged_size=self.paged_size,
-                                            paged_criticality=self.paged_criticality,
-                                            paged_cookie=self.paged_cookie)
+                                            controls=self.controls)
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
             else:
@@ -515,6 +506,5 @@ class Reader(object):
                                                                      controls=self.controls,
                                                                      paged_size=paged_size,
                                                                      paged_criticality=paged_criticality,
-                                                                     generator=generator
-                                                                     ):
+                                                                     generator=generator):
             yield self._get_entry(response)

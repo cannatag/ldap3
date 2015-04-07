@@ -1,5 +1,6 @@
 * 0.9.8.2 2015.04.05
     - SaslCred returned as raw bytes (thanks Peter)
+    - search_paged now works in abstract.reader (thanks
 
 * 0.9.8.1 2015.04.04
     - Added NTLMv2 authentication method

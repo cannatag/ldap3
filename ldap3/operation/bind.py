@@ -117,7 +117,7 @@ def bind_response_to_dict(response):
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral']),
-            'saslCreds': str(response['serverSaslCreds'])}
+            'saslCreds': bytes(response['serverSaslCreds']) if response['serverSaslCreds'] is not None else None}
 
 
 def sicily_bind_response_to_dict(response):
@@ -126,11 +126,3 @@ def sicily_bind_response_to_dict(response):
             'server_creds': bytes(response['matchedDN']),
             'error_message': str(response['diagnosticMessage'])}
 
-
-def bind_response_dict_to_sicily_bind_response_dict(response):
-    sicily_bind_response_dict = dict()
-    sicily_bind_response_dict['result'] = response['result']
-    sicily_bind_response_dict['description'] = response['description']
-    sicily_bind_response_dict['server_creds'] = bytes(response['dn'], encoding='utf-8')
-    sicily_bind_response_dict['error_message'] = response['message']
-    return sicily_bind_response_dict

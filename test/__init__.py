@@ -69,7 +69,7 @@ if location.startswith('TRAVIS'):
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-elif location == 'GCNBHPW8-EDIR':
+elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -93,7 +93,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_user_key_file = 'local-edir-admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-AD':
     # test elitebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']

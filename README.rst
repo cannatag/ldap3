@@ -88,6 +88,10 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 Changelog
 ---------
 
+* 0.9.8.2 2015.04.08
+    - SaslCred returned as raw bytes (thanks Peter)
+    - search_paged now properly works in abstract.reader (thanks wazboy)
+
 * 0.9.8.1 2015.04.04
     - Added NTLMv2 authentication method
     - extend.standard.who_am_i() now try to decode the authzid as unicode

@@ -87,15 +87,12 @@ class Reader(object):
         self.size_limit = 0
         self.time_limit = 0
         self.types_only = False
-        self.paged_size = None
-        self.paged_criticality = False
         self.validated_query = None
         self._query_dict = dict()
         self._validated_query_dict = dict()
         self.execution_time = None
         self.query_filter = None
         self.entries = []
-        self.paged_cookie = None
         self.last_sub_tree = None
         self.reset()
 
@@ -153,8 +150,6 @@ class Reader(object):
         self.size_limit = 0
         self.time_limit = 0
         self.types_only = False
-        self.paged_size = None
-        self.paged_criticality = False
 
     def reset(self):
         """Clear all the Reader parameters
@@ -166,7 +161,6 @@ class Reader(object):
         self.execution_time = None
         self.query_filter = None
         self.entries = []
-        self.paged_cookie = None
         self.last_sub_tree = None
         self._create_query_filter()
 
@@ -372,10 +366,7 @@ class Reader(object):
                                             time_limit=self.time_limit,
                                             types_only=self.types_only,
                                             get_operational_attributes=self.get_operational_attributes,
-                                            controls=self.controls,
-                                            paged_size=self.paged_size,
-                                            paged_criticality=self.paged_criticality,
-                                            paged_cookie=self.paged_cookie)
+                                            controls=self.controls)
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
             else:
@@ -482,27 +473,38 @@ class Reader(object):
 
         return self.entries
 
-    def search_paged(self, paged_size, paged_criticality=True):
+    def search_paged(self, paged_size, paged_criticality=True, generator=True):
         """Perform a paged search, can be called as an Iterator
 
         :param paged_size: number of entries returned in each search
         :type paged_size: int
         :param paged_criticality: specify if server must not execute the search if it is not capable of paging searches
         :type paged_criticality: bool
+        :param generator: if True the paged searches are executed while generating the entries,
+                          if False all the paged searches are execute before returning the generator
+        :type generator: bool
         :return: Entries found in search
 
         """
+        if not self.connection:
+            raise LDAPReaderError('no connection established')
 
-        if not self.paged_cookie:
-            self.clear()
-
-        self.paged_size = paged_size
-        self.paged_criticality = paged_criticality
-        query_scope = SUBTREE if self.sub_tree else LEVEL
-
-        self._execute_query(query_scope)
-
-        if self.entries:
-            yield self.entries
-        else:
-            raise StopIteration
+        self.clear()
+        self._create_query_filter()
+        self.entries = []
+        self.last_sub_tree = self.sub_tree
+        self.execution_time = datetime.now()
+        for response in self.connection.extend.standard.paged_search(search_base=self.base,
+                                                                     search_filter=self.query_filter,
+                                                                     search_scope=SUBTREE if self.sub_tree else LEVEL,
+                                                                     dereference_aliases=self.dereference_aliases,
+                                                                     attributes=self.attributes,
+                                                                     size_limit=self.size_limit,
+                                                                     time_limit=self.time_limit,
+                                                                     types_only=self.types_only,
+                                                                     get_operational_attributes=self.get_operational_attributes,
+                                                                     controls=self.controls,
+                                                                     paged_size=paged_size,
+                                                                     paged_criticality=paged_criticality,
+                                                                     generator=generator):
+            yield self._get_entry(response)

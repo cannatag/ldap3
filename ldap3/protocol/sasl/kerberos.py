@@ -26,7 +26,7 @@
 # original code by Hugh Cole-Baker, modified by Peter Foley
 # it needs the gssapi package
 
-from ldap3.core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationError
+from ...core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationError
 
 try:
     import gssapi
@@ -57,7 +57,7 @@ def sasl_gssapi(connection, controls):
             result = send_sasl_negotiation(connection, controls, out_token)
             in_token = result['saslCreds']
             try:
-                ctx.complete # This raises an exception if we haven't completed connecting.
+                ctx.complete  # This raises an exception if we haven't completed connecting.
                 break
             except gssapi.exceptions.MissingContextError:
                 pass

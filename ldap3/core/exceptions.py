@@ -351,7 +351,7 @@ class LDAPDefinitionError(LDAPConfigurationError):
     pass
 
 
-class LDAPPackageUnavailableError(LDAPConfigurationError):
+class LDAPPackageUnavailableError(LDAPConfigurationError, ImportError):
     pass
 
 

@@ -50,7 +50,6 @@ from ..operation.search import search_operation
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
-from ..protocol.sasl.kerberos import sasl_gssapi
 from ..strategy.async import AsyncStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.sync import SyncStrategy
@@ -723,6 +722,7 @@ class Connection(object):
                 elif self.sasl_mechanism == 'DIGEST-MD5':
                     result = sasl_digest_md5(self, controls)
                 elif self.sasl_mechanism == 'GSSAPI':
+                    from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
                     result = sasl_gssapi(self, controls)
 
                 self.sasl_in_progress = False

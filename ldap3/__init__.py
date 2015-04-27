@@ -214,7 +214,8 @@ if str != bytes:  # python 3
 else:  # python 2
     STRING_TYPES = (str, unicode)
 
-SEQUENCE_TYPES = (list, tuple)
+from types import GeneratorType
+SEQUENCE_TYPES = (list, tuple, GeneratorType)
 
 # older and longer constants
 AUTH_ANONYMOUS = ANONYMOUS

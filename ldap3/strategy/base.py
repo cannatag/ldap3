@@ -31,16 +31,16 @@ from datetime import datetime
 
 from pyasn1.codec.ber import encoder, decoder
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS,\
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS, \
     DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
-from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
+from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer, \
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
-from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict,\
+from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict, \
     search_result_entry_response_to_dict, search_request_to_dict
 from ..operation.bind import bind_response_to_dict, bind_request_to_dict, sicily_bind_response_to_dict
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
@@ -126,7 +126,7 @@ class BaseStrategy(object):
         else:
             if not self.connection.closed:
                 self._stop_listen()
-                if not self. no_real_dsa:
+                if not self.no_real_dsa:
                     self._close_socket()
 
         self.connection.bound = False
@@ -229,15 +229,8 @@ class BaseStrategy(object):
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
 
-            if message_type == 'bindRequest':
-                self.connection.request = BaseStrategy.decode_request(ldap_message)
-                self.sending(ldap_message)
-                self.connection.request = None
-            else:
-                self.sending(ldap_message)
-
-
             self.connection.request = BaseStrategy.decode_request(ldap_message)
+            self.sending(ldap_message)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
         else:
@@ -298,11 +291,13 @@ class BaseStrategy(object):
                 raise LDAPResponseTimeoutError('no response from server')
 
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
-                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
+                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'],
+                                          response_type=result['type'])
 
             # checks if any response has a range tag
             # self._auto_range_searching is set as a flag to avoid recursive searches
-            if self.connection.auto_range and not hasattr(self, '_auto_range_searching') and any((True for resp in response if 'raw_attributes' in resp for name in resp['raw_attributes'] if ';range=' in name)):
+            if self.connection.auto_range and not hasattr(self, '_auto_range_searching') and any(
+                    (True for resp in response if 'raw_attributes' in resp for name in resp['raw_attributes'] if ';range=' in name)):
                 self._auto_range_searching = result.copy()
                 temp_response = response[:]  # copy
                 self.do_search_on_auto_range(self._outstanding[message_id], response)
@@ -318,7 +313,7 @@ class BaseStrategy(object):
 
             self._outstanding.pop(message_id)
         else:
-            raise(LDAPResponseTimeoutError('message id not in outstanding queue'))
+            raise (LDAPResponseTimeoutError('message id not in outstanding queue'))
 
         return response, result
 
@@ -333,7 +328,8 @@ class BaseStrategy(object):
 
         ret_value = -1
         if len(data) > 2:
-            if data[1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
+            if data[
+                1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
                 ret_value = data[1] + 2
             else:  # BER definite length - long form. Highest bit of byte 1 is 1, last 7 bits counts the number of following octets containing the value length
                 bytes_length = data[1] - 128
@@ -360,7 +356,8 @@ class BaseStrategy(object):
             else:
                 result = sicily_bind_response_to_dict(component)
         elif message_type == 'searchResEntry':
-            result = search_result_entry_response_to_dict(component, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
+            result = search_result_entry_response_to_dict(component, self.connection.server.schema, self.connection.server.custom_formatter,
+                                                          self.connection.check_names)
         elif message_type == 'searchResDone':
             result = search_result_done_response_to_dict(component)
         elif message_type == 'searchResRef':

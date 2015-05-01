@@ -24,14 +24,14 @@ from sys import version
 from os import environ
 from random import SystemRandom
 
-from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
+from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
-# test_server_mode = IP_SYSTEM_DEFAULT
-test_server_mode = IP_V6_PREFERRED
+test_server_mode = IP_SYSTEM_DEFAULT
+# test_server_mode = IP_V6_PREFERRED
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True
@@ -42,7 +42,7 @@ test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
 test_check_names = False  # check attribute names in operations
 test_get_info = NONE  # get info from DSA
-
+test_usage = True
 
 try:
     location = environ['USERDOMAIN']
@@ -117,7 +117,6 @@ elif location == 'GCNBHPW8-AD':
     test_ntlm_password = 'Rc1234pfop'
 elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
-    # test_server = 'edir1.hyperv'
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
     test_base = 'o=test'  # base context where test objects are created
@@ -178,7 +177,7 @@ else:
 print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
-print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names)
+print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage', test_usage)
 
 
 def random_id():
@@ -196,7 +195,8 @@ def get_connection(bind=None,
                    sasl_mechanism=None,
                    sasl_credentials=None,
                    ntlm_credentials=None,
-                   get_info=None):
+                   get_info=None,
+                   usage=None):
     if bind is None:
         if test_server_type == 'AD':
             bind = AUTO_BIND_TLS_BEFORE_BIND
@@ -210,6 +210,8 @@ def get_connection(bind=None,
         authentication = test_authentication
     if get_info is None:
         get_info = test_get_info
+    if usage is None:
+        usage = test_usage
 
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
@@ -238,7 +240,8 @@ def get_connection(bind=None,
                           sasl_credentials=sasl_credentials,
                           lazy=lazy_connection,
                           pool_name='pool1',
-                          check_names=check_names)
+                          check_names=check_names,
+                          collect_usage=usage)
     elif authentication == NTLM:
         return Connection(server,
                           auto_bind=bind,
@@ -249,7 +252,8 @@ def get_connection(bind=None,
                           authentication=NTLM,
                           lazy=lazy_connection,
                           pool_name='pool1',
-                          check_names=check_names)
+                          check_names=check_names,
+                          collect_usage=usage)
     else:
         return Connection(server,
                           auto_bind=bind,
@@ -260,7 +264,8 @@ def get_connection(bind=None,
                           authentication=authentication,
                           lazy=lazy_connection,
                           pool_name='pool1',
-                          check_names=check_names)
+                          check_names=check_names,
+                          collect_usage=usage)
 
 
 def drop_connection(connection, dn_to_delete=None):

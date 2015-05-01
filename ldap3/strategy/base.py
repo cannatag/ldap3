@@ -228,12 +228,10 @@ class BaseStrategy(object):
             message_controls = build_controls_list(controls)
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
-
-            self.sending(ldap_message)
-
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
+            self.sending(ldap_message)
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
             raise LDAPSocketOpenError(self.connection.last_error)

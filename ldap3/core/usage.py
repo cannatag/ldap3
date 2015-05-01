@@ -158,28 +158,31 @@ class ConnectionUsage(object):
         self.bytes_transmitted += length
         self.operations += 1
         self.messages_transmitted += 1
-        if message['type'] == 'abandonRequest':
-            self.abandon_operations += 1
-        elif message['type'] == 'addRequest':
-            self.add_operations += 1
-        elif message['type'] == 'bindRequest':
-            self.bind_operations += 1
-        elif message['type'] == 'compareRequest':
-            self.compare_operations += 1
-        elif message['type'] == 'delRequest':
-            self.delete_operations += 1
-        elif message['type'] == 'extendedReq':
-            self.extended_operations += 1
-        elif message['type'] == 'modifyRequest':
-            self.modify_operations += 1
-        elif message['type'] == 'modDNRequest':
-            self.modify_dn_operations += 1
-        elif message['type'] == 'searchRequest':
-            self.search_operations += 1
-        elif message['type'] == 'unbindRequest':
-            self.unbind_operations += 1
-        else:
-            raise LDAPMetricsError('unable to collect usage for unknown message type')
+        try:
+            if message['type'] == 'abandonRequest':
+                self.abandon_operations += 1
+            elif message['type'] == 'addRequest':
+                self.add_operations += 1
+            elif message['type'] == 'bindRequest':
+                self.bind_operations += 1
+            elif message['type'] == 'compareRequest':
+                self.compare_operations += 1
+            elif message['type'] == 'delRequest':
+                self.delete_operations += 1
+            elif message['type'] == 'extendedReq':
+                self.extended_operations += 1
+            elif message['type'] == 'modifyRequest':
+                self.modify_operations += 1
+            elif message['type'] == 'modDNRequest':
+                self.modify_dn_operations += 1
+            elif message['type'] == 'searchRequest':
+                self.search_operations += 1
+            elif message['type'] == 'unbindRequest':
+                self.unbind_operations += 1
+            else:
+                raise LDAPMetricsError('unable to collect usage for unknown message type')
+        except TypeError:
+            raise LDAPMetricsError('unable to collect usage for empty message type')
 
     def update_received_message(self, length):
         self.bytes_received += length

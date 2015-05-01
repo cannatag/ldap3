@@ -229,7 +229,13 @@ class BaseStrategy(object):
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
 
-            self.sending(ldap_message)
+            if message_type == 'bindRequest':
+                self.connection.request = BaseStrategy.decode_request(ldap_message)
+                self.sending(ldap_message)
+                self.connection.request = None
+            else:
+                self.sending(ldap_message)
+
 
             self.connection.request = BaseStrategy.decode_request(ldap_message)
             self.connection.request['controls'] = controls

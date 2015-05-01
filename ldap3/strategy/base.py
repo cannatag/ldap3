@@ -229,9 +229,8 @@ class BaseStrategy(object):
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
 
-            self.sending(ldap_message)
-
             self.connection.request = BaseStrategy.decode_request(ldap_message)
+            self.sending(ldap_message)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
         else:

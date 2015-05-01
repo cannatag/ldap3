@@ -35,6 +35,7 @@ from .exceptions import LDAPInvalidServerError, LDAPDefinitionError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
+from ..utils.log import log, log_enabled
 
 
 class Server(object):
@@ -143,8 +144,8 @@ class Server(object):
         self._schema_info = None
         self.lock = Lock()
         self.custom_formatter = formatter
-        self._address_info = []  # property self.address_info resolved at open time (or when you call check_availability)
-        self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date
+        self._address_info = []  # property self.address_info resolved at open time (or when check_availability is called)
+        self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date ever
         self.current_address = None
         self.connect_timeout = connect_timeout
         self.mode = mode
@@ -196,6 +197,9 @@ class Server(object):
                 self._address_info = []
                 self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date
 
+            if log_enabled():
+                for address in self._address_info:
+                    log('address for %s resolved at %r' % (self, address[:-2]))
         return self._address_info
 
     def update_availability(self, address, available):
@@ -235,10 +239,13 @@ class Server(object):
                 available = False
 
             if available:
+                if log_enabled():
+                    log('server %s available at %r' % (self, address))
                 self.update_availability(address, True)
                 break  # if an available address is found exits immediately
             else:
                 self.update_availability(address, False)
+                log('server %s unavailable at %r' % (self, address))
 
         return available
 
@@ -257,26 +264,24 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
-        if connection.strategy.pooled:
-            self.dsa_info = connection.strategy.pool
-        result = connection.search(search_base='',
-                                   search_filter='(objectClass=*)',
-                                   search_scope=BASE,
-                                   attributes=['altServer',  # requests specific dsa info attributes
-                                               'namingContexts',
-                                               'supportedControl',
-                                               'supportedExtension',
-                                               'supportedFeatures',
-                                               'supportedCapabilities',
-                                               'supportedLdapVersion',
-                                               'supportedSASLMechanisms',
-                                               'vendorName',
-                                               'vendorVersion',
-                                               'subschemaSubentry',
-                                               '*'],  # requests all remaining attributes (other),
-                                   get_operational_attributes=True)
-
         if not connection.strategy.pooled:  # in pooled strategies get_dsa_info is performed by the worker threads
+            result = connection.search(search_base='',
+                                       search_filter='(objectClass=*)',
+                                       search_scope=BASE,
+                                       attributes=['altServer',  # requests specific dsa info attributes
+                                                   'namingContexts',
+                                                   'supportedControl',
+                                                   'supportedExtension',
+                                                   'supportedFeatures',
+                                                   'supportedCapabilities',
+                                                   'supportedLdapVersion',
+                                                   'supportedSASLMechanisms',
+                                                   'vendorName',
+                                                   'vendorVersion',
+                                                   'subschemaSubentry',
+                                                   '*'],  # requests all remaining attributes (other),
+                                       get_operational_attributes=True)
+
             with self.lock:
                 if isinstance(result, bool):  # sync request
                     self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
@@ -284,6 +289,9 @@ class Server(object):
                     results, _ = connection.get_response(result)
                     if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                         self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
+
+            if log_enabled():
+                log('dsa info read for %s from %s' % (self, connection))
 
     def _get_schema_info(self, connection, entry=''):
         """
@@ -306,7 +314,7 @@ class Server(object):
                     schema_entry = results[0]['attributes']['subschemaSubentry'][0]
 
         result = None
-        if schema_entry:
+        if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=BASE,
@@ -323,7 +331,6 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-        if not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             with self.lock:
                 self._schema_info = None
                 if result:
@@ -339,6 +346,8 @@ class Server(object):
                         if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
                             for attribute in self._dsa_info.other:
                                 self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
+            if log_enabled():
+                log('schema read for %s from %s' % (self, connection))
 
     def get_info_from_server(self, connection):
         """
@@ -431,4 +440,7 @@ class Server(object):
             else:
                 raise LDAPInvalidServerError('invalid server definition')
 
+        if log_enabled():
+            for candidate in candidates:
+                log('candidate address for %s: %r' % (self, candidate[:-2]))
         return candidates

@@ -23,11 +23,6 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from logging import DEBUG
-
-# logging
-LIBRARY_LOGGING_LEVEL = DEBUG
-
 # authentication
 ANONYMOUS = 'ANONYMOUS'
 SIMPLE = 'SIMPLE'

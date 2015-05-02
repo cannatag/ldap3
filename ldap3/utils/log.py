@@ -23,11 +23,18 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from logging import getLogger, DEBUG, getLevelName
+from logging import getLogger, getLevelName, DEBUG
 
-from .. import LIBRARY_LOGGING_LEVEL
+# logging
+VERBOSITY_HIGH = 10
+VERBOSITY_MEDIUM = 20
+VERBOSITY_LOW = 30
+VERBOSITY_LEVELS = [VERBOSITY_LOW, VERBOSITY_MEDIUM, VERBOSITY_HIGH]
+LIBRARY_VERBOSITY_LEVEL = VERBOSITY_MEDIUM
+LIBRARY_LOGGING_LEVEL = DEBUG
 
 logging_level = None
+verbosity_level = None
 
 try:
     from logging import NullHandler
@@ -45,22 +52,30 @@ except ImportError:  # NullHandler not present in Python < 2.7
             self.lock = None
 
 
-def log(message):
-    logger.log(logging_level, message)
-
+def log(verbosity, message, *args):
+    if verbosity <= verbosity_level:
+        logger.log(logging_level, message, *args)
 
 def log_enabled():
-    if logger.isEnabledFor(logging_level):
-        return True
-    return False
+    return True if logger.isEnabledFor(logging_level) else False
 
 
-def set_logging_level(level):
-    global logging_level
-    logging_level = level
+def set_library_logging_level(level):
+    if isinstance(level, int):
+        global logging_level
+        logging_level = level
 
 
+def set_library_verbosity_level(verbosity):
+    if verbosity in VERBOSITY_LEVELS:
+        global verbosity_level
+        verbosity_level = verbosity
+
+# set a logger for the library with NullHandler. It can be used by the application with its own logging configuration
 logger = getLogger('ldap3')
 logger.addHandler(NullHandler())
-set_logging_level(LIBRARY_LOGGING_LEVEL)
-logger.info('ldap3 library intialized - logging emitted when loglevel is ' + getLevelName(logging_level))
+set_library_logging_level(LIBRARY_LOGGING_LEVEL)
+set_library_verbosity_level(LIBRARY_VERBOSITY_LEVEL)
+
+# emits a info message to let the application know that ldap3 logging is available when the log level is set to logging_level
+logger.info('ldap3 library intialized - logging emitted when loglevel is' + getLevelName(logging_level))

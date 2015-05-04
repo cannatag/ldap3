@@ -35,7 +35,7 @@ from .exceptions import LDAPInvalidServerError, LDAPDefinitionError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
-from ..utils.log import log, log_enabled, VERBOSITY_MEDIUM, VERBOSITY_LOW, VERBOSITY_HIGH
+from ..utils.log import log, log_enabled, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY
 
 
 class Server(object):
@@ -85,23 +85,33 @@ class Server(object):
             hostname, _, hostport = self.host.partition(':')
             try:
                 port = int(hostport) or port
-                self.host = hostname
             except ValueError:
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, 'port %s must be an integer', port)
                 raise LDAPInvalidPort('port must be an integer')
+            self.host = hostname
         elif url_given and self.host.startswith('['):
             hostname, sep, hostport = self.host[1:].partition(']')
             if sep != ']' or not self._is_ipv6(hostname):
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, 'invalid IPv6 server address for %s', self.host)
                 raise LDAPInvalidServerError()
             if len(hostport):
                 if not hostport.startswith(':'):
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, 'invalid URL in server name for %s', self.host)
                     raise LDAPInvalidServerError('invalid URL in server name')
                 if not hostport[1:].isdecimal():
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, 'port must be an integer for %s', self.host)
                     raise LDAPInvalidPort('port must be an integer')
                 port = int(hostport[1:])
             self.host = hostname
         elif not url_given and self._is_ipv6(self.host):
             pass
         elif self.host.count(':') > 1:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'invalid server address for %s', self.host)
             raise LDAPInvalidServerError()
 
         self.host.rstrip('/')
@@ -115,8 +125,12 @@ class Server(object):
             if port in range(0, 65535):
                 self.port = port
             else:
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, 'port %s must be in range from 0 to 65535', port)
                 raise LDAPInvalidPort('port must in range from 0 to 65535')
         else:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'port %s must be an integer', port)
             raise LDAPInvalidPort('port must be an integer')
 
         if isinstance(allowed_referral_hosts, SEQUENCE_TYPES):
@@ -149,6 +163,9 @@ class Server(object):
         self.current_address = None
         self.connect_timeout = connect_timeout
         self.mode = mode
+
+        if log_enabled(VERBOSITY_CHATTY):
+            log(VERBOSITY_CHATTY, 'instantiated Server: %r', self)
 
     @staticmethod
     def _is_ipv6(host):
@@ -197,9 +214,9 @@ class Server(object):
                 self._address_info = []
                 self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_NORMAL):
                 for address in self._address_info:
-                    log(VERBOSITY_MEDIUM, 'address for <%s> resolved at <%r>', self, address[:-2])
+                    log(VERBOSITY_NORMAL, 'address for <%s> resolved at <%r>', self, address[:-2])
         return self._address_info
 
     def update_availability(self, address, available):
@@ -239,25 +256,29 @@ class Server(object):
                 available = False
 
             if available:
-                if log_enabled():
-                    log(VERBOSITY_MEDIUM, 'server <%s> available at <%r>', self, address)
+                if log_enabled(VERBOSITY_NORMAL):
+                    log(VERBOSITY_NORMAL, 'server <%s> available at <%r>', self, address)
                 self.update_availability(address, True)
                 break  # if an available address is found exits immediately
             else:
                 self.update_availability(address, False)
-                log(VERBOSITY_LOW, 'server <%s> not available at <%r>', self, address)
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, 'server <%s> not available at <%r>', self, address)
 
         return available
 
     @staticmethod
     def next_message_id():
         """
-        messageId is unique for all connections
+        LDAP messageId is unique for all connections to same server
         """
         with Server._message_id_lock:
             Server._message_counter += 1
             if Server._message_counter >= LDAP_MAX_INT:
                 Server._message_counter = 1
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'new message id %d issued for Server %s', Server._message_counter)
+
         return Server._message_counter
 
     def _get_dsa_info(self, connection):
@@ -290,8 +311,8 @@ class Server(object):
                     if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                         self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
 
-            if log_enabled():
-                log(VERBOSITY_MEDIUM, 'DSA info read for <%s> via <%s>', self, connection)
+            if log_enabled(VERBOSITY_NORMAL):
+                log(VERBOSITY_NORMAL, 'DSA info read for <%s> via <%s>', self, connection)
 
     def _get_schema_info(self, connection, entry=''):
         """
@@ -313,7 +334,6 @@ class Server(object):
                 if len(results) == 1 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
                     schema_entry = results[0]['attributes']['subschemaSubentry'][0]
 
-        result = None
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
@@ -346,8 +366,8 @@ class Server(object):
                         if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
                             for attribute in self._dsa_info.other:
                                 self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
-            if log_enabled():
-                log(VERBOSITY_MEDIUM, 'schema read for <%s> via <%s>', self, connection)
+            if log_enabled(VERBOSITY_NORMAL):
+                log(VERBOSITY_NORMAL, 'schema read for <%s> via <%s>', self, connection)
 
     def get_info_from_server(self, connection):
         """
@@ -379,10 +399,14 @@ class Server(object):
     def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):
             self._dsa_info = dsa_info
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'attached DSA info to Server %s', self)
 
     def attach_schema_info(self, dsa_schema=None):
         if isinstance(dsa_schema, SchemaInfo):
             self._schema_info = dsa_schema
+        if log_enabled(VERBOSITY_CHATTY):
+            log(VERBOSITY_CHATTY, 'attached schema info to Server %s', self)
 
     @property
     def info(self):
@@ -411,12 +435,19 @@ class Server(object):
         if isinstance(dsa_info, DsaInfo):
             dummy._dsa_info = dsa_info
         else:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'invalid DSA info for %s', host)
             raise LDAPDefinitionError('invalid dsa info')
 
         if isinstance(dsa_schema, SchemaInfo):
             dummy._schema_info = dsa_schema
         else:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'invalid schema info for %s', host)
             raise LDAPDefinitionError('invalid schema info')
+
+        if log_enabled(VERBOSITY_NORMAL):
+            log(VERBOSITY_NORMAL, 'created server %s from definition', dummy)
 
         return dummy
 
@@ -438,9 +469,11 @@ class Server(object):
                 candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                 candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
             else:
-                raise LDAPInvalidServerError('invalid server definition')
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, 'invalid server mode for %s', self)
+                raise LDAPInvalidServerError('invalid server mode')
 
-        if log_enabled():
+        if log_enabled(VERBOSITY_SPARSE):
             for candidate in candidates:
-                log(VERBOSITY_LOW, 'candidate address for <%s>: <%r>', self, candidate[:-2])
+                log(VERBOSITY_SPARSE, 'candidate address for <%s>: <%r>', self, candidate[:-2])
         return candidates

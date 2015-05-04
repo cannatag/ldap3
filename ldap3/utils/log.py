@@ -26,9 +26,9 @@
 from logging import getLogger, getLevelName, DEBUG
 
 # logging
-VERBOSITY_HIGH = 10
+VERBOSITY_LOW = 10
 VERBOSITY_MEDIUM = 20
-VERBOSITY_LOW = 30
+VERBOSITY_HIGH = 30
 VERBOSITY_LEVELS = [VERBOSITY_LOW, VERBOSITY_MEDIUM, VERBOSITY_HIGH]
 LIBRARY_VERBOSITY_LEVEL = VERBOSITY_MEDIUM
 LIBRARY_LOGGING_LEVEL = DEBUG
@@ -43,18 +43,31 @@ except ImportError:  # NullHandler not present in Python < 2.7
 
     class NullHandler(Handler):
         def handle(self, record):
-            """Stub."""
+            pass
 
         def emit(self, record):
-            """Stub."""
+            pass
 
         def createLock(self):
             self.lock = None
 
 
+def get_verbosity_level_name(level):
+
+    if level == VERBOSITY_LOW:
+        return 'VERBOSITY_LOW'
+    elif level == VERBOSITY_MEDIUM:
+        return 'VERBOSITY_MEDIUM'
+    elif level == VERBOSITY_HIGH:
+        return 'VERBOSITY_HIGH'
+
+    raise ValueError('unknown verbosity level')
+
+
 def log(verbosity, message, *args):
     if verbosity <= verbosity_level:
-        logger.log(logging_level, message, *args)
+        logger.log(logging_level, '[' + get_verbosity_level_name(verbosity) + '] ' + message, *args)
+
 
 def log_enabled():
     return True if logger.isEnabledFor(logging_level) else False
@@ -78,4 +91,4 @@ set_library_logging_level(LIBRARY_LOGGING_LEVEL)
 set_library_verbosity_level(LIBRARY_VERBOSITY_LEVEL)
 
 # emits a info message to let the application know that ldap3 logging is available when the log level is set to logging_level
-logger.info('ldap3 library intialized - logging emitted when loglevel is' + getLevelName(logging_level))
+logger.info('ldap3 library intialized - logging emitted when loglevel is ' + getLevelName(logging_level))

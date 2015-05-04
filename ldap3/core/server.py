@@ -199,7 +199,7 @@ class Server(object):
 
             if log_enabled():
                 for address in self._address_info:
-                    log(VERBOSITY_MEDIUM, 'address for %s resolved at %r', self, address[:-2])
+                    log(VERBOSITY_MEDIUM, 'address for <%s> resolved at <%r>', self, address[:-2])
         return self._address_info
 
     def update_availability(self, address, available):
@@ -240,12 +240,12 @@ class Server(object):
 
             if available:
                 if log_enabled():
-                    log(VERBOSITY_MEDIUM, 'server %s available at %r', self, address)
+                    log(VERBOSITY_MEDIUM, 'server <%s> available at <%r>', self, address)
                 self.update_availability(address, True)
                 break  # if an available address is found exits immediately
             else:
                 self.update_availability(address, False)
-                log(VERBOSITY_LOW, 'server %s not available at %r', self, address)
+                log(VERBOSITY_LOW, 'server <%s> not available at <%r>', self, address)
 
         return available
 
@@ -291,7 +291,7 @@ class Server(object):
                         self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
 
             if log_enabled():
-                log(VERBOSITY_MEDIUM, 'DSA info read for %s via %s', self, connection)
+                log(VERBOSITY_MEDIUM, 'DSA info read for <%s> via <%s>', self, connection)
 
     def _get_schema_info(self, connection, entry=''):
         """
@@ -347,7 +347,7 @@ class Server(object):
                             for attribute in self._dsa_info.other:
                                 self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
             if log_enabled():
-                log(VERBOSITY_MEDIUM, 'schema read for %s via %s', self, connection)
+                log(VERBOSITY_MEDIUM, 'schema read for <%s> via <%s>', self, connection)
 
     def get_info_from_server(self, connection):
         """
@@ -442,5 +442,5 @@ class Server(object):
 
         if log_enabled():
             for candidate in candidates:
-                log(VERBOSITY_LOW, 'candidate address for %s: %r', self, candidate[:-2])
+                log(VERBOSITY_LOW, 'candidate address for <%s>: <%r>', self, candidate[:-2])
         return candidates

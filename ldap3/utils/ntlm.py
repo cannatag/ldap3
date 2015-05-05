@@ -121,8 +121,8 @@ AV_FLAG_INTEGRITY = 1
 AV_FLAG_TARGET_SPN_UNTRUSTED = 2
 
 AV_FLAG_TYPES = [AV_FLAG_CONSTRAINED,
-                AV_FLAG_INTEGRITY,
-                AV_FLAG_TARGET_SPN_UNTRUSTED]
+                 AV_FLAG_INTEGRITY,
+                 AV_FLAG_TARGET_SPN_UNTRUSTED]
 
 
 def pack_windows_version(debug=False):

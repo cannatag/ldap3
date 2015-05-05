@@ -172,6 +172,8 @@ class Connection(object):
                 self.authentication = authentication
             else:
                 self.last_error = 'unknown authentication method'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPUnknownAuthenticationMethodError(self.last_error)
             self.version = version
             self.auto_referrals = True if auto_referrals else False
@@ -241,6 +243,8 @@ class Connection(object):
                 self.strategy = MockAsyncStrategy(self)
             else:
                 self.last_error = 'unknown strategy'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPUnknownStrategyError(self.last_error)
 
             # map strategy functions to connection functions
@@ -265,6 +269,8 @@ class Connection(object):
                         self.start_tls(read_server_info=True)
                     if not self.bound:
                         self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
+                        if log_enabled(VERBOSITY_SEVERE):
+                            log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                         raise LDAPBindError(self.last_error)
 
             if log_enabled(VERBOSITY_CHATTY):
@@ -360,6 +366,8 @@ class Connection(object):
                 self.open()
 
             if exc_type is not None:
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', exc_type, self)
                 return False  # re-raise LDAPExceptionError
 
     def bind(self,
@@ -399,15 +407,21 @@ class Connection(object):
                         response = self.do_sasl_bind(controls)
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
+                        if log_enabled(VERBOSITY_SEVERE):
+                            log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
                 elif self.authentication == NTLM:
                     if self.user and self.password:
                         response = self.do_ntlm_bind(controls)
                     else:  # user or password missing
                         self.last_error = 'NTLM needs domain\\username and a password'
+                        if log_enabled(VERBOSITY_SEVERE):
+                            log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                         raise LDAPUnknownAuthenticationMethodError(self.last_error)
                 else:
                     self.last_error = 'unknown authentication method'
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if not self.strategy.sync and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
@@ -420,6 +434,8 @@ class Connection(object):
                     result = response
                 else:
                     self.last_error = 'unknown authentication method'
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if result is None:
@@ -509,6 +525,8 @@ class Connection(object):
                 attributes += (ALL_OPERATIONAL_ATTRIBUTES, )  # concatenate tuple
 
             if isinstance(paged_size, int):
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'performing paged search for %d items with cookie %s for %s', paged_size, paged_cookie, self)
                 real_search_control_value = RealSearchControlValue()
                 real_search_control_value['size'] = Size(paged_size)
                 real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
@@ -592,8 +610,11 @@ class Connection(object):
                 object_class_attr_name = 'objectClass'
 
             attributes[object_class_attr_name] = list(set([object_class for object_class in parm_object_class + attr_object_class]))  # remove duplicate ObjectClasses
+
             if not attributes[object_class_attr_name]:
                 self.last_error = 'ObjectClass attribute is mandatory'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPObjectClassError(self.last_error)
 
             request = add_operation(dn, attributes, self.server.schema if self.server else None)
@@ -623,6 +644,8 @@ class Connection(object):
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
             request = delete_operation(dn)
@@ -657,22 +680,32 @@ class Connection(object):
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
             if not isinstance(changes, dict):
                 self.last_error = 'changes must be a dictionary'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPChangesError(self.last_error)
 
             if not changes:
                 self.last_error = 'no changes in modify request'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPChangesError(self.last_error)
 
             for change in changes:
                 if len(changes[change]) != 2:
                     self.last_error = 'malformed change'
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                     raise LDAPChangesError(self.last_error)
                 elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
                     self.last_error = 'unknown change type'
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                     raise LDAPChangesError(self.last_error)
 
             request = modify_operation(dn, changes, self.server.schema if self.server else None)
@@ -706,10 +739,14 @@ class Connection(object):
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
             if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
-                self.last_error = 'DN cannot change while moving'
+                self.last_error = 'DN cannot change while performing moving'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPChangesError(self.last_error)
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
@@ -791,6 +828,8 @@ class Connection(object):
                 self._deferred_start_tls = True
                 self.tls_started = True
                 return_value = True
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'deferring START TLS for %s', self)
             else:
                 self._deferred_start_tls = False
                 if self.server.tls.start_tls(self) and self.strategy.sync:  # for async connections _start_tls is run by the strategy
@@ -884,6 +923,8 @@ class Connection(object):
         if not self.strategy.pooled:
             with self.lock:
                 if not self.closed:
+                    if log_enabled(VERBOSITY_CHATTY):
+                        log(VERBOSITY_CHATTY, 'refreshing server info for %s', self)
                     previous_response = self.response
                     previous_result = self.result
                     previous_entries = self._entries
@@ -892,6 +933,8 @@ class Connection(object):
                     self.result = previous_result
                     self._entries = previous_entries
         else:
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'refreshing server info from pool for %s', self)
             self.strategy.pool.get_info_from_server()
 
     def response_to_ldif(self,
@@ -914,6 +957,8 @@ class Connection(object):
                         header = add_ldif_header(['-'])[0]
                         stream.write(prepare_for_stream(header + line_separator + line_separator))
                     stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'building LDIF output %s for %s', ldif_output, self)
                 return ldif_output
 
             return None
@@ -947,6 +992,8 @@ class Connection(object):
 
                 json_output = json.dumps(json_dict, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))
 
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'building JSON output %s for %s', json_output, self)
                 if stream:
                     stream.write(json_output)
 
@@ -962,6 +1009,9 @@ class Connection(object):
                 if isinstance(target, STRING_TYPES):
                     target = open(target, 'w+')
 
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'writing response to file for %s', self)
+
                 target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
                 target.close()
 
@@ -970,6 +1020,8 @@ class Connection(object):
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
 
+                if log_enabled(VERBOSITY_NORMAL):
+                    log(VERBOSITY_NORMAL, 'executing deferred (open: %s, start_tls: %s, bind: %s) for %s', self._deferred_open, self._deferred_start_tls, self._deferred_bind, self)
                 try:
                     if self._deferred_open:
                         self.open(read_server_info=False)
@@ -978,7 +1030,9 @@ class Connection(object):
                     if self._deferred_bind:
                         self.bind(read_server_info=False, controls=self._bind_controls)
                     self.refresh_server_info()
-                except LDAPExceptionError:
+                except LDAPExceptionError as e:
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, '%s for %s', e, self)
                     raise  # re-raise LDAPExceptionError
                 finally:
                     self._executing_deferred = False
@@ -1034,6 +1088,8 @@ class Connection(object):
                             entries.append(entry)
                         break
                 else:
+                    if log_enabled(VERBOSITY_SEVERE):
+                        log(VERBOSITY_SEVERE, 'attribute set not found for %s in %s', resp_attr_set, self)
                     raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
 
         return entries

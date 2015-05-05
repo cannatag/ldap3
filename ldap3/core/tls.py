@@ -25,11 +25,14 @@
 
 from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
 from .. import SEQUENCE_TYPES
+from ..utils.log import log, log_enabled, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY
 
 try:
     # noinspection PyUnresolvedReferences
     import ssl
 except ImportError:
+    if log_enabled(VERBOSITY_SEVERE):
+        log(VERBOSITY_SEVERE, 'SSL not supported in this Python interpreter')
     raise LDAPSSLNotSupportedError('SSL not supported in this Python interpreter')
 
 try:
@@ -72,10 +75,14 @@ class Tls(object):
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
         elif validate:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'invalid validate parameter %s', validate)
             raise LDAPSSLConfigurationError('invalid validate parameter')
         if ca_certs_file and path.exists(ca_certs_file):
             self.ca_certs_file = ca_certs_file
         elif ca_certs_file:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'invalid CA public key file %s', ca_certs_file)
             raise LDAPSSLConfigurationError('invalid CA public key file')
         else:
             self.ca_certs_file = None
@@ -83,8 +90,12 @@ class Tls(object):
         if ca_certs_path and use_ssl_context and path.exists(ca_certs_path):
             self.ca_certs_path = ca_certs_path
         elif ca_certs_path and not use_ssl_context:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'cannot use CA public keys path, SSLContext not available')
             raise LDAPSSLNotSupportedError('cannot use CA public keys path, SSLContext not available')
         elif ca_certs_path:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'invalid CA public keys path %s', ca_certs_path)
             raise LDAPSSLConfigurationError('invalid CA public keys path')
         else:
             self.ca_certs_path = None
@@ -92,6 +103,8 @@ class Tls(object):
         if ca_certs_data and use_ssl_context:
             self.ca_certs_data = ca_certs_data
         elif ca_certs_data:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'cannot use CA data, SSLContext not available')
             raise LDAPSSLNotSupportedError('cannot use CA data, SSLContext not available')
         else:
             self.ca_certs_data = None
@@ -99,6 +112,8 @@ class Tls(object):
         if local_private_key_password and use_ssl_context:
             self.private_key_password = local_private_key_password
         elif local_private_key_password:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'cannot use local private key password, SSLContext not available')
             raise LDAPSSLNotSupportedError('cannot use local private key password, SSLContext is not available')
         else:
             self.private_key_password = None
@@ -188,6 +203,8 @@ class Tls(object):
             if connection.result['description'] not in ['success']:
                 # startTLS failed
                 connection.last_error = 'startTLS failed - ' + str(connection.result['description'])
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', connection.last_error, connection)
                 raise LDAPStartTLSError(connection.last_error)
             return self._start_tls(connection)
 
@@ -202,6 +219,8 @@ class Tls(object):
         connection.starting_tls = False
 
         if exc:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'error %s wrapping socket for TLS in %s', connection.last_error, connection)
             raise start_tls_exception_factory(LDAPStartTLSError, exc)(connection.last_error)
 
         if connection.usage:
@@ -222,8 +241,13 @@ def check_hostname(sock, server_name, additional_names):
 
         try:
             match_hostname(server_certificate, host_name)  # raise CertificateError if certificate doesn't match server name
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, "certificate matches host name %s", host_name)
             return
         except CertificateError:
-            pass
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, "certificate doesn't match host name %s", host_name)
 
+    if log_enabled(VERBOSITY_SEVERE):
+        log(VERBOSITY_SEVERE, "host name doesn't match")
     raise LDAPCertificateError("hostname doesn't match")

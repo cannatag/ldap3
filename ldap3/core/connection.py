@@ -366,7 +366,7 @@ class Connection(object):
         :return: bool
 
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start BIND operation via <%s>', self)
 
         with self.lock:
@@ -425,7 +425,7 @@ class Connection(object):
                     self.refresh_server_info()
             self._entries = None
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done BIND operation, result <%s>', self.bound)
 
             return self.bound
@@ -437,7 +437,7 @@ class Connection(object):
         :param controls: LDAP controls to send along with the bind operation
 
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start UNBIND operation via <%s>', self)
 
         with self.lock:
@@ -451,7 +451,7 @@ class Connection(object):
                 self.send('unbindRequest', request, controls)
                 self.strategy.close()
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done UNBIND operation, result <%s>', True)
 
             return True
@@ -484,7 +484,7 @@ class Connection(object):
         - If lazy = True open and bind will be deferred until another
           LDAP operation is performed
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start SEARCH operation via <%s>', self)
 
         with self.lock:
@@ -516,7 +516,7 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'searchResDone' and len(response) > 0 else False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done SEARCH operation, result <%s>', return_value)
 
             return return_value
@@ -529,7 +529,7 @@ class Connection(object):
         """
         Perform a compare operation
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start COMPARE operation via <%s>', self)
 
         with self.lock:
@@ -542,7 +542,7 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done COMPARE operation, result <%s>', return_value)
 
             return return_value
@@ -559,7 +559,7 @@ class Connection(object):
         Attributes is a dictionary in the form 'attr': 'val' or 'attr':
         ['val1', 'val2', ...] for multivalued attributes
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start ADD operation via <%s>', self)
 
         with self.lock:
@@ -596,7 +596,7 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done ADD operation, result <%s>', return_value)
 
             return return_value
@@ -607,7 +607,7 @@ class Connection(object):
         """
         Delete the entry identified by the DN from the DIB.
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start DELETE operation via <%s>', self)
 
         with self.lock:
@@ -625,7 +625,7 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done DELETE operation, result <%s>', return_value)
 
             return return_value
@@ -641,7 +641,7 @@ class Connection(object):
           (operation, [val1, val2]), 'attribute2': (operation, [val1, val2])}
         - Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start MODIFY operation via <%s>', self)
 
         with self.lock:
@@ -675,7 +675,7 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done MODIFY operation, result <%s>', return_value)
 
             return return_value
@@ -690,7 +690,7 @@ class Connection(object):
         Modify DN of the entry or performs a move of the entry in the
         DIT.
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start MODIFY DN operation via <%s>', self)
 
         with self.lock:
@@ -712,7 +712,7 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done MODIFY DN operation, result <%s>', return_value)
 
             return return_value
@@ -723,7 +723,7 @@ class Connection(object):
         """
         Abandon the operation indicated by message_id
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start ABANDON operation via <%s>', self)
 
         with self.lock:
@@ -738,7 +738,7 @@ class Connection(object):
                     self._entries = None
                     return_value = True
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done ABANDON operation, result <%s>', return_value)
 
             return return_value
@@ -750,7 +750,7 @@ class Connection(object):
         """
         Performs an extended operation
         """
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start EXTENDED operation <via> %s', self)
 
         with self.lock:
@@ -763,14 +763,14 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done EXTENDED operation, result <%s>', return_value)
 
             return return_value
 
     def start_tls(self, read_server_info=True):  # as per RFC4511. Removal of TLS is defined as MAY in RFC4511 so the client can't implement a generic stop_tls method0
 
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start START TLS operation via <%s>', self)
 
         with self.lock:
@@ -791,14 +791,14 @@ class Connection(object):
                 elif not self.strategy.sync:
                     return_value = True
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done START TLS operation, result <%s>', return_value)
 
             return return_value
 
     def do_sasl_bind(self,
                      controls):
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start SASL BIND operation via <%s>', self)
 
         with self.lock:
@@ -815,14 +815,14 @@ class Connection(object):
 
                 self.sasl_in_progress = False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done SASL BIND operation, result <%s>', result)
 
             return result
 
     def do_ntlm_bind(self,
                      controls):
-        if log_enabled():
+        if log_enabled(VERBOSITY_NORMAL):
             log(VERBOSITY_NORMAL, 'start NTLM BIND operation via <%s>', self)
 
         with self.lock:
@@ -866,7 +866,7 @@ class Connection(object):
                     result = None
                 self.sasl_in_progress = False
 
-            if log_enabled():
+            if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done SASL NTLM operation, result <%s>', result)
 
             return result

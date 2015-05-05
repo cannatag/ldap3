@@ -62,7 +62,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import prepare_for_stream, check_json_dict, format_json
-from ..utils.log import log, log_enabled, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY
+from ..utils.log import log, log_enabled, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY
 
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
@@ -75,8 +75,8 @@ except ImportError:
 def _format_socket_endpoint(endpoint):
     if endpoint and len(endpoint) == 2:
         return str(endpoint[0]) + ':' + str(endpoint[1])
-    else:
-        return endpoint
+
+    return endpoint
 
 
 # noinspection PyProtectedMember
@@ -157,6 +157,8 @@ class Connection(object):
         with self.lock:
             if client_strategy not in CLIENT_STRATEGIES:
                 self.last_error = 'unknown client connection strategy'
+                if log_enabled(VERBOSITY_SEVERE):
+                    log(VERBOSITY_SEVERE, '%s for %s', self.last_error, self)
                 raise LDAPUnknownStrategyError(self.last_error)
 
             self.strategy_type = client_strategy
@@ -250,6 +252,8 @@ class Connection(object):
 
             if not self.strategy.no_real_dsa:
                 if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
+                    if log_enabled(VERBOSITY_CHATTY):
+                        log(VERBOSITY_CHATTY, 'performing auto_bind for %s', self)
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
                         self.bind(read_server_info=True)
@@ -262,6 +266,9 @@ class Connection(object):
                     if not self.bound:
                         self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                         raise LDAPBindError(self.last_error)
+
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'instantiated Connection: %r', self)
 
     def __str__(self):
         s = [
@@ -374,6 +381,8 @@ class Connection(object):
                 self._deferred_bind = True
                 self._bind_controls = controls
                 self.bound = True
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'deferring bind for %s', self)
             else:
                 self._deferred_bind = False
                 self._bind_controls = None

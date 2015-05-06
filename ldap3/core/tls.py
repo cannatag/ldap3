@@ -40,13 +40,19 @@ try:
 except ImportError:
     from ..utils.tls_backport import CertificateError
     from ..utils.tls_backport import match_hostname_backport as match_hostname
+    if log_enabled(VERBOSITY_CHATTY):
+        log(VERBOSITY_CHATTY, 'using tls_backport')
 
 try:  # try to use SSLContext
     # noinspection PyUnresolvedReferences
     from ssl import create_default_context, Purpose  # defined in Python 3.4
     use_ssl_context = True
+    if log_enabled(VERBOSITY_CHATTY):
+        log(VERBOSITY_CHATTY, 'SSLContext available')
 except ImportError:
     use_ssl_context = False
+    if log_enabled(VERBOSITY_CHATTY):
+        log(VERBOSITY_CHATTY, 'SSLContext unavailable')
 
 from os import path
 
@@ -123,6 +129,9 @@ class Tls(object):
         self.certificate_file = local_certificate_file
         self.valid_names = valid_names
 
+        if log_enabled(VERBOSITY_CHATTY):
+            log(VERBOSITY_CHATTY, 'initialized Tls: <%r>' % self)
+
     def __str__(self):
         s = [
             'protocol: ' + str(self.version),
@@ -165,6 +174,8 @@ class Tls(object):
             if self.version is not None:  # if version is present overrides the default context version
                 ssl_context.protocol = self.version
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
+            if log_enabled(VERBOSITY_NORMAL):
+                log(VERBOSITY_NORMAL, 'socket wrapped with ssl using SSLContext for <%s>', connection)
         else:
             if self.version is None and hasattr(ssl, 'PROTOCOL_SSLv23'):
                 self.version = ssl.PROTOCOL_SSLv23
@@ -176,6 +187,8 @@ class Tls(object):
                                              ssl_version=self.version,
                                              ca_certs=self.ca_certs_file,
                                              do_handshake_on_connect=do_handshake)
+            if log_enabled(VERBOSITY_NORMAL):
+                log(VERBOSITY_NORMAL, 'socket wrapped with ssl for <%s>', connection)
 
         if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)
@@ -189,23 +202,33 @@ class Tls(object):
 
         if (connection.tls_started and not connection._executing_deferred) or connection.strategy._outstanding or connection.sasl_in_progress:
             # Per RFC 4513 (3.1.1)
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, "can't start tls because operations are in progress for <%s>", self)
             return False
         connection.starting_tls = True
+        if log_enabled(VERBOSITY_CHATTY):
+            log(VERBOSITY_CHATTY, 'starting tls for <%s>', connection)
         result = connection.extended('1.3.6.1.4.1.1466.20037')
         if not connection.strategy.sync:
             # async - _start_tls must be executed by the strategy
             response = connection.get_response(result)
             if response != (None, None):
+                if log_enabled(VERBOSITY_SPARSE):
+                    log(VERBOSITY_SPARSE, 'tls started for <%s>', connection)
                 return True
             else:
+                if log_enabled(VERBOSITY_SPARSE):
+                    log(VERBOSITY_SPARSE, 'tls not started for <%s>', connection)
                 return False
         else:
             if connection.result['description'] not in ['success']:
                 # startTLS failed
                 connection.last_error = 'startTLS failed - ' + str(connection.result['description'])
                 if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for %s', connection.last_error, connection)
+                    log(VERBOSITY_SEVERE, '%s for <%s>', connection.last_error, connection)
                 raise LDAPStartTLSError(connection.last_error)
+            if log_enabled(VERBOSITY_SPARSE):
+                log(VERBOSITY_SPARSE, 'tls started for <%s>', connection)
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
@@ -220,7 +243,7 @@ class Tls(object):
 
         if exc:
             if log_enabled(VERBOSITY_SEVERE):
-                log(VERBOSITY_SEVERE, 'error %s wrapping socket for TLS in %s', connection.last_error, connection)
+                log(VERBOSITY_SEVERE, 'error %s wrapping socket for TLS in <%s>', connection.last_error, connection)
             raise start_tls_exception_factory(LDAPStartTLSError, exc)(connection.last_error)
 
         if connection.usage:
@@ -237,13 +260,15 @@ def check_hostname(sock, server_name, additional_names):
         if host_name is None:
             continue
         elif host_name == '*':
-            return
+            if log_enabled(VERBOSITY_NORMAL):
+                log(VERBOSITY_NORMAL, 'certificate matches * wildcard')
+            return  # valid
 
         try:
             match_hostname(server_certificate, host_name)  # raise CertificateError if certificate doesn't match server name
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, "certificate matches host name %s", host_name)
-            return
+            if log_enabled(VERBOSITY_NORMAL):
+                log(VERBOSITY_NORMAL, 'certificate matches host name %s', host_name)
+            return  # valid
         except CertificateError:
             if log_enabled(VERBOSITY_CHATTY):
                 log(VERBOSITY_CHATTY, "certificate doesn't match host name %s", host_name)

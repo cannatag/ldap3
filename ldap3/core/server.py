@@ -165,7 +165,7 @@ class Server(object):
         self.mode = mode
 
         if log_enabled(VERBOSITY_CHATTY):
-            log(VERBOSITY_CHATTY, 'instantiated Server: %r', self)
+            log(VERBOSITY_CHATTY, 'instantiated Server: <%r>', self)
 
     @staticmethod
     def _is_ipv6(host):
@@ -277,7 +277,7 @@ class Server(object):
             if Server._message_counter >= LDAP_MAX_INT:
                 Server._message_counter = 1
             if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'new message id %d issued for Server %s', Server._message_counter)
+                log(VERBOSITY_CHATTY, 'new message id %d issued for Server <%s>', Server._message_counter)
 
         return Server._message_counter
 
@@ -400,13 +400,13 @@ class Server(object):
         if isinstance(dsa_info, DsaInfo):
             self._dsa_info = dsa_info
             if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'attached DSA info to Server %s', self)
+                log(VERBOSITY_CHATTY, 'attached DSA info to Server <%s>', self)
 
     def attach_schema_info(self, dsa_schema=None):
         if isinstance(dsa_schema, SchemaInfo):
             self._schema_info = dsa_schema
         if log_enabled(VERBOSITY_CHATTY):
-            log(VERBOSITY_CHATTY, 'attached schema info to Server %s', self)
+            log(VERBOSITY_CHATTY, 'attached schema info to Server <%s>', self)
 
     @property
     def info(self):
@@ -470,7 +470,7 @@ class Server(object):
                 candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
             else:
                 if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, 'invalid server mode for %s', self)
+                    log(VERBOSITY_SEVERE, 'invalid server mode for <%s>', self)
                 raise LDAPInvalidServerError('invalid server mode')
 
         if log_enabled(VERBOSITY_SPARSE):

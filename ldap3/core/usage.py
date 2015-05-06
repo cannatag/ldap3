@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from os import linesep
 
 from .exceptions import LDAPMetricsError
+from ..utils.log import log, log_enabled, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY
 
 
 class ConnectionUsage(object):
@@ -58,6 +59,8 @@ class ConnectionUsage(object):
         self.restartable_failures = 0
         self.restartable_successes = 0
         self.servers_from_pool = 0
+        if log_enabled(VERBOSITY_NORMAL):
+            log(VERBOSITY_NORMAL, 'reset usage metric')
 
     def __init__(self):
         self.initial_connection_start_time = None
@@ -86,6 +89,9 @@ class ConnectionUsage(object):
         self.restartable_failures = 0
         self.restartable_successes = 0
         self.servers_from_pool = 0
+
+        if log_enabled(VERBOSITY_CHATTY):
+            log(VERBOSITY_CHATTY, 'instantiating Usage object')
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep
@@ -179,6 +185,8 @@ class ConnectionUsage(object):
         elif message['type'] == 'unbindRequest':
             self.unbind_operations += 1
         else:
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'unable to collect usage for unknown message type %s', message['type'])
             raise LDAPMetricsError('unable to collect usage for unknown message type')
 
     def update_received_message(self, length):
@@ -193,14 +201,18 @@ class ConnectionUsage(object):
         if not self.initial_connection_start_time:
             self.initial_connection_start_time = self.open_socket_start_time
 
+        if log_enabled(VERBOSITY_CHATTY):
+            log(VERBOSITY_CHATTY, 'start collecting uasge metrics')
+
     def stop(self):
         if self.open_socket_start_time:
             self.connection_stop_time = datetime.now()
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'stop collecting uasge metrics')
 
     @property
     def elapsed_time(self):
         if self.connection_stop_time:
             return self.connection_stop_time - self.open_socket_start_time
         else:
-            # noinspection PyTypeChecker
             return (datetime.now() - self.open_socket_start_time) if self.open_socket_start_time else timedelta(0)

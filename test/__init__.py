@@ -27,11 +27,15 @@ from random import SystemRandom
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
+from ldap3.utils.log import VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY, set_library_verbosity_level, get_verbosity_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
-test_server_mode = IP_SYSTEM_DEFAULT
-# test_server_mode = IP_V6_PREFERRED
+# test_server_mode = IP_SYSTEM_DEFAULT
+test_server_mode = IP_V6_PREFERRED
+
+test_logging = True
+test_verbosity = VERBOSITY_CHATTY
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True
@@ -69,6 +73,7 @@ if location.startswith('TRAVIS'):
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
+    test_logging_filename = 'ldap3.log'
 elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
@@ -93,6 +98,7 @@ elif location == 'GCNBHPW8':
     test_user_key_file = 'local-edir-admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCNBHPW8-AD':
     # test elitebook - Active Directory (AD)
     # test_server = ['win1',
@@ -115,6 +121,7 @@ elif location == 'GCNBHPW8-AD':
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc1234pfop'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
@@ -135,6 +142,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_user_key_file = ''
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCW89227':
     # test camera
     # test_server = ['sl08',
@@ -160,6 +168,7 @@ elif location == 'GCW89227':
     test_user_key_file = 'admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 else:
     raise Exception('testing location ' + location + ' is not valid')
 
@@ -174,11 +183,16 @@ else:
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
 
+if test_logging:
+    import logging
+    logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)
+    set_library_verbosity_level(test_verbosity)
+
 print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage', test_usage)
-
+print('Logging:', 'False' if not test_logging else test_logging_filename, '- Verbosity:', get_verbosity_level_name(test_verbosity) if test_logging else 'None')
 
 def random_id():
     return '[' + str(SystemRandom().random())[-8:] + ']'

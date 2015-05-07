@@ -38,15 +38,15 @@ from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
 from ..strategy.reusable import ReusableStrategy
-from ..operation.abandon import abandon_operation
-from ..operation.add import add_operation
-from ..operation.bind import bind_operation
-from ..operation.compare import compare_operation
-from ..operation.delete import delete_operation
-from ..operation.extended import extended_operation
-from ..operation.modify import modify_operation
-from ..operation.modifyDn import modify_dn_operation
-from ..operation.search import search_operation
+from ..operation.abandon import abandon_operation, abandon_request_to_dict
+from ..operation.add import add_operation, add_request_to_dict, add_response_to_dict
+from ..operation.bind import bind_operation, bind_request_to_dict, bind_response_to_dict, sicily_bind_response_to_dict
+from ..operation.compare import compare_operation, compare_request_to_dict, compare_response_to_dict
+from ..operation.delete import delete_operation, delete_request_to_dict, delete_response_to_dict
+from ..operation.extended import extended_operation, extended_request_to_dict, extended_response_to_dict
+from ..operation.modify import modify_operation, modify_request_to_dict, modify_response_to_dict
+from ..operation.modifyDn import modify_dn_operation, modify_dn_request_to_dict, modify_dn_response_to_dict
+from ..operation.search import search_operation, search_request_to_dict, search_result_entry_response_to_dict, search_result_reference_response_to_dict
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
@@ -404,13 +404,23 @@ class Connection(object):
                 if self.closed:  # try to open connection if closed
                     self.open(read_server_info=False)
                 if self.authentication == ANONYMOUS:
+                    if log_enabled(VERBOSITY_NORMAL):
+                        log(VERBOSITY_NORMAL, 'performing anonymous BIND for <%s>', self)
                     request = bind_operation(self.version, self.authentication, '', '')
+                    if log_enabled(VERBOSITY_CHATTY):
+                        log(VERBOSITY_CHATTY, 'BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
                 elif self.authentication == SIMPLE:
+                    if log_enabled(VERBOSITY_NORMAL):
+                        log(VERBOSITY_NORMAL, 'performing simple BIND for <%s>', self)
                     request = bind_operation(self.version, self.authentication, self.user, self.password)
+                    if log_enabled(VERBOSITY_CHATTY):
+                        log(VERBOSITY_CHATTY, 'BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
                 elif self.authentication == SASL:
                     if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
+                        if log_enabled(VERBOSITY_NORMAL):
+                            log(VERBOSITY_NORMAL, 'performing SASL BIND for <%s>', self)
                         response = self.do_sasl_bind(controls)
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
@@ -419,6 +429,8 @@ class Connection(object):
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
                 elif self.authentication == NTLM:
                     if self.user and self.password:
+                        if log_enabled(VERBOSITY_NORMAL):
+                            log(VERBOSITY_NORMAL, 'performing NTLM BIND for <%s>', self)
                         response = self.do_ntlm_bind(controls)
                     else:  # user or password missing
                         self.last_error = 'NTLM needs domain\\username and a password'
@@ -433,11 +445,13 @@ class Connection(object):
 
                 if not self.strategy.sync and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
                     _, result = self.get_response(response)
+                    if log_enabled(VERBOSITY_CHATTY):
+                        log(VERBOSITY_CHATTY, 'async BIND response id <%s> received via <%s>', result, self)
                 elif self.strategy.sync:
                     result = self.result
-                elif self.authentication == SASL:  # async SASL
-                    result = response
-                elif self.authentication == NTLM:  # async NTLM
+                    if log_enabled(VERBOSITY_CHATTY):
+                        log(VERBOSITY_CHATTY, 'BIND response <%s> received via <%s>', bind_response_to_dict(response), self)
+                elif self.authentication == SASL or self.authentication == NTLM:  # async SASL and NTLM
                     result = response
                 else:
                     self.last_error = 'unknown authentication method'
@@ -480,6 +494,8 @@ class Connection(object):
                 self._deferred_start_tls = False
             elif not self.closed:
                 request = unbind_operation()
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'UNBIND request sent via <%s>', self)
                 self.send('unbindRequest', request, controls)
                 self.strategy.close()
 
@@ -542,13 +558,23 @@ class Connection(object):
                 controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
             response = self.post_send_search(self.send('searchRequest', request, controls))
             self._entries = None
 
             if isinstance(response, int):
                 return_value = response
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'async SEARCH response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'searchResDone' and len(response) > 0 else False
+                if log_enabled(VERBOSITY_CHATTY):
+                    for entry in response:
+                        if entry['type'] == 'searchResEntry':
+                            log(VERBOSITY_CHATTY, 'SEARCH response entry <%s> received via <%s>', search_result_entry_response_to_dict(entry), self)
+                        elif entry['type'] == 'searchResRef':
+                            log(VERBOSITY_CHATTY, 'SEARCH response reference <%s> received via <%s>', search_result_reference_response_to_dict(entry), self)
 
             if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done SEARCH operation, result <%s>', return_value)
@@ -569,12 +595,18 @@ class Connection(object):
         with self.lock:
             self._fire_deferred()
             request = compare_operation(dn, attribute, value, self.server.schema if self.server else None)
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
             self._entries = None
             if isinstance(response, int):
                 return_value = response
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'async COMPARE response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'COMPARE response <%s> received via <%s>', compare_response_to_dict(response), self)
 
             if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done COMPARE operation, result <%s>', return_value)
@@ -619,18 +651,24 @@ class Connection(object):
             attributes[object_class_attr_name] = list(set([object_class for object_class in parm_object_class + attr_object_class]))  # remove duplicate ObjectClasses
 
             if not attributes[object_class_attr_name]:
-                self.last_error = 'ObjectClass attribute is mandatory'
+                self.last_error = 'objectClass attribute is mandatory'
                 if log_enabled(VERBOSITY_SEVERE):
                     log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
                 raise LDAPObjectClassError(self.last_error)
 
             request = add_operation(dn, attributes, self.server.schema if self.server else None)
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'async ADD response id <%s> received via <%s>', return_value, self)
             else:
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'ADD response <%s> received via <%s>', add_response_to_dict(response), self)
                 return_value = True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -656,12 +694,18 @@ class Connection(object):
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
             request = delete_operation(dn)
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'DELETE request <%s> sent via <%s>', delete_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('delRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'async DELETE response id <%s> received via <%s>', return_value, self)
             else:
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'DELETE response <%s> received via <%s>', delete_response_to_dict(response), self)
                 return_value = True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -716,12 +760,18 @@ class Connection(object):
                     raise LDAPChangesError(self.last_error)
 
             request = modify_operation(dn, changes, self.server.schema if self.server else None)
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'async MODIFY response id <%s> received via <%s>', return_value, self)
             else:
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'MODIFY response <%s> received via <%s>', modify_response_to_dict(response), self)
                 return_value = True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -757,12 +807,18 @@ class Connection(object):
                 raise LDAPChangesError(self.last_error)
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'MODIFY DN request <%s> sent via <%s>', modify_dn_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modDNRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'async MODIFY DN response id <%s> received via <%s>', return_value, self)
             else:
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'MODIFY DN response <%s> received via <%s>', modify_dn_response_to_dict(response), self)
                 return_value = True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -785,6 +841,8 @@ class Connection(object):
             if self.strategy._outstanding:
                 if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
                     request = abandon_operation(message_id)
+                    if log_enabled(VERBOSITY_CHATTY):
+                        log(VERBOSITY_CHATTY, 'ABANDON request: <%s> sent via <%s>', abandon_request_to_dict(request), self)
                     self.send('abandonRequest', request, controls)
                     self.result = None
                     self.response = None
@@ -809,11 +867,17 @@ class Connection(object):
         with self.lock:
             self._fire_deferred()
             request = extended_operation(request_name, request_value)
+            if log_enabled(VERBOSITY_CHATTY):
+                log(VERBOSITY_CHATTY, 'EXTENDED request <%s> sent via <%s>', extended_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('extendedReq', request, controls))
             self._entries = None
             if isinstance(response, int):
                 return_value = response
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'async EXTENDED response id <%s> received via <%s>', return_value, self)
             else:
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'EXTENDED response <%s> received via <%s>', extended_response_to_dict(response), self)
                 return_value = True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -892,6 +956,8 @@ class Connection(object):
                 # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                 # send a sicilyPackageDiscovery request (in the bindRequest)
                 request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
+                if log_enabled(VERBOSITY_CHATTY):
+                    log(VERBOSITY_CHATTY, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
                 response = self.post_send_single_response(self.send('bindRequest', request, controls))
                 if not self.strategy.sync:
                     _, result = self.get_response(response)
@@ -901,21 +967,26 @@ class Connection(object):
                     sicily_packages = result['server_creds'].decode('ascii').split(';')
                     if 'NTLM' in sicily_packages:  # NTLM available on server
                         request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
+                        if log_enabled(VERBOSITY_CHATTY):
+                            log(VERBOSITY_CHATTY, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
                         if not self.strategy.sync:
                             _, result = self.get_response(response)
                         else:
+                            if log_enabled(VERBOSITY_CHATTY):
+                                log(VERBOSITY_CHATTY, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', sicily_bind_response_to_dict(response[0]), self)
                             result = response[0]
 
                         if result['result'] == RESULT_SUCCESS:
-                            request = bind_operation(self.version,
-                                                     'SICILY_RESPONSE_NTLM',
-                                                     ntlm_client,
-                                                     result['server_creds'])
+                            request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', ntlm_client, result['server_creds'])
+                            if log_enabled(VERBOSITY_CHATTY):
+                                log(VERBOSITY_CHATTY, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
                             if not self.strategy.sync:
                                 _, result = self.get_response(response)
                             else:
+                                if log_enabled(VERBOSITY_CHATTY):
+                                    log(VERBOSITY_CHATTY, 'NTLM BIND response <%s> received via <%s>', sicily_bind_response_to_dict(response[0]), self)
                                 result = response[0]
                 else:
                     result = None
@@ -1077,10 +1148,10 @@ class Connection(object):
 
             entries = []
             for response in search_response:
-                resp_attr_set = set(response['attributes'].keys())
-                for object_def in object_defs:
-                    if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
-                        if response['type'] == 'searchResEntry':
+                if response['type'] == 'searchResEntry':
+                    resp_attr_set = set(response['attributes'].keys())
+                    for object_def in object_defs:
+                        if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
                             entry = Entry(response['dn'], self)
                             try:
                                 entry.__dict__['_attributes'] = Reader._get_attributes(None, response, object_def[1], entry)
@@ -1094,9 +1165,9 @@ class Connection(object):
                             entry.__dict__['_reader'] = None  # not used
                             entries.append(entry)
                         break
-                else:
-                    if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, 'attribute set not found for %s in <%s>', resp_attr_set, self)
-                    raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
+                    else:
+                        if log_enabled(VERBOSITY_SEVERE):
+                            log(VERBOSITY_SEVERE, 'attribute set not found for %s in <%s>', resp_attr_set, self)
+                        raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
 
         return entries

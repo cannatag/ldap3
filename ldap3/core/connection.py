@@ -79,6 +79,13 @@ def _format_socket_endpoint(endpoint):
     return endpoint
 
 
+def _format_socket_endpoints(sock):
+    try:
+        return '[local: ' + _format_socket_endpoint(sock.getsockname()) + ' - remote: ' + _format_socket_endpoint(sock.getpeername()) + ']'
+    except Exception:
+        return '[no socket]'
+
+
 # noinspection PyProtectedMember
 class Connection(object):
     """Main ldap connection class.
@@ -282,7 +289,7 @@ class Connection(object):
             'user: ' + str(self.user),
             'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
             'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
-            ('[local: ' + _format_socket_endpoint(self.socket.getsockname()) + ' - remote: ' + _format_socket_endpoint(self.socket.getpeername()) + ']') if self.socket else '[no socket]',
+            _format_socket_endpoints(self.socket),
             'tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'),
             'listening' if self.listening else 'not listening',
             self.strategy.__class__.__name__
@@ -526,7 +533,7 @@ class Connection(object):
 
             if isinstance(paged_size, int):
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'performing paged search for %d items with cookie %s for <%s>', paged_size, paged_cookie, self)
+                    log(VERBOSITY_CHATTY, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, paged_cookie, self)
                 real_search_control_value = RealSearchControlValue()
                 real_search_control_value['size'] = Size(paged_size)
                 real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')

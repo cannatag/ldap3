@@ -30,8 +30,7 @@ from datetime import datetime, MINYEAR
 from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT,\
     CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
     SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
-from .exceptions import LDAPInvalidPort
-from .exceptions import LDAPInvalidServerError, LDAPDefinitionError
+from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPort, LDAPInvalidTlsSpecificationError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
@@ -87,23 +86,23 @@ class Server(object):
                 port = int(hostport) or port
             except ValueError:
                 if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, 'port %s must be an integer', port)
+                    log(VERBOSITY_SEVERE, 'port <%s> must be an integer', port)
                 raise LDAPInvalidPort('port must be an integer')
             self.host = hostname
         elif url_given and self.host.startswith('['):
             hostname, sep, hostport = self.host[1:].partition(']')
             if sep != ']' or not self._is_ipv6(hostname):
                 if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, 'invalid IPv6 server address for %s', self.host)
+                    log(VERBOSITY_SEVERE, 'invalid IPv6 server address for <%s>', self.host)
                 raise LDAPInvalidServerError()
             if len(hostport):
                 if not hostport.startswith(':'):
                     if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, 'invalid URL in server name for %s', self.host)
+                        log(VERBOSITY_SEVERE, 'invalid URL in server name for <%s>', self.host)
                     raise LDAPInvalidServerError('invalid URL in server name')
                 if not hostport[1:].isdecimal():
                     if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, 'port must be an integer for %s', self.host)
+                        log(VERBOSITY_SEVERE, 'port must be an integer for <%s>', self.host)
                     raise LDAPInvalidPort('port must be an integer')
                 port = int(hostport[1:])
             self.host = hostname
@@ -111,7 +110,7 @@ class Server(object):
             pass
         elif self.host.count(':') > 1:
             if log_enabled(VERBOSITY_SEVERE):
-                log(VERBOSITY_SEVERE, 'invalid server address for %s', self.host)
+                log(VERBOSITY_SEVERE, 'invalid server address for <%s>', self.host)
             raise LDAPInvalidServerError()
 
         self.host.rstrip('/')
@@ -126,11 +125,11 @@ class Server(object):
                 self.port = port
             else:
                 if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, 'port %s must be in range from 0 to 65535', port)
+                    log(VERBOSITY_SEVERE, 'port <%s> must be in range from 0 to 65535', port)
                 raise LDAPInvalidPort('port must in range from 0 to 65535')
         else:
             if log_enabled(VERBOSITY_SEVERE):
-                log(VERBOSITY_SEVERE, 'port %s must be an integer', port)
+                log(VERBOSITY_SEVERE, 'port <%s> must be an integer', port)
             raise LDAPInvalidPort('port must be an integer')
 
         if isinstance(allowed_referral_hosts, SEQUENCE_TYPES):
@@ -146,6 +145,11 @@ class Server(object):
             self.allowed_referral_hosts = []
 
         self.ssl = True if use_ssl else False
+        if tls and not isinstance(tls, Tls):
+            if log_enabled(VERBOSITY_SEVERE):
+                log(VERBOSITY_SEVERE, 'invalid tls specification: <%s>', tls)
+            raise LDAPInvalidTlsSpecificationError('invalid Tls object')
+
         self.tls = Tls() if self.ssl and not tls else tls
 
         if self._is_ipv6(self.host):
@@ -277,7 +281,7 @@ class Server(object):
             if Server._message_counter >= LDAP_MAX_INT:
                 Server._message_counter = 1
             if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'new message id %d issued for Server <%s>', Server._message_counter)
+                log(VERBOSITY_CHATTY, 'new message id <%d> generated', Server._message_counter)
 
         return Server._message_counter
 
@@ -447,7 +451,7 @@ class Server(object):
             raise LDAPDefinitionError('invalid schema info')
 
         if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'created server %s from definition', dummy)
+            log(VERBOSITY_NORMAL, 'created server <%s> from definition', dummy)
 
         return dummy
 

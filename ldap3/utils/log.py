@@ -69,29 +69,39 @@ def get_verbosity_level_name(level):
 
 def log(verbosity, message, *args):
     if verbosity <= verbosity_level:
-        logger.log(logging_level, '[' + get_verbosity_level_name(verbosity) + '] ' + message, *args)
+        logger.log(logging_level, get_verbosity_level_name(verbosity) + ':' + message, *args)
 
 
 def log_enabled(verbosity):
     return True if logger.isEnabledFor(logging_level) and verbosity <= verbosity_level else False
 
 
-def set_library_logging_level(level):
+def set_library_log_activation_level(level):
     if isinstance(level, int):
         global logging_level
         logging_level = level
+    else:
+        if log_enabled(VERBOSITY_SEVERE):
+            log(VERBOSITY_SEVERE, 'invalid library log activation level <%s> ', level)
+        raise ValueError('invalid library log activation level')
 
 
 def set_library_verbosity_level(verbosity):
     if verbosity in VERBOSITY_LEVELS:
         global verbosity_level
         verbosity_level = verbosity
+        if log_enabled(VERBOSITY_SEVERE):
+            log(VERBOSITY_SEVERE, 'verbosity level set to ' + get_verbosity_level_name(verbosity_level))
+    else:
+        if log_enabled(VERBOSITY_SEVERE):
+            log(VERBOSITY_SEVERE, 'unable to set verbosity level to <%s>', verbosity)
+        raise ValueError('invalid library verbosity level')
 
 # set a logger for the library with NullHandler. It can be used by the application with its own logging configuration
 logger = getLogger('ldap3')
 logger.addHandler(NullHandler())
-set_library_logging_level(LIBRARY_LOGGING_LEVEL)
+set_library_log_activation_level(LIBRARY_LOGGING_LEVEL)
 set_library_verbosity_level(LIBRARY_VERBOSITY_LEVEL)
 
 # emits a info message to let the application know that ldap3 logging is available when the log level is set to logging_level
-logger.info('ldap3 library intialized - logging emitted when loglevel is ' + getLevelName(logging_level))
+logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(logging_level) + ' - available verbosity levels are: ' + ', '.join([get_verbosity_level_name(level) for level in VERBOSITY_LEVELS]))

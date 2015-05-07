@@ -91,7 +91,7 @@ class ConnectionUsage(object):
         self.servers_from_pool = 0
 
         if log_enabled(VERBOSITY_CHATTY):
-            log(VERBOSITY_CHATTY, 'instantiating Usage object')
+            log(VERBOSITY_CHATTY, 'instantiated Usage object')
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep
@@ -186,7 +186,7 @@ class ConnectionUsage(object):
             self.unbind_operations += 1
         else:
             if log_enabled(VERBOSITY_SEVERE):
-                log(VERBOSITY_SEVERE, 'unable to collect usage for unknown message type %s', message['type'])
+                log(VERBOSITY_SEVERE, 'unable to collect usage for unknown message type <%s>', message['type'])
             raise LDAPMetricsError('unable to collect usage for unknown message type')
 
     def update_received_message(self, length):

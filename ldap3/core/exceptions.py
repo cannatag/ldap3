@@ -385,6 +385,9 @@ class LDAPSSLNotSupportedError(LDAPExceptionError, ImportError):
     pass
 
 
+class LDAPInvalidTlsSpecificationError(LDAPException):
+    pass
+
 # connection exceptions
 class LDAPBindError(LDAPExceptionError):
     pass

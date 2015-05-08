@@ -39,14 +39,14 @@ from .pooling import ServerPool
 from .server import Server
 from ..strategy.reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation, abandon_request_to_dict
-from ..operation.add import add_operation, add_request_to_dict, add_response_to_dict
-from ..operation.bind import bind_operation, bind_request_to_dict, bind_response_to_dict, sicily_bind_response_to_dict
-from ..operation.compare import compare_operation, compare_request_to_dict, compare_response_to_dict
-from ..operation.delete import delete_operation, delete_request_to_dict, delete_response_to_dict
-from ..operation.extended import extended_operation, extended_request_to_dict, extended_response_to_dict
-from ..operation.modify import modify_operation, modify_request_to_dict, modify_response_to_dict
-from ..operation.modifyDn import modify_dn_operation, modify_dn_request_to_dict, modify_dn_response_to_dict
-from ..operation.search import search_operation, search_request_to_dict, search_result_entry_response_to_dict, search_result_reference_response_to_dict
+from ..operation.add import add_operation, add_request_to_dict
+from ..operation.bind import bind_operation, bind_request_to_dict
+from ..operation.compare import compare_operation, compare_request_to_dict
+from ..operation.delete import delete_operation, delete_request_to_dict
+from ..operation.extended import extended_operation, extended_request_to_dict
+from ..operation.modify import modify_operation, modify_request_to_dict
+from ..operation.modifyDn import modify_dn_operation, modify_dn_request_to_dict
+from ..operation.search import search_operation, search_request_to_dict
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
@@ -61,7 +61,7 @@ from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
-from ..utils.conv import prepare_for_stream, check_json_dict, format_json
+from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
 from ..utils.log import log, log_enabled, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY
 
 try:
@@ -549,7 +549,7 @@ class Connection(object):
 
             if isinstance(paged_size, int):
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, paged_cookie, self)
+                    log(VERBOSITY_CHATTY, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
                 real_search_control_value = RealSearchControlValue()
                 real_search_control_value['size'] = Size(paged_size)
                 real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')

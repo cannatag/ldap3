@@ -24,5 +24,6 @@ class OffsetTzInfo(tzinfo):
     def tzname(self, dt):
         return self.name
 
+    # noinspection PyMethodMayBeStatic
     def dst(self, dt):
         return timedelta(0)

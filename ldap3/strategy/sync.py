@@ -179,3 +179,9 @@ class SyncStrategy(BaseStrategy):
         ldap_responses.append(RESPONSE_COMPLETE)
 
         return ldap_responses
+
+    def set_stream(self, value):
+        raise NotImplementedError
+
+    def get_stream(self):
+        raise NotImplementedError

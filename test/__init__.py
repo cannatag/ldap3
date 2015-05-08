@@ -27,7 +27,7 @@ from random import SystemRandom
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
-from ldap3.utils.log import VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY, set_library_verbosity_level, get_verbosity_level_name
+from ldap3.utils.log import VERBOSITY_NONE, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY, set_library_verbosity_level, get_verbosity_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
@@ -186,10 +186,9 @@ else:
 if test_logging:
     remove(test_logging_filename)
     import logging
+    logging._defaultFormatter = logging.Formatter(u"%(message)s")
     logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)
-    logger = logging.getLogger()
-    handler = logger.handlers[0]
-    handler.encoding = 'utf-8'
+    logging._defaultFormatter = logging.Formatter(u"%(message)s")
     set_library_verbosity_level(test_verbosity)
 
 print('Testing location:', location)
@@ -197,6 +196,7 @@ print('Test server:', test_server)
 print('Python version:', version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage', test_usage)
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Verbosity:', get_verbosity_level_name(test_verbosity) if test_logging else 'None')
+
 
 def random_id():
     return '[' + str(SystemRandom().random())[-8:] + ']'

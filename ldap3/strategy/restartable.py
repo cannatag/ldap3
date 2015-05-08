@@ -217,3 +217,9 @@ class RestartableStrategy(SyncStrategy):
     def _reset_exception_history(self):
         if self.exception_history:
             self.exception_history = []
+
+    def get_stream(self):
+        raise NotImplementedError
+
+    def set_stream(self, value):
+        raise NotImplementedError

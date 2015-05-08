@@ -184,3 +184,12 @@ class AsyncStrategy(BaseStrategy):
             responses = self._responses.pop(message_id) if message_id in self._responses and self._responses[message_id][-1] == RESPONSE_COMPLETE else None
 
         return responses
+
+    def receiving(self):
+        raise NotImplementedError
+
+    def get_stream(self):
+        raise NotImplementedError
+
+    def set_stream(self, value):
+        raise NotImplementedError

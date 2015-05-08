@@ -56,8 +56,8 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
 
-    def test_modify_deleted(self):
-        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_ADD, ['businessCategory-3-added'])})
+    def test_modify_delete_attribute_value(self):
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_ADD, ['businessCategory-3-added', 'businessCategory-4-added'])})
         if not self.connection.strategy.sync:
             _, result = self.connection.get_response(result)
         else:
@@ -65,6 +65,21 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
 
         result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_DELETE, ['businessCategory-3-added'])})
+        if not self.connection.strategy.sync:
+            _, result = self.connection.get_response(result)
+        else:
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+
+    def test_modify_delete_attribute(self):
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_ADD, ['businessCategory-5-added', 'businessCategory-6-added'])})
+        if not self.connection.strategy.sync:
+            _, result = self.connection.get_response(result)
+        else:
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_DELETE, [])})
         if not self.connection.strategy.sync:
             _, result = self.connection.get_response(result)
         else:

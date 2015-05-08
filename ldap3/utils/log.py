@@ -26,16 +26,18 @@
 from logging import getLogger, getLevelName, DEBUG
 
 # logging
+VERBOSITY_NONE = 0
 VERBOSITY_SEVERE = 10
 VERBOSITY_SPARSE = 20
 VERBOSITY_NORMAL = 30
 VERBOSITY_CHATTY = 40
-VERBOSITY_LEVELS = [VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY]
-LIBRARY_VERBOSITY_LEVEL = VERBOSITY_NORMAL
+VERBOSITY_LEVELS = [VERBOSITY_NONE, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY]
+LIBRARY_VERBOSITY_LEVEL = VERBOSITY_NONE
 LIBRARY_LOGGING_LEVEL = DEBUG
 
 logging_level = None
 verbosity_level = None
+logging_encoding = 'ascii'
 
 try:
     from logging import NullHandler
@@ -55,7 +57,9 @@ except ImportError:  # NullHandler not present in Python < 2.7
 
 def get_verbosity_level_name(level):
 
-    if level == VERBOSITY_SEVERE:
+    if level == VERBOSITY_NONE:
+        return 'NONE'
+    elif level == VERBOSITY_SEVERE:
         return 'SEVERE'
     elif level == VERBOSITY_SPARSE:
         return 'SPARSE'
@@ -69,10 +73,16 @@ def get_verbosity_level_name(level):
 
 def log(verbosity, message, *args):
     if verbosity <= verbosity_level:
-        logger.log(logging_level, get_verbosity_level_name(verbosity) + ':' + message, *args)
+        encoded_message = (get_verbosity_level_name(verbosity) + ':' + message % args).encode(logging_encoding, 'backslashreplace')
+        logger.log(logging_level, encoded_message)
+
 
 def log_enabled(verbosity):
-    return True if logger.isEnabledFor(logging_level) and verbosity <= verbosity_level else False
+    if verbosity <= verbosity_level:
+        if logger.isEnabledFor(logging_level):
+            return True
+
+    return False
 
 
 def set_library_log_activation_level(level):

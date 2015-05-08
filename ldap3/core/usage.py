@@ -60,7 +60,7 @@ class ConnectionUsage(object):
         self.restartable_successes = 0
         self.servers_from_pool = 0
         if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'reset usage metric')
+            log(VERBOSITY_NORMAL, 'reset usage metrics')
 
     def __init__(self):
         self.initial_connection_start_time = None
@@ -202,13 +202,13 @@ class ConnectionUsage(object):
             self.initial_connection_start_time = self.open_socket_start_time
 
         if log_enabled(VERBOSITY_CHATTY):
-            log(VERBOSITY_CHATTY, 'start collecting uasge metrics')
+            log(VERBOSITY_CHATTY, 'start collecting usage metrics')
 
     def stop(self):
         if self.open_socket_start_time:
             self.connection_stop_time = datetime.now()
             if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'stop collecting uasge metrics')
+                log(VERBOSITY_CHATTY, 'stop collecting usage metrics')
 
     @property
     def elapsed_time(self):

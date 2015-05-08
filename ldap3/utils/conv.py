@@ -32,14 +32,17 @@ from ..core.exceptions import LDAPDefinitionError
 
 
 def escape_bytes(bytes_value):
-    if str != bytes:  # Python 3
-        if isinstance(bytes_value, str):
-            bytes_value = bytearray(bytes_value, encoding='utf-8')
-        escaped = '\\'.join([('%02x' % int(b)) for b in bytes_value])
-    else:  # Python 2
-        if isinstance(bytes_value, unicode):
-            bytes_value = bytes_value.encode('utf-8')
-        escaped = '\\'.join([('%02x' % ord(b)) for b in bytes_value])
+    if bytes_value:
+        if str != bytes:  # Python 3
+            if isinstance(bytes_value, str):
+                bytes_value = bytearray(bytes_value, encoding='utf-8')
+            escaped = '\\'.join([('%02x' % int(b)) for b in bytes_value])
+        else:  # Python 2
+            if isinstance(bytes_value, unicode):
+                bytes_value = bytes_value.encode('utf-8')
+            escaped = '\\'.join([('%02x' % ord(b)) for b in bytes_value])
+    else:
+        escaped = ''
 
     return ('\\' + escaped) if escaped else ''
 

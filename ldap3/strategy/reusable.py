@@ -52,6 +52,22 @@ class ReusableStrategy(BaseStrategy):
     Strategy has two customizable properties, the total number of connections in the pool and the lifetime of each connection.
     When lifetime is expired the connection is closed and will be open again when needed.
     """
+
+    def receiving(self):
+        raise NotImplementedError
+
+    def _start_listen(self):
+        raise NotImplementedError
+
+    def _get_response(self, message_id):
+        raise NotImplementedError
+
+    def get_stream(self):
+        raise NotImplementedError
+
+    def set_stream(self, value):
+        raise NotImplementedError
+
     pools = dict()
 
     # noinspection PyProtectedMember

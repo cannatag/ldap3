@@ -29,6 +29,7 @@
 from ...core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationError
 
 try:
+    # noinspection PyPackageRequirements,PyUnresolvedReferences
     import gssapi
 except ImportError:
     raise LDAPPackageUnavailableError('package gssapi missing')
@@ -57,6 +58,7 @@ def sasl_gssapi(connection, controls):
             result = send_sasl_negotiation(connection, controls, out_token)
             in_token = result['saslCreds']
             try:
+                # noinspection PyStatementEffect
                 ctx.complete  # This raises an exception if we haven't completed connecting.
                 break
             except gssapi.exceptions.MissingContextError:

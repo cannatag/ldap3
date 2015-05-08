@@ -73,7 +73,7 @@ if location.startswith('TRAVIS'):
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-    test_logging_filename = '/tmp/ldap3.log'
+    test_logging_filename = 'ldap3.log'
 elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
@@ -184,7 +184,11 @@ else:
     test_lazy_connection = False  # connection lazy
 
 if test_logging:
-    remove(test_logging_filename)
+    try:
+        remove(test_logging_filename)
+    except OSError:
+        pass
+
     import logging
     logging._defaultFormatter = logging.Formatter(u"%(message)s")
     logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)

@@ -71,7 +71,6 @@ def log(verbosity, message, *args):
     if verbosity <= verbosity_level:
         logger.log(logging_level, get_verbosity_level_name(verbosity) + ':' + message, *args)
 
-
 def log_enabled(verbosity):
     return True if logger.isEnabledFor(logging_level) and verbosity <= verbosity_level else False
 

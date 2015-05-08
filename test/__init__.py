@@ -21,7 +21,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 from sys import version
-from os import environ
+from os import environ, remove
 from random import SystemRandom
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
@@ -184,8 +184,12 @@ else:
     test_lazy_connection = False  # connection lazy
 
 if test_logging:
+    remove(test_logging_filename)
     import logging
     logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)
+    logger = logging.getLogger()
+    handler = logger.handlers[0]
+    handler.encoding = 'utf-8'
     set_library_verbosity_level(test_verbosity)
 
 print('Testing location:', location)

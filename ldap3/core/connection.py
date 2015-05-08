@@ -450,7 +450,7 @@ class Connection(object):
                 elif self.strategy.sync:
                     result = self.result
                     if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'BIND response <%s> received via <%s>', bind_response_to_dict(response), self)
+                        log(VERBOSITY_CHATTY, 'BIND response <%s> received via <%s>', result, self)
                 elif self.authentication == SASL or self.authentication == NTLM:  # async SASL and NTLM
                     result = response
                 else:
@@ -572,9 +572,9 @@ class Connection(object):
                 if log_enabled(VERBOSITY_CHATTY):
                     for entry in response:
                         if entry['type'] == 'searchResEntry':
-                            log(VERBOSITY_CHATTY, 'SEARCH response entry <%s> received via <%s>', search_result_entry_response_to_dict(entry), self)
+                            log(VERBOSITY_CHATTY, 'SEARCH response entry <%s> received via <%s>', entry, self)
                         elif entry['type'] == 'searchResRef':
-                            log(VERBOSITY_CHATTY, 'SEARCH response reference <%s> received via <%s>', search_result_reference_response_to_dict(entry), self)
+                            log(VERBOSITY_CHATTY, 'SEARCH response reference <%s> received via <%s>', entry, self)
 
             if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done SEARCH operation, result <%s>', return_value)
@@ -606,7 +606,7 @@ class Connection(object):
             else:
                 return_value = True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'COMPARE response <%s> received via <%s>', compare_response_to_dict(response), self)
+                    log(VERBOSITY_CHATTY, 'COMPARE response <%s> received via <%s>', response, self)
 
             if log_enabled(VERBOSITY_SPARSE):
                 log(VERBOSITY_SPARSE, 'done COMPARE operation, result <%s>', return_value)
@@ -668,7 +668,7 @@ class Connection(object):
                     log(VERBOSITY_CHATTY, 'async ADD response id <%s> received via <%s>', return_value, self)
             else:
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'ADD response <%s> received via <%s>', add_response_to_dict(response), self)
+                    log(VERBOSITY_CHATTY, 'ADD response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -705,7 +705,7 @@ class Connection(object):
                     log(VERBOSITY_CHATTY, 'async DELETE response id <%s> received via <%s>', return_value, self)
             else:
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'DELETE response <%s> received via <%s>', delete_response_to_dict(response), self)
+                    log(VERBOSITY_CHATTY, 'DELETE response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -771,7 +771,7 @@ class Connection(object):
                     log(VERBOSITY_CHATTY, 'async MODIFY response id <%s> received via <%s>', return_value, self)
             else:
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'MODIFY response <%s> received via <%s>', modify_response_to_dict(response), self)
+                    log(VERBOSITY_CHATTY, 'MODIFY response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -818,7 +818,7 @@ class Connection(object):
                     log(VERBOSITY_CHATTY, 'async MODIFY DN response id <%s> received via <%s>', return_value, self)
             else:
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'MODIFY DN response <%s> received via <%s>', modify_dn_response_to_dict(response), self)
+                    log(VERBOSITY_CHATTY, 'MODIFY DN response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -877,7 +877,7 @@ class Connection(object):
                     log(VERBOSITY_CHATTY, 'async EXTENDED response id <%s> received via <%s>', return_value, self)
             else:
                 if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'EXTENDED response <%s> received via <%s>', extended_response_to_dict(response), self)
+                    log(VERBOSITY_CHATTY, 'EXTENDED response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
             if log_enabled(VERBOSITY_SPARSE):
@@ -974,7 +974,7 @@ class Connection(object):
                             _, result = self.get_response(response)
                         else:
                             if log_enabled(VERBOSITY_CHATTY):
-                                log(VERBOSITY_CHATTY, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', sicily_bind_response_to_dict(response[0]), self)
+                                log(VERBOSITY_CHATTY, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', response[0], self)
                             result = response[0]
 
                         if result['result'] == RESULT_SUCCESS:
@@ -986,7 +986,7 @@ class Connection(object):
                                 _, result = self.get_response(response)
                             else:
                                 if log_enabled(VERBOSITY_CHATTY):
-                                    log(VERBOSITY_CHATTY, 'NTLM BIND response <%s> received via <%s>', sicily_bind_response_to_dict(response[0]), self)
+                                    log(VERBOSITY_CHATTY, 'NTLM BIND response <%s> received via <%s>', response[0], self)
                                 result = response[0]
                 else:
                     result = None

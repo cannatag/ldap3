@@ -44,7 +44,7 @@ test_pooling_exhaust = False
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
-test_check_names = False  # check attribute names in operations
+test_check_names = True  # check attribute names in operations
 test_get_info = NONE  # get info from DSA
 test_usage = True
 

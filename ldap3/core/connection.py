@@ -62,7 +62,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
-from ..utils.log import log, log_enabled, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY
+from ..utils.log import log, log_enabled, VERBOSITY_ERROR, VERBOSITY_BASIC, VERBOSITY_PROTOCOL
 
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
@@ -164,8 +164,8 @@ class Connection(object):
         with self.lock:
             if client_strategy not in CLIENT_STRATEGIES:
                 self.last_error = 'unknown client connection strategy'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPUnknownStrategyError(self.last_error)
 
             self.strategy_type = client_strategy
@@ -179,8 +179,8 @@ class Connection(object):
                 self.authentication = authentication
             else:
                 self.last_error = 'unknown authentication method'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPUnknownAuthenticationMethodError(self.last_error)
             self.version = version
             self.auto_referrals = True if auto_referrals else False
@@ -250,8 +250,8 @@ class Connection(object):
                 self.strategy = MockAsyncStrategy(self)
             else:
                 self.last_error = 'unknown strategy'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPUnknownStrategyError(self.last_error)
 
             # map strategy functions to connection functions
@@ -263,8 +263,8 @@ class Connection(object):
 
             if not self.strategy.no_real_dsa:
                 if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
-                    if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'performing automatic bind for <%s>', self)
+                    if log_enabled(VERBOSITY_BASIC):
+                        log(VERBOSITY_BASIC, 'performing automatic bind for <%s>', self)
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
                         self.bind(read_server_info=True)
@@ -276,12 +276,12 @@ class Connection(object):
                         self.start_tls(read_server_info=True)
                     if not self.bound:
                         self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
-                        if log_enabled(VERBOSITY_SEVERE):
-                            log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                        if log_enabled(VERBOSITY_ERROR):
+                            log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPBindError(self.last_error)
 
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'instantiated Connection: <%r>', self)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'instantiated Connection: <%r>', self)
 
     def __str__(self):
         s = [
@@ -373,8 +373,8 @@ class Connection(object):
                 self.open()
 
             if exc_type is not None:
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', exc_type, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', exc_type, self)
                 return False  # re-raise LDAPExceptionError
 
     def bind(self,
@@ -388,75 +388,75 @@ class Connection(object):
         :return: bool
 
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start BIND operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start BIND operation via <%s>', self)
 
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._deferred_bind = True
                 self._bind_controls = controls
                 self.bound = True
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'deferring bind for <%s>', self)
+                if log_enabled(VERBOSITY_BASIC):
+                    log(VERBOSITY_BASIC, 'deferring bind for <%s>', self)
             else:
                 self._deferred_bind = False
                 self._bind_controls = None
                 if self.closed:  # try to open connection if closed
                     self.open(read_server_info=False)
                 if self.authentication == ANONYMOUS:
-                    if log_enabled(VERBOSITY_NORMAL):
-                        log(VERBOSITY_NORMAL, 'performing anonymous BIND for <%s>', self)
+                    if log_enabled(VERBOSITY_PROTOCOL):
+                        log(VERBOSITY_PROTOCOL, 'performing anonymous BIND for <%s>', self)
                     request = bind_operation(self.version, self.authentication, '', '')
-                    if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
+                    if log_enabled(VERBOSITY_PROTOCOL):
+                        log(VERBOSITY_PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
                 elif self.authentication == SIMPLE:
-                    if log_enabled(VERBOSITY_NORMAL):
-                        log(VERBOSITY_NORMAL, 'performing simple BIND for <%s>', self)
+                    if log_enabled(VERBOSITY_PROTOCOL):
+                        log(VERBOSITY_PROTOCOL, 'performing simple BIND for <%s>', self)
                     request = bind_operation(self.version, self.authentication, self.user, self.password)
-                    if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
+                    if log_enabled(VERBOSITY_PROTOCOL):
+                        log(VERBOSITY_PROTOCOL, 'simple BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))
                 elif self.authentication == SASL:
                     if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
-                        if log_enabled(VERBOSITY_NORMAL):
-                            log(VERBOSITY_NORMAL, 'performing SASL BIND for <%s>', self)
+                        if log_enabled(VERBOSITY_PROTOCOL):
+                            log(VERBOSITY_PROTOCOL, 'performing SASL BIND for <%s>', self)
                         response = self.do_sasl_bind(controls)
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
-                        if log_enabled(VERBOSITY_SEVERE):
-                            log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                        if log_enabled(VERBOSITY_ERROR):
+                            log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
                 elif self.authentication == NTLM:
                     if self.user and self.password:
-                        if log_enabled(VERBOSITY_NORMAL):
-                            log(VERBOSITY_NORMAL, 'performing NTLM BIND for <%s>', self)
+                        if log_enabled(VERBOSITY_PROTOCOL):
+                            log(VERBOSITY_PROTOCOL, 'performing NTLM BIND for <%s>', self)
                         response = self.do_ntlm_bind(controls)
                     else:  # user or password missing
                         self.last_error = 'NTLM needs domain\\username and a password'
-                        if log_enabled(VERBOSITY_SEVERE):
-                            log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                        if log_enabled(VERBOSITY_ERROR):
+                            log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPUnknownAuthenticationMethodError(self.last_error)
                 else:
                     self.last_error = 'unknown authentication method'
-                    if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                    if log_enabled(VERBOSITY_ERROR):
+                        log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if not self.strategy.sync and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
                     _, result = self.get_response(response)
-                    if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'async BIND response id <%s> received via <%s>', result, self)
+                    if log_enabled(VERBOSITY_PROTOCOL):
+                        log(VERBOSITY_PROTOCOL, 'async BIND response id <%s> received via <%s>', result, self)
                 elif self.strategy.sync:
                     result = self.result
-                    if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'BIND response <%s> received via <%s>', result, self)
+                    if log_enabled(VERBOSITY_PROTOCOL):
+                        log(VERBOSITY_PROTOCOL, 'BIND response <%s> received via <%s>', result, self)
                 elif self.authentication == SASL or self.authentication == NTLM:  # async SASL and NTLM
                     result = response
                 else:
                     self.last_error = 'unknown authentication method'
-                    if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                    if log_enabled(VERBOSITY_ERROR):
+                        log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if result is None:
@@ -471,8 +471,8 @@ class Connection(object):
                     self.refresh_server_info()
             self._entries = None
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done BIND operation, result <%s>', self.bound)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done BIND operation, result <%s>', self.bound)
 
             return self.bound
 
@@ -483,8 +483,8 @@ class Connection(object):
         :param controls: LDAP controls to send along with the bind operation
 
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start UNBIND operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start UNBIND operation via <%s>', self)
 
         with self.lock:
             if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # clear deferred status
@@ -494,13 +494,13 @@ class Connection(object):
                 self._deferred_start_tls = False
             elif not self.closed:
                 request = unbind_operation()
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'UNBIND request sent via <%s>', self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'UNBIND request sent via <%s>', self)
                 self.send('unbindRequest', request, controls)
                 self.strategy.close()
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done UNBIND operation, result <%s>', True)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done UNBIND operation, result <%s>', True)
 
             return True
 
@@ -532,8 +532,8 @@ class Connection(object):
         - If lazy = True open and bind will be deferred until another
           LDAP operation is performed
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start SEARCH operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start SEARCH operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
@@ -548,8 +548,8 @@ class Connection(object):
                 attributes += (ALL_OPERATIONAL_ATTRIBUTES, )  # concatenate tuple
 
             if isinstance(paged_size, int):
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
                 real_search_control_value = RealSearchControlValue()
                 real_search_control_value['size'] = Size(paged_size)
                 real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
@@ -558,26 +558,26 @@ class Connection(object):
                 controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
+            if log_enabled(VERBOSITY_PROTOCOL):
+                log(VERBOSITY_PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
             response = self.post_send_search(self.send('searchRequest', request, controls))
             self._entries = None
 
             if isinstance(response, int):
                 return_value = response
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'async SEARCH response id <%s> received via <%s>', return_value, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'async SEARCH response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'searchResDone' and len(response) > 0 else False
-                if log_enabled(VERBOSITY_CHATTY):
+                if log_enabled(VERBOSITY_PROTOCOL):
                     for entry in response:
                         if entry['type'] == 'searchResEntry':
-                            log(VERBOSITY_CHATTY, 'SEARCH response entry <%s> received via <%s>', entry, self)
+                            log(VERBOSITY_PROTOCOL, 'SEARCH response entry <%s> received via <%s>', entry, self)
                         elif entry['type'] == 'searchResRef':
-                            log(VERBOSITY_CHATTY, 'SEARCH response reference <%s> received via <%s>', entry, self)
+                            log(VERBOSITY_PROTOCOL, 'SEARCH response reference <%s> received via <%s>', entry, self)
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done SEARCH operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done SEARCH operation, result <%s>', return_value)
 
             return return_value
 
@@ -589,27 +589,27 @@ class Connection(object):
         """
         Perform a compare operation
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start COMPARE operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start COMPARE operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
             request = compare_operation(dn, attribute, value, self.server.schema if self.server else None)
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
+            if log_enabled(VERBOSITY_PROTOCOL):
+                log(VERBOSITY_PROTOCOL, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
             self._entries = None
             if isinstance(response, int):
                 return_value = response
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'async COMPARE response id <%s> received via <%s>', return_value, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'async COMPARE response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'COMPARE response <%s> received via <%s>', response, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'COMPARE response <%s> received via <%s>', response, self)
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done COMPARE operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done COMPARE operation, result <%s>', return_value)
 
             return return_value
 
@@ -625,8 +625,8 @@ class Connection(object):
         Attributes is a dictionary in the form 'attr': 'val' or 'attr':
         ['val1', 'val2', ...] for multivalued attributes
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start ADD operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start ADD operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
@@ -652,27 +652,27 @@ class Connection(object):
 
             if not attributes[object_class_attr_name]:
                 self.last_error = 'objectClass attribute is mandatory'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPObjectClassError(self.last_error)
 
             request = add_operation(dn, attributes, self.server.schema if self.server else None)
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
+            if log_enabled(VERBOSITY_PROTOCOL):
+                log(VERBOSITY_PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'async ADD response id <%s> received via <%s>', return_value, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'async ADD response id <%s> received via <%s>', return_value, self)
             else:
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'ADD response <%s> received via <%s>', response, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'ADD response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done ADD operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done ADD operation, result <%s>', return_value)
 
             return return_value
 
@@ -682,34 +682,34 @@ class Connection(object):
         """
         Delete the entry identified by the DN from the DIB.
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start DELETE operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start DELETE operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
             request = delete_operation(dn)
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'DELETE request <%s> sent via <%s>', delete_request_to_dict(request), self)
+            if log_enabled(VERBOSITY_PROTOCOL):
+                log(VERBOSITY_PROTOCOL, 'DELETE request <%s> sent via <%s>', delete_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('delRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'async DELETE response id <%s> received via <%s>', return_value, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'async DELETE response id <%s> received via <%s>', return_value, self)
             else:
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'DELETE response <%s> received via <%s>', response, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'DELETE response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done DELETE operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done DELETE operation, result <%s>', return_value)
 
             return return_value
 
@@ -724,58 +724,58 @@ class Connection(object):
           (operation, [val1, val2]), 'attribute2': (operation, [val1, val2])}
         - Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start MODIFY operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start MODIFY operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
             if not isinstance(changes, dict):
                 self.last_error = 'changes must be a dictionary'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPChangesError(self.last_error)
 
             if not changes:
                 self.last_error = 'no changes in modify request'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPChangesError(self.last_error)
 
             for change in changes:
                 if len(changes[change]) != 2:
                     self.last_error = 'malformed change'
-                    if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                    if log_enabled(VERBOSITY_ERROR):
+                        log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPChangesError(self.last_error)
                 elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
                     self.last_error = 'unknown change type'
-                    if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                    if log_enabled(VERBOSITY_ERROR):
+                        log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPChangesError(self.last_error)
 
             request = modify_operation(dn, changes, self.server.schema if self.server else None)
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
+            if log_enabled(VERBOSITY_PROTOCOL):
+                log(VERBOSITY_PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'async MODIFY response id <%s> received via <%s>', return_value, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'async MODIFY response id <%s> received via <%s>', return_value, self)
             else:
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'MODIFY response <%s> received via <%s>', response, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'MODIFY response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done MODIFY operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done MODIFY operation, result <%s>', return_value)
 
             return return_value
 
@@ -789,40 +789,40 @@ class Connection(object):
         Modify DN of the entry or performs a move of the entry in the
         DIT.
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start MODIFY DN operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start MODIFY DN operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
             if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
                 self.last_error = 'DN cannot change while performing moving'
-                if log_enabled(VERBOSITY_SEVERE):
-                    log(VERBOSITY_SEVERE, '%s for <%s>', self.last_error, self)
+                if log_enabled(VERBOSITY_ERROR):
+                    log(VERBOSITY_ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPChangesError(self.last_error)
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'MODIFY DN request <%s> sent via <%s>', modify_dn_request_to_dict(request), self)
+            if log_enabled(VERBOSITY_PROTOCOL):
+                log(VERBOSITY_PROTOCOL, 'MODIFY DN request <%s> sent via <%s>', modify_dn_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modDNRequest', request, controls))
             self._entries = None
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'async MODIFY DN response id <%s> received via <%s>', return_value, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'async MODIFY DN response id <%s> received via <%s>', return_value, self)
             else:
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'MODIFY DN response <%s> received via <%s>', response, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'MODIFY DN response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done MODIFY DN operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done MODIFY DN operation, result <%s>', return_value)
 
             return return_value
 
@@ -832,8 +832,8 @@ class Connection(object):
         """
         Abandon the operation indicated by message_id
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start ABANDON operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start ABANDON operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
@@ -841,16 +841,16 @@ class Connection(object):
             if self.strategy._outstanding:
                 if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
                     request = abandon_operation(message_id)
-                    if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'ABANDON request: <%s> sent via <%s>', abandon_request_to_dict(request), self)
+                    if log_enabled(VERBOSITY_PROTOCOL):
+                        log(VERBOSITY_PROTOCOL, 'ABANDON request: <%s> sent via <%s>', abandon_request_to_dict(request), self)
                     self.send('abandonRequest', request, controls)
                     self.result = None
                     self.response = None
                     self._entries = None
                     return_value = True
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done ABANDON operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done ABANDON operation, result <%s>', return_value)
 
             return return_value
 
@@ -861,34 +861,34 @@ class Connection(object):
         """
         Performs an extended operation
         """
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start EXTENDED operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start EXTENDED operation via <%s>', self)
 
         with self.lock:
             self._fire_deferred()
             request = extended_operation(request_name, request_value)
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'EXTENDED request <%s> sent via <%s>', extended_request_to_dict(request), self)
+            if log_enabled(VERBOSITY_PROTOCOL):
+                log(VERBOSITY_PROTOCOL, 'EXTENDED request <%s> sent via <%s>', extended_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('extendedReq', request, controls))
             self._entries = None
             if isinstance(response, int):
                 return_value = response
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'async EXTENDED response id <%s> received via <%s>', return_value, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'async EXTENDED response id <%s> received via <%s>', return_value, self)
             else:
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'EXTENDED response <%s> received via <%s>', response, self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'EXTENDED response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done EXTENDED operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done EXTENDED operation, result <%s>', return_value)
 
             return return_value
 
     def start_tls(self, read_server_info=True):  # as per RFC4511. Removal of TLS is defined as MAY in RFC4511 so the client can't implement a generic stop_tls method0
 
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start START TLS operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start START TLS operation via <%s>', self)
 
         with self.lock:
             return_value = False
@@ -899,8 +899,8 @@ class Connection(object):
                 self._deferred_start_tls = True
                 self.tls_started = True
                 return_value = True
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'deferring START TLS for <%s>', self)
+                if log_enabled(VERBOSITY_BASIC):
+                    log(VERBOSITY_BASIC, 'deferring START TLS for <%s>', self)
             else:
                 self._deferred_start_tls = False
                 if self.server.tls.start_tls(self) and self.strategy.sync:  # for async connections _start_tls is run by the strategy
@@ -910,15 +910,15 @@ class Connection(object):
                 elif not self.strategy.sync:
                     return_value = True
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done START TLS operation, result <%s>', return_value)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done START TLS operation, result <%s>', return_value)
 
             return return_value
 
     def do_sasl_bind(self,
                      controls):
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start SASL BIND operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start SASL BIND operation via <%s>', self)
 
         with self.lock:
             result = None
@@ -934,15 +934,15 @@ class Connection(object):
 
                 self.sasl_in_progress = False
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done SASL BIND operation, result <%s>', result)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done SASL BIND operation, result <%s>', result)
 
             return result
 
     def do_ntlm_bind(self,
                      controls):
-        if log_enabled(VERBOSITY_NORMAL):
-            log(VERBOSITY_NORMAL, 'start NTLM BIND operation via <%s>', self)
+        if log_enabled(VERBOSITY_BASIC):
+            log(VERBOSITY_BASIC, 'start NTLM BIND operation via <%s>', self)
 
         with self.lock:
             result = None
@@ -956,8 +956,8 @@ class Connection(object):
                 # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
                 # send a sicilyPackageDiscovery request (in the bindRequest)
                 request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
+                if log_enabled(VERBOSITY_PROTOCOL):
+                    log(VERBOSITY_PROTOCOL, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
                 response = self.post_send_single_response(self.send('bindRequest', request, controls))
                 if not self.strategy.sync:
                     _, result = self.get_response(response)
@@ -967,33 +967,33 @@ class Connection(object):
                     sicily_packages = result['server_creds'].decode('ascii').split(';')
                     if 'NTLM' in sicily_packages:  # NTLM available on server
                         request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
-                        if log_enabled(VERBOSITY_CHATTY):
-                            log(VERBOSITY_CHATTY, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
+                        if log_enabled(VERBOSITY_PROTOCOL):
+                            log(VERBOSITY_PROTOCOL, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
                         if not self.strategy.sync:
                             _, result = self.get_response(response)
                         else:
-                            if log_enabled(VERBOSITY_CHATTY):
-                                log(VERBOSITY_CHATTY, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', response[0], self)
+                            if log_enabled(VERBOSITY_PROTOCOL):
+                                log(VERBOSITY_PROTOCOL, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', response[0], self)
                             result = response[0]
 
                         if result['result'] == RESULT_SUCCESS:
                             request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', ntlm_client, result['server_creds'])
-                            if log_enabled(VERBOSITY_CHATTY):
-                                log(VERBOSITY_CHATTY, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)
+                            if log_enabled(VERBOSITY_PROTOCOL):
+                                log(VERBOSITY_PROTOCOL, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
                             if not self.strategy.sync:
                                 _, result = self.get_response(response)
                             else:
-                                if log_enabled(VERBOSITY_CHATTY):
-                                    log(VERBOSITY_CHATTY, 'NTLM BIND response <%s> received via <%s>', response[0], self)
+                                if log_enabled(VERBOSITY_PROTOCOL):
+                                    log(VERBOSITY_PROTOCOL, 'NTLM BIND response <%s> received via <%s>', response[0], self)
                                 result = response[0]
                 else:
                     result = None
                 self.sasl_in_progress = False
 
-            if log_enabled(VERBOSITY_SPARSE):
-                log(VERBOSITY_SPARSE, 'done SASL NTLM operation, result <%s>', result)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'done SASL NTLM operation, result <%s>', result)
 
             return result
 
@@ -1001,8 +1001,8 @@ class Connection(object):
         if not self.strategy.pooled:
             with self.lock:
                 if not self.closed:
-                    if log_enabled(VERBOSITY_CHATTY):
-                        log(VERBOSITY_CHATTY, 'refreshing server info for <%s>', self)
+                    if log_enabled(VERBOSITY_BASIC):
+                        log(VERBOSITY_BASIC, 'refreshing server info for <%s>', self)
                     previous_response = self.response
                     previous_result = self.result
                     previous_entries = self._entries
@@ -1011,8 +1011,8 @@ class Connection(object):
                     self.result = previous_result
                     self._entries = previous_entries
         else:
-            if log_enabled(VERBOSITY_CHATTY):
-                log(VERBOSITY_CHATTY, 'refreshing server info from pool for <%s>', self)
+            if log_enabled(VERBOSITY_BASIC):
+                log(VERBOSITY_BASIC, 'refreshing server info from pool for <%s>', self)
             self.strategy.pool.get_info_from_server()
 
     def response_to_ldif(self,
@@ -1035,8 +1035,8 @@ class Connection(object):
                         header = add_ldif_header(['-'])[0]
                         stream.write(prepare_for_stream(header + line_separator + line_separator))
                     stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'building LDIF output <%s> for <%s>', ldif_output, self)
+                if log_enabled(VERBOSITY_BASIC):
+                    log(VERBOSITY_BASIC, 'building LDIF output <%s> for <%s>', ldif_output, self)
                 return ldif_output
 
             return None
@@ -1070,8 +1070,8 @@ class Connection(object):
 
                 json_output = json.dumps(json_dict, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))
 
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'building JSON output <%s> for <%s>', json_output, self)
+                if log_enabled(VERBOSITY_BASIC):
+                    log(VERBOSITY_BASIC, 'building JSON output <%s> for <%s>', json_output, self)
                 if stream:
                     stream.write(json_output)
 
@@ -1087,8 +1087,8 @@ class Connection(object):
                 if isinstance(target, STRING_TYPES):
                     target = open(target, 'w+')
 
-                if log_enabled(VERBOSITY_CHATTY):
-                    log(VERBOSITY_CHATTY, 'writing response to file for <%s>', self)
+                if log_enabled(VERBOSITY_BASIC):
+                    log(VERBOSITY_BASIC, 'writing response to file for <%s>', self)
 
                 target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
                 target.close()
@@ -1098,8 +1098,8 @@ class Connection(object):
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
 
-                if log_enabled(VERBOSITY_NORMAL):
-                    log(VERBOSITY_NORMAL, 'executing deferred (open: %s, start_tls: %s, bind: %s) for <%s>', self._deferred_open, self._deferred_start_tls, self._deferred_bind, self)
+                if log_enabled(VERBOSITY_BASIC):
+                    log(VERBOSITY_BASIC, 'executing deferred (open: %s, start_tls: %s, bind: %s) for <%s>', self._deferred_open, self._deferred_start_tls, self._deferred_bind, self)
                 try:
                     if self._deferred_open:
                         self.open(read_server_info=False)
@@ -1109,8 +1109,8 @@ class Connection(object):
                         self.bind(read_server_info=False, controls=self._bind_controls)
                     self.refresh_server_info()
                 except LDAPExceptionError as e:
-                    if log_enabled(VERBOSITY_SEVERE):
-                        log(VERBOSITY_SEVERE, '%s for <%s>', e, self)
+                    if log_enabled(VERBOSITY_ERROR):
+                        log(VERBOSITY_ERROR, '%s for <%s>', e, self)
                     raise  # re-raise LDAPExceptionError
                 finally:
                     self._executing_deferred = False
@@ -1166,8 +1166,8 @@ class Connection(object):
                             entries.append(entry)
                         break
                     else:
-                        if log_enabled(VERBOSITY_SEVERE):
-                            log(VERBOSITY_SEVERE, 'attribute set not found for %s in <%s>', resp_attr_set, self)
+                        if log_enabled(VERBOSITY_ERROR):
+                            log(VERBOSITY_ERROR, 'attribute set not found for %s in <%s>', resp_attr_set, self)
                         raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
 
         return entries

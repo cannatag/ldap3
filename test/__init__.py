@@ -27,7 +27,7 @@ from random import SystemRandom
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
-from ldap3.utils.log import VERBOSITY_NONE, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY, set_library_verbosity_level, get_verbosity_level_name
+from ldap3.utils.log import VERBOSITY_NONE, VERBOSITY_ERROR, VERBOSITY_BASIC, VERBOSITY_PROTOCOL, VERBOSITY_NETWORK, set_library_verbosity_level, get_verbosity_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
@@ -35,7 +35,7 @@ from ldap3.utils.log import VERBOSITY_NONE, VERBOSITY_SEVERE, VERBOSITY_SPARSE, 
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = True
-test_verbosity = VERBOSITY_CHATTY
+test_verbosity = VERBOSITY_NETWORK
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True

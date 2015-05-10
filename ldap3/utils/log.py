@@ -27,11 +27,16 @@ from logging import getLogger, getLevelName, DEBUG
 
 # logging
 VERBOSITY_NONE = 0
-VERBOSITY_SEVERE = 10
-VERBOSITY_SPARSE = 20
-VERBOSITY_NORMAL = 30
-VERBOSITY_CHATTY = 40
-VERBOSITY_LEVELS = [VERBOSITY_NONE, VERBOSITY_SEVERE, VERBOSITY_SPARSE, VERBOSITY_NORMAL, VERBOSITY_CHATTY]
+VERBOSITY_ERROR = 10
+VERBOSITY_BASIC = 20
+VERBOSITY_PROTOCOL = 30
+VERBOSITY_NETWORK = 40
+
+VERBOSITY_LEVELS = [VERBOSITY_NONE,
+                    VERBOSITY_ERROR,
+                    VERBOSITY_BASIC,
+                    VERBOSITY_PROTOCOL,
+                    VERBOSITY_NETWORK]
 LIBRARY_VERBOSITY_LEVEL = VERBOSITY_NONE
 LIBRARY_LOGGING_LEVEL = DEBUG
 
@@ -59,15 +64,14 @@ def get_verbosity_level_name(level):
 
     if level == VERBOSITY_NONE:
         return 'NONE'
-    elif level == VERBOSITY_SEVERE:
-        return 'SEVERE'
-    elif level == VERBOSITY_SPARSE:
-        return 'SPARSE'
-    elif level == VERBOSITY_NORMAL:
-        return 'NORMAL'
-    elif level == VERBOSITY_CHATTY:
-        return 'CHATTY'
-
+    elif level == VERBOSITY_ERROR:
+        return 'ERROR'
+    elif level == VERBOSITY_BASIC:
+        return 'BASIC'
+    elif level == VERBOSITY_PROTOCOL:
+        return 'PROTOCOL'
+    elif level == VERBOSITY_NETWORK:
+        return 'NETWORK'
     raise ValueError('unknown verbosity level')
 
 
@@ -90,8 +94,8 @@ def set_library_log_activation_level(level):
         global logging_level
         logging_level = level
     else:
-        if log_enabled(VERBOSITY_SEVERE):
-            log(VERBOSITY_SEVERE, 'invalid library log activation level <%s> ', level)
+        if log_enabled(VERBOSITY_ERROR):
+            log(VERBOSITY_ERROR, 'invalid library log activation level <%s> ', level)
         raise ValueError('invalid library log activation level')
 
 
@@ -99,11 +103,11 @@ def set_library_verbosity_level(verbosity):
     if verbosity in VERBOSITY_LEVELS:
         global verbosity_level
         verbosity_level = verbosity
-        if log_enabled(VERBOSITY_SEVERE):
-            log(VERBOSITY_SEVERE, 'verbosity level set to ' + get_verbosity_level_name(verbosity_level))
+        if log_enabled(VERBOSITY_ERROR):
+            log(VERBOSITY_ERROR, 'verbosity level set to ' + get_verbosity_level_name(verbosity_level))
     else:
-        if log_enabled(VERBOSITY_SEVERE):
-            log(VERBOSITY_SEVERE, 'unable to set verbosity level to <%s>', verbosity)
+        if log_enabled(VERBOSITY_ERROR):
+            log(VERBOSITY_ERROR, 'unable to set verbosity level to <%s>', verbosity)
         raise ValueError('invalid library verbosity level')
 
 # set a logger for the library with NullHandler. It can be used by the application with its own logging configuration

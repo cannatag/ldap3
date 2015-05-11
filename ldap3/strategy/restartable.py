@@ -51,8 +51,6 @@ class RestartableStrategy(SyncStrategy):
         self._current_controls = None
         self._restart_tls = None
         self.exception_history = []
-        if log_enabled(BASIC):
-            log(BASIC, 'instantiated RestartableStrategy: <%s>', self)
 
     def open(self, reset_usage=False, read_server_info=True):
         SyncStrategy.open(self, reset_usage, read_server_info)

@@ -53,7 +53,7 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-from ..utils.log import log, log_enabled, ERROR, PROTOCOL, NETWORK
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
 
 
 # noinspection PyProtectedMember
@@ -70,6 +70,8 @@ class BaseStrategy(object):
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
         self.pooled = None  # Indicates a connection with a connection pool
         self.can_stream = None  # indicate if a strategy keeps a stream of responses (i.e. LdifProducer can accumulate responses with a single header). Stream must be initialized and closed in _start_listen() and _stop_listen()
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
 
     def __str__(self):
         s = [

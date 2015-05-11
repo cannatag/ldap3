@@ -49,8 +49,6 @@ class SyncStrategy(BaseStrategy):
         self.no_real_dsa = False
         self.pooled = False
         self.can_stream = False
-        if log_enabled(BASIC):
-            log(BASIC, 'instantiated SyncStrategy: <%s>', self)
 
     def open(self, reset_usage=True, read_server_info=True):
         BaseStrategy.open(self, reset_usage, read_server_info)

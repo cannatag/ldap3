@@ -26,22 +26,22 @@
 from logging import getLogger, getLevelName, DEBUG
 
 # logging
-VERBOSITY_NONE = 0
-VERBOSITY_ERROR = 10
-VERBOSITY_BASIC = 20
-VERBOSITY_PROTOCOL = 30
-VERBOSITY_NETWORK = 40
+OFF = 0
+ERROR = 10
+BASIC = 20
+PROTOCOL = 30
+NETWORK = 40
 
-VERBOSITY_LEVELS = [VERBOSITY_NONE,
-                    VERBOSITY_ERROR,
-                    VERBOSITY_BASIC,
-                    VERBOSITY_PROTOCOL,
-                    VERBOSITY_NETWORK]
-LIBRARY_VERBOSITY_LEVEL = VERBOSITY_NONE
+LEVELS = [OFF,
+                    ERROR,
+                    BASIC,
+                    PROTOCOL,
+                    NETWORK]
+LIBRARY_LEVEL = OFF
 LIBRARY_LOGGING_LEVEL = DEBUG
 
 logging_level = None
-verbosity_level = None
+level = None
 logging_encoding = 'ascii'
 
 try:
@@ -60,29 +60,32 @@ except ImportError:  # NullHandler not present in Python < 2.7
             self.lock = None
 
 
-def get_verbosity_level_name(level):
+def get_detail_level_name(level):
 
-    if level == VERBOSITY_NONE:
-        return 'NONE'
-    elif level == VERBOSITY_ERROR:
+    if level == OFF:
+        return 'OFF'
+    elif level == ERROR:
         return 'ERROR'
-    elif level == VERBOSITY_BASIC:
+    elif level == BASIC:
         return 'BASIC'
-    elif level == VERBOSITY_PROTOCOL:
+    elif level == PROTOCOL:
         return 'PROTOCOL'
-    elif level == VERBOSITY_NETWORK:
+    elif level == NETWORK:
         return 'NETWORK'
-    raise ValueError('unknown verbosity level')
+    raise ValueError('unknown detail level')
 
 
-def log(verbosity, message, *args):
-    if verbosity <= verbosity_level:
-        encoded_message = (get_verbosity_level_name(verbosity) + ':' + message % args).encode(logging_encoding, 'backslashreplace')
-        logger.log(logging_level, encoded_message)
+def log(detail, message, *args):
+    if detail <= level:
+        encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(logging_encoding, 'backslashreplace')
+        if str != bytes:  # Python 3
+            logger.log(logging_level, encoded_message.decode())
+        else:
+            logger.log(logging_level, encoded_message)
 
 
-def log_enabled(verbosity):
-    if verbosity <= verbosity_level:
+def log_enabled(detail):
+    if detail <= level:
         if logger.isEnabledFor(logging_level):
             return True
 
@@ -94,27 +97,27 @@ def set_library_log_activation_level(level):
         global logging_level
         logging_level = level
     else:
-        if log_enabled(VERBOSITY_ERROR):
-            log(VERBOSITY_ERROR, 'invalid library log activation level <%s> ', level)
+        if log_enabled(ERROR):
+            log(ERROR, 'invalid library log activation level <%s> ', level)
         raise ValueError('invalid library log activation level')
 
 
-def set_library_verbosity_level(verbosity):
-    if verbosity in VERBOSITY_LEVELS:
-        global verbosity_level
-        verbosity_level = verbosity
-        if log_enabled(VERBOSITY_ERROR):
-            log(VERBOSITY_ERROR, 'verbosity level set to ' + get_verbosity_level_name(verbosity_level))
+def set_library_log_detail_level(detail):
+    if detail in LEVELS:
+        global level
+        level = detail
+        if log_enabled(ERROR):
+            log(ERROR, 'detail level set to ' + get_detail_level_name(level))
     else:
-        if log_enabled(VERBOSITY_ERROR):
-            log(VERBOSITY_ERROR, 'unable to set verbosity level to <%s>', verbosity)
-        raise ValueError('invalid library verbosity level')
+        if log_enabled(ERROR):
+            log(ERROR, 'unable to set log detail level to <%s>', detail)
+        raise ValueError('invalid library log detail level')
 
 # set a logger for the library with NullHandler. It can be used by the application with its own logging configuration
 logger = getLogger('ldap3')
 logger.addHandler(NullHandler())
 set_library_log_activation_level(LIBRARY_LOGGING_LEVEL)
-set_library_verbosity_level(LIBRARY_VERBOSITY_LEVEL)
+set_library_log_detail_level(LIBRARY_LEVEL)
 
 # emits a info message to let the application know that ldap3 logging is available when the log level is set to logging_level
-logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(logging_level) + ' - available verbosity levels are: ' + ', '.join([get_verbosity_level_name(level) for level in VERBOSITY_LEVELS]))
+logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in LEVELS]))

@@ -53,7 +53,7 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-from ..utils.log import log, log_enabled, VERBOSITY_ERROR, VERBOSITY_PROTOCOL, VERBOSITY_NETWORK
+from ..utils.log import log, log_enabled, ERROR, PROTOCOL, NETWORK
 
 
 # noinspection PyProtectedMember
@@ -71,17 +71,27 @@ class BaseStrategy(object):
         self.pooled = None  # Indicates a connection with a connection pool
         self.can_stream = None  # indicate if a strategy keeps a stream of responses (i.e. LdifProducer can accumulate responses with a single header). Stream must be initialized and closed in _start_listen() and _stop_listen()
 
+    def __str__(self):
+        s = [
+            str(self.connection) if self.connection else 'None',
+            'sync' if self.sync else 'async',
+            'no real DSA' if self.no_real_dsa else 'real DSA',
+            'pooled' if self.pooled else 'not pooled',
+            'can stream output' if self.pooled else 'cannot stream output',
+        ]
+        return ' - '.join(s)
+
     def open(self, reset_usage=True, read_server_info=True):
         """
         Open a socket to a server. Choose a server from the server pool if available
         """
-        if log_enabled(VERBOSITY_NETWORK):
-            log(VERBOSITY_NETWORK, 'opening connection for <%s>', self.connection)
+        if log_enabled(NETWORK):
+            log(NETWORK, 'opening connection for <%s>', self.connection)
         if self.connection.lazy and not self.connection._executing_deferred:
             self.connection._deferred_open = True
             self.connection.closed = False
-            if log_enabled(VERBOSITY_NETWORK):
-                log(VERBOSITY_NETWORK, 'deferring open connection for <%s>', self.connection)
+            if log_enabled(NETWORK):
+                log(NETWORK, 'deferring open connection for <%s>', self.connection)
 
         else:
             if not self.connection.closed and not self.connection._executing_deferred:  # try to close connection if still open
@@ -113,41 +123,41 @@ class BaseStrategy(object):
 
                 if not self.connection.server.current_address and exception_history:
                     if len(exception_history) == 1:  # only one exception, reraise
-                        if log_enabled(VERBOSITY_ERROR):
-                            log(VERBOSITY_ERROR, '<%s> for <%s>', exception_history[0][1](exception_history[0][2]), self.connection)
+                        if log_enabled(ERROR):
+                            log(ERROR, '<%s> for <%s>', exception_history[0][1](exception_history[0][2]), self.connection)
                         raise exception_history[0][1](exception_history[0][2])
                     else:
-                        if log_enabled(VERBOSITY_ERROR):
-                            log(VERBOSITY_ERROR, 'unable to open socket for <%s>', self.connection)
+                        if log_enabled(ERROR):
+                            log(ERROR, 'unable to open socket for <%s>', self.connection)
                         raise LDAPSocketOpenError('unable to open socket', exception_history)
                 elif not self.connection.server.current_address:
-                    if log_enabled(VERBOSITY_ERROR):
-                        log(VERBOSITY_ERROR, 'invalid server address for <%s>', self.connection)
+                    if log_enabled(ERROR):
+                        log(ERROR, 'invalid server address for <%s>', self.connection)
                     raise LDAPSocketOpenError('invalid server address')
 
             self.connection._deferred_open = False
             self._start_listen()
-            if log_enabled(VERBOSITY_NETWORK):
-                log(VERBOSITY_NETWORK, 'connection open for <%s>', self.connection)
+            if log_enabled(NETWORK):
+                log(NETWORK, 'connection open for <%s>', self.connection)
 
     def close(self):
         """
         Close connection
         """
-        if log_enabled(VERBOSITY_NETWORK):
-            log(VERBOSITY_NETWORK, 'closing connection for <%s>', self.connection)
+        if log_enabled(NETWORK):
+            log(NETWORK, 'closing connection for <%s>', self.connection)
         if self.connection.lazy and not self.connection._executing_deferred and (self.connection._deferred_bind or self.connection._deferred_open):
             self.connection.listening = False
             self.connection.closed = True
-            if log_enabled(VERBOSITY_NETWORK):
-                log(VERBOSITY_NETWORK, 'deferred connection closed for <%s>', self.connection)
+            if log_enabled(NETWORK):
+                log(NETWORK, 'deferred connection closed for <%s>', self.connection)
         else:
             if not self.connection.closed:
                 self._stop_listen()
                 if not self. no_real_dsa:
                     self._close_socket()
-            if log_enabled(VERBOSITY_NETWORK):
-                log(VERBOSITY_NETWORK, 'connection closed for <%s>', self.connection)
+            if log_enabled(NETWORK):
+                log(NETWORK, 'connection closed for <%s>', self.connection)
 
         self.connection.bound = False
         self.connection.request = None
@@ -174,8 +184,8 @@ class BaseStrategy(object):
             exc = e
 
         if exc:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         try:
@@ -189,8 +199,8 @@ class BaseStrategy(object):
             exc = e
 
         if exc:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         if use_ssl:
@@ -203,8 +213,8 @@ class BaseStrategy(object):
                 exc = e
 
             if exc:
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                if log_enabled(ERROR):
+                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         if self.connection.usage:
@@ -246,8 +256,8 @@ class BaseStrategy(object):
         if self.connection.listening:
             if self.connection.sasl_in_progress and message_type not in ['bindRequest']:  # as per RFC4511 (4.2.1)
                 self.connection.last_error = 'cannot send operation requests while SASL bind is in progress'
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                if log_enabled(ERROR):
+                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise LDAPSASLBindInProgressError(self.connection.last_error)
             message_id = self.connection.server.next_message_id()
             ldap_message = LDAPMessage()
@@ -262,8 +272,8 @@ class BaseStrategy(object):
             self.sending(ldap_message)
         else:
             self.connection.last_error = 'unable to send message, socket is not open'
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPSocketOpenError(self.connection.last_error)
 
         return message_id
@@ -293,8 +303,8 @@ class BaseStrategy(object):
                     except (socket.error, LDAPExceptionError):
                         pass
                     self.connection.last_error = 'session terminated by server'
-                    if log_enabled(VERBOSITY_ERROR):
-                        log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                     raise LDAPSessionTerminatedByServer(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
@@ -319,13 +329,13 @@ class BaseStrategy(object):
                     break
 
             if timeout <= 0:
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, 'socket timeout, no response from server for <%s>', self.connection)
+                if log_enabled(ERROR):
+                    log(ERROR, 'socket timeout, no response from server for <%s>', self.connection)
                 raise LDAPResponseTimeoutError('no response from server')
 
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
-                if log_enabled(VERBOSITY_PROTOCOL):
-                    log(VERBOSITY_PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
+                if log_enabled(PROTOCOL):
+                    log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
 
             # checks if any response has a range tag
@@ -346,8 +356,8 @@ class BaseStrategy(object):
 
             self._outstanding.pop(message_id)
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'message id not in outstanding queue for <%s>', self.connection)
+            if log_enabled(ERROR):
+                log(ERROR, 'message id not in outstanding queue for <%s>', self.connection)
             raise(LDAPResponseTimeoutError('message id not in outstanding queue'))
 
         return response, result
@@ -410,8 +420,8 @@ class BaseStrategy(object):
         elif message_type == 'intermediateResponse':
             result = intermediate_response_to_dict(component)
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'unknown response <%s> for <%s>', message_type, self.connection)
+            if log_enabled(ERROR):
+                log(ERROR, 'unknown response <%s> for <%s>', message_type, self.connection)
             raise LDAPUnknownResponseError('unknown response')
         result['type'] = message_type
         if controls:
@@ -436,8 +446,8 @@ class BaseStrategy(object):
             control_value['size'] = int(control_resp['size'])
             control_value['cookie'] = bytes(control_resp['cookie'])
             if unprocessed:
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, 'unprocessed control response in substrate for simple paged search')
+                if log_enabled(ERROR):
+                    log(ERROR, 'unprocessed control response in substrate for simple paged search')
                 raise LDAPControlsError('unprocessed control response in substrate for simple paged search')
 
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
@@ -467,8 +477,8 @@ class BaseStrategy(object):
         elif message_type == 'abandonRequest':
             result = abandon_request_to_dict(component)
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'unknown request <%s>', message_type)
+            if log_enabled(ERROR):
+                log(ERROR, 'unknown request <%s>', message_type)
             raise LDAPUnknownRequestError('unknown request')
         result['type'] = message_type
         return result
@@ -496,8 +506,8 @@ class BaseStrategy(object):
             response['raw_attributes'][attr_type] += current_response['raw_attributes'][attr_name]
             response['attributes'][attr_type] += current_response['attributes'][attr_name]
             if high_range != '*':
-                if log_enabled(VERBOSITY_PROTOCOL):
-                    log(VERBOSITY_PROTOCOL, 'performing next search on auto-range <%s> via <%s>', str(int(high_range) + 1), self.connection)
+                if log_enabled(PROTOCOL):
+                    log(PROTOCOL, 'performing next search on auto-range <%s> via <%s>', str(int(high_range) + 1), self.connection)
                 result = self.connection.search(search_base=response['dn'],
                                                 search_filter='(objectclass=*)',
                                                 search_scope=BASE,
@@ -524,8 +534,8 @@ class BaseStrategy(object):
                     self.do_next_range_search(request, resp, attr_name)
 
     def do_operation_on_referral(self, request, referrals):
-        if log_enabled(VERBOSITY_PROTOCOL):
-            log(VERBOSITY_PROTOCOL, 'following referral for <%s>', self.connection)
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'following referral for <%s>', self.connection)
         valid_referral_list = self.valid_referral_list(referrals)
         if valid_referral_list:
             preferred_referral_list = [referral for referral in valid_referral_list if referral['ssl'] == self.connection.server.ssl]
@@ -585,8 +595,8 @@ class BaseStrategy(object):
                                            controls=request['controls'])
             elif request['type'] == 'extendedRequest':
                 # TODO
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, 'follow referrals on extended operation is not implemented for <%s>', self.connection)
+                if log_enabled(ERROR):
+                    log(ERROR, 'follow referrals on extended operation is not implemented for <%s>', self.connection)
                 raise NotImplementedError()
             elif request['type'] == 'modifyRequest':
                 referral_connection.modify(selected_referral['base'] or request['entry'],
@@ -600,8 +610,8 @@ class BaseStrategy(object):
                                               controls=request['controls'])
             else:
                 self.connection.last_error = 'referral operation not permitted'
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                if log_enabled(ERROR):
+                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise LDAPReferralError(self.connection.last_error)
 
             response = referral_connection.response
@@ -615,8 +625,8 @@ class BaseStrategy(object):
 
     def sending(self, ldap_message):
         exc = None
-        if log_enabled(VERBOSITY_NETWORK):
-            log(VERBOSITY_NETWORK, 'sending <%s> message for <%s>', ldap_message, self.connection)
+        if log_enabled(NETWORK):
+            log(NETWORK, 'sending <%s> message for <%s>', ldap_message, self.connection)
         try:
             encoded_message = encoder.encode(ldap_message)
             self.connection.socket.sendall(encoded_message)
@@ -626,8 +636,8 @@ class BaseStrategy(object):
             encoded_message = None
 
         if exc:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise communication_exception_factory(LDAPSocketSendError, exc)(self.connection.last_error)
 
         if self.connection.usage:

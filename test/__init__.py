@@ -27,7 +27,7 @@ from random import SystemRandom
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
-from ldap3.utils.log import VERBOSITY_NONE, VERBOSITY_ERROR, VERBOSITY_BASIC, VERBOSITY_PROTOCOL, VERBOSITY_NETWORK, set_library_verbosity_level, get_verbosity_level_name
+from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, set_library_log_detail_level, get_detail_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
@@ -35,7 +35,7 @@ from ldap3.utils.log import VERBOSITY_NONE, VERBOSITY_ERROR, VERBOSITY_BASIC, VE
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = True
-test_verbosity = VERBOSITY_NETWORK
+test_log_detail = NETWORK
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True
@@ -190,16 +190,14 @@ if test_logging:
         pass
 
     import logging
-    logging._defaultFormatter = logging.Formatter(u"%(message)s")
     logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)
-    logging._defaultFormatter = logging.Formatter(u"%(message)s")
-    set_library_verbosity_level(test_verbosity)
+    set_library_log_detail_level(test_log_detail)
 
 print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage', test_usage)
-print('Logging:', 'False' if not test_logging else test_logging_filename, '- Verbosity:', get_verbosity_level_name(test_verbosity) if test_logging else 'None')
+print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', get_detail_level_name(test_log_detail) if test_logging else 'None')
 
 
 def random_id():

@@ -31,7 +31,7 @@ from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQ
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-from ..utils.log import log, log_enabled, VERBOSITY_ERROR, VERBOSITY_BASIC, VERBOSITY_PROTOCOL, VERBOSITY_NETWORK
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
 
 
 # noinspection PyProtectedMember
@@ -49,8 +49,8 @@ class SyncStrategy(BaseStrategy):
         self.no_real_dsa = False
         self.pooled = False
         self.can_stream = False
-        if log_enabled(VERBOSITY_BASIC):
-            log(VERBOSITY_BASIC, 'instantiated ServerPoolState: <%r>', self)
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated SyncStrategy: <%s>', self)
 
     def open(self, reset_usage=True, read_server_info=True):
         BaseStrategy.open(self, reset_usage, read_server_info)
@@ -89,8 +89,8 @@ class SyncStrategy(BaseStrategy):
                         self.close()
                     except (socket.error, LDAPExceptionError):
                         pass
-                    if log_enabled(VERBOSITY_ERROR):
-                        log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                     raise communication_exception_factory(LDAPSocketReceiveError, exc)(self.connection.last_error)
 
                 unprocessed += data
@@ -110,8 +110,8 @@ class SyncStrategy(BaseStrategy):
             else:
                 receiving = False
 
-        if log_enabled(VERBOSITY_NETWORK):
-            log(VERBOSITY_NETWORK, 'received <%d> ldap messages', len(messages))
+        if log_enabled(NETWORK):
+            log(NETWORK, 'received <%d> ldap messages', len(messages))
         return messages
 
     def post_send_single_response(self, message_id):
@@ -125,8 +125,8 @@ class SyncStrategy(BaseStrategy):
             for response in responses:
                 if response['type'] != 'intermediateResponse':
                     self.connection.last_error = 'multiple messages received error'
-                    if log_enabled(VERBOSITY_ERROR):
-                        log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                     raise LDAPSocketReceiveError(self.connection.last_error)
 
         responses.append(result)
@@ -144,8 +144,8 @@ class SyncStrategy(BaseStrategy):
             return responses
 
         self.connection.last_error = 'error receiving response'
-        if log_enabled(VERBOSITY_ERROR):
-            log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+        if log_enabled(ERROR):
+            log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
         raise LDAPSocketReceiveError(self.connection.last_error)
 
     def _get_response(self, message_id):
@@ -173,25 +173,25 @@ class SyncStrategy(BaseStrategy):
                                 return SESSION_TERMINATED_BY_SERVER
                             else:
                                 self.connection.last_error = 'unknown unsolicited notification from server'
-                                if log_enabled(VERBOSITY_ERROR):
-                                    log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                                if log_enabled(ERROR):
+                                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                                 raise LDAPSocketReceiveError(self.connection.last_error)
                         elif int(ldap_resp['messageID']) != message_id and self.decode_response(ldap_resp)['type'] == 'extendedResp':
                             self.connection.last_error = 'multiple extended responses to a single extended request'
-                            if log_enabled(VERBOSITY_ERROR):
-                                log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                            if log_enabled(ERROR):
+                                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                             raise LDAPExtensionError(self.connection.last_error)
                             # pass  # ignore message with invalid messageId when receiving multiple extendedResp. This is not allowed by RFC4511 but some LDAP server do it
                         else:
                             self.connection.last_error = 'invalid messageId received'
-                            if log_enabled(VERBOSITY_ERROR):
-                                log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                            if log_enabled(ERROR):
+                                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                             raise LDAPSocketReceiveError(self.connection.last_error)
                         response = unprocessed
                         if response:  # if this statement is removed unprocessed data will be processed as another message
                             self.connection.last_error = 'unprocessed substrate error'
-                            if log_enabled(VERBOSITY_ERROR):
-                                log(VERBOSITY_ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                            if log_enabled(ERROR):
+                                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                             raise LDAPSocketReceiveError(self.connection.last_error)
             else:
                 return SESSION_TERMINATED_BY_SERVER

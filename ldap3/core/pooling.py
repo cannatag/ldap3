@@ -30,7 +30,7 @@ from random import randint
 from .. import FIRST, ROUND_ROBIN, RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES
 from .exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError
 from .server import Server
-from ..utils.log import log, log_enabled, VERBOSITY_ERROR, VERBOSITY_BASIC
+from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
 class ServerPoolState(object):
@@ -42,8 +42,8 @@ class ServerPoolState(object):
         self.initialize_time = datetime.now()
         self.last_used_server = randint(0, len(self.servers) - 1)
 
-        if log_enabled(VERBOSITY_BASIC):
-            log(VERBOSITY_BASIC, 'instantiated ServerPoolState: <%r>', self)
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated ServerPoolState: <%r>', self)
 
     def __str__(self):
         s = 'servers: ' + linesep
@@ -89,15 +89,15 @@ class ServerPoolState(object):
                     # returns a random server in the pool
                     self.last_used_server = randint(0, len(self.servers))
             else:
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, 'unknown server pooling strategy <%s>', self.server_pool.strategy)
+                if log_enabled(ERROR):
+                    log(ERROR, 'unknown server pooling strategy <%s>', self.server_pool.strategy)
                 raise LDAPUnknownStrategyError('unknown server pooling strategy')
-            if log_enabled(VERBOSITY_BASIC):
-                log(VERBOSITY_BASIC, 'server returned from Server Pool: <%s>', self.last_used_server)
+            if log_enabled(BASIC):
+                log(BASIC, 'server returned from Server Pool: <%s>', self.last_used_server)
             return self.servers[self.last_used_server]
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'no servers in Server Pool <%s>', self)
+            if log_enabled(ERROR):
+                log(ERROR, 'no servers in Server Pool <%s>', self)
             raise LDAPServerPoolError('no servers in server pool')
 
     def find_active_random_server(self, exhaust=True):
@@ -111,8 +111,8 @@ class ServerPoolState(object):
                     # returns a random active server in the pool
                     return self.servers.index(server)
             if exhaust:
-                if log_enabled(VERBOSITY_ERROR):
-                    log(VERBOSITY_ERROR, 'no random active server in Server Pool <%s>', self)
+                if log_enabled(ERROR):
+                    log(ERROR, 'no random active server in Server Pool <%s>', self)
                 raise LDAPServerPoolExhaustedError('no random active server in server pool')
 
     def find_active_server(self, starting=0, exhaust=True):
@@ -132,8 +132,8 @@ class ServerPoolState(object):
                     index += 1
                 else:
                     if exhaust:
-                        if log_enabled(VERBOSITY_ERROR):
-                            log(VERBOSITY_ERROR, 'no active server available in Server Pool <%s>', self)
+                        if log_enabled(ERROR):
+                            log(ERROR, 'no active server available in Server Pool <%s>', self)
                         raise LDAPServerPoolExhaustedError('no active server available in server pool')
                     else:
                         continue
@@ -151,12 +151,12 @@ class ServerPool(object):
                  exhaust=False):
 
         if pool_strategy not in POOLING_STRATEGIES:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'unknown pooling strategy <%s>', pool_strategy)
+            if log_enabled(ERROR):
+                log(ERROR, 'unknown pooling strategy <%s>', pool_strategy)
             raise LDAPUnknownStrategyError('unknown pooling strategy')
         if exhaust and not active:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'cannot instantiate pool with exhaust and not active')
+            if log_enabled(ERROR):
+                log(ERROR, 'cannot instantiate pool with exhaust and not active')
             raise LDAPServerPoolError('pools can be exhausted only when checking for active servers')
         self.servers = []
         self.pool_states = dict()
@@ -168,8 +168,8 @@ class ServerPool(object):
             self.add(Server(servers))
         self.strategy = pool_strategy
 
-        if log_enabled(VERBOSITY_BASIC):
-            log(VERBOSITY_BASIC, 'instantiated ServerPool: <%r>', self)
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated ServerPool: <%r>', self)
 
     def __str__(self):
             s = 'servers: ' + linesep
@@ -221,12 +221,12 @@ class ServerPool(object):
                 elif isinstance(server, STRING_TYPES):
                     self.servers.append(Server(server))
                 else:
-                    if log_enabled(VERBOSITY_ERROR):
-                        log(VERBOSITY_ERROR, 'element must be a server in Server Pool <%s>', self)
+                    if log_enabled(ERROR):
+                        log(ERROR, 'element must be a server in Server Pool <%s>', self)
                     raise LDAPServerPoolError('server in ServerPool must be a Server')
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'server must be a Server of a list of Servers when adding to Server Pool <%s>', self)
+            if log_enabled(ERROR):
+                log(ERROR, 'server must be a Server of a list of Servers when adding to Server Pool <%s>', self)
             raise LDAPServerPoolError('server must be a Server or a list of Server')
 
         for connection in self.pool_states:
@@ -237,8 +237,8 @@ class ServerPool(object):
         if server in self.servers:
             self.servers.remove(server)
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'server %s to be removed not in Server Pool <%s>', server, self)
+            if log_enabled(ERROR):
+                log(ERROR, 'server %s to be removed not in Server Pool <%s>', server, self)
             raise LDAPServerPoolError('server not in server pool')
 
         for connection in self.pool_states:
@@ -254,14 +254,14 @@ class ServerPool(object):
         if connection in self.pool_states:
             return self.pool_states[connection].get_server()
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'connection <%s> not in Server Pool State <%s>', connection, self)
+            if log_enabled(ERROR):
+                log(ERROR, 'connection <%s> not in Server Pool State <%s>', connection, self)
             raise LDAPServerPoolError('connection not in ServerPoolState')
 
     def get_current_server(self, connection):
         if connection in self.pool_states:
             return self.pool_states[connection].get_current_server()
         else:
-            if log_enabled(VERBOSITY_ERROR):
-                log(VERBOSITY_ERROR, 'connection <%s> not in Server Pool State <%s>', connection, self)
+            if log_enabled(ERROR):
+                log(ERROR, 'connection <%s> not in Server Pool State <%s>', connection, self)
             raise LDAPServerPoolError('connection not in ServerPoolState')

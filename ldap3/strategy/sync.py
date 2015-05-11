@@ -113,7 +113,7 @@ class SyncStrategy(BaseStrategy):
                 receiving = False
 
         if log_enabled(NETWORK):
-            log(NETWORK, 'received %d ldap messages', len(messages))
+            log(NETWORK, 'received %d ldap messages via <%s>', len(messages), self.connection)
         return messages
 
     def post_send_single_response(self, message_id):

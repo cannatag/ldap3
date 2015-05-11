@@ -32,6 +32,7 @@ from .. import RESPONSE_COMPLETE, SOCKET_SIZE
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
 
 
 # noinspection PyProtectedMember
@@ -71,7 +72,9 @@ class AsyncStrategy(BaseStrategy):
                         data = self.connection.socket.recv(SOCKET_SIZE)
                     except (OSError, socket.error):
                         listen = False
-                    except Exception:
+                    except Exception as e:
+                        if log_enabled(ERROR):
+                            log(ERROR, '<%s> for <%s>', str(e), self.connection)
                         raise  # unexpected exception - re-raise
                     if len(data) > 0:
                         unprocessed += data
@@ -84,18 +87,26 @@ class AsyncStrategy(BaseStrategy):
                 elif len(unprocessed) >= length:  # add message to message list
                     if self.connection.usage:
                         self.connection._usage.update_received_message(length)
+                        if log_enabled(NETWORK):
+                            log(NETWORK, 'received %d bytes via <%s>', length, self.connection)
                     ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
                     message_id = int(ldap_resp['messageID'])
                     dict_response = self.connection.strategy.decode_response(ldap_resp)
+                    if log_enabled(NETWORK):
+                        log(NETWORK, 'received 1 ldap message via <%s>', self.connection)
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
                         if dict_response['result'] == 0:  # StartTls in progress
                             if self.connection.server.tls:
                                 self.connection.server.tls._start_tls(self.connection)
                             else:
                                 self.connection.last_error = 'no Tls object defined in Server'
+                                if log_enabled(ERROR):
+                                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                                 raise LDAPSSLConfigurationError(self.connection.last_error)
                         else:
                             self.connection.last_error = 'asynchronous StartTls failed'
+                            if log_enabled(ERROR):
+                                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                             raise LDAPStartTLSError(self.connection.last_error)
                     if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
                         with self.connection.strategy.lock:
@@ -114,6 +125,8 @@ class AsyncStrategy(BaseStrategy):
                             listen = False
                         else:
                             self.connection.last_error = 'unknown unsolicited notification from server'
+                            if log_enabled(ERROR):
+                                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                             raise LDAPStartTLSError(self.connection.last_error)
             self.connection.strategy.close()
 

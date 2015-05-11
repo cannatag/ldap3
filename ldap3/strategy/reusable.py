@@ -145,11 +145,11 @@ class ReusableStrategy(BaseStrategy):
                 self.create_pool()
                 for pooled_connection_worker in self.connections:
                     with pooled_connection_worker.lock:
-                        if log_enabled(BASIC):
-                            log(BASIC, 'connection worker started for pool <%s>', self)
                         pooled_connection_worker.thread.start()
                 self.started = True
                 self.terminated = False
+                if log_enabled(BASIC):
+                    log(BASIC, 'connection worker started for pool <%s>', self)
                 return True
             return False
 
@@ -165,10 +165,10 @@ class ReusableStrategy(BaseStrategy):
                 self.started = False
                 self.master_schema = None
                 self.master_info = None
-                self.request_queue.join()  # wait for all queue pending operations
+                self.request_queue.join()  # waits for all queue pending operations
                 for _ in range(len([connection for connection in self.connections if connection.thread.is_alive()])):  # put a TERMINATE signal on the queue for each active thread
                     self.request_queue.put((TERMINATE_REUSABLE, None, None, None))
-                self.request_queue.join()  # wait for all queue terminate operations
+                self.request_queue.join()  # waits for all queue terminate operations
                 self.terminated = True
                 if log_enabled(BASIC):
                     log(BASIC, 'pool terminated for <%s>', self)

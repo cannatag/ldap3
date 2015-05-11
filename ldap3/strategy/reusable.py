@@ -32,6 +32,7 @@ from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, RESTARTA
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
 
 
 try:
@@ -110,6 +111,8 @@ class ReusableStrategy(BaseStrategy):
                 self.lock = Lock()
                 ReusableStrategy.pools[self.name] = self
                 self.started = False
+                if log_enabled(BASIC):
+                    log(BASIC, 'instantiated ConnectionPool: <%r>', self)
 
         def __str__(self):
             s = 'POOL: ' + str(self.name) + ' - status: ' + ('started' if self.started else 'terminated')
@@ -142,6 +145,8 @@ class ReusableStrategy(BaseStrategy):
                 self.create_pool()
                 for pooled_connection_worker in self.connections:
                     with pooled_connection_worker.lock:
+                        if log_enabled(BASIC):
+                            log(BASIC, 'connection worker started for pool <%s>', self)
                         pooled_connection_worker.thread.start()
                 self.started = True
                 self.terminated = False
@@ -149,10 +154,14 @@ class ReusableStrategy(BaseStrategy):
             return False
 
         def create_pool(self):
+            if log_enabled(BASIC):
+                log(BASIC, 'created pool <%s>', self)
             self.connections = [ReusableStrategy.PooledConnectionWorker(self.master_connection, self.request_queue) for _ in range(self.pool_size)]
 
         def terminate_pool(self):
             if not self.terminated:
+                if log_enabled(BASIC):
+                    log(BASIC, 'terminating pool <%s>', self)
                 self.started = False
                 self.master_schema = None
                 self.master_info = None
@@ -161,6 +170,8 @@ class ReusableStrategy(BaseStrategy):
                     self.request_queue.put((TERMINATE_REUSABLE, None, None, None))
                 self.request_queue.join()  # wait for all queue terminate operations
                 self.terminated = True
+                if log_enabled(BASIC):
+                    log(BASIC, 'pool terminated for <%s>', self)
 
     class PooledConnectionThread(Thread):
         """
@@ -172,6 +183,8 @@ class ReusableStrategy(BaseStrategy):
             self.daemon = True
             self.worker = pooled_connection_worker
             self.master_connection = master_connection
+            if log_enabled(BASIC):
+                log(BASIC, 'instantiated PooledConnectionThread: <%r>', self)
 
         # noinspection PyProtectedMember
         def run(self):
@@ -187,6 +200,8 @@ class ReusableStrategy(BaseStrategy):
                         if self.worker.connection.bound:
                             try:
                                 self.worker.connection.unbind()
+                                if log_enabled(BASIC):
+                                    log(BASIC, 'thread terminated')
                             except LDAPExceptionError:
                                 pass
                     else:
@@ -196,6 +211,8 @@ class ReusableStrategy(BaseStrategy):
                             except LDAPExceptionError:
                                 pass
                             self.worker.new_connection()
+                            if log_enabled(BASIC):
+                                log(BASIC, 'thread respawn')
                         if message_type not in ['bindRequest', 'unbindRequest']:
                             if pool.open_pool and self.worker.connection.closed:
                                 self.worker.connection.open(read_server_info=False)
@@ -228,6 +245,8 @@ class ReusableStrategy(BaseStrategy):
                     self.worker.busy = False
                     pool.request_queue.task_done()
                     self.worker.task_counter += 1
+            if log_enabled(BASIC):
+                log(BASIC, 'thread terminated')
             if self.master_connection.usage:
                 pool.terminated_usage += self.worker.connection.usage
             self.worker.running = False
@@ -248,6 +267,8 @@ class ReusableStrategy(BaseStrategy):
             self.task_counter = 0
             self.thread = ReusableStrategy.PooledConnectionThread(self, connection)
             self.lock = Lock()
+            if log_enabled(BASIC):
+                log(BASIC, 'instantiated PooledConnectionWorker: <%s>', self)
 
         def __str__(self):
             s = 'CONN: ' + str(self.connection) + linesep + '       THREAD: '
@@ -285,6 +306,7 @@ class ReusableStrategy(BaseStrategy):
 
             self.creation_time = datetime.now()
 
+    # ReusableStrategy methods
     def __init__(self, ldap_connection):
         BaseStrategy.__init__(self, ldap_connection)
         self.sync = False
@@ -294,6 +316,8 @@ class ReusableStrategy(BaseStrategy):
         if hasattr(ldap_connection, 'pool_name') and ldap_connection.pool_name:
             self.pool = ReusableStrategy.ConnectionPool(ldap_connection)
         else:
+            if log_enabled(ERROR):
+                log(ERROR, 'reusable connection must have a pool_name')
             raise LDAPConnectionPoolNameIsMandatoryError('reusable connection must have a pool_name')
 
     def open(self, reset_usage=True, read_server_info=True):
@@ -341,6 +365,8 @@ class ReusableStrategy(BaseStrategy):
                 self.pool.request_queue.put((counter, message_type, request, controls))
 
             return counter
+        if log_enabled(ERROR):
+            log(ERROR, 'reusable connection pool not started')
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
     def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
@@ -367,6 +393,8 @@ class ReusableStrategy(BaseStrategy):
                 break
 
             if timeout <= 0:
+                if log_enabled(ERROR):
+                    log(ERROR, 'no response from worker threads in Reusable connection')
                 raise LDAPResponseTimeoutError('no response from worker threads in Reusable connection')
 
         if isinstance(response, LDAPOperationResult):

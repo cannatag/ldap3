@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 import re
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
+from ..utils.log import log, log_enabled, NETWORK
 
 
 class CertificateError(ValueError):  # fix for Python 2, code from Python 3.3 standard library

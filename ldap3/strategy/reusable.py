@@ -32,7 +32,7 @@ from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, RESTARTA
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
+from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
 try:

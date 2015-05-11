@@ -361,8 +361,7 @@ class NtlmClient(object):
             return False
 
         # 3.1.5.2
-        if (
-                    not self.server_av_netbios_computer_name or not self.server_av_netbios_domain_name) and self.server_av_flag_integrity:
+        if (not self.server_av_netbios_computer_name or not self.server_av_netbios_domain_name) and self.server_av_flag_integrity:
             return False
 
         message = NTLM_SIGNATURE  # 8 bytes
@@ -421,7 +420,8 @@ class NtlmClient(object):
     def unpack_field(field_message):
         if len(field_message) != 8:
             raise ValueError('ntlm field must be 8 bytes long')
-        return unpack('<H', field_message[0:2])[0], unpack('<H', field_message[2:4])[0], \
+        return unpack('<H', field_message[0:2])[0], \
+               unpack('<H', field_message[2:4])[0], \
                unpack('<I', field_message[4:8])[0]
 
     @staticmethod

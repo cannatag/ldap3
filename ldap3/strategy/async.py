@@ -32,7 +32,7 @@ from .. import RESPONSE_COMPLETE, SOCKET_SIZE
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
+from ..utils.log import log, log_enabled, ERROR, NETWORK
 
 
 # noinspection PyProtectedMember

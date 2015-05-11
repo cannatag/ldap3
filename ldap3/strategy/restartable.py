@@ -31,7 +31,7 @@ from datetime import datetime
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
+from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
 # noinspection PyBroadException,PyProtectedMember

@@ -32,11 +32,7 @@ BASIC = 20
 PROTOCOL = 30
 NETWORK = 40
 
-LEVELS = [OFF,
-                    ERROR,
-                    BASIC,
-                    PROTOCOL,
-                    NETWORK]
+LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK]
 LIBRARY_LEVEL = OFF
 LIBRARY_LOGGING_LEVEL = DEBUG
 
@@ -113,7 +109,7 @@ def set_library_log_detail_level(detail):
             log(ERROR, 'unable to set log detail level to <%s>', detail)
         raise ValueError('invalid library log detail level')
 
-# set a logger for the library with NullHandler. It can be used by the application with its own logging configuration
+# sets a logger for the library with NullHandler. It can be used by the application with its own logging configuration
 logger = getLogger('ldap3')
 logger.addHandler(NullHandler())
 set_library_log_activation_level(LIBRARY_LOGGING_LEVEL)

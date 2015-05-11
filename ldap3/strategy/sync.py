@@ -102,6 +102,8 @@ class SyncStrategy(BaseStrategy):
                 if len(unprocessed) < length:
                     get_more_data = True
                 else:
+                    if log_enabled(NETWORK):
+                        log(NETWORK, 'received %d bytes via <%s>', len(unprocessed[:length]), self.connection)
                     messages.append(unprocessed[:length])
                     unprocessed = unprocessed[length:]
                     get_more_data = False
@@ -111,7 +113,7 @@ class SyncStrategy(BaseStrategy):
                 receiving = False
 
         if log_enabled(NETWORK):
-            log(NETWORK, 'received <%d> ldap messages', len(messages))
+            log(NETWORK, 'received %d ldap messages', len(messages))
         return messages
 
     def post_send_single_response(self, message_id):

@@ -173,7 +173,7 @@ class Tls(object):
                 ssl_context.protocol = self.version
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
             if log_enabled(NETWORK):
-                log(NETWORK, 'socket wrapped with ssl using SSLContext for <%s>', connection)
+                log(NETWORK, 'socket wrapped with SSL using SSLContext for <%s>', connection)
         else:
             if self.version is None and hasattr(ssl, 'PROTOCOL_SSLv23'):
                 self.version = ssl.PROTOCOL_SSLv23
@@ -186,7 +186,7 @@ class Tls(object):
                                              ca_certs=self.ca_certs_file,
                                              do_handshake_on_connect=do_handshake)
             if log_enabled(NETWORK):
-                log(NETWORK, 'socket wrapped with ssl for <%s>', connection)
+                log(NETWORK, 'socket wrapped with SSL for <%s>', connection)
 
         if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)

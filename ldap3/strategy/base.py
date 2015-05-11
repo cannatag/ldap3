@@ -630,6 +630,8 @@ class BaseStrategy(object):
         try:
             encoded_message = encoder.encode(ldap_message)
             self.connection.socket.sendall(encoded_message)
+            if log_enabled(NETWORK):
+                log(NETWORK, 'sent %d bytes via <%s>', len(encoded_message), self.connection)
         except socket.error as e:
             self.connection.last_error = 'socket sending error' + str(e)
             exc = e

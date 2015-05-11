@@ -8,6 +8,11 @@ ModifyDn operations. *These two formats have different purposes and cannot be mi
 If the DN of the entry or an attribute value contains any unicode character the value must be base64 encoded, as specified in RFC2849.
 ldap3 is compliant to the latest LDIF format (version: 1).
 
+ldap3 can stream the output of a search (LDIF-CONTENT) or of an operation (LDIF-CHANGE) to a file object.
+It cannot read a file with LDIF content because this is not in the LDAPv3 standard.
+Each LDAP searver has its own tools to import an LDIF-CONTENT or perform LDIF-CHANGE.
+
+
 LDIF-CONTENT
 ============
 

@@ -21,17 +21,21 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 from sys import version
-from os import environ
+from os import environ, remove
 from random import SystemRandom
 
-from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, Server, Connection, ServerPool, SASL, \
+from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
+from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, set_library_log_detail_level, get_detail_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
+
+test_logging = True
+test_log_detail = NETWORK
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True
@@ -40,9 +44,9 @@ test_pooling_exhaust = False
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
-test_check_names = False  # check attribute names in operations
+test_check_names = True  # check attribute names in operations
 test_get_info = NONE  # get info from DSA
-
+test_usage = True
 
 try:
     location = environ['USERDOMAIN']
@@ -69,6 +73,7 @@ if location.startswith('TRAVIS'):
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
+    test_logging_filename = 'ldap3.log'
 elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
@@ -93,6 +98,7 @@ elif location == 'GCNBHPW8':
     test_user_key_file = 'local-edir-admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCNBHPW8-AD':
     # test elitebook - Active Directory (AD)
     # test_server = ['win1',
@@ -115,9 +121,9 @@ elif location == 'GCNBHPW8-AD':
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc1234pfop'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
-    # test_server = 'edir1.hyperv'
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
     test_base = 'o=test'  # base context where test objects are created
@@ -136,6 +142,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_user_key_file = ''
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCW89227':
     # test camera
     # test_server = ['sl08',
@@ -161,6 +168,7 @@ elif location == 'GCW89227':
     test_user_key_file = 'admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
+    test_logging_filename = 'C:\\Temp\\ldap3.log'
 else:
     raise Exception('testing location ' + location + ' is not valid')
 
@@ -169,16 +177,27 @@ if location.startswith('TRAVIS,'):
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
 else:
-    test_strategy = SYNC  # sync strategy for executing tests
-    # test_strategy = ASYNC  # uncomment this line to test the async strategy
+    # test_strategy = SYNC  # sync strategy for executing tests
+    test_strategy = ASYNC  # uncomment this line to test the async strategy
     # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
 
+if test_logging:
+    try:
+        remove(test_logging_filename)
+    except OSError:
+        pass
+
+    import logging
+    logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)
+    set_library_log_detail_level(test_log_detail)
+
 print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
-print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names)
+print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage', test_usage)
+print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', get_detail_level_name(test_log_detail) if test_logging else 'None')
 
 
 def random_id():
@@ -196,7 +215,8 @@ def get_connection(bind=None,
                    sasl_mechanism=None,
                    sasl_credentials=None,
                    ntlm_credentials=None,
-                   get_info=None):
+                   get_info=None,
+                   usage=None):
     if bind is None:
         if test_server_type == 'AD':
             bind = AUTO_BIND_TLS_BEFORE_BIND
@@ -210,6 +230,8 @@ def get_connection(bind=None,
         authentication = test_authentication
     if get_info is None:
         get_info = test_get_info
+    if usage is None:
+        usage = test_usage
 
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
@@ -238,7 +260,8 @@ def get_connection(bind=None,
                           sasl_credentials=sasl_credentials,
                           lazy=lazy_connection,
                           pool_name='pool1',
-                          check_names=check_names)
+                          check_names=check_names,
+                          collect_usage=usage)
     elif authentication == NTLM:
         return Connection(server,
                           auto_bind=bind,
@@ -249,7 +272,8 @@ def get_connection(bind=None,
                           authentication=NTLM,
                           lazy=lazy_connection,
                           pool_name='pool1',
-                          check_names=check_names)
+                          check_names=check_names,
+                          collect_usage=usage)
     else:
         return Connection(server,
                           auto_bind=bind,
@@ -260,7 +284,8 @@ def get_connection(bind=None,
                           authentication=authentication,
                           lazy=lazy_connection,
                           pool_name='pool1',
-                          check_names=check_names)
+                          check_names=check_names,
+                          collect_usage=usage)
 
 
 def drop_connection(connection, dn_to_delete=None):

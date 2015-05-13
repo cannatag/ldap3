@@ -28,13 +28,13 @@ from threading import Lock
 from datetime import datetime, MINYEAR
 
 from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT,\
-    CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, \
-    IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
-from .exceptions import LDAPInvalidPort
-from .exceptions import LDAPInvalidServerError, LDAPDefinitionError
+    CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
+    SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
+from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPort, LDAPInvalidTlsSpecificationError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
 
 
 class Server(object):
@@ -66,7 +66,7 @@ class Server(object):
                  tls=None,
                  formatter=None,
                  connect_timeout=None,
-                 mode=IP_SYSTEM_DEFAULT):
+                 mode=IP_V6_PREFERRED):
 
         url_given = False
         if host.startswith('ldap://'):
@@ -84,23 +84,33 @@ class Server(object):
             hostname, _, hostport = self.host.partition(':')
             try:
                 port = int(hostport) or port
-                self.host = hostname
             except ValueError:
+                if log_enabled(ERROR):
+                    log(ERROR, 'port <%s> must be an integer', port)
                 raise LDAPInvalidPort('port must be an integer')
+            self.host = hostname
         elif url_given and self.host.startswith('['):
             hostname, sep, hostport = self.host[1:].partition(']')
             if sep != ']' or not self._is_ipv6(hostname):
+                if log_enabled(ERROR):
+                    log(ERROR, 'invalid IPv6 server address for <%s>', self.host)
                 raise LDAPInvalidServerError()
             if len(hostport):
                 if not hostport.startswith(':'):
+                    if log_enabled(ERROR):
+                        log(ERROR, 'invalid URL in server name for <%s>', self.host)
                     raise LDAPInvalidServerError('invalid URL in server name')
                 if not hostport[1:].isdecimal():
+                    if log_enabled(ERROR):
+                        log(ERROR, 'port must be an integer for <%s>', self.host)
                     raise LDAPInvalidPort('port must be an integer')
                 port = int(hostport[1:])
             self.host = hostname
         elif not url_given and self._is_ipv6(self.host):
             pass
         elif self.host.count(':') > 1:
+            if log_enabled(ERROR):
+                log(ERROR, 'invalid server address for <%s>', self.host)
             raise LDAPInvalidServerError()
 
         self.host.rstrip('/')
@@ -114,8 +124,12 @@ class Server(object):
             if port in range(0, 65535):
                 self.port = port
             else:
+                if log_enabled(ERROR):
+                    log(ERROR, 'port <%s> must be in range from 0 to 65535', port)
                 raise LDAPInvalidPort('port must in range from 0 to 65535')
         else:
+            if log_enabled(ERROR):
+                log(ERROR, 'port <%s> must be an integer', port)
             raise LDAPInvalidPort('port must be an integer')
 
         if isinstance(allowed_referral_hosts, SEQUENCE_TYPES):
@@ -131,6 +145,11 @@ class Server(object):
             self.allowed_referral_hosts = []
 
         self.ssl = True if use_ssl else False
+        if tls and not isinstance(tls, Tls):
+            if log_enabled(ERROR):
+                log(ERROR, 'invalid tls specification: <%s>', tls)
+            raise LDAPInvalidTlsSpecificationError('invalid Tls object')
+
         self.tls = Tls() if self.ssl and not tls else tls
 
         if self._is_ipv6(self.host):
@@ -143,11 +162,14 @@ class Server(object):
         self._schema_info = None
         self.lock = Lock()
         self.custom_formatter = formatter
-        self._address_info = []  # property self.address_info resolved at open time (or when you call check_availability)
-        self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date
+        self._address_info = []  # property self.address_info resolved at open time (or when check_availability is called)
+        self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date ever
         self.current_address = None
         self.connect_timeout = connect_timeout
         self.mode = mode
+
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated Server: <%r>', self)
 
     @staticmethod
     def _is_ipv6(host):
@@ -196,6 +218,9 @@ class Server(object):
                 self._address_info = []
                 self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date
 
+            if log_enabled(BASIC):
+                for address in self._address_info:
+                    log(BASIC, 'address for <%s> resolved at <%r>', self, address[:-2])
         return self._address_info
 
     def update_availability(self, address, available):
@@ -235,48 +260,53 @@ class Server(object):
                 available = False
 
             if available:
+                if log_enabled(BASIC):
+                    log(BASIC, 'server <%s> available at <%r>', self, address)
                 self.update_availability(address, True)
                 break  # if an available address is found exits immediately
             else:
                 self.update_availability(address, False)
+                if log_enabled(ERROR):
+                    log(ERROR, 'server <%s> not available at <%r>', self, address)
 
         return available
 
     @staticmethod
     def next_message_id():
         """
-        messageId is unique for all connections
+        LDAP messageId is unique for all connections to same server
         """
         with Server._message_id_lock:
             Server._message_counter += 1
             if Server._message_counter >= LDAP_MAX_INT:
                 Server._message_counter = 1
+            if log_enabled(PROTOCOL):
+                log(PROTOCOL, 'new message id <%d> generated', Server._message_counter)
+
         return Server._message_counter
 
     def _get_dsa_info(self, connection):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
-        if connection.strategy.pooled:
-            self.dsa_info = connection.strategy.pool
-        result = connection.search(search_base='',
-                                   search_filter='(objectClass=*)',
-                                   search_scope=BASE,
-                                   attributes=['altServer',  # requests specific dsa info attributes
-                                               'namingContexts',
-                                               'supportedControl',
-                                               'supportedExtension',
-                                               'supportedFeatures',
-                                               'supportedCapabilities',
-                                               'supportedLdapVersion',
-                                               'supportedSASLMechanisms',
-                                               'vendorName',
-                                               'vendorVersion',
-                                               'subschemaSubentry',
-                                               '*'],  # requests all remaining attributes (other),
-                                   get_operational_attributes=True)
-
         if not connection.strategy.pooled:  # in pooled strategies get_dsa_info is performed by the worker threads
+            result = connection.search(search_base='',
+                                       search_filter='(objectClass=*)',
+                                       search_scope=BASE,
+                                       attributes=['altServer',  # requests specific dsa info attributes
+                                                   'namingContexts',
+                                                   'supportedControl',
+                                                   'supportedExtension',
+                                                   'supportedFeatures',
+                                                   'supportedCapabilities',
+                                                   'supportedLdapVersion',
+                                                   'supportedSASLMechanisms',
+                                                   'vendorName',
+                                                   'vendorVersion',
+                                                   'subschemaSubentry',
+                                                   '*'],  # requests all remaining attributes (other),
+                                       get_operational_attributes=True)
+
             with self.lock:
                 if isinstance(result, bool):  # sync request
                     self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
@@ -284,6 +314,9 @@ class Server(object):
                     results, _ = connection.get_response(result)
                     if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                         self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
+
+            if log_enabled(BASIC):
+                log(BASIC, 'DSA info read for <%s> via <%s>', self, connection)
 
     def _get_schema_info(self, connection, entry=''):
         """
@@ -305,8 +338,7 @@ class Server(object):
                 if len(results) == 1 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
                     schema_entry = results[0]['attributes']['subschemaSubentry'][0]
 
-        result = None
-        if schema_entry:
+        if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=BASE,
@@ -323,7 +355,6 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-        if not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             with self.lock:
                 self._schema_info = None
                 if result:
@@ -339,6 +370,8 @@ class Server(object):
                         if self._dsa_info:  # try to apply formatter to the "other" dict with dsa info raw values
                             for attribute in self._dsa_info.other:
                                 self._dsa_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._dsa_info.raw[attribute], self.custom_formatter)
+            if log_enabled(BASIC):
+                log(BASIC, 'schema read for <%s> via <%s>', self, connection)
 
     def get_info_from_server(self, connection):
         """
@@ -370,10 +403,14 @@ class Server(object):
     def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):
             self._dsa_info = dsa_info
+            if log_enabled(BASIC):
+                log(BASIC, 'attached DSA info to Server <%s>', self)
 
     def attach_schema_info(self, dsa_schema=None):
         if isinstance(dsa_schema, SchemaInfo):
             self._schema_info = dsa_schema
+        if log_enabled(BASIC):
+            log(BASIC, 'attached schema info to Server <%s>', self)
 
     @property
     def info(self):
@@ -402,12 +439,19 @@ class Server(object):
         if isinstance(dsa_info, DsaInfo):
             dummy._dsa_info = dsa_info
         else:
+            if log_enabled(ERROR):
+                log(ERROR, 'invalid DSA info for %s', host)
             raise LDAPDefinitionError('invalid dsa info')
 
         if isinstance(dsa_schema, SchemaInfo):
             dummy._schema_info = dsa_schema
         else:
+            if log_enabled(ERROR):
+                log(ERROR, 'invalid schema info for %s', host)
             raise LDAPDefinitionError('invalid schema info')
+
+        if log_enabled(BASIC):
+            log(BASIC, 'created server <%s> from definition', dummy)
 
         return dummy
 
@@ -429,6 +473,11 @@ class Server(object):
                 candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                 candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
             else:
-                raise LDAPInvalidServerError('invalid server definition')
+                if log_enabled(ERROR):
+                    log(ERROR, 'invalid server mode for <%s>', self)
+                raise LDAPInvalidServerError('invalid server mode')
 
+        if log_enabled(BASIC):
+            for candidate in candidates:
+                log(BASIC, 'candidate address for <%s>: <%r>', self, candidate[:-2])
         return candidates

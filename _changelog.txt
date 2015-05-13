@@ -1,5 +1,10 @@
-* 0.9.8.3 2015.04.08
+* 0.9.8.3 2015.05.11
+    - Added support for logging
+    - Added LDAPInvalidTlsSpecificationError exception
     - Added support for kerberos sasl - needs the gssapi package (thanks sigmaris and pefoley2)
+    - Added support for using generator objects in ldap operations (thanks Matt)
+    - Fixed bug in collect_usage (thanks Philippe)
+    - Changed default server mode from IP_SYSTEM_DEFAULT to IP_V6_PREFERRED
 
 * 0.9.8.2 2015.04.08
     - SaslCred returned as raw bytes (thanks Peter)

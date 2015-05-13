@@ -25,11 +25,14 @@
 
 from .exceptions import LDAPSSLNotSupportedError, LDAPSSLConfigurationError, LDAPStartTLSError, LDAPCertificateError, start_tls_exception_factory
 from .. import SEQUENCE_TYPES
+from ..utils.log import log, log_enabled, ERROR, BASIC, NETWORK
 
 try:
     # noinspection PyUnresolvedReferences
     import ssl
 except ImportError:
+    if log_enabled(ERROR):
+        log(ERROR, 'SSL not supported in this Python interpreter')
     raise LDAPSSLNotSupportedError('SSL not supported in this Python interpreter')
 
 try:
@@ -37,6 +40,8 @@ try:
 except ImportError:
     from ..utils.tls_backport import CertificateError
     from ..utils.tls_backport import match_hostname_backport as match_hostname
+    if log_enabled(BASIC):
+        log(BASIC, 'using tls_backport')
 
 try:  # try to use SSLContext
     # noinspection PyUnresolvedReferences
@@ -44,6 +49,8 @@ try:  # try to use SSLContext
     use_ssl_context = True
 except ImportError:
     use_ssl_context = False
+    if log_enabled(BASIC):
+        log(BASIC, 'SSLContext unavailable')
 
 from os import path
 
@@ -72,10 +79,14 @@ class Tls(object):
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
         elif validate:
+            if log_enabled(ERROR):
+                log(ERROR, 'invalid validate parameter <%s>', validate)
             raise LDAPSSLConfigurationError('invalid validate parameter')
         if ca_certs_file and path.exists(ca_certs_file):
             self.ca_certs_file = ca_certs_file
         elif ca_certs_file:
+            if log_enabled(ERROR):
+                log(ERROR, 'invalid CA public key file <%s>', ca_certs_file)
             raise LDAPSSLConfigurationError('invalid CA public key file')
         else:
             self.ca_certs_file = None
@@ -83,8 +94,12 @@ class Tls(object):
         if ca_certs_path and use_ssl_context and path.exists(ca_certs_path):
             self.ca_certs_path = ca_certs_path
         elif ca_certs_path and not use_ssl_context:
+            if log_enabled(ERROR):
+                log(ERROR, 'cannot use CA public keys path, SSLContext not available')
             raise LDAPSSLNotSupportedError('cannot use CA public keys path, SSLContext not available')
         elif ca_certs_path:
+            if log_enabled(ERROR):
+                log(ERROR, 'invalid CA public keys path <%s>', ca_certs_path)
             raise LDAPSSLConfigurationError('invalid CA public keys path')
         else:
             self.ca_certs_path = None
@@ -92,6 +107,8 @@ class Tls(object):
         if ca_certs_data and use_ssl_context:
             self.ca_certs_data = ca_certs_data
         elif ca_certs_data:
+            if log_enabled(ERROR):
+                log(ERROR, 'cannot use CA data, SSLContext not available')
             raise LDAPSSLNotSupportedError('cannot use CA data, SSLContext not available')
         else:
             self.ca_certs_data = None
@@ -99,6 +116,8 @@ class Tls(object):
         if local_private_key_password and use_ssl_context:
             self.private_key_password = local_private_key_password
         elif local_private_key_password:
+            if log_enabled(ERROR):
+                log(ERROR, 'cannot use local private key password, SSLContext not available')
             raise LDAPSSLNotSupportedError('cannot use local private key password, SSLContext is not available')
         else:
             self.private_key_password = None
@@ -107,6 +126,9 @@ class Tls(object):
         self.private_key_file = local_private_key_file
         self.certificate_file = local_certificate_file
         self.valid_names = valid_names
+
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated Tls: <%r>' % self)
 
     def __str__(self):
         s = [
@@ -150,6 +172,8 @@ class Tls(object):
             if self.version is not None:  # if version is present overrides the default context version
                 ssl_context.protocol = self.version
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
+            if log_enabled(NETWORK):
+                log(NETWORK, 'socket wrapped with SSL using SSLContext for <%s>', connection)
         else:
             if self.version is None and hasattr(ssl, 'PROTOCOL_SSLv23'):
                 self.version = ssl.PROTOCOL_SSLv23
@@ -161,6 +185,8 @@ class Tls(object):
                                              ssl_version=self.version,
                                              ca_certs=self.ca_certs_file,
                                              do_handshake_on_connect=do_handshake)
+            if log_enabled(NETWORK):
+                log(NETWORK, 'socket wrapped with SSL for <%s>', connection)
 
         if do_handshake and (self.validate == ssl.CERT_REQUIRED or self.validate == ssl.CERT_OPTIONAL):
             check_hostname(wrapped_socket, connection.server.host, self.valid_names)
@@ -174,21 +200,33 @@ class Tls(object):
 
         if (connection.tls_started and not connection._executing_deferred) or connection.strategy._outstanding or connection.sasl_in_progress:
             # Per RFC 4513 (3.1.1)
+            if log_enabled(ERROR):
+                log(ERROR, "can't start tls because operations are in progress for <%s>", self)
             return False
         connection.starting_tls = True
+        if log_enabled(BASIC):
+            log(BASIC, 'starting tls for <%s>', connection)
         result = connection.extended('1.3.6.1.4.1.1466.20037')
         if not connection.strategy.sync:
             # async - _start_tls must be executed by the strategy
             response = connection.get_response(result)
             if response != (None, None):
+                if log_enabled(BASIC):
+                    log(BASIC, 'tls started for <%s>', connection)
                 return True
             else:
+                if log_enabled(BASIC):
+                    log(BASIC, 'tls not started for <%s>', connection)
                 return False
         else:
             if connection.result['description'] not in ['success']:
                 # startTLS failed
                 connection.last_error = 'startTLS failed - ' + str(connection.result['description'])
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', connection.last_error, connection)
                 raise LDAPStartTLSError(connection.last_error)
+            if log_enabled(BASIC):
+                log(BASIC, 'tls started for <%s>', connection)
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
@@ -202,6 +240,8 @@ class Tls(object):
         connection.starting_tls = False
 
         if exc:
+            if log_enabled(ERROR):
+                log(ERROR, 'error <%s> wrapping socket for TLS in <%s>', connection.last_error, connection)
             raise start_tls_exception_factory(LDAPStartTLSError, exc)(connection.last_error)
 
         if connection.usage:
@@ -218,12 +258,19 @@ def check_hostname(sock, server_name, additional_names):
         if host_name is None:
             continue
         elif host_name == '*':
-            return
+            if log_enabled(NETWORK):
+                log(NETWORK, 'certificate matches * wildcard')
+            return  # valid
 
         try:
             match_hostname(server_certificate, host_name)  # raise CertificateError if certificate doesn't match server name
-            return
+            if log_enabled(NETWORK):
+                log(NETWORK, 'certificate matches host name <%s>', host_name)
+            return  # valid
         except CertificateError:
-            pass
+            if log_enabled(NETWORK):
+                log(NETWORK, "certificate doesn't match host name <%s>", host_name)
 
+    if log_enabled(ERROR):
+        log(ERROR, "host name doesn't match")
     raise LDAPCertificateError("hostname doesn't match")

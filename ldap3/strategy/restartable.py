@@ -31,6 +31,7 @@ from datetime import datetime
 from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
 from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
+from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
 # noinspection PyBroadException,PyProtectedMember
@@ -64,13 +65,17 @@ class RestartableStrategy(SyncStrategy):
             SyncStrategy._open_socket(self, address, use_ssl)  # try to open socket using SyncWait
             self._reset_exception_history()
             return
-        except Exception:  # machinery for restartable connection
+        except Exception as e:  # machinery for restartable connection
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> while restarting <%s>', e, self.connection)
             self._add_exception_to_history()
 
         if not self._restarting:  # if not already performing a restart
             self._restarting = True
             counter = self.restartable_tries
             while counter > 0:
+                if log_enabled(BASIC):
+                    log(BASIC, 'try #%d to open Restartable connection <%s>', self.restartable_tries - counter, self.connection)
                 sleep(self.restartable_sleep_time)
                 if not self.connection.closed:
                     try:  # resetting connection
@@ -93,7 +98,9 @@ class RestartableStrategy(SyncStrategy):
                     self._restarting = False
                     self._reset_exception_history()
                     return
-                except Exception:
+                except Exception as e:
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> while restarting <%s>', e, self.connection)
                     self._add_exception_to_history()
                     if self.connection.usage:
                         self.connection._usage.restartable_failures += 1
@@ -101,6 +108,8 @@ class RestartableStrategy(SyncStrategy):
                     counter -= 1
             self._restarting = False
             self.connection.last_error = 'restartable connection strategy failed while opening socket'
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def send(self, message_type, request, controls=None):
@@ -116,19 +125,25 @@ class RestartableStrategy(SyncStrategy):
             message_id = SyncStrategy.send(self, message_type, request, controls)  # tries to send using SyncWait
             self._reset_exception_history()
             return message_id
-        except Exception:
+        except Exception as e:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> while restarting <%s>', e, self.connection)
             self._add_exception_to_history()
         if not self._restarting:  # machinery for restartable connection
             self._restarting = True
             counter = self.restartable_tries
             while counter > 0:
+                if log_enabled(BASIC):
+                    log(BASIC, 'try #%d to send in Restartable connection <%s>', self.restartable_tries - counter, self.connection)
                 sleep(self.restartable_sleep_time)
                 if not self.connection.closed:
                     try:  # resetting connection
                         self.connection.close()
                     except (socket.error, LDAPSocketOpenError):  # don't trace socket errors because socket could already be closed
                         pass
-                    except Exception:
+                    except Exception as e:
+                        if log_enabled(ERROR):
+                            log(ERROR, '<%s> while restarting <%s>', e, self.connection)
                         self._add_exception_to_history()
                 failure = False
                 try:  # reopening connection
@@ -138,7 +153,9 @@ class RestartableStrategy(SyncStrategy):
                     if message_type != 'bindRequest':
                         self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
                     self.connection.refresh_server_info()
-                except Exception:
+                except Exception as e:
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> while restarting <%s>', e, self.connection)
                     self._add_exception_to_history()
                     failure = True
 
@@ -150,7 +167,9 @@ class RestartableStrategy(SyncStrategy):
                         self._restarting = False
                         self._reset_exception_history()
                         return ret_value  # successful send
-                    except Exception:
+                    except Exception as e:
+                        if log_enabled(ERROR):
+                            log(ERROR, '<%s> while restarting <%s>', e, self.connection)
                         self._add_exception_to_history()
                         failure = True
 
@@ -163,6 +182,8 @@ class RestartableStrategy(SyncStrategy):
             self._restarting = False
 
         self.connection.last_error = 'restartable connection failed to send'
+        if log_enabled(ERROR):
+            log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
         raise LDAPMaximumRetriesError(self.connection.last_error, self.exception_history, self.restartable_tries)
 
     def post_send_single_response(self, message_id):
@@ -170,7 +191,9 @@ class RestartableStrategy(SyncStrategy):
             ret_value = SyncStrategy.post_send_single_response(self, message_id)
             self._reset_exception_history()
             return ret_value
-        except Exception:
+        except Exception as e:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> while restarting <%s>', e, self.connection)
             self._add_exception_to_history()
 
         # if an LDAPExceptionError is raised then resend the request
@@ -179,12 +202,16 @@ class RestartableStrategy(SyncStrategy):
             self._reset_exception_history()
             return ret_value
         except Exception as e:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> while restarting <%s>', e, self.connection)
             self._add_exception_to_history()
             exc = e
 
         if exc:
             if not isinstance(exc, LDAPOperationResult):
                 self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise exc
 
     def post_send_search(self, message_id):
@@ -192,7 +219,9 @@ class RestartableStrategy(SyncStrategy):
             ret_value = SyncStrategy.post_send_search(self, message_id)
             self._reset_exception_history()
             return ret_value
-        except Exception:
+        except Exception as e:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> while restarting <%s>', e, self.connection)
             self._add_exception_to_history()
 
         # if an LDAPExceptionError is raised then resend the request
@@ -201,12 +230,16 @@ class RestartableStrategy(SyncStrategy):
             self._reset_exception_history()
             return ret_value
         except Exception as e:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> while restarting <%s>', e, self.connection)
             self._add_exception_to_history()
             exc = e
 
         if exc:
             if not isinstance(exc, LDAPOperationResult):
                 self.connection.last_error = exc.args
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise exc
 
     def _add_exception_to_history(self):
@@ -217,3 +250,9 @@ class RestartableStrategy(SyncStrategy):
     def _reset_exception_history(self):
         if self.exception_history:
             self.exception_history = []
+
+    def get_stream(self):
+        raise NotImplementedError
+
+    def set_stream(self, value):
+        raise NotImplementedError

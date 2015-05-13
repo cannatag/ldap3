@@ -40,7 +40,7 @@ Connection parameters are:
 
 * auto_referrals: specify if the Connection must follows referrals automatically (defaults to True). Allowed referral servers are specified in the Server object
 
-* sasl_mechanism: specify the SASL mechanism to use for AUTH_SASL authentication. Available mechanism are EXTERNAL and DIGEST-MD5 (**deprecated**)
+* sasl_mechanism: specify the SASL mechanism to use for AUTH_SASL authentication. Available mechanism are EXTERNAL, DIGEST-MD5 (**deprecated**) and GSSAPI
 
 * sasl_credential: an object specific to the SASL mechanism chosen. Look at documentation for each SASL mechanism supported
 

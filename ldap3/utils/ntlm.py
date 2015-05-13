@@ -35,6 +35,7 @@ from os import urandom
 
 try:
     from locale import getpreferredencoding
+
     oem_encoding = getpreferredencoding()
 except Exception:
     oem_encoding = 'utf-8'
@@ -121,8 +122,8 @@ AV_FLAG_INTEGRITY = 1
 AV_FLAG_TARGET_SPN_UNTRUSTED = 2
 
 AV_FLAG_TYPES = [AV_FLAG_CONSTRAINED,
-                AV_FLAG_INTEGRITY,
-                AV_FLAG_TARGET_SPN_UNTRUSTED]
+                 AV_FLAG_INTEGRITY,
+                 AV_FLAG_TARGET_SPN_UNTRUSTED]
 
 
 def pack_windows_version(debug=False):
@@ -146,12 +147,12 @@ def pack_windows_version(debug=False):
         minor_release = 0
         build = 0
 
-    return pack('<B', major_release) +\
-           pack('<B', minor_release) +\
-           pack('<H', build) +\
-           pack('<B', 0) +\
-           pack('<B', 0) +\
-           pack('<B', 0) +\
+    return pack('<B', major_release) + \
+           pack('<B', minor_release) + \
+           pack('<H', build) + \
+           pack('<B', 0) + \
+           pack('<B', 0) + \
+           pack('<B', 0) + \
            pack('<B', 15)
 
 
@@ -306,13 +307,15 @@ class NtlmClient(object):
 
         target_name_len, _, target_name_offset = self.unpack_field(message[12:20])  # targetNameFields - 8 bytes
         self.negotiated_flags = unpack('<I', message[20:24])[0]  # negotiated flags - 4 bytes
-        self.current_encoding = 'utf-16-le' if self.get_negotiated_flag(FLAG_NEGOTIATE_UNICODE) else oem_encoding  # set encoding
+        self.current_encoding = 'utf-16-le' if self.get_negotiated_flag(
+            FLAG_NEGOTIATE_UNICODE) else oem_encoding  # set encoding
 
         self.server_challenge = message[24:32]  # server challenge - 8 bytes
         target_info_len, _, target_info_offset = self.unpack_field(message[40:48])  # targetInfoFields - 8 bytes
         self.server_version = unpack_windows_version(message[48:56])
-        if self.get_negotiated_flag(FLAG_REQUEST_TARGET) and  target_name_len:
-            self.server_target_name = message[target_name_offset: target_name_offset + target_name_len].decode(self.current_encoding)
+        if self.get_negotiated_flag(FLAG_REQUEST_TARGET) and target_name_len:
+            self.server_target_name = message[target_name_offset: target_name_offset + target_name_len].decode(
+                self.current_encoding)
         if self.get_negotiated_flag(FLAG_NEGOTIATE_TARGET_INFO) and target_info_len:
             self.server_target_info_raw = message[target_info_offset: target_info_offset + target_info_len]
             self.server_target_info = self.unpack_av_info(self.server_target_info_raw)
@@ -382,7 +385,8 @@ class NtlmClient(object):
         user_name = self.user_name.encode(self.current_encoding)
         message += self.pack_field(user_name, pos)  # UserNameField field  # 8 bytes
         pos += len(user_name)
-        if self.get_negotiated_flag(FLAG_NEGOTIATE_OEM_WORKSTATION_SUPPLIED) or self.get_negotiated_flag(FLAG_NEGOTIATE_VERSION):
+        if self.get_negotiated_flag(FLAG_NEGOTIATE_OEM_WORKSTATION_SUPPLIED) or self.get_negotiated_flag(
+                FLAG_NEGOTIATE_VERSION):
             workstation = gethostname().encode(self.current_encoding)
         else:
             workstation = b''
@@ -416,7 +420,9 @@ class NtlmClient(object):
     def unpack_field(field_message):
         if len(field_message) != 8:
             raise ValueError('ntlm field must be 8 bytes long')
-        return unpack('<H', field_message[0:2])[0], unpack('<H', field_message[2:4])[0], unpack('<I', field_message[4:8])[0]
+        return unpack('<H', field_message[0:2])[0], \
+               unpack('<H', field_message[2:4])[0], \
+               unpack('<I', field_message[4:8])[0]
 
     @staticmethod
     def unpack_av_info(info):
@@ -445,7 +451,7 @@ class NtlmClient(object):
         # avs is a list of tuples, each tuple is made of av_type and av_value
         info = b''
         for av_type, av_value in avs:
-            if av(0) == AV_END_OF_LIST:
+            if av_type(0) == AV_END_OF_LIST:
                 continue
             info += pack('<H', av_type)
             info += pack('<H', len(av_value))

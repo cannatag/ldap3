@@ -30,7 +30,6 @@ from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindReques
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
 
-
 # BindRequest ::= [APPLICATION 0] SEQUENCE {
 #                                           version        INTEGER (1 ..  127),
 #                                           name           LDAPDN,

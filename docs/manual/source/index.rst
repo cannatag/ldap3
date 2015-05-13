@@ -27,6 +27,7 @@ ldap3 can be used on Python 3 and Python 2 (starting from python 2.6). It works 
    abstraction
    ldif
    exceptions
+   logging
    testing
    changelog
    roadmap

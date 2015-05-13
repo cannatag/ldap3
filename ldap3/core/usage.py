@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from os import linesep
 
 from .exceptions import LDAPMetricsError
+from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
 class ConnectionUsage(object):
@@ -58,6 +59,8 @@ class ConnectionUsage(object):
         self.restartable_failures = 0
         self.restartable_successes = 0
         self.servers_from_pool = 0
+        if log_enabled(BASIC):
+            log(BASIC, 'reset usage metrics')
 
     def __init__(self):
         self.initial_connection_start_time = None
@@ -86,6 +89,9 @@ class ConnectionUsage(object):
         self.restartable_failures = 0
         self.restartable_successes = 0
         self.servers_from_pool = 0
+
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated Usage object')
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep
@@ -179,6 +185,8 @@ class ConnectionUsage(object):
         elif message['type'] == 'unbindRequest':
             self.unbind_operations += 1
         else:
+            if log_enabled(ERROR):
+                log(ERROR, 'unable to collect usage for unknown message type <%s>', message['type'])
             raise LDAPMetricsError('unable to collect usage for unknown message type')
 
     def update_received_message(self, length):
@@ -193,14 +201,18 @@ class ConnectionUsage(object):
         if not self.initial_connection_start_time:
             self.initial_connection_start_time = self.open_socket_start_time
 
+        if log_enabled(BASIC):
+            log(BASIC, 'start collecting usage metrics')
+
     def stop(self):
         if self.open_socket_start_time:
             self.connection_stop_time = datetime.now()
+            if log_enabled(BASIC):
+                log(BASIC, 'stop collecting usage metrics')
 
     @property
     def elapsed_time(self):
         if self.connection_stop_time:
             return self.connection_stop_time - self.open_socket_start_time
         else:
-            # noinspection PyTypeChecker
             return (datetime.now() - self.open_socket_start_time) if self.open_socket_start_time else timedelta(0)

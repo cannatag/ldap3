@@ -314,6 +314,7 @@ class Reader(object):
                 if not isinstance(attribute.__dict__['values'], list):  # force attribute values to list (if attribute is single-valued)
                     attribute.__dict__['values'] = [attribute.__dict__['values']]
                 if attr_def.dereference_dn:  # try to get object referenced in value
+                    # noinspection PyUnresolvedReferences
                     if attribute.values:
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, query='', base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []

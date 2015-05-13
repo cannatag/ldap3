@@ -23,6 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 import re
+from ..utils.log import log, log_enabled, NETWORK
 
 
 class CertificateError(ValueError):  # fix for Python 2, code from Python 3.3 standard library
@@ -34,6 +35,8 @@ def _dnsname_match_backport(dn, hostname, max_wildcards=1):
 
     http://tools.ietf.org/html/rfc6125#section-6.4.3
     """
+    if log_enabled(NETWORK):
+        log(NETWORK, "matching dn %s with hostname %s", dn, hostname)
     pats = []
     if not dn:
         return False

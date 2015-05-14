@@ -74,7 +74,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-EDIR':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -122,7 +122,7 @@ elif location == 'GCNBHPW8-AD':
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc1234pfop'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
-elif location == 'GCNBHPW8-SLAPD':
+elif location == 'GCNBHPW8':
     # test elitebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'

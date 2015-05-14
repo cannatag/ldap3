@@ -9,8 +9,8 @@ If the DN of the entry or an attribute value contains any unicode character the 
 ldap3 is compliant to the latest LDIF format (version: 1).
 
 ldap3 can stream the output of a search (LDIF-CONTENT) or of an operation (LDIF-CHANGE) to a file object.
-It cannot read a file with LDIF content because this is not in the LDAPv3 standard.
-Each LDAP searver has its own tools to import an LDIF-CONTENT or perform LDIF-CHANGE.
+It cannot read a file with LDIF content because this is not defined in the LDAPv3 standard.
+Each LDAP server has its own tools to import an LDIF-CONTENT or to perform LDIF-CHANGE.
 
 
 LDIF-CONTENT

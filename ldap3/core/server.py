@@ -245,7 +245,7 @@ class Server(object):
                 if self.connect_timeout:
                     temp_socket.settimeout(self.connect_timeout)
                 else:
-                    temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to 2.5 seconds
+                    temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to default
                 try:
                     temp_socket.connect(address[4])
                 except socket.error:

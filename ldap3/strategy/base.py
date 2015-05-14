@@ -115,6 +115,8 @@ class BaseStrategy(object):
             if not self.no_real_dsa:
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
+                        if log_enabled(BASIC):
+                            log(BASIC, 'opening candidate address %s', candidate_address)
                         self._open_socket(candidate_address, self.connection.server.ssl)
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)

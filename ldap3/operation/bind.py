@@ -124,4 +124,3 @@ def sicily_bind_response_to_dict(response):
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'server_creds': bytes(response['matchedDN']),
             'error_message': str(response['diagnosticMessage'])}
-

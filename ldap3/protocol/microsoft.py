@@ -54,4 +54,3 @@ class SicilyBindResponse(Sequence):
                                NamedType('serverCreds', OctetString()),
                                NamedType('errorMessage', LDAPString())
                                )
-

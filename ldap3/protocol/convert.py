@@ -151,6 +151,3 @@ def validate_attribute_value(schema, name, value):
                 raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
 
     return value
-
-
-

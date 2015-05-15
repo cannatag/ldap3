@@ -76,13 +76,13 @@ def _format_socket_endpoint(endpoint):
     if endpoint and len(endpoint) == 2:
         return str(endpoint[0]) + ':' + str(endpoint[1])
 
-    return endpoint
+    return str(endpoint)
 
 
 def _format_socket_endpoints(sock):
     try:
         return '[local: ' + _format_socket_endpoint(sock.getsockname()) + ' - remote: ' + _format_socket_endpoint(sock.getpeername()) + ']'
-    except Exception:
+    except Exception  as e:
         return '[no socket]'
 
 

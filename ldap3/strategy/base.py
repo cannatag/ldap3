@@ -116,7 +116,7 @@ class BaseStrategy(object):
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
                         if log_enabled(BASIC):
-                            log(BASIC, 'opening candidate address %s', candidate_address)
+                            log(BASIC, 'opening candidate address %s', candidate_address[:-2])
                         self._open_socket(candidate_address, self.connection.server.ssl)
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
@@ -195,7 +195,7 @@ class BaseStrategy(object):
         try:
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)
-            self.connection.socket.connect(self.connection.server.address_info[0][4])
+            self.connection.socket.connect(address[4])
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode
         except socket.error as e:

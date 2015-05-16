@@ -73,17 +73,25 @@ except ImportError:
 
 
 def _format_socket_endpoint(endpoint):
-    if endpoint and len(endpoint) == 2:
+    if endpoint and len(endpoint) == 2 :  # IPv4
         return str(endpoint[0]) + ':' + str(endpoint[1])
-
-    return str(endpoint)
+    elif endpoint and len(endpoint) == 4: # IPv6
+        return '[' + str(endpoint[0]) + ']:' + str(endpoint[1])
 
 
 def _format_socket_endpoints(sock):
-    try:
-        return '[local: ' + _format_socket_endpoint(sock.getsockname()) + ' - remote: ' + _format_socket_endpoint(sock.getpeername()) + ']'
-    except Exception as e:
-        return '[no socket]'
+    if sock:
+        try:
+            local = sock.getsockname()
+        except OSError:
+            local = (None, None, None, None)
+        try:
+            remote = sock.getpeername()
+        except OSError:
+            remote = (None, None, None, None)
+
+        return '<local: ' + _format_socket_endpoint(local) + ' - remote: ' + _format_socket_endpoint(remote) + '>'
+    return '<no socket>'
 
 
 # noinspection PyProtectedMember

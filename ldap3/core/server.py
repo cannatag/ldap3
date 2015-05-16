@@ -375,7 +375,7 @@ class Server(object):
 
     def get_info_from_server(self, connection):
         """
-        read info from DSE and from subschema
+        reads info from DSE and from subschema
         """
         if not connection.closed:
             if self.get_info in [DSA, ALL, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:

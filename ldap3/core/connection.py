@@ -83,11 +83,11 @@ def _format_socket_endpoints(sock):
     if sock:
         try:
             local = sock.getsockname()
-        except OSError:
+        except Exception:
             local = (None, None, None, None)
         try:
             remote = sock.getpeername()
-        except OSError:
+        except Exception:
             remote = (None, None, None, None)
 
         return '<local: ' + _format_socket_endpoint(local) + ' - remote: ' + _format_socket_endpoint(remote) + '>'

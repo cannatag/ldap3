@@ -82,7 +82,7 @@ def _format_socket_endpoint(endpoint):
 def _format_socket_endpoints(sock):
     try:
         return '[local: ' + _format_socket_endpoint(sock.getsockname()) + ' - remote: ' + _format_socket_endpoint(sock.getpeername()) + ']'
-    except Exception  as e:
+    except Exception as e:
         return '[no socket]'
 
 

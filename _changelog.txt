@@ -1,4 +1,5 @@
 * 0.9.8.4
+    - Added NETWORK_EXTENDED log detail level with pretty print description of ldap messages
     - fixed logging of IPv6 addresses
     - fixed checking of open address when dns returns more than one ip for the same host
     - fixed selection of proper address when failing back from IPv6 to IPv4 and vice-versa

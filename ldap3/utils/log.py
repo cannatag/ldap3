@@ -31,8 +31,9 @@ ERROR = 10
 BASIC = 20
 PROTOCOL = 30
 NETWORK = 40
+NETWORK_EXTENDED = 50
 
-LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK]
+LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK, NETWORK_EXTENDED]
 LIBRARY_LEVEL = OFF
 LIBRARY_LOGGING_LEVEL = DEBUG
 
@@ -68,6 +69,8 @@ def get_detail_level_name(level):
         return 'PROTOCOL'
     elif level == NETWORK:
         return 'NETWORK'
+    elif level == NETWORK_EXTENDED:
+        return 'NETWORK_EXTENDED'
     raise ValueError('unknown detail level')
 
 

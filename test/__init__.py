@@ -27,7 +27,7 @@ from random import SystemRandom
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
 
-from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, set_library_log_detail_level, get_detail_level_name
+from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, NETWORK_EXTENDED, set_library_log_detail_level, get_detail_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
 
@@ -74,7 +74,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-EDIR':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -122,7 +122,7 @@ elif location == 'GCNBHPW8-AD':
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc1234pfop'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
-elif location == 'GCNBHPW8-SLAPD':
+elif location == 'GCNBHPW8':
     # test elitebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'

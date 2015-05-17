@@ -220,7 +220,7 @@ class Server(object):
 
             if log_enabled(BASIC):
                 for address in self._address_info:
-                    log(BASIC, 'address for <%s> resolved at <%r>', self, address[:-2])
+                    log(BASIC, 'address for <%s> resolved as <%r>', self, address[:-2])
         return self._address_info
 
     def update_availability(self, address, available):
@@ -479,5 +479,5 @@ class Server(object):
 
         if log_enabled(BASIC):
             for candidate in candidates:
-                log(BASIC, 'candidate address for <%s>: <%r>', self, candidate[:-2])
+                log(BASIC, 'obtained candidate address for <%s>: <%r> with mode %s', self, candidate[:-2], self.mode)
         return candidates

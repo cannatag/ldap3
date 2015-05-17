@@ -53,7 +53,7 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, NETWORK_EXTENDED
 
 
 # noinspection PyProtectedMember
@@ -116,7 +116,7 @@ class BaseStrategy(object):
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
                         if log_enabled(BASIC):
-                            log(BASIC, 'opening candidate address %s', candidate_address[:-2])
+                            log(BASIC, 'try to open candidate address %s', candidate_address[:-2])
                         self._open_socket(candidate_address, self.connection.server.ssl)
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
@@ -630,7 +630,9 @@ class BaseStrategy(object):
     def sending(self, ldap_message):
         exc = None
         if log_enabled(NETWORK):
-            log(NETWORK, 'sending <%s> message for <%s>', ldap_message, self.connection)
+            log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
+        if log_enabled(NETWORK_EXTENDED):
+            log(NETWORK_EXTENDED, 'sending ldap message <%s> via <%s>', ldap_message.prettyPrint(), self.connection)
         try:
             encoded_message = encoder.encode(ldap_message)
             self.connection.socket.sendall(encoded_message)

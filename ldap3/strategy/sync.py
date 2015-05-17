@@ -31,7 +31,7 @@ from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQ
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-from ..utils.log import log, log_enabled, ERROR, NETWORK
+from ..utils.log import log, log_enabled, ERROR, NETWORK, NETWORK_EXTENDED
 
 
 # noinspection PyProtectedMember
@@ -162,6 +162,8 @@ class SyncStrategy(BaseStrategy):
                         if self.connection.usage:
                             self.connection._usage.update_received_message(len(response))
                         ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAPMessage())
+                        if log_enabled(NETWORK_EXTENDED):
+                            log(NETWORK_EXTENDED, 'received ldap message <%s> via <%s>', ldap_resp.prettyPrint(), self.connection)
                         if int(ldap_resp['messageID']) == message_id:
                             dict_response = self.decode_response(ldap_resp)
                             ldap_responses.append(dict_response)

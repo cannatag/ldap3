@@ -23,10 +23,10 @@ You can change the ldap3 logging activation level to another one if you need not
     from ldap3.utils.log import set_library_log_activation_level
     set_library_log_activation_level(logging.CRITICAL)  # ldap3 will emit its log only when you set level=logging.CRITICAL in your log configuration
 
-ldap3 logging has its own level of log detail: OFF, ERROR, BASIC, PROTOCOL and NETWORK. You can set the level of detail with ldap3.utils.log.set_library_log_detail_level().
+ldap3 logging has its own level of log detail: OFF, ERROR, BASIC, PROTOCOL, NETWORK and NETWORK_EXTENDED. You can set the level of detail with ldap3.utils.log.set_library_log_detail_level().
 Detail level defaults to OFF. You must change it at runtime as needed to have anything logged:
 
-    from ldap3.utils.log import set_library_log_detail_level, OFF, BASIC, NETWORK
+    from ldap3.utils.log import set_library_log_detail_level, OFF, BASIC, NETWORK, NETWORK_EXTENDED
     # ... unlogged ldap3 operation
     set_library_log_detail_level(BASIC)
     # ... ldap3 operation with few details
@@ -46,6 +46,8 @@ Each detail level detail a specific feature of the library and includes the prev
 * PROTOCOL: LDAPv3 operations are logged, sent requests and received responses are shown
 
 * NETWORK: socket activity is logged
+
+* NETWORK_EXTENDED: ldap messages are decoded and properly printed (thanks to pyasn1 prettyPrint feature) - The message is a multi line prefixed with the character '|'
 
 Each log record contains the detail level and when available information on the active connection used. So the log size grows very easily.
 ldap3 performance degrades when logging is active, especially at level greater than ERROR, so it's better to use it only when needed.

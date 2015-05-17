@@ -32,7 +32,7 @@ from .. import RESPONSE_COMPLETE, SOCKET_SIZE
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
-from ..utils.log import log, log_enabled, ERROR, NETWORK, NETWORK_EXTENDED
+from ..utils.log import log, log_enabled, ERROR, NETWORK, NETWORK_EXTENDED, format_ldap_message
 
 
 # noinspection PyProtectedMember
@@ -95,7 +95,7 @@ class AsyncStrategy(BaseStrategy):
                     if log_enabled(NETWORK):
                         log(NETWORK, 'received 1 ldap message via <%s>', self.connection)
                     if log_enabled(NETWORK_EXTENDED):
-                        log(NETWORK_EXTENDED, 'received ldap message <%s> via <%s>', ldap_resp.prettyPrint(), self.connection)
+                        log(NETWORK_EXTENDED, 'received ldap message via <%s>:%s', self.connection. format_ldap_message(ldap_resp))
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
                         if dict_response['result'] == 0:  # StartTls in progress
                             if self.connection.server.tls:

@@ -220,7 +220,7 @@ class Server(object):
 
             if log_enabled(BASIC):
                 for address in self._address_info:
-                    log(BASIC, 'address for <%s> resolved at <%r>', self, address[:-2])
+                    log(BASIC, 'address for <%s> resolved as <%r>', self, address[:-2])
         return self._address_info
 
     def update_availability(self, address, available):
@@ -245,7 +245,7 @@ class Server(object):
                 if self.connect_timeout:
                     temp_socket.settimeout(self.connect_timeout)
                 else:
-                    temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to 2.5 seconds
+                    temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to default
                 try:
                     temp_socket.connect(address[4])
                 except socket.error:
@@ -375,7 +375,7 @@ class Server(object):
 
     def get_info_from_server(self, connection):
         """
-        read info from DSE and from subschema
+        reads info from DSE and from subschema
         """
         if not connection.closed:
             if self.get_info in [DSA, ALL, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
@@ -479,5 +479,5 @@ class Server(object):
 
         if log_enabled(BASIC):
             for candidate in candidates:
-                log(BASIC, 'candidate address for <%s>: <%r>', self, candidate[:-2])
+                log(BASIC, 'obtained candidate address for <%s>: <%r> with mode %s', self, candidate[:-2], self.mode)
         return candidates

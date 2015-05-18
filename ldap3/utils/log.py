@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from logging import getLogger, getLevelName, DEBUG
+from os import linesep
 
 # logging
 OFF = 0
@@ -31,8 +32,9 @@ ERROR = 10
 BASIC = 20
 PROTOCOL = 30
 NETWORK = 40
+EXTENDED = 50
 
-LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK]
+LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED]
 LIBRARY_LEVEL = OFF
 LIBRARY_LOGGING_LEVEL = DEBUG
 
@@ -68,6 +70,8 @@ def get_detail_level_name(level):
         return 'PROTOCOL'
     elif level == NETWORK:
         return 'NETWORK'
+    elif level == EXTENDED:
+        return 'EXTENDED'
     raise ValueError('unknown detail level')
 
 
@@ -117,3 +121,12 @@ set_library_log_detail_level(LIBRARY_LEVEL)
 
 # emits a info message to let the application know that ldap3 logging is available when the log level is set to logging_level
 logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in LEVELS]))
+
+
+def format_ldap_message(message, prefix):
+    prefixed = ''
+    for line in message.prettyPrint().split('\n'):
+        if line:
+            prefixed += linesep + prefix + line
+
+    return prefixed

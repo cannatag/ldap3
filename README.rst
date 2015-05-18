@@ -88,6 +88,13 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 Changelog
 ---------
 
+* 0.9.8.4
+    - Added NETWORK_EXTENDED log detail level with pretty print description of ldap messages
+    - fixed logging of IPv6 addresses
+    - fixed checking of open address when dns returns more than one ip for the same host
+    - fixed selection of proper address when failing back from IPv6 to IPv4 and vice-versa
+    - when sending controls controlValue is now optional (as stated in RFC 4511), specify None to not send it
+
 * 0.9.8.3 2015.05.11
     - Added support for logging
     - Added LDAPInvalidTlsSpecificationError exception

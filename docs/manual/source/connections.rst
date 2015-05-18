@@ -263,7 +263,7 @@ Controls
 ========
 Controls, if used, must be a list of tuples. Each tuple must have 3 elements: the control OID, a boolean to specify if the control is critical,
  and a value. If the boolean is set to True the server must honorate the control or refuse the operation. Mixing controls must be defined
- in controls specification (as per RFC4511)
+ in controls specification (as per RFC4511). controlValue is optional, set it to None to not send any value.
 
 
 Responses

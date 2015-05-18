@@ -101,7 +101,7 @@ def build_controls_list(controls):
         return None
 
     if not isinstance(controls, SEQUENCE_TYPES):
-        raise LDAPControlsError('controls must be a list')
+        raise LDAPControlsError('controls must be a sequence')
 
     built_controls = Controls()
     for idx, control in enumerate(controls):
@@ -109,10 +109,11 @@ def build_controls_list(controls):
             built_control = Control()
             built_control['controlType'] = control[0]
             built_control['criticality'] = control[1]
-            built_control['controlValue'] = control[2]
+            if control[2] is not None:
+                built_control['controlValue'] = control[2]
             built_controls.setComponentByPosition(idx, built_control)
         else:
-            raise LDAPControlsError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue')
+            raise LDAPControlsError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue (None if not provided)')
 
     return built_controls
 
@@ -151,6 +152,3 @@ def validate_attribute_value(schema, name, value):
                 raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
 
     return value
-
-
-

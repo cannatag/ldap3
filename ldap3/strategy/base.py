@@ -53,7 +53,7 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 
 
 # noinspection PyProtectedMember
@@ -115,6 +115,8 @@ class BaseStrategy(object):
             if not self.no_real_dsa:
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
+                        if log_enabled(BASIC):
+                            log(BASIC, 'try to open candidate address %s', candidate_address[:-2])
                         self._open_socket(candidate_address, self.connection.server.ssl)
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
@@ -193,7 +195,7 @@ class BaseStrategy(object):
         try:
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)
-            self.connection.socket.connect(self.connection.server.address_info[0][4])
+            self.connection.socket.connect(address[4])
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode
         except socket.error as e:
@@ -628,10 +630,12 @@ class BaseStrategy(object):
     def sending(self, ldap_message):
         exc = None
         if log_enabled(NETWORK):
-            log(NETWORK, 'sending <%s> message for <%s>', ldap_message, self.connection)
+            log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
         try:
             encoded_message = encoder.encode(ldap_message)
             self.connection.socket.sendall(encoded_message)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'ldap message sent via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))
             if log_enabled(NETWORK):
                 log(NETWORK, 'sent %d bytes via <%s>', len(encoded_message), self.connection)
         except socket.error as e:

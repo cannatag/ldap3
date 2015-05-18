@@ -163,7 +163,7 @@ class SyncStrategy(BaseStrategy):
                             self.connection._usage.update_received_message(len(response))
                         ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAPMessage())
                         if log_enabled(EXTENDED):
-                            log(EXTENDED, 'received 1 ldap message via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
+                            log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
                         if int(ldap_resp['messageID']) == message_id:
                             dict_response = self.decode_response(ldap_resp)
                             ldap_responses.append(dict_response)

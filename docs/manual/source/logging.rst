@@ -47,7 +47,11 @@ Each detail level detail a specific feature of the library and includes the prev
 
 * NETWORK: socket activity is logged
 
-* EXTENDED: ldap messages are decoded and properly printed (thanks to pyasn1 prettyPrint feature) - The message is a multi line prefixed with the character '|'
+* EXTENDED: ldap messages are decoded and properly printed
+
+
+At EXTENDED level every message is logged and printed in a proper way (thanks to pyasn1 prettyPrint feature).
+The flow of the network conversation can be easily guessed by the prefix of the message lines: >> for outgoing messages and << for incoming messages.
 
 Each log record contains the detail level and when available information on the active connection used. So the log size grows very easily.
 ldap3 performance degrades when logging is active, especially at level greater than ERROR, so it's better to use it only when needed.
@@ -57,166 +61,281 @@ logging text is encoded to ASCII.
 
 Examples:
 
+Opening an SSL connection to an LDAP server listening on IPv4 only on a IPv6/IPv4 box. The connection mode is set to IP_V6_PREFERRED, the connection is bound and a search operation is performed
+
 a search operation at basic level::
 
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
     DEBUG:ldap3:ERROR:detail level set to BASIC
-    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='edir1', port=389, use_ssl=False, get_info='ALL')>
-    DEBUG:ldap3:BASIC:instantiated SyncStrategy: <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - closed - [no socket] - tls not started - not listening - No strategy - sync - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='edir1', port=389, use_ssl=False, get_info='ALL'), user='cn=admin,o=services', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, read_only=False, lazy=False, raise_exceptions=False)>
-    DEBUG:ldap3:BASIC:start BIND operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - closed - [no socket] - tls not started - not listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:address for <ldap://edir1:389 - cleartext> resolved at <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.101', 389)]>
-    DEBUG:ldap3:BASIC:candidate address for <ldap://edir1:389 - cleartext>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.101', 389)]>
-    DEBUG:ldap3:BASIC:refreshing server info for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50950 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50950 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:DSA info read for <ldap://edir1:389 - cleartext> via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50950 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50950 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:schema read for <ldap://edir1:389 - cleartext> via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50950 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done BIND operation, result <True>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50950 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:start UNBIND operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50950 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
-
-
-the same operation at PROTOCOL detail level (longer responses are shortened)::
-
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK
-    DEBUG:ldap3:ERROR:detail level set to PROTOCOL
-    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='edir1', port=389, use_ssl=False, get_info='ALL')>
-    DEBUG:ldap3:BASIC:instantiated SyncStrategy: <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - closed - [no socket] - tls not started - not listening - No strategy - sync - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='edir1', port=389, use_ssl=False, get_info='ALL'), user='cn=admin,o=services', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, read_only=False, lazy=False, raise_exceptions=False)>
-    DEBUG:ldap3:BASIC:start BIND operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - closed - [no socket] - tls not started - not listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:address for <ldap://edir1:389 - cleartext> resolved at <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.101', 389)]>
-    DEBUG:ldap3:BASIC:candidate address for <ldap://edir1:389 - cleartext>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.101', 389)]>
-    DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:simple BIND request <{'name': 'cn=admin,o=services', 'authentication': {'sasl': None, 'simple': 'password'}, 'version': 3}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <1> generated
-    DEBUG:ldap3:PROTOCOL:BIND response <{'description': 'success', 'dn': '', 'result': 0, 'type': 'bindResponse', 'referrals': None, 'message': '', 'saslCreds': None}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:refreshing server info for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH request <{'typeOnly': False, 'sizeLimit': 0, 'filter': '(objectClass=*)', 'scope': 0, 'attributes': ['altServer', 'namingContexts', 'supportedControl', 'supportedExtension', 'supportedFeatures', 'supportedCapabilities', 'supportedLdapVersion', 'supportedSASLMechanisms', 'vendorName', 'vendorVersion', 'subschemaSubentry', '*', '+'], 'dereferenceAlias': 3, 'base': '', 'timeLimit': 0}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <2> generated
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'dn': '', 'raw_attributes': {'supportedLDAPVersion': [b'2', b'3'] ... }> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:DSA info read for <ldap://edir1:389 - cleartext> via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH request <{'typeOnly': False, 'sizeLimit': 0, 'filter': '(objectClass=subschema)', 'scope': 0, 'attributes': ['objectClasses', 'attributeTypes', 'ldapSyntaxes', 'matchingRules', 'matchingRuleUse', 'dITContentRules', 'dITStructureRules', 'nameForms', 'createTimestamp', 'modifyTimestamp', '*', '+'], 'dereferenceAlias': 3, 'base': 'cn=schema', 'timeLimit': 0}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <3> generated
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'dn': 'cn=schema', 'raw_attributes': {'objectClass': [b'top', b'subschema'], ... ]}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:schema read for <ldap://edir1:389 - cleartext> via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done BIND operation, result <True>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH request <{'typeOnly': False, 'sizeLimit': 0, 'filter': '(cn=*)', 'scope': 2, 'attributes': ['objectClass', 'sn'], 'dereferenceAlias': 3, 'base': 'o=test', 'timeLimit': 0}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <4> generated
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'dn': 'cn=[62985459]paged_search-6,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'paged_search-6']}, 'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['paged_search-6']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    ...
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'dn': 'cn=[50120048]search-1,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-1']}, 'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-1']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:start UNBIND operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:UNBIND request sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <5> generated
-    DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
-
-the same opeaton at NETWORK detail level (longer responses are shortened)::
-
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK
-    DEBUG:ldap3:ERROR:detail level set to NETWORK
-    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='edir1', port=389, use_ssl=False, get_info='ALL')>
+    DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
+    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
     DEBUG:ldap3:BASIC:instantiated Usage object
-    DEBUG:ldap3:BASIC:instantiated SyncStrategy: <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - closed - [no socket] - tls not started - not listening - No strategy - sync - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='edir1', port=389, use_ssl=False, get_info='ALL'), user='cn=admin,o=services', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
-    DEBUG:ldap3:BASIC:start BIND operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - closed - [no socket] - tls not started - not listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:opening connection for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - closed - [no socket] - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:reset usage metrics
     DEBUG:ldap3:BASIC:start collecting usage metrics
-    DEBUG:ldap3:BASIC:address for <ldap://edir1:389 - cleartext> resolved at <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.101', 389)]>
-    DEBUG:ldap3:BASIC:candidate address for <ldap://edir1:389 - cleartext>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.101', 389)]>
-    DEBUG:ldap3:NETWORK:connection open for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:simple BIND request <{'authentication': {'simple': 'password', 'sasl': None}, 'name': 'cn=admin,o=services', 'version': 3}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <1> generated
-    DEBUG:ldap3:NETWORK:sending <LDAPMessage().setComponentByPosition(0, MessageID(1)).setComponentByPosition(1, ProtocolOp().setComponentByPosition(0, BindRequest().setComponentByPosition(0, Version(3)).setComponentByPosition(1, LDAPDN('b'cn=admin,o=services'')).setComponentByPosition(2, AuthenticationChoice().setComponentByPosition(0, Simple('b'password'')))))> message for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:sent 41 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 1 ldap messages
-    DEBUG:ldap3:PROTOCOL:BIND response <{'type': 'bindResponse', 'result': 0, 'referrals': None, 'message': '', 'dn': '', 'description': 'success', 'saslCreds': None}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - unbound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:refreshing server info for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH request <{'filter': '(objectClass=*)', 'scope': 0, 'base': '', 'typeOnly': False, 'attributes': ['altServer', 'namingContexts', 'supportedControl', 'supportedExtension', 'supportedFeatures', 'supportedCapabilities', 'supportedLdapVersion', 'supportedSASLMechanisms', 'vendorName', 'vendorVersion', 'subschemaSubentry', '*', '+'], 'sizeLimit': 0, 'dereferenceAlias': 3, 'timeLimit': 0}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <2> generated
-    DEBUG:ldap3:NETWORK:sending <LDAPMessage().setComponentByPosition(0, MessageID(2)).setComponentByPosition(1, ProtocolOp().setComponentByPosition(3, SearchRequest().setComponentByPosition(0, LDAPDN('b''')).setComponentByPosition(1, Scope('baseObject')).setComponentByPosition(2, DerefAliases('derefAlways')).setComponentByPosition(3, Integer0ToMax(0)).setComponentByPosition(4, Integer0ToMax(0)).setComponentByPosition(5, TypesOnly('False')).setComponentByPosition(6, Filter().setComponentByPosition(7, Present('b'objectClass''))).setComponentByPosition(7, AttributeSelection().setComponentByPosition(0, Selector('b'altServer'')).setComponentByPosition(1, Selector('b'namingContexts'')).setComponentByPosition(2, Selector('b'supportedControl'')).setComponentByPosition(3, Selector('b'supportedExtension'')).setComponentByPosition(4, Selector('b'supportedFeatures'')).setComponentByPosition(5, Selector('b'supportedCapabilities'')).setComponentByPosition(6, Selector('b'supportedLdapVersion'')).setComponentByPosition(7, Selector('b'supportedSASLMechanisms'')).setComponentByPosition(8, Selector('b'vendorName'')).setComponentByPosition(9, Selector('b'vendorVersion'')).setComponentByPosition(10, Selector('b'subschemaSubentry'')).setComponentByPosition(11, Selector('b'*'')).setComponentByPosition(12, Selector('b'+'')))))> message for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:sent 248 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 3434 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 2 ldap messages
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'dn': '', 'raw_attributes': {'supportedLDAPVersion': [b'2', b'3'] ... }> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:DSA info read for <ldap://edir1:389 - cleartext> via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH request <{'filter': '(objectClass=subschema)', 'scope': 0, 'base': 'cn=schema', 'typeOnly': False, 'attributes': ['objectClasses', 'attributeTypes', 'ldapSyntaxes', 'matchingRules', 'matchingRuleUse', 'dITContentRules', 'dITStructureRules', 'nameForms', 'createTimestamp', 'modifyTimestamp', '*', '+'], 'sizeLimit': 0, 'dereferenceAlias': 3, 'timeLimit': 0}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <3> generated
-    DEBUG:ldap3:NETWORK:sending <LDAPMessage().setComponentByPosition(0, MessageID(3)).setComponentByPosition(1, ProtocolOp().setComponentByPosition(3, SearchRequest().setComponentByPosition(0, LDAPDN('b'cn=schema'')).setComponentByPosition(1, Scope('baseObject')).setComponentByPosition(2, DerefAliases('derefAlways')).setComponentByPosition(3, Integer0ToMax(0)).setComponentByPosition(4, Integer0ToMax(0)).setComponentByPosition(5, TypesOnly('False')).setComponentByPosition(6, Filter().setComponentByPosition(3, EqualityMatch().setComponentByPosition(0, AttributeDescription('b'objectClass'')).setComponentByPosition(1, AssertionValue('b'subschema'')))).setComponentByPosition(7, AttributeSelection().setComponentByPosition(0, Selector('b'objectClasses'')).setComponentByPosition(1, Selector('b'attributeTypes'')).setComponentByPosition(2, Selector('b'ldapSyntaxes'')).setComponentByPosition(3, Selector('b'matchingRules'')).setComponentByPosition(4, Selector('b'matchingRuleUse'')).setComponentByPosition(5, Selector('b'dITContentRules'')).setComponentByPosition(6, Selector('b'dITStructureRules'')).setComponentByPosition(7, Selector('b'nameForms'')).setComponentByPosition(8, Selector('b'createTimestamp'')).setComponentByPosition(9, Selector('b'modifyTimestamp'')).setComponentByPosition(10, Selector('b'*'')).setComponentByPosition(11, Selector('b'+'')))))> message for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:sent 228 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 158334 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 2 ldap messages
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'dn': 'cn=schema', 'raw_attributes': {'objectClass': [b'top', b'subschema'], ... ]}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:50954 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:schema read for <ldap://edir1:389 - cleartext> via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]>
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]>
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]
+    DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it> for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [::]:50122 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]
+    DEBUG:ldap3:BASIC:refreshing server info for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50123 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:BASIC:done BIND operation, result <True>
-    DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH request <{'filter': '(cn=*)', 'scope': 2, 'base': 'o=test', 'typeOnly': False, 'attributes': ['objectClass', 'sn'], 'sizeLimit': 0, 'dereferenceAlias': 3, 'timeLimit': 0}> sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <4> generated
-    DEBUG:ldap3:NETWORK:sending <LDAPMessage().setComponentByPosition(0, MessageID(4)).setComponentByPosition(1, ProtocolOp().setComponentByPosition(3, SearchRequest().setComponentByPosition(0, LDAPDN('b'o=test'')).setComponentByPosition(1, Scope('wholeSubtree')).setComponentByPosition(2, DerefAliases('derefAlways')).setComponentByPosition(3, Integer0ToMax(0)).setComponentByPosition(4, Integer0ToMax(0)).setComponentByPosition(5, TypesOnly('False')).setComponentByPosition(6, Filter().setComponentByPosition(7, Present('b'cn''))).setComponentByPosition(7, AttributeSelection().setComponentByPosition(0, Selector('b'objectClass'')).setComponentByPosition(1, Selector('b'sn'')))))> message for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:sent 53 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 158 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 158 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 158 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 158 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 158 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 158 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 146 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:received 18 ldap messages
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['paged_search-6']}, 'dn': 'cn=[62985459]paged_search-6,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'paged_search-6']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['paged_search-5']}, 'dn': 'cn=[62985459]paged_search-5,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'paged_search-5']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['paged_search-4']}, 'dn': 'cn=[62985459]paged_search-4,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'paged_search-4']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['paged_search-3']}, 'dn': 'cn=[62985459]paged_search-3,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'paged_search-3']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['paged_search-2']}, 'dn': 'cn=[62985459]paged_search-2,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'paged_search-2']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['paged_search-1']}, 'dn': 'cn=[62985459]paged_search-1,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'paged_search-1']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-9']}, 'dn': 'cn=[81539822]search-9,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-9']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-8']}, 'dn': 'cn=[81539822]search-8,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-8']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-7']}, 'dn': 'cn=[81539822]search-7,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-7']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-6']}, 'dn': 'cn=[81539822]search-6,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-6']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-5']}, 'dn': 'cn=[81539822]search-5,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-5']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-4']}, 'dn': 'cn=[81539822]search-4,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-4']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-3']}, 'dn': 'cn=[81539822]search-3,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-3']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-2']}, 'dn': 'cn=[81539822]search-2,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-2']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-1']}, 'dn': 'cn=[81539822]search-1,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-1']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-2']}, 'dn': 'cn=[50120048]search-2,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-2']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'Person', 'ndsLoginProperties', 'Top'], 'sn': ['search-1']}, 'dn': 'cn=[50120048]search-1,o=test', 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'Person', b'ndsLoginProperties', b'Top'], 'sn': [b'search-1']}}> received via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:start SEARCH operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50123 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
-    DEBUG:ldap3:BASIC:start UNBIND operation via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:UNBIND request sent via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:new message id <5> generated
-    DEBUG:ldap3:NETWORK:sending <LDAPMessage().setComponentByPosition(0, MessageID(5)).setComponentByPosition(1, ProtocolOp().setComponentByPosition(2, UnbindRequest('b''')))> message for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:sent 7 bytes via <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:closing connection for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - open - [local: 192.168.137.1:49421 - remote: 192.168.137.101:389] - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:NETWORK:connection closed for <ldap://edir1:389 - cleartext - user: cn=admin,o=services - bound - closed - [no socket] - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:start UNBIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50123 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:BASIC:stop collecting usage metrics
     DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
 
+
+the same operation at PROTOCOL detail level::
+
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    DEBUG:ldap3:ERROR:detail level set to PROTOCOL
+    DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
+    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
+    DEBUG:ldap3:BASIC:instantiated Usage object
+    DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:reset usage metrics
+    DEBUG:ldap3:BASIC:start collecting usage metrics
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]>
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]>
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]
+    DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it.> for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [::]:50127 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]
+    DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'authentication': {'sasl': None, 'simple': 'password'}, 'name': 'cn=admin,o=test'}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <1> generated
+    DEBUG:ldap3:PROTOCOL:BIND response <{'result': 0, 'saslCreds': None, 'type': 'bindResponse', 'message': '', 'referrals': None, 'dn': '', 'description': 'success'}> received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done BIND operation, result <True>
+    DEBUG:ldap3:BASIC:start SEARCH operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:SEARCH request <{'sizeLimit': 0, 'scope': 2, 'timeLimit': 0, 'typeOnly': False, 'filter': '(cn=test*)', 'attributes': ['objectClass', 'sn'], 'base': 'o=test', 'dereferenceAlias': 3}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <2> generated
+    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'type': 'searchResEntry', 'dn': 'cn=testSASL,o=test', 'attributes': {'objectClass': ['inetOrgPerson', 'organizationalPerson', 'person', 'top'], 'sn': ['testSASL']}, 'raw_attributes': {'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'person', b'top'], 'sn': [b'testSASL']}}> received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
+    DEBUG:ldap3:BASIC:start UNBIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:UNBIND request sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <3> generated
+    DEBUG:ldap3:BASIC:stop collecting usage metrics
+    DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
+
+
+the same opeaton at NETWORK detail level::
+
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    DEBUG:ldap3:ERROR:detail level set to NETWORK
+    DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
+    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
+    DEBUG:ldap3:BASIC:instantiated Usage object
+    DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:opening connection for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:reset usage metrics
+    DEBUG:ldap3:BASIC:start collecting usage metrics
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]>
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]>
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]
+    DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it> for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [::]:50130 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]
+    DEBUG:ldap3:NETWORK:socket wrapped with SSL using SSLContext for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [None]:None - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:connection open for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'authentication': {'sasl': None, 'simple': 'password'}, 'name': 'cn=admin,o=test'}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <1> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:sent 37 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:BIND response <{'description': 'success', 'referrals': None, 'result': 0, 'type': 'bindResponse', 'message': '', 'saslCreds': None, 'dn': ''}> received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done BIND operation, result <True>
+    DEBUG:ldap3:BASIC:start SEARCH operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:SEARCH request <{'attributes': ['objectClass', 'sn'], 'base': 'o=test', 'scope': 2, 'dereferenceAlias': 3, 'filter': '(cn=test*)', 'typeOnly': False, 'sizeLimit': 0, 'timeLimit': 0}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <2> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:sent 63 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 114 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'raw_attributes': {'sn': [b'testSASL'], 'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'person', b'top']}, 'attributes': {'sn': ['testSASL'], 'objectClass': ['inetOrgPerson', 'organizationalPerson', 'person', 'top']}, 'type': 'searchResEntry', 'dn': 'cn=testSASL,o=test'}> received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
+    DEBUG:ldap3:BASIC:start UNBIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:UNBIND request sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <3> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:sent 7 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:closing connection for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:connection closed for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:stop collecting usage metrics
+    DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
+
+
+the same operation at EXTENDED detail level::
+
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    DEBUG:ldap3:ERROR:detail level set to EXTENDED
+    DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
+    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
+    DEBUG:ldap3:BASIC:instantiated Usage object
+    DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:opening connection for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:reset usage metrics
+    DEBUG:ldap3:BASIC:start collecting usage metrics
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]>
+    DEBUG:ldap3:BASIC:address for <ldaps://openldap:636 - ssl> resolved as <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]>
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldaps://openldap:636 - ssl>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 636, 0, 20)]
+    DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] Impossibile stabilire la connessione. Rifiuto persistente del computer di destinazione> for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [::]:50132 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]
+    DEBUG:ldap3:NETWORK:socket wrapped with SSL using SSLContext for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [None]:None - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:connection open for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'authentication': {'sasl': None, 'simple': 'password'}, 'name': 'cn=admin,o=test', 'version': 3}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <1> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=1
+    >> protocolOp=ProtocolOp:
+    >>  bindRequest=BindRequest:
+    >>   version=3
+    >>   name=b'cn=admin,o=test'
+    >>   authentication=AuthenticationChoice:
+    >>    simple=b'password'
+    DEBUG:ldap3:NETWORK:sent 37 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>:
+    <<LDAPMessage:
+    << messageID=1
+    << protocolOp=ProtocolOp:
+    <<  bindResponse=BindResponse:
+    <<   resultCode='success'
+    <<   matchedDN=b''
+    <<   diagnosticMessage=b''
+    DEBUG:ldap3:PROTOCOL:BIND response <{'dn': '', 'description': 'success', 'type': 'bindResponse', 'message': '', 'result': 0, 'saslCreds': None, 'referrals': None}> received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done BIND operation, result <True>
+    DEBUG:ldap3:BASIC:start SEARCH operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:SEARCH request <{'scope': 2, 'base': 'o=test', 'timeLimit': 0, 'filter': '(cn=test*)', 'typeOnly': False, 'attributes': ['objectClass', 'sn'], 'dereferenceAlias': 3, 'sizeLimit': 0}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <2> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=2
+    >> protocolOp=ProtocolOp:
+    >>  searchRequest=SearchRequest:
+    >>   baseObject=b'o=test'
+    >>   scope='wholeSubtree'
+    >>   derefAliases='derefAlways'
+    >>   sizeLimit=0
+    >>   timeLimit=0
+    >>   typesOnly='False'
+    >>   filter=Filter:
+    >>    substringFilter=SubstringFilter:
+    >>     type=b'cn'
+    >>     substrings=Substrings:
+    >>      Substring:
+    >>       initial=b'test'
+    >>   attributes=AttributeSelection:
+    >>    b'objectClass'    b'sn'
+    DEBUG:ldap3:NETWORK:sent 63 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 114 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>:
+    <<LDAPMessage:
+    << messageID=2
+    << protocolOp=ProtocolOp:
+    <<  searchResEntry=SearchResultEntry:
+    <<   object=b'cn=testSASL,o=test'
+    <<   attributes=PartialAttributeList:
+    <<    PartialAttribute:
+    <<     type=b'sn'
+    <<     vals=Vals:
+    <<      b'testSASL'
+    <<    PartialAttribute:
+    <<     type=b'objectClass'
+    <<     vals=Vals:
+    <<      b'inetOrgPerson'      b'organizationalPerson'      b'person'      b'top'
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>:
+    <<LDAPMessage:
+    << messageID=2
+    << protocolOp=ProtocolOp:
+    <<  searchResDone=SearchResultDone:
+    <<   resultCode='success'
+    <<   matchedDN=b''
+    <<   diagnosticMessage=b''
+    DEBUG:ldap3:PROTOCOL:SEARCH response entry <{'attributes': {'sn': ['testSASL'], 'objectClass': ['inetOrgPerson', 'organizationalPerson', 'person', 'top']}, 'dn': 'cn=testSASL,o=test', 'type': 'searchResEntry', 'raw_attributes': {'sn': [b'testSASL'], 'objectClass': [b'inetOrgPerson', b'organizationalPerson', b'person', b'top']}}> received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done SEARCH operation, result <True>
+    DEBUG:ldap3:BASIC:start UNBIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:UNBIND request sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <3> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sending via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=3
+    >> protocolOp=ProtocolOp:
+    >>  unbindRequest=b''
+    DEBUG:ldap3:NETWORK:sent 7 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:closing connection for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:connection closed for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:stop collecting usage metrics
+    DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
+
+At the ERROR detail level you get only the library errors:
+
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    DEBUG:ldap3:ERROR:detail level set to ERROR
+    DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it.> for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [::]:50321 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+
+The usage metrics are the same at every detail:
+
+    Connection Usage:
+      Time: [elapsed:        0:00:01.949587]
+        Initial start time:  2015-05-18T19:27:17.057422
+        Open socket time:    2015-05-18T19:27:17.057422
+        Close socket time:   2015-05-18T19:27:19.007009
+      Server:
+        Servers from pool:   0
+        Sockets open:        1
+        Sockets closed:      1
+        Sockets wrapped:     1
+      Bytes:                 249
+        Transmitted:         107
+        Received:            142
+      Messages:              6
+        Transmitted:         3
+        Received:            3
+      Operations:            3
+        Abandon:             0
+        Bind:                1
+        Compare:             0
+        Delete:              0
+        Extended:            0
+        Modify:              0
+        ModifyDn:            0
+        Search:              1
+        Unbind:              1
+      Referrals:
+        Received:            0
+        Followed:            0
+      Restartable tries:     0
+        Failed restarts:     0
+        Successful restarts: 0

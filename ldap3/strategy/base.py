@@ -631,11 +631,11 @@ class BaseStrategy(object):
         exc = None
         if log_enabled(NETWORK):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
-        if log_enabled(EXTENDED):
-            log(EXTENDED, 'sending 1 ldap message via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))
         try:
             encoded_message = encoder.encode(ldap_message)
             self.connection.socket.sendall(encoded_message)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'ldap message sent via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))
             if log_enabled(NETWORK):
                 log(NETWORK, 'sent %d bytes via <%s>', len(encoded_message), self.connection)
         except socket.error as e:

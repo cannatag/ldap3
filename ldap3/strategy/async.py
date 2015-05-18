@@ -95,7 +95,7 @@ class AsyncStrategy(BaseStrategy):
                     if log_enabled(NETWORK):
                         log(NETWORK, 'received 1 ldap message via <%s>', self.connection)
                     if log_enabled(EXTENDED):
-                        log(EXTENDED, 'received 1 ldap message via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
+                        log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
                     if dict_response['type'] == 'extendedResp' and dict_response['responseName'] == '1.3.6.1.4.1.1466.20037':
                         if dict_response['result'] == 0:  # StartTls in progress
                             if self.connection.server.tls:

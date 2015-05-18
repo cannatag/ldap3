@@ -632,7 +632,7 @@ class BaseStrategy(object):
         if log_enabled(NETWORK):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
         if log_enabled(EXTENDED):
-            log(EXTENDED, 'sending ldap message via <%s>:%s', self.connection, format_ldap_message(ldap_message))
+            log(EXTENDED, 'sending 1 ldap message via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))
         try:
             encoded_message = encoder.encode(ldap_message)
             self.connection.socket.sendall(encoded_message)

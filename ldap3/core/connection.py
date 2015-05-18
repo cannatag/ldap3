@@ -73,9 +73,9 @@ except ImportError:
 
 
 def _format_socket_endpoint(endpoint):
-    if endpoint and len(endpoint) == 2 :  # IPv4
+    if endpoint and len(endpoint) == 2:  # IPv4
         return str(endpoint[0]) + ':' + str(endpoint[1])
-    elif endpoint and len(endpoint) == 4: # IPv6
+    elif endpoint and len(endpoint) == 4:  # IPv6
         return '[' + str(endpoint[0]) + ']:' + str(endpoint[1])
 
 

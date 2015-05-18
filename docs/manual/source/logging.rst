@@ -47,7 +47,7 @@ Each detail level detail a specific feature of the library and includes the prev
 
 * NETWORK: socket activity is logged
 
-* NETWORK_EXTENDED: ldap messages are decoded and properly printed (thanks to pyasn1 prettyPrint feature) - The message is a multi line prefixed with the character '|'
+* EXTENDED: ldap messages are decoded and properly printed (thanks to pyasn1 prettyPrint feature) - The message is a multi line prefixed with the character '|'
 
 Each log record contains the detail level and when available information on the active connection used. So the log size grows very easily.
 ldap3 performance degrades when logging is active, especially at level greater than ERROR, so it's better to use it only when needed.

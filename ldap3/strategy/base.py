@@ -53,7 +53,7 @@ from ..operation.abandon import abandon_request_to_dict
 from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, NETWORK_EXTENDED, format_ldap_message
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 
 
 # noinspection PyProtectedMember
@@ -631,8 +631,8 @@ class BaseStrategy(object):
         exc = None
         if log_enabled(NETWORK):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
-        if log_enabled(NETWORK_EXTENDED):
-            log(NETWORK_EXTENDED, 'sending ldap message via <%s>:%s', self.connection, format_ldap_message(ldap_message))
+        if log_enabled(EXTENDED):
+            log(EXTENDED, 'sending ldap message via <%s>:%s', self.connection, format_ldap_message(ldap_message))
         try:
             encoded_message = encoder.encode(ldap_message)
             self.connection.socket.sendall(encoded_message)

@@ -4,6 +4,7 @@
     - fixed checking of open address when dns returns more than one ip for the same host
     - fixed selection of proper address when failing back from IPv6 to IPv4 and vice-versa
     - when sending controls controlValue is now optional (as stated in RFC 4511), specify None to not send it
+    - moved badges to shields.io
 
 * 0.9.8.3 2015.05.11
     - Added support for logging

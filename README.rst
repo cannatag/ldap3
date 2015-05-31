@@ -1,15 +1,15 @@
 LDAP3
 =====
 
-.. image:: https://pypip.in/version/ldap3/badge.svg
+.. image:: https://img.shields.io/pypi/v/ldap3.svg
     :target: https://pypi.python.org/pypi/ldap3/
     :alt: Latest Version
 
-.. image:: https://travis-ci.org/cannatag/ldap3.svg?branch=master
+.. image:: https://img.shields.io/travis/cannatag/ldap3/master.svg
     :target: https://travis-ci.org/cannatag/ldap3
     :alt: TRAVIS-CI build status for master branch
 
-.. image:: https://pypip.in/license/ldap3/badge.svg
+.. image:: https://img.shields.io/pypi/l/ldap3.svg
     :target: https://pypi.python.org/pypi/ldap3/
     :alt: License
 

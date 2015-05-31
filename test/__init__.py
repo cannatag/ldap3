@@ -74,7 +74,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
-elif location == 'GCNBHPW8-EDIR':
+elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -122,7 +122,7 @@ elif location == 'GCNBHPW8-AD':
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc1234pfop'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
@@ -177,8 +177,8 @@ if location.startswith('TRAVIS,'):
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
 else:
-    # test_strategy = SYNC  # sync strategy for executing tests
-    test_strategy = ASYNC  # uncomment this line to test the async strategy
+    test_strategy = SYNC  # sync strategy for executing tests
+    # test_strategy = ASYNC  # uncomment this line to test the async strategy
     # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy

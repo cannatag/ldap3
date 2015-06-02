@@ -8,14 +8,13 @@ To use SSL basic authentication change the server definition to::
 
 To start a TLS connection on an already created clear connection::
 
-    c.tls = Tls()
     c.start_tls()
 
 
 The Tls object
 ==============
 
-You can customize the Tls object with references to keys, certificates and CAs. It includes all attributes needed to securely connect over an ssl socket:
+You can customize the server Tls object with references to keys, certificates and CAs. It includes all attributes needed to securely connect over an ssl socket:
 
 * local_private_key_file: the file with the private key of the client
 * local_certificate_file: the certificate of the server
@@ -59,7 +58,7 @@ ssl wrapped socket mechanism.
 SASL
 ----
 
-Two SASL mechanisms are currently implemented in the ldap3 library: EXTERNAL and DIGEST-MD5. Even if DIGEST-MD5 is **deprecated** and moved to historic (RFC6331, July 2011)
+Three SASL mechanisms are currently implemented in the ldap3 library: EXTERNAL, DIGEST-MD5 and GSSAPI (Kerberos, via the python-gssapi package). Even if DIGEST-MD5 is **deprecated** and moved to historic (RFC6331, July 2011)
 because it is **"insecure and unsuitable for use in protocols"** (as stated by the RFC) I've developed the authentication phase of the protocol because it is still used in LDAP servers.
 
 External

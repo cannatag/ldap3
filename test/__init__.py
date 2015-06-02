@@ -35,7 +35,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = True
-test_log_detail = NETWORK
+test_log_detail = EXTENDED
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True
@@ -74,7 +74,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
-elif location == 'GCNBHPW8-EDIR':
+elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
     # test_server = 'edir1.hyperv'
     test_server = ['edir1',
@@ -122,7 +122,7 @@ elif location == 'GCNBHPW8-AD':
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc1234pfop'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
@@ -145,13 +145,13 @@ elif location == 'GCNBHPW8':
     test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCW89227':
     # test camera
-    # test_server = ['sl08',
-    #               'sl09',
-    #               'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
+    test_server = ['sl08',
+                   'sl09',
+                   'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
     # test_server = 'sl10'
-    # test_server_type = 'EDIR'
-    test_server = 'nova01.amm.intra.camera.it'
-    test_server_type = 'AD'
+    test_server_type = 'EDIR'
+    # test_server = 'nova01.amm.intra.camera.it'
+    # test_server_type = 'AD'
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -163,9 +163,9 @@ elif location == 'GCW89227':
     test_sasl_user = 'testSASL.services'
     test_sasl_password = 'password'
     test_sasl_realm = None
-    test_ca_cert_file = 'local-edir-.pem'
-    test_user_cert_file = 'admin-cert.pem'
-    test_user_key_file = 'admin-key.pem'
+    test_ca_cert_file = 'local-edir-ca-cert.pem'
+    test_user_cert_file = 'local-edir-admin-cert.pem'
+    test_user_key_file = 'local-edir-admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
@@ -177,8 +177,8 @@ if location.startswith('TRAVIS,'):
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
 else:
-    # test_strategy = SYNC  # sync strategy for executing tests
-    test_strategy = ASYNC  # uncomment this line to test the async strategy
+    test_strategy = SYNC  # sync strategy for executing tests
+    # test_strategy = ASYNC  # uncomment this line to test the async strategy
     # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy

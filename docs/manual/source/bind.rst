@@ -199,3 +199,140 @@ The ldap3 library support an additional method to bind to Active Directory serve
 
 This authentication method is specific for Active Directory and uses a proprietary authentication protocol named SICILY
 that break the LDAP RFC but can be used to access AD.
+
+
+Extended logging
+----------------
+To get an idea of what's happening when you perform a simple bind to an ldap server using the StartTLS operation this is
+the extended log from a Bind session to an openldap server from a Windows client::
+
+    # Initialization:
+
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    DEBUG:ldap3:ERROR:detail level set to EXTENDED
+    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO')>
+    DEBUG:ldap3:BASIC:instantiated Usage object
+    DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:NETWORK:opening connection for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:reset usage metrics
+    DEBUG:ldap3:BASIC:start collecting usage metrics
+    DEBUG:ldap3:BASIC:address for <ldap://openldap:389 - cleartext> resolved as <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 389, 0, 20)]>
+    DEBUG:ldap3:BASIC:address for <ldap://openldap:389 - cleartext> resolved as <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 389)]>
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldap://openldap:389 - cleartext>: <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 389, 0, 20)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldap://openldap:389 - cleartext>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 389)]> with mode IP_V6_PREFERRED
+
+
+    # Opening the connection (trying IPv6 then IPv4):
+
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 389, 0, 20)]
+    DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it.> for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <local: [::]:49610 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 389)]
+    DEBUG:ldap3:NETWORK:connection open for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:start START TLS operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
+
+
+    # Starting TLS - wrapping the socket in an ssl socket:
+
+    DEBUG:ldap3:BASIC:starting tls for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:start EXTENDED operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:EXTENDED request <{'name': '1.3.6.1.4.1.1466.20037', 'value': None}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <1> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=1
+    >> protocolOp=ProtocolOp:
+    >>  extendedReq=ExtendedRequest:
+    >>   requestName=b'1.3.6.1.4.1.1466.20037'
+    DEBUG:ldap3:NETWORK:sent 31 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
+    <<LDAPMessage:
+    << messageID=1
+    << protocolOp=ProtocolOp:
+    <<  extendedResp=ExtendedResponse:
+    <<   resultCode='success'
+    <<   matchedDN=b''
+    <<   diagnosticMessage=b''
+    DEBUG:ldap3:PROTOCOL:EXTENDED response <[{'referrals': None, 'dn': '', 'type': 'extendedResp', 'result': 0, 'description': 'success', 'responseName': None, 'responseValue': b'', 'message': ''}]> received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done EXTENDED operation, result <True>
+    DEBUG:ldap3:BASIC:tls started for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:socket wrapped with SSL using SSLContext for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: [None]:None - remote: [None]:None> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done START TLS operation, result <True>
+
+
+    # Performing Bind operation with Simple Bind method:
+
+    DEBUG:ldap3:BASIC:start BIND operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'name': 'cn=admin,o=test', 'authentication': {'sasl': None, 'simple': 'password'}, 'version': 3}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <2> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=2
+    >> protocolOp=ProtocolOp:
+    >>  bindRequest=BindRequest:
+    >>   version=3
+    >>   name=b'cn=admin,o=test'
+    >>   authentication=AuthenticationChoice:
+    >>    simple=b'password'
+    DEBUG:ldap3:NETWORK:sent 37 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>:
+    <<LDAPMessage:
+    << messageID=2
+    << protocolOp=ProtocolOp:
+    <<  bindResponse=BindResponse:
+    <<   resultCode='success'
+    <<   matchedDN=b''
+    <<   diagnosticMessage=b''
+    DEBUG:ldap3:PROTOCOL:BIND response <{'referrals': None, 'dn': '', 'type': 'bindResponse', 'result': 0, 'description': 'success', 'saslCreds': None, 'message': ''}> received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done BIND operation, result <True>
+
+
+These are the usage metrics of this session::
+
+    Connection Usage:
+     Time: [elapsed:        0:00:01.908938]
+       Initial start time:  2015-06-02T09:37:49.451263
+       Open socket time:    2015-06-02T09:37:49.451263
+       Close socket time:
+     Server:
+       Servers from pool:   0
+       Sockets open:        1
+       Sockets closed:      0
+       Sockets wrapped:     1
+     Bytes:                 96
+       Transmitted:         68
+       Received:            28
+     Messages:              4
+       Transmitted:         2
+       Received:            2
+     Operations:            2
+       Abandon:             0
+       Bind:                1
+       Compare:             0
+       Delete:              0
+       Extended:            1
+       Modify:              0
+       ModifyDn:            0
+       Search:              0
+       Unbind:              0
+     Referrals:
+       Received:            0
+       Followed:            0
+     Restartable tries:     0
+       Failed restarts:     0
+       Successful restarts: 0
+
+As you can see there have been two operation, 1 for the bind and 1 for the startTLS (an extendend operation). 1 socket
+has been open and has been wrapped in ssl. All the communication stream took 96 bytes in 4 LDAP messages.
+

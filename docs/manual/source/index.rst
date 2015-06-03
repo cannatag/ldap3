@@ -11,6 +11,9 @@ RFC4511 is the current LDAP specification (June 2006) from IETF and obsoletes th
 
 ldap3 can be used on Python 3 and Python 2 (starting from python 2.6). It works on PyPy and PyPy3.
 
+Contents
+
+
 .. toctree::
    :maxdepth: 2
 

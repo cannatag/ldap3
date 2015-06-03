@@ -10,7 +10,7 @@ With synchronous strategy (SYNC, RESTARTABLE) all LDAP operation requests return
 With asynchronous strategies (ASYNC, REUSABLE) all LDAP operation requests (except Bind that returns a boolean) return an integer,
  the 'message_id' of the request. You can send multiple request without waiting for responses.
 
-You can get each response with the get_response(message_id) method of the Connection object.If you get an exception the response has not yet arrived.
+You can get each response with the get_response(message_id) method of the Connection object. If you get an exception the response has not yet arrived.
 A timeout value can be specified (get_response(message_id, timeout = 20)) to set the number of seconds to wait for the response to appear (defaults is 10 seconds).
 
 Library raises an exception in the LDAPExceptionError hierarchy to signal errors, the last exception message is stored in the last_error attribute of the Connection object when available.
@@ -20,6 +20,8 @@ After any operation, you'll find the following attributes populated in the Conne
 * result: the result of the last operation (only synchronous strategies)
 
 * response: the entries found if the last operation is a search operation (only for synchronous strategies)
+
+* entries: the entries found exposed via the abstraction Entry object (useful when using ldap3 from the interactive shell)
 
 * last_error: any error occurred in the last operation
 

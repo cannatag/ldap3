@@ -2,11 +2,11 @@
 LDAP Operations
 ###############
 
-To be done
+.. toctree::
+   :maxdepth: 2
 
    bind
    unbind
-   start_tls
    compare
    add
    delete

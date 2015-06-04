@@ -2,18 +2,19 @@
 The BIND operation
 ##################
 
-As specified in RFC4511 the Bind operation must be tought as the "authenticate" operation. It's name (and that of its
+As specified in RFC4511 the **Bind** operation must be tought as the "authenticate" operation. It's name (and that of its
 Unbind counterpart) is for historical reason.
 
 When you open a connection to an LDAP server you're in an **anonymous** connection state. What this exactly means
 is defined by the server implementation, not by the protocol. Think of this as of a default access to the server public
-data (even if what public data means is still a server local matter).
+data (even if what public data means is still a server local matter). In ldap3 you establish the connection to the server
+with the open() method of the connection object. The bind() method implies the open() method.
 
 The Bind operation allows authentication information to be exchanged between the client and server to establish a new
 authorization state.
 
 The Bind request typically specifies the desired authentication identity. Some Bind mechanisms also allow the client
-to specify the authorization identity.  If the authorization identity is not specified, the server derives it from the
+to specify the authorization identity. If the authorization identity is not specified, the server derives it from the
 authentication identity in an implementation-specific manner.
 
 If you want to provide authentication information you must use the Bind operation to specify an identity to be used to
@@ -38,7 +39,7 @@ its allowed SASL mechanism in the DSE information that can be read anonymously.
 Simple Bind
 -----------
 
-You perform a simple bind as in the following example (using the default synchronous strategy)::
+You perform a Simple Bind operation as in the following example (using the default synchronous strategy)::
 
     # import class and constants
     from ldap3 import Server, Connection, ALL
@@ -203,8 +204,8 @@ that break the LDAP RFC but can be used to access AD.
 
 Extended logging
 ----------------
-To get an idea of what's happening when you perform a simple bind to an ldap server using the StartTLS operation this is
-the extended log from a Bind session to an openldap server from a Windows client::
+To get an idea of what's happening when you perform a Simple Bind operation using the StartTLS security feature this is
+the extended log from a session to an OpenLdap server from a Windows client with dual stack IP::
 
     # Initialization:
 

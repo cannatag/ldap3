@@ -202,7 +202,7 @@ class Server(object):
             addresses = None
             try:
                 addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
-            except socket.gaierror:
+            except (socket.gaierror, AttributeError):
                 pass
 
             if not addresses:  # if addresses not found or raised an exception (for example for bad flags) tries again without flags

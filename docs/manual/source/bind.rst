@@ -22,11 +22,11 @@ access the data. Keep in mind that either the authentication details than the au
 are a local server matter. The LDAP protocol doesn't specify how the identity must be stored on the server nor how the
 authorization ACLs are specified.
 
-The bind operation specify 4 different methods to authenticate to the server:
+The Bind operation specify 4 different methods to authenticate to the server:
 
 * Simple bind: you provide user credentials by the means of a username (in a dn form) and a password.
 
-* Anonymous simple Bind: the user and password are passed as empty strings
+* Anonymous simple Bind: the user and password are passed as empty strings.
 
 * Unauthenticated simple Bind: you pass a username without a password. This method, even if specified in the protocol,
 should not be used because is higly insecure and should be forbidden by the server. It was used for tracing purpose.

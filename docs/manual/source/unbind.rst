@@ -27,7 +27,7 @@ You perform an Unbind operation as in the following example (using the default s
     # perform some LDAP operation
     ...
 
-    # perform the Bind operation
+    # perform the Unbind operation
     c.unbind()
 
 
@@ -36,6 +36,18 @@ It just ends the user's session and close the socket. The ldap3 library checks t
 on both communication directions and then closes the socket.
 
 You can check if the socket has been closed querying the *closed* attribute of the connection object.
+
+Notice of Disconnection
+-----------------------
+
+Usually all communications between the client and the server are started by the client. There is only one case where the
+LDAP server send an unsolicited message: the Notice of Disconnection. This message is issued by the server as an alert
+when the server is about to stop. Once the message is sent, the server doesn't wait for any response, closes the socket
+and quits. Note that this notification is not used as a response to an Unbind requested by the client.
+
+When the ldap3 library receive a Notice of Disconnection it tries to gracefully close the socket and then raise the
+LDAPSessionTerminatedByServer Exception. With asynchronous strategies the Exception is raised immediately, while with
+synchronous strategies the Exception is raised as you try to send data over the socket.
 
 Extended logging
 ----------------
@@ -106,6 +118,7 @@ These are the usage metrics of this session::
       Operations:            1
         Abandon:             0
         Bind:                0
+        Add:                 0
         Compare:             0
         Delete:              0
         Extended:            0

@@ -35,7 +35,6 @@ should not be used because is higly insecure and should be forbidden by the serv
 access to the server. Before trying a mechanism you should check that the server supports it. The LDAP server publish
 its allowed SASL mechanism in the DSE information that can be read anonymously.
 
-
 Simple Bind
 -----------
 
@@ -320,6 +319,7 @@ These are the usage metrics of this session::
      Operations:            2
        Abandon:             0
        Bind:                1
+       Add:                 0
        Compare:             0
        Delete:              0
        Extended:            1

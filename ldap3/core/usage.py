@@ -113,6 +113,7 @@ class ConnectionUsage(object):
         r += '  Operations:            ' + str(self.operations) + linesep
         r += '    Abandon:             ' + str(self.abandon_operations) + linesep
         r += '    Bind:                ' + str(self.bind_operations) + linesep
+        r += '    Add:                 ' + str(self.add_operations) + linesep
         r += '    Compare:             ' + str(self.compare_operations) + linesep
         r += '    Delete:              ' + str(self.delete_operations) + linesep
         r += '    Extended:            ' + str(self.extended_operations) + linesep

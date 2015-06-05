@@ -7,10 +7,10 @@ LDAP Operations
 
    bind
    unbind
-   compare
    add
    delete
    modify
    modify_dn
    search
+   compare
    abandon

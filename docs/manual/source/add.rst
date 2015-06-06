@@ -3,18 +3,19 @@ The ADD operation
 #################
 
 The **Add** operation allows a client to request the addition of an entry into the LDAP directory. The Add operation is
- used only for new entries, that is the dn must reference a non existent object, but the parent objects must exist.
- For example if you try to add an entry with dn cn=user1,ou=users,o=company the company and users containers must already
- be present in the directory but the user1 object must non exist.
+used only for new entries, that is the dn must reference a non existent object, but the parent objects must exist.
+For example if you try to add an entry with dn cn=user1,ou=users,o=company the company and users containers must already
+be present in the directory but the user1 object must non exist.
 
- To perform an Add operation you must specify the dn of the new entry and a list of attributes to add.
+To perform an Add operation you must specify the dn of the new entry and a list of attributes to add.
 
- In the ldap3 library the signature for the Add operation is::
+In the ldap3 library the signature for the Add operation is::
 
-        def add(dn,
-                object_class=None,
-                attributes=None,
-                controls=None)
+    def add(self,
+            dn,
+            object_class=None,
+            attributes=None,
+            controls=None)
 
 * dn: distinguish name of the object to add
 
@@ -45,14 +46,19 @@ You perform an Add operation as in the following example (using the default sync
 
     print(c.result)
 
+    # close the connection
+
+    c.unbind()
+
 Obviously you must follow all the rules and restrictions specified in the LDAP server schema. Furthermore you cannot
 specify any operational attributes or any attribute defined with the NO-USER-MODIFICATION flag in the schema, or the operation
 will fail.
 
 Extended logging
 ----------------
+
 To get an idea of what's happening when you perform an Add operation this is the extended log from a session to an OpenLdap
- server from a Windows client with dual stack IP::
+server from a Windows client with dual stack IP::
 
     # Initialization:
 
@@ -80,7 +86,7 @@ To get an idea of what's happening when you perform an Add operation this is the
     DEBUG:ldap3:BASIC:refreshing server info for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
 
 
-    # Performing Bind operation with Simple Bind method:
+    # Authenticating to the LDAP server with the Simple Bind method:
 
     DEBUG:ldap3:BASIC:start BIND operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
@@ -112,7 +118,7 @@ To get an idea of what's happening when you perform an Add operation this is the
     DEBUG:ldap3:BASIC:done BIND operation, result <True>
 
 
-    # Performing Bind operation with Simple Bind method:
+    # Performing the Add operation:
 
     DEBUG:ldap3:BASIC:start ADD operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:ADD request <{'entry': 'cn=user1,o=test', 'attributes': {'gidNumber': ['0'], 'sn': ['user_sn'], 'objectClass': ['iNetOrgPerson', 'posixGroup', 'top']}}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
@@ -152,7 +158,7 @@ To get an idea of what's happening when you perform an Add operation this is the
     DEBUG:ldap3:BASIC:done ADD operation, result <False>
 
 
-    # Performing the Unbind operation:
+    # Closing the connnection (via the Unbind operation):
 
     DEBUG:ldap3:BASIC:start UNBIND operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:UNBIND request sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>

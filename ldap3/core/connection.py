@@ -728,8 +728,8 @@ class Connection(object):
         """
         Modify attributes of entry
 
-        - Changes is a dictionary in the form {'attribute1':
-          (operation, [val1, val2]), 'attribute2': (operation, [val1, val2])}
+        - Changes is a dictionary in the form {'attribute1': (operation, [val1, val2]),
+        'attribute2': (operation, [val1, val2]), ...}
         - Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
         if log_enabled(BASIC):

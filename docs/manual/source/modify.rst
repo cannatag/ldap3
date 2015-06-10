@@ -62,9 +62,167 @@ You perform a Modify operation as in the following example (using the default sy
     # define the connection
     c = Connection(s, user='user_dn', password='user_password')
 
-    # perform the Delete operation
-    c.delete('cn=user1,ou=uses,o=company')
+    # perform the Modify operation
+    c.modify('cn=user1,o=test', {'givenName': (MODIFY_REPLACE, ['givenname-1-replaced']), 'sn': (MODIFY_REPLACE, ['sn-replaced'])})
     print(c.result)
 
     # close the connection
     c.unbind()
+
+Extended logging
+----------------
+
+To get an idea of what happens when you perform a Modify operation this is the extended log from a session to an OpenLdap
+server from a Windows client with dual stack IP::
+
+    # Initialization:
+
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    DEBUG:ldap3:ERROR:detail level set to EXTENDED
+    DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO')>
+    DEBUG:ldap3:BASIC:instantiated Usage object
+    DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:NETWORK:opening connection for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:reset usage metrics
+    DEBUG:ldap3:BASIC:start collecting usage metrics
+    DEBUG:ldap3:BASIC:address for <ldap://openldap:389 - cleartext> resolved as <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 389)]>
+    DEBUG:ldap3:BASIC:address for <ldap://openldap:389 - cleartext> resolved as <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 389, 0, 20)]>
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldap://openldap:389 - cleartext>: <[<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 389, 0, 20)]> with mode IP_V6_PREFERRED
+    DEBUG:ldap3:BASIC:obtained candidate address for <ldap://openldap:389 - cleartext>: <[<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 389)]> with mode IP_V6_PREFERRED
+
+
+    # Opening the connection (trying IPv6 then IPv4):
+
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 389, 0, 20)]
+    DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it.> for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <local: [::]:50396 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 389)]
+    DEBUG:ldap3:NETWORK:connection open for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+
+
+    # Authenticating to the LDAP server with the Simple Bind method:
+
+    DEBUG:ldap3:BASIC:start BIND operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'name': 'cn=admin,o=test', 'authentication': {'simple': 'password', 'sasl': None}}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <1> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=1
+    >> protocolOp=ProtocolOp:
+    >>  bindRequest=BindRequest:
+    >>   version=3
+    >>   name=b'cn=admin,o=test'
+    >>   authentication=AuthenticationChoice:
+    >>    simple=b'password'
+    DEBUG:ldap3:NETWORK:sent 37 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
+    <<LDAPMessage:
+    << messageID=1
+    << protocolOp=ProtocolOp:
+    <<  bindResponse=BindResponse:
+    <<   resultCode='success'
+    <<   matchedDN=b''
+    <<   diagnosticMessage=b''
+    DEBUG:ldap3:PROTOCOL:BIND response <{'message': '', 'description': 'success', 'referrals': None, 'saslCreds': None, 'result': 0, 'dn': '', 'type': 'bindResponse'}> received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:refreshing server info for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done BIND operation, result <True>
+
+
+    # Performing the Modify operation:
+
+    DEBUG:ldap3:BASIC:start MODIFY operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:MODIFY request <{'entry': 'cn=user1,o=test', 'changes': [{'attribute': {'type': 'givenName', 'value': ['givenname-1-replaced']}, 'operation': 2}, {'attribute': {'type': 'sn', 'value': ['sn-replaced']}, 'operation': 2}]}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <2> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=2
+    >> protocolOp=ProtocolOp:
+    >>  modifyRequest=ModifyRequest:
+    >>   object=b'cn=user1,o=test'
+    >>   changes=Changes:
+    >>    Change:
+    >>     operation='replace'
+    >>     modification=PartialAttribute:
+    >>      type=b'givenName'
+    >>      vals=Vals:
+    >>       b'givenname-1-replaced'
+    >>    Change:
+    >>     operation='replace'
+    >>     modification=PartialAttribute:
+    >>      type=b'sn'
+    >>      vals=Vals:
+    >>       b'sn-replaced'
+    DEBUG:ldap3:NETWORK:sent 94 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
+    <<LDAPMessage:
+    << messageID=2
+    << protocolOp=ProtocolOp:
+    <<  modifyResponse=ModifyResponse:
+    <<   resultCode='success'
+    <<   matchedDN=b''
+    <<   diagnosticMessage=b''
+    DEBUG:ldap3:PROTOCOL:MODIFY response <[{'message': '', 'description': 'success', 'referrals': None, 'result': 0, 'dn': '', 'type': 'modifyResponse'}]> received via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:done MODIFY operation, result <True>
+
+
+    # Closing the connnection (via the Unbind operation):
+
+    DEBUG:ldap3:BASIC:start UNBIND operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:UNBIND request sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:new message id <3> generated
+    DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
+    >>LDAPMessage:
+    >> messageID=3
+    >> protocolOp=ProtocolOp:
+    >>  unbindRequest=b''
+    DEBUG:ldap3:NETWORK:sent 7 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:closing connection for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:NETWORK:connection closed for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - closed - <no socket> - tls not started - not listening - SyncStrategy>
+    DEBUG:ldap3:BASIC:stop collecting usage metrics
+    DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
+
+
+These are the usage metrics of this session::
+
+    Connection Usage:
+      Time: [elapsed:        0:00:01.243813]
+        Initial start time:  2015-06-10T18:23:50.618075
+        Open socket time:    2015-06-10T18:23:50.618075
+        Close socket time:   2015-06-10T18:23:51.861888
+      Server:
+        Servers from pool:   0
+        Sockets open:        1
+        Sockets closed:      1
+        Sockets wrapped:     0
+      Bytes:                 166
+        Transmitted:         138
+        Received:            28
+      Messages:              5
+        Transmitted:         3
+        Received:            2
+      Operations:            3
+        Abandon:             0
+        Bind:                1
+        Add:                 0
+        Compare:             0
+        Delete:              0
+        Extended:            0
+        Modify:              1
+        ModifyDn:            0
+        Search:              0
+        Unbind:              1
+      Referrals:
+        Received:            0
+        Followed:            0
+      Restartable tries:     0
+        Failed restarts:     0
+        Successful restarts: 0

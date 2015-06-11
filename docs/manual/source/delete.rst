@@ -12,7 +12,7 @@ In the ldap3 library the signature for the Delete operation is::
                dn,
                controls=None):
 
-* dn: distinguish name of the object to delete
+* dn: distinguished name of the object to delete
 
 * controls: additional controls to send with the request
 
@@ -30,7 +30,7 @@ You perform a Delete operation as in the following example (using the default sy
     c = Connection(s, user='user_dn', password='user_password')
 
     # perform the Delete operation
-    c.delete('cn=user1,ou=uses,o=company')
+    c.delete('cn=user1,ou=users,o=company')
     print(c.result)
 
     # close the connection

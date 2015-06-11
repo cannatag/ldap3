@@ -13,9 +13,16 @@ In the ldap3 library the signature for the Modify operation is::
                changes,
                controls=None):
 
+
+* dn: distinguished name of the object whose attributes must be modified
+
+* changes: a dictionary of changes to be performed on the specified entry
+
+* controls: additional controls to send in the request
+
+
 * dn: distinguish name of the object to delete
 
-* changes: a sequence of changes to be performed in the specified entry
 
 * controls: additional controls to send with the request
 
@@ -63,7 +70,7 @@ You perform a Modify operation as in the following example (using the default sy
     c = Connection(s, user='user_dn', password='user_password')
 
     # perform the Modify operation
-    c.modify('cn=user1,o=test', {'givenName': (MODIFY_REPLACE, ['givenname-1-replaced']), 'sn': (MODIFY_REPLACE, ['sn-replaced'])})
+    c.modify('cn=user1,ou=users,o=company', {'givenName': (MODIFY_REPLACE, ['givenname-1-replaced']), 'sn': (MODIFY_REPLACE, ['sn-replaced'])})
     print(c.result)
 
     # close the connection

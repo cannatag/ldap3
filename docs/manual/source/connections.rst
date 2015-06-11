@@ -58,47 +58,49 @@ With the connection you can perform all the standard LDAP operations:
 
 * bind: performs a bind to the LDAP Server with the authentication type and credential specified in the connection
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 * unbind: disconnect and close the connection
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 * compare: performs a comparison between an attribute value of an entry and an arbitrary value
 
-    * dn: distinguish name of the entry whose attribute you want to compare
+    * dn: distinguished name of the entry whose attribute you want to compare
 
     * attribute: name of the attribute to compare
 
     * value: value to be compared
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 * add: add an entry to the LDAP server
 
-    * dn: distinguish name of the object to add
+    * dn: distinguished name of the object to add
 
     * object_class: class name of the attribute to add, can be a string containing a single value or a list of strings
 
     * attributes: a dictionary in the form {'attr1': 'val1', 'attr2': 'val2', ...} or {'attr1': ['val1', 'val2', ...], ...} for multivalued attributes
 
+    * controls: additional controls to send in the request
+
 * delete: deletes the object specified
 
-    * dn: distinguish name of the object to delete
+    * dn: distinguished name of the object to delete
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 * modify: modifies attributes of an entry
 
-    * dn: distinguish name of the object whose attributes must be modified
+    * dn: distinguished name of the object whose attributes must be modified
 
     * changes: a dictionary in the form {'attribute1': (operation, [val1, val2, ...]), 'attribute2': (operation, [val1, val2, ...])}, operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 * modify_dn: modifies relative distinguished name of an entry or performs a move of an entry
 
-    * dn: distinguish name of the entry whose relative name must be modified
+    * dn: distinguished name of the entry whose relative name must be modified
 
     * relative_dn: new relative dn of the entry
 
@@ -106,7 +108,7 @@ With the connection you can perform all the standard LDAP operations:
 
     * new_superior: the new container of the entry
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 .. note::
 
@@ -146,7 +148,7 @@ With the connection you can perform all the standard LDAP operations:
 
     * get_operational_attributes: if True returns information attributes mananged automatically by the server for  each entry
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
     * paged_size: if paged_size is greater than 0 a simple paged search is executed as described in RFC2696 (defaults to None). The search will return at most the specified number of entries
 
@@ -158,7 +160,7 @@ With the connection you can perform all the standard LDAP operations:
 
     * message_id: id of a previously sent request
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 * Extended: performs an extended operation
 
@@ -166,7 +168,7 @@ With the connection you can perform all the standard LDAP operations:
 
     * request_value: optional value sent in the request (defaults to None)
 
-    * controls: additional controls to be used in the request
+    * controls: additional controls to send in the request
 
 
 Additional methods defined:

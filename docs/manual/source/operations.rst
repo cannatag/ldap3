@@ -10,7 +10,7 @@ LDAP Operations
    add
    delete
    modify
-   modify_dn
+   modifydn
    search
    compare
    abandon

@@ -12,7 +12,7 @@ In the ldap3 library the signature for the Delete operation is::
                dn,
                controls=None):
 
-* dn: distinguish name of the object to delete
+* dn: distinguished name of the object to delete
 
 * controls: additional controls to send with the request
 
@@ -30,7 +30,7 @@ You perform a Delete operation as in the following example (using the default sy
     c = Connection(s, user='user_dn', password='user_password')
 
     # perform the Delete operation
-    c.delete('cn=user1,ou=uses,o=company')
+    c.delete('cn=user1,ou=users,o=company')
     print(c.result)
 
     # close the connection
@@ -43,6 +43,7 @@ To get an idea of what's happening when you perform a Delete operation this is t
 server from a Windows client with dual stack IP::
 
     # Initialization:
+
     INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
     DEBUG:ldap3:ERROR:detail level set to EXTENDED
     DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO')>
@@ -59,7 +60,6 @@ server from a Windows client with dual stack IP::
 
 
     # Opening the connection (trying IPv6 then IPv4):
-
 
     DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET6: 23>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('fe80::215:5dff:fe8f:2f0d%20', 389, 0, 20)]
     DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it.> for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <local: [::]:50396 - remote: [None]:None> - tls not started - not listening - SyncStrategy>

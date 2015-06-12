@@ -39,7 +39,7 @@ from ..protocol.convert import changes_to_list, validate_attribute_value
 #            ...  },
 #    modification    PartialAttribute } }
 
-change_table = {MODIFY_ADD: 0,  # accepts direct values too
+change_table = {MODIFY_ADD: 0,  # accepts actual values too
                 MODIFY_DELETE: 1,
                 MODIFY_REPLACE: 2,
                 MODIFY_INCREMENT: 3,

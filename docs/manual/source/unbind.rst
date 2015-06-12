@@ -13,6 +13,14 @@ communication socket. The Bind operation instead has nothing to do with the sock
 So it's perfectly legal to open a connession to the ldap server, perform some operation in the anonymous state and then Unbind
 to close the session.
 
+In the ldap3 library the signature for the Delete operation is::
+
+    def unbind(self,
+               controls=None):
+
+* controls: additional controls to send in the request
+
+
 You perform an Unbind operation as in the following example (using the default synchronous strategy)::
 
     # import class and constants

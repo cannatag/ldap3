@@ -40,9 +40,9 @@ You perform an Add operation as in the following example (using the default sync
     c = Connection(s, user='user_dn', password='user_password')
 
     # perform the Add operation
-    c.add('cn=user1,ou=uses,o=company', ['iNetOrgPerson', 'posixGroup', 'top'], {'sn': 'user_sn', 'gidNumber': 0})
+    c.add('cn=user1,ou=users,o=company', ['iNetOrgPerson', 'posixGroup', 'top'], {'sn': 'user_sn', 'gidNumber': 0})
     # equivalent to
-    c.add('cn=user1,ou=uses,o=company', attributes={'objectClass':  ['iNetOrgPerson', 'posixGroup', 'top'], 'sn': 'user_sn', gidNumber: 0})
+    c.add('cn=user1,ou=users,o=company', attributes={'objectClass':  ['iNetOrgPerson', 'posixGroup', 'top'], 'sn': 'user_sn', gidNumber: 0})
 
     print(c.result)
 

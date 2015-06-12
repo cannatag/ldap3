@@ -143,7 +143,7 @@ To perform the search you can use any of the following methods:
 
 - search_level(): force a Level search.
 
-- search_sub_tree(): force a whole sub-tree search, starting from 'base'.
+- search_subtree(): force a whole sub-tree search, starting from 'base'.
 
 - search_object(): force a object search, DN to search must be specified in 'base'.
 

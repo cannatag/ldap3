@@ -160,7 +160,7 @@ With the connection you can perform all the standard LDAP operations:
 
     * message_id: id of a previously sent request
 
-    * controls: additional controls to send in the request
+    * controls: additional controls to send in the request to be abandoned
 
 * Extended: performs an extended operation
 

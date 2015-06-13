@@ -856,6 +856,9 @@ class Connection(object):
                     self.response = None
                     self._entries = None
                     return_value = True
+                else:
+                    if log_enabled(ERROR):
+                        log(ERROR, 'cannot abandon a Bind, an Unbind or an Abandon operation or message ID %s not found via <%s>', str(message_id), self)
 
             if log_enabled(BASIC):
                 log(BASIC, 'done ABANDON operation, result <%s>', return_value)

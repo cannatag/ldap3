@@ -35,6 +35,9 @@ should not be used because is higly insecure and should be forbidden by the serv
 access to the server. Before trying a mechanism you should check that the server supports it. The LDAP server publish
 its allowed SASL mechanism in the DSE information that can be read anonymously.
 
+The Bind method returns True if the bind is successful, False if something goes wrong while binding. In this case you
+can inspect the result attribute of the connection object to get the error description.
+
 Simple Bind
 -----------
 

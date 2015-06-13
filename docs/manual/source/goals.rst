@@ -31,7 +31,7 @@ ldap3 Features
 
     * The library is **compatible with Python 2** (2.6 and 2.7)
 
-    * Testing is done in Python 3 (3.4) Python 2 (2.6, 2.7), PyPy 2,4,0 and PyPy3 2.4.0
+    * Testing is done in Python 3 (3.4) Python 2 (2.6, 2.7), PyPy 2.4.0 and PyPy3 2.4.0
 
     * Unicode strings are properly managed.
 

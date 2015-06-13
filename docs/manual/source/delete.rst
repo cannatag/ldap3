@@ -16,6 +16,13 @@ In the ldap3 library the signature for the Delete operation is::
 
 * controls: additional controls to send with the request
 
+For synchronous strategies the delete method returns True if the operation was successful, returns False in case of errors.
+In this case you can inspect the result attribute of the connection object to get the error description.
+
+For asynchronous strategies the delete method returns the message id of the operation. You can get the operation result with
+the get_response(message_id) method of the connection object.
+
+
 Only leaf entries (those with no subordinate entries) can be deleted with this operation.
 
 You perform a Delete operation as in the following example (using the default synchronous strategy)::

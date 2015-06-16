@@ -25,6 +25,12 @@ In the ldap3 library the signature for the Add operation is::
 
 * controls: additional controls to send with the request
 
+For synchronous strategies the add method returns True if the operation was successful, returns False in case of errors.
+In this case you can inspect the result attribute of the connection object to get the error description.
+
+For asynchronous strategies the add method returns the message id of the operation. You can get the operation result with
+the get_response(message_id) method of the connection object.
+
 The object_class parameter is a shortcut for specify a sequence of object classes. You can specify the object classes in the
 attributes parameter too.
 

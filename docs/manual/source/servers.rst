@@ -120,7 +120,7 @@ If the attribute is defined in the schema as 'multi_value' the attribute value i
 Offline Schema
 --------------
 
-If your LDAP server doesn't return the DSA info or the Schema you can load pre-built schemas and infos with the get_info parameter. Are available schemas for eDirectory, Active Directory and Openldap.
+If your LDAP server doesn't return the DSA info or the Schema you can load pre-built schemas and infos with the get_info parameter. Schemas are available for eDirectory, Active Directory and Openldap.
 
 You can also save the schema and info in a json string::
 

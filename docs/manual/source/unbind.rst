@@ -20,6 +20,7 @@ In the ldap3 library the signature for the Delete operation is::
 
 * controls: additional controls to send in the request
 
+The unbind method always returns True.
 
 You perform an Unbind operation as in the following example (using the default synchronous strategy)::
 
@@ -37,7 +38,6 @@ You perform an Unbind operation as in the following example (using the default s
 
     # perform the Unbind operation
     c.unbind()
-
 
 The Unbind request is quite peculiar in the LDAPv3 protocol. There is no acknowledgement from thet server, that doesn't respond at all.
 It just ends the user's session and close the socket. The ldap3 library checks the success of this operation shutting down the socket

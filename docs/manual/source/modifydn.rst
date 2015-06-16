@@ -29,6 +29,13 @@ In the ldap3 library the signature for the Delete operation is::
 
 * controls: additional controls to send in the request
 
+
+For synchronous strategies the modify_dn method returns True if the operation was successful, returns False in case of errors.
+In this case you can inspect the result attribute of the connection object to get the error description.
+
+For asynchronous strategies the modify_dn method returns the message id of the operation. You can get the operation result with
+the get_response(message_id) method of the connection object.
+
 You can rename an entry with a ModifyDN operation as in the following example (using the default synchronous strategy)::
 
     # import class and constants

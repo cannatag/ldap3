@@ -30,7 +30,7 @@ Detail level defaults to OFF. You must change it at runtime as needed to have an
     # ... unlogged ldap3 operation
     set_library_log_detail_level(BASIC)
     # ... ldap3 operation with few details
-    set_library_log_detail_level(NETWORK)
+    set_library_log_detail_level(EXTENDED)
     # ... other ldap3 operation with most details
     set_library_log_detail_level(OFF)
     # nothing else is logged

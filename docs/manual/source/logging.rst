@@ -23,10 +23,10 @@ You can change the ldap3 logging activation level to another one if you need not
     from ldap3.utils.log import set_library_log_activation_level
     set_library_log_activation_level(logging.CRITICAL)  # ldap3 will emit its log only when you set level=logging.CRITICAL in your log configuration
 
-ldap3 logging has its own level of log detail: OFF, ERROR, BASIC, PROTOCOL, NETWORK and NETWORK_EXTENDED. You can set the level of detail with ldap3.utils.log.set_library_log_detail_level().
-Detail level defaults to OFF. You must change it at runtime as needed to have anything logged:
+ldap3 logging has its own level of log detail: OFF, ERROR, BASIC, PROTOCOL, NETWORK and EXTENDED. You can set the level of detail with ldap3.utils.log.set_library_log_detail_level().
+Detail level defaults to OFF. You must change it at runtime as needed to have anything logged::
 
-    from ldap3.utils.log import set_library_log_detail_level, OFF, BASIC, NETWORK, NETWORK_EXTENDED
+    from ldap3.utils.log import set_library_log_detail_level, OFF, BASIC, NETWORK, EXTENDED
     # ... unlogged ldap3 operation
     set_library_log_detail_level(BASIC)
     # ... ldap3 operation with few details

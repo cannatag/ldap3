@@ -28,6 +28,7 @@ from os import linesep
 
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, STRING_TYPES, SEQUENCE_TYPES
 from .attribute import Attribute
+from .attrDef import no_default
 from .entry import Entry
 from ..core.exceptions import LDAPReaderError
 from .operationalAttribute import OperationalAttribute
@@ -303,7 +304,7 @@ class Reader(object):
                     name = attr_name
                     break
 
-            if name or attr_def.default is not None:  # attribute value found in result or default value present
+            if name or attr_def.default != no_default:  # attribute value found in result or default value present
                 attribute = Attribute(attr_def, entry)
                 attribute.__dict__['_response'] = response
                 attribute.__dict__['raw_values'] = response['raw_attributes'][name] if name else None

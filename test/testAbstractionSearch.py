@@ -135,4 +135,15 @@ class Test(unittest.TestCase):
         qu = 'CommonName := ' + testcase_id + 'abstract-member-11'
         ru = Reader(self.connection, ou, qu, test_base)
         lu = ru.search()
-        self.assertEqual(str(lu[0].employee), '')
+        self.assertEqual(lu[0].employee.value, '')
+
+    def test_search_with_None_default(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-12'))
+
+        ou = ObjectDef('iNetOrgPerson')
+        ou += AttrDef('cn', 'CommonName')
+        ou += AttrDef('employeeType', key='Employee', default=None)
+        qu = 'CommonName := ' + testcase_id + 'abstract-member-12'
+        ru = Reader(self.connection, ou, qu, test_base)
+        lu = ru.search()
+        self.assertEqual(lu[0].employee.value, None)

@@ -303,7 +303,7 @@ class Reader(object):
                     name = attr_name
                     break
 
-            if name or attr_def.default is not None:  # attribute value found in result or default value present
+            if name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default
                 attribute = Attribute(attr_def, entry)
                 attribute.__dict__['_response'] = response
                 attribute.__dict__['raw_values'] = response['raw_attributes'][name] if name else None

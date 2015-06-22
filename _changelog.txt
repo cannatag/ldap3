@@ -2,7 +2,7 @@
     - Updated docs with ldap operations pages
     - Fixed a bug where an Exception was raised on OpenBSD for missing IPV4_MAPPED flag
     - Fixed missing add operation usage metrics
-    - Abstract Attribute doesn't permit "falsy" values as default (thanks Lucas)
+    - Abstract Attribute doesn't permit "falsy" values or None as default (thanks Lucas)
 
 * 0.9.8.4 2015.05.19
     - Added EXTENDED log detail level with prettyPrint description of ldap messages

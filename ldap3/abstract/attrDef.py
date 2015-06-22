@@ -26,11 +26,6 @@
 from ..core.exceptions import LDAPKeyError
 
 
-# We do not use "None" for checking if there is no default value for the AttrDef,
-# because you could not use "None" as the default value anymore if we do so.
-no_default = object()
-
-
 class AttrDef(object):
     """Hold the definition of an attribute
 
@@ -51,12 +46,14 @@ class AttrDef(object):
 
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=no_default, dereference_dn=None):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
         self.pre_query = pre_query
         self.post_query = post_query
+        # We do use "NotImplemented" for an none existent default value, because this allows "None" to be
+        # used as default
         self.default = default
         self.dereference_dn = dereference_dn
 

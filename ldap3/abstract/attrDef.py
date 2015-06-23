@@ -46,14 +46,12 @@ class AttrDef(object):
 
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=None, dereference_dn=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
         self.pre_query = pre_query
         self.post_query = post_query
-        # We do use "NotImplemented" for an none existent default value, because this allows "None" to be
-        # used as default
         self.default = default
         self.dereference_dn = dereference_dn
 

@@ -228,3 +228,107 @@ request it explicitly.
 
 To request the operational attributes you can even set the get_operational_attributes parameter to True.
 
+Checked Attributes
+==================
+The checked attributes feature checks the LDAP syntax of the attributes defined in schema and returns a properly formatted
+entry result while performing searches. This means that if, for example, you have an attributes specified as GUID in the
+server schema you will get the properly formatted GUID value ('012381d3-3b1c-904f-b29a-012381d33b1c') in the
+connection.response[0]['attributes'] key dictionary instead of a sequence of bytes. Or if you request an attribute defined
+as an Interger in the schema you will get the value already converted to int. Furthermore for attributes defined as single
+valued in schema you will get the value instead of a list of values (that would always be one sized).
+To activate this feature you must set the get info to GET_SCHEMA_INFO or GET_ALL_INFO value when defining the server object
+and the 'check_names' attributes to True in the Connection object (True by default).
+
+There are a few of standard formatters defined in the library, most of them are defined in the relevants RFCs:
+
+* format_unicode  # returns an unicode object in Python 2 and a string in Python 3
+
+* format_integer  # returns an integer
+
+* format_binary  # returns a bytes() sequence
+
+* format_uuid  # returns a GUID (UUID) as specified in RFC 4122 - byte order is big endian
+
+* format_uuid_le  # same as above but byte order is little endian
+
+* format_boolean  # returns a boolean
+
+* format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as
+defined in RFC 4517
+
+You can even define your custom formatter for specific purposes. Just pass a dictionary in the format
+{'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte value and convert it the relevant object or class instance.
+
+The resolution order of the format feature is the following:
+
+Custom formatters have precedence over standard formatter. In each category (from highest to lowest priority):
+
+1. attribute name
+
+2. attribute oid(from schema)
+
+3. attribute names (from oid_info)
+
+4. attribute syntax (from schema)
+
+If a suitable formatter is not found the value will be rendered as bytes.
+
+Search constraints
+------------------
+
+You can limit the number of entries returned in a search or the time spent by the server performing the search using the
+size_limit and time_limit parameters. The server can also have some system wide constrains regarding the maximun number of
+entries returned in any search and the time spent in performing the search. It can also have some constrains on how the
+aliases are dereferenced. You must check the configuration of your LDAP server to verify which limitations are currenty
+active.
+
+You can also request to not get any attribute value in the entries returned by the search with the types_only=True
+parameter.
+
+Simple paged search
+-------------------
+
+The search operation can perform a *simple paged search* as per RFC2696. You must specify the required number of entries
+returned in each response set. After the first search you must send back the cookie you get with each response in each
+subsequent search. If you send 0 as paged_size and a valid cookie the search operation referred by that cookie is abandoned.
+Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']; the server may return
+an estimated total number of entries in connection.result['controls']['1.2.840.113556.1.4.319']['value']['size'].
+You can change the paged_size in any subsequent search request.
+
+Example::
+
+    from ldap3 import Server, Connection, SUBTREE
+    total_entries = 0
+    server = Server('test-server')
+    connection = Connection(server, user='test-user', password='test-password', auto_bind=True)
+    connection.search(search_base='o=test', search_filter='(objectClass=inetOrgPerson)', search_scope=SUBTREE,
+                      attributes=['cn', 'givenName'], paged_size=5)
+    total_entries += len(connection.response)
+    cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    while cookie:
+        connection.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SUBTREE,
+                          attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
+        total_entries += len(connection.response)
+        cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    print('Total entries retrieved:', total_entries)
+    connection.close()
+
+Response
+--------
+
+Responses
+=========
+
+Responses are received and stored in the connection.response as a list of dictionaries.
+You can get the search result entries of a Search operation iterating over the response attribute.
+Each entry is a dictionary with the following field:
+
+* dn: the distinguished name of the entry
+
+* attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format
+
+* raw_attributes: same as 'attributes' but not encoded (bytearray)
+
+
+Entries
+-------

@@ -1,4 +1,4 @@
-* 0.9.8.5 2015.06.22
+* 0.9.8.5 2015.06.23
     - Updated docs with ldap operations pages
     - Fixed a bug where an Exception was raised on OpenBSD for missing IPV4_MAPPED flag
     - Fixed missing add operation usage metrics

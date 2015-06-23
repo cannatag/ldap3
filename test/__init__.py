@@ -76,10 +76,9 @@ if location.startswith('TRAVIS'):
     test_logging_filename = 'ldap3.log'
 elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
-    # test_server = 'edir1.hyperv'
-    test_server = ['edir1',
-                   'edir2',
-                   'edir3']  # the ldap server where tests are executed, if a list is given a pool will be created
+    test_server = ['edir1.hyperv',
+                   'edir2.hyperv',
+                   'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_base = 'o=test'  # base context where test objects are created

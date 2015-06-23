@@ -25,7 +25,6 @@
 
 from ..core.exceptions import LDAPKeyError
 
-
 class AttrDef(object):
     """Hold the definition of an attribute
 
@@ -39,14 +38,14 @@ class AttrDef(object):
     :type pre_query: callable
     :param post_query: called to transform values returned by search
     :type post_query: callable
-    :param default: value returned when the attribute is absent
+    :param default: value returned when the attribute is absent (defaults to NotImplemented to allow use of None as default)
     :type default: string, integer
     :param dereference_dn: reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry
     :type dereference_dn: ObjectDef
 
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=None, dereference_dn=None):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate

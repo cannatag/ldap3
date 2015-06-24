@@ -188,4 +188,4 @@ class Test(unittest.TestCase):
             response = [entry for entry in self.connection.response if entry['dn'].startswith(test_name_attr + '=' + testcase_id)]
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 1)
+        self.assertTrue(len(response) >= 1)

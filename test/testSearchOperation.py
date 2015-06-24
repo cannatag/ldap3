@@ -185,7 +185,7 @@ class Test(unittest.TestCase):
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
-            response = self.connection.response
+            response = [entry for entry in self.connection.response if entry['dn'].startswith(test_name_attr + '=' + testcase_id)]
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 3)
+        self.assertEqual(len(response), 1)

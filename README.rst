@@ -88,12 +88,19 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 Changelog
 ---------
 
+* 0.9.8.5 2015.06.23
+    - Updated docs with ldap operations pages
+    - Fixed a bug where an Exception was raised on OpenBSD for missing IPV4_MAPPED flag
+    - Fixed missing add operation usage metrics
+    - Abstract Attribute doesn't permit "falsy" values or None as default (thanks Lucas)
+
 * 0.9.8.4 2015.05.19
     - Added EXTENDED log detail level with prettyPrint description of ldap messages
     - fixed logging of IPv6 address description
     - fixed checking of open address when dns returns more than one ip for the same host
     - fixed selection of proper address when failing back from IPv6 to IPv4 and vice-versa
     - when sending controls controlValue is now optional (as stated in RFC 4511), specify None to not send it
+    - moved badges to shields.io
 
 * 0.9.8.3 2015.05.11
     - Added support for logging

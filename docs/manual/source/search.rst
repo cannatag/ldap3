@@ -300,25 +300,68 @@ Example::
     from ldap3 import Server, Connection, SUBTREE
     total_entries = 0
     server = Server('test-server')
-    connection = Connection(server, user='test-user', password='test-password', auto_bind=True)
-    connection.search(search_base='o=test', search_filter='(objectClass=inetOrgPerson)', search_scope=SUBTREE,
-                      attributes=['cn', 'givenName'], paged_size=5)
-    total_entries += len(connection.response)
-    cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    c = Connection(server, user='username', password='password')
+    c.search(search_base = 'o=test',
+             search_filter = '(objectClass=inetOrgPerson)',
+             search_scope = SUBTREE,
+             attributes = ['cn', 'givenName'],
+             paged_size = 5)
+    total_entries += len(c.response)
+    for entry in c.response:
+        print(entry['dn'], entry['attributes])
+    cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
-        connection.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SUBTREE,
-                          attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
-        total_entries += len(connection.response)
-        cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        c.search(search_base = 'o=test',
+                 search_filter = '(object_class=inetOrgPerson)',
+                 search_scope = SUBTREE,
+                 attributes = ['cn', 'givenName'],
+                 paged_size = 5,
+                 paged_cookie = cookie)
+        total_entries += len(c.response)
+        cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        for entry in c.response:
+            print(entry['dn'], entry['attributes])
     print('Total entries retrieved:', total_entries)
-    connection.close()
+
+Or you can use the much simpler extended operations package that wraps all this machinery and hides implementation
+details, you can choose to get back a generator or the whole list of entries found.
+
+
+Working with a generator is better when you deal with very long list of entries or have memory issues::
+
+    # generator
+    total_entries = 0
+    entry_generator = c.extend.standard.paged_search(search_base = 'o=test',
+                                                     search_filter = '(objectClass=inetOrgPerson)',
+                                                     search_scope = SUBTREE,
+                                                     attributes = ['cn', 'givenName'],
+                                                     paged_size = 5,
+                                                     generator=True)
+    for entry in entry_generator:
+        total_entries += 1
+        print(entry['dn'], entry['attributes])
+    print('Total entries retrieved:', total_entries)
+
+Remember that a generator can be consumed only one time, so you must elaborate the results in a sequential way.
+
+
+Working with a list keeps all the found entries in a list and you can elaborate them in a random way::
+
+    # whole result list
+    entry_list = c.extend.standard.paged_search(search_base = 'o=test',
+                                                search_filter = '(objectClass=inetOrgPerson)',
+                                                search_scope = SUBTREE,
+                                                attributes = ['cn', 'givenName'],
+                                                paged_size = 5,
+                                                generator=False)
+    for entry in entry_list:
+        print entry['attributes']
+    total_entries = len(entry_list)
+    print('Total entries retrieved:', total_entries)
+
 
 Response
 --------
-
-Responses
-=========
-
 Responses are received and stored in the connection.response as a list of dictionaries.
 You can get the search result entries of a Search operation iterating over the response attribute.
 Each entry is a dictionary with the following field:

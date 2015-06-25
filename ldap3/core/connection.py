@@ -728,8 +728,9 @@ class Connection(object):
         """
         Modify attributes of entry
 
-        - Changes is a dictionary in the form {'attribute1': (operation, [val1, val2]),
-        'attribute2': (operation, [val1, val2]), ...}
+        - Changes is a dictionary in the form {'attribute1': change),
+        'attribute2': [change, change, ...], ...}
+        change is (operation, [value1, value2, ...])
         - Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
         if log_enabled(BASIC):
@@ -755,17 +756,23 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPChangesError(self.last_error)
 
-            for change in changes:
-                if len(changes[change]) != 2:
-                    self.last_error = 'malformed change'
-                    if log_enabled(ERROR):
-                        log(ERROR, '%s for <%s>', self.last_error, self)
-                    raise LDAPChangesError(self.last_error)
-                elif changes[change][0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
-                    self.last_error = 'unknown change type'
-                    if log_enabled(ERROR):
-                        log(ERROR, '%s for <%s>', self.last_error, self)
-                    raise LDAPChangesError(self.last_error)
+            for attribute_name in changes:
+                change = changes[attribute_name]
+                if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
+                    if len(change) != 2:
+                        self.last_error = 'malformed change'
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPChangesError(self.last_error)
+
+                    changes[attribute_name] = [change]  # insert change in a tuple
+                else:
+                    for change_operation in change:
+                        if len(change_operation) != 2 or change_operation[0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
+                            self.last_error = 'invalid change list'
+                            if log_enabled(ERROR):
+                                log(ERROR, '%s for <%s>', self.last_error, self)
+                            raise LDAPChangesError(self.last_error)
 
             request = modify_operation(dn, changes, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):

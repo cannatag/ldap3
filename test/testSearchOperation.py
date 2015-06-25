@@ -177,3 +177,15 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 2)
+
+    def test_search_not_match(self):
+        result = self.connection.search(search_base=test_base,
+                                        search_filter='(!(' + test_name_attr + '=' + testcase_id + 'search-1))',
+                                        attributes=[test_name_attr, 'givenName'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = [entry for entry in self.connection.response if entry['dn'].startswith(test_name_attr + '=' + testcase_id)]
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(len(response) >= 1)

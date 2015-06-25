@@ -201,7 +201,7 @@ Working with a generator is better when you deal with very long list of entries 
                                                      search_filter = '(objectClass=inetOrgPerson)',
                                                      search_scope = SUBTREE,
                                                      attributes = ['cn', 'givenName'],
-                                                     paged_size = 5,
+                l                                     paged_size = 5,
                                                      generator=True)
     for entry in entry_generator:
         total_entries += 1

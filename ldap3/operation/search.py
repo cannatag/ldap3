@@ -253,7 +253,9 @@ def compile_filter(filter_node):
     elif filter_node.tag == NOT:
         boolean_filter = Not()
         boolean_filter['innerNotFilter'] = compile_filter(filter_node.elements[0])
-        compiled_filter['notFilter'] = boolean_filter
+        # compiled_filter['notFilter'] = boolean_filter
+        compiled_filter.setComponentByName('notFilter', boolean_filter, verifyConstraints=False)  # do not verify constraints because of hack for recursive filters in rfc4511
+
     elif filter_node.tag == MATCH_APPROX:
         matching_filter = ApproxMatch()
         matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])

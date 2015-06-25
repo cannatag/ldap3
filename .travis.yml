@@ -19,5 +19,6 @@ env:
   - USERDOMAIN=TRAVIS,REUSABLE,1
 install:
   - "pip install ."
+  - "pip list"
 script:
   - nosetests -s test

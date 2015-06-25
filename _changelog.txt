@@ -1,3 +1,6 @@
+*0.9.8.6 2015.06.25
+    - modify operation now accept multiple changes for same attribute (Thanks Lorenzo)
+
 * 0.9.8.5.post2 2015.06.24
     - Updated pyasn1 to 0.1.8
     - Fixed error in not filter with pyasn1 0.1.8

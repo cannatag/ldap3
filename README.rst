@@ -88,6 +88,10 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 Changelog
 ---------
 
+* 0.9.8.5.post2 2015.06.24
+    - Updated pyasn1 to 0.1.8
+    - Fixed error in not filter with pyasn1 0.1.8
+
 * 0.9.8.5 2015.06.23
     - Updated docs with ldap operations pages
     - Fixed a bug where an Exception was raised on OpenBSD for missing IPV4_MAPPED flag

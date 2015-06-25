@@ -30,7 +30,6 @@ In this case you can inspect the result attribute of the connection object to ge
 For asynchronous strategies the modify method returns the message id of the operation. You can get the operation result with
 the get_response(message_id) method of the connection object.
 
-
 There are 4 different kinds of change:
 
 * MODIFY_ADD: add values listed to the specified attribute, creating the attribute if necessary.
@@ -46,10 +45,9 @@ the entire attribute is removed.
              must be appropriate for the request (e.g., it must have INTEGER or other increment-able values), and the
              modification must provide one and only one value. (RFC4525)
 
-changes is a dictionary in the form {'attribute1': (operation, [val1, val2, ...]], 'attribute2': (operation, [val1, val2, ...]), ...}
+changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
 
 operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT (import them from the ldap3 namespace)
-
 
 The entire list of modifications is performed by the server in the order they are listed as a single atomic operation.
 While individual modifications may violate certain aspects of the directory schema (such as the object class definition
@@ -75,7 +73,9 @@ You perform a Modify operation as in the following example (using the default sy
     c = Connection(s, user='user_dn', password='user_password')
 
     # perform the Modify operation
-    c.modify('cn=user1,ou=users,o=company', {'givenName': (MODIFY_REPLACE, ['givenname-1-replaced']), 'sn': (MODIFY_REPLACE, ['sn-replaced'])})
+    c.modify('cn=user1,ou=users,o=company',
+             {'givenName': [(MODIFY_REPLACE, ['givenname-1-replaced'])],
+              'sn': [(MODIFY_REPLACE, ['sn-replaced'])]})
     print(c.result)
 
     # close the connection

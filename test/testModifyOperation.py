@@ -85,3 +85,19 @@ class Test(unittest.TestCase):
         else:
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
+
+    def test_delete_add_same_attribute(self):
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_ADD, ['businessCategory-7-added', 'businessCategory-8-added', 'businessCategory-9-added'])})
+        if not self.connection.strategy.sync:
+            _, result = self.connection.get_response(result)
+        else:
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': [(MODIFY_DELETE, ['businessCategory-8-added']), (MODIFY_ADD, ['business-Category-10-added'])]})
+
+        if not self.connection.strategy.sync:
+            _, result = self.connection.get_response(result)
+        else:
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')

@@ -52,26 +52,29 @@ change_table = {MODIFY_ADD: 0,  # accepts actual values too
 def modify_operation(dn,
                      changes,
                      schema=None):
-    # changes is a dictionary in the form {'attribute1': (operation, [val1, val2, ...]], 'attribute2': (operation, [val1, val2, ...]), ...}
+    # changes is a dictionary in the form {'attribute': [(operation, [val1, ...]), ...], ...}
     # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
     # increment as per RFC4525
 
     change_list = Changes()
-    for pos, attribute in enumerate(changes):
-        partial_attribute = PartialAttribute()
-        partial_attribute['type'] = AttributeDescription(attribute)
-        partial_attribute['vals'] = Vals()
-        if isinstance(changes[attribute][1], SEQUENCE_TYPES):
-            for index, value in enumerate(changes[attribute][1]):
-                partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
-        else:
-            partial_attribute['vals'].setComponentByPosition(0, validate_attribute_value(schema, attribute, changes[attribute][1]))
+    pos = 0
+    for attribute in changes:
+        for change_operation in changes[attribute]:
+            partial_attribute = PartialAttribute()
+            partial_attribute['type'] = AttributeDescription(attribute)
+            partial_attribute['vals'] = Vals()
+            if isinstance(change_operation[1], SEQUENCE_TYPES):
+                for index, value in enumerate(change_operation[1]):
+                    partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
+            else:
+                partial_attribute['vals'].setComponentByPosition(0, validate_attribute_value(schema, attribute, change_operation[1]))
 
-        change = Change()
-        change['operation'] = Operation(change_table[changes[attribute][0]])
-        change['modification'] = partial_attribute
+            change = Change()
+            change['operation'] = Operation(change_table[change_operation[0]])
+            change['modification'] = partial_attribute
 
-        change_list[pos] = change
+            change_list[pos] = change
+            pos += 1
 
     request = ModifyRequest()
     request['object'] = LDAPDN(dn)

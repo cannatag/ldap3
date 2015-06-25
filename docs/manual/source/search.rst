@@ -41,23 +41,23 @@ In the ldap3 library the signature for the Search operation is::
     * DEREF_NEVER: never dereferences entries, returns alias objects instead. The alias contains the reference to the real entry.
 
     * DEREF_SEARCH: while searching subordinates of the base object, dereferences any alias within the search scope.
-Dereferenced objects become the bases of further search scopes where the Search operation is also applied by the server.
-The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
+      Dereferenced objects become the bases of further search scopes where the Search operation is also applied by the server.
+      The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
 
     * DEREF_BASE: dereferences aliases in locating the base object of the search, but not when searching subordinates
-of the base object.
+      of the base object.
 
     * DEREF_ALWAYS: always returns the referenced entries, not the alias object.
 
 * attributes: a single attribute or a list of attributes to be returned by the search (defaults to None).
-If attributes is None no attribute is returned. If attributes is ALL_ATTRIBUTES or ALL_OPERATIONAL_ATTRIBUTES all user attributes
-or all operational attributes are returned.
+  If attributes is None no attribute is returned. If attributes is ALL_ATTRIBUTES or ALL_OPERATIONAL_ATTRIBUTES all user attributes
+  or all operational attributes are returned.
 
 * size_limit: maximum number of entries returned by the search (defaults to None).
-If None the whole set of found entries is returned, unless the server has a more restrictive rule.
+  If None the whole set of found entries is returned, unless the server has a more restrictive rule.
 
 * time_limit: number of seconds allowed for the search (defaults to None).
-If None the search can take an unlimited amount of time, unless the server has a more restrictive rule.
+  If None the search can take an unlimited amount of time, unless the server has a more restrictive rule.
 
 * types_only: doesn't return any attribute value, only the attribute names are returned.
 
@@ -66,13 +66,13 @@ If None the search can take an unlimited amount of time, unless the server has a
 * controls: additional controls to send in the request.
 
 * paged_size: if paged_size is greater than 0 a simple paged search is executed as described in RFC2696 (defaults to None).
-The search will return at most the specified number of entries.
+  The search will return at most the specified number of entries.
 
 * paged_criticality: if True the search will be executed only if the server is capable of performing a simple paged search.
-If False and the server is not capable of performing a simple paged search a standard search will be executed.
+  If False and the server is not capable of performing a simple paged search a standard search will be executed.
 
 * paged_cookie: an *opaque* string received in a paged paged search that must be sent back while requesting
-subsequent entries of the search result.
+  subsequent entries of the search result.
 
 The LDAP filter
 ---------------
@@ -107,33 +107,33 @@ If the search filter contains the following characters you must use the relevant
 There are 7 match operators that can be used in a filter:
 
 * EQUALITY (attribute=value): The matching rule for an equality filter is defined in the schema by the EQUALITY matching
-rule for the attribute type. The filter is TRUE when the EQUALITY rule returns TRUE as applied to the attribute and the
-asserted value.
+  rule for the attribute type. The filter is TRUE when the EQUALITY rule returns TRUE as applied to the attribute and the
+  asserted value.
 
 * SUBSTRING (attribute=initial*middle*final): there can be at most one initial substring and at most one final substring
-of the assertion value, while there can be many middle substrings separated by an asterisk. The matching rule in a
-substrings filter is defined by the SUBSTR matching rule for the attribute type. The filter is TRUE when the SUBSTR rule
-returns TRUE as applied to the attribute and the asserted value.
+  of the assertion value, while there can be many middle substrings separated by an asterisk. The matching rule in a
+  substrings filter is defined by the SUBSTR matching rule for the attribute type. The filter is TRUE when the SUBSTR rule
+  returns TRUE as applied to the attribute and the asserted value.
 
 * GREATER OR EQUAL (attribute>=value): The matching rule is defined by the ORDERING matching rule for the attribute type.
-The filter is TRUE when the ORDERING rule returns FALSE as applied to the attribute and the asserted value.
+  The filter is TRUE when the ORDERING rule returns FALSE as applied to the attribute and the asserted value.
 
 * LESS OR EQUAL (attribute<=value): The matching rules are defined by the ORDERING and EQUALITY matching rules for the
-attribute type. The filter is TRUE when either the ORDERING or EQUALITY rule returns TRUE as applied to the attribute
-and the asserted value.
+  attribute type. The filter is TRUE when either the ORDERING or EQUALITY rule returns TRUE as applied to the attribute
+  and the asserted value.
 
 * PRESENT (attribute=*): the filter is TRUE when there is an attribute present in an entry, FALSE when no attribute
-is present in an entry, and Undefined otherwise.
+  is present in an entry, and Undefined otherwise.
 
 * APPROXIMATE (attribute~=value): the filter is TRUE when there is a value of the attribute type for which some
-server locally-defined approximate matching algorithm (e.g., spelling variations, phonetic match, etc.) returns TRUE.
-If a value matches for equality, it also satisfies an approximate match. If approximate matching is not supported for the
-attribute, this filter should be treated as an equality filter by the server. The approximate algorithm, if available,
-is local to the server so you should check your server documentation to see if this matching operator can be used.
+  server locally-defined approximate matching algorithm (e.g., spelling variations, phonetic match, etc.) returns TRUE.
+  If a value matches for equality, it also satisfies an approximate match. If approximate matching is not supported for the
+  attribute, this filter should be treated as an equality filter by the server. The approximate algorithm, if available,
+  is local to the server so you should check your server documentation to see if this matching operator can be used.
 
 * EXTENSIBLE (attribute:=value): in the extensible filter the attribute part of the filter is augmented with other
-information (separated by a colon ":" as in "(o:dn:=Ace Industry)") to achieve particular search behaviours. Please
-check the documentation of your LDAP server to see what EXTENSIBLE syntax is available.
+  information (separated by a colon ":" as in "(o:dn:=Ace Industry)") to achieve particular search behaviours. Please
+  check the documentation of your LDAP server to see what EXTENSIBLE syntax is available.
 
 NOT, AND and OR
 +++++++++++++++
@@ -182,13 +182,13 @@ There are four possible ways of managing aliases while searching:
 * DEREF_NEVER: never dereferences entries, returns alias objects instead. The alias contains the reference to the real entry.
 
 * DEREF_SEARCH: while searching subordinates of the base object, dereferences any alias within the search scope.
-Dereferenced objects become the bases of further search scopes where the Search operation is also applied by the server.
-If the search scope is SUBTREE, the Search continues in the subtree of any dereferenced object. If the search scope is
-LEVEL, the search is applied to any dereferenced objects and is not applied to their subordinates.
-Servers should eliminate duplicate entries that arise due to alias dereferencing while searching.
+  Dereferenced objects become the bases of further search scopes where the Search operation is also applied by the server.
+  If the search scope is SUBTREE, the Search continues in the subtree of any dereferenced object. If the search scope is
+  LEVEL, the search is applied to any dereferenced objects and is not applied to their subordinates.
+  Servers should eliminate duplicate entries that arise due to alias dereferencing while searching.
 
 * DEREF_BASE: dereferences aliases in locating the base object of the search, but not when searching subordinates
-of the base object.
+  of the base object.
 
 * DEREF_ALWAYS: Dereference aliases both in searching and in locating the base object of the Search.
 
@@ -229,7 +229,7 @@ request it explicitly.
 To request the operational attributes you can even set the get_operational_attributes parameter to True.
 
 Checked Attributes
-==================
+------------------
 The checked attributes feature checks the LDAP syntax of the attributes defined in schema and returns a properly formatted
 entry result while performing searches. This means that if, for example, you have an attributes specified as GUID in the
 server schema you will get the properly formatted GUID value ('012381d3-3b1c-904f-b29a-012381d33b1c') in the
@@ -254,7 +254,7 @@ There are a few of standard formatters defined in the library, most of them are 
 * format_boolean  # returns a boolean
 
 * format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as
-defined in RFC 4517
+  defined in RFC 4517
 
 You can even define your custom formatter for specific purposes. Just pass a dictionary in the format
 {'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte value and convert it the relevant object or class instance.

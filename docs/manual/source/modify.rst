@@ -2,7 +2,7 @@
 The MODIFY operation
 ####################
 
-The **MOdify** operation allows a client to request the modification of an entry already present in the LDAP directory.
+The **Modify** operation allows a client to request the modification of an entry already present in the LDAP directory.
 
 To perform a Modify operation you must specify the dn of the entry and the kind of changes requested.
 

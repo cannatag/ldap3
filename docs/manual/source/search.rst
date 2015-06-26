@@ -136,7 +136,7 @@ There are 7 match operators that can be used in a filter:
   check the documentation of your LDAP server to see what EXTENSIBLE syntax is available.
 
 NOT, AND and OR
-+++++++++++++++
+---------------
 
 You can negate the result of an assertion with the NOT (!) operator as in::
 
@@ -194,6 +194,7 @@ There are four possible ways of managing aliases while searching:
 
 Attributes
 ----------
+
 There are two kinds of attributes defined in the LDAP schema: User attributes and Operational Attributes. User attribute
 are added, modified and deleted with the usual LDAP operations, while Operational attributes are managed by the server and
 can only be read.
@@ -230,6 +231,7 @@ To request the operational attributes you can even set the get_operational_attri
 
 Checked Attributes
 ------------------
+
 The checked attributes feature checks the LDAP syntax of the attributes defined in schema and returns a properly formatted
 entry result while performing searches. This means that if, for example, you have an attributes specified as GUID in the
 server schema you will get the properly formatted GUID value ('012381d3-3b1c-904f-b29a-012381d33b1c') in the
@@ -362,6 +364,7 @@ Working with a list keeps all the found entries in a list and you can elaborate 
 
 Response
 --------
+
 Responses are received and stored in the connection.response as a list of dictionaries.
 You can get the search result entries of a Search operation iterating over the response attribute.
 Each entry is a dictionary with the following field:
@@ -375,3 +378,101 @@ Each entry is a dictionary with the following field:
 
 Entries
 -------
+
+Entries found in search are returned also in connection.entries as abstract.entry objects. This can be helpful when you
+use the ldap3 library from the interpreter prompt.
+
+Each Entry object contains one object found in the search. You can access entry attributes either as a dictionary or as
+properties using the attribute name: entry['CommonName'] is the same of entry.CommonName and of entry.commonName or entry.commonname.
+
+Each Entry has a entry_get_dn() method that returns the distinguished name of the LDAP entry.
+
+Attributes are stored in an internal dictionary with case insensitive access. You can even access the raw attribute with
+the get_raw_attribute(attribute_name) to get an attribute raw value, or get_raw_attributes() to get the whole
+raw attributes dictionary.
+
+Entry is a read only object, you cannot modify or add any property to it. It's an iterable object that returns an attribute
+object at each iteration. Note that you get back the whole attribute object, not only the key as in a standard dictionary::
+
+    >>> c.entries[0]
+    DN: cn=person1,o=test
+        cn: person1
+        givenName: person1_givenname
+        objectClass: inetOrgPerson
+                     organizationalPerson
+                     Person
+                     ndsLoginProperties
+                     Top
+        sn: person1_surname
+        GUID: fd9a0d90-15be-2841-fd82-fd9a0d9015be
+
+and each attribute of the entry can be accessed as a dictionary or as a namespace::
+
+    >>> c.entries[0].GUID
+        GUID: fd9a0d90-15be-2841-fd82-fd9a0d9015be
+    >>> c.entries[0].GUID.value
+        'fd9a0d90-15be-2841-fd82-fd9a0d9015be'
+    >>> c.entries[0].GUID.raw_values
+        [b'\xfd\x9a\r\x90\x15\xbe(A\xfd\x82\xfd\x9a\r\x90\x15\xbe']
+    >>> c.entries[0].GUID.values
+        ['fd9a0d90-15be-2841-fd82-fd9a0d9015be']
+
+An Entry can be converted to LDIF with the entry.entry_to_ldif() method and to JSON with the entry.entry_to_json() method.
+Entries can be easily printed at the interactive prompt::
+
+
+    >>> print(c.entries[0].entry_to_ldif())
+    version: 1
+    dn: cn=person1,o=test
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: Person
+    objectClass: ndsLoginProperties
+    objectClass: Top
+    ACL: 2#subtree#cn=person1,o=test#[All Attributes Rights]
+    ACL: 6#entry#cn=person1,o=test#loginScript
+    ACL: 2#entry#[Public]#messageServer
+    ACL: 2#entry#[Root]#groupMembership
+    ACL: 6#entry#cn=person1,o=test#printJobConfiguration
+    ACL: 2#entry#[Root]#networkAddress
+    sn: person1_surname
+    cn: person1
+    givenName: person1_givenname
+    GUID:: +J4sRRpsAEmjlfieLEUabA==
+    # total number of entries: 1
+
+    >>> print(c.entries[0].entry_to_json())
+    {
+        "attributes": {
+            "ACL": [
+                "2#subtree#cn=person1,o=test#[All Attributes Rights]",
+                "6#entry#cn=person1,o=test#loginScript",
+                "2#entry#[Public]#messageServer",
+                "2#entry#[Root]#groupMembership",
+                "6#entry#cn=person1,o=test#printJobConfiguration",
+                "2#entry#[Root]#networkAddress"
+            ],
+            "cn": [
+                "person1"
+            ],
+            "givenName": [
+                "person1_givenname"
+            ],
+            "GUID": [
+                "f89e2c45-1a6c-0049-a395-f89e2c451a6c"
+            ],
+            "objectClass": [
+                "inetOrgPerson",
+                "organizationalPerson",
+                "Person",
+                "ndsLoginProperties",
+                "Top"
+            ],
+            "sn": [
+                "person1_surname"
+            ]
+        },
+        "dn": "cn=person1,o=test"
+    }
+
+To obtain already formatted values you must request the schema in the Server object with get_info=SCHEMA or get_info=ALL.

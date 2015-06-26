@@ -1161,7 +1161,7 @@ class Connection(object):
             object_defs = []
             for attr_set in unique_attr_sets:
                 object_def = ObjectDef()
-                object_def += list(attr_set)  # convert the set in a list to be added to the object definition
+                object_def += list(attr_set)  # converts the set in a list to be added to the object definition
                 object_defs.append((attr_set, object_def))  # objects_defs contains a tuple with the set and the ObjectDef
 
             entries = []
@@ -1182,7 +1182,7 @@ class Connection(object):
                                 entry.__dict__[attr_name] = attr
                             entry.__dict__['_reader'] = None  # not used
                             entries.append(entry)
-                        break
+                            break
                     else:
                         if log_enabled(ERROR):
                             log(ERROR, 'attribute set not found for %s in <%s>', resp_attr_set, self)

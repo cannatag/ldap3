@@ -25,6 +25,7 @@
 
 from logging import getLogger, getLevelName, DEBUG
 from os import linesep
+from copy import deepcopy
 
 # logging
 OFF = 0
@@ -34,8 +35,8 @@ PROTOCOL = 30
 NETWORK = 40
 EXTENDED = 50
 
-sensitive_lines = ('simple', 'credentials')  # must be a tuple, not a list
-sensitive_args = ('password', 'sasl_credentials')  # must be a tuple, not a list
+sensitive_lines = ('simple', 'credentials', 'serversaslcreds')  # must be a tuple, not a list
+sensitive_args = ('simple', 'password', 'sasl_credentials', 'saslcreds', 'server_creds')
 
 LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED]
 LIBRARY_LEVEL = OFF
@@ -62,14 +63,16 @@ except ImportError:  # NullHandler not present in Python < 2.7
             self.lock = None
 
 def _strip_sensitive_data_from_dict(d):
+    d = deepcopy(d)
     if not isinstance(d, dict):
-        return
+        return d
     for k in d.keys():
         if isinstance(d[k], dict):
-            _strip_sensitive_data_from_dict(d[k])
-        elif k in sensitive_args and d[k]:
+            d[k] = _strip_sensitive_data_from_dict(d[k])
+        elif k.lower() in sensitive_args and d[k]:
             d[k] = '<stripped %d characters of sensitive data>' % len(d[k])
 
+    return d
 def get_detail_level_name(level):
 
     if level == OFF:
@@ -90,9 +93,8 @@ def get_detail_level_name(level):
 def log(detail, message, *args):
     if detail <= level:
         if strip_sensitive_data:
-            for arg in args:
-                if isinstance(arg, dict):
-                    _strip_sensitive_data_from_dict(arg)
+            args = tuple([_strip_sensitive_data_from_dict(arg) if isinstance(arg, dict) else arg for arg in args])
+
         encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(logging_encoding, 'backslashreplace')
         if str != bytes:  # Python 3
             logger.log(logging_level, encoded_message.decode())
@@ -106,6 +108,10 @@ def log_enabled(detail):
             return True
 
     return False
+
+
+def get_log_stripped_sensitive_data():
+    return True if strip_sensitive_data else False
 
 
 def set_library_log_activation_level(level):

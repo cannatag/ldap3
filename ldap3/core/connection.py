@@ -62,7 +62,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_log_stripped_sensitive_data
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
 
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
@@ -289,7 +289,7 @@ class Connection(object):
                         raise LDAPBindError(self.last_error)
 
             if log_enabled(BASIC):
-                if get_log_stripped_sensitive_data():
+                if get_library_log_hide_sensitive_data():
                     log(BASIC, 'instantiated Connection: <%s>', self.repr_with_sensitive_data_stripped())
                 else:
                     log(BASIC, 'instantiated Connection: <%r>', self)

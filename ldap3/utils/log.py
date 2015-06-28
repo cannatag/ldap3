@@ -45,7 +45,7 @@ LIBRARY_LOGGING_LEVEL = DEBUG
 logging_level = None
 level = None
 logging_encoding = 'ascii'
-strip_sensitive_data = None
+hide_sensitive_data = None
 
 try:
     from logging import NullHandler
@@ -92,7 +92,7 @@ def get_detail_level_name(level):
 
 def log(detail, message, *args):
     if detail <= level:
-        if strip_sensitive_data:
+        if hide_sensitive_data:
             args = tuple([_strip_sensitive_data_from_dict(arg) if isinstance(arg, dict) else arg for arg in args])
 
         encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(logging_encoding, 'backslashreplace')
@@ -110,8 +110,8 @@ def log_enabled(detail):
     return False
 
 
-def get_log_stripped_sensitive_data():
-    return True if strip_sensitive_data else False
+def get_library_log_hide_sensitive_data():
+    return True if hide_sensitive_data else False
 
 
 def set_library_log_activation_level(level):
@@ -135,35 +135,39 @@ def set_library_log_detail_level(detail):
             log(ERROR, 'unable to set log detail level to <%s>', detail)
         raise ValueError('invalid library log detail level')
 
-def set_library_log_strip_sensitive_data(strip=True):
-    global strip_sensitive_data
-    if strip:
-        strip_sensitive_data = True
+def set_library_log_hide_sensitive_data(hide=True):
+    global hide_sensitive_data
+    if hide:
+        hide_sensitive_data = True
     else:
-        strip_sensitive_data = False
+        hide_sensitive_data = False
     if log_enabled(ERROR):
-        log(ERROR, 'strip sensitive data set to ' + str(strip_sensitive_data))
+        log(ERROR, 'hide sensitive data set to ' + str(hide_sensitive_data))
 
 
 def format_ldap_message(message, prefix, sensitive=None):
     prefixed = ''
     for line in message.prettyPrint().split('\n'):
         if line:
-            if strip_sensitive_data and line.strip().lower().startswith(sensitive_lines):
+            if hide_sensitive_data and line.strip().lower().startswith(sensitive_lines):
                 tag, _, data = line.partition('=')
-                prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % len(data)
+                if data.startswith("b'") and data.endswith("'") or data.startswith('b"') and data.endswith('"'):
+                    prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % (len(data) - 3, )
+                else:
+                    prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % len(data)
             else:
                 prefixed += linesep + prefix + line
-
     return prefixed
 
 # sets a logger for the library with NullHandler. It can be used by the application with its own logging configuration
 logger = getLogger('ldap3')
 logger.addHandler(NullHandler())
+
+# set defaults for the library logging
 set_library_log_activation_level(LIBRARY_LOGGING_LEVEL)
 set_library_log_detail_level(LIBRARY_LEVEL)
-set_library_log_strip_sensitive_data(True)
+set_library_log_hide_sensitive_data(True)
 
 # emits a info message to let the application know that ldap3 logging is available when the log level is set to logging_level
-logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in LEVELS]) + ' - sensitive data will ' + ('' if strip_sensitive_data else 'not ') + 'be stripped')
+logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in LEVELS]) + ' - sensitive data will ' + ('' if hide_sensitive_data else 'not ') + 'be hidden')
 

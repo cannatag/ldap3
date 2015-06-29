@@ -64,8 +64,12 @@ except ImportError:  # NullHandler not present in Python < 2.7
             self.lock = None
 
 def _strip_sensitive_data_from_dict(d):
-    d = deepcopy(d)
     if not isinstance(d, dict):
+        return d
+
+    try:
+        d = deepcopy(d)
+    except Exception:  # if deepcopy goes wrong gives up and return the dict unchanged
         return d
     for k in d.keys():
         if isinstance(d[k], dict):

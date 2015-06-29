@@ -106,7 +106,7 @@ class Test(unittest.TestCase):
             entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
         if self.connection.check_names:
-            self.assertEqual(entries[0].entry_get_dn(), self.delete_at_teardown[0][0])
+            self.assertEqual(entries[0].entry_get_dn().lower(), self.delete_at_teardown[0][0].lower())
 
     def test_search_simple_paged(self):
         if not self.connection.strategy.pooled:

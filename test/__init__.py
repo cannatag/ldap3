@@ -111,15 +111,15 @@ elif location == 'GCNBHPW8-AD':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
-    test_password = 'Rc1234pfop'  # user password
+    test_password = 'Rc9999pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,DC=FOREST,DC=LAB'
-    test_sasl_password = 'Rc1234pfop'
+    test_sasl_password = 'Rc9999pfop'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = 'FOREST\\Administrator'
-    test_ntlm_password = 'Rc1234pfop'
+    test_ntlm_password = 'Rc9999pfop'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCNBHPW8-SLAPD':
     # test elitebook - OpenLDAP (SLAPD)

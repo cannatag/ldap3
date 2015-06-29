@@ -18,7 +18,7 @@ Contents
    :maxdepth: 2
 
    welcome
-   goals
+   features
    installation
    quicktour
    servers
@@ -40,4 +40,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`

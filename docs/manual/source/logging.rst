@@ -2,28 +2,36 @@
 Logging
 #######
 
-ldap3 has an extended logging capability that uses the standard Python logging libray and integrates with the logging facility of the client application.
+ldap3 has an extended logging capability that uses the standard Python logging libray and integrates with the logging
+facility of the client application.
 
 To enable logging the application must have a working logging configuration that emits logging at the DEBUG level::
 
     import logging
     logging.basicConfig(filename='client_application.log', level=logging.DEBUG)
 
-This is intended to avoid the mix of ldap3 logging records in the application logging. Only one record is emitted at INFO level regardless of the library log activation level::
+This is intended to avoid the mix of ldap3 logging records in the application logging. Only one record is emitted at
+INFO level regardless of the library log activation level::
 
     INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK
 
-This is to inform that the logging facility is enabled and record will be emitted only when the loglevel and the detail level are properly set. Only when you set the log level to DEBUG ldap3 starts to emit its log record.
+This is to inform that the logging facility is enabled and record will be emitted only when the loglevel and the detail
+level are properly set. Only when you set the log level to DEBUG ldap3 starts to emit its log record.
 
+Logging activation level
+========================
 
-You can change the ldap3 logging activation level to another one if you need not to mix logging from ldap3 with DEBUG level for your application::
+You can change the ldap3 logging activation level to another one if you need not to mix logging from ldap3 with DEBUG
+level for your application::
 
     import logging
     logging.basicConfig(filename='client_application.log', level=logging.CRITICAL)
     from ldap3.utils.log import set_library_log_activation_level
     set_library_log_activation_level(logging.CRITICAL)  # ldap3 will emit its log only when you set level=logging.CRITICAL in your log configuration
 
-ldap3 logging has its own level of log detail: OFF, ERROR, BASIC, PROTOCOL, NETWORK and EXTENDED. You can set the level of detail with ldap3.utils.log.set_library_log_detail_level().
+ldap3 logging has its own level of log detail: OFF, ERROR, BASIC, PROTOCOL, NETWORK and EXTENDED. You can set the level
+of detail with ldap3.utils.log.set_library_log_detail_level().
+
 Detail level defaults to OFF. You must change it at runtime as needed to have anything logged::
 
     from ldap3.utils.log import set_library_log_detail_level, OFF, BASIC, NETWORK, EXTENDED
@@ -35,7 +43,11 @@ Detail level defaults to OFF. You must change it at runtime as needed to have an
     set_library_log_detail_level(OFF)
     # nothing else is logged
 
-Each detail level detail a specific feature of the library and includes the previous levels details, as for standard logging:
+Logging detail level
+====================
+
+Each detail level details a specific feature of the library and includes the previous level details, as for standard
+logging:
 
 * NONE: nothing is logged
 
@@ -49,9 +61,9 @@ Each detail level detail a specific feature of the library and includes the prev
 
 * EXTENDED: ldap messages are decoded and properly printed
 
-
-At EXTENDED level every message is logged and printed in a proper way (thanks to pyasn1 prettyPrint feature).
-The flow of the network conversation can be easily guessed by the prefix of the message lines: >> for outgoing messages and << for incoming messages.
+At EXTENDED level every LDAP message is logged and printed in a proper way (thanks to pyasn1 prettyPrint feature).
+The flow of the network conversation can be easily guessed by the prefix of the message lines: >> for outgoing messages
+(to the LDAP server) and << for incoming messages (from the LDAP server).
 
 Each log record contains the detail level and when available information on the active connection used. So the log size grows very easily.
 ldap3 performance degrades when logging is active, especially at level greater than ERROR, so it's better to use it only when needed.
@@ -59,19 +71,40 @@ ldap3 performance degrades when logging is active, especially at level greater t
 logging text is encoded to ASCII.
 
 
-Examples:
+Hiding sensitive data
+=====================
+
+Sensitive data (as user password and SASL credentials) are stripped by default from the log and substitued with a string
+of '*' (same length of the original value) or by a "<stripped xxx characters of sensitive data>" message (where xxx is the
+number of character stripped). You can change the default behaviour and let the log record all the data with the
+set_library_log_hide_sensitive_data(True) function of the utils.log package::
+
+    import logging
+    logging.basicConfig(filename=log_file, level=logging.DEBUG)
+    from ldap3.utils.log import set_library_log_detail_level, get_detail_level_name, set_library_log_hide_sensitive_data, EXTENDED
+
+    set_library_log_detail_level(EXTENDED)
+    set_library_log_strip_sensitive_data(True)
+
+
+You can use the get_library_log_hide_sensitive_data() function of the utils.log module to check if sensitive data will
+be hidden or not.
+
+
+Examples
+========
 
 Opening an SSL connection to an LDAP server listening on IPv4 only on a IPv6/IPv4 box. The connection mode is set to IP_V6_PREFERRED, the connection is bound and a search operation is performed
 
 a search operation at basic level::
 
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED - sensitive data will be hidden
     DEBUG:ldap3:ERROR:detail level set to BASIC
     DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
     DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
     DEBUG:ldap3:BASIC:instantiated Usage object
     DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='********', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
     DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:reset usage metrics
     DEBUG:ldap3:BASIC:start collecting usage metrics
@@ -93,13 +126,13 @@ a search operation at basic level::
 
 the same operation at PROTOCOL detail level::
 
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED - sensitive data will be hidden
     DEBUG:ldap3:ERROR:detail level set to PROTOCOL
     DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
     DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
     DEBUG:ldap3:BASIC:instantiated Usage object
     DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='********', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
     DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:reset usage metrics
     DEBUG:ldap3:BASIC:start collecting usage metrics
@@ -111,7 +144,7 @@ the same operation at PROTOCOL detail level::
     DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it.> for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [::]:50127 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:try to open candidate address [<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('192.168.137.104', 636)]
     DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'authentication': {'sasl': None, 'simple': 'password'}, 'name': 'cn=admin,o=test'}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'authentication': {'sasl': None, 'simple': '<stripped 8 characters of sensitive data>'}, 'name': 'cn=admin,o=test'}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:new message id <1> generated
     DEBUG:ldap3:PROTOCOL:BIND response <{'result': 0, 'saslCreds': None, 'type': 'bindResponse', 'message': '', 'referrals': None, 'dn': '', 'description': 'success'}> received via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:BASIC:refreshing server info for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50128 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
@@ -130,13 +163,13 @@ the same operation at PROTOCOL detail level::
 
 the same opeaton at NETWORK detail level::
 
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED - sensitive data will be hidden
     DEBUG:ldap3:ERROR:detail level set to NETWORK
     DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
     DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
     DEBUG:ldap3:BASIC:instantiated Usage object
     DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='********', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
     DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:opening connection for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:reset usage metrics
@@ -151,7 +184,7 @@ the same opeaton at NETWORK detail level::
     DEBUG:ldap3:NETWORK:socket wrapped with SSL using SSLContext for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [None]:None - remote: [None]:None> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:connection open for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'authentication': {'sasl': None, 'simple': 'password'}, 'name': 'cn=admin,o=test'}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'authentication': {'sasl': None, 'simple': '<stripped 8 characters of sensitive data>'}, 'name': 'cn=admin,o=test'}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:new message id <1> generated
     DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:sent 37 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50131 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
@@ -184,13 +217,13 @@ the same opeaton at NETWORK detail level::
 
 the same operation at EXTENDED detail level::
 
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED - sensitive data will be hidden
     DEBUG:ldap3:ERROR:detail level set to EXTENDED
     DEBUG:ldap3:BASIC:instantiated Tls: <Tls(validate=0)>
     DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO')>
     DEBUG:ldap3:BASIC:instantiated Usage object
     DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=636, use_ssl=True, tls=Tls(validate=0), get_info='NO_INFO'), user='cn=admin,o=test', password='********', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
     DEBUG:ldap3:BASIC:start BIND operation via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:opening connection for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:reset usage metrics
@@ -205,7 +238,7 @@ the same operation at EXTENDED detail level::
     DEBUG:ldap3:NETWORK:socket wrapped with SSL using SSLContext for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [None]:None - remote: [None]:None> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:connection open for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:simple BIND request <{'authentication': {'sasl': None, 'simple': 'password'}, 'name': 'cn=admin,o=test', 'version': 3}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'authentication': {'sasl': None, 'simple': '<stripped 8 characters of sensitive data>'}, 'name': 'cn=admin,o=test', 'version': 3}> sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:new message id <1> generated
     DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:EXTENDED:ldap message sent via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>:
@@ -216,7 +249,7 @@ the same operation at EXTENDED detail level::
     >>   version=3
     >>   name=b'cn=admin,o=test'
     >>   authentication=AuthenticationChoice:
-    >>    simple=b'password'
+    >>    simple=<stripped 8 characters of sensitive data>
     DEBUG:ldap3:NETWORK:sent 37 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 14 bytes via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:50133 - remote: 192.168.137.104:636> - tls not started - listening - SyncStrategy>
@@ -301,7 +334,7 @@ the same operation at EXTENDED detail level::
 
 At the ERROR detail level you get only the library errors:
 
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
+    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED - sensitive data will be hidden
     DEBUG:ldap3:ERROR:detail level set to ERROR
     DEBUG:ldap3:ERROR:<socket connection error: [WinError 10061] No connection could be made because the target machine actively refused it.> for <ldaps://openldap:636 - ssl - user: cn=admin,o=test - unbound - closed - <local: [::]:50321 - remote: [None]:None> - tls not started - not listening - SyncStrategy>
 
@@ -326,6 +359,7 @@ The usage metrics are the same at every detail:
       Operations:            3
         Abandon:             0
         Bind:                1
+        Add                  0
         Compare:             0
         Delete:              0
         Extended:            0

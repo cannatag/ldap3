@@ -62,7 +62,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
 
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
@@ -289,7 +289,10 @@ class Connection(object):
                         raise LDAPBindError(self.last_error)
 
             if log_enabled(BASIC):
-                log(BASIC, 'instantiated Connection: <%r>', self)
+                if get_library_log_hide_sensitive_data():
+                    log(BASIC, 'instantiated Connection: <%s>', self.repr_with_sensitive_data_stripped())
+                else:
+                    log(BASIC, 'instantiated Connection: <%r>', self)
 
     def __str__(self):
         s = [
@@ -324,6 +327,37 @@ class Connection(object):
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
         r += '' if (self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(self)
+        r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
+        r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
+        r += ')'
+
+        return r
+
+    def repr_with_sensitive_data_stripped(self):
+        if self.server_pool:
+            r = 'Connection(server={0.server_pool!r}'.format(self)
+        else:
+            r = 'Connection(server={0.server!r}'.format(self)
+        r += '' if self.user is None else ', user={0.user!r}'.format(self)
+        r += '' if self.password is None else ", password='{0}'".format('*' * len(self.password))
+        r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
+        r += '' if self.version is None else ', version={0.version!r}'.format(self)
+        r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)
+        r += '' if self.strategy_type is None else ', client_strategy={0.strategy_type!r}'.format(self)
+        r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
+        r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.sasl_mechanism!r}'.format(self)
+        if self.sasl_mechanism == 'DIGEST-MD5':
+            r += '' if self.sasl_credentials is None else ", sasl_credentials=({0!r}, {1!r}, '{2}', {3!r})".format(self.sasl_credentials[0], self.sasl_credentials[1], '*' * len(self.sasl_credentials[2]), self.sasl_credentials[3])
+        else:
+            r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
+        r += '' if self.check_names is None else ', check_names={0.check_names!r}'.format(self)
+        r += '' if self.usage is None else (', collect_usage=' + 'True' if self.usage else 'False')
+        r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
+        r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
+        r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
+        r += '' if (
+            self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(
+            self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += ')'

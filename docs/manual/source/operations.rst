@@ -11,6 +11,6 @@ LDAP Operations
    delete
    modify
    modifydn
-   search
+   searches
    compare
    abandon

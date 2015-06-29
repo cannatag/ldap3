@@ -135,16 +135,6 @@ def validate_simple_password(password):
     return password
 
 
-# def addSaslCredentialsToBindRequest(request, mechanism, credentials):
-#     sasl_credentials = SaslCredentials()
-#     sasl_credentials['mechanism'] = mechanism
-#     if credentials:
-#         sasl_credentials['credentials'] = credentials
-#     request['authentication'] = AuthenticationChoice().setComponentByName('sasl', sasl_credentials)
-#
-#     return request
-
-
 def abort_sasl_negotiation(connection, controls):
     from ...operation.bind import bind_operation
 

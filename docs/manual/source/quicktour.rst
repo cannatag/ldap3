@@ -3,15 +3,15 @@ Quick tour
 ##########
 
 To use ldap3 import the library from the ldap3 namespace. You can choose the strategy that the client will use to connect to the server.
- here are 5 strategies that can be used for establishing a connection: SYNC, ASYNC, LDIF, RESTARTABLE and REUSABLE.
+There are 5 strategies that can be used for establishing a connection: SYNC, ASYNC, LDIF, RESTARTABLE and REUSABLE.
 
 With synchronous strategy (SYNC, RESTARTABLE) all LDAP operation requests return a boolean: True if they're successful, False if they fail.
 
 With asynchronous strategies (ASYNC, REUSABLE) all LDAP operation requests (except Bind that returns a boolean) return an integer,
- the 'message_id' of the request. You can send multiple request without waiting for responses.
+the 'message_id' of the request. You can send multiple request without waiting for responses.
 
-You can get each response with the get_response(message_id) method of the Connection object. If you get an exception the response has not yet arrived.
-A timeout value can be specified (get_response(message_id, timeout = 20)) to set the number of seconds to wait for the response to appear (defaults is 10 seconds).
+In asynchorouns strategies you can get each response with the get_response(message_id) method of the Connection object. You will get an exception the response
+has not yet arrived. A timeout value can be specified (get_response(message_id, timeout = 20)) to set the number of seconds to wait for the response to appear (defaults is 10 seconds).
 
 Library raises an exception in the LDAPExceptionError hierarchy to signal errors, the last exception message is stored in the last_error attribute of the Connection object when available.
 
@@ -21,11 +21,11 @@ After any operation, you'll find the following attributes populated in the Conne
 
 * response: the entries found if the last operation is a search operation (only for synchronous strategies)
 
-* entries: the entries found exposed via the abstraction Entry object (useful when using ldap3 from the interactive shell)
+* entries: the entries found exposed via the abstraction layer (useful when using ldap3 from the interactive shell)
 
-* last_error: any error occurred in the last operation
+* last_error: any error occurred in the last operation (for synchronous strategies)
 
-* bound: True if bound else False
+* bound: True if the connection is actually bound to the LDAP session on the server else False
 
 * listening: True if the socket is listening to the server
 
@@ -72,12 +72,12 @@ To move from synchronous to asynchronous connection you have just to change the 
 
 That's all you have to do to have an asynchronous threaded LDAP client connection.
 
-To get operational attributes (createStamp, modifiedStamp, ...) for response objects add 'get_operational_attributes = True' in the search request::
+To get operational attributes (those attributes created automatically by the server, as createStamp, modifiedStamp, ...) for response objects add 'get_operational_attributes = True' in the search request::
 
     c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attributes = True)
 
 
-After a search operation you can  access the connection.entries property, to get the search result in a more object oriented representation::
+After a search operation you can access the connection.entries property, to get the search result in a more object oriented representation::
 
     c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'givenName', 'objectClass'], get_operational_attributes = True)
     for entry in c.entries:
@@ -92,32 +92,25 @@ Connection context manager
 Connections respond to the context manager protocol, so you can have automatic open, bind and unbind with the following syntax::
 
     from ldap3 import Server, Connection, SUBTREE
-    s = Server('servername')
-    c = Connection(s, user='username', password='password')
-    with c:
-        c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])
+    with Connection('servername', user='username', password='password') as c
+        c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])  # connection is open, bound, searched and closed
     print(c.response)
 
-or, even shorter::
+When using context managers the Connection object will retains its previous state when exiting the context, that is if the connection
+was closed and unbound it will remain closed and unbound when leaving the context, if the connection was open or bound its state will
+be restored when exiting the context. Connection is always open and bound while in context.
 
-    from ldap3 import Server, Connection, SUBTREE
-    with Connection(Server('servername'), user = 'username', password = 'password') as c
-        c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])  # connection is opened, bound, searched and closed
-    print(c.response)
-
-The Connection object retains its state when entering the context, that is if the connection was closed and unbound it will remain closed and unbound when leaving the context,
-if the connection was open or bound its state will be restored when exiting the context. Connection is always open and bound while in context.
-
-Using the context manager connections will be opened and bound as you enter the Connection context and will be unbound when you leave the context.
-Unbind will be tried even if the operations in context raise an exception.
+Using the context manager connections will be open and bound as you enter the Connection context and will be unbound when you leave the context.
+The Unbind operation will be tried even if the operations in context raise an exception.
 
 
 Binding
 -------
 
-You can bind (authenticate) to the server with any of the authentication method defined in the LDAP v3 protocol: Anonymous, Simple and SASL.
+You can bind (authenticate) to the server with any of the authentication methods defined in the LDAP v3 protocol: Anonymous, Simple and SASL.
 
-You can perform an automatic bind with the auto_bind=True parameter of the connection object or performing a bind() operation that returns a boolean to indicate if bind was succcesful.
+You can perform an automatic bind with the auto_bind=True parameter of the connection object or can connect performing a bind()
+operation. The bind() operation returns a boolean to indicate if the binding was succcesful.
 
 You can read the result of the bind operation in the 'result' attribute of the connection object. If auto_bind is not succesful the library will raise an LDAPBindError exception.
 
@@ -126,10 +119,10 @@ Searching
 
 Search operation is enhanced with a few parameters:
 
-- get_operational_attributes: when True retrieves the operational (system generated) attributes for each of the result entries.
-- paged_size: if greater than 0 the server returns a simple paged search response with the number of entries specified (LDAP server must conform to RFC2696).
-- paged_cookie: used for subsequent retrieval of additional entries in a simple paged search.
-- paged_criticality: if True the search should fail if simple paged search is not available on the server else a full search is performed.
+* get_operational_attributes: when True retrieves the operational (system generated) attributes for each of the result entries.
+* paged_size: if greater than 0 the server returns a simple paged search response with the number of entries specified (LDAP server must conform to RFC2696).
+* paged_cookie: used for subsequent retrieval of additional entries in a simple paged search.
+* paged_criticality: if True the search should fail if simple paged search is not available on the server else a full search is performed.
 
 If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515 (section 3):
  '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'
@@ -141,14 +134,17 @@ To search for a binary value you must use the RFC4515 escape ASCII sequence for 
     search_filter = '(guid=' + escape_bytes(guid) + ')'
     c.search('o=test', search_filter, attributes=['guid'])
 
-search_filter will contain *'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'*
+search_filter will contain *'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'*.
 Raw values for the attributes retrieved are stored in the *raw_attributes* dictonary of the search result entries in c.response.
-If the schema is read (with get_info=GET_SCHEMA_INFO (or GET_ALL_INFO in the Server object) and check_names is set to True in the Connection object the *attributes* is populated with the formatted values as specified by the RFCs and the schema syntaxes.
+If the schema is read (with get_info=SCHEMA or get_info=ALL in the Server object) and the check_names parameter of
+the Connection object is set to True, the *attributes* attribute is populated with the formatted values as specified by the RFCs according to the schema syntaxes.
 Custom formatters can be used to specify how an attribute value must be returned in the 'attributes' attribute of the search entry object.
-A formatter must be a callable that receives a bytes value and return an object. The object will be returned in the 'attributes'.
-If the attribute is defined in the schema as 'multi_value' the attribute value is returned as a list (even if only a single value is present) else it's returned as a single value.
+A formatter must be a callable that receives a bytes value and returns an object. If the attribute is defined in the schema as 'multi_value'
+the attribute value is returned as a list (even if only a single value is present) else it's returned as a single value.
 
-Formatted (following the schema and RFC indications) attributes are stored in the *attributes* dictionary of the search result entries in c.response. This is performed only if the schema is read in the server object and the check_names parameter is set to True else the unicode value is returned.
+Formatted (following the schema and RFC indications) attributes are stored in the *attributes* dictionary of the search
+result entries in c.response. This is performed only if the schema is read in the server object and the check_names parameter
+is set to True else the undecoded value is returned.
 
 Attributes key are case insensitive, this means that you can access c.response[0]['attributes']['postalAddress'] or c.response[0]['attributes']['postaladdress'] and get the same values back.
 
@@ -157,8 +153,8 @@ Simple Paged search
 -------------------
 
 The search operation can perform a *simple paged search* as per RFC2696. You must specify the required number of entries in each response set.
-After the first search you must send back the cookie you get with each response in each subsequent search. If you send 0 as paged_size and a valid cookie the search operation referred by that cookie is abandoned.
-Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']; the server may return an estimated total number of entries in
+After the first search you must send back the cookie you got with each response in each subsequent search. If you send 0 as paged_size and a valid cookie the search operation referred by that cookie is abandoned.
+The Cookie should be stored in connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']; the server may return an estimated total number of entries in
 connection.result['controls']['1.2.840.113556.1.4.319']['value']['size'].
 You can change the paged_size in any subsequent search request.
 
@@ -190,7 +186,8 @@ Example::
             print(entry['dn'], entry['attributes])
     print('Total entries retrieved:', total_entries)
 
-Or you can use the much simpler extended operations package that wraps all this machinery and hides implementation details, you can choose to get back a generator or the whole list of entries found.
+If you don't want to deal directly with the cookie you can use the much simpler extended operations package that wraps
+all the cookie machinery and hides implementation details, you can choose to get back a generator or the whole list of entries found.
 
 
 Working with a generator is better when you deal with very long list of entries or have memory issues::
@@ -201,7 +198,7 @@ Working with a generator is better when you deal with very long list of entries 
                                                      search_filter = '(objectClass=inetOrgPerson)',
                                                      search_scope = SUBTREE,
                                                      attributes = ['cn', 'givenName'],
-                l                                     paged_size = 5,
+                                                     paged_size = 5,
                                                      generator=True)
     for entry in entry_generator:
         total_entries += 1

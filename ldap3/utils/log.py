@@ -35,6 +35,7 @@ PROTOCOL = 30
 NETWORK = 40
 EXTENDED = 50
 
+max_line_length = 4096
 sensitive_lines = ('simple', 'credentials', 'serversaslcreds')  # must be a tuple, not a list
 sensitive_args = ('simple', 'password', 'sasl_credentials', 'saslcreds', 'server_creds')
 
@@ -97,10 +98,12 @@ def log(detail, message, *args):
 
         encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(logging_encoding, 'backslashreplace')
         if str != bytes:  # Python 3
-            logger.log(logging_level, encoded_message.decode())
+            encoded_message = encoded_message.decode()
+
+        if len(encoded_message) > max_line_length:
+            logger.log(logging_level, encoded_message[:max_line_length] + ' <removed %d remaining bytes in this log line>' % (len(encoded_message) - max_line_length, ))
         else:
             logger.log(logging_level, encoded_message)
-
 
 def log_enabled(detail):
     if detail <= level:
@@ -123,6 +126,19 @@ def set_library_log_activation_level(level):
             log(ERROR, 'invalid library log activation level <%s> ', level)
         raise ValueError('invalid library log activation level')
 
+
+def get_library_log_max_line_length():
+    return max_line_length
+
+
+def set_library_log_max_line_length(length):
+    if isinstance(length, int):
+        global max_line_length
+        max_line_length = length
+    else:
+        if log_enabled(ERROR):
+            log(ERROR, 'invalid log max line length <%s> ', length)
+        raise ValueError('invalid library log max line length')
 
 def set_library_log_detail_level(detail):
     if detail in LEVELS:

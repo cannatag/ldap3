@@ -38,6 +38,7 @@ EXTENDED = 50
 max_line_length = 4096
 sensitive_lines = ('simple', 'credentials', 'serversaslcreds')  # must be a tuple, not a list
 sensitive_args = ('simple', 'password', 'sasl_credentials', 'saslcreds', 'server_creds')
+hide_sensitive_data = None
 
 LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED]
 LIBRARY_LEVEL = OFF
@@ -46,7 +47,6 @@ LIBRARY_LOGGING_LEVEL = DEBUG
 logging_level = None
 level = None
 logging_encoding = 'ascii'
-hide_sensitive_data = None
 
 try:
     from logging import NullHandler

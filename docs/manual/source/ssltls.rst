@@ -2,7 +2,7 @@
 SSL & TLS
 #########
 
-To use SSL basic authentication change the server definition to::
+You can use SSL basic authentication with the use_ssl parameter of the Server object, you can also specify a port (636 is the default for secure ldap)::
 
     s = Server('servername', port = 636, use_ssl = True)  # define a secure LDAP server
 
@@ -36,16 +36,15 @@ SSLContext
 ----------
 You can use SSLContext if running in Python 3.4 or newer.
 
-The use of ssl.SSLContext make tls operation more flexible, It integrates with the system wide Certification Authorities and also ensure that there are "reasonable" security default when using the tls
-layer. It's now also possible to specify a file system path containing
-the CA file or even pass certificate data "on the fly". When defining
-the Tls object you have the following parameters available:
+The use of ssl.SSLContext make TLS operation more flexible, It integrates with the system wide Certification Authorities and also ensure that there are "reasonable" security defaults when using the TLS
+layer. It's also possible to specify a file system path containing
+the CA file or even pass certificate data "on the fly".
 
-ca_cert_file: the usual link to the certification authority chain of
-certificates
-ca_cert_path: a link to a path containing the certification
-authorities certificates (reashed, as expected by OpenSSL)
-ca_cert_data: CA certificate data stored in memory
+When defining the Tls object you have the following additional parameters available:
+
+* ca_cert_file: the usual link to the certification authority chain of certificates
+* ca_cert_path: a link to a path containing the certification  authorities certificates (reashed, as expected by OpenSSL)
+* ca_cert_data: CA certificate data stored in memory
 
 if you leave all these parameter to None the SSLContext will use the
 system wide certificate store (ssl path on linux, CA stores on

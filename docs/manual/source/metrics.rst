@@ -2,7 +2,7 @@
 Connection metrics
 ##################
 
-If you set the collect_usage parameter to True in a Connection object creation the metrics system is activated.
+If you set the collect_usage parameter to True in a Connection object the metrics feature is activated.
 You get the 'usage' attribute in the connection object populated with an instance of the ConnectionUsage class.
 
 ConnectionUsage stores counters for each operation performed in the Connection, you get metrics for the following fields:
@@ -34,12 +34,12 @@ ConnectionUsage stores counters for each operation performed in the Connection, 
 * restartable_failures:
 * restartable_successes:
 
-Metrics are properly collected while the connection is open, stopped as the connection is closed and reset if the connection is used again.
+Metrics are properly collected while the connection is open,kept while it's closed and reset if the connection is used again.
 While using a ServerPool or a restartable strategy the metrics are not reset when the server is changed.
 
 You can reset the usage metrics with the connection.usage.reset() method.
 
-You can print out the metrics at any moment of execution of your code with::
+You can print out the metrics at any time of execution of your code with::
 
     print(connection.usage)
 

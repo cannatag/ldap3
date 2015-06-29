@@ -2,69 +2,68 @@
 Connections
 ###########
 
-Connection object is used to send operation requests to the LDAP Server. It can use different connection strategies and supports the *context manager* protocol to automatically open, bind and unbind the connection.
+The Connection object is used to send operation requests to the LDAP Server. It can use different connection strategies and supports the *context manager* protocol to automatically open, bind and unbind the connection.
 
 The following strategies are available:
 
-* SYNC: the request is sent and the connection waits until the response is received. You get the response in the return value of the connection
+* SYNC: the request is sent and the connection waits until the response is received. You get the result in the return value of the connection.
 
-* ASYNC: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response
+* ASYNC: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response.
 
-* LDIF: the request is transformed in a *ldif-change* format and an LDIF output is returned
+* LDIF: the request is transformed in a *ldif-change* format and an LDIF output is returned.
 
-* RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times of forever
+* RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times of forever.
 
 .. sidebar:: Lazy connections
 
-   * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation will be necessary.
+   * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation is needed.
 
 * REUSABLE: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
 
-When using an asynchronous strategy each operation returns immediately an operation_id. You can call the get_response method of the connection object to obtain the response received from the server.
+When using an asynchronous strategy each operation returns immediately a message_id. You can call the get_response method of the connection object to obtain the response received from the server.
 
 Connection parameters are:
 
-* server: the Server object to be contacted. It can be a ServerPool. In this case the ServerPool pooling strategy is followed when opening the connection
-
-* user: the account of the user to log in for simple bind (defaults to None)
+* server: the Server object to be contacted. It can be a ServerPool. In this case the ServerPool pooling strategy is followed when opening the connection. You can also pass a string containing the name of the server. In this case the Server object is implicitly created with default values.
+* user: the account of the user to log in for simple bind (defaults to None).
 
 * password: the password of the user for simple bind (defaults to None)
 
-* auto_bind: automatically opens and binds the connection. Can be AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND
+* auto_bind: automatically opens and binds the connection. Can be AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND.
 
-* version: LDAP protocol version (defaults to 3)
+* version: LDAP protocol version (defaults to 3).
 
-* authentication: authentication method, can be one of AUTH_ANONYMOUS, AUTH_SIMPLE or AUTH_SASL (aliased with ANONYMOUS, SIMPLE, SASL) and NTLM. Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE. NTLM uses NTLMv2 authentication. Username must be in the form of domain\user.
+* authentication: authentication method, can be one of ANONYMOUS, SIMPLE, SASL or NTLM. Defaults to AUTH_ANONYMOUS if user and password are both None else defaults to AUTH_SIMPLE. NTLM uses NTLMv2 authentication. Username must be in the form domain\\user.
 
-* client_strategy: communication strategy used by the client (defaults to STRATEGY_SYNC)
+* client_strategy: communication strategy used by the client (defaults to SYNC).
 
-* auto_referrals: specify if the Connection must follows referrals automatically (defaults to True). Allowed referral servers are specified in the Server object
+* auto_referrals: specify if the Connection must follows referrals automatically (defaults to True). Allowed referral servers are specified in the Server object.
 
-* sasl_mechanism: specify the SASL mechanism to use for AUTH_SASL authentication. Available mechanism are EXTERNAL, DIGEST-MD5 (**deprecated**) and GSSAPI
+* sasl_mechanism: specify the SASL mechanism to use for AUTH_SASL authentication. Available mechanism are EXTERNAL, DIGEST-MD5 (**deprecated** by RFCs because insecure) and GSSAPI.
 
-* sasl_credential: an object specific to the SASL mechanism chosen. Look at documentation for each SASL mechanism supported
+* sasl_credential: an object specific to the SASL mechanism chosen. Refer to the documentation for each SASL mechanism supported.
 
-* collect_usage: binds a ConnectionUsage object to the connection to store metrics of connection usage (see later)
+* collect_usage: binds a ConnectionUsage object to the connection to store metrics of connection usage (see later).
 
-* read_only: when True inhibits modify, delete, add and modifyDn (move) operations, defaults to False
+* read_only: when True inhibits modify, delete, add and modifyDn (move) operations, defaults to False.
 
 * lazy: when True connection will defer open and bind until another LDAP operation is requested
 
-* check_names: when True attribute names in assertion and in filter will be checked against the schema (Server must have schema infos loaded with the get_info parameter) and search result will be formatted as specified in schema
+* check_names: when True attribute names in assertions and filters will be checked against the schema (Server must have schema loaded with the get_info=ALL or get_info=SCHEMA parameter) and search result will be formatted as specified in schema.
 
 * raise_exceptions: when True LDAP operations will raise exceptions (subclasses of LDAPOperationResult) when the result is not one of the following: RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL.
 
-With the connection you can perform all the standard LDAP operations:
+With the connection object you can perform all the standard LDAP operations:
 
-* bind: performs a bind to the LDAP Server with the authentication type and credential specified in the connection
-
-    * controls: additional controls to send in the request
-
-* unbind: disconnect and close the connection
+* bind: performs a bind to the LDAP Server with the authentication type and credential specified in the connection:
 
     * controls: additional controls to send in the request
 
-* compare: performs a comparison between an attribute value of an entry and an arbitrary value
+* unbind: disconnect and close the connection:
+
+    * controls: additional controls to send in the request
+
+* compare: performs a comparison between an attribute value of an entry and an arbitrary value:
 
     * dn: distinguished name of the entry whose attribute you want to compare
 
@@ -72,7 +71,7 @@ With the connection you can perform all the standard LDAP operations:
 
     * value: value to be compared
 
-    * controls: additional controls to send in the request
+    * controls: additional controls to send in the request:
 
 * add: add an entry to the LDAP server
 
@@ -80,17 +79,17 @@ With the connection you can perform all the standard LDAP operations:
 
     * object_class: class name of the attribute to add, can be a string containing a single value or a list of strings
 
-    * attributes: a dictionary in the form {'attr1': 'val1', 'attr2': 'val2', ...} or {'attr1': ['val1', 'val2', ...], ...} for multivalued attributes
+    * attributes: a dictionary in the form {'attr1': 'val1', 'attr2': 'val2', ...} (or {'attr1': ['val1', 'val2', ...], ...} for multivalued attributes)
 
     * controls: additional controls to send in the request
 
-* delete: deletes the object specified
+* delete: deletes the object specified:
 
     * dn: distinguished name of the object to delete
 
     * controls: additional controls to send in the request
 
-* modify: modifies attributes of an entry
+* modify: modifies attributes of an entry:
 
     * dn: distinguished name of the object whose attributes must be modified
 
@@ -98,7 +97,7 @@ With the connection you can perform all the standard LDAP operations:
 
     * controls: additional controls to send in the request
 
-* modify_dn: modifies relative distinguished name of an entry or performs a move of an entry
+* modify_dn: modifies the relative distinguished name of an entry or performs a move of an entry:
 
     * dn: distinguished name of the entry whose relative name must be modified
 
@@ -114,7 +113,7 @@ With the connection you can perform all the standard LDAP operations:
 
    modify_dn is really a two-flavours operation: you can rename the last part of the dn *or* you move the entry in another container but you cannot perform both operations at the same time.
 
-* Search: performs a search in the LDAP database
+* Search: performs a search in the LDAP database:
 
     * search_base: the base of the search request.
 
@@ -135,22 +134,22 @@ With the connection you can perform all the standard LDAP operations:
         * DEREF_NEVER: never dereferences entries, returns alias objects instead. The alias contains the reference to the real entry.
 
         * DEREF_SEARCH: while searching subordinates of the base object, dereferences any alias within the search scope.
-    Dereferenced objects become the bases of further search scopes where the Search operation is also applied.
-    The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
+          Dereferenced objects become the bases of further search scopes where the Search operation is also applied.
+          The server should eliminate duplicate entries that arise due to alias dereferencing while searching.
 
         * DEREF_BASE: dereferences aliases in locating the base object of the search, but not when searching subordinates
-    of the base object.
+          of the base object.
 
         * DEREF_ALWAYS: always returns the referenced entries, not the alias object.
 
     * attributes: a single attribute or a list of attributes to be returned by the search (defaults to None).
-    If attributes is None no attribute is returned. If attributes is ALL_ATTRIBUTES all attributes are returned.
+      If attributes is None no attribute is returned. If attributes is ALL_ATTRIBUTES all attributes are returned.
 
     * size_limit: maximum number of entries returned by the search (defaults to None).
-    If None the whole set of found entries is returned, unless the server has a more restrictive rule.
+      If None the whole set of found entries is returned, unless the server has a more restrictive constrain.
 
     * time_limit: number of seconds allowed for the search (defaults to None).
-    If None the search can take an unlimited amount of time, unless the server has a more restrictive rule.
+      If None the search can take an unlimited amount of time, unless the server has a more restrictive constrain.
 
     * types_only: doesn't return attribute values.
 
@@ -159,21 +158,21 @@ With the connection you can perform all the standard LDAP operations:
     * controls: additional controls to send in the request.
 
     * paged_size: if paged_size is greater than 0 a simple paged search is executed as described in RFC2696 (defaults to None).
-    The search will return at most the specified number of entries.
+      The search will return at most the specified number of entries.
 
     * paged_criticality: if True the search will be executed only if the server is capable of performing a simple paged search.
-    If False and the server is not capable of performing a simple paged search a standard search will be executed.
+      If False and the server is not capable of performing a simple paged search a standard search will be executed.
 
     * paged_cookie: an *opaque* string received in a paged paged search that must be sent back while requesting
-    subsequent entries of the search result.
+      subsequent entries of the search result.
 
-* Abandon: abandons the operation indicated by message_id, if possible
+* Abandon: abandons the operation indicated by message_id, if possible:
 
     * message_id: id of a previously sent request
 
     * controls: additional controls to send in the request to be abandoned
 
-* Extended: performs an extended operation
+* Extended: performs an extended operation:
 
     * request_name: name of the extended operation
 
@@ -184,11 +183,11 @@ With the connection you can perform all the standard LDAP operations:
 
 Additional methods defined:
 
-* start_tls: establishes a secure connection, can be executed before or after the bind operation
+* start_tls: establishes a secure connection, can be executed before or after the bind operation.
 
-* do_sasl_bind: performs a SASL bind with the parameter defined in the Connection. It's automatically executed when you call the bind operation if SASL authentication is used
+* do_sasl_bind: performs a SASL bind with the parameter defined in the Connection. It's automatically executed when you call the bind operation if SASL authentication is used.
 
-* refresh_dsa_info: reads info from server as specified in the get_info parameter of the Connection object
+* refresh_dsa_info: reads info from server as specified in the get_info parameter of the Connection object.
 
 * response_to_ldif: a method you can call to convert the response of a search to a LDIF format (ldif-content). It has the following parameters:
 
@@ -214,7 +213,7 @@ Connection attributes:
 
 * response: the response of the last operation (for example, the entries found in a search), without the result
 
-* last_error: any error occurred in the last operation
+* last_error: any error occurred in the last operation (for synchronous strategies)
 
 * bound: True if bound to server else False
 
@@ -240,57 +239,20 @@ Connection attributes:
 
 * lazy: connection will defer open and bind until another LDAP operation is requested
 
-* check_names: True if you want to check the attribute and object class names against the schema in filters and in add/compare/modify operations (:class: requested by RFC)
+* check_names: True if you want to check the attribute and object class names against the schema in filters and in add/compare/modify operations
 
-* pool_name: an identifier for the Connection pool when using a pooled connection strategy
+* pool_name: anoptional identifier for the Connection pool when using a pooled connection strategy
 
 * pool_size: size of the connection pool used in a pooled connection strategy
 
 * pool_lifetime: number of second before recreating a new connection in a pooled connection strategy
 
-Simple Paged search
--------------------
-
-The search operation can perform a *simple paged search* as per RFC2696. You must specify the required number of entries in each response set. After the first search you must send back the cookie you get with each response in each subsequent search. If you send 0 as paged_size and a valid cookie the search operation referred by that cookie is abandoned.
-Cookie can be found in connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']; the server may return an estimated total number of entries in connection.result['controls']['1.2.840.113556.1.4.319']['value']['size']. You can change the paged_size in any subsequent search request.
-
-Example::
-
-    from ldap3 import Server, Connection, SUBTREE
-    total_entries = 0
-    server = Server('test-server')
-    connection = Connection(server, user='test-user', password='test-password', auto_bind=True)
-    connection.search(search_base='o=test', search_filter='(objectClass=inetOrgPerson)', search_scope=SUBTREE,
-                      attributes=['cn', 'givenName'], paged_size=5)
-    total_entries += len(connection.response)
-    cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-    while cookie:
-        connection.search(search_base = 'o=test', search_filter = '(object_class=inetOrgPerson)', search_scope = SUBTREE,
-                          attributes = ['cn', 'givenName'], paged_size = 5, paged_cookie = cookie)
-        total_entries += len(connection.response)
-        cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-    print('Total entries retrieved:', total_entries)
-    connection.close()
-
 Controls
 ========
 Controls, if used, must be a list of tuples. Each tuple must have 3 elements: the control OID, a boolean to specify if the control is critical,
- and a value. If the boolean is set to True the server must honorate the control or refuse the operation. Mixing controls must be defined
- in controls specification (as per RFC4511). controlValue is optional, set it to None to not send any value.
+and a value. If the boolean is set to True the server must honorate the control or refuse the operation. Mixing controls must be defined
+in controls specification (as per RFC4511). controlValue is optional, set it to None to not send any value.
 
-
-Responses
-=========
-
-Responses are received and stored in the connection.response as a list of dictionaries.
-You can get the search result entries of a Search operation iterating over the response attribute.
-Each entry is a dictionary with the following field:
-
-* dn: the distinguished name of the entry
-
-* attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format
-
-* raw_attributes: same as 'attributes' but not encoded (bytearray)
 
 Result
 ======
@@ -309,16 +271,29 @@ You can check the result value to know if the operation has been sucessful. The 
 * referrals: a list of referrals where the operation can be continued (optional)
 
 
+Responses
+=========
+
+Responses are received and stored in the connection.response as a list of dictionaries.
+You can get the search result entries of a Search operation iterating over the response attribute.
+Each entry is a dictionary with the following field:
+
+* dn: the distinguished name of the entry
+
+* attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format
+
+* raw_attributes: same as 'attributes' but not encoded (bytearray)
+
+
 Checked Attributes
 ==================
-The checked attributes feature checks the LDAP syntax of the attributes defined in schema and returns a properly formatted entry result while performing searches.
+The checked attributes feature checks the LDAP syntax of the attributes defined in schema and returns a properly formatted entry value while performing searches.
 This means that if, for example, you have an attributes specified as GUID in the server schema you will get the properly formatted GUID value ('012381d3-3b1c-904f-b29a-012381d33b1c') in the connection.response[0]['attributes'] key dictionary instead of a sequence of bytes.
-Or if you request an attribute defined as an Interger in the schema you will get the value already converted to int.
-Furthermore for attributes defined as single valued in schema you will get the value instead of a list of values (that would always be one sized). To activate this feature you must set the get info to GET_SCHEMA_INFO or GET_ALL_INFO value when defining the server object and the 'check_names' attributes to True in the Connection object (this is True by default starting from 0.9.4).
+Or if you request an attribute defined as an Integer in the schema you will get the value already converted to int.
+Furthermore for attributes defined *single valued* in the schema you will get the value instead of a list containing only one value.
+To activate this feature you must set the get_info parameter to SCHEMA or ALL when defining the server object and the check_names attributes to True in the Connection object (the default).
 
-To activate checked attributes you must read the schema with the get_info parameter in the Server definition and set the check_names parameter to True (default) in the Connection definition.
-
-There are a few of standard formatters defined in the library, most of them are defined in the relevants RFCs:
+There are some standard formatters defined in the library, most of them are defined in the relevants RFCs:
 
 * format_unicode  # returns an unicode object in Python 2 and a string in Python 3
 
@@ -334,14 +309,14 @@ There are a few of standard formatters defined in the library, most of them are 
 
 * format_time  # returns a datetime object (with properly defined timezone, or UTC if timezone is not specified) as defined in RFC 4517
 
-You can even define your custom formatter for specific purposes. Just pass a dictionary in the format {'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte value and convert it the relevant object or class instance.
+You can even define your custom formatter for specific purposes. Just pass a dictionary in the format {'identifier': callable}
+in the 'formatter' parameter of the Server object. The callable must be able to receive a bytes value and convert it to the relevant object or class instance.
 
-The resolution order of the format feature is the following:
-Custom formatters have precedence over standard formatter. In each category (from highest to lowest):
+Custom formatters have precedence over standard formatter. In each category (from highest to lowest) the resolution order is:
 
 1. attribute name
 
-2. attribute oid(from schema)
+2. attribute oid (from schema)
 
 3. attribute names (from oid_info)
 

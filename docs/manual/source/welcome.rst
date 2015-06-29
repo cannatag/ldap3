@@ -71,4 +71,4 @@ Thanks to
 
 * **GitHub** for providing the *free source repository space and tools* I use to develop this project.
 
-* **Python Software Foundation** for providing support for building the test lab infrastructure.
+* The **Python Software Foundation** for providing support for building the test lab infrastructure.

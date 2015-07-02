@@ -1,8 +1,9 @@
-# python .gitignore from GitHub
-
+# Created by .ignore support plugin (hsz.mobi)
+### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
 
 # C extensions
 *.so
@@ -15,6 +16,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+.eggs/
 lib/
 lib64/
 parts/
@@ -38,9 +40,11 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .coverage
+.coverage.*
 .cache
 nosetests.xml
 coverage.xml
+*,cover
 
 # Translations
 *.mo
@@ -51,11 +55,9 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
-docs/build/
 
 # PyBuilder
 target/
 
-# PyCharm
+#PyCharm
 .idea/
-

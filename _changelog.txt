@@ -5,6 +5,7 @@
       and utils.log.get_library_hide_sensitive_data() to get the current value
     - limited number of characters in a single log line. use the utils.log.set_library_log_max_line_length(length) to set
       and utils.log.get_library_log_max_line_length(length) to get the current value
+    - added CHANGES.txt with full changelog, latest changes only in README.txt
 
 * 0.9.8.5.post2 2015.06.24
     - Updated pyasn1 to 0.1.8

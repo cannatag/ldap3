@@ -74,21 +74,34 @@ logging text is encoded to ASCII.
 Hiding sensitive data
 =====================
 
-Sensitive data (as user password and SASL credentials) are stripped by default from the log and substitued with a string
-of '*' (same length of the original value) or by a "<stripped xxx characters of sensitive data>" message (where xxx is the
-number of character stripped). You can change the default behaviour and let the log record all the data with the
-set_library_log_hide_sensitive_data(True) function of the utils.log package::
+Sensitive data (as user password and SASL credentials) are stripped by default from the log and substituted with a string
+of '*' (with the same length of the original value) or by a "<stripped xxx characters of sensitive data>" message (where xxx is the
+number of characters stripped). You can change the default behaviour and let the log record all the data with the
+set_library_log_hide_sensitive_data(False) function of the utils.log package::
 
     import logging
     logging.basicConfig(filename=log_file, level=logging.DEBUG)
     from ldap3.utils.log import set_library_log_detail_level, get_detail_level_name, set_library_log_hide_sensitive_data, EXTENDED
 
     set_library_log_detail_level(EXTENDED)
-    set_library_log_hide_sensitive_data(True)
+    set_library_log_hide_sensitive_data(False)
 
 
 You can use the get_library_log_hide_sensitive_data() function of the utils.log module to check if sensitive data will
 be hidden or not.
+
+
+Maximum log line length
+=======================
+When logging LDAP responses at the EXTENDED detail level is possible to receive very long lines. This usually happens
+when the schema is read with get_info=SCHEMA or get_info=ALL in the Server object. A tipical response while reading the
+schema can be 300 KB (or more) long.
+
+To avoid the creation of huge and usually useless logs the ldap3 library log system set the maximum length of the log lines
+to a default value of 4096 characters. This should be a reasonable value for logging search operation responses, without
+cluttering the log. If you want to change the maximum log line length to another value you can use the
+set_library_log_max_line_length(length) function to set the desired length. You can use the get_library_log_max_line_length()
+function to read the current value.
 
 
 Examples

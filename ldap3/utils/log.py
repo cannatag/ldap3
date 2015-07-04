@@ -35,18 +35,16 @@ PROTOCOL = 30
 NETWORK = 40
 EXTENDED = 50
 
-max_line_length = 4096
-sensitive_lines = ('simple', 'credentials', 'serversaslcreds')  # must be a tuple, not a list
-sensitive_args = ('simple', 'password', 'sasl_credentials', 'saslcreds', 'server_creds')
-hide_sensitive_data = None
+_sensitive_lines = ('simple', 'credentials', 'serversaslcreds')  # must be a tuple, not a list
+_sensitive_args = ('simple', 'password', 'sasl_credentials', 'saslcreds', 'server_creds')
+_hide_sensitive_data = None
 
 DETAIL_LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED]
-LIBRARY_LEVEL = OFF
-LIBRARY_LOGGING_LEVEL = DEBUG
 
-logging_level = None
-level = None
-logging_encoding = 'ascii'
+_max_line_length = 4096
+_logging_level = None
+_detail_level = None
+_logging_encoding = 'ascii'
 
 try:
     from logging import NullHandler
@@ -75,80 +73,83 @@ def _strip_sensitive_data_from_dict(d):
     for k in d.keys():
         if isinstance(d[k], dict):
             d[k] = _strip_sensitive_data_from_dict(d[k])
-        elif k.lower() in sensitive_args and d[k]:
+        elif k.lower() in _sensitive_args and d[k]:
             d[k] = '<stripped %d characters of sensitive data>' % len(d[k])
 
     return d
 
 
-def get_detail_level_name(level):
-
-    if level == OFF:
+def get_detail_level_name(level_name):
+    if level_name == OFF:
         return 'OFF'
-    elif level == ERROR:
+    elif level_name == ERROR:
         return 'ERROR'
-    elif level == BASIC:
+    elif level_name == BASIC:
         return 'BASIC'
-    elif level == PROTOCOL:
+    elif level_name == PROTOCOL:
         return 'PROTOCOL'
-    elif level == NETWORK:
+    elif level_name == NETWORK:
         return 'NETWORK'
-    elif level == EXTENDED:
+    elif level_name == EXTENDED:
         return 'EXTENDED'
     raise ValueError('unknown detail level')
 
 
 def log(detail, message, *args):
-    if detail <= level:
-        if hide_sensitive_data:
+    if detail <= _detail_level:
+        if _hide_sensitive_data:
             args = tuple([_strip_sensitive_data_from_dict(arg) if isinstance(arg, dict) else arg for arg in args])
 
-        encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(logging_encoding, 'backslashreplace')
+        encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(_logging_encoding, 'backslashreplace')
         if str != bytes:  # Python 3
             encoded_message = encoded_message.decode()
 
-        if len(encoded_message) > max_line_length:
-            logger.log(logging_level, encoded_message[:max_line_length] + ' <removed %d remaining bytes in this log line>' % (len(encoded_message) - max_line_length, ))
+        if len(encoded_message) > _max_line_length:
+            logger.log(_logging_level, encoded_message[:_max_line_length] + ' <removed %d remaining bytes in this log line>' % (len(encoded_message) - _max_line_length, ))
         else:
-            logger.log(logging_level, encoded_message)
+            logger.log(_logging_level, encoded_message)
 
 
 def log_enabled(detail):
-    if detail <= level:
-        if logger.isEnabledFor(logging_level):
+    if detail <= _detail_level:
+        if logger.isEnabledFor(_logging_level):
             return True
 
     return False
 
 
 def set_library_log_hide_sensitive_data(hide=True):
-    global hide_sensitive_data
+    global _hide_sensitive_data
     if hide:
-        hide_sensitive_data = True
+        _hide_sensitive_data = True
     else:
-        hide_sensitive_data = False
+        _hide_sensitive_data = False
     if log_enabled(ERROR):
-        log(ERROR, 'hide sensitive data set to ' + str(hide_sensitive_data))
+        log(ERROR, 'hide sensitive data set to ' + str(_hide_sensitive_data))
 
 
 def get_library_log_hide_sensitive_data():
-    return True if hide_sensitive_data else False
+    return True if _hide_sensitive_data else False
 
 
-def set_library_log_activation_level(level):
-    if isinstance(level, int):
-        global logging_level
-        logging_level = level
+def set_library_log_activation_level(logging_level):
+    if isinstance(logging_level, int):
+        global _logging_level
+        _logging_level = logging_level
     else:
         if log_enabled(ERROR):
-            log(ERROR, 'invalid library log activation level <%s> ', level)
+            log(ERROR, 'invalid library log activation level <%s> ', logging_level)
         raise ValueError('invalid library log activation level')
+
+
+def get_library_log_activation_lavel():
+    return _logging_level
 
 
 def set_library_log_max_line_length(length):
     if isinstance(length, int):
-        global max_line_length
-        max_line_length = length
+        global _max_line_length
+        _max_line_length = length
     else:
         if log_enabled(ERROR):
             log(ERROR, 'invalid log max line length <%s> ', length)
@@ -156,26 +157,30 @@ def set_library_log_max_line_length(length):
 
 
 def get_library_log_max_line_length():
-    return max_line_length
+    return _max_line_length
 
 
 def set_library_log_detail_level(detail):
     if detail in DETAIL_LEVELS:
-        global level
-        level = detail
+        global _detail_level
+        _detail_level = detail
         if log_enabled(ERROR):
-            log(ERROR, 'detail level set to ' + get_detail_level_name(level))
+            log(ERROR, 'detail level set to ' + get_detail_level_name(_detail_level))
     else:
         if log_enabled(ERROR):
             log(ERROR, 'unable to set log detail level to <%s>', detail)
         raise ValueError('invalid library log detail level')
 
 
+def get_library_log_detail_level():
+    return _detail_level
+
+
 def format_ldap_message(message, prefix, sensitive=None):
     prefixed = ''
     for line in message.prettyPrint().split('\n'):
         if line:
-            if hide_sensitive_data and line.strip().lower().startswith(sensitive_lines):
+            if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):
                 tag, _, data = line.partition('=')
                 if data.startswith("b'") and data.endswith("'") or data.startswith('b"') and data.endswith('"'):
                     prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % (len(data) - 3, )
@@ -190,10 +195,10 @@ logger = getLogger('ldap3')
 logger.addHandler(NullHandler())
 
 # set defaults for the library logging
-set_library_log_activation_level(LIBRARY_LOGGING_LEVEL)
-set_library_log_detail_level(LIBRARY_LEVEL)
+set_library_log_activation_level(DEBUG)
+set_library_log_detail_level(OFF)
 set_library_log_hide_sensitive_data(True)
 
-# emits a info message to let the application know that ldap3 logging is available when the log level is set to logging_level
-logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in DETAIL_LEVELS]) + ' - sensitive data will ' + ('' if hide_sensitive_data else 'not ') + 'be hidden')
+# emits a info message to let the application know that ldap3 logging is available when the log level is set to _logging_level
+logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(_logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in DETAIL_LEVELS]) + ' - sensitive data will ' + ('' if _hide_sensitive_data else 'not ') + 'be hidden')
 

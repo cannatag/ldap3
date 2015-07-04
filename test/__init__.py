@@ -352,4 +352,3 @@ def add_group(connection, batch_id, groupname, members=None):
         raise Exception('unable to create group ' + groupname + ': ' + str(result))
 
     return dn, result
-

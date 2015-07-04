@@ -2,7 +2,7 @@
     - modify operation now accept multiple changes for same attribute (Thanks Lorenzo)
     - fixed entries property in connection when objects from multiple object classes are returned
     - hide sensitive data in logging. use the utils.log.set_library_hide_sensitive_data(False) to show sensitive data
-      and utils.log.get_library_hide_sensitive_data(length) to get the current value
+      and utils.log.get_library_hide_sensitive_data() to get the current value
     - limited number of characters in a single log line. use the utils.log.set_library_log_max_line_length(length) to set
       and utils.log.get_library_log_max_line_length(length) to get the current value
 

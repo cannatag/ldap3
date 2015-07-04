@@ -84,7 +84,7 @@ set_library_log_hide_sensitive_data(True) function of the utils.log package::
     from ldap3.utils.log import set_library_log_detail_level, get_detail_level_name, set_library_log_hide_sensitive_data, EXTENDED
 
     set_library_log_detail_level(EXTENDED)
-    set_library_log_strip_sensitive_data(True)
+    set_library_log_hide_sensitive_data(True)
 
 
 You can use the get_library_log_hide_sensitive_data() function of the utils.log module to check if sensitive data will

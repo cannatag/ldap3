@@ -45,7 +45,7 @@ the entire attribute is removed.
              must be appropriate for the request (e.g., it must have INTEGER or other increment-able values), and the
              modification must provide one and only one value. (RFC4525)
 
-changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
+changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...], (operation2, [val1, val2, ...]), ...], 'attribute2': [(operation, [val1, val2, ...])], ...}
 
 operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT (import them from the ldap3 namespace)
 

@@ -93,7 +93,7 @@ With the connection object you can perform all the standard LDAP operations:
 
     * dn: distinguished name of the object whose attributes must be modified
 
-    * changes: a dictionary in the form {'attribute1': [(operation, [val1, val2, ...]), ...], ...}, operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
+    * changes: a dictionary in the form {'attribute1': [(operation1, [val1, val2, ...]), (operation2, [val1, val2, ...]), ...]}, operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
 
     * controls: additional controls to send in the request
 

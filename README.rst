@@ -84,3 +84,9 @@ Contact me
 ----------
 
 For information and suggestions you can contact me at cannatag@gmail.com or you can also a support ticket on https://github.com/cannatag/ldap3/issues/new
+
+
+Changelog
+---------
+
+You can read the current changelog at http://ldap3.readthedocs.org/changelog.html

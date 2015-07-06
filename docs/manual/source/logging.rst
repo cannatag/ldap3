@@ -16,12 +16,12 @@ INFO level regardless of the library log activation level::
     INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK
 
 This is to inform that the logging facility is enabled and record will be emitted only when the loglevel and the detail
-level are properly set. Only when you set the log level to DEBUG ldap3 starts to emit its log record.
+level are properly set. Only when you set the log level to DEBUG ldap3 starts to emit its log records.
 
 Logging activation level
 ========================
 
-You can change the ldap3 logging activation level to another one if you need not to mix logging from ldap3 with DEBUG
+You can change the ldap3 logging activation level to a different one if you need not to mix logging from ldap3 with DEBUG
 level for your application::
 
     import logging

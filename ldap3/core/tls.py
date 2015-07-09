@@ -38,8 +38,7 @@ except ImportError:
 try:
     from ssl import match_hostname, CertificateError  # backport for python2 missing ssl functionalities
 except ImportError:
-    from ..utils.tls_backport import CertificateError
-    from ..utils.tls_backport import match_hostname_backport as match_hostname
+    from backports.ssl_match_hostname import match_hostname, CertificateError 
     if log_enabled(BASIC):
         log(BASIC, 'using tls_backport')
 

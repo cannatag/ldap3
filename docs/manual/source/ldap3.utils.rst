@@ -11,7 +11,6 @@ Submodules
    ldap3.utils.dn
    ldap3.utils.log
    ldap3.utils.ntlm
-   ldap3.utils.tls_backport
    ldap3.utils.uri
 
 Module contents

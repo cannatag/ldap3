@@ -1,3 +1,7 @@
+* 0.9.8.7 2015.07.10
+    - uses backports.ssl_match_name if present instead of static backported functions for matching server names in ssl certificate
+
+
 * 0.9.8.6 2015.06.30
     - modify operation now accept multiple changes for same attribute (Thanks Lorenzo)
     - fixed entries property in connection when objects from multiple object classes are returned

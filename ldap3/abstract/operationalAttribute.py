@@ -26,7 +26,7 @@
 from os import linesep
 
 from .attribute import Attribute
-
+from ..utils.repr import to_stdout_encoding
 
 # noinspection PyUnresolvedReferences,PyMissingConstructor
 class OperationalAttribute(Attribute):
@@ -49,12 +49,12 @@ class OperationalAttribute(Attribute):
 
     def __repr__(self):
         if len(self.values) == 1:
-            r = self.key + ' [OPERATIONAL]: ' + str(self.values[0])
+            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ' [OPERATIONAL]: ' + str(self.values[0])
+            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
             filler = ' ' * (len(self.key) + 6)
             for value in sorted(self.values[1:]):
-                r += linesep + filler + str(value)
+                r += linesep + filler + to_stdout_encoding(value)
         else:
             r = ''
 

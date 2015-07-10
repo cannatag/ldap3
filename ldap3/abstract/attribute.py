@@ -26,6 +26,7 @@
 from os import linesep
 
 from ..core.exceptions import LDAPAttributeError
+from ..utils.repr import to_stdout_encoding
 
 
 # noinspection PyUnresolvedReferences
@@ -49,12 +50,12 @@ class Attribute(object):
 
     def __repr__(self):
         if len(self.values) == 1:
-            r = self.key + ': ' + str(self.values[0])
+            r = self.key + ': ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ': ' + str(self.values[0])
+            r = self.key + ': ' + to_stdout_encoding(self.values[0])
             filler = ' ' * (len(self.key) + 6)
             for value in self.values[1:]:
-                r += linesep + filler + str(value)
+                r += linesep + filler + to_stdout_encoding(value)
         else:
             r = ''
 
@@ -62,9 +63,9 @@ class Attribute(object):
 
     def __str__(self):
         if len(self.values) == 1:
-            return self.values[0]
+            return to_stdout_encoding(self.values[0])
         else:
-            return str(self.values)
+            return to_stdout_encoding(self.values)
 
     def __len__(self):
         return len(self.values)

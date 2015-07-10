@@ -23,16 +23,20 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from .. import STRING_TYPES
 
 try:
     from sys import stdout
-    repr_encoding = stdout.encoding # get the encoding of the stdout for printing (repr)
+    repr_encoding = stdout.encoding  # get the encoding of the stdout for printing (repr)
 except Exception:
-    encoding = 'ascii'  # defaults
+    repr_encoding = 'ascii'  # default
 
 
 def to_stdout_encoding(value):
-    if str == bytes:  # python 2
-        if type(value):
-            pass
+    if not isinstance(value, STRING_TYPES):
+        value = str(value)
 
+    if str == bytes:  # python 2
+        return value.encode(repr_encoding, 'backslashreplace')
+    else:
+        return value.encode(repr_encoding, errors='backslashreplace').decode(repr_encoding, errors='backslashreplace')

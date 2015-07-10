@@ -33,4 +33,6 @@ except Exception:
 
 def to_stdout_encoding(value):
     if str == bytes:  # python 2
-        if type(value)
+        if type(value):
+            pass
+

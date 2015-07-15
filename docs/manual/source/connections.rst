@@ -65,13 +65,13 @@ With the connection object you can perform all the standard LDAP operations:
 
 * compare: performs a comparison between an attribute value of an entry and an arbitrary value:
 
-    * dn: distinguished name of the entry whose attribute you want to compare
+    * dn: distinguished name of the entry whose attribute is to compare
 
     * attribute: name of the attribute to compare
 
     * value: value to be compared
 
-    * controls: additional controls to send in the request:
+    * controls: additional controls to send in the request
 
 * add: add an entry to the LDAP server
 

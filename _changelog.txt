@@ -1,6 +1,7 @@
 * 0.9.8.7 2015.07.10
     - uses backports.ssl_match_name if present instead of static backported functions for matching server names in ssl certificate
-
+    - attributes values are properly printed when not strings in abstract.attribute (thanks hogneh)
+    - checking unicode __repr__ in python2
 
 * 0.9.8.6 2015.06.30
     - modify operation now accept multiple changes for same attribute (Thanks Lorenzo)

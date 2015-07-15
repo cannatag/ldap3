@@ -178,9 +178,9 @@ def get_library_log_detail_level():
 
 def format_ldap_message(message, prefix):
     prefixed = ''
-    for line in message.prettyPrint().split('\n'):
+    for line in message.prettyPrint().split('\n'):  # uses pyasn1 LDAP message prettyPrint() method
         if line:
-            if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):
+            if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):  # _sensitive_lines is a tuple. startswith() method check each tuple element
                 tag, _, data = line.partition('=')
                 if data.startswith("b'") and data.endswith("'") or data.startswith('b"') and data.endswith('"'):
                     prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % (len(data) - 3, )

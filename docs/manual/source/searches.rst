@@ -476,3 +476,10 @@ Entries can be easily printed at the interactive prompt::
     }
 
 To obtain already formatted values you must request the schema in the Server object with get_info=SCHEMA or get_info=ALL.
+
+
+Extended logging
+----------------
+
+To get an idea of what happens when you perform a Search operation this is the extended log from a session to an OpenLdap
+server from a Windows client with dual stack IP::

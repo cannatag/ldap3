@@ -168,3 +168,42 @@ server from a Windows client with dual stack IP::
     DEBUG:ldap3:NETWORK:connection closed for <ldap://openldap:389 - cleartext - user: cn=admin,o=services - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:stop collecting usage metrics
     DEBUG:ldap3:BASIC:done UNBIND operation, result <True>
+
+
+
+These are the usage metrics of this session::
+
+    Connection Usage:
+      Time: [elapsed:        0:00:01.040277]
+        Initial start time:  2015-07-16T07:38:39.883408
+        Open socket time:    2015-07-16T07:38:39.883408
+        Close socket time:   2015-07-16T07:38:40.923685
+      Server:
+        Servers from pool:   0
+        Sockets open:        1
+        Sockets closed:      1
+        Sockets wrapped:     0
+      Bytes:                 121
+        Transmitted:         87
+        Received:            34
+      Messages:              5
+        Transmitted:         3
+        Received:            2
+      Operations:            3
+        Abandon:             0
+        Bind:                1
+        Add:                 0
+        Compare:             1
+        Delete:              0
+        Extended:            0
+        Modify:              0
+        ModifyDn:            0
+        Search:              0
+        Unbind:              1
+      Referrals:
+        Received:            0
+        Followed:            0
+      Restartable tries:     0
+        Failed restarts:     0
+        Successful restarts: 0
+

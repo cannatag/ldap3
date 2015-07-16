@@ -55,8 +55,10 @@ class StandardExtendedOperations(ExtendedOperationContainer):
     def modify_password(self,
                         user=None,
                         old_password=None,
-                        new_password=None):
-        return ModifyPassword(self._connection, user, old_password, new_password).send()
+                        new_password=None,
+                        hashed=None):
+
+        return ModifyPassword(self._connection, user, old_password, new_password, hashed).send()
 
     def paged_search(self,
                      search_base,

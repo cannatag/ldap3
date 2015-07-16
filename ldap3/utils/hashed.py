@@ -1,0 +1,33 @@
+"""
+"""
+
+# Created on 2015.07.16
+#
+# Author: Giovanni Cannata
+#
+# Copyright 2015 Giovanni Cannata
+#
+# This file is part of ldap3.
+#
+# ldap3 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ldap3 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with ldap3 in the COPYING and COPYING.LESSER files.
+# If not, see <http://www.gnu.org/licenses/>.
+
+from .. import HASHED_MD5, HASHED_SALTED_MD5, HASHED_SALTED_SHA, HASHED_SALTED_SHA256, \
+    HASHED_SALTED_SHA384, HASHED_SALTED_SHA512, HASHED_SHA, HASHED_SHA256, HASHED_SHA384, HASHED_SHA512
+
+import hashlib
+
+
+def hash_md5(value):
+    return ('{%s}' % 'md5') + hashlib.new('MD5', value)

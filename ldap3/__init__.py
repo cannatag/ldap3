@@ -248,6 +248,18 @@ GET_DSA_INFO = DSA
 GET_SCHEMA_INFO = SCHEMA
 GET_ALL_INFO = ALL
 
+# Hashed password
+HASHED_NONE = 'PLAIN'
+HASHED_SHA = 'SHA'
+HASHED_SHA256 = 'SHA256'
+HASHED_SHA384 = 'SHA384'
+HASHED_SHA512 = 'SHA512'
+HASHED_MD5 = 'MD5'
+HASHED_SALTED_SHA = 'SALTED_SHA'
+HASHED_SALTED_SHA256 = 'SALTED_SHA256'
+HASHED_SALTED_SHA384 = 'SALTED_SHA384'
+HASHED_SALTED_SHA512 = 'SALTED_SHA512'
+HASHED_SALTED_MD5 = 'SALTED_MD5'
 
 # centralized imports
 from .version import __author__, __version__, __email__, __description__, __status__, __license__, __url__
@@ -258,6 +270,7 @@ from .core.pooling import ServerPool
 from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalAttribute
 from .protocol.rfc4512 import DsaInfo, SchemaInfo
 
+# imports error Exceptions
 from .core.exceptions import LDAPException, LDAPExceptionError, LDAPSocketCloseError, LDAPReferralError, \
     LDAPAttributeError, LDAPBindError, LDAPCertificateError, LDAPChangesError, LDAPCommunicationError, LDAPConnectionIsReadOnlyError, \
     LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPControlsError, LDAPEntryError, \
@@ -266,8 +279,9 @@ from .core.exceptions import LDAPException, LDAPExceptionError, LDAPSocketCloseE
     LDAPSASLBindInProgressError, LDAPSASLMechanismNotSupportedError, LDAPSASLPrepError, LDAPSchemaError, LDAPServerPoolError, \
     LDAPServerPoolExhaustedError, LDAPSocketOpenError, LDAPSocketReceiveError, LDAPSocketSendError, LDAPSSLConfigurationError,\
     LDAPSSLNotSupportedError, LDAPStartTLSError, LDAPTypeError, LDAPUnknownAuthenticationMethodError, LDAPUnknownRequestError, \
-    LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError, LDAPResponseTimeoutError
+    LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError, LDAPResponseTimeoutError, LDAPInvalidHashAlgorithmError
 
+# imports result code Exceptions
 from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSASResult, LDAPAliasDereferencingProblemResult,\
     LDAPAliasProblemResult, LDAPAssertionFailedResult, LDAPAttributeOrValueExistsResult, LDAPAuthMethodNotSupportedResult, \
     LDAPAuthorizationDeniedResult, LDAPBusyResult, LDAPCanceledResult, LDAPCannotCancelResult, LDAPConfidentialityRequiredResult,\

@@ -10,12 +10,12 @@ ldap3 Features
 2. Platform independent (tested on Linux and Windows) architecture:
 
     * The library **runs on Windows, Linux and Mac OSX** and (possibly) on other systems where it can gain access to the network via a Python
-   interpreter without any difference.
+      interpreter without any difference.
 
 3. Based on **pure Python code**:
 
     * No need to install binaries or non Python code. The very same code works on Windows, Linux, Mac OS X, FreeBSD,
-    OpenBSD and other systems, either in Python 2 or Python 3.
+      OpenBSD and other systems, either in Python 2 or Python 3.
 
     * ldap3 **doesn't need a C compiler neither the openldap client library**
 

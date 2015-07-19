@@ -339,7 +339,7 @@ class Connection(object):
         else:
             r = 'Connection(server={0.server!r}'.format(self)
         r += '' if self.user is None else ', user={0.user!r}'.format(self)
-        r += '' if self.password is None else ", password='{0}'".format('*' * len(self.password))
+        r += '' if self.password is None else ", password='{0}'".format('<stripped %d characters of sensitive data>' % len(self.password))
         r += '' if self.auto_bind is None else ', auto_bind={0.auto_bind!r}'.format(self)
         r += '' if self.version is None else ', version={0.version!r}'.format(self)
         r += '' if self.authentication is None else ', authentication={0.authentication!r}'.format(self)

@@ -176,11 +176,11 @@ def get_library_log_detail_level():
     return _detail_level
 
 
-def format_ldap_message(message, prefix, sensitive=None):
+def format_ldap_message(message, prefix):
     prefixed = ''
-    for line in message.prettyPrint().split('\n'):
+    for line in message.prettyPrint().split('\n'):  # uses pyasn1 LDAP message prettyPrint() method
         if line:
-            if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):
+            if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):  # _sensitive_lines is a tuple. startswith() method check each tuple element
                 tag, _, data = line.partition('=')
                 if data.startswith("b'") and data.endswith("'") or data.startswith('b"') and data.endswith('"'):
                     prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % (len(data) - 3, )
@@ -201,4 +201,3 @@ set_library_log_hide_sensitive_data(True)
 
 # emits a info message to let the application know that ldap3 logging is available when the log level is set to _logging_level
 logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(_logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in DETAIL_LEVELS]) + ' - sensitive data will ' + ('' if _hide_sensitive_data else 'not ') + 'be hidden')
-

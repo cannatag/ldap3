@@ -1,3 +1,7 @@
+# changes file for ldap3
+# generated on 2015-07-19 22:54:35.977000
+# version 0.9.8.7
+
 * 0.9.8.7 2015.07.19
     - backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10
     - uses backports.ssl_match_hostname if present instead of static backported functions for matching server names in ssl certificate (thanks Michal)

@@ -30,6 +30,7 @@ from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DERE
     CASE_INSENSITIVE_ATTRIBUTE_NAMES, SEQUENCE_TYPES
 
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
+from ..protocol.formatters.formatters import format_unicode
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
     AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, \
@@ -468,7 +469,8 @@ def search_request_to_dict(request):
 
 def search_result_entry_response_to_dict(response, schema, custom_formatter, check_names):
     entry = dict()
-    entry['dn'] = str(response['object'])
+    # entry['dn'] = str(response['object'])
+    entry['dn'] = format_unicode(str(response['object']))
     entry['raw_attributes'] = raw_attributes_to_dict(response['attributes'])
     if check_names:
         entry['attributes'] = checked_attributes_to_dict(response['attributes'], schema, custom_formatter)

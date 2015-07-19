@@ -35,17 +35,13 @@ There are 4 different kinds of change:
 * MODIFY_ADD: add values listed to the specified attribute, creating the attribute if necessary.
 
 * MODIFY_DELETE: delete values listed from the attribute. If no values are listed, or if all current values of the attribute are listed,
-the entire attribute is removed.
+  the entire attribute is removed.
 
-* MODIFY_REPLACE: replace all existing values of the specified attribute with the new values listed, creating the attribute
-           if it did not already exist.  A replace with no values will delete the entire attribute if it exists, and it
-           is ignored if the attribute does not exist.
+* MODIFY_REPLACE: replace all existing values of the specified attribute with the new values listed, creating the attribute if it did not already exist.  A replace with no values will delete the entire attribute if it exists, and it is ignored if the attribute does not exist.
 
-* MODIFY_INCREMENT: All existing values of the specified attribute are to be incremented by the listed value. The attribute
-             must be appropriate for the request (e.g., it must have INTEGER or other increment-able values), and the
-             modification must provide one and only one value. (RFC4525)
+* MODIFY_INCREMENT: All existing values of the specified attribute are to be incremented by the listed value. The attribute must be appropriate for the request (e.g., it must have INTEGER or other increment-able values), and the modification must provide one and only one value. (RFC4525)
 
-changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...])], 'attribute2': [(operation, [val1, val2, ...])], ...}
+changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...], (operation2, [val1, val2, ...]), ...], 'attribute2': [(operation, [val1, val2, ...])], ...}
 
 operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT (import them from the ldap3 namespace)
 
@@ -94,7 +90,7 @@ server from a Windows client with dual stack IP::
     DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO')>
     DEBUG:ldap3:BASIC:instantiated Usage object
     DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO'), user='cn=admin,o=test', password='<stripped 8 characters of sensitive data>', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
     DEBUG:ldap3:NETWORK:opening connection for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:reset usage metrics
     DEBUG:ldap3:BASIC:start collecting usage metrics
@@ -117,7 +113,7 @@ server from a Windows client with dual stack IP::
 
     DEBUG:ldap3:BASIC:start BIND operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'name': 'cn=admin,o=test', 'authentication': {'simple': 'password', 'sasl': None}}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'version': 3, 'name': 'cn=admin,o=test', 'authentication': {'simple': '<stripped 8 characters of sensitive data>', 'sasl': None}}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:new message id <1> generated
     DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
@@ -128,7 +124,7 @@ server from a Windows client with dual stack IP::
     >>   version=3
     >>   name=b'cn=admin,o=test'
     >>   authentication=AuthenticationChoice:
-    >>    simple=b'password'
+    >>    simple=b'<stripped 8 characters of sensitive data>'
     DEBUG:ldap3:NETWORK:sent 37 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:52751 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>

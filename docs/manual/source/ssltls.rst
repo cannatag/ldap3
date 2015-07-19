@@ -11,6 +11,14 @@ To start a TLS connection on an already created clear connection::
     c.start_tls()
 
 
+
+Some older versions (up to 2.7.9) of the Python interpreter lack the capability to check the server certificate against
+the DNS name of the server. This is a potential breach of security because a server could present a certificate issued
+for another host name. ldap3 includes a backport of this capability ported from the 3.4.3 version of the Python interpreter.
+If you want to keep your application up to date with the hostname checking capability of the latest Python version
+you can install the backports.ssl_match_hostname package from pypi. The ldap3 library will detect and use it instead of
+the included static backport.
+
 The Tls object
 ==============
 

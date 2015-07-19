@@ -65,13 +65,13 @@ With the connection object you can perform all the standard LDAP operations:
 
 * compare: performs a comparison between an attribute value of an entry and an arbitrary value:
 
-    * dn: distinguished name of the entry whose attribute you want to compare
+    * dn: distinguished name of the entry whose attribute is to compare
 
     * attribute: name of the attribute to compare
 
     * value: value to be compared
 
-    * controls: additional controls to send in the request:
+    * controls: additional controls to send in the request
 
 * add: add an entry to the LDAP server
 
@@ -93,7 +93,7 @@ With the connection object you can perform all the standard LDAP operations:
 
     * dn: distinguished name of the object whose attributes must be modified
 
-    * changes: a dictionary in the form {'attribute1': [(operation, [val1, val2, ...]), ...], ...}, operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
+    * changes: a dictionary in the form {'attribute1': [(operation1, [val1, val2, ...]), (operation2, [val1, val2, ...]), ...]}, operation is MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
 
     * controls: additional controls to send in the request
 
@@ -118,8 +118,8 @@ With the connection object you can perform all the standard LDAP operations:
     * search_base: the base of the search request.
 
     * search_filter: the filter of the search request. It must conform to the LDAP filter syntax specified in RFC4515.
-    If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515
-    (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'.
+      If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515
+      (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'.
 
     * search_scope: specifies how broad the search context is:
 

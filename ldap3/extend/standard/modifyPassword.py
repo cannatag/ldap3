@@ -23,8 +23,11 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from ... import HASHED_NONE
 from ...extend.operation import ExtendedOperation
+from ldap3 import HASHED_MD5
 from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
+from ...utils.hashed import hashed
 
 # implements RFC3062
 
@@ -36,14 +39,17 @@ class ModifyPassword(ExtendedOperation):
         self.asn1_spec = PasswdModifyResponseValue()
         self.response_attribute = 'new_password'
 
-    def __init__(self, connection, user=None, old_password=None, new_password=None):
+    def __init__(self, connection, user=None, old_password=None, new_password=None, hash_algorithm=None, salt=None):
         ExtendedOperation.__init__(self, connection)  # calls super __init__()
         if user:
             self.request_value['userIdentity'] = user
         if old_password:
             self.request_value['oldPasswd'] = old_password
         if new_password:
-            self.request_value['newPasswd'] = new_password
+            if not hashed or hashed == HASHED_NONE:
+                self.request_value['newPasswd'] = new_password
+            else:
+                self.request_value['newPasswd'] = hashed(hash_algorithm, new_password, salt)
 
     def populate_result(self):
         try:

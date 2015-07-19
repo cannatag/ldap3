@@ -69,7 +69,7 @@ def _convert_to_ldif(descriptor, value, base64):
             encoded = str(encoded, encoding='ascii')  # Python 3
         line = descriptor + ':: ' + encoded
     else:
-        if not str == bytes:  # Python 3
+        if str != bytes:  # Python 3
             value = str(value, encoding='ascii')
         else:  # Python 2
             value = str(value)

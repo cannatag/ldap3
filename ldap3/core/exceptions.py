@@ -380,12 +380,16 @@ class LDAPReaderError(LDAPExceptionError):
     pass
 
 
-# tls exceptions
+# security exceptions
 class LDAPSSLNotSupportedError(LDAPExceptionError, ImportError):
     pass
 
 
-class LDAPInvalidTlsSpecificationError(LDAPException):
+class LDAPInvalidTlsSpecificationError(LDAPExceptionError):
+    pass
+
+
+class LDAPInvalidHashAlgorithmError(LDAPExceptionError, ValueError):
     pass
 
 

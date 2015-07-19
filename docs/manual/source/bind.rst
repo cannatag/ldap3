@@ -28,12 +28,9 @@ The Bind operation specify 4 different methods to authenticate to the server:
 
 * Anonymous simple Bind: the user and password are passed as empty strings.
 
-* Unauthenticated simple Bind: you pass a username without a password. This method, even if specified in the protocol,
-should not be used because is higly insecure and should be forbidden by the server. It was used for tracing purpose.
+* Unauthenticated simple Bind: you pass a username without a password. This method, even if specified in the protocol, should not be used because is higly insecure and should be forbidden by the server. It was used for tracing purpose.
 
-* Sasl (Simple Authentication and Security Layer): this define multiple mechanisms that each server can provide to allow
-access to the server. Before trying a mechanism you should check that the server supports it. The LDAP server publish
-its allowed SASL mechanism in the DSE information that can be read anonymously.
+* Sasl (Simple Authentication and Security Layer): this define multiple mechanisms that each server can provide to allow access to the server. Before trying a mechanism you should check that the server supports it. The LDAP server publish its allowed SASL mechanism in the DSE information that can be read anonymously.
 
 The Bind method returns True if the bind is successful, False if something goes wrong while binding. In this case you
 can inspect the result attribute of the connection object to get the error description.
@@ -216,7 +213,7 @@ the extended log from a session to an OpenLdap server from a Windows client with
     DEBUG:ldap3:BASIC:instantiated Server: <Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO')>
     DEBUG:ldap3:BASIC:instantiated Usage object
     DEBUG:ldap3:BASIC:instantiated <SyncStrategy>: <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - No strategy - async - real DSA - not pooled - cannot stream output>
-    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO'), user='cn=admin,o=test', password='password', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
+    DEBUG:ldap3:BASIC:instantiated Connection: <Connection(server=Server(host='openldap', port=389, use_ssl=False, get_info='NO_INFO'), user='cn=admin,o=test', password='<stripped 8 characters of sensitive data>', auto_bind='NONE', version=3, authentication='SIMPLE', client_strategy='SYNC', auto_referrals=True, check_names=True, collect_usage=True, read_only=False, lazy=False, raise_exceptions=False)>
     DEBUG:ldap3:NETWORK:opening connection for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - closed - <no socket> - tls not started - not listening - SyncStrategy>
     DEBUG:ldap3:BASIC:reset usage metrics
     DEBUG:ldap3:BASIC:start collecting usage metrics
@@ -273,7 +270,7 @@ the extended log from a session to an OpenLdap server from a Windows client with
 
     DEBUG:ldap3:BASIC:start BIND operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:performing simple BIND for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:simple BIND request <{'name': 'cn=admin,o=test', 'authentication': {'sasl': None, 'simple': 'password'}, 'version': 3}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:simple BIND request <{'name': 'cn=admin,o=test', 'authentication': {'sasl': None, 'simple': '<stripped 8 characters of sensitive data>'}, 'version': 3}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:new message id <2> generated
     DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
     DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>:
@@ -284,7 +281,7 @@ the extended log from a session to an OpenLdap server from a Windows client with
     >>   version=3
     >>   name=b'cn=admin,o=test'
     >>   authentication=AuthenticationChoice:
-    >>    simple=b'password'
+    >>    simple=b'<stripped 8 characters of sensitive data>'
     DEBUG:ldap3:NETWORK:sent 37 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - unbound - open - <local: 192.168.137.1:49611 - remote: 192.168.137.104:389> - tls started - listening - SyncStrategy>

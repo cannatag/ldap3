@@ -25,7 +25,9 @@
 
 from ... import HASHED_NONE
 from ...extend.operation import ExtendedOperation
+from ldap3 import HASHED_MD5
 from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
+from ...utils.hashed import hashed
 
 # implements RFC3062
 
@@ -37,7 +39,7 @@ class ModifyPassword(ExtendedOperation):
         self.asn1_spec = PasswdModifyResponseValue()
         self.response_attribute = 'new_password'
 
-    def __init__(self, connection, user=None, old_password=None, new_password=None, hashed=None):
+    def __init__(self, connection, user=None, old_password=None, new_password=None, hash_algorithm=None):
         ExtendedOperation.__init__(self, connection)  # calls super __init__()
         if user:
             self.request_value['userIdentity'] = user
@@ -46,8 +48,8 @@ class ModifyPassword(ExtendedOperation):
         if new_password:
             if not hashed or hashed == HASHED_NONE:
                 self.request_value['newPasswd'] = new_password
-            elif False:
-                pass
+            elif hashed == HASHED_MD5:
+                self.request_value['newPasswd'] = hashed(hash_algorithm, new_password)
             else:
                 raise Exception
 

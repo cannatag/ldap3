@@ -28,12 +28,14 @@ from ..utils.log import log, log_enabled, NETWORK
 try:
     from backports.ssl_match_hostname import match_hostname, CertificateError
 except ImportError:
-    class CertificateError(ValueError):  # fix for Python 2, code from Python 3.3 standard library
+    class CertificateError(ValueError):  # fix for Python 2, code from Python 3.5 standard library
         pass
 
 
-    def _dnsname_match_backport(dn, hostname, max_wildcards=1):
-        """Matching according to RFC 6125, section 6.4.3
+    def _dnsname_match(dn, hostname, max_wildcards=1):
+        """Backported from Python 3.4.3 standard library
+
+        Matching according to RFC 6125, section 6.4.3
 
         http://tools.ietf.org/html/rfc6125#section-6.4.3
         """
@@ -43,10 +45,9 @@ except ImportError:
         if not dn:
             return False
 
-        dn_array = dn.split(r'.')
-
-        leftmost = dn_array[0]
-        remainder = dn_array[1:]
+        pieces = dn.split(r'.')
+        leftmost = pieces[0]
+        remainder = pieces[1:]
 
         wildcards = leftmost.count('*')
         if wildcards > max_wildcards:
@@ -86,9 +87,8 @@ except ImportError:
         return pat.match(hostname)
 
 
-    def match_hostname_backport(cert, hostname):
-        """
-        Fix for Python2; code from Python 3.4.1 standard library.
+    def match_hostname(cert, hostname):
+        """Backported from Python 3.4.3 standard library.
 
         Verify that *cert* (in decoded format as returned by
         SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 and RFC 6125
@@ -97,6 +97,7 @@ except ImportError:
         CertificateError is raised on failure. On success, the function
         returns nothing.
         """
+
         if not cert:
             raise ValueError("empty or no certificate, match_hostname needs a "
                              "SSL socket or SSL context with either "
@@ -105,7 +106,7 @@ except ImportError:
         san = cert.get('subjectAltName', ())
         for key, value in san:
             if key == 'DNS':
-                if _dnsname_match_backport(value, hostname):
+                if _dnsname_match(value, hostname):
                     return
                 dnsnames.append(value)
         if not dnsnames:
@@ -116,12 +117,17 @@ except ImportError:
                     # XXX according to RFC 2818, the most specific Common Name
                     # must be used.
                     if key == 'commonName':
-                        if _dnsname_match_backport(value, hostname):
+                        if _dnsname_match(value, hostname):
                             return
                         dnsnames.append(value)
         if len(dnsnames) > 1:
-            raise CertificateError("hostname %r doesn't match either of %s" % (hostname, ', '.join(map(repr, dnsnames))))
+            raise CertificateError("hostname %r "
+                                   "doesn't match either of %s"
+                                   % (hostname, ', '.join(map(repr, dnsnames))))
         elif len(dnsnames) == 1:
-            raise CertificateError("hostname %r doesn't match %r" % (hostname, dnsnames[0]))
+            raise CertificateError("hostname %r "
+                                   "doesn't match %r"
+                                   % (hostname, dnsnames[0]))
         else:
-            raise CertificateError("no appropriate commonName or subjectAltName fields were found")
+            raise CertificateError("no appropriate commonName or "
+                                   "subjectAltName fields were found")

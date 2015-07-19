@@ -23,11 +23,70 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import HASHED_MD5, HASHED_SALTED_MD5, HASHED_SALTED_SHA, HASHED_SALTED_SHA256, \
+from .. import HASHED_NONE, HASHED_MD5, HASHED_SALTED_MD5, HASHED_SALTED_SHA, HASHED_SALTED_SHA256, \
     HASHED_SALTED_SHA384, HASHED_SALTED_SHA512, HASHED_SHA, HASHED_SHA256, HASHED_SHA384, HASHED_SHA512
 
 import hashlib
+from os import urandom
+from ldap3.core.exceptions import LDAPInvalidHashAlgorithmError
+from base64 import b64encode
+
+# each tuple: (the string to include between braces in the digest, the name of the algorithm to invoke with the new() function)
+
+algorithms_table = {
+    HASHED_MD5: ('md5', 'MD5'),
+    HASHED_SHA: ('sha', 'DSA-SHA'),
+    HASHED_SHA256: ('sha256', 'SHA256'),
+    HASHED_SHA384: ('sha384', 'SHA384'),
+    HASHED_SHA512: ('sha512', 'SHA512')
+}
 
 
-def hash_md5(value):
-    return ('{%s}' % 'md5') + hashlib.new('MD5', value)
+salted_table = {
+    HASHED_SALTED_MD5: ('smd5', HASHED_MD5),
+    HASHED_SALTED_SHA: ('ssha', HASHED_SHA),
+    HASHED_SALTED_SHA256: ('ssha256', HASHED_SHA256),
+    HASHED_SALTED_SHA384: ('ssha384', HASHED_SHA384),
+    HASHED_SALTED_SHA512: ('ssha512', HASHED_SHA512)
+}
+
+
+def hashed(algorithm, value, salt=None, raw=False):
+    if algorithm == HASHED_NONE:
+        return value
+
+    # algorithm name can be already coded in the ldap3 constants or can be any value passed in the 'algorithm' parameter
+
+    if algorithm in algorithms_table:
+        try:
+            digest = hashlib.new(algorithms_table[algorithm][1], value).digest()
+        except ValueError:
+            raise LDAPInvalidHashAlgorithmError('Hash algorithm ' + str(algorithm) + ' not available')
+
+        if raw:
+            return digest
+        return ('{%s}' % algorithms_table[algorithm][0]) + b64encode(digest).decode('ascii')
+
+    elif algorithm in salted_table:
+        if not salt:
+            salt = urandom(8)
+        digest = hashed(salted_table[algorithm][1], value + salt, raw=True) + salt
+        if raw:
+            return digest
+
+        return ('{%s}' % salted_table[algorithm][0]) + b64encode(digest).decode('ascii')
+    else:
+        # if an unknown (to the library) algorithm is requested passes the name as the string in braces and as the algorithm name
+        # if salt is present uses it to salt the digest
+        try:
+            if not salt:
+                digest = hashlib.new(algorithm, value).digest()
+            else:
+                digest = hashlib.new(algorithm, value + salt).digest() + salt
+        except ValueError:
+            raise LDAPInvalidHashAlgorithmError('Hash algorithm ' + str(algorithm) + ' not available')
+
+        if raw:
+            return digest
+        return ('{%s}' % algorithm) + b64encode(digest).decode('ascii')
+

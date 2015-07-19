@@ -118,8 +118,8 @@ With the connection object you can perform all the standard LDAP operations:
     * search_base: the base of the search request.
 
     * search_filter: the filter of the search request. It must conform to the LDAP filter syntax specified in RFC4515.
-    If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515
-    (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'.
+      If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515
+      (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'.
 
     * search_scope: specifies how broad the search context is:
 

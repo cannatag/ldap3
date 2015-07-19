@@ -66,14 +66,12 @@ def hashed(algorithm, value, salt=None, raw=False):
         if raw:
             return digest
         return ('{%s}' % algorithms_table[algorithm][0]) + b64encode(digest).decode('ascii')
-
     elif algorithm in salted_table:
         if not salt:
             salt = urandom(8)
         digest = hashed(salted_table[algorithm][1], value + salt, raw=True) + salt
         if raw:
             return digest
-
         return ('{%s}' % salted_table[algorithm][0]) + b64encode(digest).decode('ascii')
     else:
         # if an unknown (to the library) algorithm is requested passes the name as the string in braces and as the algorithm name

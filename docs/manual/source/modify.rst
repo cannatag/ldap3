@@ -35,15 +35,11 @@ There are 4 different kinds of change:
 * MODIFY_ADD: add values listed to the specified attribute, creating the attribute if necessary.
 
 * MODIFY_DELETE: delete values listed from the attribute. If no values are listed, or if all current values of the attribute are listed,
-the entire attribute is removed.
+  the entire attribute is removed.
 
-* MODIFY_REPLACE: replace all existing values of the specified attribute with the new values listed, creating the attribute
-           if it did not already exist.  A replace with no values will delete the entire attribute if it exists, and it
-           is ignored if the attribute does not exist.
+* MODIFY_REPLACE: replace all existing values of the specified attribute with the new values listed, creating the attribute if it did not already exist.  A replace with no values will delete the entire attribute if it exists, and it is ignored if the attribute does not exist.
 
-* MODIFY_INCREMENT: All existing values of the specified attribute are to be incremented by the listed value. The attribute
-             must be appropriate for the request (e.g., it must have INTEGER or other increment-able values), and the
-             modification must provide one and only one value. (RFC4525)
+* MODIFY_INCREMENT: All existing values of the specified attribute are to be incremented by the listed value. The attribute must be appropriate for the request (e.g., it must have INTEGER or other increment-able values), and the modification must provide one and only one value. (RFC4525)
 
 changes is a dictionary in the form {'attribute1': [(operation, [val1, val2, ...], (operation2, [val1, val2, ...]), ...], 'attribute2': [(operation, [val1, val2, ...])], ...}
 

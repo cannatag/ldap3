@@ -1,5 +1,5 @@
 # changes file for ldap3
-# generated on 2015-07-19 22:54:35.977000
+# generated on 2015-07-19 22:56:55.275339
 # version 0.9.8.7
 
 * 0.9.8.7 2015.07.19

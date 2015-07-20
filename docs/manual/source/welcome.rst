@@ -1,15 +1,15 @@
 The ldap3 project
 #################
 
-ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The whole ldap3 library has been written from scratch
-and the same identical codebase works with Python 2, Python 3, PyPy and PyPy3 on any system where it can gain access to
+ldap3 is a strictly RFC 4511 conforming LDAP V3 pure Python client. The whole ldap3 library has been **written from scratch**
+and the **same identical codebase works with Python 2, Python 3, PyPy and PyPy3** on any system where it can gain access to
 the network via a Python interpreter and its Standard Library.
 
 
 License
 -------
 
-The ldap3 library and is open source software released under the **LGPL v3 license**.
+The ldap3 library is open source software released under the **LGPL v3 license**.
 
 
 RFCs Compliance
@@ -17,33 +17,14 @@ RFCs Compliance
 
 The ldap3 library strictly follows the latest (as of 2015) RFCs describing the LDAP v3 protocol:
 
-* RFC4510: Technical Specification Road Map
-* RFC4511: The Protocol
-* RFC4512: Directory Information Models
-* RFC4513: Authentication Methods and Security Mechanisms
-* RFC4514: String Representation of Distinguished Names
-* RFC4515: String Representation of Search Filters
-* RFC4516: Uniform Resource Locator
-* RFC4517: Syntaxes and Matching Rules
-* RFC4518: Internationalized String Preparation
-* RFC4519: Schema for User Applications
-
-The following RFCs, describing additional functionality of the LDAP3 protocol are also followed:
-
-* RFC2696: LDAP Control Extension for Simple Paged Results Manipulation
-* RFC2849: The LDAP Data Interchange Format (LDIF) - Technical Specification
-* RFC3045: Storing Vendor Information in the LDAP root DSE
-* RFC3062: LDAP Password Modify Extended Operation
-* RFC4525: Modify-Increment Extension
-* RFC4530: entryUUID Operational Attribute
-* RFC4532: Who am I?" Operation
-* RFC5020: entryDN Operational Attribute
+* The **Latest RFCs for LDAP v3** (dated 2006) obsolete the previous RFCs specified in RFC3377 (2251-2256, 2829, 2830, 3371) for LDAP v3 and amend and clarify the LDAP protocol.
+* All the ASN1 definitions are written from scratch to be current with RFC 4511.
 
 The ldap3 library deliberately doesn't follow the specification in RFC4511 (4.5.1.8.1) that states that in a Search
 operation "an empty list with no attributes requests the return of all user attributes.". Instead you have to request
 each attribute explicitly or use the ldap3.ALL_ATTRIBUTES value in the attributes requested list in the Search operation.
-This is to avoid pollution from bad formed search operation where alle attributes are returned back from the server when,
-probably, only a few of them, if not only one, are really required by the application.
+This is to avoid excessive server load caused by poor formed searches operation where all attributes are returned back
+from the server when, probably, only a few of them if not only one, are really required by the application.
 
 
 PEP8 Compliance

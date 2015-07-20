@@ -3,27 +3,27 @@ ldap3 Features
 
 1. ldap3 strictly conforms to the current RFCs for the version 3 of the LDAP protocol (from 4510 to 4519):
 
-      * RFC4510: Technical Specification Road Map
-      * RFC4511: The Protocol
-      * RFC4512: Directory Information Models
-      * RFC4513: Authentication Methods and Security Mechanisms
-      * RFC4514: String Representation of Distinguished Names
-      * RFC4515: String Representation of Search Filters
-      * RFC4516: Uniform Resource Locator
-      * RFC4517: Syntaxes and Matching Rules
-      * RFC4518: Internationalized String Preparation
-      * RFC4519: Schema for User Applications
+    * RFC4510: Technical Specification Road Map
+    * RFC4511: The Protocol
+    * RFC4512: Directory Information Models
+    * RFC4513: Authentication Methods and Security Mechanisms
+    * RFC4514: String Representation of Distinguished Names
+    * RFC4515: String Representation of Search Filters
+    * RFC4516: Uniform Resource Locator
+    * RFC4517: Syntaxes and Matching Rules
+    * RFC4518: Internationalized String Preparation
+    * RFC4519: Schema for User Applications
 
-      The following RFCs, describing additional functionality of the LDAP3 protocol are also followed:
+    The following RFCs, describing additional functionalities of the LDAP3 protocol are also followed:
 
-      * RFC2696: LDAP Control Extension for Simple Paged Results Manipulation
-      * RFC2849: The LDAP Data Interchange Format (LDIF) - Technical Specification
-      * RFC3045: Storing Vendor Information in the LDAP root DSE
-      * RFC3062: LDAP Password Modify Extended Operation
-      * RFC4525: Modify-Increment Extension
-      * RFC4530: entryUUID Operational Attribute
-      * RFC4532: Who am I?" Operation
-      * RFC5020: entryDN Operational Attribute
+    * RFC2696: LDAP Control Extension for Simple Paged Results Manipulation
+    * RFC2849: The LDAP Data Interchange Format (LDIF) - Technical Specification
+    * RFC3045: Storing Vendor Information in the LDAP root DSE
+    * RFC3062: LDAP Password Modify Extended Operation
+    * RFC4525: Modify-Increment Extension
+    * RFC4530: entryUUID Operational Attribute
+    * RFC4532: Who am I?" Operation
+    * RFC5020: entryDN Operational Attribute
 
 
 2. Platform independent (tested on Linux and Windows) architecture:

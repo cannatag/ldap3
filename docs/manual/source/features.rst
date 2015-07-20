@@ -44,7 +44,10 @@ ldap3 Features
       and in the exposed API.
 
     * The ldap3 library depends on the standard Python library and the pyasn1 package only. If you need kerberos support
-      you must install the gssapi package.
+      you must install the gssapi package. ldap3 includes a backport (from Python 3.4.3) of ssl.check_hostnames to be
+      used on older (version < 2.7.10) Python version. If you want to use a more up to date version of the check_hostnames
+      feature you can install the backports.ssl_check_hostnames package that should be kept updated with the Standard
+      Library of the latest Python release.
 
 4. Compatible with Python 3 and Python 2:
 

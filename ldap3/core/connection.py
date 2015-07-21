@@ -676,14 +676,14 @@ class Connection(object):
             if object_class is None:
                 parm_object_class = []
             else:
-                parm_object_class = object_class if isinstance(object_class, SEQUENCE_TYPES) else [object_class]
+                parm_object_class = list(object_class) if isinstance(object_class, SEQUENCE_TYPES) else [object_class]
 
             object_class_attr_name = ''
             if attributes:
                 for attr in attributes:
                     if attr.lower() == 'objectclass':
                         object_class_attr_name = attr
-                        attr_object_class = attributes[object_class_attr_name] if isinstance(attributes[object_class_attr_name], SEQUENCE_TYPES) else [attributes[object_class_attr_name]]
+                        attr_object_class = list(attributes[object_class_attr_name]) if isinstance(attributes[object_class_attr_name], SEQUENCE_TYPES) else [attributes[object_class_attr_name]]
             else:
                 attributes = dict()
 

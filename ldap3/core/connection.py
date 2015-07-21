@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
+from functools import reduce
 from threading import RLock
 import json
 
@@ -690,7 +691,7 @@ class Connection(object):
             if not object_class_attr_name:
                 object_class_attr_name = 'objectClass'
 
-            attributes[object_class_attr_name] = list(set([object_class for object_class in parm_object_class + attr_object_class]))  # remove duplicate ObjectClasses
+            attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, attr_object_class + parm_object_class, [])  # remove duplicate ObjectClasses
 
             if not attributes[object_class_attr_name]:
                 self.last_error = 'objectClass attribute is mandatory'

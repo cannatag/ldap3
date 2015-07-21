@@ -691,7 +691,7 @@ class Connection(object):
             if not object_class_attr_name:
                 object_class_attr_name = 'objectClass'
 
-            attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, attr_object_class + parm_object_class, [])  # remove duplicate ObjectClasses
+            attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, parm_object_class + attr_object_class, [])  # remove duplicate ObjectClasses
 
             if not attributes[object_class_attr_name]:
                 self.last_error = 'objectClass attribute is mandatory'

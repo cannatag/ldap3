@@ -1,3 +1,7 @@
+* 0.9.8.8 2015.07.24
+    - Coerce objectClass to a list in Add operation (thanks Yutaka)
+    - objectClass attribute values mantain their order in the Add operation (thanks Yutaka)
+
 * 0.9.8.7 2015.07.19
     - backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10
     - uses backports.ssl_match_hostname if present instead of static backported functions for matching server names in ssl certificate (thanks Michal)

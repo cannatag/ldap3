@@ -26,6 +26,7 @@
 from os import linesep
 from threading import RLock
 import json
+from functools import reduce
 
 from pyasn1.codec.ber import encoder
 
@@ -676,21 +677,21 @@ class Connection(object):
             if object_class is None:
                 parm_object_class = []
             else:
-                parm_object_class = object_class if isinstance(object_class, SEQUENCE_TYPES) else [object_class]
+                parm_object_class = list(object_class) if isinstance(object_class, SEQUENCE_TYPES) else [object_class]
 
             object_class_attr_name = ''
             if attributes:
                 for attr in attributes:
                     if attr.lower() == 'objectclass':
                         object_class_attr_name = attr
-                        attr_object_class = attributes[object_class_attr_name] if isinstance(attributes[object_class_attr_name], SEQUENCE_TYPES) else [attributes[object_class_attr_name]]
+                        attr_object_class = list(attributes[object_class_attr_name]) if isinstance(attributes[object_class_attr_name], SEQUENCE_TYPES) else [attributes[object_class_attr_name]]
             else:
                 attributes = dict()
 
             if not object_class_attr_name:
                 object_class_attr_name = 'objectClass'
 
-            attributes[object_class_attr_name] = list(set([object_class for object_class in parm_object_class + attr_object_class]))  # remove duplicate ObjectClasses
+            attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, parm_object_class + attr_object_class, [])  # remove duplicate ObjectClasses
 
             if not attributes[object_class_attr_name]:
                 self.last_error = 'objectClass attribute is mandatory'

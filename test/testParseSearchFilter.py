@@ -32,6 +32,12 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['attr'], 'cn')
         self.assertEqual(f.elements[0].assertion['value'], b'admin')
 
+    def test_parse_search_filter_equality_2(self):
+        f = parse_filter('(cn=a<=b=>c)', None)
+        self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
+        self.assertEqual(f.elements[0].assertion['attr'], 'cn')
+        self.assertEqual(f.elements[0].assertion['value'], b'a<=b=>c')
+
     def test_parse_search_filter_extensible_syntax_1(self):
         f = parse_filter('(cn:caseExactMatch:=Fred Flintstone)', None)
         self.assertEqual(f.elements[0].tag, MATCH_EXTENSIBLE)

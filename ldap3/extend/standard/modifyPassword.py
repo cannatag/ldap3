@@ -46,7 +46,7 @@ class ModifyPassword(ExtendedOperation):
         if old_password:
             self.request_value['oldPasswd'] = old_password
         if new_password:
-            if not hashed or hashed == HASHED_NONE:
+            if not hash_algorithm or hash_algorithm == HASHED_NONE:
                 self.request_value['newPasswd'] = new_password
             else:
                 self.request_value['newPasswd'] = hashed(hash_algorithm, new_password, salt)

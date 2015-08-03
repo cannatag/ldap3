@@ -26,6 +26,8 @@
 # original code by Hugh Cole-Baker, modified by Peter Foley
 # it needs the gssapi package
 
+import socket
+
 from ...core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationError
 
 try:
@@ -47,7 +49,8 @@ def sasl_gssapi(connection, controls):
     from RFC 4752. Does not support any security layers, only authentication!
     """
 
-    target_name = gssapi.Name('ldap@' + connection.server.host, gssapi.NameType.hostbased_service)
+    hostname = socket.gethostbyaddr(connection.socket.getpeername()[0])[0]
+    target_name = gssapi.Name('ldap@' + hostname, gssapi.NameType.hostbased_service)
     ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos)
     in_token = None
     try:

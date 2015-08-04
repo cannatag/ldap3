@@ -48,9 +48,7 @@ def sasl_gssapi(connection, controls):
     """
 
     target_name = gssapi.Name('ldap@' + connection.server.host, gssapi.NameType.hostbased_service)
-    creds = gssapi.Credentials(name=gssapi.Name(connection.user), usage='initiate') if connection.user else None
-    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos,
-                                 creds=creds)
+    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos)
     in_token = None
     try:
         while True:

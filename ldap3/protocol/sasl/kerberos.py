@@ -46,9 +46,12 @@ def sasl_gssapi(connection, controls):
     Performs a bind using the Kerberos v5 ("GSSAPI") SASL mechanism
     from RFC 4752. Does not support any security layers, only authentication!
     """
-
-    target_name = gssapi.Name('ldap@' + connection.server.host, gssapi.NameType.hostbased_service)
-    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos)
+    if connection.sasl_credentials and connection.sasl_credentials[0]:
+        target_name = gssapi.Name('ldap@' + connection.sasl_credentials[0], gssapi.NameType.hostbased_service)
+    else:
+        target_name = gssapi.Name('ldap@' + connection.server.host, gssapi.NameType.hostbased_service)
+    creds = gssapi.Credentials(name=gssapi.Name(connection.user), usage='initiate') if connection.user else None
+    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos, creds = creds)
     in_token = None
     try:
         while True:

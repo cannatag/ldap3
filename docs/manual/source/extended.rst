@@ -2,7 +2,7 @@
 Extended Operations
 ===================
 
-Rxtended operations are defined In the connection object in the 'extend' attribute.
+Extended operations are defined In the connection object in the 'extend' attribute.
 
 Extended operations are logically grouped by their use and vendor::
 

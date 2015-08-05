@@ -34,6 +34,8 @@ try:
 except ImportError:
     raise LDAPPackageUnavailableError('package gssapi missing')
 
+import socket
+
 from .sasl import send_sasl_negotiation, abort_sasl_negotiation
 
 NO_SECURITY_LAYER = 1
@@ -46,10 +48,11 @@ def sasl_gssapi(connection, controls):
     Performs a bind using the Kerberos v5 ("GSSAPI") SASL mechanism
     from RFC 4752. Does not support any security layers, only authentication!
     """
-    if connection.sasl_credentials and connection.sasl_credentials[0]:
-        target_name = gssapi.Name('ldap@' + connection.sasl_credentials[0], gssapi.NameType.hostbased_service)
+    if connection.sasl_credentials and connection.sasl_credentials.get('rdns'):
+        hostname = socket.gethostbyaddr(connection.socket.getpeername()[0])[0]
     else:
-        target_name = gssapi.Name('ldap@' + connection.server.host, gssapi.NameType.hostbased_service)
+        hostname = connection.server.host
+    target_name = gssapi.Name('ldap@' + hostname, gssapi.NameType.hostbased_service)
     creds = gssapi.Credentials(name=gssapi.Name(connection.user), usage='initiate') if connection.user else None
     ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos, creds = creds)
     in_token = None

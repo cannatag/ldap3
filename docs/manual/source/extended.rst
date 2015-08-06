@@ -33,7 +33,7 @@ For example::
     s = Server(...)
     c = Connection(s, ...)
     c.bind()  # bind as someone that has permission to change user's password
-    new_password = c.extend.standard.modify_password('cn=test1,o=test', 'old_password', 'new_password', SALTED_SHA256)  # a new password is set, hashed with sha256 and a random salt
+    new_password = c.extend.standard.modify_password('cn=test1,o=test', 'old_password', 'new_password', 'SALTED_SHA256')  # a new password is set, hashed with sha256 and a random salt
 
 
 A special case with modify_password is for LDAP servers that follow RFC3062. If you send the old password and do not specify

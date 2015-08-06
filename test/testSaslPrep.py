@@ -34,24 +34,29 @@ class Test(unittest.TestCase):
     def test_valid_simple_alphanumeric_password(self):
         password = 'abcdefg1234567890ABCDEFG'
         validated = validate_simple_password(password)
-        self.assertEqual(password, validated)
+        self.assertEqual(b'abcdefg1234567890ABCDEFG', validated)
+
+    def test_valid_simple_alphanumeric_bytes_password(self):
+        password = b'abcdefg1234567890ABCDEFG'
+        validated = validate_simple_password(password)
+        self.assertEqual(b'abcdefg1234567890ABCDEFG', validated)
 
     def test_valid_simple_alphanumeric_password_with_ascii_characters(self):
-        password = 'abcdefg1234567890ABCDEFG!"$%&/()='
+        password = b'abcdefg1234567890ABCDEFG!"$%&/()='
         validated = validate_simple_password(password)
         self.assertEqual(password, validated)
 
     def test_valid_simple_alphanumeric_password_with_non_ascii_characters(self):
         password = ''.join(['123', lookup('POUND SIGN'), 'abc'])
         validated = validate_simple_password(password)
-        self.assertEqual(password, validated)
+        self.assertEqual(b'123\xc2\xa3abc', validated)
 
     def test_valid_simple_alphanumeric_password_with_mapped_to_nothing_characters(self):
         password = ''.join(['123', lookup('SOFT HYPHEN'), 'abc'])
         validated = validate_simple_password(password)
-        self.assertEqual('123abc', validated)
+        self.assertEqual(b'123abc', validated)
 
     def test_valid_simple_alphanumeric_password_with_mapped_to_space_characters(self):
         password = ''.join(['123', lookup('FIGURE SPACE'), 'abc'])
         validated = validate_simple_password(password)
-        self.assertEqual('123 abc', validated)
+        self.assertEqual(b'123 abc', validated)

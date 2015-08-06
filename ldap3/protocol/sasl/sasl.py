@@ -121,16 +121,20 @@ def sasl_prep(data):
     return prepared_data
 
 
-def validate_simple_password(password):
+def validate_simple_password(password, accept_empty=False):
     """
     validate simple password as per RFC4013 using sasl_prep:
     """
 
-    if password == '' or password is None:
+    if accept_empty and not password:
+        return password
+    elif not password:
         raise LDAPPasswordIsMandatoryError("simple password can't be empty")
 
     if not isinstance(password, bytes):  # bytes are returned raw, as per RFC (4.2)
         password = sasl_prep(password)
+        if str != bytes:  # python 3
+            password = password.encode('utf-8')
 
     return password
 

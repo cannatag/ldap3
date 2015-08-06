@@ -52,7 +52,7 @@ salted_table = {
 
 
 def hashed(algorithm, value, salt=None, raw=False):
-    if algorithm == HASHED_NONE:
+    if algorithm is None or algorithm == HASHED_NONE:
         return value
 
     # algorithm name can be already coded in the ldap3 constants or can be any value passed in the 'algorithm' parameter

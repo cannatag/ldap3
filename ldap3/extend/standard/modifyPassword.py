@@ -28,6 +28,7 @@ from ...extend.operation import ExtendedOperation
 from ldap3 import HASHED_MD5
 from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
 from ...utils.hashed import hashed
+from ...protocol.sasl.sasl import sasl_prep
 
 # implements RFC3062
 
@@ -44,9 +45,14 @@ class ModifyPassword(ExtendedOperation):
         if user:
             self.request_value['userIdentity'] = user
         if old_password:
+            if not isinstance(old_password, bytes):  # bytes are returned raw, as per RFC (4.2)
+                old_password = sasl_prep(old_password)
             self.request_value['oldPasswd'] = old_password
         if new_password:
-            if not hash_algorithm or hash_algorithm == HASHED_NONE:
+            if not isinstance(new_password, bytes):  # bytes are returned raw, as per RFC (4.2)
+                new_password = sasl_prep(new_password)
+                print(type(new_password))
+            if hash_algorithm is None or hash_algorithm == HASHED_NONE:
                 self.request_value['newPasswd'] = new_password
             else:
                 self.request_value['newPasswd'] = hashed(hash_algorithm, new_password, salt)

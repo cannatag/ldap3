@@ -30,6 +30,7 @@ The payload of these extended operation is properly encoded and decoded. When av
 
 For example::
 
+    from ldap3 import Server, Connection, SALTED_SHA256
     s = Server(...)
     c = Connection(s, ...)
     c.bind()  # bind as someone that has permission to change user's password

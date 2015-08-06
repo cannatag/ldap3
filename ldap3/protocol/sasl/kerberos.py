@@ -25,6 +25,7 @@
 
 # original code by Hugh Cole-Baker, modified by Peter Foley
 # it needs the gssapi package
+import socket
 
 from ...core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationError
 
@@ -45,13 +46,20 @@ def sasl_gssapi(connection, controls):
     """
     Performs a bind using the Kerberos v5 ("GSSAPI") SASL mechanism
     from RFC 4752. Does not support any security layers, only authentication!
+
+    sasl_credentials can be empty or a 1-element tuple with the requested target_name or the True
+    value to request the target_name from DNS
     """
-    if connection.sasl_credentials and connection.sasl_credentials[0]:
-        target_name = gssapi.Name('ldap@' + connection.sasl_credentials[0], gssapi.NameType.hostbased_service)
+    if connection.sasl_credentials and len(connection.sasl_credentials) == 1 and connection.sasl_credentials[0]:
+        if connection.sasl_credentials[0] is True:
+            hostname = socket.gethostbyaddr(connection.socket.getpeername()[0])[0]
+            target_name = gssapi.Name('ldap@' + hostname, gssapi.NameType.hostbased_service)
+        else:
+            target_name = gssapi.Name('ldap@' + connection.sasl_credentials[0], gssapi.NameType.hostbased_service)
     else:
         target_name = gssapi.Name('ldap@' + connection.server.host, gssapi.NameType.hostbased_service)
     creds = gssapi.Credentials(name=gssapi.Name(connection.user), usage='initiate') if connection.user else None
-    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos, creds = creds)
+    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos, creds=creds)
     in_token = None
     try:
         while True:

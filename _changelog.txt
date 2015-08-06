@@ -4,7 +4,8 @@
     - Fixed search filter composition when the value part of the assertion contains = character (thanks Eero)
     - Fixed modify_password extended operation when no hash method is specified (thanks midnightlynx)
     - Added credentials to kerberos authentication (thanks Alex)
-    - Target name can be specified in sasl_credentials for kerberos authentication (thanks Alex)
+    - Target name can be specified in sasl_credentials for Kerberos authentication (thanks Alex)
+    - Target name can be read from DNS in sasl_credential for Kerberos authentication (thanks Alex)
 
 * 0.9.8.7 2015.07.19
     - backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10

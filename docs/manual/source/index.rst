@@ -18,6 +18,7 @@ Contents
    :maxdepth: 2
 
    welcome
+   tutorial
    features
    installation
    quicktour
@@ -30,6 +31,7 @@ Contents
    abstraction
    ldif
    exceptions
+   utils
    logging
    testing
    changelog

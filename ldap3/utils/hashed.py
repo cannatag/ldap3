@@ -51,7 +51,10 @@ salted_table = {
 }
 
 
-def hashed(algorithm, value, salt=None, raw=False):
+def hashed(algorithm, value, salt=None, raw=False, encoding='utf-8'):
+    if str != bytes and not isinstance(value, bytes):  # python 3
+        value = value.encode(encoding)
+
     if algorithm is None or algorithm == HASHED_NONE:
         return value
 

@@ -110,6 +110,10 @@ when you leave the context. The Unbind operation will be tried even if the opera
 Binding
 -------
 
+.. note::
+
+   For more comprehensive information about binding, see the :doc:`BIND <bind>` documentation.
+
 You can bind (authenticate) to the server with any of the authentication methods defined in the LDAP v3 protocol:
 Anonymous, Simple and SASL. An additional NTML method is defined to access Microsoft Active Directory servers.
 

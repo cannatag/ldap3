@@ -165,6 +165,8 @@ you pass None as 'realm' the default realm of the LDAP server will be used.
 **Again, remember that DIGEST-MD5 is deprecated and should not be used.**
 
 
+.. _sasl-kerberos:
+
 Kerberos
 ^^^^^^^^
 

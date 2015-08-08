@@ -168,7 +168,7 @@ you pass None as 'realm' the default realm of the LDAP server will be used.
 Kerberos
 ^^^^^^^^
 
-Kerberos authentication uses the python-gssapi package. You must install it and configure your Kerberos environment to use the GSSAPI mechanism::
+Kerberos authentication uses the ``gssapi`` package. You must install it and configure your Kerberos environment to use the GSSAPI mechanism::
 
     import ldap3
     import ssl

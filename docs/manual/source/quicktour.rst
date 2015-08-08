@@ -127,6 +127,10 @@ succesful the library will raise an LDAPBindError exception.
 Searching
 ---------
 
+.. note::
+
+   For more comprehensive information about searching, see the :doc:`SEARCH <searches>` documentation.
+
 Search operation is enhanced with a few parameters:
 
 * get_operational_attributes: when True retrieves the operational (system generated) attributes for each of the result

@@ -180,6 +180,24 @@ Kerberos authentication uses the ``gssapi`` package. You must install it and con
     connection.bind()
     print(connection.extend.standard.who_am_i())
 
+You can specify which Kerberos client principal should be used with the ``user`` parameter when declaring the ``Connection``::
+
+    connection = ldap3.Connection(
+        server, user='ldap-client/client.example.com',
+        authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
+
+By default the library attempts to bind against the service principal for the domain you attempted to connect to. If your target LDAP service uses a round-robin DNS, it's likely that the hostname you connect to won't match. In this case, you can either specify a hostname explicitly as the first element of the ``sasl_credential`` connection parameter, or pass ``True`` as the first element to do a reverse DNS lookup::
+
+    # Override server hostname for authentication
+    connection = ldap3.Connection(
+        server, sasl_credential=('ldap-3.example.com',),
+        authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
+
+    # Perform a reverse DNS lookup to determine the hostname to authenticate against.
+    connection = ldap3.Connection(
+        server, sasl_credential=(True,),
+        authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
+
 
 
 NTLM

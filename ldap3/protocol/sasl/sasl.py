@@ -133,7 +133,7 @@ def validate_simple_password(password, accept_empty=False):
 
     if not isinstance(password, bytes):  # bytes are returned raw, as per RFC (4.2)
         password = sasl_prep(password)
-        if str != bytes:  # python 3
+        if not isinstance(password, bytes):
             password = password.encode('utf-8')
 
     return password

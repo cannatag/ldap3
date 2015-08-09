@@ -78,7 +78,13 @@ At least you need the Server and the Connection object, and any additional const
 Accessing an LDAP server
 ========================
 
-In this tutorial we will access an LDAP server called "myldap.example.com"
+In this tutorial we will access a free public test LDAP server available at "ldap.forumsys.com". We are allowed read only access,
+so we can't modify any data on the server.
+
+Define the new server and connection objects::
+
+    s = Server('ldap.forumsys.com', get_info = ALL)
+    c = Connection(s)
 
 
 ... more to come ...

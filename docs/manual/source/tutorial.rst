@@ -35,7 +35,7 @@ You may wonder why the "L" in LDAP? Well, its ancestor was called DAP (Directory
 and was developed in the 1980s by the CCITT (now ITU-T), the International Committee for Telephone and Telegraphy (a venerable
 entity that gave us, among other, the fax and the modem protocols we used in the pre-Internet era). DAP was a very "heavy"
 and hard to implement protocol (either for the client and the server components) and was not accessible via TCP/IP. In 1993
-a lightweight access protocol was invented in 1993 to act as a gateway to the DAP world. Afterwards followed server products
+a lightweight access protocol was invented to act as a gateway to the DAP world. Afterwards followed server products
 that could understand LDAP directly and the gateway to DAP was soon cut off. LDAP v3 was first documented in 1997 and its
 documentation was revised in 2006.
 
@@ -66,6 +66,19 @@ or from source::
     python setup.py install
 
 ldap3 installs the pyasn1 package if not present. This package is used to communicate with the server over the network.
+
+ldap3 usage is very simple and straightforward: you define a Server object, a Connection object tied to the Server and
+issue commands to it. A server can have more than one connection and there are different communication strategies to choose
+from. All the imports are done in the ldap3 namespace, that exposes all you need to interact with the LDAP server.
+At least you need the Server and the Connection object, and any additional constant you will use in your LDAP conversation
+(constants are defined in upper case)::
+
+    from ldap3 import Server, Connection, ALL
+
+Accessing an LDAP server
+========================
+
+In this tutorial we will access an LDAP server called "myldap.example.com"
 
 
 ... more to come ...

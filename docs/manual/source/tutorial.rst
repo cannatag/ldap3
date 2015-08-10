@@ -116,6 +116,7 @@ with a synchronous *communication strategy* (more on communication strategies la
 With print(conn) [or str(conn)] we ask an overview of the connection. We already get back a lot of information:
 
 ======================================================= ==================================================================
+======================================================= ==================================================================
 ldap://ldap.forumsys.com:389                            the server name and the port we are connected to
 cleartext                                               the authentication method used
 user: None                                              the credentials used, in this case None means an anonymous binding
@@ -126,6 +127,8 @@ tls not started                                         the status of the TLS (T
 listening                                               the status of the communication strategy
 SyncStrategy                                            the communication strategy used
 ======================================================= ==================================================================
+
+
 If you ask for the representation of the conn object you can get a view of all the object definition arguments::
 
     >>> conn

@@ -214,39 +214,39 @@ class DsaInfo(BaseServerInfo):
             r += ('  Supported LDAP Versions: ' + str(self.supported_ldap_versions))
         r += linesep
         if isinstance(self.naming_contexts, SEQUENCE_TYPES):
-            r += ('  Naming Contexts:' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts])) if self.naming_contexts else ''
+            r += ('  Naming Contexts: ' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts])) if self.naming_contexts else ''
         else:
-            r += ('  Naming Contexts:' + str(self.naming_contexts))
+            r += ('  Naming Contexts: ' + str(self.naming_contexts))
         r += linesep
         if isinstance(self.alt_servers, SEQUENCE_TYPES):
-            r += ('  Alternative Servers:' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers])) if self.alt_servers else ''
+            r += ('  Alternative Servers: ' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers])) if self.alt_servers else ''
         else:
-            r += ('  Alternative Servers:' + str(self.alt_servers))
+            r += ('  Alternative Servers: ' + str(self.alt_servers))
         r += linesep
         if isinstance(self.supported_controls, SEQUENCE_TYPES):
-            r += ('  Supported Controls:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls])) if self.supported_controls else ''
+            r += ('  Supported Controls: ' + linesep + linesep.join(['    ' + str(s) for s in self.supported_controls])) if self.supported_controls else ''
         else:
-            r += ('  Supported Controls:' + str(self.supported_controls))
+            r += ('  Supported Controls: ' + str(self.supported_controls))
         r += linesep
         if isinstance(self.supported_extensions, SEQUENCE_TYPES):
-            r += ('  Supported Extensions:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions])) if self.supported_extensions else ''
+            r += ('  Supported Extensions: ' + linesep + linesep.join(['    ' + str(s) for s in self.supported_extensions])) if self.supported_extensions else ''
         else:
-            r += ('  Supported Extensions:' + str(self.supported_extensions))
+            r += ('  Supported Extensions: ' + str(self.supported_extensions))
         r += linesep
         if isinstance(self.supported_features, SEQUENCE_TYPES):
-            r += ('  Supported Features:' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features])) if self.supported_features else ''
+            r += ('  Supported Features: ' + linesep + linesep.join(['    ' + str(s) for s in self.supported_features])) if self.supported_features else ''
         else:
-            r += ('  Supported Features:' + str(self.supported_features))
+            r += ('  Supported Features: ' + str(self.supported_features))
         r += linesep
         if isinstance(self.supported_sasl_mechanisms, SEQUENCE_TYPES):
-            r += ('  Supported SASL Mechanisms:' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms])) if self.supported_sasl_mechanisms else ''
+            r += ('  Supported SASL Mechanisms: ' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms])) if self.supported_sasl_mechanisms else ''
         else:
-            r += ('  Supported SASL Mechanisms:' + str(self.supported_sasl_mechanisms))
+            r += ('  Supported SASL Mechanisms: ' + str(self.supported_sasl_mechanisms))
         r += linesep
         if isinstance(self.schema_entry, SEQUENCE_TYPES):
-            r += ('  Schema Entry:' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry])) if self.schema_entry else ''
+            r += ('  Schema Entry: ' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry])) if self.schema_entry else ''
         else:
-            r += ('  Schema Entry:' + str(self.schema_entry))
+            r += ('  Schema Entry: ' + str(self.schema_entry))
         r += linesep
         r += 'Other:' + linesep
         for k, v in self.other.items():

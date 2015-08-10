@@ -130,6 +130,12 @@ SyncStrategy                                            the communication strate
 ======================================================= ==================================================================
 
 
+.. sidebar:: Object representation
+
+    the ldap3 library uses the following object representation rule: when you use the str() representation you get all
+    the information about the status of the object, when you use the repr() you get back a string you can use in the
+    Python console to recreate the object.
+
 If you ask for the representation of the conn object you can get a view of all the object definition arguments::
 
     >>> conn
@@ -140,10 +146,6 @@ If you ask for the representation of the conn object you can get a view of all t
 
 If you just copy and paste the object representation you can instantiate a new one. This is very helpful when experimenting
 in the interactive console.
-
-.. sidebar:: Object representation
-
-    the ldap3 library uses the following object representation rule: when you use the str() representation you get all the information about the status of the object, when you use the repr() you get back a string you can use in the Python console to recreate the object.
 
 Now let's try to request more information to the LDAP server::
 
@@ -204,7 +206,8 @@ Supported Features        ...               Additional capabilities of the serve
 Supported SASL Mechanisms None              No SASL authentication mechanisms available
 Schema Entry              cn=Subschema      The location of the schema in the DIT
 Other                     ...               Additional information provided by the server
-                                            but not requeste by the LDAP standard
+                                            but not requested by the LDAP standard
+=========================================================================================
 
 
 ... more to come ...

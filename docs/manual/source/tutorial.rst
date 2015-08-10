@@ -193,7 +193,7 @@ Now let's try to request more information to the LDAP server::
 
 Wow, the server let an anonymous user to know a lot about it:
 
-========================= ================= ===========================================
+========================= ================= =============================================
 Supported LDAP Versions   3                 The server supports LDAP v3 only
 Naming contexts           dc=example,dc=com The server store information from the
                                             dc=example,dc=com context downward

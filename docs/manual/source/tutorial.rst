@@ -127,7 +127,7 @@ With print(conn) [or str(conn)] we ask an overview of the connection. We already
 |SyncStrategy                                            |the communication strategy used                                    |
 +----------------------------------------------------------------------------------------------------------------------------+
 
-.. sidebar::
+.. sidebar:: Object representation
     the ldap3 library uses the following object representation rule: when you use the str() representation you get all
     the information about the status of the object, when you use the repr() you get back a string you can use in the
     Python console to recreate the object.
@@ -145,3 +145,28 @@ If you just copy and paste the object representation you can instantiate a new o
 in the interactive console.
 
 ... more to come ...
+
+
++------------------------+------------+----------+----------+
+| Header row, column 1   | Header 2   | Header 3 | Header 4 |
+| (header rows optional) |            |          |          |
++========================+============+==========+==========+
+| body row 1, column 1   | column 2   | column 3 | column 4 |
++------------------------+------------+----------+----------+
+| body row 2             | Cells may span columns.          |
++------------------------+------------+---------------------+
+| body row 3             | Cells may  | - Table cells       |
++------------------------+ span rows. | - contain           |
+| body row 4             |            | - body elements.    |
++------------------------+------------+---------------------+
+
+
+
+=====  =====  =======
+  A      B    A and B
+=====  =====  =======
+False  False  False
+True   False  False
+False  True   False
+True   True   True
+=====  =====  =======

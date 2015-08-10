@@ -20,9 +20,10 @@ I think is important to know what LDAP is not because people tend to call "LDAP"
 Lightweight Directory Access Protocol. LDAP is just a "protocol", like many of the other 'trailing-P' words
 in the Internet ecosystem (HTTP, FTP, IP, TCP...). It's a set of rules you have to use to "talk" to an external
 server/database/service/procedure/repository/product (all things in the above list). All the talk you can do via LDAP is
-about key/value(s) pairs grouped in a hierarchical structure. LDAP doesn't specify how the data is stored or how the user
-is authorized to read and modify them. There are only a few types of data that each LDAP server must recognize (the
-standard *schema* we'll meet later).
+about key/value(s) pairs grouped in a hierarchical structure. This hierarchical structure is called the DIT (Directory
+Information Tree) but LDAP doesn't specify how the data is stored on the server neither how the user is authorized to
+read and modify them. There are only a few data types that every LDAP server must recognize (the standard *schema*
+we'll meet later).
 
 That's all, all the (sometime too complex) LDAP machinery you will interact with has this only purpose.
 
@@ -49,7 +50,8 @@ The ldap3 package
 ldap3 is a fully compliant ldap v3 client and follows the latest (as per 2015) standard RFCs. It's written from scratch to be
 compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can access the network.
 
-Chances are that you find the ldap3 package already installed on your machine, just try to **import ldap3** from your Python console.
+Chances are that you find the ldap3 package already installed on your machine, just try to **import ldap3** from your
+Python console.
 
 If you get an ImportError you need to install the package from pypi via pip::
 
@@ -140,7 +142,69 @@ If you just copy and paste the object representation you can instantiate a new o
 in the interactive console.
 
 .. sidebar:: Object representation
+
     the ldap3 library uses the following object representation rule: when you use the str() representation you get all the information about the status of the object, when you use the repr() you get back a string you can use in the Python console to recreate the object.
+
+Now let's try to request more information to the LDAP server::
+
+    >>> server = Server('ldap.forumsys.com', get_info=ALL)
+    >>> conn = Connection(server, auto_bind=True)
+    >>> print(server.info)
+    DSA info (from DSE):
+      Supported LDAP Versions: 3
+      Naming Contexts:
+        dc=example,dc=com
+      Alternative Servers:None
+      Supported Controls:
+        2.16.840.1.113730.3.4.18 - Proxy Authorization Control - Control - RFC6171
+        2.16.840.1.113730.3.4.2 - ManageDsaIT - Control - RFC3296
+        1.3.6.1.4.1.4203.1.10.1 - Subentries - Control - RFC3672
+        1.2.840.113556.1.4.319 - LDAP Simple Paged Results - Control - RFC2696
+        1.2.826.0.1.3344810.2.3 - Matched Values - Control - RFC3876
+        1.3.6.1.1.13.2 - LDAP Post-read - Control - RFC4527
+        1.3.6.1.1.13.1 - LDAP Pre-read - Control - RFC4527
+        1.3.6.1.1.12 - Assertion - Control - RFC4528
+      Supported Extensions:
+        1.3.6.1.4.1.1466.20037 - StartTLS - Extension - RFC4511-RFC4513
+        1.3.6.1.4.1.4203.1.11.1 - Modify Password - Extension - RFC3062
+        1.3.6.1.4.1.4203.1.11.3 - Who am I - Extension - RFC4532
+        1.3.6.1.1.8 - Cancel Operation - Extension - RFC3909
+      Supported Features:
+        1.3.6.1.1.14 - Modify-Increment - Feature - RFC4525
+        1.3.6.1.4.1.4203.1.5.1 - All Op Attrs - Feature - RFC3673
+        1.3.6.1.4.1.4203.1.5.2 - OC AD Lists - Feature - RFC4529
+        1.3.6.1.4.1.4203.1.5.3 - True/False filters - Feature - RFC4526
+        1.3.6.1.4.1.4203.1.5.4 - Language Tag Options - Feature - RFC3866
+        1.3.6.1.4.1.4203.1.5.5 - language Range Options - Feature - RFC3866
+      Supported SASL Mechanisms:None
+      Schema Entry:
+        cn=Subschema
+    Other:
+      configContext:
+        cn=config
+      objectClass:
+        top
+        OpenLDAProotDSE
+      structuralObjectClass:
+    OpenLDAProotDSE
+      entryDN:
+
+Wow, the server let an anonymous user to know a lot about it:
+
+========================= ================= ===========================================
+Supported LDAP Versions   3                 The server supports LDAP v3 only
+Naming contexts           dc=example,dc=com The server store information from the
+                                            dc=example,dc=com context downward
+Alternative servers       None              This is the only replica of the database
+Supported Controls        ...               Optional controls that can be sent in a
+                                            request operation
+Supported Extentions      ...               Additional extended operations understood
+                                            by the server
+Supported Features        ...               Additional capabilities of the server
+Supported SASL Mechanisms None              No SASL authentication mechanisms available
+Schema Entry              cn=Subschema      The location of the schema in the DIT
+Other                     ...               Additional information provided by the server
+                                            but not requeste by the LDAP standard
 
 
 ... more to come ...

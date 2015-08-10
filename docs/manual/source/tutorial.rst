@@ -17,11 +17,14 @@ LDAP compliant server and use it. I'd rather like to be sure that you are aware 
 - it's not an open source neither a closed source product
 
 I think is important to know what LDAP is not because people tend to call "LDAP" a peculiar part of what they use of the
-Lightweight Directory Access Protocol (ops.. I revealed it!). LDAP is just a "protocol", like many of the other '*P' words
+Lightweight Directory Access Protocol. LDAP is just a "protocol", like many of the other 'trailing-P' words
 in the Internet ecosystem (HTTP, FTP, IP, TCP...). It's a set of rules you have to use to "talk" to an external
 server/database/service/procedure/repository/product (all things in the above list). All the talk you can do via LDAP is
-about key/value(s) pairs grouped in a hierarchical structure. That's all, all the (sometime too complex) LDAP machinery
-you will interact with has this only purpose.
+about key/value(s) pairs grouped in a hierarchical structure. LDAP doesn't specify how the data is stored or how the user
+is authorized to read and modify them. There are only a few types of data that each LDAP server must recognize (the
+standard *schema* we'll meet later).
+
+That's all, all the (sometime too complex) LDAP machinery you will interact with has this only purpose.
 
 Being a standard protocol LDAP is not related to any specific product and it is described in a set of RFC (Request for
 comments, the official rules of the Internet ecosystem). Its latest version is 3 and is documented in the RFC4510
@@ -81,10 +84,64 @@ Accessing an LDAP server
 In this tutorial we will access a free public test LDAP server available at "ldap.forumsys.com". We are allowed read only access,
 so we can't modify any data on the server.
 
-Define the new server and connection objects::
+In the LDAP protocol the login operation is called **bind**. A bind can be performed in 3 different ways: anonymous bind,
+simple password bind, and SASL (a Simple Authentication and Security Layer that allows multiple authentication methods)
+bind. You can think of the Anonymous bind as a *public* access to the LDAP server where you don't provide any credentials
+and the server apply some *default* access rules. Not all LDAP servers allow anonymous bind. With the simple password
+binding and the SASL binding you provide credentials that the LDAP server uses to determine your authorizazion level.
+Again, keep in mind that the LDAP v3 standard doesn't define any specific access level and that the authorization
+mechanism is not specified at all. So each LDAP server can have a different method for authorizing the user to different
+access levels.
 
-    s = Server('ldap.forumsys.com', get_info = ALL)
-    c = Connection(s)
+Let's start accessing the server with an anonymous bind::
 
+    >>> server = Server('ldap.forumsys.com')
+    >>> conn = Connection(server)
+    >>> conn.bind()
+    >>>
+
+or shorter::
+
+    >>> conn = Connection('ldap3.forumsys.com', auto_bind=True)
+    >>>
+
+It hardly could be simpler than that! We already have a full working anonymous connection open and bound to the server
+with a synchronous *communication strategy* (more on communication strategies later)::
+
+    >>> print(conn)
+    'ldap://ldap.forumsys.com:389 - cleartext - user: None - bound - open - <local: 192.168.1.101:51038 - remote: 23.20.46.132:389> \
+    - tls not started - listening - SyncStrategy'
+    >>>
+
+With print(conn) [or str(conn)] we ask an overview of the connection. We already get back a lot of information:
+
++----------------------------------------------------------------------------------------------------------------------------+
+|ldap://ldap.forumsys.com:389                            |the server name and the port we are connected to                   |
+|cleartext                                               |the authentication method used                                     |
+|user: None                                              |the credentials used, in this case None means an anonymous binding |
+|bound                                                   |the status of the LDAP session                                     |
+|open                                                    |the status of the underlying TCP/IP session                        |
+|<local: 192.168.1.101:51038 - remote: 23.20.46.132:389> |the local and remote socket endpoints                              |
+|tls not started                                         |the status of the TLS (Transport Layer Security) session           |
+|listening                                               |the status of the communication strategy                           |
+|SyncStrategy                                            |the communication strategy used                                    |
++----------------------------------------------------------------------------------------------------------------------------+
+
+.. sidebar::
+    the ldap3 library uses the following object representation rule: when you use the str() representation you get all
+    the information about the status of the object, when you use the repr() you get back a string you can use in the
+    Python console to recreate the object.
+
+
+If you ask for the representation of the conn object you can get a view of all the object definition arguments::
+
+    >>> conn
+    Connection(server=Server(host='ldap.forumsys.com', port=389, use_ssl=False, get_info='NO_INFO'), auto_bind='NO_TLS', \
+    version=3, authentication='ANONYMOUS', client_strategy='SYNC', auto_referrals=True, check_names=True, read_only=False,
+    lazy=False, raise_exceptions=False)
+    >>>
+
+If you just copy and paste the object representation you can instantiate a new one. This is very helpful when experimenting
+in the interactive console.
 
 ... more to come ...

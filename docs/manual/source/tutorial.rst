@@ -151,7 +151,7 @@ Now let's try to request more information to the LDAP server::
 
     >>> server = Server('ldap.forumsys.com', get_info=ALL)
     >>> conn = Connection(server, auto_bind=True)
-    >>> print(server.info)
+    >>> server.info
     DSA info (from DSE):
       Supported LDAP Versions: 3
       Naming Contexts:
@@ -209,6 +209,48 @@ Other                     ...               Additional information provided by t
                                             but not requested by the LDAP standard
 =========================================================================================
 
+Now we know that this server is a stand-alone LDAP service that holds objects in the dc=example,dc=com context, that
+doesn't support any SASL access mechanisms and that is based on OpenLDAP. Furthermore in the Supported Controls we can
+see it supports "paged searches", and the "who am i" extended operation in Supported Extensions.
+
+.. sidebar:: Controls vs Extensions
+
+    In LDAP a *control* is some additional information that can be attached to any LDAP request or response while an *extension* is a
+    completely custom request that can be sent to the LDAP server in an Extended Operation Request. Each server declare
+    which controls and which extendend operation it understand. The ldap3 library decodes the known supported controls
+    and extended operation and includes a brief description and a reference to the relevant RFC in the server.info
+    attribute.
+
+Let's examine the LDAP server schema::
+
+    >>> server.schema
+    >>> s.schema
+    DSA Schema from: cn=Subschema
+      Attribute types:{'nisMapName': Attribute type: 1.3.6.1.1.1.1.26
+      Short name: nisMapName
+    , 'documentVersion': Attribute type: 0.9.2342.19200300.100.1.13
+      Short name: documentVersion
+      Description: RFC1274: version of document
+      Equality rule: caseIgnoreMatch
+      Syntax: 1.3.6.1.4.1.1466.115.121.1.15 [1.3.6.1.4.1.1466.115.121.1.15 - Directory String - LDAP Syntax - RFC4517]
+      Minimum Length: 256
+      OidInfo: 0.9.2342.19200300.100.1.13 - documentVersion - Attribute Type - RFC4524
+    , 'olcModulePath': Attribute type: 1.3.6.1.4.1.4203.1.12.2.3.0.31
+      Short name: olcModulePath
+      Single Value: True
+      Syntax: 1.3.6.1.4.1.1466.115.121.1.15 [1.3.6.1.4.1.1466.115.121.1.15 - Directory String - LDAP Syntax - RFC4517]
+
+    ...
+    < a very long list of descriptors >
+
+
+The schema is a very long list and describes what kind of data types the LDAP server can understand. It also specifies
+what attributes can be stored in each class.
+Some classes are container for other objects (either containers or leaf objects) and are used to build the hierarchy of
+the Directory Information Tree. Container objects can have attributes too. Every LDAP server must at least support the
+standard LDAP3 schema but can have additional custom classes and attributes. The schema defines also the syntax and the
+matching rules of the different kind of data types stored in the LDAP.
+
+
 
 ... more to come ...
-

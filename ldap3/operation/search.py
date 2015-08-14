@@ -103,29 +103,27 @@ class FilterNode(object):
 
 
 def evaluate_match(match, schema):
-    match = match.strip()
-    if '~=' in match:
+    left_part, equal_sign, right_part = match.strip().partition('=')
+    if not equal_sign:
+        raise LDAPInvalidFilterError('invalid matching assertion')
+    if left_part.endswith('~'):  # approximate match '~='
         tag = MATCH_APPROX
-        left_part, _, right_part = match.partition('~=')
-        left_part = left_part.strip()
+        left_part = left_part[:-1].strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
-    elif '>=' in match:
+    elif left_part.endswith('>'):  # greater or equal match '>='
         tag = MATCH_GREATER_OR_EQUAL
-        left_part, _, right_part = match.partition('>=')
-        left_part = left_part.strip()
+        left_part = left_part[:-1].strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
-    elif '<=' in match:
+    elif left_part.endswith('<'):  # # less or equal match '<='
         tag = MATCH_LESS_OR_EQUAL
-        left_part, _, right_part = match.partition('<=')
-        left_part = left_part.strip()
+        left_part = left_part[:-1].strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
-    elif ':=' in match:
+    elif left_part.endswith(':'):  # extensible match ':='
         tag = MATCH_EXTENSIBLE
-        left_part, _, right_part = match.partition(':=')
-        left_part = left_part.strip()
+        left_part = left_part[:-1].strip()
         right_part = right_part.strip()
         extended_filter_list = left_part.split(':')
         matching_rule = None
@@ -160,12 +158,12 @@ def evaluate_match(match, schema):
         attribute_name = attribute_name.strip() if attribute_name else None
         matching_rule = matching_rule.strip() if matching_rule else None
         assertion = {'attr': attribute_name, 'value': validate_assertion_value(schema, attribute_name, right_part), 'matchingRule': matching_rule, 'dnAttributes': dn_attributes}
-    elif match.endswith('=*'):
+    elif right_part == '*':  # # attribute present match '=*'
         tag = MATCH_PRESENT
-        assertion = {'attr': match[:-2]}
-    elif '=' in match and '*' in match:
+        left_part = left_part.strip()
+        assertion = {'attr': left_part}
+    elif '*' in right_part:  # # substring match '=initial*substring*substring*final'
         tag = MATCH_SUBSTRING
-        left_part, _, right_part = match.partition('=')
         left_part = left_part.strip()
         right_part = right_part.strip()
         substrings = right_part.split('*')
@@ -173,14 +171,11 @@ def evaluate_match(match, schema):
         final = validate_assertion_value(schema, left_part, substrings[-1]) if substrings[-1] else None
         any_string = [validate_assertion_value(schema, left_part, substring) for substring in substrings[1:-1] if substring]
         assertion = {'attr': left_part, 'initial': initial, 'any': any_string, 'final': final}
-    elif '=' in match:
+    else:  # equality match '='
         tag = MATCH_EQUAL
-        left_part, _, right_part = match.partition('=')
         left_part = left_part.strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
-    else:
-        raise LDAPInvalidFilterError('invalid matching assertion')
 
     return FilterNode(tag, assertion)
 

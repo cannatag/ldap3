@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from .. import SUBTREE, DEREF_ALWAYS
+from .. import SUBTREE, DEREF_ALWAYS, HASHED_NONE
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
@@ -56,9 +56,10 @@ class StandardExtendedOperations(ExtendedOperationContainer):
                         user=None,
                         old_password=None,
                         new_password=None,
-                        hashed=None):
+                        hash_algorithm=None,
+                        salt=None):
 
-        return ModifyPassword(self._connection, user, old_password, new_password, hashed).send()
+        return ModifyPassword(self._connection, user, old_password, new_password, hash_algorithm, salt).send()
 
     def paged_search(self,
                      search_base,

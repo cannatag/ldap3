@@ -16,7 +16,7 @@ The following strategies are available:
 
 .. sidebar:: Lazy connections
 
-   * In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation is needed.
+   In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation is needed.
 
 * REUSABLE: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
 

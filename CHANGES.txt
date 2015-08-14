@@ -1,6 +1,16 @@
 # changes file for ldap3
-# generated on 2015-07-19 22:54:35.977000
-# version 0.9.8.7
+# generated on 2015-08-14 23:00:06.574729
+# version 0.9.8.8
+
+* 0.9.8.8 2015.08.14
+    - Coerce objectClass to a list in Add operation (thanks Yutaka)
+    - objectClass attribute values mantain their order in the Add operation (thanks Yutaka)
+    - Fixed search filter composition when the value part of the assertion contains = character (thanks Eero)
+    - Fixed modify_password extended operation when no hash method is specified (thanks midnightlynx)
+    - Added credentials to kerberos authentication (thanks Alex)
+    - Target name can be specified in sasl_credentials for Kerberos authentication (thanks Alex)
+    - Target name can be read from DNS in sasl_credential for Kerberos authentication (thanks Alex)
+    - Fixed connection.entries error when referrals are in the search response (thanks WIll)
 
 * 0.9.8.7 2015.07.19
     - backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10

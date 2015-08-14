@@ -1182,9 +1182,10 @@ class Connection(object):
             # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset
             attr_sets = []
             for response in search_response:
-                resp_attr_set = set(response['attributes'].keys())
-                if resp_attr_set not in attr_sets:
-                    attr_sets.append(resp_attr_set)
+                if response['type'] == 'searchResEntry':
+                    resp_attr_set = set(response['attributes'].keys())
+                    if resp_attr_set not in attr_sets:
+                        attr_sets.append(resp_attr_set)
             attr_sets.sort(key=lambda x: -len(x))  # sorts the list in descending length order
             unique_attr_sets = []
             for attr_set in attr_sets:

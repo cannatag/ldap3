@@ -28,8 +28,6 @@ from threading import RLock
 import json
 from functools import reduce
 
-from pyasn1.codec.ber import encoder
-
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, \
     DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
@@ -64,7 +62,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
-
+from ..utils.asn1 import encoder
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet

@@ -33,6 +33,7 @@ from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
 
+# bytes_stream = open('bytes_received_stream', 'wb')
 
 # noinspection PyProtectedMember
 class SyncStrategy(BaseStrategy):
@@ -158,6 +159,7 @@ class SyncStrategy(BaseStrategy):
             responses = self.receiving()
             if responses:
                 for response in responses:
+                    # bytes_stream.write(response)
                     while len(response) > 0:
                         if self.connection.usage:
                             self.connection._usage.update_received_message(len(response))

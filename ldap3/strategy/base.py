@@ -29,8 +29,6 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from pyasn1.codec.ber import encoder, decoder
-
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS,\
     DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
@@ -54,7 +52,7 @@ from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
-
+from ..utils.asn1 import encoder, decoder
 
 # noinspection PyProtectedMember
 class BaseStrategy(object):

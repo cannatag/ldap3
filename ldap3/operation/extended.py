@@ -24,12 +24,11 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.type.univ import OctetString
-from pyasn1.codec.ber import encoder
 from pyasn1.type.base import Asn1Item
 
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
 from ..protocol.convert import decode_referrals
-
+from ..utils.asn1 import encoder
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
 #     requestName      [0] LDAPOID,

@@ -1,3 +1,7 @@
+* 0.9.8.9 2015.08.19
+    - Fixed boolean value for True value in ASN.1 encoding for certain ldap server (thanks Will)
+    - Disabled testing with pypy3 on Travis-CI for incompatibility with version 0.1.8 of pyasn1
+
 * 0.9.8.8 2015.08.14
     - Coerce objectClass to a list in Add operation (thanks Yutaka)
     - objectClass attribute values mantain their order in the Add operation (thanks Yutaka)

@@ -26,11 +26,11 @@
 from datetime import datetime
 
 from pyasn1.type.univ import Integer
-from pyasn1.codec.ber import decoder
 
 from ...core.exceptions import LDAPExtensionError
 from ...protocol.novell import LDAPDN, ReplicaInfoRequestValue
 from ..operation import ExtendedOperation
+from ...utils.asn1 import decoder
 
 
 class ReplicaInfo(ExtendedOperation):

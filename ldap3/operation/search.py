@@ -337,22 +337,22 @@ def search_operation(search_base,
     request = SearchRequest()
     request['baseObject'] = LDAPDN(search_base)
 
-    if search_scope == BASE:
+    if search_scope == BASE or search_scope == 0:
         request['scope'] = Scope('baseObject')
-    elif search_scope == LEVEL:
+    elif search_scope == LEVEL or search_scope == 1:
         request['scope'] = Scope('singleLevel')
-    elif search_scope == SUBTREE:
+    elif search_scope == SUBTREE or search_scope == 2:
         request['scope'] = Scope('wholeSubtree')
     else:
         raise LDAPInvalidScopeError('invalid scope type')
 
-    if dereference_aliases == DEREF_NEVER:
+    if dereference_aliases == DEREF_NEVER or dereference_aliases == 0:
         request['derefAliases'] = DerefAliases('neverDerefAliases')
-    elif dereference_aliases == DEREF_SEARCH:
+    elif dereference_aliases == DEREF_SEARCH or dereference_aliases == 1:
         request['derefAliases'] = DerefAliases('derefInSearching')
-    elif dereference_aliases == DEREF_BASE:
+    elif dereference_aliases == DEREF_BASE or dereference_aliases == 2:
         request['derefAliases'] = DerefAliases('derefFindingBaseObj')
-    elif dereference_aliases == DEREF_ALWAYS:
+    elif dereference_aliases == DEREF_ALWAYS or dereference_aliases == 3:
         request['derefAliases'] = DerefAliases('derefAlways')
     else:
         raise LDAPInvalidDereferenceAliasesError('invalid dereference aliases type')

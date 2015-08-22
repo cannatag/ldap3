@@ -26,13 +26,14 @@
 from threading import Thread, Lock
 import socket
 
-from pyasn1.codec.ber import decoder
-
 from .. import RESPONSE_COMPLETE, SOCKET_SIZE
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, format_ldap_message, ERROR, NETWORK, EXTENDED
+from ..utils.asn1 import decoder
+
+
 
 
 # noinspection PyProtectedMember

@@ -23,6 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from pprint import pprint
+
 from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder
 from pyasn1.type.univ import Boolean
 from pyasn1.compat.octets import ints2octs
@@ -40,6 +42,7 @@ class BooleanCEREncoder(BooleanEncoder):
 tagMap[Boolean.tagSet] = BooleanCEREncoder()
 
 from pyasn1.codec.ber import encoder, decoder
+
 
 def compare_ldap_responses(r1, r2):
     if r1 == r2:
@@ -71,12 +74,6 @@ def compute_ber_size(data):
 
 
 def get_ber_tag(octet):
-    # print(bin(octet))
-    # print(bin(octet & 0b10000000))
-    # print(bin(octet & 0b01000000))
-    # print(bin(octet & 0b00100000))
-    # print(bin(octet & 0b00011111))
-
     ber_class = CLASSES[(bool(octet & 0b10000000), bool(octet & 0b01000000))]
 
     if ber_class == 'UNIVERSAL':
@@ -91,27 +88,28 @@ def get_ber_tag(octet):
 
 def decode_message(message):
     print('*** MESSAGE DECODER ***')
-    decode_tlv(message, 0, len(message))
+
+    decoded = decode_tlv(message, 0, len(message))
+    pprint(decoded)
+
+    return decoded
 
 
 def decode_tlv(message, start, stop):
+    decoded = []
     while start < stop:
         ber_class, ber_constructed, ber_type = get_ber_tag(message[start])
         ber_len, ber_value_offset = compute_ber_size(message[start:])
         start += ber_value_offset
-        print(ber_class[0], ber_constructed, ber_type[0], ber_len, ber_value_offset)
-        if not ber_constructed:
-            if ber_type[1]:
-                value = ber_type[1](message, start, start + ber_len)
-            else:
-                value = message[start: start + ber_len]
-            print(value)
+        # print(ber_class[0], ber_constructed, ber_type[0], ber_len, ber_value_offset)
+        if ber_type[1]:
+            value = ber_type[1](message, start, start + ber_len)  # call primitive value decode function
         else:
-            if ber_type[1]:
-                ber_type[1](message, start, start + ber_len)  # call decode function
-            else:
-                print('need decoder for', ber_class, ber_constructed, ber_type[0], 'start:', ber_value_offset, '-', ber_len)
+            raise NotImplementedError('need decoder for ' + ber_class + ' - ' + ber_type[0] + 'at: ', ber_value_offset, ' for ' + ber_len)
+        decoded.append((ber_class, ber_constructed, ber_type[0], value))
         start += ber_len
+
+    return decoded
 
 
 def decode_integer(message, start, stop):
@@ -133,17 +131,21 @@ def decode_octet_string(message, start, stop):
 
 
 def decode_boolean(message, start, stop):
-    raise NotImplementedError
+    if message[start: stop] == 0:
+        return False
+
+    return True
 
 
 def decode_sequence(message, start, stop):
     print('*** SEQUENCE DECODER ***')
-    decode_tlv(message, start, stop)
+    return decode_tlv(message, start, stop)
 
 
 def decode_bind_response(message, start, stop):
     print('*** BIND RESPONSE DECODER ***')
-    decode_tlv(message, start, stop)
+    return decode_tlv(message, start, stop)
+
 
 UNIVERSAL_TYPES = {1: ('BOOLEAN', decode_boolean),
                    2: ('INTEGER', decode_integer),

@@ -30,10 +30,9 @@ from ..core.exceptions import LDAPSocketReceiveError, communication_exception_fa
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
-from ..utils.asn1 import decoder
+from ..utils.asn1 import decoder, decode_message, compare_ldap_responses
 
-
-# bytes_stream = open('bytes_received_stream', 'wb')
+LDAP_MESSAGE_TEMPLATE = LDAPMessage()
 
 # noinspection PyProtectedMember
 class SyncStrategy(BaseStrategy):
@@ -159,11 +158,12 @@ class SyncStrategy(BaseStrategy):
             responses = self.receiving()
             if responses:
                 for response in responses:
-                    # bytes_stream.write(response)
                     while len(response) > 0:
                         if self.connection.usage:
                             self.connection._usage.update_received_message(len(response))
-                        ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAPMessage())
+                        ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)
+                        ldap_resp_fast = decode_message(response)
+                        compare_ldap_responses(ldap_resp, ldap_resp_fast)
                         if log_enabled(EXTENDED):
                             log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
                         if int(ldap_resp['messageID']) == message_id:

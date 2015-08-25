@@ -42,7 +42,7 @@ class Test(unittest.TestCase):
 
     def test_object_classes(self):
         if not self.connection.strategy.pooled:
-            self.assertEqual(type(self.connection.server.schema.object_classes['iNetOrgPerson']), ObjectClassInfo)
+            self.assertEqual(type(self.connection.server.schema.object_classes['inetOrgPerson']), ObjectClassInfo)
 
     def test_attributes_types(self):
         if self.connection.server.schema:

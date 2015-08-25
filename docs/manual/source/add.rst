@@ -46,9 +46,9 @@ You perform an Add operation as in the following example (using the default sync
     c = Connection(s, user='user_dn', password='user_password')
 
     # perform the Add operation
-    c.add('cn=user1,ou=users,o=company', ['iNetOrgPerson', 'posixGroup', 'top'], {'sn': 'user_sn', 'gidNumber': 0})
+    c.add('cn=user1,ou=users,o=company', ['inetOrgPerson', 'posixGroup', 'top'], {'sn': 'user_sn', 'gidNumber': 0})
     # equivalent to
-    c.add('cn=user1,ou=users,o=company', attributes={'objectClass':  ['iNetOrgPerson', 'posixGroup', 'top'], 'sn': 'user_sn', gidNumber: 0})
+    c.add('cn=user1,ou=users,o=company', attributes={'objectClass':  ['inetOrgPerson', 'posixGroup', 'top'], 'sn': 'user_sn', gidNumber: 0})
 
     print(c.result)
 
@@ -127,7 +127,7 @@ server from a Windows client with dual stack IP::
     # Performing the Add operation:
 
     DEBUG:ldap3:BASIC:start ADD operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:ADD request <{'entry': 'cn=user1,o=test', 'attributes': {'gidNumber': ['0'], 'sn': ['user_sn'], 'objectClass': ['iNetOrgPerson', 'posixGroup', 'top']}}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:ADD request <{'entry': 'cn=user1,o=test', 'attributes': {'gidNumber': ['0'], 'sn': ['user_sn'], 'objectClass': ['inetOrgPerson', 'posixGroup', 'top']}}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:new message id <2> generated
     DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:
@@ -148,7 +148,7 @@ server from a Windows client with dual stack IP::
     >>    Attribute:
     >>     type=b'objectClass'
     >>     vals=ValsAtLeast1:
-    >>      b'iNetOrgPerson'      b'posixGroup'      b'top'
+    >>      b'inetOrgPerson'      b'posixGroup'      b'top'
     DEBUG:ldap3:NETWORK:sent 110 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 14 bytes via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:NETWORK:received 1 ldap messages via <ldap://openldap:389 - cleartext - user: cn=admin,o=test - bound - open - <local: 192.168.137.1:50397 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>

@@ -60,8 +60,8 @@ ALL_ATTRIBUTES = '*'
 NO_ATTRIBUTES = '1.1'  # as per RFC 4511
 ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
 
-CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
-CASE_INSENSITIVE_SCHEMA_NAMES = True
+CASE_INSENSITIVE_ATTRIBUTE_NAMES = False
+CASE_INSENSITIVE_SCHEMA_NAMES = False
 
 # checks
 ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
@@ -205,6 +205,60 @@ RESULT_ASSERTION_FAILED = 122
 RESULT_AUTHORIZATION_DENIED = 123
 RESULT_E_SYNC_REFRESH_REQUIRED = 4096
 
+RESULT_CODES = {
+    RESULT_SUCCESS: 'success',
+    RESULT_OPERATIONS_ERROR: 'operationsError',
+    RESULT_PROTOCOL_ERROR: 'protocolError',
+    RESULT_TIME_LIMIT_EXCEEDED: 'timeLimitExceeded',
+    RESULT_SIZE_LIMIT_EXCEEDED: 'sizeLimitExceeded',
+    RESULT_COMPARE_FALSE: 'compareFalse',
+    RESULT_COMPARE_TRUE: 'compareTrue',
+    RESULT_AUTH_METHOD_NOT_SUPPORTED: 'authMethodNotSupported',
+    RESULT_STRONGER_AUTH_REQUIRED: 'strongerAuthRequired',
+    RESULT_REFERRAL: 'referral',
+    RESULT_ADMIN_LIMIT_EXCEEDED: 'adminLimitExceeded',
+    RESULT_UNAVAILABLE_CRITICAL_EXTENSION: 'unavailableCriticalExtension',
+    RESULT_CONFIDENTIALITY_REQUIRED: 'confidentialityRequired',
+    RESULT_SASL_BIND_IN_PROGRESS: 'saslBindInProgress',
+    RESULT_NO_SUCH_ATTRIBUTE: 'noSuchAttribute',
+    RESULT_UNDEFINED_ATTRIBUTE_TYPE: 'undefinedAttributeType',
+    RESULT_INAPPROPRIATE_MATCHING: 'inappropriateMatching',
+    RESULT_CONSTRAINT_VIOLATION: 'constraintViolation',
+    RESULT_ATTRIBUTE_OR_VALUE_EXISTS: 'attributeOrValueExists',
+    RESULT_INVALID_ATTRIBUTE_SYNTAX: 'invalidAttributeSyntax',
+    RESULT_NO_SUCH_OBJECT: 'noSuchObject',
+    RESULT_ALIAS_PROBLEM: 'aliasProblem',
+    RESULT_INVALID_DN_SYNTAX: 'invalidDNSyntax',
+    RESULT_ALIAS_DEREFERENCING_PROBLEM: 'aliasDereferencingProblem',
+    RESULT_INAPPROPRIATE_AUTHENTICATION: 'inappropriateAuthentication',
+    RESULT_INVALID_CREDENTIALS: 'invalidCredentials',
+    RESULT_INSUFFICIENT_ACCESS_RIGHTS: 'insufficientAccessRights',
+    RESULT_BUSY: 'busy',
+    RESULT_UNAVAILABLE: 'unavailable',
+    RESULT_UNWILLING_TO_PERFORM: 'unwillingToPerform',
+    RESULT_LOOP_DETECTED: 'loopDetected',
+    RESULT_NAMING_VIOLATION: 'namingViolation',
+    RESULT_OBJECT_CLASS_VIOLATION: 'objectClassViolation',
+    RESULT_NOT_ALLOWED_ON_NON_LEAF: 'notAllowedOnNonLeaf',
+    RESULT_NOT_ALLOWED_ON_RDN: 'notAllowedOnRDN',
+    RESULT_ENTRY_ALREADY_EXISTS: 'entryAlreadyExists',
+    RESULT_OBJECT_CLASS_MODS_PROHIBITED: 'objectClassModsProhibited',
+    RESULT_AFFECT_MULTIPLE_DSAS: 'affectMultipleDSAs',
+    RESULT_OTHER: 'other',
+    RESULT_LCUP_RESOURCES_EXHAUSTED: 'lcupResourcesExhausted',
+    RESULT_LCUP_SECURITY_VIOLATION: 'lcupSecurityViolation',
+    RESULT_LCUP_INVALID_DATA: 'lcupInvalidData',
+    RESULT_LCUP_UNSUPPORTED_SCHEME: 'lcupUnsupportedScheme',
+    RESULT_LCUP_RELOAD_REQUIRED: 'lcupReloadRequired',
+    RESULT_CANCELED: 'canceled',
+    RESULT_NO_SUCH_OPERATION: 'noSuchOperation',
+    RESULT_TOO_LATE: 'tooLate',
+    RESULT_CANNOT_CANCEL: 'cannotCancel',
+    RESULT_ASSERTION_FAILED: 'assertionFailed',
+    RESULT_AUTHORIZATION_DENIED: 'authorizationDenied',
+    RESULT_E_SYNC_REFRESH_REQUIRED: 'e-syncRefreshRequired'
+}
+
 # do not raise exception for (in raise_exceptions connection mode)
 DO_NOT_RAISE_EXCEPTIONS = [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL]
 
@@ -260,6 +314,7 @@ HASHED_SALTED_SHA256 = 'SALTED_SHA256'
 HASHED_SALTED_SHA384 = 'SALTED_SHA384'
 HASHED_SALTED_SHA512 = 'SALTED_SHA512'
 HASHED_SALTED_MD5 = 'SALTED_MD5'
+
 
 # centralized imports
 from .version import __author__, __version__, __email__, __description__, __status__, __license__, __url__

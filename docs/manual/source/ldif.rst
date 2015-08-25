@@ -66,8 +66,8 @@ For example::
 
     from ldap3 import Connection, LDIF
     connection = Connection(server = None, client_strategy = LDIF)  # no need of real LDAP server
-    connection.add('cn=test-add-operation,o=test'), 'iNetOrgPerson',
-                   {'objectClass': 'iNetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
+    connection.add('cn=test-add-operation,o=test'), 'inetOrgPerson',
+                   {'objectClass': 'inetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
 
 
 in connection.response you will find::

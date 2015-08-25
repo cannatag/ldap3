@@ -30,9 +30,10 @@ from ..core.exceptions import LDAPSocketReceiveError, communication_exception_fa
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
-from ..utils.asn1 import decoder, decode_message, compare_ldap_responses
+from ..utils.asn1 import decoder, decode_message_fast, compare_ldap_responses
 
 LDAP_MESSAGE_TEMPLATE = LDAPMessage()
+
 
 # noinspection PyProtectedMember
 class SyncStrategy(BaseStrategy):
@@ -156,23 +157,25 @@ class SyncStrategy(BaseStrategy):
         response_complete = False
         while not response_complete:
             responses = self.receiving()
+            unprocessed = b''
             if responses:
                 for response in responses:
                     while len(response) > 0:
                         if self.connection.usage:
                             self.connection._usage.update_received_message(len(response))
-                        ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)
-                        ldap_resp_fast = decode_message(response)
-                        compare_ldap_responses(ldap_resp, ldap_resp_fast)
+                        # ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)
+                        ldap_resp = decode_message_fast(response)
                         if log_enabled(EXTENDED):
                             log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
                         if int(ldap_resp['messageID']) == message_id:
-                            dict_response = self.decode_response(ldap_resp)
+                            # dict_response = self.decode_response(ldap_resp)
+                            dict_response = self.decode_response_fast(ldap_resp)
+                            # compare_ldap_responses(dict_response, dict_response_fast)
                             ldap_responses.append(dict_response)
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 response_complete = True
                         elif int(ldap_resp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-                            dict_response = self.decode_response(ldap_resp)
+                            dict_response = self.decode_response_fast(ldap_resp)
                             if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
                             else:
@@ -180,7 +183,7 @@ class SyncStrategy(BaseStrategy):
                                 if log_enabled(ERROR):
                                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                                 raise LDAPSocketReceiveError(self.connection.last_error)
-                        elif int(ldap_resp['messageID']) != message_id and self.decode_response(ldap_resp)['type'] == 'extendedResp':
+                        elif int(ldap_resp['messageID']) != message_id and self.decode_response_fast(ldap_resp)['type'] == 'extendedResp':
                             self.connection.last_error = 'multiple extended responses to a single extended request'
                             if log_enabled(ERROR):
                                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)

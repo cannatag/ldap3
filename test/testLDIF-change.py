@@ -47,7 +47,7 @@ class Test(unittest.TestCase):
         else:
             controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(unicode('\xe0\xe0', encoding='latin1'), encoding='UTF-8')))  # for python2 compatability
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'trailingspace '))
-        self.connection.add(generate_dn(test_base, testcase_id, 'ldif-change-1'), 'iNetOrgPerson', {'objectClass': 'iNetOrgPerson', 'sn': 'ldif-change-1', test_name_attr: 'ldif-change-1'}, controls=controls)
+        self.connection.add(generate_dn(test_base, testcase_id, 'ldif-change-1'), 'inetOrgPerson', {'objectClass': 'inetOrgPerson', 'sn': 'ldif-change-1', test_name_attr: 'ldif-change-1'}, controls=controls)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
         self.assertTrue('dn: ' + test_name_attr + '=' + testcase_id + 'ldif-change-1,' + test_base in response)
@@ -56,7 +56,7 @@ class Test(unittest.TestCase):
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: w6DDoA==' in response)
         self.assertTrue('control: 2.16.840.1.113719.1.27.103.7 false:: dHJhaWxpbmdzcGFjZSA=' in response)
         self.assertTrue('changetype: add' in response)
-        self.assertTrue('objectClass: iNetOrgPerson' in response)
+        self.assertTrue('objectClass: inetOrgPerson' in response)
         self.assertTrue('sn: ldif-change-1' in response)
         self.assertTrue(test_name_attr + ': ldif-change-1' in response)
 

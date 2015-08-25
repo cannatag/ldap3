@@ -29,10 +29,14 @@ from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder
 from pyasn1.type.univ import Boolean
 from pyasn1.compat.octets import ints2octs
 
-CLASSES = {(False, False): 'UNIVERSAL',
-           (False, True): 'APPLICATION',
-           (True, False): 'CONTEXT',
-           (True, True): 'PRIVATE'}
+from .. import RESULT_CODES
+
+from ..protocol.convert import referrals_to_list
+
+CLASSES = {(False, False): 0,  # Universal
+           (False, True): 1,  # Application
+           (True, False): 2,  # Context
+           (True, True): 3}  # Private
 
 
 # Monkeypatching of pyasn1 for encoding Boolean with the value 0xFF for TRUE
@@ -44,12 +48,22 @@ tagMap[Boolean.tagSet] = BooleanCEREncoder()
 from pyasn1.codec.ber import encoder, decoder
 
 
+def compare_dicts(d1=dict(), d2=dict()):
+    if len(list(d1.keys())) != len(list(d2.keys())):
+        return False
+
+    for k in d1.keys():
+        if isinstance(d1[k], dict):
+            compare_dicts(d1[k], d2[k])
+        elif d2[k] != d1[k]:
+            return False
+
+    return True
+
+
 def compare_ldap_responses(r1, r2):
-    # if r1 == r2:
-    #     print('OK')
-    # else:
-    #     print('NO')
-    pass
+    if not compare_dicts(r1, r2):
+        print('NO')
 
 
 def compute_ber_size(data):
@@ -78,11 +92,11 @@ def get_ber_tag_python2(octet):
     ber_class = CLASSES[(bool(octet & 0b10000000), bool(octet & 0b01000000))]
 
     ber_type = octet & 0b00011111
-    if ber_class == 'UNIVERSAL':
+    if ber_class == 0:
         ber_decoder = UNIVERSAL_TYPES[octet & 0b00011111]
-    elif ber_class == 'APPLICATION':
+    elif ber_class == 1:
         ber_decoder = APPLICATION_TYPES[octet & 0b00011111]
-    elif ber_class == 'CONTEXT':
+    elif ber_class == 2:
         ber_decoder = None
     else:
         raise NotImplementedError('PRIVATE class error')
@@ -95,11 +109,11 @@ def get_ber_tag_python3(octet):
     ber_class = CLASSES[(bool(octet & 0b10000000), bool(octet & 0b01000000))]
 
     ber_type = octet & 0b00011111
-    if ber_class == 'UNIVERSAL':
+    if ber_class == 0:
         ber_decoder = UNIVERSAL_TYPES[octet & 0b00011111]
-    elif ber_class == 'APPLICATION':
+    elif ber_class == 1:
         ber_decoder = APPLICATION_TYPES[octet & 0b00011111]
-    elif ber_class == 'CONTEXT':
+    elif ber_class == 2:
         ber_decoder = None
     else:
         raise NotImplementedError('PRIVATE class error')
@@ -107,11 +121,15 @@ def get_ber_tag_python3(octet):
     return ber_class, bool(octet & 0b00100000), ber_type, ber_decoder
 
 
-def decode_message(message):
-    decoded = decode_tlv(message, 0, len(message), LDAP_MESSAGE_CONTEXT)
-    # pprint(decoded)
-
-    return decoded
+def decode_message_fast(message):
+    ber_len, ber_value_offset = compute_ber_size(message[0:]) # get start of sequence
+    decoded = decode_tlv(message, ber_value_offset, ber_len + ber_value_offset, LDAP_MESSAGE_CONTEXT)
+    return {
+        'messageID': decoded[0][3],
+        'protocolOp': decoded[1][2],
+        'payload': decoded[1][3],
+        'controls': decoded[2][3] if len(decoded) == 3 else None
+    }
 
 
 def decode_tlv(message, start, stop, context_decoders=None):
@@ -161,6 +179,8 @@ def decode_integer_python3(message, start, stop, context_decoders=None):
 
 def decode_octet_string(message, start, stop, context_decoders=None):
     value = message[start: stop]
+    # if str != bytes: # python 3
+    #    return str(value, encoding='utf-8')
     return value
 
 
@@ -196,11 +216,28 @@ def decode_search_result_entry(message, start, stop, context_decoders=None):
 
 
 def decode_controls(message, start, stop, context_decoders=None):
-    return decode_sequence(message, start, stop, CONTROLS_CONTEXT)
+    return decode_tlv(message, start, stop, CONTROLS_CONTEXT)
 
 
 def decode_control(message, start, stop, context_decoders=None):
-    return decode_sequence(message, start, stop)
+    return decode_tlv(message, start, stop)
+
+
+def ldap_result_to_dict_fast(response):
+    response_dict = dict()
+    response_dict['result'] = int(response[0][3])  # resultCode
+    response_dict['description'] = RESULT_CODES[response_dict['result']]
+    response_dict['dn'] = response[1][3].decode('utf-8')  # matchedDN
+    response_dict['message'] = response[2][3].decode('utf-8')  # diagnosticMessage
+    if len(response) == 4:
+        response_dict['referrals'] = referrals_to_list(response[3][3])  # referrals
+    else:
+        response_dict['referrals'] = None
+
+    return response_dict
+
+
+######
 
 if str != bytes:  # python 3
     decode_integer = decode_integer_python3
@@ -214,8 +251,8 @@ UNIVERSAL_TYPES = {
     2: decode_integer,  # Integer
     4: decode_octet_string,  # Octet String
     10: decode_integer,  # Enumerated
-    16: decode_sequence,  # Sequence
-    17: decode_sequence  # Set
+    16: decode_tlv,  # Sequence
+    17: decode_tlv  # Set
 }
 
 APPLICATION_TYPES = {

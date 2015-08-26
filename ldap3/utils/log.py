@@ -26,6 +26,8 @@
 from logging import getLogger, getLevelName, DEBUG
 from os import linesep
 from copy import deepcopy
+from pprint import pformat
+from ..protocol.rfc4511 import LDAPMessage
 
 # logging
 OFF = 0
@@ -178,7 +180,7 @@ def get_library_log_detail_level():
 
 def format_ldap_message(message, prefix):
     prefixed = ''
-    for line in message.prettyPrint().split('\n'):  # uses pyasn1 LDAP message prettyPrint() method
+    for line in (message.prettyPrint().split('\n') if isinstance(message, LDAPMessage) else pformat(message).split('\n')):  # uses pyasn1 LDAP message prettyPrint() method
         if line:
             if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):  # _sensitive_lines is a tuple. startswith() method check each tuple element
                 tag, _, data = line.partition('=')

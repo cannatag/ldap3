@@ -144,10 +144,10 @@ elif location == 'GCNBHPW8-SLAPD':
     test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCW89227':
     # test camera
-    test_server = ['sl08',
-                   'sl09',
-                   'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
-    # test_server = 'sl10'
+    # test_server = ['sl08',
+    #               'sl09',
+    #               'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
+    test_server = 'sl10'
     test_server_type = 'EDIR'
     # test_server = 'nova01.amm.intra.camera.it'
     # test_server_type = 'AD'
@@ -177,7 +177,7 @@ if location.startswith('TRAVIS,'):
     test_lazy_connection = bool(int(lazy))
 else:
     test_strategy = SYNC  # sync strategy for executing tests
-    # test_strategy = ASYNC  # uncomment this line to test the async strategy
+    test_strategy = ASYNC  # uncomment this line to test the async strategy
     # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
     # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
     test_lazy_connection = False  # connection lazy
@@ -337,7 +337,7 @@ def add_user(connection, batch_id, username, attributes=None):
     operation_result = connection.add(dn, 'inetOrgPerson', attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        raise Exception('unable to create user ' + username + ': ' + str(result))
+        raise Exception('unable to create user ' + dn + ': ' + str(result))
 
     return dn, result
 

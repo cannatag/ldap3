@@ -30,7 +30,7 @@ from ..core.exceptions import LDAPSocketReceiveError, communication_exception_fa
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
-from ..utils.asn1 import decoder, decode_message_fast, compare_ldap_responses
+from ..utils.asn1 import decoder, decode_message_fast
 
 LDAP_MESSAGE_TEMPLATE = LDAPMessage()
 

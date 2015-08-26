@@ -31,9 +31,7 @@ from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAP
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, format_ldap_message, ERROR, NETWORK, EXTENDED
-from ..utils.asn1 import decoder
-
-
+from ..utils.asn1 import decoder, decode_message_fast
 
 
 # noinspection PyProtectedMember
@@ -90,7 +88,8 @@ class AsyncStrategy(BaseStrategy):
                         self.connection._usage.update_received_message(length)
                         if log_enabled(NETWORK):
                             log(NETWORK, 'received %d bytes via <%s>', length, self.connection)
-                    ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
+                    #ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
+                    ldap_resp = decode_message_fast(unprocessed[:length])
                     message_id = int(ldap_resp['messageID'])
                     dict_response = self.connection.strategy.decode_response_fast(ldap_resp)
                     if log_enabled(NETWORK):

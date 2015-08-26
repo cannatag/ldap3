@@ -124,7 +124,7 @@ def decode_integer(message, start, stop, context_decoders):
     return value
 
 
-def decode_octet_string(message, start, stop, context_decoders):
+def decode_octet_string(message, start, stop, context_decoders=None):
     return message[start: stop]
 
 

@@ -157,25 +157,26 @@ class SyncStrategy(BaseStrategy):
         response_complete = False
         while not response_complete:
             responses = self.receiving()
-            unprocessed = b''
             if responses:
                 for response in responses:
                     while len(response) > 0:
                         if self.connection.usage:
                             self.connection._usage.update_received_message(len(response))
-                        # ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)
-                        ldap_resp = decode_message_fast(response)
+                        if self.connection.fast_decoder:
+                            ldap_resp = decode_message_fast(response)
+                        else:
+                            ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)
                         if log_enabled(EXTENDED):
                             log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
-                        if int(ldap_resp['messageID']) == message_id:
-                            # dict_response = self.decode_response(ldap_resp)
+                        if self.connection.fast_decoder:
                             dict_response = self.decode_response_fast(ldap_resp)
-                            # compare_ldap_responses(dict_response, dict_response_fast)
+                        else:
+                            dict_response = self.decode_response(ldap_resp)
+                        if int(ldap_resp['messageID']) == message_id:
                             ldap_responses.append(dict_response)
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 response_complete = True
                         elif int(ldap_resp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-                            dict_response = self.decode_response_fast(ldap_resp)
                             if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
                             else:
@@ -183,7 +184,7 @@ class SyncStrategy(BaseStrategy):
                                 if log_enabled(ERROR):
                                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                                 raise LDAPSocketReceiveError(self.connection.last_error)
-                        elif int(ldap_resp['messageID']) != message_id and self.decode_response_fast(ldap_resp)['type'] == 'extendedResp':
+                        elif int(ldap_resp['messageID']) != message_id and dict_response['type'] == 'extendedResp':
                             self.connection.last_error = 'multiple extended responses to a single extended request'
                             if log_enabled(ERROR):
                                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
@@ -194,12 +195,12 @@ class SyncStrategy(BaseStrategy):
                             if log_enabled(ERROR):
                                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                             raise LDAPSocketReceiveError(self.connection.last_error)
-                        response = unprocessed
-                        if response:  # if this statement is removed unprocessed data will be processed as another message
-                            self.connection.last_error = 'unprocessed substrate error'
-                            if log_enabled(ERROR):
-                                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                            raise LDAPSocketReceiveError(self.connection.last_error)
+                        # response = unprocessed
+                        # if response:  # if this statement is removed unprocessed data will be processed as another message
+                        #     self.connection.last_error = 'unprocessed substrate error'
+                        #     if log_enabled(ERROR):
+                        #         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                        #     raise LDAPSocketReceiveError(self.connection.last_error)
             else:
                 return SESSION_TERMINATED_BY_SERVER
         ldap_responses.append(RESPONSE_COMPLETE)

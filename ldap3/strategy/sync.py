@@ -159,13 +159,13 @@ class SyncStrategy(BaseStrategy):
             responses = self.receiving()
             if responses:
                 for response in responses:
-                    while len(response) > 0:
+                    if len(response) > 0:
                         if self.connection.usage:
                             self.connection._usage.update_received_message(len(response))
                         if self.connection.fast_decoder:
                             ldap_resp = decode_message_fast(response)
                         else:
-                            ldap_resp, unprocessed = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)
+                            ldap_resp, _ = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)  # unprocessed unused because receiving() waits for the whole message
                         if log_enabled(EXTENDED):
                             log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
                         if self.connection.fast_decoder:

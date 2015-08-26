@@ -48,22 +48,22 @@ tagMap[Boolean.tagSet] = BooleanCEREncoder()
 from pyasn1.codec.ber import encoder, decoder
 
 
-def compare_dicts(d1=dict(), d2=dict()):
-    if len(list(d1.keys())) != len(list(d2.keys())):
-        return False
+# def compare_dicts(d1=dict(), d2=dict()):
+#     if len(list(d1.keys())) != len(list(d2.keys())):
+#         return False
+#
+#     for k in d1.keys():
+#         if isinstance(d1[k], dict):
+#             compare_dicts(d1[k], d2[k])
+#         elif d2[k] != d1[k]:
+#             return False
+#
+#     return True
 
-    for k in d1.keys():
-        if isinstance(d1[k], dict):
-            compare_dicts(d1[k], d2[k])
-        elif d2[k] != d1[k]:
-            return False
 
-    return True
-
-
-def compare_ldap_responses(r1, r2):
-    if not compare_dicts(r1, r2):
-        print('NO')
+# def compare_ldap_responses(r1, r2):
+#     if not compare_dicts(r1, r2):
+#         print('NO')
 
 
 def compute_ber_size(data):
@@ -87,43 +87,9 @@ def compute_ber_size(data):
         return value_length, bytes_length + 2
 
 
-def get_ber_tag_python2(octet):
-    octet = ord(octet)  # for python 2 compatibility
-    ber_class = CLASSES[(bool(octet & 0b10000000), bool(octet & 0b01000000))]
-
-    ber_type = octet & 0b00011111
-    if ber_class == 0:
-        ber_decoder = UNIVERSAL_TYPES[octet & 0b00011111]
-    elif ber_class == 1:
-        ber_decoder = APPLICATION_TYPES[octet & 0b00011111]
-    elif ber_class == 2:
-        ber_decoder = None
-    else:
-        raise NotImplementedError('PRIVATE class error')
-
-    return ber_class, bool(octet & 0b00100000), ber_type, ber_decoder
-
-
-def get_ber_tag_python3(octet):
-    octet = octet  # for python 2 compatibility
-    ber_class = CLASSES[(bool(octet & 0b10000000), bool(octet & 0b01000000))]
-
-    ber_type = octet & 0b00011111
-    if ber_class == 0:
-        ber_decoder = UNIVERSAL_TYPES[octet & 0b00011111]
-    elif ber_class == 1:
-        ber_decoder = APPLICATION_TYPES[octet & 0b00011111]
-    elif ber_class == 2:
-        ber_decoder = None
-    else:
-        raise NotImplementedError('PRIVATE class error')
-
-    return ber_class, bool(octet & 0b00100000), ber_type, ber_decoder
-
-
 def decode_message_fast(message):
-    ber_len, ber_value_offset = compute_ber_size(message[0:]) # get start of sequence
-    decoded = decode_tlv(message, ber_value_offset, ber_len + ber_value_offset, LDAP_MESSAGE_CONTEXT)
+    ber_len, ber_value_offset = compute_ber_size(message[0:])  # get start of sequence
+    decoded = decode_sequence(message, ber_value_offset, ber_len + ber_value_offset, LDAP_MESSAGE_CONTEXT)
     return {
         'messageID': decoded[0][3],
         'protocolOp': decoded[1][2],
@@ -132,95 +98,59 @@ def decode_message_fast(message):
     }
 
 
-def decode_tlv(message, start, stop, context_decoders=None):
+def decode_sequence(message, start, stop, context_decoders=None):
     decoded = []
     while start < stop:
-        ber_class, ber_constructed, ber_type, ber_decoder = get_ber_tag(message[start])
+        octet = get_byte(message[start])
+        ber_class = CLASSES[(bool(octet & 0b10000000), bool(octet & 0b01000000))]
+        ber_constructed = bool(octet & 0b00100000)
+        ber_type = octet & 0b00011111
+        ber_decoder = UNIVERSAL_TYPES[octet & 0b00011111] if ber_class == 0 else (APPLICATION_TYPES[octet & 0b00011111] if ber_class == 1 else None)
         ber_len, ber_value_offset = compute_ber_size(message[start:])
         start += ber_value_offset
-        # print(ber_class[0], ber_constructed, ber_type[0], ber_len, ber_value_offset)
         if ber_decoder:
             value = ber_decoder(message, start, start + ber_len, context_decoders)  # call value decode function
-        elif context_decoders and ber_type in context_decoders:
-            value = context_decoders[ber_type](message, start, start + ber_len)  # call value decode function
         else:
-            raise NotImplementedError('need decoder for ' + ber_class + ' - ' + str(ber_type) + ' at: ' + str(ber_value_offset) + ' for ' + str(ber_len))
+            value = context_decoders[ber_type](message, start, start + ber_len)  # call value decode function for context class
         decoded.append((ber_class, ber_constructed, ber_type, value))
         start += ber_len
 
     return decoded
 
 
-def decode_integer_python2(message, start, stop, context_decoders=None):
+def decode_integer(message, start, stop, context_decoders):
     # adapted from pyasn1
     first = message[start]
-    if ord(first) & 0x80:
-        value = -1
-    else:
-        value = 0
+    value = -1 if get_byte(first) & 0x80 else 0
     for octet in message[start: stop]:
-        value = value << 8 | ord(octet)
+        value = value << 8 | get_byte(octet)
 
     return value
 
 
-def decode_integer_python3(message, start, stop, context_decoders=None):
-    # adapted from pyasn1
-    first = message[start]
-    if first & 0x80:
-        value = -1
-    else:
-        value = 0
-    for octet in message[start: stop]:
-        value = value << 8 | octet
-
-    return value
-
-
-def decode_octet_string(message, start, stop, context_decoders=None):
+def decode_octet_string(message, start, stop, context_decoders):
     value = message[start: stop]
-    # if str != bytes: # python 3
-    #    return str(value, encoding='utf-8')
     return value
 
 
 def decode_boolean(message, start, stop, context_decoders=None):
-    if message[start: stop] == 0:
-        return False
-
-    return True
-
-
-def decode_sequence(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop, context_decoders)
+    return False if message[start: stop] == 0 else True
 
 
 def decode_bind_response(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop, BIND_RESPONSE_CONTEXT)
+    return decode_sequence(message, start, stop, BIND_RESPONSE_CONTEXT)
 
 
 def decode_extended_response(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop, EXTENDED_RESPONSE_CONTEXT)
+    return decode_sequence(message, start, stop, EXTENDED_RESPONSE_CONTEXT)
 
 
 def decode_intermediate_response(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop, INTERMEDIATE_RESPONSE_CONTEXT)
-
-
-def decode_ldap_result(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop)
-
-
-def decode_search_result_entry(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop)
+    return decode_sequence(message, start, stop, INTERMEDIATE_RESPONSE_CONTEXT)
 
 
 def decode_controls(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop, CONTROLS_CONTEXT)
-
-
-def decode_control(message, start, stop, context_decoders=None):
-    return decode_tlv(message, start, stop)
+    return decode_sequence(message, start, stop, CONTROLS_CONTEXT)
 
 
 def ldap_result_to_dict_fast(response):
@@ -240,30 +170,30 @@ def ldap_result_to_dict_fast(response):
 ######
 
 if str != bytes:  # python 3
-    decode_integer = decode_integer_python3
-    get_ber_tag = get_ber_tag_python3
+    def get_byte(x):
+        return x
 else:
-    decode_integer = decode_integer_python2
-    get_ber_tag = get_ber_tag_python2
+    def get_byte(x):
+        return ord(x)
 
 UNIVERSAL_TYPES = {
     1: decode_boolean,  # Boolean
     2: decode_integer,  # Integer
     4: decode_octet_string,  # Octet String
     10: decode_integer,  # Enumerated
-    16: decode_tlv,  # Sequence
-    17: decode_tlv  # Set
+    16: decode_sequence,  # Sequence
+    17: decode_sequence  # Set
 }
 
 APPLICATION_TYPES = {
     1: decode_bind_response,  # Bind response
-    4: decode_search_result_entry,  # Search result entry
-    5: decode_ldap_result,  # Search result done
-    7: decode_ldap_result,  # Modify response
-    9: decode_ldap_result,  # Add response
-    11: decode_ldap_result,  # Delete response
-    13: decode_ldap_result,  # ModifyDN response
-    15: decode_ldap_result,  # Compare response
+    4: decode_sequence,  # Search result entry
+    5: decode_sequence,  # Search result done
+    7: decode_sequence,  # Modify response
+    9: decode_sequence,  # Add response
+    11: decode_sequence,  # Delete response
+    13: decode_sequence,  # ModifyDN response
+    15: decode_sequence,  # Compare response
     24: decode_extended_response,  # Extended response
     25: decode_intermediate_response  # intermediate response
 }
@@ -287,5 +217,5 @@ LDAP_MESSAGE_CONTEXT = {
 }
 
 CONTROLS_CONTEXT = {
-    0: decode_control  # Control
+    0: decode_sequence  # Control
 }

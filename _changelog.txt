@@ -1,8 +1,12 @@
-* 0.9.8.9 2015.08.19
-    - Fixed boolean value for True value in ASN.1 encoding for certain ldap server (thanks Will)
+* 0.9.9 2015.08.26
+    - Fixed boolean value for True value in ASN.1 encoding for certain ldap servers (thanks Will)
     - Disabled testing with pypy3 on Travis-CI for incompatibility with version 0.1.8 of pyasn1
     - Fixed follow auto referrals (thanks WIll)
     - Now protocol defined integer values can be used for scope and derefAliases arguments when searching (thanks Will)
+    - Added description field in the AttrDef object (thanks Hogne)
+    - Added a custom ber decoder. Decoding of received packets is now 10x faster.
+    - Added new boolean argument fast_decoder in connection object. Default to False
+
 * 0.9.8.8 2015.08.14
     - Coerce objectClass to a list in Add operation (thanks Yutaka)
     - objectClass attribute values mantain their order in the Add operation (thanks Yutaka)

@@ -25,6 +25,7 @@
 
 from ..core.exceptions import LDAPKeyError
 
+
 class AttrDef(object):
     """Hold the definition of an attribute
 
@@ -42,10 +43,12 @@ class AttrDef(object):
     :type default: string, integer
     :param dereference_dn: reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry
     :type dereference_dn: ObjectDef
+    :param description: custom attribute description
+    :type dereference_dn: string
 
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
@@ -53,6 +56,7 @@ class AttrDef(object):
         self.post_query = post_query
         self.default = default
         self.dereference_dn = dereference_dn
+        self.description = description
 
     def __repr__(self):
         r = 'AttrDef(key={0.key!r}'.format(self)
@@ -62,6 +66,7 @@ class AttrDef(object):
         r += '' if self.post_query is None else ', post_query={0.post_query!r}'.format(self)
         r += '' if self.default is None else ', default={0.default!r}'.format(self)
         r += '' if self.dereference_dn is None else ', dereference_dn={0.dereference_dn!r}'.format(self)
+        r += '' if self.description is None else ', description={0.d!r}'.format(self)
         r += ')'
 
         return r

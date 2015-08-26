@@ -102,7 +102,7 @@ def decode_sequence(message, start, stop, context_decoders=None):
         ber_class = CLASSES[(bool(octet & 0b10000000), bool(octet & 0b01000000))]
         ber_constructed = bool(octet & 0b00100000)
         ber_type = octet & 0b00011111
-        ber_decoder = UNIVERSAL_TYPES[octet & 0b00011111] if ber_class == 0 else (APPLICATION_TYPES[octet & 0b00011111] if ber_class == 1 else None)
+        ber_decoder = DECODERS[(ber_class, octet & 0b00011111)] if ber_class < 2 else None
         ber_len, ber_value_offset = compute_ber_size(get_bytes(message[start: start + 5]))
         start += ber_value_offset
         if ber_decoder:
@@ -116,7 +116,6 @@ def decode_sequence(message, start, stop, context_decoders=None):
 
 
 def decode_integer(message, start, stop, context_decoders):
-    # adapted from pyasn1
     first = message[start]
     value = -1 if get_byte(first) & 0x80 else 0
     for octet in message[start: stop]:
@@ -126,8 +125,7 @@ def decode_integer(message, start, stop, context_decoders):
 
 
 def decode_octet_string(message, start, stop, context_decoders):
-    value = message[start: stop]
-    return value
+    return message[start: stop]
 
 
 def decode_boolean(message, start, stop, context_decoders=None):
@@ -179,26 +177,25 @@ else:  # python 2
     def get_bytes(x):
         return bytearray(x)
 
-UNIVERSAL_TYPES = {
-    1: decode_boolean,  # Boolean
-    2: decode_integer,  # Integer
-    4: decode_octet_string,  # Octet String
-    10: decode_integer,  # Enumerated
-    16: decode_sequence,  # Sequence
-    17: decode_sequence  # Set
-}
-
-APPLICATION_TYPES = {
-    1: decode_bind_response,  # Bind response
-    4: decode_sequence,  # Search result entry
-    5: decode_sequence,  # Search result done
-    7: decode_sequence,  # Modify response
-    9: decode_sequence,  # Add response
-    11: decode_sequence,  # Delete response
-    13: decode_sequence,  # ModifyDN response
-    15: decode_sequence,  # Compare response
-    24: decode_extended_response,  # Extended response
-    25: decode_intermediate_response  # intermediate response
+DECODERS = {
+    # Universal
+    (0, 1): decode_boolean,  # Boolean
+    (0, 2): decode_integer,  # Integer
+    (0, 4): decode_octet_string,  # Octet String
+    (0, 10): decode_integer,  # Enumerated
+    (0, 16): decode_sequence,  # Sequence
+    (0, 17): decode_sequence,  # Set
+    # Application
+    (1, 1): decode_bind_response,  # Bind response
+    (1, 4): decode_sequence,  # Search result entry
+    (1, 5): decode_sequence,  # Search result done
+    (1, 7): decode_sequence,  # Modify response
+    (1, 9): decode_sequence,  # Add response
+    (1, 11): decode_sequence,  # Delete response
+    (1, 13): decode_sequence,  # ModifyDN response
+    (1, 15): decode_sequence,  # Compare response
+    (1, 24): decode_extended_response,  # Extended response
+    (1, 25): decode_intermediate_response  # intermediate response
 }
 
 BIND_RESPONSE_CONTEXT = {

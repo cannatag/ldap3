@@ -72,9 +72,6 @@ def compute_ber_size(data):
     Returns size of value and value offset
     """
 
-    if isinstance(data, str):  # fix for Python 2, data is string not bytes
-        data = bytearray(data)  # Python 2 bytearray is equivalent to Python 3 bytes
-
     if data[1] <= 127:  # BER definite length - short form. Highest bit of byte 1 is 0, message length is in the last 7 bits - Value can be up to 127 bytes long
         return data[1], 2
     else:  # BER definite length - long form. Highest bit of byte 1 is 1, last 7 bits counts the number of following octets containing the value length
@@ -88,7 +85,7 @@ def compute_ber_size(data):
 
 
 def decode_message_fast(message):
-    ber_len, ber_value_offset = compute_ber_size(message[0:])  # get start of sequence
+    ber_len, ber_value_offset = compute_ber_size(get_bytes(message[0: 5]))  # get start of sequence, at maximum 3 bytes for length
     decoded = decode_sequence(message, ber_value_offset, ber_len + ber_value_offset, LDAP_MESSAGE_CONTEXT)
     return {
         'messageID': decoded[0][3],
@@ -106,7 +103,7 @@ def decode_sequence(message, start, stop, context_decoders=None):
         ber_constructed = bool(octet & 0b00100000)
         ber_type = octet & 0b00011111
         ber_decoder = UNIVERSAL_TYPES[octet & 0b00011111] if ber_class == 0 else (APPLICATION_TYPES[octet & 0b00011111] if ber_class == 1 else None)
-        ber_len, ber_value_offset = compute_ber_size(message[start:])
+        ber_len, ber_value_offset = compute_ber_size(get_bytes(message[start: start + 5]))
         start += ber_value_offset
         if ber_decoder:
             value = ber_decoder(message, start, start + ber_len, context_decoders)  # call value decode function
@@ -172,9 +169,15 @@ def ldap_result_to_dict_fast(response):
 if str != bytes:  # python 3
     def get_byte(x):
         return x
-else:
+
+    def get_bytes(x):
+        return x
+else:  # python 2
     def get_byte(x):
         return ord(x)
+
+    def get_bytes(x):
+        return bytearray(x)
 
 UNIVERSAL_TYPES = {
     1: decode_boolean,  # Boolean

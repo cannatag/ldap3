@@ -164,14 +164,12 @@ class SyncStrategy(BaseStrategy):
                             self.connection._usage.update_received_message(len(response))
                         if self.connection.fast_decoder:
                             ldap_resp = decode_message_fast(response)
-                        else:
-                            ldap_resp, _ = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)  # unprocessed unused because receiving() waits for the whole message
-                        if log_enabled(EXTENDED):
-                            log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
-                        if self.connection.fast_decoder:
                             dict_response = self.decode_response_fast(ldap_resp)
                         else:
+                            ldap_resp, _ = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)  # unprocessed unused because receiving() waits for the whole message
                             dict_response = self.decode_response(ldap_resp)
+                        if log_enabled(EXTENDED):
+                            log(EXTENDED, 'ldap message received via <%s>:%s', self.connection, format_ldap_message(ldap_resp, '<<'))
                         if int(ldap_resp['messageID']) == message_id:
                             ldap_responses.append(dict_response)
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:

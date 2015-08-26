@@ -88,10 +88,13 @@ class AsyncStrategy(BaseStrategy):
                         self.connection._usage.update_received_message(length)
                         if log_enabled(NETWORK):
                             log(NETWORK, 'received %d bytes via <%s>', length, self.connection)
-                    #ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
-                    ldap_resp = decode_message_fast(unprocessed[:length])
+                    if self.connection.fast_decoder:
+                        ldap_resp = decode_message_fast(unprocessed[:length])
+                        dict_response = self.connection.strategy.decode_response_fast(ldap_resp)
+                    else:
+                        ldap_resp = decoder.decode(unprocessed[:length], asn1Spec=LDAPMessage())[0]
+                        dict_response = self.connection.strategy.decode_response(ldap_resp)
                     message_id = int(ldap_resp['messageID'])
-                    dict_response = self.connection.strategy.decode_response_fast(ldap_resp)
                     if log_enabled(NETWORK):
                         log(NETWORK, 'received 1 ldap message via <%s>', self.connection)
                     if log_enabled(EXTENDED):

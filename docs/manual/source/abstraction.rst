@@ -46,13 +46,14 @@ AttrDef class
 
 The AttrDef class is used to define an abstract LDAP attribute.
 AttrDef has a single mandatory parameter, the attribute name, and a number of optional parameters. The 'key' optional parameter defines a friendly name to use
-while accessing the attribute. When defining only the attribute name you can add it directly to the ObjectDef (the AttrDef is automatically defined)::
+while accessing the attribute. A 'description' parameter can be used for storing additional information on the Attribute. When defining only the attribute name
+you can add it directly to the ObjectDef (the AttrDef is automatically defined)::
 
-    cn_attribute = AttrDef('cn')
+    cn_attribute = AttrDef('cn, description='This is the internal account name')
     person.add(cn_attribute)
 
-    person += AttrDef('cn')  # same as above
-    person += 'cn'  # same as above
+    person += AttrDef('cn', description='This is the internal account name')  # same as above
+    person += 'cn'  # same as above, without description
 
 You can even add a list of attrDefs or attribute names to an ObjectDef::
 

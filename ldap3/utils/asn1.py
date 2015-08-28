@@ -194,6 +194,7 @@ DECODERS = {
     (1, 11): decode_sequence,  # Delete response
     (1, 13): decode_sequence,  # ModifyDN response
     (1, 15): decode_sequence,  # Compare response
+    (1, 19): decode_sequence,  # Search result reference
     (1, 24): decode_extended_response,  # Extended response
     (1, 25): decode_intermediate_response  # intermediate response
 }

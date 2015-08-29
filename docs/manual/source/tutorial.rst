@@ -2,7 +2,7 @@
 LDAP3 Tutorial
 ##############
 
-What LDAP is not?
+What LDAP is not.
 =================
 
 If you're reading this tutorial I assume that you already know what LDAP is, or have a rough idea of it. If you really
@@ -215,11 +215,13 @@ see it supports "paged searches", and the "who am i" extended operation in Suppo
 
 .. sidebar:: Controls vs Extensions
 
-    In LDAP a *control* is some additional information that can be attached to any LDAP request or response while an *extension* is a
-    completely custom request that can be sent to the LDAP server in an Extended Operation Request. Each server declare
-    which controls and which extendend operation it understand. The ldap3 library decodes the known supported controls
-    and extended operation and includes a brief description and a reference to the relevant RFC in the server.info
-    attribute.
+    In LDAP a *control* is some additional information that can be attached to any LDAP request or response while an
+    *extension* is a completely custom request that can be sent to the LDAP server in an Extended Operation Request.
+    A control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
+    kind of operation performed by the server.
+    Each server declares which controls and which extendend operation it understand. The ldap3 library decodes the
+    known supported controls and extended operation and includes a brief description and a reference to the relevant
+    RFC in the server.info attribute.
 
 Let's examine the LDAP server schema::
 
@@ -240,11 +242,10 @@ Let's examine the LDAP server schema::
       Single Value: True
       Syntax: 1.3.6.1.4.1.1466.115.121.1.15 [1.3.6.1.4.1.1466.115.121.1.15 - Directory String - LDAP Syntax - RFC4517]
 
-    ...
-    < a very long list of descriptors >
+    < a very long list of descriptors follows...>
 
 
-The schema is a very long list and describes what kind of data types the LDAP server can understand. It also specifies
+The schema is a very long list that describes what kind of data types the LDAP server can understand. It also specifies
 what attributes can be stored in each class.
 Some classes are container for other objects (either containers or leaf objects) and are used to build the hierarchy of
 the Directory Information Tree. Container objects can have attributes too. Every LDAP server must at least support the
@@ -252,5 +253,17 @@ standard LDAP3 schema but can have additional custom classes and attributes. The
 matching rules of the different kind of data types stored in the LDAP.
 
 
+.. ::note::
+    Object classes and attributes are both independent objects in LDAP, an attribute is not a "child" of a class neither a
+    class is a "parent" of any attributes. Classes and attributes are linked by the schema with the MAY and MUST options
+    of the object class that specify what attributes an entry of a specified class can contain and which of them are mandatory.
 
-... more to come ...
+.. ::sidebar::
+    There are 3 different types of object classes: ABSTRACT (used only in defining the class hiearchy), STRUCTURAL (used to
+    create concrete entry) and AUXILIARY (used to add additional attributes to an entry. Only one structural class can be used
+    in an entry, while many auxiliary classes can be added to the same entry. Adding an object class to an entry simply means
+    that the attributes defined in that object class can be added to the entry.
+
+
+
+    ... more to come ...

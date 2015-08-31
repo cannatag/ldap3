@@ -69,9 +69,11 @@ def sasl_gssapi(connection, controls):
             result = send_sasl_negotiation(connection, controls, out_token)
             in_token = result['saslCreds']
             try:
-                # noinspection PyStatementEffect
-                ctx.complete  # This raises an exception if we haven't completed connecting.
-                break
+                # This raised an exception in gssapi<1.1.2 if the context was
+                # incomplete, but was fixed in
+                # https://github.com/pythongssapi/python-gssapi/pull/70
+                if ctx.complete:
+                    break
             except gssapi.exceptions.MissingContextError:
                 pass
 

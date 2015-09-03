@@ -1096,6 +1096,26 @@ class Connection(object):
 
             return None
 
+    def response_to_dict_list(self,
+                         raw=False,
+                         search_result=None):
+        with self.lock:
+            if search_result is None:
+                search_result = self.response
+
+            if isinstance(search_result, SEQUENCE_TYPES):
+                dict_list = list()
+
+                for response in search_result:
+                    if response['type'] == 'searchResEntry':
+                        if raw:
+                            entry = dict(response['raw_attributes'])
+                        else:
+                            entry = dict(response['attributes'])
+                        dict_list.append(entry)
+
+                return dict_list
+
     def response_to_json(self,
                          raw=False,
                          search_result=None,

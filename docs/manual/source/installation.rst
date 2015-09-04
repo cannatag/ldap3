@@ -63,7 +63,7 @@ hierarchy starting from the LDAPExceptionError class is raised with a descriptio
 attribute.
 
 If you prefer to deal always with Exceptions you can set the **raise_exceptions** attribute to True in the Connection
-object definition. From now on the Connection will raise exceptions for all operations that return a result codeù
+object definition. From now on the Connection will raise exceptions for all operations that return result codes
 different from RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL.
 
 Communication exceptions have multiple inheritance either from LDAPCommunicationError and the specific socket exception.

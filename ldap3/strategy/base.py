@@ -53,7 +53,7 @@ from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
-from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast
+from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
 
 
 # noinspection PyProtectedMember
@@ -522,14 +522,10 @@ class BaseStrategy(object):
             else:
                 criticality = False if r[3] == 0 else True  # criticality (booleand default to False)
         if control_type == '1.2.840.113556.1.4.319':  # simple paged search as per RFC2696
-            control_resp, unprocessed = decoder.decode(control_value, asn1Spec=RealSearchControlValue())
+            control_resp = decode_sequence(control_value, 0, len(control_value))
             control_value = dict()
-            control_value['size'] = int(control_resp['size'])
-            control_value['cookie'] = bytes(control_resp['cookie'])
-            if unprocessed:
-                if log_enabled(ERROR):
-                    log(ERROR, 'unprocessed control response in substrate for simple paged search')
-                raise LDAPControlsError('unprocessed control response in substrate for simple paged search')
+            control_value['size'] = int(control_resp[1][3])
+            control_value['cookie'] = bytes(control_resp[2][3])
 
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 

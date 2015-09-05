@@ -115,7 +115,7 @@ with a synchronous *communication strategy* (more on communication strategies la
     - tls not started - listening - SyncStrategy'
     >>>
 
-With print(conn) [or str(conn)] we ask an overview of the connection. We already get back a lot of information:
+With print(conn) [or str(conn)] we ask for an overview of the connection. We already get back a lot of information:
 
 ======================================================= ==================================================================
 ldap://ldap.forumsys.com:389                            the server name and the port we are connected to
@@ -145,7 +145,10 @@ If you ask for the representation of the conn object you can get a view of all t
     >>>
 
 If you just copy and paste the object representation you can instantiate a new one. This is very helpful when experimenting
-in the interactive console.
+in the interactive console and works with most of the ldap3 library objects::
+
+   >>> server
+   Server(host='ldap.forumsys.com', port=389, use_ssl=False, get_info='NO_INFO')
 
 Now let's try to request more information to the LDAP server::
 
@@ -191,7 +194,7 @@ Now let's try to request more information to the LDAP server::
     OpenLDAProotDSE
       entryDN:
 
-Wow, the server let an anonymous user to know a lot about it:
+Wow, this server let an anonymous user to know a lot about it:
 
 ========================= ================= =============================================
 Supported LDAP Versions   3                 The server supports LDAP v3 only
@@ -209,7 +212,7 @@ Other                     ...               Additional information provided by t
                                             but not requested by the LDAP standard
 =========================================================================================
 
-Now we know that this server is a stand-alone LDAP service that holds objects in the dc=example,dc=com context, that
+Now we know that this server is a stand-alone LDAP server that holds objects in the dc=example,dc=com context, that
 doesn't support any SASL access mechanisms and that is based on OpenLDAP. Furthermore in the Supported Controls we can
 see it supports "paged searches", and the "who am i" extended operation in Supported Extensions.
 
@@ -226,7 +229,6 @@ see it supports "paged searches", and the "who am i" extended operation in Suppo
 Let's examine the LDAP server schema::
 
     >>> server.schema
-    >>> s.schema
     DSA Schema from: cn=Subschema
       Attribute types:{'nisMapName': Attribute type: 1.3.6.1.1.1.1.26
       Short name: nisMapName
@@ -255,15 +257,43 @@ matching rules of the different kind of data types stored in the LDAP.
 
 .. ::note::
     Object classes and attributes are both independent objects in LDAP, an attribute is not a "child" of a class neither a
-    class is a "parent" of any attributes. Classes and attributes are linked by the schema with the MAY and MUST options
+    class is a "parent" of any attribute. Classes and attributes are linked in the schema with the MAY and MUST options
     of the object class that specify what attributes an entry of a specified class can contain and which of them are mandatory.
 
 .. ::sidebar::
-    There are 3 different types of object classes: ABSTRACT (used only in defining the class hiearchy), STRUCTURAL (used to
-    create concrete entry) and AUXILIARY (used to add additional attributes to an entry. Only one structural class can be used
+    There are 3 different types of object classes: ABSTRACT (used only for defining the class hiearchy), STRUCTURAL (used to
+    create concrete entries) and AUXILIARY (used to add additional attributes to an entry. Only one structural class can be used
     in an entry, while many auxiliary classes can be added to the same entry. Adding an object class to an entry simply means
     that the attributes defined in that object class can be added to the entry.
 
 
+When the schema is read the ldap3 library will try to automatically convert data to their representation. So an integer
+will be returned as an int, a generalizedDate as a datetime object and so on. If you don't read the schema all the values
+are returned as bytes and unicode strings.
 
-    ... more to come ...
+
+Did you note that we still didn't give any credentials to the server? LDAP allow users to perform operation anonymously without declaring their
+identity! Obviously what the server return to an anonymous connection is someway limited. This makes sense because originally the LDAP
+protocol was intended for reading phone directories, as a printed book, so its content could be read by anyone. If you want to establish
+a logged connection you have a two options: Simple and SASL. With Simple authentication you provide a dn name and a password,
+the server will check if your credentials are valid and will permit or deny access to the data. SASL stands for Simple Authentication
+and Security Layer and provides additional methods to identify the user.
+
+Let's ask the server who we are::
+
+    >>> conn.extend.standard.who_am_i()
+    >>>
+
+Hum... no response. This means we have no authentication status on the server, so we are an **Anonymous** user.
+
+Let's try to specify a valid user::
+
+    >>> conn = Connection(server, 'cn=read-only-admin, dc=example, dc=com', 'password', auto_bind=True)
+    >>> conn.extend.standard.who_am_i()
+    'dn:cn=read-only-admin, dc=example, dc=com'
+
+Now the server knows that we are a valid user and the who_am_i extended operation returns our identity.
+
+... more to come ...
+
+

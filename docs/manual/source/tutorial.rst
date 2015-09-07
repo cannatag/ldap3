@@ -292,7 +292,7 @@ Let's try to specify a valid user::
     >>> conn.extend.standard.who_am_i()
     'dn:cn=read-only-admin, dc=example, dc=com'
 
-Now the server knows that we are a valid user and the who_am_i extended operation returns our identity.
+Now the server knows that we are a valid user and the who_am_i extended operation returns our identity, so let's try some
 
 ... more to come ...
 

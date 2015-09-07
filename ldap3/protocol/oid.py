@@ -547,7 +547,13 @@ Oids = {  # administrative role
           '2.5.4.54': OidInfo('2.5.4.54', OID_ATTRIBUTE_TYPE, 'dmdName', 'RFC2256'),
           '2.5.4.65': OidInfo('2.5.4.65', OID_ATTRIBUTE_TYPE, 'pseudonym', 'RFC3280'),
           '2.16.840.1.113719.1.1.4.1.501': OidInfo('2.16.840.1.113719.1.1.4.1.501', OID_ATTRIBUTE_TYPE, 'GUID', 'NOVELL'),
-          '2.16.840.1.113719.1..27.4.50': OidInfo('2.16.840.1.113719.1.27.4.50', OID_ATTRIBUTE_TYPE, 'localEntryID', 'NOVELL'),
+          '2.16.840.1.113719.1.27.4.50': OidInfo('2.16.840.1.113719.1.27.4.50', OID_ATTRIBUTE_TYPE, 'localEntryID', 'NOVELL'),
+          '2.16.840.1.113730.3.8.3.1': OidInfo('2.16.840.1.113730.3.8.3.1', OID_ATTRIBUTE_TYPE, 'ipaUniqueID', 'freeIPA'),
+          '2.16.840.1.113730.3.8.3.2': OidInfo('2.16.840.1.113730.3.8.3.2', OID_ATTRIBUTE_TYPE, 'ipaClientVersion', 'freeIPA'),
+          '2.16.840.1.113730.3.8.3.3': OidInfo('2.16.840.1.113730.3.8.3.3', OID_ATTRIBUTE_TYPE, 'enrolledBy', 'freeIPA'),
+          '2.16.840.1.113730.3.8.3.4': OidInfo('2.16.840.1.113730.3.8.3.4', OID_ATTRIBUTE_TYPE, 'fqdn', 'freeIPA'),
+          '2.16.840.1.113730.3.8.3.18': OidInfo('2.16.840.1.113730.3.8.3.18', OID_ATTRIBUTE_TYPE, 'managedBy', 'freeIPA'),
+          '2.16.840.1.113730.3.8.3.24': OidInfo('2.16.840.1.113730.3.8.3.24', OID_ATTRIBUTE_TYPE, 'ipaEntitlementId', 'freeIPA'),
 
           # controls
           '1.2.826.0.1.3344810.2.3': OidInfo('1.2.826.0.1.3344810.2.3', OID_CONTROL, 'Matched Values', 'RFC3876'),

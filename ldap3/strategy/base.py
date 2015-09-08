@@ -30,7 +30,7 @@ from random import choice
 from datetime import datetime
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS,\
-    DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE, RESULT_CODES
+    DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
@@ -524,8 +524,8 @@ class BaseStrategy(object):
         if control_type == '1.2.840.113556.1.4.319':  # simple paged search as per RFC2696
             control_resp = decode_sequence(control_value, 0, len(control_value))
             control_value = dict()
-            control_value['size'] = int(control_resp[1][3])
-            control_value['cookie'] = bytes(control_resp[2][3])
+            control_value['size'] = int(control_resp[0][3][0][3])
+            control_value['cookie'] = bytes(control_resp[0][3][1][3])
 
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 

@@ -34,7 +34,8 @@ with open(path.join(package_name, 'version.py'), 'w+') as project_version_file:
         '__url__ = ' + "'" + url + "'",
         '__description__ = ' + "'" + description + "'",
         '__status__ = ' + "'" + status + "'",
-        '__license__ = ' + "'" + license + "'"]))
+        '__license__ = ' + "'" + license + "'",
+        '']))  # empty blank line at the end of the version.py file
 
 # creates CHANGES.txt
     with open(path.join('CHANGES.txt'), 'w+') as changes_file, open(path.join('_changelog.txt'), 'r') as project_changelog_file:

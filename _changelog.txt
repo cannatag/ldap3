@@ -8,6 +8,8 @@
     - Added new boolean argument fast_decoder in connection object. Defaults to True.
     - Highest date correctly managed by the format_ad_timestamp() formatter. (thanks Will)
     - Fix for latest gssapi kerberos authentication module (thanks Alex)
+    - Added freeIPA OID descriptors
+    - removed unneded OidInfo class
 
 * 0.9.8.8 2015.08.14
     - Coerce objectClass to a list in Add operation. (thanks Yutaka)

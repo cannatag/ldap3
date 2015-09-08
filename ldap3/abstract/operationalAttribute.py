@@ -28,6 +28,7 @@ from os import linesep
 from .attribute import Attribute
 from ..utils.repr import to_stdout_encoding
 
+
 # noinspection PyUnresolvedReferences,PyMissingConstructor
 class OperationalAttribute(Attribute):
     """Operational attribute/values object. Include the search result of an

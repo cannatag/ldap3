@@ -305,7 +305,7 @@ class Connection(object):
             'tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'),
             'listening' if self.listening else 'not listening',
             self.strategy.__class__.__name__ if hasattr(self, 'strategy') else 'No strategy',
-            'fast decoder' if self.fast_decoder else 'pyasn1 decoder'
+            'internal decoder' if self.fast_decoder else 'pyasn1 decoder'
         ]
         return ' - '.join(s)
 

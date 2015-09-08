@@ -168,12 +168,12 @@ def format_attribute_values(schema, name, values, custom_formatter):
         formatter = standard_formatter[attr_type.oid]
 
     if not formatter and attr_type and attr_type.oid_info:
-        if isinstance(attr_type.oid_info.name, SEQUENCE_TYPES):  # search for multiple names defined in oid_info
-            for attr_name in attr_type.oid_info.name:
+        if isinstance(attr_type.oid_info[2], SEQUENCE_TYPES):  # search for multiple names defined in oid_info
+            for attr_name in attr_type.oid_info[2]:
                 if attr_name in standard_formatter:
                     formatter = standard_formatter[attr_name]
                     break
-        elif attr_type.oid_info.name in standard_formatter:  # search for name defined in oid_info
+        elif attr_type.oid_info[2] in standard_formatter:  # search for name defined in oid_info
             formatter = standard_formatter[attr_type.oid_info.name]
 
     if not formatter and attr_type and attr_type.syntax in standard_formatter:  # search for syntax defined in schema

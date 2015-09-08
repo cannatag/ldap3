@@ -23,7 +23,6 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from pprint import pprint
 
 from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder
 from pyasn1.type.univ import Boolean
@@ -85,7 +84,7 @@ def compute_ber_size(data):
 
 
 def decode_message_fast(message):
-    ber_len, ber_value_offset = compute_ber_size(get_bytes(message[0: 5]))  # get start of sequence, at maximum 3 bytes for length
+    ber_len, ber_value_offset = compute_ber_size(get_bytes(message[:10]))  # get start of sequence, at maximum 3 bytes for length
     decoded = decode_sequence(message, ber_value_offset, ber_len + ber_value_offset, LDAP_MESSAGE_CONTEXT)
     return {
         'messageID': decoded[0][3],
@@ -103,7 +102,7 @@ def decode_sequence(message, start, stop, context_decoders=None):
         ber_constructed = bool(octet & 0b00100000)
         ber_type = octet & 0b00011111
         ber_decoder = DECODERS[(ber_class, octet & 0b00011111)] if ber_class < 2 else None
-        ber_len, ber_value_offset = compute_ber_size(get_bytes(message[start: start + 5]))
+        ber_len, ber_value_offset = compute_ber_size(get_bytes(message[start: start + 10]))
         start += ber_value_offset
         if ber_decoder:
             value = ber_decoder(message, start, start + ber_len, context_decoders)  # call value decode function
@@ -115,7 +114,7 @@ def decode_sequence(message, start, stop, context_decoders=None):
     return decoded
 
 
-def decode_integer(message, start, stop, context_decoders):
+def decode_integer(message, start, stop, context_decoders=None):
     first = message[start]
     value = -1 if get_byte(first) & 0x80 else 0
     for octet in message[start: stop]:

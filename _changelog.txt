@@ -1,12 +1,24 @@
+* 0.9.9 2015.09.09
+    - Fixed boolean value for True value in ASN.1 encoding for certain ldap servers. (thanks Will)
+    - Fixed follow auto referrals. (thanks WIll)
+    - Now protocol defined integer values can be used for scope and derefAliases arguments when searching. (thanks Will)
+    - Added description field in the AttrDef object. (thanks Hogne)
+    - Added a custom ber decoder. Decoding of received packets is now 10x faster.
+    - Added new boolean argument fast_decoder in connection object. Defaults to True.
+    - Highest date correctly managed by the format_ad_timestamp() formatter. (thanks Will)
+    - Fix for latest gssapi kerberos authentication module (thanks Alex)
+    - Added freeIPA OID descriptors
+    - removed unneeded OidInfo class
+
 * 0.9.8.8 2015.08.14
-    - Coerce objectClass to a list in Add operation (thanks Yutaka)
-    - objectClass attribute values mantain their order in the Add operation (thanks Yutaka)
-    - Fixed search filter composition when the value part of the assertion contains = character (thanks Eero)
-    - Fixed modify_password extended operation when no hash method is specified (thanks midnightlynx)
-    - Added credentials to kerberos authentication (thanks Alex)
-    - Target name can be specified in sasl_credentials for Kerberos authentication (thanks Alex)
-    - Target name can be read from DNS in sasl_credential for Kerberos authentication (thanks Alex)
-    - Fixed connection.entries error when referrals are in the search response (thanks WIll)
+    - Coerce objectClass to a list in Add operation. (thanks Yutaka)
+    - objectClass attribute values mantain their order in the Add operation. (thanks Yutaka)
+    - Fixed search filter composition when the value part of the assertion contains = character. (thanks Eero)
+    - Fixed modify_password extended operation when no hash method is specified. (thanks midnightlynx)
+    - Added credentials to kerberos authentication. (thanks Alex)
+    - Target name can be specified in sasl_credentials for Kerberos authentication. (thanks Alex)
+    - Target name can be read from DNS in sasl_credential for Kerberos authentication. (thanks Alex)
+    - Fixed connection.entries error when referrals are in the search response. (thanks WIll)
 
 * 0.9.8.7 2015.07.19
     - backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10

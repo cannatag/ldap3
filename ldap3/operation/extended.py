@@ -24,12 +24,12 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.type.univ import OctetString
-from pyasn1.codec.ber import encoder
 from pyasn1.type.base import Asn1Item
 
+from .. import RESULT_CODES
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
-from ..protocol.convert import decode_referrals
-
+from ..protocol.convert import decode_referrals, referrals_to_list
+from ..utils.asn1 import encoder
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
 #     requestName      [0] LDAPOID,
@@ -68,3 +68,37 @@ def extended_response_to_dict(response):
 def intermediate_response_to_dict(response):
     return {'responseName': str(response['responseName']),
             'responseValue': bytes(response['responseValue']) if response['responseValue'] else bytes()}
+
+
+def extended_response_to_dict_fast(response):
+    response_dict = dict()
+    response_dict['result'] = int(response[0][3])  # resultCode
+    response_dict['description'] = RESULT_CODES[response_dict['result']]
+    response_dict['dn'] = response[1][3].decode('utf-8')  # matchedDN
+    response_dict['message'] = response[2][3].decode('utf-8')  # diagnosticMessage
+    response_dict['referrals'] = None  # referrals
+    response_dict['responseName'] = None  # referrals
+    response_dict['responseValue'] = None  # responseValue
+
+    for r in response[3:]:
+        if r[2] == 3:  # referrals
+            response_dict['referrals'] = referrals_to_list(r[3])  # referrals
+        elif r[2] == 10:  # responseName
+            response_dict['responseName'] = r[3].decode('utf-8')
+            response_dict['responseValue'] = b''  # responseValue could be empty
+
+        else:  # responseValue (11)
+            response_dict['responseValue'] = bytes(r[3])
+
+    return response_dict
+
+
+def intermediate_response_to_dict_fast(response):
+    response_dict = dict()
+    for r in response:
+        if r[2] == 0:  # responseName
+            response_dict['responseName'] = r[3].decode('utf-8')
+        else:  # responseValue (1)
+            response_dict['responseValue'] = bytes(r[3])
+
+    return response_dict

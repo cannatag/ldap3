@@ -29,8 +29,6 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from pyasn1.codec.ber import encoder, decoder
-
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS,\
     DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
@@ -41,10 +39,11 @@ from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
 from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict,\
-    search_result_entry_response_to_dict, search_request_to_dict
-from ..operation.bind import bind_response_to_dict, bind_request_to_dict, sicily_bind_response_to_dict
+    search_result_entry_response_to_dict, search_request_to_dict, search_result_entry_response_to_dict_fast, search_result_reference_response_to_dict_fast
+from ..operation.bind import bind_response_to_dict, bind_request_to_dict, sicily_bind_response_to_dict, bind_response_to_dict_fast, \
+    sicily_bind_response_to_dict_fast
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
-from ..operation.extended import extended_request_to_dict, extended_response_to_dict, intermediate_response_to_dict
+from ..operation.extended import extended_request_to_dict, extended_response_to_dict, intermediate_response_to_dict, extended_response_to_dict_fast, intermediate_response_to_dict_fast
 from ..core.server import Server
 from ..operation.modifyDn import modify_dn_request_to_dict, modify_dn_response_to_dict
 from ..operation.delete import delete_response_to_dict, delete_request_to_dict
@@ -54,6 +53,7 @@ from ..core.tls import Tls
 from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
+from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
 
 
 # noinspection PyProtectedMember
@@ -435,6 +435,57 @@ class BaseStrategy(object):
                 result['controls'][decoded_control[0]] = decoded_control[1]
         return result
 
+    def decode_response_fast(self, ldap_message):
+        """
+        Convert received LDAPMessage from fast ber decoder to a dict
+        """
+        if ldap_message['protocolOp'] == 1:  # bindResponse
+            if not ldap_message['payload'][1][3].startswith(b'NTLM'):  # patch for microsoft ntlm authentication
+                result = bind_response_to_dict_fast(ldap_message['payload'])
+            else:
+                result = sicily_bind_response_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'bindResponse'
+        elif ldap_message['protocolOp'] == 4:  # searchResEntry'
+            result = search_result_entry_response_to_dict_fast(ldap_message['payload'], self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
+            result['type'] = 'searchResEntry'
+        elif ldap_message['protocolOp'] == 5:  # searchResDone
+            result = ldap_result_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'searchResDone'
+        elif ldap_message['protocolOp'] == 19:  # searchResRef
+            result = search_result_reference_response_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'searchResRef'
+        elif ldap_message['protocolOp'] == 7:  # modifyResponse
+            result = ldap_result_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'modifyResponse'
+        elif ldap_message['protocolOp'] == 9:  # addResponse
+            result = ldap_result_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'addResponse'
+        elif ldap_message['protocolOp'] == 11:  # delResponse
+            result = ldap_result_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'delResponse'
+        elif ldap_message['protocolOp'] == 13:  # modDNResponse
+            result = ldap_result_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'modDNResponse'
+        elif ldap_message['protocolOp'] == 15:  # compareResponse
+            result = ldap_result_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'compareResponse'
+        elif ldap_message['protocolOp'] == 24:  # extendedResp
+            result = extended_response_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'extendedResp'
+        elif ldap_message['protocolOp'] == 25:  # intermediateResponse
+            result = intermediate_response_to_dict_fast(ldap_message['payload'])
+            result['type'] = 'intermediateResponse'
+        else:
+            if log_enabled(ERROR):
+                log(ERROR, 'unknown response <%s> for <%s>', ldap_message['protocolOp'], self.connection)
+            raise LDAPUnknownResponseError('unknown response')
+        if ldap_message['controls']:
+            result['controls'] = dict()
+            for control in ldap_message['controls']:
+                decoded_control = self.decode_control_fast(control[3])
+                result['controls'][decoded_control[0]] = decoded_control[1]
+        return result
+
     @staticmethod
     def decode_control(control):
         """
@@ -453,6 +504,28 @@ class BaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, 'unprocessed control response in substrate for simple paged search')
                 raise LDAPControlsError('unprocessed control response in substrate for simple paged search')
+
+        return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
+
+    @staticmethod
+    def decode_control_fast(control):
+        """
+        decode control, return a 2-element tuple where the first element is the control oid
+        and the second element is a dictionary with description (from Oids), criticality and decoded control value
+        """
+        control_type = str(control[0][3].decode('utf-8'))
+        criticality = False
+        control_value = None
+        for r in control[1:]:
+            if r[2] == 4:  # controlValue
+                control_value = r[3]
+            else:
+                criticality = False if r[3] == 0 else True  # criticality (booleand default to False)
+        if control_type == '1.2.840.113556.1.4.319':  # simple paged search as per RFC2696
+            control_resp = decode_sequence(control_value, 0, len(control_value))
+            control_value = dict()
+            control_value['size'] = int(control_resp[0][3][0][3])
+            control_value['cookie'] = bytes(control_resp[0][3][1][3])
 
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 

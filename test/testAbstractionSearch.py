@@ -73,7 +73,7 @@ class Test(unittest.TestCase):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-5'))
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-6'))
         self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
-        ou = ObjectDef('iNetOrgPerson')
+        ou = ObjectDef('inetOrgPerson')
         ou += AttrDef('cn', 'Common Name', post_query=reverse)
         ou += AttrDef('sn', 'Surname')
         ou += AttrDef('givenName', 'Given Name', post_query=raise_parentheses_rank)
@@ -105,7 +105,7 @@ class Test(unittest.TestCase):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-9'))
         self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
 
-        ou = ObjectDef('iNetOrgPerson')
+        ou = ObjectDef('inetOrgPerson')
         ou += AttrDef('cn', 'Common Name', pre_query=change)
         ou += AttrDef('sn', 'Surname')
         ou += AttrDef('givenName', 'Given Name')
@@ -118,7 +118,7 @@ class Test(unittest.TestCase):
     def test_search_with_default(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-10'))
 
-        ou = ObjectDef('iNetOrgPerson')
+        ou = ObjectDef('inetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='not employed')
         qu = 'CommonName := ' + testcase_id + 'abstract-member-10'
@@ -129,7 +129,7 @@ class Test(unittest.TestCase):
     def test_search_with_falsy_default(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-11'))
 
-        ou = ObjectDef('iNetOrgPerson')
+        ou = ObjectDef('inetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='')
         qu = 'CommonName := ' + testcase_id + 'abstract-member-11'
@@ -140,7 +140,7 @@ class Test(unittest.TestCase):
     def test_search_with_None_default(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-12'))
 
-        ou = ObjectDef('iNetOrgPerson')
+        ou = ObjectDef('inetOrgPerson')
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default=None)
         qu = 'CommonName := ' + testcase_id + 'abstract-member-12'

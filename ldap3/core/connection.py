@@ -29,8 +29,6 @@ from threading import RLock
 import json
 from functools import reduce
 
-from pyasn1.codec.ber import encoder
-
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, \
     DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
@@ -65,7 +63,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
-
+from ..utils.asn1 import encoder
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
@@ -168,7 +166,8 @@ class Connection(object):
                  raise_exceptions=False,
                  pool_name=None,
                  pool_size=None,
-                 pool_lifetime=None):
+                 pool_lifetime=None,
+                 fast_decoder=True):
 
         self.lock = RLock()  # re-entrant lock to assure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
@@ -230,6 +229,7 @@ class Connection(object):
             self.auto_range = True if auto_range else False
             self.extend = ExtendedOperationsRoot(self)
             self._entries = None
+            self.fast_decoder = fast_decoder
 
             if isinstance(server, STRING_TYPES):
                 server = Server(server)
@@ -305,7 +305,8 @@ class Connection(object):
             _format_socket_endpoints(self.socket),
             'tls not started' if not self.tls_started else('deferred start_tls' if self._deferred_start_tls else 'tls started'),
             'listening' if self.listening else 'not listening',
-            self.strategy.__class__.__name__ if hasattr(self, 'strategy') else 'No strategy'
+            self.strategy.__class__.__name__ if hasattr(self, 'strategy') else 'No strategy',
+            'internal decoder' if self.fast_decoder else 'pyasn1 decoder'
         ]
         return ' - '.join(s)
 
@@ -331,6 +332,7 @@ class Connection(object):
         r += '' if (self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
+        r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
         r += ')'
 
         return r

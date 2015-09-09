@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from .. import SUBTREE, DEREF_ALWAYS, HASHED_NONE
+from .. import SUBTREE, DEREF_ALWAYS
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas

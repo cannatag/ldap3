@@ -23,10 +23,9 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from pyasn1.codec.ber import decoder
-
 from .. import RESULT_SUCCESS
 from ..core.exceptions import LDAPExtensionError
+from ..utils.asn1 import decoder
 
 
 class ExtendedOperation(object):

@@ -23,12 +23,12 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from pyasn1.codec.ber import decoder
 from pyasn1.type.univ import Integer
 
 from ...core.exceptions import LDAPExtensionError
 from ..operation import ExtendedOperation
 from ...protocol.rfc4511 import LDAPDN
+from ...utils.asn1 import decoder
 
 
 class PartitionEntryCount(ExtendedOperation):

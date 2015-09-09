@@ -35,7 +35,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = True
-test_log_detail = EXTENDED
+test_log_detail = OFF
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = True
@@ -74,7 +74,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-EDIR':
     # test elitebook - eDirectory (EDIR)
     test_server = ['edir1.hyperv',
                    'edir2.hyperv',
@@ -98,7 +98,7 @@ elif location == 'GCNBHPW8':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
-elif location == 'GCNBHPW8-AD':
+elif location == 'GCNBHPW8':
     # test elitebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -144,10 +144,10 @@ elif location == 'GCNBHPW8-SLAPD':
     test_logging_filename = 'C:\\Temp\\ldap3.log'
 elif location == 'GCW89227':
     # test camera
-    test_server = ['sl08',
-                   'sl09',
-                   'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
-    # test_server = 'sl10'
+    # test_server = ['sl08',
+    #               'sl09',
+    #               'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
+    test_server = 'sl10'
     test_server_type = 'EDIR'
     # test_server = 'nova01.amm.intra.camera.it'
     # test_server_type = 'AD'
@@ -195,7 +195,7 @@ if test_logging:
 print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
-print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage', test_usage)
+print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage)
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', get_detail_level_name(test_log_detail) if test_logging else 'None')
 
 
@@ -326,18 +326,18 @@ def add_user(connection, batch_id, username, attributes=None):
         attributes = dict()
 
     if test_server_type == 'EDIR':
-        attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username})
+        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     elif test_server_type == 'AD':
-        attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username, 'unicodePwd': '"Rc1234abcd"'.encode('utf-16-le'), 'userAccountControl': 512})
+        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username, 'unicodePwd': '"Rc1234abcd"'.encode('utf-16-le'), 'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
-        attributes.update({'objectClass': ['iNetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:
-        attributes.update({'objectClass': 'iNetOrgPerson', 'sn': username})
+        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)
-    operation_result = connection.add(dn, 'iNetOrgPerson', attributes)
+    operation_result = connection.add(dn, 'inetOrgPerson', attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        raise Exception('unable to create user ' + username + ': ' + str(result))
+        raise Exception('unable to create user ' + dn + ': ' + str(result))
 
     return dn, result
 

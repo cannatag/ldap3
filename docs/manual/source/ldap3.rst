@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     ldap3.abstract
-    ldap3.compat
     ldap3.core
     ldap3.extend
     ldap3.operation

@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
 
     def test_wrong_object_class_add(self):
         if not self.connection.strategy.pooled:
-            self.assertRaises(LDAPObjectClassError, self.connection.add, generate_dn(test_base, testcase_id, 'test-add-operation-wrong'), 'iNetOrgPerson', {'objectClass': ['iNetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+            self.assertRaises(LDAPObjectClassError, self.connection.add, generate_dn(test_base, testcase_id, 'test-add-operation-wrong'), 'inetOrgPerson', {'objectClass': ['inetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
 
     def test_valid_assertion(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-1'))
@@ -75,5 +75,5 @@ class Test(unittest.TestCase):
         self.assertEqual(len(response), 1)
 
     def test_valid_object_class_add(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-3', attributes={'objectClass': ['iNetOrgPerson', 'Person']}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-3', attributes={'objectClass': ['inetOrgPerson', 'Person']}))
         self.assertEqual(self.delete_at_teardown[0][1]['description'], 'success')

@@ -40,7 +40,6 @@ from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 from ..protocol.formatters.standard import format_attribute_values
 
-
 # SearchRequest ::= [APPLICATION 3] SEQUENCE {
 # baseObject      LDAPDN,
 #     scope           ENUMERATED {
@@ -337,22 +336,22 @@ def search_operation(search_base,
     request = SearchRequest()
     request['baseObject'] = LDAPDN(search_base)
 
-    if search_scope == BASE:
+    if search_scope == BASE or search_scope == 0:
         request['scope'] = Scope('baseObject')
-    elif search_scope == LEVEL:
+    elif search_scope == LEVEL or search_scope == 1:
         request['scope'] = Scope('singleLevel')
-    elif search_scope == SUBTREE:
+    elif search_scope == SUBTREE or search_scope == 2:
         request['scope'] = Scope('wholeSubtree')
     else:
         raise LDAPInvalidScopeError('invalid scope type')
 
-    if dereference_aliases == DEREF_NEVER:
+    if dereference_aliases == DEREF_NEVER or dereference_aliases == 0:
         request['derefAliases'] = DerefAliases('neverDerefAliases')
-    elif dereference_aliases == DEREF_SEARCH:
+    elif dereference_aliases == DEREF_SEARCH or dereference_aliases == 1:
         request['derefAliases'] = DerefAliases('derefInSearching')
-    elif dereference_aliases == DEREF_BASE:
+    elif dereference_aliases == DEREF_BASE or dereference_aliases == 2:
         request['derefAliases'] = DerefAliases('derefFindingBaseObj')
-    elif dereference_aliases == DEREF_ALWAYS:
+    elif dereference_aliases == DEREF_ALWAYS or dereference_aliases == 3:
         request['derefAliases'] = DerefAliases('derefAlways')
     else:
         raise LDAPInvalidDereferenceAliasesError('invalid dereference aliases type')
@@ -373,6 +372,10 @@ def decode_vals(vals):
     return [str(val) for val in vals if val] if vals else None
 
 
+def decode_vals_fast(vals):
+    return [val[3].decode('utf-8') for val in vals if val] if vals else None
+
+
 def attributes_to_dict(attribute_list):
     attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
     for attribute in attribute_list:
@@ -381,8 +384,20 @@ def attributes_to_dict(attribute_list):
     return attributes
 
 
+def attributes_to_dict_fast(attribute_list):
+    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    for attribute in attribute_list:
+        attributes[attribute[3][0][3].decode('utf-8')] = decode_vals_fast(attribute[3][1][3])
+
+    return attributes
+
+
 def decode_raw_vals(vals):
     return [bytes(val) for val in vals] if vals else None
+
+
+def decode_raw_vals_fast(vals):
+    return [bytes(val[3]) for val in vals] if vals else None
 
 
 def raw_attributes_to_dict(attribute_list):
@@ -393,10 +408,27 @@ def raw_attributes_to_dict(attribute_list):
     return attributes
 
 
+def raw_attributes_to_dict_fast(attribute_list):
+    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    for attribute in attribute_list:
+        attributes[attribute[3][0][3].decode('utf-8')] = decode_raw_vals_fast(attribute[3][1][3])
+
+    return attributes
+
+
 def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=None):
     checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
     for attribute in attribute_list:
-        checked_attributes[str(attribute['type'])] = format_attribute_values(schema, str(attribute['type']), decode_raw_vals(attribute['vals']) or [], custom_formatter)
+        name = str(attribute['type'])
+        checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals(attribute['vals']) or [], custom_formatter)
+    return checked_attributes
+
+
+def checked_attributes_to_dict_fast(attribute_list, schema=None, custom_formatter=None):
+    checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    for attribute in attribute_list:
+        name = attribute[3][0][3].decode('utf-8')
+        checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals_fast(attribute[3][1][3]) or [], custom_formatter)
     return checked_attributes
 
 
@@ -485,3 +517,19 @@ def search_result_done_response_to_dict(response):
 
 def search_result_reference_response_to_dict(response):
     return {'uri': search_refs_to_list(response)}
+
+
+def search_result_entry_response_to_dict_fast(response, schema, custom_formatter, check_names):
+    entry_dict = dict()
+    entry_dict['dn'] = response[0][3].decode('utf-8')  # object
+    entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
+    if check_names:
+        entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes
+    else:
+        entry_dict['attributes'] = attributes_to_dict_fast(response[1][3])  # attributes
+
+    return entry_dict
+
+
+def search_result_reference_response_to_dict_fast(response):
+    return {'uri': search_refs_to_list([r[3] for r in response])}

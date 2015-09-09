@@ -82,6 +82,7 @@ def json_encode_b64(obj):
         raise LDAPDefinitionError('unable to encode ' + str(obj) + ' - ' + str(e))
 
 
+# noinspection PyProtectedMember
 def check_json_dict(json_dict):
     # needed for python 2
 
@@ -103,12 +104,13 @@ def check_json_dict(json_dict):
 
 
 def json_hook(obj):
-    if hasattr(obj, 'keys') and len(obj.keys()) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
+    if hasattr(obj, 'keys') and len(list(obj.keys())) == 2 and 'encoding' in obj.keys() and 'encoded' in obj.keys():
         return b64decode(obj['encoded'])
 
     return obj
 
 
+# noinspection PyProtectedMember
 def format_json(obj):
     if isinstance(obj, CaseInsensitiveDict):
         return obj._store

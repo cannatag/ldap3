@@ -46,13 +46,14 @@ AttrDef class
 
 The AttrDef class is used to define an abstract LDAP attribute.
 AttrDef has a single mandatory parameter, the attribute name, and a number of optional parameters. The 'key' optional parameter defines a friendly name to use
-while accessing the attribute. When defining only the attribute name you can add it directly to the ObjectDef (the AttrDef is automatically defined)::
+while accessing the attribute. A 'description' parameter can be used for storing additional information on the Attribute. When defining only the attribute name
+you can add it directly to the ObjectDef (the AttrDef is automatically defined)::
 
-    cn_attribute = AttrDef('cn')
+    cn_attribute = AttrDef('cn, description='This is the internal account name')
     person.add(cn_attribute)
 
-    person += AttrDef('cn')  # same as above
-    person += 'cn'  # same as above
+    person += AttrDef('cn', description='This is the internal account name')  # same as above
+    person += 'cn'  # same as above, without description
 
 You can even add a list of attrDefs or attribute names to an ObjectDef::
 
@@ -171,11 +172,11 @@ configuration and status::
     print(personReader)
     CONN   : ldap://server:389 - cleartext - user: cn=admin,o=test - version 3 - unbound - closed - not listening - SyncWaitStrategy
     BASE   : 'o=test' [SUB]
-    DEFS   : 'iNetOrgPerson' [CommonName <cn>, Department <employeeType>, Surname <sn>]
+    DEFS   : 'inetOrgPerson' [CommonName <cn>, Department <employeeType>, Surname <sn>]
     QUERY  : 'Common Name :test-add*, surname:=t*' [AND]
     PARSED : 'CommonName: =test-add*, Surname: =t*' [AND]
     ATTRS  : ['cn', 'employeeType', 'sn', '+'] [OPERATIONAL]
-    FILTER : '(&(objectClass=iNetOrgPerson)(cn=test-add*)(sn=t*))'
+    FILTER : '(&(objectClass=inetOrgPerson)(cn=test-add*)(sn=t*))'
     ENTRIES: 1 [SUB] [executed at: Sun Feb  9 20:43:47 2014]
 
 
@@ -206,7 +207,7 @@ flag in the Reader object to specify if components are in '&' (AND, True value) 
 
 Object classes defined in the ObjectDef are always included in the filter, so for the previous example the resulting filter is::
 
-    (&(&(objectClass=iNetOrgPerson)(objectClass=AuxEngineer))(cn=b*)(EmployeeType=E))
+    (&(&(objectClass=inetOrgPerson)(objectClass=AuxEngineer))(cn=b*)(EmployeeType=E))
 
 when using a Reader with the 'engineer' ObjectDef.
 

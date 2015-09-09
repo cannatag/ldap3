@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SIMPLE, ANONYMOUS, SASL
+from .. import SIMPLE, ANONYMOUS, SASL, RESULT_CODES
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
@@ -124,3 +124,30 @@ def sicily_bind_response_to_dict(response):
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'server_creds': bytes(response['matchedDN']),
             'error_message': str(response['diagnosticMessage'])}
+
+
+def bind_response_to_dict_fast(response):
+    response_dict = dict()
+    response_dict['result'] = int(response[0][3])  # resultCode
+    response_dict['description'] = RESULT_CODES[response_dict['result']]
+    response_dict['dn'] = response[1][3].decode('utf-8')  # matchedDN
+    response_dict['message'] = response[2][3].decode('utf-8')  # diagnosticMessage
+    response_dict['referrals'] = None  # referrals
+    response_dict['saslCreds'] = None  # saslCreds
+    for r in response[3:]:
+        if r[2] == 3:  # referrals
+            response_dict['referrals'] = referrals_to_list(r[3])  # referrals
+        else:
+            response_dict['saslCreds'] = bytes(r[3])  # saslCreds
+
+    return response_dict
+
+
+def sicily_bind_response_to_dict_fast(response):
+    response_dict = dict()
+    response_dict['result'] = int(response[0][3])  # resultCode
+    response_dict['description'] = RESULT_CODES[response_dict['result']]
+    response_dict['server_creds'] = bytes(response[1][3])  # server_creds
+    response_dict['error_message'] = response[2][3].decode('utf-8')  # error_message
+
+    return response_dict

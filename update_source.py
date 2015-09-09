@@ -45,15 +45,3 @@ with open(path.join(package_name, 'version.py'), 'w+') as project_version_file:
             '# version ' + version,
             '']))
         changes_file.write('\n' + project_changelog_file.read())
-
-# # updates README.rst from _changelog.txt
-#
-# with open(path.join('README.rst'), 'r+') as project_readme_file, \
-#         open(path.join('_changelog.txt'), 'r') as project_changelog_file:
-#     readme = project_readme_file.read()
-#     changelog_identifier = '\nChangelog\n---------\n\n'
-#     changelog_position = readme.find(changelog_identifier)
-#     if changelog_position > 0:
-#         updated_readme = readme[0: changelog_position + len(changelog_identifier)] + project_changelog_file.read()
-#         project_readme_file.seek(0, 0)
-#         project_readme_file.write(updated_readme)

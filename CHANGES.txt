@@ -1,10 +1,9 @@
 # changes file for ldap3
-# generated on 2015-09-04 15:11:22.792103
+# generated on 2015-09-09 16:39:02.619299
 # version 0.9.9
 
-* 0.9.9 2015.08.26
+* 0.9.9 2015.09.09
     - Fixed boolean value for True value in ASN.1 encoding for certain ldap servers. (thanks Will)
-    - Disabled testing with pypy3 on Travis-CI for incompatibility with version 0.1.8 of pyasn1.
     - Fixed follow auto referrals. (thanks WIll)
     - Now protocol defined integer values can be used for scope and derefAliases arguments when searching. (thanks Will)
     - Added description field in the AttrDef object. (thanks Hogne)
@@ -12,6 +11,8 @@
     - Added new boolean argument fast_decoder in connection object. Defaults to True.
     - Highest date correctly managed by the format_ad_timestamp() formatter. (thanks Will)
     - Fix for latest gssapi kerberos authentication module (thanks Alex)
+    - Added freeIPA OID descriptors
+    - removed unneeded OidInfo class
 
 * 0.9.8.8 2015.08.14
     - Coerce objectClass to a list in Add operation. (thanks Yutaka)

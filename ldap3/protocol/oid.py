@@ -121,6 +121,8 @@ def decode_syntax(syntax):
 #         return self.__str__()
 
 
+# tuple structure: (oid, kind, name, docs)
+
 # noinspection PyPep8
 Oids = {  # administrative role
           '2.5.23.1': ('2.5.23.1', OID_ADMINISTRATIVE_ROLE, 'autonomousArea', 'RFC3672'),

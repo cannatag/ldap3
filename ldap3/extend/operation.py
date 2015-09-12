@@ -44,7 +44,7 @@ class ExtendedOperation(object):
     def send(self):
         if self.connection.check_names and self.connection.server.info is not None and self.connection.server.info.supported_extensions is not None:  # checks if extension is supported
             for request_name in self.connection.server.info.supported_extensions:
-                if request_name.oid == self.request_name:
+                if request_name[0] == self.request_name:
                     break
             else:
                 raise LDAPExtensionError('extension not in DSA list of supported extensions')

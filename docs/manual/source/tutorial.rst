@@ -150,6 +150,11 @@ in the interactive console and works for most of the ldap3 library objects::
    >>> server
    Server(host='ipa.demo1.freeipa.org', port=389, use_ssl=False, get_info='NO_INFO')
 
+
+
+Getting info from the server
+============================
+
 Now let's try to request more information to the LDAP server::
 
     >>> server = Server('ipa.demo1.freeipa.org', get_info=ALL)
@@ -345,7 +350,7 @@ and Security Layer and provides additional methods to identify the user.
 Let's ask the server who we are::
 
     >>> conn.extend.standard.who_am_i()
-    >>>
+
 
 Hum... an empty response. This means we have no authentication status on the server, we are an **Anonymous** user. This doesn't mean
 that we are unknown to the server, actually we have a session open with the server and we can send additional operation requests without
@@ -358,6 +363,23 @@ Let's try to specify a valid user::
     'dn: uid=manager,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
 
 Now the server knows that we are a valid user and the who_am_i() extended operation returns our identity.
+
+
+.. ::note:: Opening vs binding
+    The LDAP protocol provides a Bind and an Unbind operation but, for historical reasons, they are not symmetric. In fact before binding
+    to the server the connection must be open. This is implicitly done by the ldap3 package when you issue a Bind or another operation or
+    can be esplicity done with the **open()** method of the Connection object. The Unbind operation is used to *terminate* the connection.
+    It both ends the session and closes the connection. so it cannot be used anymore. If you want to access as another user or change the
+    current session to an anonymous, just issue another Bind.
+
+
+Establish a secure connection
+=============================
+
+If we check the connection info we see that we are using an insecure channel. Our credentials passes over the wire in clear text, so they
+can be easily captured with a network sniffer. The LDAP protocol provides two way to secure the connection: LDAP over TLS (or SSL) or the
+StartTLS extended operation. In the former we expect that the communication channel is already secured with TLS when openkng the connection,
+while in the latter the connection is open with as unsecure and then the channel is secured when issuing the StartTLS operation.
 
 ... more to come ...
 

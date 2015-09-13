@@ -421,17 +421,23 @@ To start the connection on a SSL socket::
     ldaps://ipa.demo1.freeipa.org:636 - **ssl** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:**636**> - **tls not started** - listening - SyncStrategy - internal decoder
 
 
-Either with the former or with the latter method the connection is now encrypted. We have not specified any TLS option, so the certificate received
-by the server is considered valid. You can customize the TLS options providing a Tls object to the Server object::
+Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no check of
+certificate validity. You can customize the SSL behaviour providing a Tls object to the Server object with the SSL context configuration::
 
-    >>> from ldap3 import Tls
+    >>> from ldap3 import Server, Connection, Tls
     >>> import ssl
     >>> tls_configuration = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1)
     >>> server = Server('ipa.demo1.freeipa.org', use_ssl=True, tls=tls_configuration)
+    >>> conn = Connection(server)
+    >>> conn.open()
     ...
     ldap3.core.exceptions.LDAPSocketOpenError: (LDAPSocketOpenError('socket ssl wrapping error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)',),)
 
-In this case we get a LDAPSocketOpenError because the certificate cannot be verified. You can configure the Tls object with a number of option. Look at :ref:`the SSL and TLS documentation <ssltls>`
+Here we get a LDAPSocketOpenError exception because the certificate cannot be verified. You can configure the Tls object with a number of options. Look at :ref:`the SSL and TLS documentation <ssltls>`
+
+
+Performing searches
+===================
 
 
 ... more to come ...

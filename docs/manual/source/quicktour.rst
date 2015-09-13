@@ -141,9 +141,6 @@ Search operation is enhanced with a few parameters:
 * paged_criticality: if True the search should fail if simple paged search is not available on the server else a full
   search is performed.
 
-If the search filter contains the following characters you must use the relevant escape ASCII sequence, as per RFC4515
- (section 3): '*' -> '\\\\2A', '(' -> '\\\\28', ')' -> '\\\\29', '\\' -> '\\\\5C', chr(0) -> '\\\\00'
-
 To search for a binary value you must use the RFC4515 escape ASCII sequence for each byte in the search assertion. You
 can use the function *escape_bytes()* in ldap3.utils.conv for properly escape a bytes object::
 

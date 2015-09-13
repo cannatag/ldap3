@@ -119,7 +119,7 @@ With print(conn), or str(conn), we ask for an overview of the connection and get
 
 ======================================================= ==================================================================
 dap://ipa.demo1.freeipa.org:389                         the server URL (scheme, name and port we are connected to)
-cleartext                                               the authentication method used
+cleartext                                               the kind of connection the server is listening to
 user: None                                              the credentials used, in this case None means an anonymous binding
 bound                                                   the status of the LDAP session
 open                                                    the status of the underlying TCP/IP session
@@ -237,6 +237,22 @@ Now let's try to request more information to the LDAP server::
       objectClass:
         top
 
+.. sidebar:: Controls vs Extensions
+
+    In LDAP a *control* is some additional information that can be attached to any LDAP request or response while an
+    *extension* is a completely custom request that can be sent to the LDAP server in an Extended Operation Request.
+    A control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
+    kind of operation performed by the server.
+    Each server declares which controls and which extendend operation it understand. The ldap3 library decodes the
+    known supported controls and extended operation and includes a brief description and a reference to the relevant
+    RFC in the server.info attribute. Not all controls or extension must be used by clients. Sometimes controls and
+    extensions are used by servers that hold a replica or a partition of the data. Unfortunately in the LDAP specifications
+    there is no way to understand if such extensions are reserved for server (DSA, Directory Server Agent in LDAP
+    parlance) to server communication (for example in replica or partitions management) or can be used
+    by clients (DUA, Directory User Agent) because the LDAP protocols doesn't provide a way for DSA to communicate,
+    a DSA actually presents itself as a DUA to another DSA.
+
+
 Wow, this server let an anonymous user to know a lot about it:
 
 ========================= ================= =======================================================================
@@ -257,22 +273,8 @@ Other                     ...                     Additional information provide
 
 Now we know that this server is a stand-alone LDAP server that holds objects in the dc=demo1,dc=freeipa,dc=org context,
 that supports various SASL access mechanisms and that is based on the 389 Directory Service server. Furthermore in the
-Supported Controls we can see it supports "paged searches", and the "who am i" extended operation in Supported Extensions.
-
-.. sidebar:: Controls vs Extensions
-
-    In LDAP a *control* is some additional information that can be attached to any LDAP request or response while an
-    *extension* is a completely custom request that can be sent to the LDAP server in an Extended Operation Request.
-    A control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
-    kind of operation performed by the server.
-    Each server declares which controls and which extendend operation it understand. The ldap3 library decodes the
-    known supported controls and extended operation and includes a brief description and a reference to the relevant
-    RFC in the server.info attribute. Not all controls or extension must be used by clients. Sometimes controls and
-    extensions are used by servers that hold a replica or a partition of the data. Unfortunately in the LDAP specifications
-    there is no way to understand if such extensions are reserved for server (DSA, Directory Server Agent in LDAP
-    parlance) to server communication (for example in replica or partitions management) or can be used
-    by clients (DUA, Directory User Agent) because the LDAP protocols doesn't provide a way for DSA to communicate,
-    a DSA actually presents itself as a DUA to another DSA.
+Supported Controls we can see it supports "paged searches", and the "who am i" and "StartTLS" extended operation in
+Supported Extensions.
 
 Let's examine the LDAP server schema::
 
@@ -358,36 +360,76 @@ binding again. Even if we don't send the anonymous bind operation the server wil
 
 Let's try to specify a valid user::
 
-    >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123',, auto_bind=True)
+    >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
     >>> conn.extend.standard.who_am_i()
     'dn: uid=manager,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
 
 Now the server knows that we are a valid user and the who_am_i() extended operation returns our identity.
 
 
-.. ::note:: Opening vs binding
+.. ::note:: Opening vs Binding
     The LDAP protocol provides a Bind and an Unbind operation but, for historical reasons, they are not symmetric. In fact before binding
     to the server the connection must be open. This is implicitly done by the ldap3 package when you issue a Bind or another operation or
-    can be esplicity done with the **open()** method of the Connection object. The Unbind operation is used to *terminate* the connection.
-    It both ends the session and closes the connection. so it cannot be used anymore. If you want to access as another user or change the
-    current session to an anonymous, just issue another Bind.
+    can be esplicity done with the **open()** method of the Connection object. The Unbind operation is actually used to *terminate* the
+    connection, both ending the session and closing the connection. so it cannot be used anymore. If you want to access as another user or change the
+    current session to an anonymous, just issue another Bind without Unbinding the connection.
 
 
-Establish a secure connection
-=============================
+Establishing a secure connection
+================================
 
-If we check the connection info we see that we are using an insecure channel. Our credentials passes over the wire in clear text, so they
-can be easily captured with a network sniffer. The LDAP protocol provides two way to secure the connection: LDAP over TLS (or SSL) or the
-StartTLS extended operation. In the former the communication channel is secured with TLS when opening the connection, while in the latter
-the connection is open as unsecure and then the channel is secured when issuing the StartTLS operation. Usually the LDAP over TLS is indicated
-as **ldaps://** even if this is not requested by the lDAP specifications
+If we check the connection info we see that we are using a cleartext (insecure) channel::
+
+    >>> print(conn)
+    ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
+
+Our credentials pass unencrypted over the wire, so they an be easily captured with a network sniffer. The LDAP protocol provides two ways
+to secure a connection: LDAP over TLS (or SSL) or the StartTLS extended operation. This two method both ending in establishing a secure TLS connection
+but with the former the communication channel is secured with TLS as soon as the connection is open, while with the latter the connection is open as
+unsecure and then the channel is secured when we issue the StartTLS operation.
+
+.. ::note:: LDAP URL
+    A cleartext connection to a server can be expressed in a URL with schema "ldap://". Usually the LDAP over TLS is indicated as **ldaps://** even if
+    this is not indicated in the lDAP specifications. If a URL is indicated while creating the Server object the ldap3 library recognize the URL schema and
+    open the proper port in clear or with the specified (or default, if none is specified) TLS options.
 
 .. ::sidebar:: Default port numbers
    The default ports for *cleartext* (unsecure) communication is 389, while the default for *LDAP over TLS* (secure) communication is 636. Note
-   that you can start a session on the 389 port and then increase the security level with the StartTLS operation, so you can have a secure
-   communication even on the 389 port. Obviously the server can listen on additional or different ports. When defining the Server object you
-   can specify which port to use with the *port* parameter.
+   that because you can start a session on the 389 port and then increase the security level with the StartTLS operation, you can have a secure
+   communication even on the 389 port (usually considered unsecure). Obviously the server can listen on additional or different ports. When
+   defining the Server object you can specify which port to use with the *port* parameter.
 
+
+Let's try to use the StartTLS extended operation::
+
+    >>> conn.start_tls()
+    True
+
+if we check the conn status we see that the connection is on a secure channel, even if started on a cleartext connection::
+
+    >>> print(conn)
+    ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:**389**> - **tls started** - listening - SyncStrategy - internal decoder
+
+
+To start the connection on a SSL socket::
+
+    >>> server = Server('ipa.demo1.freeipa.org', use_ssl=True, get_info=ALL)
+    >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
+    >>> print(conn)
+    ldaps://ipa.demo1.freeipa.org:636 - **ssl** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:**636**> - **tls not started** - listening - SyncStrategy - internal decoder
+
+
+Either with the former of with the latter method the connection is now encrypted. We have not specified any TLS option, so the certificate received
+by the server is considered valid. You can customize the TLS options providing a Tls object to the Server object::
+
+    >>> from ldap3 import Tls
+    >>> import ssl
+    >>> tls_configuration = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1)
+    >>> server = Server('ipa.demo1.freeipa.org', use_ssl=True, tls=tls_configuration)
+    ...
+    ldap3.core.exceptions.LDAPSocketOpenError: (LDAPSocketOpenError('socket ssl wrapping error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)',),)
+
+In this case we get a LDAPSocketOpenError because the certificate cannot be verified. You can configure the Tls object with a number of option. Look at :ref:`the SSL and TLS documentation <ssltls>`
 
 
 ... more to come ...

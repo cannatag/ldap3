@@ -1,6 +1,6 @@
-#########
-SSL & TLS
-#########
+###########
+SSL and TLS
+###########
 
 You can use SSL basic authentication with the use_ssl parameter of the Server object, you can also specify a port (636 is the default for secure ldap)::
 
@@ -34,8 +34,9 @@ Tls object uses the ssl module of the Python standard library with additional ch
 
 The needed constants are defined in the ssl package.
 
-IF you don't use a specific Tls object and set use_tls=True in the Server definition, a default Tls object will be used, it has no certificate files, uses the ssl.PROTOCOL_SSLv23 (if available in your Python interpreter) and performs no validation of the server certificate. It's recommended to set validate=ssl.CERT_REQUIRED to verify the certificate server.
-Example::
+IF you don't use a specific Tls object and set use_tls=True in the Server definition, a default Tls object will be used, it has no certificate
+files, uses the ssl.PROTOCOL_SSLv23 (if available in your Python interpreter) and performs no validation of the server certificate.
+It's recommended to set validate=ssl.CERT_REQUIRED to verify the certificate server. Example::
 
     tls = Tls(local_private_key_file='client_private_key.pem', local_certificate_file='client_cert.pem', validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1, ca_certs_file='ca_certs.b64')
 
@@ -66,7 +67,7 @@ SASL
 ----
 
 Three SASL mechanisms are currently implemented in the ldap3 library: EXTERNAL, DIGEST-MD5 and GSSAPI (Kerberos, via the gssapi package). Even if DIGEST-MD5 is **deprecated** and moved to historic (RFC6331, July 2011)
-because it is **"insecure and unsuitable for use in protocols"** (as stated by the RFC) I've developed the authentication phase of the protocol because it is still used in LDAP servers.
+because it is **insecure and unsuitable for use in protocols** (as stated by the RFC) I've developed the authentication phase of the protocol because it is still used in LDAP servers.
 
 External
 ^^^^^^^^

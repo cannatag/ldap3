@@ -378,8 +378,17 @@ Establish a secure connection
 
 If we check the connection info we see that we are using an insecure channel. Our credentials passes over the wire in clear text, so they
 can be easily captured with a network sniffer. The LDAP protocol provides two way to secure the connection: LDAP over TLS (or SSL) or the
-StartTLS extended operation. In the former we expect that the communication channel is already secured with TLS when openkng the connection,
-while in the latter the connection is open with as unsecure and then the channel is secured when issuing the StartTLS operation.
+StartTLS extended operation. In the former the communication channel is secured with TLS when opening the connection, while in the latter
+the connection is open as unsecure and then the channel is secured when issuing the StartTLS operation. Usually the LDAP over TLS is indicated
+as **ldaps://** even if this is not requested by the lDAP specifications
+
+.. ::sidebar:: Default port numbers
+   The default ports for *cleartext* (unsecure) communication is 389, while the default for *LDAP over TLS* (secure) communication is 636. Note
+   that you can start a session on the 389 port and then increase the security level with the StartTLS operation, so you can have a secure
+   communication even on the 389 port. Obviously the server can listen on additional or different ports. When defining the Server object you
+   can specify which port to use with the *port* parameter.
+
+
 
 ... more to come ...
 

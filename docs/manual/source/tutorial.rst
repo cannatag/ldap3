@@ -388,8 +388,8 @@ to secure a connection: LDAP over TLS (or SSL) or the StartTLS extended operatio
 but with the former the communication channel is secured with TLS as soon as the connection is open, while with the latter the connection is open as
 unsecure and then the channel is secured when we issue the StartTLS operation.
 
-.. ::note:: LDAP URL
-    A cleartext connection to a server can be expressed in a URL with schema "ldap://". Usually the LDAP over TLS is indicated as **ldaps://** even if
+.. ::note:: LDAP URL scheme
+    A cleartext connection to a server can be expressed in a URL with schema **ldap://**. Usually the LDAP over TLS is indicated as **ldaps://** even if
     this is not indicated in the lDAP specifications. If a URL is indicated while creating the Server object the ldap3 library recognize the URL schema and
     open the proper port in clear or with the specified (or default, if none is specified) TLS options.
 
@@ -411,6 +411,8 @@ if we check the conn status we see that the connection is on a secure channel, e
     ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:**389**> - **tls started** - listening - SyncStrategy - internal decoder
 
 
+THere is no way to return to an unencrypted connection once a StartTLS operation is issued.
+
 To start the connection on a SSL socket::
 
     >>> server = Server('ipa.demo1.freeipa.org', use_ssl=True, get_info=ALL)
@@ -419,7 +421,7 @@ To start the connection on a SSL socket::
     ldaps://ipa.demo1.freeipa.org:636 - **ssl** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:**636**> - **tls not started** - listening - SyncStrategy - internal decoder
 
 
-Either with the former of with the latter method the connection is now encrypted. We have not specified any TLS option, so the certificate received
+Either with the former or with the latter method the connection is now encrypted. We have not specified any TLS option, so the certificate received
 by the server is considered valid. You can customize the TLS options providing a Tls object to the Server object::
 
     >>> from ldap3 import Tls

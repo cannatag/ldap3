@@ -2,7 +2,7 @@
 LDAP3 Tutorial
 ##############
 
-..tip:: Disclaimer
+.. tip:: Disclaimer
 In this tutorial we will access a public demo of `link FreeIPA <https://www.freeipa.org>`, available at
 https://ipa.demo1.freeipa.org. FreeIPA is a fully featured identity management solution, but for the purposes
 of this tutorial we're only interested in its LDAP server. Note that the demo server is periodically wiped, as described on the
@@ -348,7 +348,7 @@ a logged connection you have a two options: Simple and SASL. With Simple authent
 The server will check if your credentials are valid and will permit or deny access to the data. SASL provides additional methods to identify
 the user as external certificate or Kerberos.
 
-.. attention::
+.. note::
     With ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
 
         # import class and constants

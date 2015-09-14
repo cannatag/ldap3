@@ -2,11 +2,10 @@
 LDAP3 Tutorial
 ##############
 
-.. tip:: Disclaimer
-In this tutorial we will access a public demo of `link FreeIPA <https://www.freeipa.org>`, available at
+In this tutorial we will access a public demo of `Link FreeIPA <https://www.freeipa.org>`, available at
 https://ipa.demo1.freeipa.org. FreeIPA is a fully featured identity management solution, but for the purposes
 of this tutorial we're only interested in its LDAP server. Note that the demo server is periodically wiped, as described on the
-`link FreeIPA demo wiki page <https://www.freeipa.org/page/Demo>`.
+`Link FreeIPA demo wiki page <https://www.freeipa.org/page/Demo>`.
 
 
 What LDAP is not
@@ -66,7 +65,6 @@ If you get an ImportError you need to install the package from PyPI via pip::
 
 
 .. warning::
-
    If pip complains about certificates you should specify the path to the PyPI CA with the --cert parameter::
 
    pip install ldap3 --cert /path/to/the/DigiCert_High_Assurance_EV_Root_CA.pem
@@ -135,7 +133,6 @@ internal decoder                                        which BER decoder are we
 
 
 .. sidebar:: Object representation
-
     the ldap3 library uses the following object representation rule: when you use the str() representation you get all
     the information about the status of the object, when you use the repr() you get back a string you can use in the
     Python console to recreate the object.
@@ -152,7 +149,6 @@ in the interactive console and works for most of the ldap3 library objects::
 
    >>> server
    Server(host='ipa.demo1.freeipa.org', port=389, use_ssl=False, get_info='NO_INFO')
-
 
 
 Getting info from the server

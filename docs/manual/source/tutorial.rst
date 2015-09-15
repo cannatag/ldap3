@@ -3,12 +3,12 @@ LDAP3 Tutorial
 ##############
 
 .. note::
-In this tutorial we will access a public demo of `FreeIPA`_, available at https://ipa.demo1.freeipa.org. FreeIPA is a fully
-featured identity management solution, but for the purposes of this tutorial we're only interested in its LDAP server. Note
-that the demo server is periodically wiped, as described on the `FreeIPA demo wiki page`_.
+    In this tutorial we will access a public demo of `FreeIPA`_, available at https://ipa.demo1.freeipa.org. FreeIPA is a fully
+    featured identity management solution, but for the purposes of this tutorial we're only interested in its LDAP server. Note
+    that the demo server is periodically wiped, as described on the `FreeIPA demo wiki page`_.
 
-.. _FreeIPA: https://www.freeipa.org
-.. _FreeIPA demo wiki page: https://www.freeipa.org/page/Demo.
+    .. _FreeIPA: https://www.freeipa.org
+    .. _FreeIPA demo wiki page: https://www.freeipa.org/page/Demo.
 
 
 What LDAP is not

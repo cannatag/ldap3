@@ -7,8 +7,8 @@ In this tutorial we will access a public demo of `FreeIPA`_, available at https:
 featured identity management solution, but for the purposes of this tutorial we're only interested in its LDAP server. Note
 that the demo server is periodically wiped, as described on the `FreeIPA demo wiki page`_.
 
+.. _FreeIPA: https://www.freeipa.org
 .. _FreeIPA demo wiki page: https://www.freeipa.org/page/Demo.
-.. _Python Guide: http://docs.python-guide.org/en/latest/index.html
 
 
 What LDAP is not

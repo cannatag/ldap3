@@ -161,7 +161,8 @@ class Attribute(Sequence):
     #     ...,
     #     vals (SIZE(1..MAX))})
     componentType = NamedTypes(NamedType('type', AttributeDescription()),
-                               NamedType('vals', ValsAtLeast1()))
+                               # NamedType('vals', ValsAtLeast1()))
+                               NamedType('vals', Vals()))  # changed from ValsAtLeast1() to allow empty member values in groups - this should not be as per rfc4511 4.1.7, but openldap accept it
 
 
 class AttributeList(SequenceOf):

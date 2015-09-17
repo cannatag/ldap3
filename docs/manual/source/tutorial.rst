@@ -416,17 +416,17 @@ Let's try to use the StartTLS extended operation::
 if we check the conn status we see that the connection is on a secure channel, even if started on a cleartext connection::
 
     >>> print(conn)
-    ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:**389**> - **tls started** - listening - SyncStrategy - internal decoder
+    ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:389> - tls started - listening - SyncStrategy - internal decoder
 
 
-THere is no way to return to an unencrypted connection once a StartTLS operation is issued.
+There is no way to return to an unencrypted connection once a StartTLS operation is issued.
 
 To start the connection on a SSL socket::
 
     >>> server = Server('ipa.demo1.freeipa.org', use_ssl=True, get_info=ALL)
     >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
     >>> print(conn)
-    ldaps://ipa.demo1.freeipa.org:636 - **ssl** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:**636**> - **tls not started** - listening - SyncStrategy - internal decoder
+    ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
 
 
 Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no check of

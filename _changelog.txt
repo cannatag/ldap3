@@ -1,3 +1,6 @@
+* 0.9.9.1 2015.09.17
+    - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but openldap accept it
+
 * 0.9.9 2015.09.09
     - Fixed boolean value for True value in ASN.1 encoding for certain ldap servers. (thanks Will)
     - Fixed follow auto referrals. (thanks WIll)

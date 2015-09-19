@@ -74,7 +74,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
-elif location == 'GCNBHPW8-EDIR':
+elif location == 'GCNBHPW8':
     # test elitebook - eDirectory (EDIR)
     test_server = ['edir1.hyperv',
                    'edir2.hyperv',
@@ -98,7 +98,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'C:\\Temp\\ldap3.log'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-AD':
     # test elitebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']

@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import SEQUENCE_TYPES
-from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ValsAtLeast1, ResultCode, Vals
+from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ResultCode, Vals
 from ..protocol.convert import referrals_to_list, attributes_to_dict, validate_attribute_value
 
 # AddRequest ::= [APPLICATION 8] SEQUENCE {

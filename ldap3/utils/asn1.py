@@ -46,7 +46,9 @@ tagMap[Boolean.tagSet] = BooleanCEREncoder()
 
 from pyasn1.codec.ber import encoder, decoder
 
+# a fast BER decoder for LDAP responses only
 
+# for testing
 # def compare_dicts(d1=dict(), d2=dict()):
 #     if len(list(d1.keys())) != len(list(d2.keys())):
 #         return False

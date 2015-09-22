@@ -51,7 +51,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
     def __delitem__(self, key):
         ci_key = self._ci_key(key)
         del self._store[self._case_insensitive_keymap[ci_key]]
-        del self._case_insensitive_keymap[self._ci_key(key)]
+        del self._case_insensitive_keymap[ci_key]
 
     def __setitem__(self, key, item):
         ci_key = self._ci_key(key)

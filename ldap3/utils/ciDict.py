@@ -29,11 +29,6 @@ from .. import SEQUENCE_TYPES
 
 
 class CaseInsensitiveDict(collections.MutableMapping):
-    if bytes == str:  # python2
-        _case_insensitive_types = (str, unicode)
-    else:  # python3
-        _case_insensitive_types = (str,)
-
     def __init__(self, other=None, **kwargs):
         self._store = dict()  # store use the original key
         self._case_insensitive_keymap = dict()  # is a mapping ci_key -> key
@@ -55,10 +50,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
     def __delitem__(self, key):
         ci_key = self._ci_key(key)
-        if ci_key in self._case_insensitive_keymap:  # updates existing value
-            del self._store[self._case_insensitive_keymap[ci_key]]
-        else:
-            del self._store[key]
+        del self._store[self._case_insensitive_keymap[ci_key]]
         del self._case_insensitive_keymap[self._ci_key(key)]
 
     def __setitem__(self, key, item):

@@ -1,6 +1,13 @@
 # changes file for ldap3
-# generated on 2015-09-09 16:39:02.619299
-# version 0.9.9
+# generated on 2015-09-23 21:35:23.993878
+# version 0.9.9.1
+
+* 0.9.9.1 2015.09.21
+    - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)
+    - faster case insensitive dict while getting and setting key (thanks Pierre)
+    - Updated setuptools to 18.3.2
+    - Updated wheel to 0.26
+    - Tested against Python 2.6 - Python 2.7 - Python 3.3 - Python 3.4 - Python 3.5 - pypy - pypy3
 
 * 0.9.9 2015.09.09
     - Fixed boolean value for True value in ASN.1 encoding for certain ldap servers. (thanks Will)

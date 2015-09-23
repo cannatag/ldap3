@@ -29,26 +29,13 @@ from .. import SEQUENCE_TYPES
 
 
 class CaseInsensitiveDict(collections.MutableMapping):
-    if bytes == str:  # python2
-        _case_insensitive_types = (str, unicode)
-    else:  # python3
-        _case_insensitive_types = (str,)
-
     def __init__(self, other=None, **kwargs):
-        self._store = dict()
+        self._store = dict()  # store use the original key
+        self._case_insensitive_keymap = dict()  # is a mapping ci_key -> key
         if other or kwargs:
             if other is None:
                 other = dict()
             self.update(other, **kwargs)
-
-    def _getkey(self, key):
-        if isinstance(key, CaseInsensitiveDict._case_insensitive_types):
-            for stored_key in self._store:
-                if isinstance(stored_key, CaseInsensitiveDict._case_insensitive_types):
-                    if key.lower() == stored_key.lower():
-                        key = stored_key
-                        break
-        return key
 
     def __contains__(self, item):
         try:
@@ -57,14 +44,25 @@ class CaseInsensitiveDict(collections.MutableMapping):
         except Exception:
             return False
 
+    @staticmethod
+    def _ci_key(key):
+        return key.lower() if hasattr(key, 'lower') else key
+
     def __delitem__(self, key):
-        del self._store[self._getkey(key)]
+        ci_key = self._ci_key(key)
+        del self._store[self._case_insensitive_keymap[ci_key]]
+        del self._case_insensitive_keymap[ci_key]
 
     def __setitem__(self, key, item):
-        self._store[self._getkey(key)] = item
+        ci_key = self._ci_key(key)
+        if ci_key in self._case_insensitive_keymap:  # updates existing value
+            self._store[self._case_insensitive_keymap[ci_key]] = item
+        else:  # new key
+            self._store[key] = item
+            self._case_insensitive_keymap[ci_key] = key
 
     def __getitem__(self, key):
-        return self._store[self._getkey(key)]
+        return self._store[self._case_insensitive_keymap[self._ci_key(key)]]
 
     def __iter__(self):
         return self._store.__iter__()

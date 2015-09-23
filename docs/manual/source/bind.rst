@@ -218,7 +218,7 @@ The ldap3 library support an additional method to bind to Active Directory serve
         print('error in bind', c.result)
 
 This authentication method is specific for Active Directory and uses a proprietary authentication protocol named SICILY
-that break the LDAP RFC but can be used to access AD.
+that breaks the LDAP RFC but can be used to access AD.
 
 
 Extended logging

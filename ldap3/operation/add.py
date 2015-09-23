@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import SEQUENCE_TYPES
-from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ValsAtLeast1, ResultCode
+from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ResultCode, Vals
 from ..protocol.convert import referrals_to_list, attributes_to_dict, validate_attribute_value
 
 # AddRequest ::= [APPLICATION 8] SEQUENCE {
@@ -40,7 +40,8 @@ def add_operation(dn,
     for pos, attribute in enumerate(attributes):
         attribute_list[pos] = Attribute()
         attribute_list[pos]['type'] = AttributeDescription(attribute)
-        vals = ValsAtLeast1()
+        # vals = ValsAtLeast1()
+        vals = Vals()  # changed from ValsAtLeast1() for allowing empty member value in groups
         if isinstance(attributes[attribute], SEQUENCE_TYPES):
             for index, value in enumerate(attributes[attribute]):
                 vals.setComponentByPosition(index, validate_attribute_value(schema, attribute, value))

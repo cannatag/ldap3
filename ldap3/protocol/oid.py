@@ -23,9 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-# from collections import namedtuple
-
-# from .. import SEQUENCE_TYPES
+from .. import SEQUENCE_TYPES
 
 # Holds info about OIDs.
 # Each OID info is a named tuple with the following attributes:
@@ -97,7 +95,7 @@ def constant_to_oid_kind(oid_kind):
 
 def decode_oids(sequence):
     if sequence:
-        return [Oids.get(oid, (oid, None, None, None)) for oid in sequence if oid]
+        return sorted([Oids.get(oid, (oid, None, None, None)) for oid in sequence if oid])
     return list()
 
 
@@ -107,19 +105,14 @@ def decode_syntax(syntax):
     return Oids.get(syntax, None)
 
 
-# class (namedtuple('', 'oid, kind, name, docs')):
-#     def __str__(self):
-#         r = self.oid + ' - '
-#         if self.name:
-#             r += ((', '.join(self.name)) if isinstance(self.name, SEQUENCE_TYPES) else self.name) + ' - '
-#         r += constant_to_oid_kind(self.kind) + ' - ' if self.kind is not None else ''
-#         r += self.docs + ' - ' if self.docs else ''
-#
-#         return r[:-3]
+def oid_to_string(oid):
+    s = oid[0]
+    if oid[2]:
+        s += ' - ' + ((', '.join(oid[2])) if isinstance(oid[2], SEQUENCE_TYPES) else oid[2])
+    s += (' - ' + constant_to_oid_kind(oid[1])) if oid[1] is not None else ''
+    s += (' - ' + oid[3]) if oid[3] else ''
 
-#     def __repr__(self):
-#         return self.__str__()
-
+    return s
 
 # tuple structure: (oid, kind, name, docs)
 
@@ -604,9 +597,11 @@ Oids = {  # administrative role
           '1.3.6.1.4.1.42.2.27.8.5.1': ('1.3.6.1.4.1.42.2.27.8.5.1', OID_CONTROL, 'Password policy', 'IETF DRAFT behera-ldap-password-policy'),
           '1.3.6.1.4.1.42.2.27.9.5.2': ('1.3.6.1.4.1.42.2.27.9.5.2', OID_CONTROL, 'Get effective rights', 'IETF DRAFT draft-ietf-ldapext-acl-model'),
           '1.3.6.1.4.1.42.2.27.9.5.8': ('1.3.6.1.4.1.42.2.27.9.5.8', OID_CONTROL, 'Account usability', 'SUN microsystems'),
+          '1.3.6.1.4.1.1466.29539.12': ('1.3.6.1.4.1.1466.29539.12', OID_CONTROL, 'Chaining loop detect', 'SUN microsystems'),
           '1.3.6.1.4.1.4203.1.9.1.1': ('1.3.6.1.4.1.4203.1.9.1.1', OID_CONTROL, 'LDAP content synchronization', 'RFC4533'),
           '1.3.6.1.4.1.4203.1.10.1': ('1.3.6.1.4.1.4203.1.10.1', OID_CONTROL, 'Subentries', 'RFC3672'),
           '1.3.6.1.4.1.4203.1.10.2': ('1.3.6.1.4.1.4203.1.10.2', OID_CONTROL, 'No-Operation', 'IETF DRAFT draft-zeilenga-ldap-noop'),
+          '1.3.6.1.4.1.4203.666.5.16': ('1.3.6.1.4.1.4203.666.5.16', OID_CONTROL, 'LDAP Dereference', 'IETF DRAFT draft-masarati-ldap-deref'),
           '1.3.6.1.4.1.7628.5.101.1': ('1.3.6.1.4.1.7628.5.101.1', OID_CONTROL, 'LDAP subentries', 'IETF DRAFT draft-ietf-ldup-subentry'),
           '1.3.6.1.4.1.26027.1.5.2': ('1.3.6.1.4.1.26027.1.5.2', OID_CONTROL, 'Replication repair', 'OpenDS'),
           '2.16.840.1.113719.1.27.101.5': ('2.16.840.1.113719.1.27.101.5', OID_CONTROL, 'Simple password', 'NOVELL'),
@@ -624,13 +619,15 @@ Oids = {  # administrative role
           '2.16.840.1.113730.3.4.9': ('2.16.840.1.113730.3.4.9', OID_CONTROL, 'Virtual List View Request', 'IETF'),
           '2.16.840.1.113730.3.4.10': ('2.16.840.1.113730.3.4.10', OID_CONTROL, 'Virtual List View Response', 'IETF'),
           '2.16.840.1.113730.3.4.12': ('2.16.840.1.113730.3.4.12', OID_CONTROL, 'Proxied Authorization (old)', 'Netscape'),
-          '2.16.840.1.113730.3.4.13': ('2.16.840.1.113730.3.4.13', OID_CONTROL, 'iPlanet Directory Server Replication Update Information', 'iPlanet'),
-          '2.16.840.1.113730.3.4.14': ('2.16.840.1.113730.3.4.14', OID_CONTROL, 'Search on specific database', 'iPlanet'),
+          '2.16.840.1.113730.3.4.13': ('2.16.840.1.113730.3.4.13', OID_CONTROL, 'iPlanet Directory Server Replication Update Information', 'Netscape'),
+          '2.16.840.1.113730.3.4.14': ('2.16.840.1.113730.3.4.14', OID_CONTROL, 'Search on specific database', 'Netscape'),
           '2.16.840.1.113730.3.4.15': ('2.16.840.1.113730.3.4.15', OID_CONTROL, 'Authorization Identity Response Control', 'RFC3829'),
           '2.16.840.1.113730.3.4.16': ('2.16.840.1.113730.3.4.16', OID_CONTROL, 'Authorization Identity Request Control', 'RFC3829'),
-          '2.16.840.1.113730.3.4.17': ('2.16.840.1.113730.3.4.17', OID_CONTROL, 'Real attribute only request', 'iPlanet'),
+          '2.16.840.1.113730.3.4.17': ('2.16.840.1.113730.3.4.17', OID_CONTROL, 'Real attribute only request', 'Netscape'),
           '2.16.840.1.113730.3.4.18': ('2.16.840.1.113730.3.4.18', OID_CONTROL, 'Proxy Authorization Control', 'RFC6171'),
-          '2.16.840.1.113730.3.4.19': ('2.16.840.1.113730.3.4.19', OID_CONTROL, 'Virtual attribute only request', 'iPlanet'),
+          '2.16.840.1.113730.3.4.19': ('2.16.840.1.113730.3.4.19', OID_CONTROL, 'Chaining loop detection', 'Netscape'),
+          '2.16.840.1.113730.3.4.20': ('2.16.840.1.113730.3.4.20', OID_CONTROL, 'Mapping Tree Node - Use one backend [extended]', 'openLDAP'),
+          '2.16.840.1.113730.3.8.10.6': ('2.16.840.1.113730.3.8.10.6', OID_CONTROL, 'OTP Sync Request', 'freeIPA'),
 
           # dit content rules
 
@@ -855,6 +852,27 @@ Oids = {  # administrative role
           '2.16.840.1.113719.1.148.100.16': ('2.16.840.1.113719.1.148.100.16', OID_EXTENSION, 'SSLDAP_UNLOCK_SECRETS_REPLY', 'NOVELL'),
           '2.16.840.1.113719.1.148.100.17': ('2.16.840.1.113719.1.148.100.17', OID_EXTENSION, 'SSLDAP_SET_EP_MASTER_PASSWORD_REQUEST', 'NOVELL'),
           '2.16.840.1.113719.1.148.100.18': ('2.16.840.1.113719.1.148.100.18', OID_EXTENSION, 'SSLDAP_SET_EP_MASTER_PASSWORD_REPLY', 'NOVELL'),
+          '2.16.840.1.113730.3.5.1': ('2.16.840.1.113730.3.5.1', OID_EXTENSION, 'Transaction Request Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.2': ('2.16.840.1.113730.3.5.2', OID_EXTENSION, 'Transaction Response Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.3': ('2.16.840.1.113730.3.5.3', OID_EXTENSION, 'Transaction Response Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.4': ('2.16.840.1.113730.3.5.4', OID_EXTENSION, 'iPlanet Replication Response Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.5': ('2.16.840.1.113730.3.5.5', OID_EXTENSION, 'iPlanet End Replication Request Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.6': ('2.16.840.1.113730.3.5.6', OID_EXTENSION, 'iPlanet Replication Entry Request Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.7': ('2.16.840.1.113730.3.5.7', OID_EXTENSION, 'iPlanet Bulk Import Start Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.8': ('2.16.840.1.113730.3.5.8', OID_EXTENSION, 'iPlanet Bulk Import Finished Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.9': ('2.16.840.1.113730.3.5.9', OID_EXTENSION, 'iPlanet Digest Authentication Calculation Extended Operation', 'Netscape'),
+          '2.16.840.1.113730.3.5.10': ('2.16.840.1.113730.3.5.10', OID_EXTENSION, 'Distributed Numeric Assignment Extended Request', 'Netscape'),
+          '2.16.840.1.113730.3.5.11': ('2.16.840.1.113730.3.5.11', OID_EXTENSION, 'Distributed Numeric Assignment Extended Response', 'Netscape'),
+          '2.16.840.1.113730.3.5.12': ('2.16.840.1.113730.3.5.12', OID_EXTENSION, 'Start replication request', 'Netscape'),
+          '2.16.840.1.113730.3.5.13': ('2.16.840.1.113730.3.5.13', OID_EXTENSION, 'Start replication response', 'Netscape'),
+          '2.16.840.1.113730.3.6.5': ('2.16.840.1.113730.3.6.5', OID_EXTENSION, 'Replication CleanAllRUV', 'Netscape'),
+          '2.16.840.1.113730.3.6.6': ('2.16.840.1.113730.3.6.6', OID_EXTENSION, 'Replication Abort CleanAllRUV', 'Netscape'),
+          '2.16.840.1.113730.3.6.7': ('2.16.840.1.113730.3.6.7', OID_EXTENSION, 'Replication CleanAllRUV Retrieve MaxCSN', 'Netscape'),
+          '2.16.840.1.113730.3.6.8': ('2.16.840.1.113730.3.6.8', OID_EXTENSION, 'Replication CleanAllRUV Check Status', 'Netscape'),
+          '2.16.840.1.113730.3.8.10.1': ('2.16.840.1.113730.3.8.10.1', OID_EXTENSION, 'KeyTab set', 'FreeIPA'),
+          '2.16.840.1.113730.3.8.10.2': ('2.16.840.1.113730.3.8.10.2', OID_EXTENSION, 'KeyTab ret', 'FreeIPA'),
+          '2.16.840.1.113730.3.8.10.3': ('2.16.840.1.113730.3.8.10.3', OID_EXTENSION, 'Enrollment join', 'FreeIPA'),
+          '2.16.840.1.113730.3.8.10.5': ('2.16.840.1.113730.3.8.10.5', OID_EXTENSION, 'KeyTab get', 'FreeIPA'),
 
           # features (capabilities)
           '1.2.840.113556.1.4.800': ('1.2.840.113556.1.4.800', OID_FEATURE, 'Active directory', 'MICROSOFT'),

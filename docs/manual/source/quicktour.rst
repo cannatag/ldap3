@@ -2,43 +2,7 @@
 Quick tour
 ##########
 
-To use ldap3 just import the objects you need from the ldap3 namespace. You can choose the strategy that the client will
-use to connect to the server, there are 5 strategies that can be used for establishing a connection: SYNC, ASYNC, LDIF,
-RESTARTABLE and REUSABLE.
 
-With synchronous strategies (SYNC, RESTARTABLE) all LDAP operations return a boolean: True if they're successful, False
-if they fail.
-
-With asynchronous strategies (ASYNC, REUSABLE) all LDAP operations (except Bind that returns a boolean) return an
-integer, the *message_id* of the request. You can send multiple requests without waiting for responses and get each
-response with the get_response(message_id) method of the Connection object as you need it. You will get an exception if
-the response has not yet arrived after a specified time. In the get_response method this timeout value can be set
-(with the *timeout* attribute)) to the number of seconds to wait for the response to appear (defaults is 10 seconds).
-
-THe library raises one of the exceptions defined in the LDAPExceptionError hierarchy to signal errors, the last
-exception message is stored in the *last_error* attribute of the Connection object when available.
-
-After any operation, you'll find the following attributes populated in the Connection object:
-
-* result: the result of the last operation (synchronous strategies only)
-* response: the entries found if the last operation is a search operation (synchronous strategies only)
-* entries: the entries found exposed via the abstraction layer (useful when using ldap3 from the interactive shell)
-* last_error: any error occurred in the last operation (synchronous strategies only)
-* bound: True if the connection is actually bound to the server else False
-* listening: True if the socket is listening to the server
-* closed: True if the socket is not open
-
-You can have a LDIF representation of the response of a search with::
-
-    connection.response_to_ldif()
-
-or you can save the response to a JSON string::
-
-    entries = connection.response_to_json()
-
-you can alose have the response saved to a file in JSON format::
-
-    connection.response_to_json('entries-found.json')
 
 
 Connections

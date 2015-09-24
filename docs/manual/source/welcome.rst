@@ -9,7 +9,10 @@ the network via a Python interpreter and its Standard Library.
 License
 -------
 
-The ldap3 library is open source software released under the **LGPL v3 license**.
+The ldap3 library is open source software released under the **LGPL v3 license** (http://www.gnu.org/licenses/lgpl-3.0.html).
+This means that you can use the ldap3 library in any application (open or proprietary). You can also copy, distribute and modify
+the ldap3 library provided that modifications are described and licensed for free under LGPL.
+Derivatives works can only be redistributed under LGPL, but applications that use the library don't have to be.
 
 
 RFCs Compliance
@@ -23,14 +26,17 @@ The ldap3 library strictly follows the latest (as of 2015) RFCs describing the L
 The ldap3 library deliberately doesn't follow the specification in RFC4511 (4.5.1.8.1) that states that in a Search
 operation "an empty list with no attributes requests the return of all user attributes.". Instead you have to request
 each attribute explicitly or use the ldap3.ALL_ATTRIBUTES value in the attributes requested list in the Search operation.
-This is to avoid excessive server load caused by poor formed searches operation where all attributes are returned back
+This is to avoid unnecessary server and network load caused by poor formed searches operation where all attributes are returned back
 from the server when, probably, only a few of them if not only one, are really required by the application.
 
+The library also allows to send an empty member list while creating a GroupOfNames object, even if this is not allowed in the official LDAP v3 schema.
 
 PEP8 Compliance
 ---------------
 
-ldap3 is PEP8 compliant, except for line length.
+ldap3 is PEP8 compliant, except for line length. PEP8 (https://www.python.org/dev/peps/pep-0008/) is the standard coding style
+guide for the Python Standard Library and for many other Python projects. It provides a consistent way of writing code for maintainability
+and readability following the principle that "software is more read then written".
 
 
 Home Page
@@ -42,19 +48,20 @@ Project home page is https://github.com/cannatag/ldap3
 Documentation
 -------------
 
-Documentation is available at http://ldap3.readthedocs.org
+Documentation is available at http://ldap3.readthedocs.org. You can download a PDF copy of the manual at https://media.readthedocs.org/pdf/ldap3/stable/ldap3.pdf
 
 
 Download
 --------
 
-Package download is available at https://pypi.python.org/pypi/ldap3
+Package download is available at https://pypi.python.org/pypi/ldap3. If you use a package manager that support the *wheel* format
+you can get the universal wheel package, and install it on any supported Python environment.
 
 
 Install
 -------
 
-Install with **pip install ldap3**. The library auto install the pyasn1 package. If you need Kerberos support you must
+Install with **pip install ldap3**. If needed the library auto install the pyasn1 package. If you need Kerberos support you must
 install the gssapi package. ldap3 includes a backport (from Python 3.4.3) of ssl.check_hostnames to be used on older
 (version < 2.7.10) Python version. If you want to use a more up to date version of the check_hostnames feature you can
 install the backports.ssl_check_hostnames package that should be kept updated with the Standard Library of the latest
@@ -64,13 +71,14 @@ Python release.
 GIT repository
 --------------
 
-You can download the latest source at https://github.com/cannatag/ldap3/master
+You can download the latest released source software at https://github.com/cannatag/ldap3/tree/master
 
 
 Contribute to the project
 -------------------------
 
-You can contribute to the ldap3 project on https://github.com/cannatag/ldap3/dev
+ldap3 source is hosted on github. You can contribute to the ldap3 project on https://github.com/cannatag/ldap3/dev forking the project and
+submitting *pull requests+ with your modifications.
 
 
 Continuous integration

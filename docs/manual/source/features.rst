@@ -14,7 +14,7 @@ ldap3 Features
     * RFC4518: Internationalized String Preparation
     * RFC4519: Schema for User Applications
 
-    The following RFCs, describing additional functionalities of the LDAP3 protocol are also followed:
+    The following RFCs, describing additional functionalities of the LDAP3 protocol, are also followed:
 
     * RFC2696: LDAP Control Extension for Simple Paged Results Manipulation
     * RFC2849: The LDAP Data Interchange Format (LDIF) - Technical Specification
@@ -22,7 +22,7 @@ ldap3 Features
     * RFC3062: LDAP Password Modify Extended Operation
     * RFC4525: Modify-Increment Extension
     * RFC4530: entryUUID Operational Attribute
-    * RFC4532: Who am I?" Operation
+    * RFC4532: "Who am I?" Operation
     * RFC5020: entryDN Operational Attribute
 
 
@@ -36,38 +36,38 @@ ldap3 Features
     * No need to install binaries or non Python code. The very same code works on Windows, Linux, Mac OS X, FreeBSD,
       OpenBSD and other systems, either in Python 2 or Python 3.
 
-    * ldap3 **doesn't need a C compiler neither the OpenLDAP client library**
+    * ldap3 **doesn't need a C compiler neither the OpenLDAP client library**.
 
     * The library is self-contained and its installation is the same on any platform.
 
     * Socket and thread programming is appropriate for the platform used, with no changes needed in the configuration
       and in the exposed API.
 
-    * The ldap3 library depends on the standard Python library and the pyasn1 package only. If you need kerberos support
-      you must install the gssapi package. ldap3 includes a backport (from Python 3.4.3) of ssl.check_hostnames to be
-      used on older (version < 2.7.10) Python version. If you want to use a more up to date version of the check_hostnames
-      feature you can install the backports.ssl_check_hostnames package that should be kept updated with the Standard
-      Library of the latest Python release.
+    * The ldap3 library depends on the standard Python library and the pyasn1 package only. If you need Kerberos support
+      you must install the *gssapi* package. ldap3 includes a backport (from Python 3.4.3) of ```ssl.check_hostnames``` to be
+      used on older (version < 2.7.10) Python versions. If you want to use a more up to date version of the check_hostnames
+      feature you can install the *backports.ssl_check_hostnames* package that should be kept updated with the Standard
+      Library of the latest Python release by its maintainers.
 
-4. Compatible with Python 3 and Python 2:
+4. Compatible with Python 2 and Python 3:
 
     * A **single codebase** for Python 2 and Python 3
 
-    * Development is done in **Python 3 native code** that works in Python 2 too.
+    * Developed in **Python 3 native code** that works in Python 2 too.
 
-    * The library is **compatible with Python 2** (2.6 and 2.7) without any code compatibility parser/converter.
+    * The library is **compatible with Python 2** (2.6 and 2.7) without the need of any code compatibility parser/converter.
 
-    * Testing is done in Python 3 (3.4) Python 2 (2.6, 2.7), PyPy and PyPy3
+    * Testing is done in Python 3 (3.4, 3.5) Python 2 (2.6, 2.7), PyPy and PyPy3
 
-    * Unicode strings are properly managed.
+    * Unicode strings are properly managed in each Python version.
 
 5. Multiple *connection strategies* to choose from, either synchronous or asynchronous:
 
     * The library has different ways to connect to the LDAP server (no-thread, single-threaded, multi-threaded).
       This is achieved with **pluggable communication strategies** that can be changed on a per-connection basis.
 
-    * SYNC, ASYNC, LDIF, REUSABLE, RESTARTABLE are currently defined.
+    * SYNC, ASYNC, LDIF, RESTARTABLE (fault-tolerant), REUSABLE (fault-tolerant and pooled), are currently defined.
 
 6. Simplified query construction language:
 
-    * The library includes an  **abstraction layer** for performing LDAP queries.
+    * The library includes an  optional **abstraction layer** for performing LDAP queries.

@@ -3,38 +3,6 @@ Quick tour
 ##########
 
 
-
-
-Connections
------------
-
-The connection is the main object you use to perform any LDAP operation. You can create a connection with::
-
-    # import objects and constants
-    from ldap3 import Server, Connection, SIMPLE, SYNC, ASYNC, SUBTREE, ALL
-
-    # define the Server and the Connection objects
-    s = Server('servername', port = 389, get_info = ALL)  # define an unsecure LDAP server, requesting info on the server and the schema
-    c = Connection(s, auto_bind = True, client_strategy = SYNC, user='username', password='password', authentication=SIMPLE, check_names=True)
-    print(s.info) # display info from the server. OID are decoded when recognized by the library
-
-    # request a few objects from the LDAP server
-    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])
-    response = c.response
-    result = c.result
-    for r in response:
-        print(r['dn'], r['attributes'])  # return formatted attributes
-        print(r['dn'], r['raw_attributes'])  # return raw (bytes) attributes
-    print(result)
-    c.unbind()
-
-To move from the synchronous to the asynchronous strategy change the 'client_strategy' parameter to 'ASYNC' and
-substitute the *response* and *result* assignments with::
-
-    response, result = c.get_response(result)
-
-That's all you have to do to have an asynchronous threaded LDAP client connection.
-
 To get operational attributes (those attributes created automatically by the server, as createStamp, modifiedStamp, ...)
 for response objects add 'get_operational_attributes = True' in the search request::
 
@@ -69,24 +37,6 @@ open or bound its state will be restored when exiting the context. Connection is
 
 When using the context manager connections will be open and bound as you enter the Connection context and will be unbound
 when you leave the context. The Unbind operation will be tried even if the operations in context raise an exception.
-
-
-Binding
--------
-
-.. note::
-
-   For more comprehensive information about binding, see the :doc:`BIND <bind>` documentation.
-
-You can bind (authenticate) to the server with any of the authentication methods defined in the LDAP v3 protocol:
-Anonymous, Simple and SASL. An additional NTML method is defined to access Microsoft Active Directory servers.
-
-You can perform an automatic bind with the auto_bind=True parameter of the connection object or can connect performing
-a bind() operation. The bind() operation returns a boolean to indicate if the bind was succcesful.
-
-You can read the result of the bind operation in the 'result' attribute of the connection object. If auto_bind is not
-succesful the library will raise an LDAPBindError exception.
-
 
 Searching
 ---------

@@ -32,7 +32,8 @@ It's important to know what LDAP is not because people tend to call "LDAP" a pec
 *Lightweight Directory Access Protocol*. LDAP is a *protocol*, like many of the other 'trailing-P' words in the Internet
 ecosystem (HTTP, FTP, IP, TCP...). It is a set of rules you have to use to communicate with an external
 server/database/service/procedure/repository/product (all the things in the above list). Data managed via LDAP are
-key/value(s) pairs grouped in a hierarchical structure. This hierarchical structure is called the DIT (Directory
+key/value(s) pairs grouped in a hierarchical structure. The value referred by the key cacould be *multi-valued+ (can contains more
+than one attribute). This hierarchical structure is called the DIT (Directory
 Information Tree) but LDAP doesn't specify how the data is actually stored on the server neither how the user is authorized to
 read and modify them. There are only a few data types that every LDAP server must recognize (the standard *schema*
 we'll meet later).
@@ -324,8 +325,10 @@ Let's examine the LDAP server schema::
 The schema is a very long list that describes what kind of data types the LDAP server understands. It also specifies
 what attributes can be stored in each class. Some classes are container for other objects (either containers or leaf
 objects) and are used to build the hierarchy of the Directory Information Tree. Container objects can have attributes too.
-Every LDAP server must at least support the standard LDAP3 schema but can have additional custom classes and attributes.
-The schema defines also the syntaxes and the matching rules of the different kind of data types stored in the LDAP.
+One important specification in the schema is if the attribute is *multi-valued*. In this case more tnan a value can be stored
+in the attribute and all values are returnd when the attribute is requested in a search. Every LDAP server must at least support
+the standard LDAP3 schema but can have additional custom classes and attributes. The schema defines also the syntaxes and the
+matching rules of the different kind of data types stored in the LDAP.
 
 .. note::
     Object classes and attributes are independent objects. An attribute is not a "child" of a class neither a
@@ -355,11 +358,11 @@ SASL provides additional methods to identify the user, as an external certificat
     With ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
 
         # import class and constants
-        from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, SASL, NTLM)
+        from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, SASL, NTLM
 
         # define the server and the connection
-        s = Server('servername', get_info=ALL)
-        c = Connection(s, user="Domain\\User", password="password", authentication=NTLM)
+        server = Server('servername', get_info=ALL)
+        conn = Connection(server, user="Domain\\User", password="password", authentication=NTLM)
 
     This kind of authentication is not part of the LDAP 3 RFCs but uses a proprietary Microsoft mechanism called SICILY.
 
@@ -403,7 +406,7 @@ unsecure and then the channel is secured when we issue the StartTLS operation.
 .. note:: LDAP URL scheme
 
     A cleartext connection to a server can be expressed in a URL with the **ldap://** scheme, while LDAP over TLS is indicated as **ldaps://** even if
-    this is not spècified in any of the LDAP RFCs. If a scheme is included in the server name while creating the Server object, the ldap3 library
+    this is not spï¿½cified in any of the LDAP RFCs. If a scheme is included in the server name while creating the Server object, the ldap3 library
     recognizes opens the proper port, unencrypted or with the specified (or default) TLS options.
 
 .. sidebar:: Default port numbers
@@ -423,7 +426,6 @@ if we check the conn status we see that the connection is on a secure channel, e
     >>> print(conn)
     ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:389> - tls started - listening - SyncStrategy - internal decoder
 
-
 There is no way to return to an unencrypted connection once a StartTLS operation is issued.
 
 To start the connection on a SSL socket::
@@ -432,7 +434,6 @@ To start the connection on a SSL socket::
     >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
     >>> print(conn)
     ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
-
 
 Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no check of
 certificate validity. You can customize the TLS behaviour providing a Tls object to the Server object with the security context configuration::
@@ -449,15 +450,40 @@ certificate validity. You can customize the TLS behaviour providing a Tls object
 We get a LDAPSocketOpenError exception because the certificate cannot be verified. You can configure the Tls object with a number of options.
 Look at :ref:`the SSL and TLS documentation <ssltls>` for more information.
 
-Operations
-==========
+Database Operations
+===================
 
-After any operation, you'll find the following attributes populated in the Connection object:
+As any system that stores information, LDAP let you perform the standard CRUD (Create, Read, Update, Delete) operations, but their usage is someway rudimentary.
+Again, if you think of the intended use of the original DAP protocol, storing simple key-values pairs related to an entry to be used in a phone directory,
+this makes sense. Data are written once, seldom modified, and eventually deleted, So the create (Add in LDAP), update (Modify) and delete (Delete) operations
+are very basic while the Read (Search) operation is richer of options, but lacks many capabilities you would expect in a modern query language (as 1 to N relationship
+or data validation). Nonetheless almost everything you can do in a modern database can be equally done in LDAP. Furthermore consider that even if an LDAP
+server can be accessed by multiple clients simultaniously, the LDAP protocol itself has no notion of "transaction", so if you need to issue multiple Add
+or Modify operations and you want to keep your data consisten, you must investigate the extended operations of the specific LDAP server you're connecting
+to, to see if it supports transactions for multiple operations.
 
-* result: the result of the last operation (synchronous strategies only)
-* response: the entries found if the last operation is a search operation (synchronous strategies only)
-* entries: the entries found exposed via the abstraction layer (useful when using ldap3 from the interactive shell)
-* last_error: any error occurred in the last operation (synchronous strategies only)
+.. note:: Synchronous vs Asynchronous
+
+    You can submit operations to the server in two different ways: **synchronous** and **asynchronous**. In the former you send the request and wait for the response,
+    while in the latter you send the request, store its *message id* (a unique number stamped on every message of your LDAP session) and later retrieve the relevant response
+    from the server. You'll probably always stick with the synchronous way to access an LDAP server, because nowadays LDAP servers are very fast in sending the response, but the
+    asynchronous mode is still useful if your program is an event-driven one (maybe using an asynchronous event loop). ldap3 supports both of this models with its different
+    *communication strategies*.
+
+
+LDAP also supports the Compare operation that returns True only if an attribute has the value you specify in the request. This can seem useless at first (you
+could read the attribute and perform the comparison in your code) but it can be useful to check the presence of a value, even in a multi-valued attribute,
+without having the permission to read it. This obviuosly rely upon some "access restriction" mechanism that should be present on the server,
+but the LDAP protocol doesn't specify how it should work. It may be also a way to check the validity of a password without performing a Bind operation
+with the specific user.
+
+
+After any synchronous operation, you'll find the following attributes populated in the Connection object:
+
+* result: the result of the last operation as returned by the server
+* response: the entries found if the last operation is a Search operation
+* entries: the entries found exposed via the abstraction layer
+* last_error: any error occurred in the last operation
 * bound: True if the connection is actually bound to the server else False
 * listening: True if the socket is listening to the server
 * closed: True if the socket is not open
@@ -466,6 +492,39 @@ After any operation, you'll find the following attributes populated in the Conne
 Performing searches
 ===================
 
+The Search operation in ldap3 has meny parameters, but only a few of them are mandatory:
+
+* search_base: the position in the Directory Tree where we start our search
+* search_filter: what are we actually searching
+
+.. sidebar:: Search filter syntax
+
+    Search filters are odds if you're unfamiliar with their syntax. They are based on assertions. One *assertion* is a bracketed expression
+    where you affirm something about an attribute and its value as ```(givenName=John)``` or ```(maxRetries>=10)```. Each assertion resolves
+    to True or False, or Undefined (that is treated as False by most servers) for a specific entry in the DIT. You can use the * (asterisk)
+    character as a wildcard specifier. Assertions can be grouped in boolean sets where each assertion (*and* set, specified with &) or just one
+    assertion (*or* set, specified with |) must be verified. A single assertion can be negated (*not* set, specified with !). Each set must
+    be bracketed, allowing for recursive filters. To search for all users named John with an email ending with '@example.org' the filter will
+    be ```(&(givenName=John)(mail=*@example.org))```, to search for all users named John or Fred with the email ending in '@example.org' the
+    filter will be ```(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))``` while to search for all users that have a givenName
+    different from Smith the filter will be ```(&(givenName=*)(!(givenName=Smith)))```. Longer search filters can easily become hard to understand
+    so it may be useful divide them on multple lines while writing/reading them:
+    ```(&
+         (|
+           (givenName=Fred)
+           (givenName=John)
+         )
+         (mail=*@example.org)
+       )```
+
+
+
+
+Let's try to search something in the FreeIPA demo LDAP server:
+
+
+
+... work in progress ...
 
 You can have a LDIF representation of the response of a search with::
 
@@ -479,6 +538,22 @@ you can alose have the response saved to a file in JSON format::
 
     connection.response_to_json('entries-found.json')
 
+
+To get operational attributes (those attributes created automatically by the server, as createStamp, modifiedStamp, ...)
+for response objects add 'get_operational_attributes = True' in the search request::
+
+    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attributes = True)
+
+
+After a search operation you can access the connection.entries property, to get the search result with a more object
+oriented representation::
+
+    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'givenName', 'objectClass'], get_operational_attributes = True)
+    for entry in c.entries:
+        print(entry.entry_get_dn())
+        print(entry.givenName, entry.sn)
+
+Look at 'Entry' in the 'abstraction layer' chapter for the description of the Entry object)
 
 Communication strategies
 ========================

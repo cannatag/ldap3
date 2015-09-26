@@ -398,16 +398,16 @@ If we check the connection info we see that we are using a cleartext (insecure) 
     >>> print(conn)
     ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
 
-Our credentials pass unencrypted over the wire, so they can be easily captured with a network sniffer. The LDAP protocol provides two ways
-to secure a connection: **LDAP over TLS** (or SSL) or the **StartTLS** extended operation. This two method both establish a secure TLS connection
+Our credentials pass unencrypted over the wire, so that they can be easily captured with a network sniffer. The LDAP protocol provides two ways
+to secure a connection: **LDAP over TLS** (or over SSL) or the **StartTLS** extended operation. This two method both establish a secure TLS connection
 but with the former the communication channel is secured with TLS as soon as the connection is open, while with the latter the connection is open as
 unsecure and then the channel is secured when we issue the StartTLS operation.
 
 .. note:: LDAP URL scheme
 
-    A cleartext connection to a server can be expressed in a URL with the **ldap://** scheme, while LDAP over TLS is indicated as **ldaps://** even if
-    this is not sp�cified in any of the LDAP RFCs. If a scheme is included in the server name while creating the Server object, the ldap3 library
-    recognizes opens the proper port, unencrypted or with the specified (or default) TLS options.
+    A cleartext connection to a server can be expressed in a URL with the **ldap://** scheme, while LDAP over TLS is indicated as **ldaps://** (even if
+    this is not specified in any of the LDAP RFCs). If a scheme is included in the server name while creating the Server object, the ldap3 library
+    opens the proper port, unencrypted or with the specified TLS options (or default options if none is specified).
 
 .. sidebar:: Default port numbers
 
@@ -426,7 +426,7 @@ if we check the conn status we see that the connection is on a secure channel, e
     >>> print(conn)
     ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:389> - tls started - listening - SyncStrategy - internal decoder
 
-There is no way to return to an unencrypted connection once a StartTLS operation is issued.
+There is no way to return to a cleartext status once a StartTLS operation is issued on the connection.
 
 To start the connection on a SSL socket::
 
@@ -435,8 +435,8 @@ To start the connection on a SSL socket::
     >>> print(conn)
     ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
 
-Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no check of
-certificate validity. You can customize the TLS behaviour providing a Tls object to the Server object with the security context configuration::
+Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no checking of
+certificate validity. You can customize the TLS behaviour providing a Tls object to the Server object using the security context configuration::
 
     >>> from ldap3 import Server, Connection, Tls
     >>> import ssl
@@ -447,67 +447,70 @@ certificate validity. You can customize the TLS behaviour providing a Tls object
     ...
     ldap3.core.exceptions.LDAPSocketOpenError: (LDAPSocketOpenError('socket ssl wrapping error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)',),)
 
-We get a LDAPSocketOpenError exception because the certificate cannot be verified. You can configure the Tls object with a number of options.
-Look at :ref:`the SSL and TLS documentation <ssltls>` for more information.
+In this specific case, using the FreeIPA demo server we get a LDAPSocketOpenError exception because the certificate cannot be verified.
+You can configure the Tls object with a number of options. Look at :ref:`the SSL and TLS documentation <ssltls>` for more information.
 
 Database Operations
 ===================
 
 As any system that stores information, LDAP let you perform the standard CRUD (Create, Read, Update, Delete) operations, but their usage is someway rudimentary.
-Again, if you think of the intended use of the original DAP protocol, storing simple key-values pairs related to an entry to be used in a phone directory,
+Again, if you think of the intended use of the original DAP protocol (storing simple key-values pairs related to an entry to be used in a phone directory)
 this makes sense. Data are written once, seldom modified, and eventually deleted, So the create (Add in LDAP), update (Modify) and delete (Delete) operations
 are very basic while the Read (Search) operation is richer of options, but lacks many capabilities you would expect in a modern query language (as 1 to N relationship
-or data validation). Nonetheless almost everything you can do in a modern database can be equally done in LDAP. Furthermore consider that even if an LDAP
-server can be accessed by multiple clients simultaniously, the LDAP protocol itself has no notion of "transaction", so if you need to issue multiple Add
-or Modify operations and you want to keep your data consisten, you must investigate the extended operations of the specific LDAP server you're connecting
+or data manupulation). Nonetheless almost everything you can do in a modern database can be equally done in LDAP. Furthermore consider that even if an LDAP
+server can be accessed by multiple clients simultaneously, the LDAP protocol itself has no notion of "transaction", so if you need to issue multiple Add
+or Modify operations in an atomic way (to keep your data consistent), you must investigate the extended operations of the specific LDAP server you're connecting
 to, to see if it supports transactions for multiple operations.
 
 .. note:: Synchronous vs Asynchronous
 
     You can submit operations to the server in two different ways: **synchronous** and **asynchronous**. In the former you send the request and wait for the response,
-    while in the latter you send the request, store its *message id* (a unique number stamped on every message of your LDAP session) and later retrieve the relevant response
-    from the server. You'll probably always stick with the synchronous way to access an LDAP server, because nowadays LDAP servers are very fast in sending the response, but the
-    asynchronous mode is still useful if your program is an event-driven one (maybe using an asynchronous event loop). ldap3 supports both of this models with its different
-    *communication strategies*.
+    while in the latter you send the request, store its *message id* (a unique number stamped on every message of your LDAP session), somewhere in the ldap3 library
+    an asynchronous thread listens to the connection and store all responses it receives from the server and later you ask to the connection for the relevant response (in
+    case it is still not received you'll try to retrieve it again later). You'll probably always stick with the synchronous way to access an LDAP server, because
+    nowadays LDAP servers are very fast in responding, but the asynchronous mode is still useful if your program is event-driven (maybe using an asynchronous event loop).
+    ldap3 supports both of this models with its different *communication strategies*.
 
 
 LDAP also supports the Compare operation that returns True only if an attribute has the value you specify in the request. This can seem useless at first (you
-could read the attribute and perform the comparison in your code) but it can be useful to check the presence of a value, even in a multi-valued attribute,
-without having the permission to read it. This obviuosly rely upon some "access restriction" mechanism that should be present on the server,
-but the LDAP protocol doesn't specify how it should work. It may be also a way to check the validity of a password without performing a Bind operation
-with the specific user.
+could read the attribute and perform the comparison using more powerful tools in your code) but it can be useful to check the presence of a value,
+even in a multi-valued attribute, without having the permission to read it. This obviuosly rely upon some "access restriction" mechanism that should
+be present on the server, but the LDAP protocol doesn't specify how it should work. It may be also a way to check the validity of a password without
+performing a Bind operation with the specific user.
 
 
 After any synchronous operation, you'll find the following attributes populated in the Connection object:
 
-* result: the result of the last operation as returned by the server
-* response: the entries found if the last operation is a Search operation
-* entries: the entries found exposed via the abstraction layer
-* last_error: any error occurred in the last operation
-* bound: True if the connection is actually bound to the server else False
-* listening: True if the socket is listening to the server
-* closed: True if the socket is not open
+* ```result```: the result of the last operation (as returned by the server)
+* ```response```: the entries found if the last operation is a Search operation
+* ```entries```: the entries found exposed via the abstraction layer
+* ```last_error```: any error occurred in the last operation
+* ```bound```: True if the connection is actually bound to the server else False
+* ```listening```: True if the socket is listening to the server
+* ```closed```: True if the socket is not open
 
 
 Performing searches
 ===================
 
-The Search operation in ldap3 has meny parameters, but only a few of them are mandatory:
+The Search operation in ldap3 has meny parameters, but only two of them are mandatory:
 
-* search_base: the position in the Directory Tree where we start our search
-* search_filter: what are we actually searching
+* ```search_base```: the location in the Directory Tree where the search will start
+* ```search_filter```: what are we actually searching
 
 .. sidebar:: Search filter syntax
 
-    Search filters are odds if you're unfamiliar with their syntax. They are based on assertions. One *assertion* is a bracketed expression
+    Search filters look odd if you're unfamiliar with their syntax. They are based on assertions. One *assertion* is a bracketed expression
     where you affirm something about an attribute and its value as ```(givenName=John)``` or ```(maxRetries>=10)```. Each assertion resolves
-    to True or False, or Undefined (that is treated as False by most servers) for a specific entry in the DIT. You can use the * (asterisk)
-    character as a wildcard specifier. Assertions can be grouped in boolean sets where each assertion (*and* set, specified with &) or just one
-    assertion (*or* set, specified with |) must be verified. A single assertion can be negated (*not* set, specified with !). Each set must
-    be bracketed, allowing for recursive filters. To search for all users named John with an email ending with '@example.org' the filter will
-    be ```(&(givenName=John)(mail=*@example.org))```, to search for all users named John or Fred with the email ending in '@example.org' the
-    filter will be ```(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))``` while to search for all users that have a givenName
-    different from Smith the filter will be ```(&(givenName=*)(!(givenName=Smith)))```. Longer search filters can easily become hard to understand
+    to True, False or Undefined (that is treated as False by most servers) for a specific entry in the Tree. You can use the ```*``` (asterisk)
+    character as a wildcard specifier. Assertions can be grouped in boolean sets where each assertion (*and* set, specified with ```&```) or just one
+    assertion (*or* set, specified with ```|```) must be True. A single assertion can be negated (*not* set, specified with ```!```). Each set must
+    be bracketed, allowing for recursive sets.
+
+    For example to search for all users named John with an email ending with '@example.org' the filter will be ```(&(givenName=John)(mail=*@example.org))```,
+    to search for all users named John or Fred with the email ending in '@example.org' the filter will be
+    ```(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))``` while to search for all users that have a givenName different from Smith the filter
+    will be ```(&(givenName=*)(!(givenName=Smith)))```. Longer search filters can easily become hard to understand
     so it may be useful divide them on multple lines while writing/reading them:
     ```(&
          (|
@@ -517,11 +520,7 @@ The Search operation in ldap3 has meny parameters, but only a few of them are ma
          (mail=*@example.org)
        )```
 
-
-
-
 Let's try to search something in the FreeIPA demo LDAP server:
-
 
 
 ... work in progress ...

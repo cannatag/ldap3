@@ -115,7 +115,7 @@ or shorter::
     >>> conn = Connection('ipa.demo1.freeipa.org', auto_bind=True)
     True
 
-It hardly could be simpler than that. The ```auto_bind``` parameter forces the bind() operation while creating the Connection object.
+It hardly could be simpler than that. The ``auto_bind`` parameter forces the bind() operation while creating the Connection object.
 We have now a full working anonymous connection open and bound to the server with a *synchronous* communication strategy (more on
 communication strategies later)::
 
@@ -161,8 +161,8 @@ in the interactive console and works for most of the ldap3 library objects::
 Getting information from the server
 ===================================
 
-The LDAP protocol specifies that an LDAP server must return some information about itself. We can requeste them with the ```get_info=ALL```
-parameter and access them with the ```.info``` attribute of the Server object::
+The LDAP protocol specifies that an LDAP server must return some information about itself. We can requeste them with the ``get_info=ALL``
+parameter and access them with the ``.info`` attribute of the Server object::
 
     >>> server = Server('ipa.demo1.freeipa.org', get_info=ALL)
     >>> conn = Connection(server, auto_bind=True)
@@ -332,7 +332,7 @@ matching rules of the different kind of data types stored in the LDAP.
 
 .. note::
     Object classes and attributes are independent objects. An attribute is not a "child" of a class neither a
-    class is a "parent" of any attribute. Classes and attributes are linked in the schema with the ```MAY``` and ```MUST``` options
+    class is a "parent" of any attribute. Classes and attributes are linked in the schema with the ``MAY`` and ``MUST`` options
     of the object class definition that specify what attributes an entry can contain and which of them are mandatory.
 
 .. sidebar::
@@ -343,8 +343,8 @@ matching rules of the different kind of data types stored in the LDAP.
 
 While reading the schema the ldap3 library will try to automatically convert data to their representation. So an integer
 will be returned as an int, a generalizedDate as a datetime object and so on. If you don't read the schema all the values
-are returned as bytes and unicode strings. You can control this behaviour with the ```get_info``` parameter of the Server object
-and the ```check_names``` parameter of the Connection object.
+are returned as bytes and unicode strings. You can control this behaviour with the ``get_info`` parameter of the Server object
+and the ``check_names`` parameter of the Connection object.
 
 Did you note that we still have not provided any credentials to the server? LDAP allow users to perform operations anonymously without
 declaring their identity! Obviously what the server returns to an anonymous connection is someway limited. This makes sense because
@@ -414,7 +414,7 @@ unsecure and then the channel is secured when we issue the StartTLS operation.
    The default port for cleartext (unsecure) communication is **389**, while the default for LDAP over TLS (secure) communication is **636**. Note
    that because you can start a session on the 389 port and then increase the security level with the StartTLS operation, you can have a secure
    communication even on the 389 port (usually considered unsecure). Obviously the server can listen on additional or different ports. When
-   defining the Server object you can specify which port to use with the ```port``` parameter.
+   defining the Server object you can specify which port to use with the ``port`` parameter.
 
 Let's try to use the StartTLS extended operation::
 
@@ -454,71 +454,74 @@ Database Operations
 ===================
 
 As any system that stores information, LDAP let you perform the standard CRUD (Create, Read, Update, Delete) operations, but their usage is someway rudimentary.
-Again, if you think of the intended use of the original DAP protocol (storing simple key-values pairs related to an entry to be used in a phone directory)
-this makes sense. Data are written once, seldom modified, and eventually deleted, So the create (Add in LDAP), update (Modify) and delete (Delete) operations
-are very basic while the Read (Search) operation is richer of options, but lacks many capabilities you would expect in a modern query language (as 1 to N relationship
-or data manupulation). Nonetheless almost everything you can do in a modern database can be equally done in LDAP. Furthermore consider that even if an LDAP
-server can be accessed by multiple clients simultaneously, the LDAP protocol itself has no notion of "transaction", so if you need to issue multiple Add
-or Modify operations in an atomic way (to keep your data consistent), you must investigate the extended operations of the specific LDAP server you're connecting
-to, to see if it supports transactions for multiple operations.
+Again, if you think of the intended use of the original DAP protocol (storing simple key-values pairs related to an entry to use in a phone directory)
+this makes sense. An entry is written once, seldom modified, and eventually deleted, So the create (**Add** in LDAP), update (**Modify** or **ModifyDn**)
+and delete (**Delete**) operations have a very basic usage while the Read (**Search**) operation is richer of options, but lacks many capabilities
+you would expect in a modern query language (as 1 to N relationship, joining, or server data manipulation). Nonetheless almost everything you can do in a modern
+database can be equally done in LDAP. Furthermore consider that even if an LDAP server can be accessed by multiple clients simultaneously, the LDAP
+protocol itself has no notion of "transaction", so if you want to issue multiple Add or Modify operations in an atomic way (to keep your data consistent),
+you must investigate the extended operations of the specific LDAP server you're connecting to, to see if it supports transactions for multiple operations.
 
 .. note:: Synchronous vs Asynchronous
 
-    You can submit operations to the server in two different ways: **synchronous** and **asynchronous**. In the former you send the request and wait for the response,
-    while in the latter you send the request, store its *message id* (a unique number stamped on every message of your LDAP session), somewhere in the ldap3 library
-    an asynchronous thread listens to the connection and store all responses it receives from the server and later you ask to the connection for the relevant response (in
-    case it is still not received you'll try to retrieve it again later). You'll probably always stick with the synchronous way to access an LDAP server, because
-    nowadays LDAP servers are very fast in responding, but the asynchronous mode is still useful if your program is event-driven (maybe using an asynchronous event loop).
+    You can submit operations to the server in two different ways: **synchronous** and **asynchronous**. While in the former you just send the request and
+    wait for the response, in the latter the ldap3 library constantly listens to the server (in an independent thread). When you send a request you must
+    store its *message id* (a unique number stamped on every message of your LDAP session) in your code so you can ask later to the ldap3 for the relevant response
+    when it's ready. You'll probably always stick with the synchronous way to access an LDAP server, because nowadays LDAP servers are fast to respond,
+    but the asynchronous mode is still useful if your program is event-driven (maybe using an asynchronous event loop).
+
     ldap3 supports both of this models with its different *communication strategies*.
 
 
-LDAP also supports the Compare operation that returns True only if an attribute has the value you specify in the request. This can seem useless at first (you
-could read the attribute and perform the comparison using more powerful tools in your code) but it can be useful to check the presence of a value,
-even in a multi-valued attribute, without having the permission to read it. This obviuosly rely upon some "access restriction" mechanism that should
-be present on the server, but the LDAP protocol doesn't specify how it should work. It may be also a way to check the validity of a password without
+LDAP also supports the **Compare** operation that returns True only if an attribute has the value you specify in the request. At first this can seem
+useless (you could read the attribute and perform the comparison using more powerful tools in your code) but it is used to check the presence
+of a value, even in a multi-valued attribute, without having the permission to read it. This obviuosly rely upon some "access restriction" mechanism that must
+exist on the server, but the LDAP protocol doesn't specify how this mechanism works. Compare is also used to check the validity of a password without
 performing a Bind operation with the specific user.
 
 
 After any synchronous operation, you'll find the following attributes populated in the Connection object:
 
-* ```result```: the result of the last operation (as returned by the server)
-* ```response```: the entries found if the last operation is a Search operation
-* ```entries```: the entries found exposed via the abstraction layer
-* ```last_error```: any error occurred in the last operation
-* ```bound```: True if the connection is actually bound to the server else False
-* ```listening```: True if the socket is listening to the server
-* ```closed```: True if the socket is not open
+* ``result``: the result of the last operation (as returned by the server)
+* ``response``: the entries found (if the last operation is a Search)
+* ``entries``: the entries found exposed via the abstraction layer (if the last operation is a Search)
+* ``last_error``: the error occurred in the last operation, if any
+* ``bound``: True if the connection is actually bound to the server
+* ``listening``: True if the socket is listening to the server
+* ``closed``: True if the socket is not open
 
 
 Performing searches
 ===================
 
-The Search operation in ldap3 has meny parameters, but only two of them are mandatory:
+The Search operation in ldap3 has a number of parameters, but only two of them are mandatory:
 
-* ```search_base```: the location in the Directory Tree where the search will start
-* ```search_filter```: what are we actually searching
+* ``search_base``: the location in the Directory Tree where the search will start
+* ``search_filter``: what are we actually searching
 
 .. sidebar:: Search filter syntax
 
-    Search filters look odd if you're unfamiliar with their syntax. They are based on assertions. One *assertion* is a bracketed expression
-    where you affirm something about an attribute and its value as ```(givenName=John)``` or ```(maxRetries>=10)```. Each assertion resolves
-    to True, False or Undefined (that is treated as False by most servers) for a specific entry in the Tree. You can use the ```*``` (asterisk)
-    character as a wildcard specifier. Assertions can be grouped in boolean sets where each assertion (*and* set, specified with ```&```) or just one
-    assertion (*or* set, specified with ```|```) must be True. A single assertion can be negated (*not* set, specified with ```!```). Each set must
-    be bracketed, allowing for recursive sets.
+    Search filters are based on assertions and look odd when you're unfamiliar with their syntax. One *assertion* is a bracketed expression
+    that affirms something about an attribute and its value, as ``(givenName=John)`` or ``(maxRetries>=10)``. Each assertion resolves
+    to True, False or Undefined (that is treated as False) for one or more entries in the Tree. Assertions can be grouped in boolean sets
+    where each assertion (*and* set, specified with ``&``) or just one assertion (*or* set, specified with ``|``) must be True. A single
+    assertion can be negated (*not* set, specified with ``!``). Each set must be bracketed, allowing for recursive sets.  You can use the ``*`` (asterisk)
+    character as a wildcard in the usual way.
 
-    For example to search for all users named John with an email ending with '@example.org' the filter will be ```(&(givenName=John)(mail=*@example.org))```,
+    For example, to search for all users named John with an email ending with '@example.org' the filter will be ``(&(givenName=John)(mail=*@example.org))``,
     to search for all users named John or Fred with the email ending in '@example.org' the filter will be
-    ```(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))``` while to search for all users that have a givenName different from Smith the filter
-    will be ```(&(givenName=*)(!(givenName=Smith)))```. Longer search filters can easily become hard to understand
-    so it may be useful divide them on multple lines while writing/reading them:
-    ```(&
+    ``(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))`` while to search for all users that have a givenName different from Smith the filter
+    will be ``(&(givenName=*)(!(givenName=Smith)))`` (The first assertion in the *and* set is needed to ensure the presence of the value). Longer
+    search filters can easily become hard to understand so it may be useful to divide them on multple lines while writing/reading them::
+
+    (&
          (|
            (givenName=Fred)
            (givenName=John)
          )
          (mail=*@example.org)
-       )```
+       )
+
 
 Let's try to search something in the FreeIPA demo LDAP server:
 

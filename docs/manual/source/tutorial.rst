@@ -19,7 +19,7 @@ If you're reading this tutorial I assume that you already know what LDAP is, or 
 don't know anything about LDAP after reading this tutorial you should be to access an LDAP compliant server and use it without bothering with
 the many glitches of the LDAP protocol.
 
-I rather want to be sure that you are aware of what LDAP **is not**:
+I'd rather want to be sure that you are aware of what LDAP **is not**:
 
 - is not a server
 - is not a database
@@ -29,18 +29,17 @@ I rather want to be sure that you are aware of what LDAP **is not**:
 - is not an open source neither a closed source product
 
 It's important to know what LDAP is not because people tend to call "LDAP" a peculiar part of what they use of the
-*Lightweight Directory Access Protocol*. LDAP is a *protocol*, like many of the other 'trailing-P' words in the Internet
-ecosystem (HTTP, FTP, IP, TCP...). It is a set of rules you have to use to communicate with an external
+*Lightweight Directory Access Protocol*. LDAP is a *protocol* and as other 'trailing-P' words in the Internet
+ecosystem (HTTP, FTP, TCP, IP, ...) it is a set of rules you must use to communicate with an external
 server/database/service/procedure/repository/product (all the things in the above list). Data managed via LDAP are
-key/value(s) pairs grouped in a hierarchical structure. The value referred by the key cacould be *multi-valued+ (can contains more
-than one attribute). This hierarchical structure is called the DIT (Directory
-Information Tree) but LDAP doesn't specify how the data is actually stored on the server neither how the user is authorized to
+key/value(s) pairs grouped in a hierarchical structure. This hierarchical structure is called the DIT (Directory
+Information Tree). LDAP doesn't specify how the data is actually stored on the server neither how the user is authorized to
 read and modify them. There are only a few data types that every LDAP server must recognize (the standard *schema*
 we'll meet later).
 
 That's all, all the (sometime too complex) LDAP machinery you will interact with has this only purpose.
 
-Being a standard protocol, LDAP is not related to any specific product and it's described in a set of RFC (Request for
+Being a protocol, LDAP is not related to any specific product and it is described in a set of RFC (Request for
 comments, the official rules of the Internet ecosystem). Its latest version is 3 and is documented in the RFC4510 and subsequents RFCs
 released in June 2006.
 
@@ -52,15 +51,16 @@ You may wonder why the "L" in LDAP? Its ancestor, called DAP (Directory Access P
 by the CCITT (now ITU-T), the International Committee for Telephone and Telegraphy (the venerable entity that gave us, among
 others, the fax and the modem protocols we used in the pre-Internet era). DAP was a very heavy and hard to implement protocol
 (either for the client and the server components) and was not accessible via TCP/IP. In 1993 a lighter access protocol
-was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards followed server products that could understand LDAP directly
-and the gateway to DAP was soon cut off. LDAP v3 was first documented in 1997 and its documentation was revised in 2006.
+was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards followed server products that
+could understand LDAP directly and the gateway to DAP was soon cut off. LDAP v3 was first documented in 1997 and its
+documentation was revised in 2006.
 
 
 The ldap3 package
 =================
 
 ldap3 is a fully compliant LDAP v3 client library and follows the latest standard RFCs. It's written from scratch to be
-compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can access the network via the
+compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can access the network via the Python
 standard library.
 
 Chances are that you find the ldap3 package already installed (or installable with the local package manager) on your machine, just try
@@ -72,7 +72,7 @@ If you get an ImportError you need to install the package from PyPI via pip::
 
 
 .. warning::
-   If pip complains about certificates you should specify the path to the PyPI CA with the --cert parameter::
+   If pip complains about certificates you should specify the path to the PyPI CA certificate with the --cert parameter::
 
    pip install ldap3 --cert /path/to/the/DigiCert_High_Assurance_EV_Root_CA.pem
 
@@ -81,7 +81,7 @@ or you can download the source from https://github.com/cannatag/ldap3 and instal
 
     python setup.py install
 
-ldap3 installs the pyasn1 package if not present. This package is used to communicate with the server over the network.
+ldap3 installs the **pyasn1** package if not present. This package is used to communicate with the server over the network.
 
 ldap3 usage is straightforward: you define a Server object, a Connection object tied to the Server and then issue commands to it.
 A server can have more than one connection and there are different communication strategies to choose from. All the imports

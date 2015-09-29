@@ -54,7 +54,7 @@ class Entry(object):
         self.__dict__['_reader'] = reader
 
     def __repr__(self):
-        if self._dn:
+        if self._dn is not None:
             r = 'DN: ' + to_stdout_encoding(self._dn) + linesep
             if self._attributes:
                 for attr in sorted(self._attributes):

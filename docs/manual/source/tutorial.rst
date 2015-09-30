@@ -575,15 +575,11 @@ returned by the server) in the ```values``` and ```raw_values``` attribute::
     krbLastPwdChange: 2015-09-30 04:06:59+00:00
     >>> entry['KRB LAST PWD CHANGE']
     krbLastPwdChange: 2015-09-30 04:06:59+00:00
+
     >>> e.krbLastPwdChange.values
     [datetime.datetime(2015, 9, 30, 4, 6, 59, tzinfo=OffsetTzInfo(offset=0, name='UTC'))]
     >>> entry.krbLastPwdChange.raw_values
     [b'20150930040659Z']
-
-
-
-
-
 
 
 ... work in progress ...

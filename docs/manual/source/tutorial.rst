@@ -123,7 +123,7 @@ communication strategies later)::
     ldap://ipa.demo1.freeipa.org:389 - cleartext - user: None - bound - open - <local: 192.168.1.101:49813 - remote: 209.132.178.99:389> -
     tls not started - listening - SyncStrategy - internal decoder
 
-With print(conn) we ask the connection for its status and get back a lot of information:
+With print(conn) we ask to the connection its status and get back a lot of information:
 
 ======================================================= ==================================================================
 ldap://ipa.demo1.freeipa.org:389                        the server URL (scheme, name and port we are connected to)

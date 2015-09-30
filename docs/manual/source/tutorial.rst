@@ -358,7 +358,7 @@ SASL provides additional methods to identify the user, as an external certificat
     With ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
 
         # import class and constants
-        from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, SASL, NTLM
+        from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, NTLM
 
         # define the server and the connection
         server = Server('servername', get_info=ALL)
@@ -514,16 +514,76 @@ The Search operation in ldap3 has a number of parameters, but only two of them a
     will be ``(&(givenName=*)(!(givenName=Smith)))`` (The first assertion in the *and* set is needed to ensure the presence of the value). Longer
     search filters can easily become hard to understand so it may be useful to divide them on multple lines while writing/reading them::
 
-    (&
-         (|
-           (givenName=Fred)
-           (givenName=John)
-         )
-         (mail=*@example.org)
-       )
+        (&
+            (|
+                (givenName=Fred)
+                (givenName=John)
+            )
+            (mail=*@example.org)
+        )
 
 
-Let's try to search something in the FreeIPA demo LDAP server:
+Let's try to search all the users in the FreeIPA demo LDAP server::
+
+    >>> from ldap3 import Server, Connection
+    >>> server = Server('ipa.demo1.freeipa.org', get_info="ALL")
+    >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
+    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(objectclass=person)')
+    True
+    >>> conn.entries
+    [DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    , DN: uid=manager,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    , DN: uid=employee,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    , DN: uid=helpdesk,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    ]
+
+Here we are requesting all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
+We have not requested any attribute, so in the response we get only the Distinguished Name of the entry found.
+
+Now let's try to request some attributes::
+
+    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(objectclass=person)', attributes=['sn','krbLastPwdChange', 'objectclass'])
+    True
+    >>> conn.entries[0]
+    >>> conn.entries[0]
+    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+        krbLastPwdChange: 2015-09-30 04:06:59+00:00
+        objectclass: top
+                     person
+                     posixaccount
+                     krbprincipalaux
+                     krbticketpolicyaux
+                     inetuser
+                     ipaobject
+                     ipasshuser
+                     ipaSshGroupOfPubKeys
+        sn: Administrator
+
+
+As you can see the ```entries``` attribute of the connection object is specially crafted to be used in interactive mode. It gives a visual
+representation of the entry data structure where each value is, according to the schema, properly formatted (look at the date in krbLastPwdChange is
+actually stored as ```b'20150930040659Z'```). Attributes can be queried as if the entry were a class object or a dict, with some
+additional features as case-insensitivity and blank-insensitivity. You can get the formatted value and the raw value (the value actually
+returned by the server) in the ```values``` and ```raw_values``` attribute::
+
+    >>> entry = entries[0]
+    >>> entry.krbLastPwdChange
+    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    >>> entry.KRBLastPwdCHANGE
+    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    >>> entry['krbLastPwdChange']
+    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    >>> entry['KRB LAST PWD CHANGE']
+    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    >>> e.krbLastPwdChange.values
+    [datetime.datetime(2015, 9, 30, 4, 6, 59, tzinfo=OffsetTzInfo(offset=0, name='UTC'))]
+    >>> entry.krbLastPwdChange.raw_values
+    [b'20150930040659Z']
+
+
+
+
+
 
 
 ... work in progress ...

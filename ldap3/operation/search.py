@@ -105,7 +105,7 @@ def evaluate_match(match, schema):
     left_part, equal_sign, right_part = match.strip().partition('=')
     if not equal_sign:
         raise LDAPInvalidFilterError('invalid matching assertion')
-    if left_part.endswith('~'):  # approximate match '`~=`'
+    if left_part.endswith('~'):  # approximate match '~='
         tag = MATCH_APPROX
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()

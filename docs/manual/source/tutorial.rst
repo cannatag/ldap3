@@ -351,8 +351,17 @@ declaring their identity! Obviously what the server returns to an anonymous conn
 originally the DAP protocol was intended for reading phone directories, as in a printed book, so its content could be read by anyone.
 
 If you want to establish an authenticated connection you have two options: Simple and SASL. With Simple authentication you provide
-a distinguished name and a password. The server will check if your credentials are valid and will permit or deny access to the data.
+a Distinguished Name and a password. The server will check if your credentials are valid and will permit or deny access to the data.
 SASL provides additional methods to identify the user, as an external certificate or a Kerberos ticket.
+
+.. sidebar:: Distinguished Names
+    As a filesystem the DIT is a hierarchical structure, so to identity a stored object you must specify its *path* starting from the top
+    of the Tree up to the last leaf that is the object. This is called the **Distinguished Name** (DN) of an object and is constructed with the
+    names, separated by a comma, of all the objects that form the path from the leaf to the top of the Tree. This names are called **Relative
+    Distinguished Name** (RDN) because are unique only in the context where the object is. So, for example, if we have a *person* object with
+    RDN ``cn=Fred`` that is stored in an *organizational unit* with RDN ``ou=users`` that is stored in an *organization* with RDN ``o=company``
+    the DN of the *person* object will be ``cn=Fred, ou=users, o=company``. The RDN value must be unique in the context where the object
+    is stored, but there is no specification in the LDAP schema on which attribute to use as RDN for a specific class.
 
 .. note::
     With ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
@@ -411,10 +420,10 @@ unsecure and then the channel is secured when we issue the StartTLS operation.
 
 .. sidebar:: Default port numbers
 
-   The default port for cleartext (unsecure) communication is **389**, while the default for LDAP over TLS (secure) communication is **636**. Note
-   that because you can start a session on the 389 port and then increase the security level with the StartTLS operation, you can have a secure
-   communication even on the 389 port (usually considered unsecure). Obviously the server can listen on additional or different ports. When
-   defining the Server object you can specify which port to use with the ``port`` parameter.
+    The default port for cleartext (unsecure) communication is **389**, while the default for LDAP over TLS (secure) communication is **636**. Note
+    that because you can start a session on the 389 port and then increase the security level with the StartTLS operation, you can have a secure
+    communication even on the 389 port (usually considered unsecure). Obviously the server can listen on additional or different ports. When
+    defining the Server object you can specify which port to use with the ``port`` parameter.
 
 Let's try to use the StartTLS extended operation::
 
@@ -454,7 +463,7 @@ Database Operations
 ===================
 
 As any system that stores information, LDAP let you perform the standard CRUD (Create, Read, Update, Delete) operations, but their usage is someway rudimentary.
-Again, if you think of the intended use of the original DAP protocol (storing simple key-values pairs related to an entry to use in a phone directory)
+Again, if you think of the intended use of the original DAP protocol (storing simple key-values pairs related to an entry in a phone directory)
 this makes sense. An entry is written once, seldom modified, and eventually deleted, So the create (**Add** in LDAP), update (**Modify** or **ModifyDn**)
 and delete (**Delete**) operations have a very basic usage while the Read (**Search**) operation is richer of options, but lacks many capabilities
 you would expect in a modern query language (as 1 to N relationship, joining, or server data manipulation). Nonetheless almost everything you can do in a modern
@@ -465,20 +474,18 @@ you must investigate the extended operations of the specific LDAP server you're 
 .. note:: Synchronous vs Asynchronous
 
     You can submit operations to the server in two different ways: **synchronous** and **asynchronous**. While in the former you just send the request and
-    wait for the response, in the latter the ldap3 library constantly listens to the server (in an independent thread). When you send a request you must
-    store its *message id* (a unique number stamped on every message of your LDAP session) in your code so you can ask later to the ldap3 for the relevant response
-    when it's ready. You'll probably always stick with the synchronous way to access an LDAP server, because nowadays LDAP servers are fast to respond,
+    wait for the response, in the latter the ldap3 library constantly listens to the server (one independent thread for each connection). When you send a request you must
+    store its *message id* (a unique number stamped on every message of your LDAP session) in your code so you can ask later to connection object for the relevant response
+    when it's ready. You'll probably stick with the synchronous way to access an LDAP server, because nowadays LDAP servers are fast to respond,
     but the asynchronous mode is still useful if your program is event-driven (maybe using an asynchronous event loop).
 
     ldap3 supports both of this models with its different *communication strategies*.
 
-
 LDAP also supports the **Compare** operation that returns True only if an attribute has the value you specify in the request. At first this can seem
-useless (you could read the attribute and perform the comparison using more powerful tools in your code) but it is used to check the presence
-of a value, even in a multi-valued attribute, without having the permission to read it. This obviuosly rely upon some "access restriction" mechanism that must
-exist on the server, but the LDAP protocol doesn't specify how this mechanism works. Compare is also used to check the validity of a password without
-performing a Bind operation with the specific user.
-
+useless (you could read the attribute and perform the comparison using more powerful tools in your code) but you need this operation to check for the presence
+of a value (even in a multi-valued attribute) without having the permission to read it. This obviuosly rely upon some "access restriction" mechanism that must
+be present on the server, but the LDAP protocol doesn't specify how this mechanism works, so you must check your server documentation. Compare is also used to
+check the validity of a password (that you can't read) without performing a Bind operation with the specific user.
 
 After any synchronous operation, you'll find the following attributes populated in the Connection object:
 
@@ -503,10 +510,12 @@ The Search operation in ldap3 has a number of parameters, but only two of them a
 
     Search filters are based on assertions and look odd when you're unfamiliar with their syntax. One *assertion* is a bracketed expression
     that affirms something about an attribute and its value, as ``(givenName=John)`` or ``(maxRetries>=10)``. Each assertion resolves
-    to True, False or Undefined (that is treated as False) for one or more entries in the Tree. Assertions can be grouped in boolean sets
-    where each assertion (*and* set, specified with ``&``) or just one assertion (*or* set, specified with ``|``) must be True. A single
-    assertion can be negated (*not* set, specified with ``!``). Each set must be bracketed, allowing for recursive sets.  You can use the ``*`` (asterisk)
-    character as a wildcard in the usual way.
+    to True, False or Undefined (that is treated as False) for one or more entries in the Tree. Assertions can be grouped in boolean groups
+    where all assertions (*and* group, specified with ``&``) or just one assertion (*or* group, specified with ``|``) must be True. A single
+    assertion can be negated (*not* group, specified with ``!``). Each group must be bracketed, allowing for recursive sets.
+    Operators allowed in an assertion are ``=`` (*equal*), ``<=`` (*less than or equal*), ``>=`` (*greater than or equal*), ``=*`` (*present*), ``~=``
+    (*aproximate*) and ``:=`` (*extensible*). Surprisingly the *less than* operator and the *greater than* are don't exist in the filter syntax.
+    The *aproximate* and the *extensible* are someway obscure and seldom used. In an equality filter you can use the ``*`` (asterisk) as a wildcard in the usual way.
 
     For example, to search for all users named John with an email ending with '@example.org' the filter will be ``(&(givenName=John)(mail=*@example.org))``,
     to search for all users named John or Fred with the email ending in '@example.org' the filter will be
@@ -540,11 +549,10 @@ Let's try to search all the users in the FreeIPA demo LDAP server::
 Here we are requesting all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
 We have not requested any attribute, so in the response we get only the Distinguished Name of the entry found.
 
-Now let's try to request some attributes::
+Now let's try to request some attributes for the admin user::
 
-    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(objectclass=person)', attributes=['sn','krbLastPwdChange', 'objectclass'])
+    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '&((objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
     True
-    >>> conn.entries[0]
     >>> conn.entries[0]
     DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
         krbLastPwdChange: 2015-09-30 04:06:59+00:00
@@ -560,8 +568,14 @@ Now let's try to request some attributes::
         sn: Administrator
 
 
+.. note::
+    When using attributes in a search filter it's a good habit to always request for the class of object you expect to retrieve. You cannot be sure that the
+    attribute you're serching for is not used is some other object classes, and even if you were sure that no other object class uses the attribute this could always change
+    in the future when someone creates on the LDAP server a new object class that uses that same attribute and your program suddenly breaks with no apparent reason.
+
+
 As you can see the ```entries``` attribute of the connection object is specially crafted to be used in interactive mode. It gives a visual
-representation of the entry data structure where each value is, according to the schema, properly formatted (look at the date in krbLastPwdChange is
+representation of the entry data structure where each value is, according to the schema, properly formatted (the date value in krbLastPwdChange is
 actually stored as ```b'20150930040659Z'```). Attributes can be queried as if the entry were a class object or a dict, with some
 additional features as case-insensitivity and blank-insensitivity. You can get the formatted value and the raw value (the value actually
 returned by the server) in the ```values``` and ```raw_values``` attribute::
@@ -576,10 +590,20 @@ returned by the server) in the ```values``` and ```raw_values``` attribute::
     >>> entry['KRB LAST PWD CHANGE']
     krbLastPwdChange: 2015-09-30 04:06:59+00:00
 
-    >>> e.krbLastPwdChange.values
+    >>> entry.krbLastPwdChange.values
     [datetime.datetime(2015, 9, 30, 4, 6, 59, tzinfo=OffsetTzInfo(offset=0, name='UTC'))]
     >>> entry.krbLastPwdChange.raw_values
     [b'20150930040659Z']
+
+
+In the previous searche operations we specified ``dc=demo1, dc=freeipa, dc=org`` as the starting base of our search, but the objects we got back were in the ``cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org``
+context of the DIT. So the server has, for some unapparent reason, walked down in every context under the base and applied the filter to each of the objects in the sub-contexts.
+It actually performed a *whole subtree* search. Other possible kind of search are the *single level* (that searches only in the level specified in the base) and the *base object* (that
+search only in the attributes of the object specified in the base). What changes in this different kinds of searches is the breath of the portion of
+the LDAP database that is searched. This is called the **scope** of the search and can be specified with the ``search_scope`` attribute of the search
+operation. It can assume thre different values (defined in the ldap3 namespace) ```BASE```, ```LEVEL``` and ```SUBTREE```. The latter value is the default for
+the search opertion, so this clarifies why we got back the objects in the sub-context of the base in our previous searches.
+
 
 
 ... work in progress ...

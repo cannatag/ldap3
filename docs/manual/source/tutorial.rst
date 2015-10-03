@@ -11,6 +11,9 @@ ldap3 Tutorial
     .. _FreeIPA: https://www.freeipa.org
     .. _FreeIPA demo wiki page: https://www.freeipa.org/page/Demo
 
+.. warning::
+    If during the tutorial you receive an ``LDAPSocketReceiveError: error receiving data`` exception the server could have
+    closed the connection abruptly. You can easily reopen it with the ``conn.bind()`` method.
 
 What LDAP is not
 ================
@@ -393,9 +396,9 @@ binding. Even if we don't send the anonymous bind operation the server will acce
 
 Let's try to specify a valid user::
 
-    >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
+    >>> conn = Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
     >>> conn.extend.standard.who_am_i()
-    'dn: uid=manager,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+    'dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
 
 Now the server knows that we are a recognized user and the who_am_i() extended operation returns our identity.
 
@@ -405,7 +408,7 @@ Establishing a secure connection
 If we check the connection info we see that we are using a cleartext (insecure) channel::
 
     >>> print(conn)
-    ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
+    ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
 
 Our credentials pass unencrypted over the wire, so that they can be easily captured with a network sniffer. The LDAP protocol provides two ways
 to secure a connection: **LDAP over TLS** (or over SSL) or the **StartTLS** extended operation. This two method both establish a secure TLS connection
@@ -433,16 +436,16 @@ Let's try to use the StartTLS extended operation::
 if we check the conn status we see that the connection is on a secure channel, even if started on a cleartext connection::
 
     >>> print(conn)
-    ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:389> - tls started - listening - SyncStrategy - internal decoder
+    ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:389> - tls started - listening - SyncStrategy - internal decoder
 
 There is no way to return to a cleartext status once a StartTLS operation is issued on the connection.
 
 To start the connection on a SSL socket::
 
     >>> server = Server('ipa.demo1.freeipa.org', use_ssl=True, get_info=ALL)
-    >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
+    >>> conn = Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
     >>> print(conn)
-    ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
+    ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
 
 Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no checking of
 certificate validity. You can customize the TLS behaviour providing a Tls object to the Server object using the security context configuration::
@@ -536,7 +539,7 @@ Let's try to search all the users in the FreeIPA demo LDAP server::
 
     >>> from ldap3 import Server, Connection
     >>> server = Server('ipa.demo1.freeipa.org', get_info="ALL")
-    >>> conn = Connection(server, 'uid=manager, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
+    >>> conn = Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(objectclass=person)')
     True
     >>> conn.entries
@@ -551,7 +554,7 @@ We have not requested any attribute, so in the response we get only the Distingu
 
 Now let's try to request some attributes for the admin user::
 
-    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '&((objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
+    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
     True
     >>> conn.entries[0]
     DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
@@ -602,40 +605,62 @@ It actually performed a *whole subtree* search. Other possible kind of search ar
 search only in the attributes of the object specified in the base). What changes in this different kinds of searches is the breath of the portion of
 the LDAP database that is searched. This is called the **scope** of the search and can be specified with the ``search_scope`` attribute of the search
 operation. It can assume thre different values (defined in the ldap3 namespace) ```BASE```, ```LEVEL``` and ```SUBTREE```. The latter value is the default for
-the search opertion, so this clarifies why we got back the objects in the sub-context of the base in our previous searches.
+the search opertion, so this clarifies why we got back all the objects in the sub-contexts of the base in our previous searches.
 
-
-
-... work in progress ...
 
 You can have a LDIF representation of the response of a search with::
 
-    connection.response_to_ldif()
+    >>> print(conn.entries[0].entry_to_ldif())
+    version: 1
+    dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    objectclass: top
+    objectclass: person
+    objectclass: posixaccount
+    objectclass: krbprincipalaux
+    objectclass: krbticketpolicyaux
+    objectclass: inetuser
+    objectclass: ipaobject
+    objectclass: ipasshuser
+    objectclass: ipaSshGroupOfPubKeys
+    krbLastPwdChange: 20150930040659Z
+    sn: Administrator
+    # total number of entries: 1
+
+.. sidebar:: LDIF
+
+    LDIF stands for LDAP Data Interchange Format and is a textual standard used to describe two different aspects of LDAP: the content of an entry (**LDIF-CONTENT**)
+    or the changes performed to an entry with an LDAP operation (**LDIF-CHANGE**). LDIF-CONTENT is used to describe LDAP entries in an ASCII stream (i.e. a file),
+    while LDIF-CHANGE is used to describe Add, Delete, Modify and ModifyDn operations.
+
+    *These two formats have different purposes and cannot be mixed in the same stream.*
 
 or you can save the response to a JSON string::
 
-    entries = connection.response_to_json()
+    >>> print(entry.entry_to_json())
+    {
+        "attributes": {
+            "krbLastPwdChange": [
+                "2015-09-30 04:06:59+00:00"
+            ],
+            "objectclass": [
+                "top",
+                "person",
+                "posixaccount",
+                "krbprincipalaux",
+                "krbticketpolicyaux",
+                "inetuser",
+                "ipaobject",
+                "ipasshuser",
+                "ipaSshGroupOfPubKeys"
+            ],
+            "sn": [
+                "Administrator"
+            ]
+        },
+        "dn": "uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org"
 
-you can alose have the response saved to a file in JSON format::
+        connection.r_to_ldif()
 
-    connection.response_to_json('entries-found.json')
-
-
-To get operational attributes (those attributes created automatically by the server, as createStamp, modifiedStamp, ...)
-for response objects add 'get_operational_attributes = True' in the search request::
-
-    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attributes = True)
-
-
-After a search operation you can access the connection.entries property, to get the search result with a more object
-oriented representation::
-
-    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'givenName', 'objectClass'], get_operational_attributes = True)
-    for entry in c.entries:
-        print(entry.entry_get_dn())
-        print(entry.givenName, entry.sn)
-
-Look at 'Entry' in the 'abstraction layer' chapter for the description of the Entry object)
 
 Communication strategies
 ========================
@@ -648,8 +673,8 @@ if they fail.
 
 With asynchronous strategies (ASYNC, REUSABLE) all LDAP operations (except Bind that returns a boolean) return an
 integer, the *message_id* of the request. You can send multiple requests without waiting for responses and get each
-response with the get_response(message_id) method of the Connection object as you need it. You will get an exception if
+response with the ``get_response(message_id)`` method of the Connection object as you need it. You will get an exception if
 the response has not yet arrived after a specified time. In the get_response method this timeout value can be set
-(with the *timeout* attribute)) to the number of seconds to wait for the response to appear (defaults is 10 seconds).
+with the ``timeout`` attribute to the number of seconds to wait for the response to appear (defaults is 10 seconds).
 
 ... more to come ...

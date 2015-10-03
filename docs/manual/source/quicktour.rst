@@ -3,41 +3,6 @@ Quick tour
 ##########
 
 
-To get operational attributes (those attributes created automatically by the server, as createStamp, modifiedStamp, ...)
-for response objects add 'get_operational_attributes = True' in the search request::
-
-    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'], get_operational_attributes = True)
-
-
-After a search operation you can access the connection.entries property, to get the search result with a more object
-oriented representation::
-
-    c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'givenName', 'objectClass'], get_operational_attributes = True)
-    for entry in c.entries:
-        print(entry.entry_get_dn())
-        print(entry.givenName, entry.sn)
-
-Look at 'Entry' in the 'abstraction layer' chapter for the description of the Entry object)
-
-
-Connection context manager
---------------------------
-
-Connections respond to the context manager protocol, so you can have automatic open, bind and unbind with the following
-syntax::
-
-    from ldap3 import Server, Connection, SUBTREE
-    with Connection('servername', user='username', password='password') as c
-        c.search('o=test','(objectClass=*)', SUBTREE, attributes = ['sn', 'objectClass'])  # connection is open, bound, searched and closed
-    print(c.response)
-
-When using context managers the Connection object will retains its previous state when exiting the context, that is if
-the connection was closed and unbound it will remain closed and unbound when leaving the context, if the connection was
-open or bound its state will be restored when exiting the context. Connection is always open and bound while in context.
-
-When using the context manager connections will be open and bound as you enter the Connection context and will be unbound
-when you leave the context. The Unbind operation will be tried even if the operations in context raise an exception.
-
 Searching
 ---------
 

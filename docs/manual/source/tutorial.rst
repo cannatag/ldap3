@@ -106,6 +106,23 @@ Again, keep in mind that the LDAP v3 standard doesn't define any specific access
 mechanism is not specified at all. So each LDAP server type can have a different method for authorizing the user to different
 access levels.
 
+.. note::
+    You can choose the strategy that the client will use to connect to the server with the ``client_strategy`` parameter of the
+    connection object. There are 5 strategies that can be used for establishing a connection: SYNC, ASYNC, LDIF, RESTARTABLE and REUSABLE.
+
+    With synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
+    if they fail.
+
+    With asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return an
+    integer, the *message_id* of the request. You can send multiple requests without waiting for responses and get each
+    response with the ``get_response(message_id)`` method of the Connection object as you need it. You will get an exception if
+    the response has not yet arrived after a specified time. In the get_response method this timeout value can be set
+    with the ``timeout`` attribute to the number of seconds to wait for the response to appear (defaults is 10 seconds).
+
+    The **LDIF** strategy is used to create a stream of LDIF-CHANGEs.
+
+    In this tutorial we will use the default SYNC communication strategy.
+
 Let's start accessing the server with an anonymous bind::
 
     >>> server = Server('ipa.demo1.freeipa.org')
@@ -509,30 +526,28 @@ The Search operation in ldap3 has a number of parameters, but only two of them a
 * ``search_base``: the location in the Directory Tree where the search will start
 * ``search_filter``: what are we actually searching
 
-.. sidebar:: Search filter syntax
+Search filters are based on assertions and look odd when you're unfamiliar with their syntax. One *assertion* is a bracketed expression
+that affirms something about an attribute and its value, as ``(givenName=John)`` or ``(maxRetries>=10)``. Each assertion resolves
+to True, False or Undefined (that is treated as False) for one or more entries in the Tree. Assertions can be grouped in boolean groups
+where all assertions (*and* group, specified with ``&``) or just one assertion (*or* group, specified with ``|``) must be True. A single
+assertion can be negated (*not* group, specified with ``!``). Each group must be bracketed, allowing for recursive sets.
+Operators allowed in an assertion are ``=`` (*equal*), ``<=`` (*less than or equal*), ``>=`` (*greater than or equal*), ``=*`` (*present*), ``~=``
+(*aproximate*) and ``:=`` (*extensible*). Surprisingly the *less than* operator and the *greater than* are don't exist in the filter syntax.
+The *aproximate* and the *extensible* are someway obscure and seldom used. In an equality filter you can use the ``*`` (asterisk) as a wildcard in the usual way.
 
-    Search filters are based on assertions and look odd when you're unfamiliar with their syntax. One *assertion* is a bracketed expression
-    that affirms something about an attribute and its value, as ``(givenName=John)`` or ``(maxRetries>=10)``. Each assertion resolves
-    to True, False or Undefined (that is treated as False) for one or more entries in the Tree. Assertions can be grouped in boolean groups
-    where all assertions (*and* group, specified with ``&``) or just one assertion (*or* group, specified with ``|``) must be True. A single
-    assertion can be negated (*not* group, specified with ``!``). Each group must be bracketed, allowing for recursive sets.
-    Operators allowed in an assertion are ``=`` (*equal*), ``<=`` (*less than or equal*), ``>=`` (*greater than or equal*), ``=*`` (*present*), ``~=``
-    (*aproximate*) and ``:=`` (*extensible*). Surprisingly the *less than* operator and the *greater than* are don't exist in the filter syntax.
-    The *aproximate* and the *extensible* are someway obscure and seldom used. In an equality filter you can use the ``*`` (asterisk) as a wildcard in the usual way.
+For example, to search for all users named John with an email ending with '@example.org' the filter will be ``(&(givenName=John)(mail=*@example.org))``,
+to search for all users named John or Fred with the email ending in '@example.org' the filter will be
+``(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))`` while to search for all users that have a givenName different from Smith the filter
+will be ``(&(givenName=*)(!(givenName=Smith)))`` (The first assertion in the *and* set is needed to ensure the presence of the value). Longer
+search filters can easily become hard to understand so it may be useful to divide them on multple lines while writing/reading them::
 
-    For example, to search for all users named John with an email ending with '@example.org' the filter will be ``(&(givenName=John)(mail=*@example.org))``,
-    to search for all users named John or Fred with the email ending in '@example.org' the filter will be
-    ``(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))`` while to search for all users that have a givenName different from Smith the filter
-    will be ``(&(givenName=*)(!(givenName=Smith)))`` (The first assertion in the *and* set is needed to ensure the presence of the value). Longer
-    search filters can easily become hard to understand so it may be useful to divide them on multple lines while writing/reading them::
-
-        (&
-            (|
-                (givenName=Fred)
-                (givenName=John)
-            )
-            (mail=*@example.org)
+    (&
+        (|
+            (givenName=Fred)
+            (givenName=John)
         )
+        (mail=*@example.org)
+    )
 
 
 Let's try to search all the users in the FreeIPA demo LDAP server::
@@ -659,22 +674,52 @@ or you can save the response to a JSON string::
         },
         "dn": "uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org"
 
-        connection.r_to_ldif()
+Searching for binary values
+===========================
+To search for a binary value you must use the RFC4515 escape ASCII sequence for each byte in the search assertion. You
+can use the function *escape_bytes()* in ldap3.utils.conv for properly escape a bytes object::
+
+    >>> from ldap3.utils.conv import escape_bytes
+    >>> unique_id = b'\xca@\xf2k\x1d\x86\xcaL\xb7\xa2\xca@\xf2k\x1d\x86'
+    >>> search_filter = '(nsUniqueID=' + escape_bytes(unique_id) + ')'
+    >>> conn.search('dc=demo1, dc=freeipa, dc=org', search_filter, attributes=['nsUniqueId'])
+
+search_filter will contain ``'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'``.
 
 
-Communication strategies
-========================
+Connection context manager
+==========================
 
-You can choose the strategy that the client will use to connect to the server, there are 5 strategies that can be used
-for establishing a connection: SYNC, ASYNC, LDIF, RESTARTABLE and REUSABLE.
+Connections respond to the context manager protocol, so you can have automatic open, bind and unbind with the following
+syntax::
 
-With synchronous strategies (SYNC, RESTARTABLE) all LDAP operations return a boolean: True if they're successful, False
-if they fail.
+    >>> with Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123') as conn:
+            conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
+            entry = conn.entries[0]
+    True
+    >>> conn.bound
+    False
+    >>> entry
+    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    objectclass: top
+                 person
+                 posixaccount
+                 krbprincipalaux
+                 krbticketpolicyaux
+                 inetuser
+                 ipaobject
+                 ipasshuser
+                 ipaSshGroupOfPubKeys
+    sn: Administrator
 
-With asynchronous strategies (ASYNC, REUSABLE) all LDAP operations (except Bind that returns a boolean) return an
-integer, the *message_id* of the request. You can send multiple requests without waiting for responses and get each
-response with the ``get_response(message_id)`` method of the Connection object as you need it. You will get an exception if
-the response has not yet arrived after a specified time. In the get_response method this timeout value can be set
-with the ``timeout`` attribute to the number of seconds to wait for the response to appear (defaults is 10 seconds).
+When using context managers the Connection object will retains its previous state when exiting the context.
+The connection is always open and bound while in context. If the connection was not bound to the server when entering the context the
+Unbind operation will be tried when you leave the context even if the operations in the context have raised an exception.
 
-... more to come ...
+The Add operation
+=================
+
+Let's try to add some data to the LDAP server::
+
+... work in progress ...

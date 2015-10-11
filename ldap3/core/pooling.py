@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from datetime import datetime, MINYEAR
 from os import linesep
 from random import randint
 
@@ -35,7 +35,7 @@ from ..utils.log import log, log_enabled, ERROR, BASIC
 
 class ServerPoolState(object):
     def __init__(self, server_pool):
-        self.servers = []
+        self.servers = []  # each element is a list: [server, last_checked_time, available]
         self.strategy = server_pool.strategy
         self.server_pool = server_pool
         self.refresh()
@@ -49,42 +49,42 @@ class ServerPoolState(object):
         s = 'servers: ' + linesep
         if self.servers:
             for server in self.servers:
-                s += str(server) + linesep
+                s += str(server[0]) + linesep
         else:
             s += 'None' + linesep
         s += 'Pool strategy: ' + str(self.strategy) + linesep
-        s += ' - Last used server: ' + ('None' if self.last_used_server == -1 else str(self.servers[self.last_used_server]))
+        s += ' - Last used server: ' + ('None' if self.last_used_server == -1 else str(self.servers[self.last_used_server][0]))
 
         return s
 
     def refresh(self):
         self.servers = []
         for server in self.server_pool.servers:
-            self.servers.append(server)
+            self.servers.append([server, datetime(MINYEAR, 1, 1), True])  # server, smallest date ever, supposed available
         self.last_used_server = randint(0, len(self.servers) - 1)
 
     def get_current_server(self):
-        return self.servers[self.last_used_server]
+        return self.servers[self.last_used_server][0]
 
     def get_server(self):
         if self.servers:
             if self.server_pool.strategy == FIRST:
                 if self.server_pool.active:
                     # returns the first active server
-                    self.last_used_server = self.find_active_server(starting=0, exhaust=self.server_pool.exhaust)
+                    self.last_used_server = self.find_active_server(starting=0)
                 else:
                     # returns always the first server - no pooling
                     self.last_used_server = 0
             elif self.server_pool.strategy == ROUND_ROBIN:
                 if self.server_pool.active:
                     # returns the next active server in a circular range
-                    self.last_used_server = self.find_active_server(self.last_used_server + 1, exhaust=self.server_pool.exhaust)
+                    self.last_used_server = self.find_active_server(self.last_used_server + 1)
                 else:
                     # returns the next server in a circular range
                     self.last_used_server = self.last_used_server + 1 if (self.last_used_server + 1) < len(self.servers) else 0
             elif self.server_pool.strategy == RANDOM:
                 if self.server_pool.active:
-                    self.last_used_server = self.find_active_random_server(exhaust=self.server_pool.exhaust)
+                    self.last_used_server = self.find_active_random_server()
                 else:
                     # returns a random server in the pool
                     self.last_used_server = randint(0, len(self.servers))
@@ -94,50 +94,59 @@ class ServerPoolState(object):
                 raise LDAPUnknownStrategyError('unknown server pooling strategy')
             if log_enabled(BASIC):
                 log(BASIC, 'server returned from Server Pool: <%s>', self.last_used_server)
-            return self.servers[self.last_used_server]
+            return self.servers[self.last_used_server][0]
         else:
             if log_enabled(ERROR):
                 log(ERROR, 'no servers in Server Pool <%s>', self)
             raise LDAPServerPoolError('no servers in server pool')
 
-    def find_active_random_server(self, exhaust=True):
-        while True:
+    def find_active_random_server(self):
+        counter = self.server_pool.active  # can be True for "forever" or the number of cycle to try
+        while counter:
             temp_list = self.servers[:]  # copy
             while temp_list:
                 # pops a random server from a temp list and checks its
                 # availability, if not available tries another one
                 server = temp_list.pop(randint(0, len(temp_list) - 1))
+                if not server[2]:  # server is offline
+                    if isinstance(self.server_pool.exhaust, bool) or (datetime.now() - server[1]).seconds < self.server_pool.exhaust:  # keeps server offline
+                        continue
+                server[1] = datetime.now()
                 if server.check_availability():
                     # returns a random active server in the pool
-                    return self.servers.index(server)
-            if exhaust:
-                if log_enabled(ERROR):
-                    log(ERROR, 'no random active server in Server Pool <%s>', self)
-                raise LDAPServerPoolExhaustedError('no random active server in server pool')
-
-    def find_active_server(self, starting=0, exhaust=True):
-        while True:
-            index = starting
-            while index < len(self.servers):
-                if self.servers[index].check_availability():
-                    break
-                index += 1
-            else:
-                # if no server found in the list (from starting index)
-                # checks starting from the base of the list
-                index = 0
-                while index < starting:
-                    if self.servers[index].check_availability():
-                        break
-                    index += 1
+                    server[2] = True
+                    return self.servers.index(server)[0]
                 else:
-                    if exhaust:
-                        if log_enabled(ERROR):
-                            log(ERROR, 'no active server available in Server Pool <%s>', self)
-                        raise LDAPServerPoolExhaustedError('no active server available in server pool')
-                    else:
+                    server[2] = False
+            if not isinstance(self.server_pool.active, bool):
+                counter -= 1
+        if log_enabled(ERROR):
+            log(ERROR, 'no random active server available in Server Pool <%s> after maximum number of tries', self)
+        raise LDAPServerPoolExhaustedError('no random active server available in server pool after maximum number of tries')
+
+    def find_active_server(self, starting):
+        counter = self.server_pool.active  # can be True for "forever" or the number of cycle to try
+        index = starting - 1
+        while counter:
+            index += 1
+            while index < len(self.servers):
+                if not self.servers[index][2]:  # server is offline
+                    if isinstance(self.server_pool.exhaust, bool) or (datetime.now() - self.server_pool[index][1]).seconds < self.server_pool.exhaust:  # keeps server offline
                         continue
-            return index
+
+                self.servers[index][1] = datetime.now()
+                if self.servers[index][0].check_availability():
+                    self.servers[index][2] = True
+                    return index
+                else:
+                    self.servers[index][2] = False  # sets server offline
+            index = 0
+            if not isinstance(self.server_pool.active, bool):
+                counter -= 1
+
+        if log_enabled(ERROR):
+            log(ERROR, 'no active server available in Server Pool <%s> after maximum number of tries', self)
+        raise LDAPServerPoolExhaustedError('no active server available in server pool after maximum number of tries')
 
     def __len__(self):
         return len(self.servers)
@@ -179,8 +188,8 @@ class ServerPool(object):
             else:
                 s += 'None' + linesep
             s += 'Pool strategy: ' + str(self.strategy)
-            s += ' - ' + 'active only: ' + ('True' if self.active else 'False')
-            s += ' - ' + 'exhaust pool: ' + ('True' if self.exhaust else 'False')
+            s += ' - ' + 'active: ' + (str(self.active) if self.active else 'False')
+            s += ' - ' + 'exhaust pool: ' + (str(self.exhaust) if self.exhaust else 'False')
             return s
 
     def __repr__(self):

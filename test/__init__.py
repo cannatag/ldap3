@@ -22,7 +22,9 @@
 from time import sleep
 from sys import version
 from os import environ, remove
+from os.path import join
 from random import SystemRandom
+from tempfile import gettempdir
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
     NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
@@ -75,10 +77,10 @@ if location.startswith('TRAVIS'):
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
 elif location == 'GCNBHPW8':
-    # test elitebook - eDirectory (EDIR)
-    test_server = ['edir1.hyperv',
-                   'edir2.hyperv',
-                   'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
+    # test notepbook - eDirectory (EDIR)
+    # test_server = ['edir1.hyperv',
+    #               'edir2.hyperv',
+    #               'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_base = 'o=test'  # base context where test objects are created
@@ -97,9 +99,9 @@ elif location == 'GCNBHPW8':
     test_user_key_file = 'local-edir-admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-    test_logging_filename = 'C:\\Temp\\ldap3.log'
+    test_logging_filename = join(gettempdir(), 'ldap3.log')
 elif location == 'GCNBHPW8-AD':
-    # test elitebook - Active Directory (AD)
+    # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
     test_server = 'win1.hyperv'
@@ -120,9 +122,9 @@ elif location == 'GCNBHPW8-AD':
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc9999pfop'
-    test_logging_filename = 'C:\\Temp\\ldap3.log'
+    test_logging_filename = join(gettempdir(), 'ldap3.log')
 elif location == 'GCNBHPW8-SLAPD':
-    # test elitebook - OpenLDAP (SLAPD)
+    # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
     test_base = 'o=test'  # base context where test objects are created
@@ -141,7 +143,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_user_key_file = ''
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-    test_logging_filename = 'C:\\Temp\\ldap3.log'
+    test_logging_filename = join(gettempdir(), 'ldap3.log')
 elif location == 'GCW89227':
     # test camera
     # test_server = ['sl08',
@@ -167,7 +169,7 @@ elif location == 'GCW89227':
     test_user_key_file = 'local-edir-admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
-    test_logging_filename = 'C:\\Temp\\ldap3.log'
+    test_logging_filename = join(gettempdir(), 'ldap3.log')
 else:
     raise Exception('testing location ' + location + ' is not valid')
 

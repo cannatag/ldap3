@@ -55,7 +55,7 @@ def bind_operation(version,
     elif authentication == SASL:
         sasl_creds = SaslCredentials()
         sasl_creds['mechanism'] = sasl_mechanism
-        if sasl_credentials:
+        if sasl_credentials is not None:
             sasl_creds['credentials'] = sasl_credentials
         request['authentication'] = AuthenticationChoice().setComponentByName('sasl', sasl_creds)
     elif authentication == ANONYMOUS:

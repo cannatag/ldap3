@@ -1,5 +1,6 @@
-* 0.9.9.2 2015.09.30
+* 0.9.9.2 2015.10.15
     - Fixed hasattr() behaviour for Entry object in Python 3
+    - Allows empty sasl_credentials in sasl bind
 
 * 0.9.9.1 2015.09.21
     - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)

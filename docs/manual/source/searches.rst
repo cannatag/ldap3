@@ -310,7 +310,7 @@ Example::
              paged_size = 5)
     total_entries += len(c.response)
     for entry in c.response:
-        print(entry['dn'], entry['attributes])
+        print(entry['dn'], entry['attributes'])
     cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
         c.search(search_base = 'o=test',
@@ -322,7 +322,7 @@ Example::
         total_entries += len(c.response)
         cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
         for entry in c.response:
-            print(entry['dn'], entry['attributes])
+            print(entry['dn'], entry['attributes'])
     print('Total entries retrieved:', total_entries)
 
 Or you can use the much simpler extended operations package that wraps all this machinery and hides implementation
@@ -341,7 +341,7 @@ Working with a generator is better when you deal with very long list of entries 
                                                      generator=True)
     for entry in entry_generator:
         total_entries += 1
-        print(entry['dn'], entry['attributes])
+        print(entry['dn'], entry['attributes'])
     print('Total entries retrieved:', total_entries)
 
 Remember that a generator can be consumed only one time, so you must elaborate the results in a sequential way.

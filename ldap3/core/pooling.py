@@ -26,11 +26,12 @@
 from datetime import datetime, MINYEAR
 from os import linesep
 from random import randint
+from time import sleep
 
-from .. import FIRST, ROUND_ROBIN, RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES
+from .. import FIRST, ROUND_ROBIN, RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES, POOLING_LOOP_TIMEOUT
 from .exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError
 from .server import Server
-from ..utils.log import log, log_enabled, ERROR, BASIC
+from ..utils.log import log, log_enabled, ERROR, BASIC, NETWORK
 
 
 class ServerPoolState(object):
@@ -101,18 +102,24 @@ class ServerPoolState(object):
             raise LDAPServerPoolError('no servers in server pool')
 
     def find_active_random_server(self):
-        counter = self.server_pool.active  # can be True for "forever" or the number of cycle to try
+        counter = self.server_pool.active  # can be True for "forever" or the number of cycles to try
         while counter:
+            if log_enabled(NETWORK):
+                log(NETWORK, 'entering loop for finding active server in pool <%s>', self)
             temp_list = self.servers[:]  # copy
             while temp_list:
                 # pops a random server from a temp list and checks its
                 # availability, if not available tries another one
                 server = temp_list.pop(randint(0, len(temp_list) - 1))
                 if not server[2]:  # server is offline
-                    if isinstance(self.server_pool.exhaust, bool) or (datetime.now() - server[1]).seconds < self.server_pool.exhaust:  # keeps server offline
+                    if (isinstance(self.server_pool.exhaust, bool) and self.server_pool.exhaust) or (datetime.now() - server[1]).seconds < self.server_pool.exhaust:  # keeps server offline
+                        if log_enabled(NETWORK):
+                            log(NETWORK, 'server <%s> excluded from checking because is considered offline', server[0])
                         continue
                 server[1] = datetime.now()
-                if server.check_availability():
+                if log_enabled(NETWORK):
+                    log(NETWORK, 'checking server <%s> for availability', server[0])
+                if server[0].check_availability():
                     # returns a random active server in the pool
                     server[2] = True
                     return self.servers.index(server)[0]
@@ -125,24 +132,42 @@ class ServerPoolState(object):
         raise LDAPServerPoolExhaustedError('no random active server available in server pool after maximum number of tries')
 
     def find_active_server(self, starting):
-        counter = self.server_pool.active  # can be True for "forever" or the number of cycle to try
-        index = starting - 1
+        counter = self.server_pool.active  # can be True for "forever" or the number of cycles to try
+        if starting >= len(self.servers):
+            starting = 0
+
         while counter:
-            index += 1
-            while index < len(self.servers):
-                if not self.servers[index][2]:  # server is offline
-                    if isinstance(self.server_pool.exhaust, bool) or (datetime.now() - self.server_pool[index][1]).seconds < self.server_pool.exhaust:  # keeps server offline
+            if log_enabled(NETWORK):
+                log(NETWORK, 'entering loop number <%s> for finding active server in pool <%s>', counter, self)
+            index = 0
+            pool_size = len(self.servers)
+            while index < pool_size:
+                offset = index + starting if index + starting < pool_size else index + starting - pool_size
+                if not self.servers[offset][2]:  # server is offline
+                    if (isinstance(self.server_pool.exhaust, bool) and self.server_pool.exhaust) or (datetime.now() - self.servers[offset][1]).seconds < self.server_pool.exhaust:  # keeps server offline
+                        if log_enabled(NETWORK):
+                            if isinstance(self.server_pool.exhaust, bool):
+                                log(NETWORK, 'server <%s> excluded from checking because is considered offline', self.servers[index][0])
+                            else:
+                                log(NETWORK, 'server <%s> excluded from checking because is considered offline still for %d seconds', self.servers[index][0], (self.server_pool.exhaust - (datetime.now() - self.servers[offset][1]).seconds))
+                        index += 1
                         continue
 
-                self.servers[index][1] = datetime.now()
-                if self.servers[index][0].check_availability():
-                    self.servers[index][2] = True
-                    return index
+                self.servers[offset][1] = datetime.now()
+                if log_enabled(NETWORK):
+                    log(NETWORK, 'checking server <%s> for availability', self.servers[offset][0])
+                if self.servers[offset][0].check_availability():
+                    self.servers[offset][2] = True
+                    return offset
                 else:
-                    self.servers[index][2] = False  # sets server offline
-            index = 0
+                    self.servers[offset][2] = False  # sets server offline
+                index += 1
+
             if not isinstance(self.server_pool.active, bool):
                 counter -= 1
+            if log_enabled(NETWORK):
+                log(NETWORK, 'waiting for %d seconds before retrying pool servers cycle', POOLING_LOOP_TIMEOUT)
+            sleep(POOLING_LOOP_TIMEOUT)
 
         if log_enabled(ERROR):
             log(ERROR, 'no active server available in Server Pool <%s> after maximum number of tries', self)

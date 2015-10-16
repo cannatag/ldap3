@@ -127,6 +127,7 @@ ROUND_ROBIN = 'ROUND_ROBIN'
 RANDOM = 'RANDOM'
 
 POOLING_STRATEGIES = [FIRST, ROUND_ROBIN, RANDOM]
+POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool
 
 # communication
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'

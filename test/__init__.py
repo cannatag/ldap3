@@ -37,11 +37,11 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = True
-test_log_detail = OFF
+test_log_detail = EXTENDED
 
 test_pooling_strategy = ROUND_ROBIN
-test_pooling_active = True
-test_pooling_exhaust = False
+test_pooling_active = 10
+test_pooling_exhaust = 10
 
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
@@ -78,10 +78,10 @@ if location.startswith('TRAVIS'):
     test_logging_filename = 'ldap3.log'
 elif location == 'GCNBHPW8':
     # test notepbook - eDirectory (EDIR)
-    # test_server = ['edir1.hyperv',
-    #               'edir2.hyperv',
-    #               'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
-    test_server = 'edir1.hyperv'
+    test_server = ['edir1.hyperv',
+                   'edir2.hyperv',
+                   'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
+    # test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations

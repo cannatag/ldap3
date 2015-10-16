@@ -1,6 +1,9 @@
-* 0.9.9.2 2015.10.15
+* 0.9.9.2 2015.10.17
     - Fixed hasattr() behaviour for Entry object in Python 3
     - Allows empty sasl_credentials in sasl bind
+    - Added POOLING_LOOP_TIMEOUT constant to specify how many seconds the server pooling strategy has to wait before retrying if it did not find an active server (defaults to 10)
+    - Pooling strategy now allows to specify the number of cycles to try when finding a server (with active=N)
+    - Pooling strategy now allows to specify how many seconds a server must be considered offline before retrying to check for availabiliry (with exhaust=N)
 
 * 0.9.9.1 2015.09.21
     - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)

@@ -227,7 +227,7 @@ class Connection(object):
             self.raise_exceptions = raise_exceptions
             self.auto_range = True if auto_range else False
             self.extend = ExtendedOperationsRoot(self)
-            self._entries = None
+            self._entries = []
             self.fast_decoder = fast_decoder
 
             if isinstance(server, STRING_TYPES):
@@ -514,7 +514,7 @@ class Connection(object):
 
                 if read_server_info and self.bound:
                     self.refresh_server_info()
-            self._entries = None
+            self._entries = []
 
             if log_enabled(BASIC):
                 log(BASIC, 'done BIND operation, result <%s>', self.bound)
@@ -606,7 +606,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
             response = self.post_send_search(self.send('searchRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, int):
                 return_value = response
@@ -643,7 +643,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
-            self._entries = None
+            self._entries = []
             if isinstance(response, int):
                 return_value = response
                 if log_enabled(PROTOCOL):
@@ -705,7 +705,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -742,7 +742,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'DELETE request <%s> sent via <%s>', delete_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('delRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -815,7 +815,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -862,7 +862,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY DN request <%s> sent via <%s>', modify_dn_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modDNRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -898,7 +898,7 @@ class Connection(object):
                     self.send('abandonRequest', request, controls)
                     self.result = None
                     self.response = None
-                    self._entries = None
+                    self._entries = []
                     return_value = True
                 else:
                     if log_enabled(ERROR):
@@ -925,7 +925,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'EXTENDED request <%s> sent via <%s>', extended_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('extendedReq', request, controls))
-            self._entries = None
+            self._entries = []
             if isinstance(response, int):
                 return_value = response
                 if log_enabled(PROTOCOL):

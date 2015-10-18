@@ -40,8 +40,8 @@ test_logging = True
 test_log_detail = EXTENDED
 
 test_pooling_strategy = ROUND_ROBIN
-test_pooling_active = 10
-test_pooling_exhaust = 10
+test_pooling_active = 20
+test_pooling_exhaust = 15
 
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
@@ -294,7 +294,7 @@ def drop_connection(connection, dn_to_delete=None):
         for dn in dn_to_delete:
             done = False
             counter = 30
-            while not done:  # wait at maximum for 120 seconds
+            while not done:  # waits at maximum for 120 seconds
                 operation_result = connection.delete(dn[0])
                 result = get_operation_result(connection, operation_result)
                 if result['description'] == 'success':

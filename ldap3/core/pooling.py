@@ -39,9 +39,9 @@ class ServerPoolState(object):
         self.servers = []  # each element is a list: [server, last_checked_time, available]
         self.strategy = server_pool.strategy
         self.server_pool = server_pool
+        self.last_used_server = 0
         self.refresh()
         self.initialize_time = datetime.now()
-        self.last_used_server = randint(0, len(self.servers) - 1)
 
         if log_enabled(BASIC):
             log(BASIC, 'instantiated ServerPoolState: <%r>', self)
@@ -114,8 +114,10 @@ class ServerPoolState(object):
                 if not server[2]:  # server is offline
                     if (isinstance(self.server_pool.exhaust, bool) and self.server_pool.exhaust) or (datetime.now() - server[1]).seconds < self.server_pool.exhaust:  # keeps server offline
                         if log_enabled(NETWORK):
-                            log(NETWORK, 'server <%s> excluded from checking because is considered offline', server[0])
+                            log(NETWORK, 'server <%s> excluded from checking because is offline', server[0])
                         continue
+                    if log_enabled(NETWORK):
+                            log(NETWORK, 'server <%s> reinserted in pool', server[0])
                 server[1] = datetime.now()
                 if log_enabled(NETWORK):
                     log(NETWORK, 'checking server <%s> for availability', server[0])
@@ -139,20 +141,21 @@ class ServerPoolState(object):
         while counter:
             if log_enabled(NETWORK):
                 log(NETWORK, 'entering loop number <%s> for finding active server in pool <%s>', counter, self)
-            index = 0
+            index = -1
             pool_size = len(self.servers)
-            while index < pool_size:
+            while index < pool_size - 1:
+                index += 1
                 offset = index + starting if index + starting < pool_size else index + starting - pool_size
                 if not self.servers[offset][2]:  # server is offline
                     if (isinstance(self.server_pool.exhaust, bool) and self.server_pool.exhaust) or (datetime.now() - self.servers[offset][1]).seconds < self.server_pool.exhaust:  # keeps server offline
                         if log_enabled(NETWORK):
                             if isinstance(self.server_pool.exhaust, bool):
-                                log(NETWORK, 'server <%s> excluded from checking because is considered offline', self.servers[index][0])
+                                log(NETWORK, 'server <%s> excluded from checking because is  offline', self.servers[offset][0])
                             else:
-                                log(NETWORK, 'server <%s> excluded from checking because is considered offline still for %d seconds', self.servers[index][0], (self.server_pool.exhaust - (datetime.now() - self.servers[offset][1]).seconds))
-                        index += 1
+                                log(NETWORK, 'server <%s> excluded from checking because is offline for %d seconds', self.servers[offset][0], (self.server_pool.exhaust - (datetime.now() - self.servers[offset][1]).seconds))
                         continue
-
+                    if log_enabled(NETWORK):
+                            log(NETWORK, 'server <%s> reinserted in pool', self.servers[offset][0])
                 self.servers[offset][1] = datetime.now()
                 if log_enabled(NETWORK):
                     log(NETWORK, 'checking server <%s> for availability', self.servers[offset][0])
@@ -161,7 +164,6 @@ class ServerPoolState(object):
                     return offset
                 else:
                     self.servers[offset][2] = False  # sets server offline
-                index += 1
 
             if not isinstance(self.server_pool.active, bool):
                 counter -= 1

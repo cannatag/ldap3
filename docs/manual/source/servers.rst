@@ -71,7 +71,17 @@ Server Pool
 
    Active strategies check if the server is listening on the specified port. When the 'active' attribute is set to True the strategy tries to open and close a socket on the port. If your LDAP server has problems with the opening and closing of sockets you can set 'active' to False..
 
-Different Server objects can be grouped in a Server pool object. A Server pool object can be specified in the Connection object to obtain an high availability (HA) connection. This is useful for long standing connections (for example an LDAP authenticator module in an application server) or when you have a multi replica LDAP server infrastructure. If you set the 'active' attribute to True while defining the ServerPool the strategy will check for server availability. With active ServerPool you can set an additional attribute 'exhaust' to raise an exception if no server is active in the pool. If 'exhaust' is set to False the pool may cycle forever and you must have an alternate way to check exhaustion of the pool.
+Different Server objects can be grouped in a ServerPool object. A ServerPool object can be specified in the Connection object
+to obtain an high availability (HA) connection. This is useful for long standing connections (for example an LDAP authenticator
+module in an application server) or when you have a multi replica LDAP server infrastructure. The ``active`` and ``exhaust``
+parameter accept either a boolean or a number: if you set ``active=True`` while defining the ServerPool the strategy will check
+for server availability, you can also set this attribute to the maximum number of cycles to try before giving up with an
+LDAPServerPoolExhaustedError exception. With ``exhaust=True`` if a server is not active it will be removed by the pool, if you set it
+to a number this will be the number of seconds an unreachable server is considered offline. WHen this timout expires the server
+is reinserted in the pool and checked again for availability.
+
+When all servers in a pool are not available the strategy will wait for the number of seconds specified in ``ldap.POOLING_LOOP_TIMEOUT``
+before starting a new cycle. This defaults to 10 seconds.
 
 The pool can have different HA strategies:
 

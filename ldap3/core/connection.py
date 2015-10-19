@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
+from functools import reduce
 from threading import RLock
 import json
 from functools import reduce

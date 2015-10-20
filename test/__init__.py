@@ -221,7 +221,6 @@ def get_connection(bind=None,
     if bind is None:
         if test_server_type == 'AD':
             bind = AUTO_BIND_TLS_BEFORE_BIND
-            bind = True
         else:
             bind = True
     if check_names is None:

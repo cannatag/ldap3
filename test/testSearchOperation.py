@@ -194,9 +194,7 @@ class Test(unittest.TestCase):
     def test_search_extended_dn(self):
         if test_server_type == 'AD':
             control = extended_dn_control()
-            '''result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr], controls=[control])
-            '''
-            result = self.connection.search(search_base=test_base, search_filter='(objectclass=*)', attributes=[test_name_attr], controls=[control])
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr], controls=[control])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
             else:
@@ -204,4 +202,6 @@ class Test(unittest.TestCase):
                 result = self.connection.result
 
             self.assertEqual(result['description'], 'success')
-            self.assertEqual(response[2]['dn'], 'abc')
+            self.assertTrue('<GUID=' in response[0]['dn'])
+            self.assertTrue('SID=' in response[0]['dn'])
+            self.assertTrue('>;' in response[0]['dn'])

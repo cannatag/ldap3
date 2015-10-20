@@ -46,6 +46,7 @@ from .rfc4511 import ResultCode, LDAPString, Control
 from ..utils.asn1 import encoder
 from .controls import build_control
 
+
 class SicilyBindResponse(Sequence):
     # BindResponse ::= [APPLICATION 1] SEQUENCE {
     #     COMPONENTS OF LDAPResult,
@@ -69,10 +70,11 @@ class DirSyncControlValue(Sequence):
                                )
 
 
-class ExtendedDN(Integer):
+class ExtendedDN(Sequence):
     # A flag value 0 specifies that the GUID and SID values be returned in hexadecimal string
     # A flag value of 1 will return the GUID and SID values in standard string format
-    pass
+    componentType = NamedTypes(NamedType('option', Integer())
+                               )
 
 
 def dir_sync_control(criticality=False, parent_first=True, max_length=65535, cookie=None):
@@ -85,9 +87,9 @@ def dir_sync_control(criticality=False, parent_first=True, max_length=65535, coo
 
 
 def extended_dn_control(criticality=False, hex_format=False):
-    control_value = ExtendedDN(int(not hex_format))
-
-    return build_control('1.2.840.113556.1.4.529', criticality, 0, encode_control_value=False)
+    control_value = ExtendedDN()
+    control_value.setComponentByName('option', Integer(not hex_format))
+    return build_control('1.2.840.113556.1.4.529', criticality, control_value)
 
 
 def show_deleted_control(criticality=False):

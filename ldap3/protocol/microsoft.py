@@ -83,10 +83,11 @@ def dir_sync_control(criticality=False, parent_first=True, max_length=65535, coo
 
     return build_control('1.2.840.113556.1.4.841', criticality, control_value)
 
+
 def extended_dn_control(criticality=False, hex_format=False):
     control_value = ExtendedDN(int(not hex_format))
 
-    return build_control('1.2.840.113556.1.4.529', criticality, control_value)
+    return build_control('1.2.840.113556.1.4.529', criticality, 0, encode_control_value=False)
 
 
 def show_deleted_control(criticality=False):

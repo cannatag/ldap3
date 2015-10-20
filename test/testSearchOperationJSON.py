@@ -72,6 +72,7 @@ class Test(unittest.TestCase):
             json_entries = json.loads(json_response)['entries']
             self.assertTrue(len(json_entries) >= 2)
 
+
     def test_search_present(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:

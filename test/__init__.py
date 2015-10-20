@@ -76,7 +76,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-EDIR':
     # test notepbook - eDirectory (EDIR)
     test_server = ['edir1.hyperv',
                    'edir2.hyperv',
@@ -100,7 +100,7 @@ elif location == 'GCNBHPW8':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
-elif location == 'GCNBHPW8-AD':
+elif location == 'GCNBHPW8':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -113,15 +113,15 @@ elif location == 'GCNBHPW8-AD':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
-    test_password = 'Rc9999pfop'  # user password
+    test_password = 'Rc999pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,DC=FOREST,DC=LAB'
-    test_sasl_password = 'Rc9999pfop'
+    test_sasl_password = 'Rc999pfop'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = 'FOREST\\Administrator'
-    test_ntlm_password = 'Rc9999pfop'
+    test_ntlm_password = 'Rc999pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
 elif location == 'GCNBHPW8-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
@@ -221,6 +221,7 @@ def get_connection(bind=None,
     if bind is None:
         if test_server_type == 'AD':
             bind = AUTO_BIND_TLS_BEFORE_BIND
+            bind = True
         else:
             bind = True
     if check_names is None:
@@ -339,8 +340,9 @@ def add_user(connection, batch_id, username, attributes=None):
     operation_result = connection.add(dn, 'inetOrgPerson', attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        raise Exception('unable to create user ' + dn + ': ' + str(result))
-
+        pass
+        '''raise Exception('unable to create user ' + dn + ': ' + str(result))
+        '''
     return dn, result
 
 

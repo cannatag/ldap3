@@ -34,6 +34,6 @@ def build_control(oid, criticality, value, encode_control_value=True):
     if encode_control_value:
         control.setComponentByName('controlValue', encoder.encode(value))
     else:
-        control.setComponentByName('controlValue', Control(value))
+        control.setComponentByName('controlValue', value)
 
     return control

@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
-from functools import reduce
 from threading import RLock
 import json
 from functools import reduce
@@ -55,7 +54,7 @@ from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.sync import SyncStrategy
 from ..strategy.restartable import RestartableStrategy
 from ..operation.unbind import unbind_operation
-from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
+from ..protocol.rfc2696 import paged_search_control
 from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
@@ -63,7 +62,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
-from ..utils.asn1 import encoder
+
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
@@ -596,12 +595,13 @@ class Connection(object):
             if isinstance(paged_size, int):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
-                real_search_control_value = RealSearchControlValue()
-                real_search_control_value['size'] = Size(paged_size)
-                real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
+                # real_search_control_value = RealSearchControlValue()
+                # real_search_control_value['size'] = Size(paged_size)
+                # real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
                 if controls is None:
                     controls = []
-                controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
+                # controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
+                controls.append(paged_search_control(paged_criticality, paged_size, paged_cookie))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):

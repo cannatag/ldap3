@@ -41,9 +41,10 @@
 #     errorMessage LDAPString }
 from pyasn1.type.namedtype import NamedTypes, NamedType
 from pyasn1.type.tag import Tag, tagClassApplication, tagFormatConstructed
-from pyasn1.type.univ import Sequence, OctetString
-from .rfc4511 import ResultCode, LDAPString
-
+from pyasn1.type.univ import Sequence, OctetString, Integer
+from .rfc4511 import ResultCode, LDAPString, Control
+from ..utils.asn1 import encoder
+from .controls import build_control
 
 class SicilyBindResponse(Sequence):
     # BindResponse ::= [APPLICATION 1] SEQUENCE {
@@ -54,3 +55,41 @@ class SicilyBindResponse(Sequence):
                                NamedType('serverCreds', OctetString()),
                                NamedType('errorMessage', LDAPString())
                                )
+
+
+class DirSyncControlValue(Sequence):
+    # realReplControlValue ::= SEQUENCE {
+    #    parentsFirst		integer
+    #    maxReturnlength	integer
+    #    cookie			    OCTET STRING }
+
+    componentType = NamedTypes(NamedType('parentsFirst', Integer()),
+                               NamedType('maxReturnLength', Integer()),
+                               NamedType('cookie', OctetString())
+                               )
+
+
+class ExtendedDN(Integer):
+    # A flag value 0 specifies that the GUID and SID values be returned in hexadecimal string
+    # A flag value of 1 will return the GUID and SID values in standard string format
+    pass
+
+
+def dir_sync_control(criticality=False, parent_first=True, max_length=65535, cookie=None):
+    control_value = DirSyncControlValue()
+    control_value.setComponentByName('parentFirst', int(parent_first))
+    control_value.setComponentByName('maxReturnLength', int(max_length))
+    control_value.setComponentByName('cookie', cookie)
+
+    return build_control('1.2.840.113556.1.4.841', criticality, control_value)
+
+def extended_dn_control(criticality=False, hex_format=False):
+    control_value = ExtendedDN(int(not hex_format))
+
+    return build_control('1.2.840.113556.1.4.529', criticality, control_value)
+
+
+def show_deleted_control(criticality=False):
+    return build_control('1.2.840.113556.1.4.417', criticality, '', False)
+
+    return control

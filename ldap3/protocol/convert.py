@@ -93,7 +93,7 @@ def prepare_changes_for_request(changes):
 
 def build_controls_list(controls):
     """
-    controls is a list of tuple
+    controls is a list of Control() or tuples
     each tuple must have 3 elements: the control OID, the criticality, the value
     criticality must be a boolean
     """
@@ -105,7 +105,9 @@ def build_controls_list(controls):
 
     built_controls = Controls()
     for idx, control in enumerate(controls):
-        if len(control) == 3 and isinstance(control[1], bool):
+        if isinstance(control, Control):
+            built_controls.setComponentByPosition(idx, control)
+        elif len(control) == 3 and isinstance(control[1], bool):
             built_control = Control()
             built_control['controlType'] = control[0]
             built_control['criticality'] = control[1]

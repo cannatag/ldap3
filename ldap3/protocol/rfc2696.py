@@ -26,7 +26,9 @@
 from pyasn1.type.univ import OctetString, Integer, Sequence
 from pyasn1.type.namedtype import NamedTypes, NamedType
 from pyasn1.type.constraint import ValueRangeConstraint
-
+from .rfc4511 import Control
+from .controls import build_control
+from ..utils.asn1 import encoder
 
 # constants
 # maxInt INTEGER ::= 2147483647 -- (2^^31 - 1) --
@@ -60,3 +62,11 @@ class RealSearchControlValue(Sequence):
 
     componentType = NamedTypes(NamedType('size', Size()),
                                NamedType('cookie', Cookie()))
+
+
+def paged_search_control(criticality=False, size=10, cookie=None):
+    control_value = RealSearchControlValue()
+    control_value.setComponentByName('size', Size(size))
+    control_value.setComponentByName('cookie', Cookie(cookie if cookie else ''))
+
+    return build_control('1.2.840.113556.1.4.319', criticality, control_value)

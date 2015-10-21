@@ -94,5 +94,3 @@ def extended_dn_control(criticality=False, hex_format=False):
 
 def show_deleted_control(criticality=False):
     return build_control('1.2.840.113556.1.4.417', criticality, '', False)
-
-    return control

@@ -59,14 +59,19 @@ class SicilyBindResponse(Sequence):
 
 
 class DirSyncControlValue(Sequence):
-    # realReplControlValue ::= SEQUENCE {
-    #    parentsFirst		integer
-    #    maxReturnlength	integer
-    #    cookie			    OCTET STRING }
-
-    componentType = NamedTypes(NamedType('parentsFirst', Integer()),
-                               NamedType('maxReturnLength', Integer()),
-                               NamedType('cookie', OctetString())
+    # DirSyncRequestValue  ::= SEQUENCE {
+    #    Flags      integer
+    #    MaxBytes   integer
+    #    Cookie     OCTET STRING }
+    #
+    # DirSyncResponseValue ::= SEQUENCE {
+    #    MoreResults     INTEGER
+    #    unused          INTEGER
+    #    CookieServer    OCTET STRING
+    #     }
+    componentType = NamedTypes(NamedType('Flags', Integer()),
+                               NamedType('MaxBytes', Integer()),
+                               NamedType('Cookie', OctetString())
                                )
 
 
@@ -77,11 +82,27 @@ class ExtendedDN(Sequence):
                                )
 
 
-def dir_sync_control(criticality=False, parent_first=True, max_length=65535, cookie=None):
+def dir_sync_control(criticality=False, object_security=False, ancestors_first=True, public_data_only=False, incremental_values=False, max_length=65535, cookie=''):
     control_value = DirSyncControlValue()
-    control_value.setComponentByName('parentFirst', int(parent_first))
-    control_value.setComponentByName('maxReturnLength', int(max_length))
-    control_value.setComponentByName('cookie', cookie)
+    flags = 0x0
+    if object_security:
+        flags |= 0x00000001
+
+    if ancestors_first:
+        flags |= 0x00000800
+
+    if public_data_only:
+        flags |= 0x00002000
+
+    if incremental_values:
+        flags |= 0x80000000
+
+    control_value.setComponentByName('Flags', int(flags))
+    control_value.setComponentByName('MaxBytes', int(max_length))
+    if cookie:
+        control_value.setComponentByName('Cookie', cookie)
+    else:
+        control_value.setComponentByName('Cookie', OctetString(''))
 
     return build_control('1.2.840.113556.1.4.841', criticality, control_value)
 
@@ -93,4 +114,4 @@ def extended_dn_control(criticality=False, hex_format=False):
 
 
 def show_deleted_control(criticality=False):
-    return build_control('1.2.840.113556.1.4.417', criticality, '', False)
+    return build_control('1.2.840.113556.1.4.417', criticality, Sequence(OctetString('')))

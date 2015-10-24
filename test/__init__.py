@@ -61,6 +61,7 @@ if location.startswith('TRAVIS'):
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
     test_server_type = 'EDIR'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -83,6 +84,7 @@ elif location == 'GCNBHPW8-EDIR':
                    'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
     # test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -106,6 +108,7 @@ elif location == 'GCNBHPW8':
     #                'win2']
     test_server = 'win1.hyperv'
     test_server_type = 'AD'
+    test_root_partition = 'DC=FOREST,DC=LAB'  # partition to use in DirSync
     test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
     test_moved = 'ou=moved,OU=test,DC=FOREST,DC=LAB'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -127,6 +130,7 @@ elif location == 'GCNBHPW8-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -153,6 +157,7 @@ elif location == 'GCW89227':
     test_server_type = 'EDIR'
     # test_server = 'nova01.amm.intra.camera.it'
     # test_server_type = 'AD'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects

@@ -21,8 +21,9 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from time import sleep
 
-from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control
+from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control, dir_sync_control
 from ldap3.utils.conv import escape_bytes
 from test import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_int_attr
@@ -190,17 +191,3 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertTrue(len(response) >= 1)
-
-    def test_search_extended_dn(self):
-        if test_server_type == 'AD':
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr], controls=[extended_dn_control(), show_deleted_control()])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
-                result = self.connection.result
-
-            self.assertEqual(result['description'], 'success')
-            self.assertTrue('<GUID=' in response[0]['dn'])
-            self.assertTrue('SID=' in response[0]['dn'])
-            self.assertTrue('>;' in response[0]['dn'])

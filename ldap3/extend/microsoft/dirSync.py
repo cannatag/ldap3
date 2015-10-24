@@ -33,8 +33,11 @@ class DirSync(object):
                  sync_base,
                  sync_filter='(objectclass=*)',
                  attributes=('*',),
-                 cookie=None,
-                 parent_first=True,
+                 cookie='',
+                 object_security=False,
+                 ancestors_first=True,
+                 public_data_only=False,
+                 incremental_values=True,
                  max_length=65535,
                  hex_guid=False
                  ):
@@ -43,26 +46,33 @@ class DirSync(object):
         self.filter = sync_filter
         self.attributes = attributes if attributes in SEQUENCE_TYPES else ()
         self.cookie = cookie
-        self.parent_first = parent_first
+        self.object_security = object_security
+        self.ancestors_first = ancestors_first
+        self.public_data_only = public_data_only
+        self.incremental_values = incremental_values
         self.max_length = max_length
         self.hex_guid = hex_guid
-        self.active = False
+        self.active = True
 
     def stop(self):
         self.active = False
-        self.loop()
+        return self.loop()
 
     def start(self):
         self.active = True
-        self.loop()
 
     def loop(self):
         while self.active:
-            result = self.connection.search(self.base,
-                                            self.filter,
-                                            SUBTREE,
-                                            self.attributes,
-                                            controls=[dir_sync_control(criticality=True, parent_first=self.parent_first, max_length=self.max_length, cookie=self.cookie),
+            result = self.connection.search(search_base=self.base,
+                                            search_filter=self.filter,
+                                            search_scope=SUBTREE,
+                                            attributes=self.attributes,
+                                            controls=[dir_sync_control(criticality=True,
+                                                                       object_security=self.object_security,
+                                                                       ancestors_first=self.ancestors_first,
+                                                                       public_data_only=self.public_data_only,
+                                                                       incremental_values=self.incremental_values,
+                                                                       max_length=self.max_length, cookie=self.cookie),
                                                       extended_dn_control(criticality=True, hex_format=self.hex_guid),
                                                       show_deleted_control(criticality=True)]
                                             )
@@ -73,6 +83,6 @@ class DirSync(object):
                 result = self.connection.result
 
             if result['description'] == 'success':
-                yield response
+                return response
             else:
                 raise LDAPExtensionError('error %s in DirSync' % result['description'])

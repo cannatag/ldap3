@@ -33,20 +33,20 @@ class DirSync(object):
     def __init__(self,
                  connection,
                  sync_base,
-                 sync_filter='(objectclass=*)',
-                 attributes=('*',),
-                 cookie=None,
-                 object_security=False,
-                 ancestors_first=True,
-                 public_data_only=False,
-                 incremental_values=True,
-                 max_length=65535,
-                 hex_guid=False
+                 sync_filter,
+                 attributes,
+                 cookie,
+                 object_security,
+                 ancestors_first,
+                 public_data_only,
+                 incremental_values,
+                 max_length,
+                 hex_guid
                  ):
         self.connection = connection
         self.base = sync_base
         self.filter = sync_filter
-        self.attributes = attributes if attributes in SEQUENCE_TYPES else ()
+        self.attributes = attributes
         self.cookie = cookie
         self.object_security = object_security
         self.ancestors_first = ancestors_first
@@ -60,7 +60,7 @@ class DirSync(object):
         result = self.connection.search(search_base=self.base,
                                         search_filter=self.filter,
                                         search_scope=SUBTREE,
-                                        attributes=ALL_ATTRIBUTES,
+                                        attributes=self.attributes,
                                         dereference_aliases=DEREF_NEVER,
                                         controls=[dir_sync_control(criticality=True,
                                                                    object_security=self.object_security,
@@ -68,8 +68,8 @@ class DirSync(object):
                                                                    public_data_only=self.public_data_only,
                                                                    incremental_values=self.incremental_values,
                                                                    max_length=self.max_length, cookie=self.cookie),
-                                                  extended_dn_control(criticality=True, hex_format=self.hex_guid),
-                                                  show_deleted_control(criticality=True)]
+                                                  extended_dn_control(criticality=False, hex_format=self.hex_guid),
+                                                  show_deleted_control(criticality=False)]
                                         )
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -86,3 +86,4 @@ class DirSync(object):
             raise LDAPExtensionError('Missing DirSync control in response from server')
         else:
             raise LDAPExtensionError('error %r in DirSync' % result)
+

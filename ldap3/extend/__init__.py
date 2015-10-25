@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from .. import SUBTREE, DEREF_ALWAYS
+from .. import SUBTREE, DEREF_ALWAYS, ALL_ATTRIBUTES
 from .microsoft.dirSync import DirSync
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
@@ -104,7 +104,7 @@ class NovellExtendedOperations(ExtendedOperationContainer):
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):
-    def dir_sync(self, sync_base, sync_filter='(objectclass=*)', attributes=('*',), cookie=None, object_security=False, ancestors_first=True, public_data_only=False, incremental_values=True, max_length=65535, hex_guid=False):
+    def dir_sync(self, sync_base, sync_filter='(objectclass=*)', attributes=ALL_ATTRIBUTES, cookie=None, object_security=False, ancestors_first=True, public_data_only=False, incremental_values=True, max_length=2147483647, hex_guid=False):
         return DirSync(self._connection,
                        sync_base=sync_base,
                        sync_filter=sync_filter,

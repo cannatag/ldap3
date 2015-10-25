@@ -5,6 +5,11 @@
     - Pooling strategy now allows to specify the number of cycles to try when finding a server (with active=N)
     - Pooling strategy now allows to specify how many seconds a server must be considered offline before retrying to check for availabiliry (with exhaust=N)
     - Connection.entries defaults to empty list
+    - ALL_ATTRIBUTES don't send any attribute in the attribute list (was sending '*') while searching
+    - Added DirSync extended function for Microsoft Active Directory
+    - Added LDAP_SERVER_DIRSYNC_OID control for Microsoft Active Directory
+    - Added LDAP_SERVER_EXTENDED_DN_OID control for Microsoft Active Directory
+    - Added LDAP_SERVER_SHOW_DELETED_OID control for Microsoft Active Directory
 
 * 0.9.9.1 2015.09.21
     - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)

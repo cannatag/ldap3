@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from ldap3.core.exceptions import LDAPExtensionError
 from ...protocol.microsoft import dir_sync_control, extended_dn_control, show_deleted_control
-from ... import SEQUENCE_TYPES, SUBTREE
+from ... import SEQUENCE_TYPES, SUBTREE, DEREF_NEVER, ALL_ATTRIBUTES
 
 
 class DirSync(object):
@@ -33,7 +33,7 @@ class DirSync(object):
                  sync_base,
                  sync_filter='(objectclass=*)',
                  attributes=('*',),
-                 cookie='',
+                 cookie=None,
                  object_security=False,
                  ancestors_first=True,
                  public_data_only=False,
@@ -66,7 +66,8 @@ class DirSync(object):
             result = self.connection.search(search_base=self.base,
                                             search_filter=self.filter,
                                             search_scope=SUBTREE,
-                                            attributes=self.attributes,
+                                            attributes=ALL_ATTRIBUTES,
+                                            dereference_aliases=DEREF_NEVER,
                                             controls=[dir_sync_control(criticality=True,
                                                                        object_security=self.object_security,
                                                                        ancestors_first=self.ancestors_first,
@@ -85,4 +86,4 @@ class DirSync(object):
             if result['description'] == 'success':
                 return response
             else:
-                raise LDAPExtensionError('error %s in DirSync' % result['description'])
+                raise LDAPExtensionError('error %r in DirSync' % result)

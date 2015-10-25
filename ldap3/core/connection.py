@@ -585,7 +585,7 @@ class Connection(object):
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
             elif attributes == ALL_ATTRIBUTES:
-                attributes = ['*']
+                attributes = []
 
             if get_operational_attributes and isinstance(attributes, list):
                 attributes.append(ALL_OPERATIONAL_ATTRIBUTES)

@@ -23,6 +23,7 @@
 import unittest
 from time import sleep
 
+from ldap3 import SUBTREE
 from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control, dir_sync_control
 from test import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_root_partition
@@ -59,20 +60,29 @@ class Test(unittest.TestCase):
     def test_search_deleted_objects_ad(self):
         if test_server_type == 'AD':
             dn_to_delete, _ = add_user(self.connection, testcase_id, 'to-be-deleted-1', attributes={'givenName': 'to-be-deleted-1'})
-            sleep(5)
+            sleep(1)
             self.connection.delete(dn_to_delete)
-            sleep(5)
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'to-be-deleted-1)', attributes=[test_name_attr], controls=[show_deleted_control()])
+            sleep(1)
+            result = self.connection.search(search_base=test_root_partition,
+                                            search_filter='(&(isDeleted=TRUE)(cn=*' + testcase_id + '*deleted-1*))',
+                                            search_scope=SUBTREE,
+                                            attributes=[],
+                                            controls=[show_deleted_control(criticality=True)])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
             else:
                 response = self.connection.response
                 result = self.connection.result
-            print(response)
-            self.assertEqual(result['description'], 'success')
+            found = False
+            for entry in response:
+                if entry['type'] == 'searchResEntry' and testcase_id in entry['dn']:
+                    found = True
+                    break
+
+            self.assertTrue(found)
 
     def test_dir_sync(self):
         if test_server_type == 'AD':
-            sync = self.connection.extend.microsoft.dir_sync(test_root_partition)
+            sync = self.connection.extend.microsoft.dir_sync(test_root_partition, max_length=16384)
             sync_data = sync.loop()
             print(sync_data)

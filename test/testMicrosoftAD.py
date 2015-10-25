@@ -83,6 +83,19 @@ class Test(unittest.TestCase):
 
     def test_dir_sync(self):
         if test_server_type == 'AD':
-            sync = self.connection.extend.microsoft.dir_sync(test_root_partition, max_length=16384)
-            sync_data = sync.loop()
-            print(sync_data)
+            sync = self.connection.extend.microsoft.dir_sync(test_root_partition, max_length=655350)
+            while sync.more_results:
+                sync.loop()
+            dn_to_delete, _ = add_user(self.connection, testcase_id, 'to-be-deleted-1', attributes={'givenName': 'to-be-deleted-1'})
+            sleep(1)
+            self.connection.delete(dn_to_delete)
+            sleep(1)
+            response = sync.loop()
+
+            found = False
+            for entry in response:
+                if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
+                    found = True
+                    break
+
+            self.assertTrue(found)

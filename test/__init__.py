@@ -37,7 +37,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = True
-test_log_detail = EXTENDED
+test_log_detail = OFF
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20

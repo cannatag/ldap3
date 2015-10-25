@@ -22,9 +22,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from ldap3.core.exceptions import LDAPExtensionError
+
+from ...core.exceptions import LDAPExtensionError
 from ...protocol.microsoft import dir_sync_control, extended_dn_control, show_deleted_control
 from ... import SEQUENCE_TYPES, SUBTREE, DEREF_NEVER, ALL_ATTRIBUTES
+from ...utils.asn1 import decode_sequence
 
 
 class DirSync(object):
@@ -52,38 +54,35 @@ class DirSync(object):
         self.incremental_values = incremental_values
         self.max_length = max_length
         self.hex_guid = hex_guid
-        self.active = True
-
-    def stop(self):
-        self.active = False
-        return self.loop()
-
-    def start(self):
-        self.active = True
+        self.more_results = True
 
     def loop(self):
-        while self.active:
-            result = self.connection.search(search_base=self.base,
-                                            search_filter=self.filter,
-                                            search_scope=SUBTREE,
-                                            attributes=ALL_ATTRIBUTES,
-                                            dereference_aliases=DEREF_NEVER,
-                                            controls=[dir_sync_control(criticality=True,
-                                                                       object_security=self.object_security,
-                                                                       ancestors_first=self.ancestors_first,
-                                                                       public_data_only=self.public_data_only,
-                                                                       incremental_values=self.incremental_values,
-                                                                       max_length=self.max_length, cookie=self.cookie),
-                                                      extended_dn_control(criticality=True, hex_format=self.hex_guid),
-                                                      show_deleted_control(criticality=True)]
-                                            )
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
-                result = self.connection.result
+        result = self.connection.search(search_base=self.base,
+                                        search_filter=self.filter,
+                                        search_scope=SUBTREE,
+                                        attributes=ALL_ATTRIBUTES,
+                                        dereference_aliases=DEREF_NEVER,
+                                        controls=[dir_sync_control(criticality=True,
+                                                                   object_security=self.object_security,
+                                                                   ancestors_first=self.ancestors_first,
+                                                                   public_data_only=self.public_data_only,
+                                                                   incremental_values=self.incremental_values,
+                                                                   max_length=self.max_length, cookie=self.cookie),
+                                                  extended_dn_control(criticality=True, hex_format=self.hex_guid),
+                                                  show_deleted_control(criticality=True)]
+                                        )
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
 
-            if result['description'] == 'success':
-                return response
-            else:
-                raise LDAPExtensionError('error %r in DirSync' % result)
+        if result['description'] == 'success' and 'controls' in result and '1.2.840.113556.1.4.841' in result['controls']:
+            decoded_value = decode_sequence(result['controls']['1.2.840.113556.1.4.841']['value'], 0, len(result['controls']['1.2.840.113556.1.4.841']['value']))
+            self.more_results = True if decoded_value[0][3][0][3] else False  # more_result if nonzero
+            self.cookie = decoded_value[0][3][2][3]  # cookie returned by the fast decoder
+            return response
+        elif 'controls' in result:
+            raise LDAPExtensionError('Missing DirSync control in response from server')
+        else:
+            raise LDAPExtensionError('error %r in DirSync' % result)

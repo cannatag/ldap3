@@ -92,7 +92,7 @@ class Test(unittest.TestCase):
             dn, _ = add_user(self.connection, testcase_id, 'to-be-deleted-1', attributes={'givenName': 'to-be-deleted-1'})
             sleep(1)
             response = sync.loop()
-            print('ADD OBJ', len(response))
+            print('ADD OBJ', len(response), response[0]['attributes'])
             found = False
             for entry in response:
                 if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
@@ -109,7 +109,7 @@ class Test(unittest.TestCase):
             self.assertEqual(result['description'], 'success')
             sleep(1)
             response = sync.loop()
-            print('MOD-ADD ATTR', len(response))
+            print('MOD-ADD ATTR', len(response), response[0]['attributes'])
             found = False
             for entry in response:
                 if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
@@ -126,7 +126,7 @@ class Test(unittest.TestCase):
             self.assertEqual(result['description'], 'success')
             sleep(1)
             response = sync.loop()
-            print('MOD-REPLACE ATTR', len(response))
+            print('MOD-REPLACE ATTR', len(response), response[0]['attributes'])
             found = False
             for entry in response:
                 if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
@@ -135,13 +135,13 @@ class Test(unittest.TestCase):
             self.assertTrue(found)
 
             # modify-delete an attribute and verify the sync
-            result = self.connection.modify(dn, {'businessCategory': (MODIFY_ADD, ['businessCategory-2-added', 'businessCategory-3-added'])})
-            if not self.connection.strategy.sync:
-                _, result = self.connection.get_response(result)
-            else:
-                result = self.connection.result
-            self.assertEqual(result['description'], 'success')
-            result = self.connection.modify(dn, {'businessCategory': (MODIFY_DELETE, ['businessCategory-2-added'])})
+            # result = self.connection.modify(dn, {'businessCategory': (MODIFY_ADD, ['businessCategory-2-added', 'businessCategory-3-added'])})
+            # if not self.connection.strategy.sync:
+            #     _, result = self.connection.get_response(result)
+            # else:
+            #     result = self.connection.result
+            # self.assertEqual(result['description'], 'success')
+            result = self.connection.modify(dn, {'businessCategory': (MODIFY_DELETE, ['businessCategory-1-replaced'])})
             if not self.connection.strategy.sync:
                 _, result = self.connection.get_response(result)
             else:
@@ -149,7 +149,7 @@ class Test(unittest.TestCase):
             self.assertEqual(result['description'], 'success')
             sleep(1)
             response = sync.loop()
-            print('MOD-DEL ATTR', len(response))
+            print('MOD-DEL ATTR', len(response), response[0]['attributes'])
             found = False
             for entry in response:
                 if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
@@ -161,7 +161,7 @@ class Test(unittest.TestCase):
             self.connection.delete(dn)
             sleep(1)
             response = sync.loop()
-            print('DEL OBJ', len(response))
+            print('DEL OBJ', len(response), response[0]['attributes'])
             found = False
             for entry in response:
                 if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:

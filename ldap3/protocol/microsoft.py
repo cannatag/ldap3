@@ -58,20 +58,26 @@ class SicilyBindResponse(Sequence):
                                )
 
 
-class DirSyncControlValue(Sequence):
+class DirSyncControlRequestValue(Sequence):
     # DirSyncRequestValue  ::= SEQUENCE {
     #    Flags      integer
     #    MaxBytes   integer
     #    Cookie     OCTET STRING }
-    #
+    componentType = NamedTypes(NamedType('Flags', Integer()),
+                               NamedType('MaxBytes', Integer()),
+                               NamedType('Cookie', OctetString())
+                               )
+
+
+class DirSyncControlResponseValue(Sequence):
     # DirSyncResponseValue ::= SEQUENCE {
     #    MoreResults     INTEGER
     #    unused          INTEGER
     #    CookieServer    OCTET STRING
     #     }
-    componentType = NamedTypes(NamedType('Flags', Integer()),
-                               NamedType('MaxBytes', Integer()),
-                               NamedType('Cookie', OctetString())
+    componentType = NamedTypes(NamedType('MoreResults', Integer()),
+                               NamedType('unused', Integer()),
+                               NamedType('CookieServer', OctetString())
                                )
 
 
@@ -83,7 +89,7 @@ class ExtendedDN(Sequence):
 
 
 def dir_sync_control(criticality, object_security, ancestors_first, public_data_only, incremental_values, max_length, cookie):
-    control_value = DirSyncControlValue()
+    control_value = DirSyncControlRequestValue()
     flags = 0x0
     if object_security:
         flags |= 0x00000001

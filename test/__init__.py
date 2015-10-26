@@ -43,6 +43,7 @@ test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
 
+test_fast_decoder = True
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -222,7 +223,8 @@ def get_connection(bind=None,
                    sasl_credentials=None,
                    ntlm_credentials=None,
                    get_info=None,
-                   usage=None):
+                   usage=None,
+                   fast_decoder=None):
     if bind is None:
         if test_server_type == 'AD':
             bind = AUTO_BIND_TLS_BEFORE_BIND
@@ -238,6 +240,8 @@ def get_connection(bind=None,
         get_info = test_get_info
     if usage is None:
         usage = test_usage
+    if fast_decoder is None:
+        fast_decoder = test_fast_decoder
 
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
@@ -267,7 +271,8 @@ def get_connection(bind=None,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names,
-                          collect_usage=usage)
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder)
     elif authentication == NTLM:
         return Connection(server,
                           auto_bind=bind,
@@ -279,7 +284,8 @@ def get_connection(bind=None,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names,
-                          collect_usage=usage)
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder)
     else:
         return Connection(server,
                           auto_bind=bind,
@@ -291,7 +297,8 @@ def get_connection(bind=None,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names,
-                          collect_usage=usage)
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder)
 
 
 def drop_connection(connection, dn_to_delete=None):

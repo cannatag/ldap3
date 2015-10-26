@@ -83,7 +83,7 @@ class Test(unittest.TestCase):
 
     def test_dir_sync(self):
         if test_server_type == 'AD':
-            sync = self.connection.extend.microsoft.dir_sync(test_root_partition)
+            sync = self.connection.extend.microsoft.dir_sync(test_root_partition, attributes=['*'])
             while sync.more_results:
                 print(len(sync.loop()))
             dn_to_delete, _ = add_user(self.connection, testcase_id, 'to-be-deleted-1', attributes={'givenName': 'to-be-deleted-1'})

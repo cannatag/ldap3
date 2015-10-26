@@ -23,7 +23,7 @@
 import unittest
 from time import sleep
 
-from ldap3 import SUBTREE
+from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control, dir_sync_control
 from test import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_root_partition
@@ -84,14 +84,84 @@ class Test(unittest.TestCase):
     def test_dir_sync(self):
         if test_server_type == 'AD':
             sync = self.connection.extend.microsoft.dir_sync(test_root_partition, attributes=['*'])
+            # read all previous changes
             while sync.more_results:
-                print(len(sync.loop()))
-            dn_to_delete, _ = add_user(self.connection, testcase_id, 'to-be-deleted-1', attributes={'givenName': 'to-be-deleted-1'})
-            sleep(1)
-            self.connection.delete(dn_to_delete)
+                print('PREV', len(sync.loop()))
+
+            # add a new object and verify the sync
+            dn, _ = add_user(self.connection, testcase_id, 'to-be-deleted-1', attributes={'givenName': 'to-be-deleted-1'})
             sleep(1)
             response = sync.loop()
-            print(len(response))
+            print('ADD OBJ', len(response))
+            found = False
+            for entry in response:
+                if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
+                    found = True
+                    break
+            self.assertTrue(found)
+
+            # modify-add an attribute and verify the sync
+            result = self.connection.modify(dn, {'businessCategory': (MODIFY_ADD, ['businessCategory-1-added'])})
+            if not self.connection.strategy.sync:
+                _, result = self.connection.get_response(result)
+            else:
+                result = self.connection.result
+            self.assertEqual(result['description'], 'success')
+            sleep(1)
+            response = sync.loop()
+            print('MOD-ADD ATTR', len(response))
+            found = False
+            for entry in response:
+                if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
+                    found = True
+                    break
+            self.assertTrue(found)
+
+            # modify-replace an attribute and verify the sync
+            result = self.connection.modify(dn, {'businessCategory': (MODIFY_REPLACE, ['businessCategory-1-replaced']), 'sn': (MODIFY_REPLACE, ['sn-replaced'])})
+            if not self.connection.strategy.sync:
+                _, result = self.connection.get_response(result)
+            else:
+                result = self.connection.result
+            self.assertEqual(result['description'], 'success')
+            sleep(1)
+            response = sync.loop()
+            print('MOD-REPLACE ATTR', len(response))
+            found = False
+            for entry in response:
+                if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
+                    found = True
+                    break
+            self.assertTrue(found)
+
+            # modify-delete an attribute and verify the sync
+            result = self.connection.modify(dn, {'businessCategory': (MODIFY_ADD, ['businessCategory-2-added', 'businessCategory-3-added'])})
+            if not self.connection.strategy.sync:
+                _, result = self.connection.get_response(result)
+            else:
+                result = self.connection.result
+            self.assertEqual(result['description'], 'success')
+            result = self.connection.modify(dn, {'businessCategory': (MODIFY_DELETE, ['businessCategory-2-added'])})
+            if not self.connection.strategy.sync:
+                _, result = self.connection.get_response(result)
+            else:
+                result = self.connection.result
+            self.assertEqual(result['description'], 'success')
+            sleep(1)
+            response = sync.loop()
+            print('MOD-DEL ATTR', len(response))
+            found = False
+            for entry in response:
+                if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:
+                    found = True
+                    break
+            self.assertTrue(found)
+
+            # delete object and verify the sync
+            self.connection.delete(dn)
+            sleep(1)
+            response = sync.loop()
+            print('DEL OBJ', len(response))
             found = False
             for entry in response:
                 if entry['type'] == 'searchResEntry' and testcase_id + 'to-be-deleted-1' in entry['dn']:

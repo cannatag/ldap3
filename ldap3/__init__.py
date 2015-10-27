@@ -83,7 +83,8 @@ ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
                                   'supportedSASLMechanisms',
                                   'vendorName',
                                   'vendorVersion',
-                                  'subschemaSubentry']
+                                  'subschemaSubentry',
+                                  'ACL']
 
 # modify type
 MODIFY_ADD = 'MODIFY_ADD'

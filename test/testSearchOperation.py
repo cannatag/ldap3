@@ -59,7 +59,10 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
-        self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-1')
+        if test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes']['givenName'], 'givenname-1')
+        else:
+            self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-1')
 
     def test_search_extensible_match(self):
         if test_server_type == 'EDIR':
@@ -101,7 +104,10 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         if self.connection.check_names:
-            self.assertEqual(response[0]['attributes']['entryDN'][0], self.delete_at_teardown[0][0])
+            if test_server_type == 'AD':
+                self.assertEqual(response[0]['dn'].lower(), self.delete_at_teardown[0][0].lower())
+            else:
+                self.assertEqual(response[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
 
     def test_search_simple_paged(self):
         if not self.connection.strategy.pooled:
@@ -148,7 +154,10 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
-        self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + '(search)-10')
+        if test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + '(search)-10')
+        else:
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + '(search)-10')
 
     def test_search_integer_exact_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '=0))', attributes=[test_name_attr, test_int_attr])

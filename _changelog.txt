@@ -10,6 +10,8 @@
     - Added LDAP_SERVER_DIRSYNC_OID control for Microsoft Active Directory
     - Added LDAP_SERVER_EXTENDED_DN_OID control for Microsoft Active Directory
     - Added LDAP_SERVER_SHOW_DELETED_OID control for Microsoft Active Directory
+    - Fixed AD tests for single valued attributes
+    - Added ACL attribute in the ATTRIBUTES_EXCLUDED_FROM_CHECK list
 
 * 0.9.9.1 2015.09.21
     - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)

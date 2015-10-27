@@ -77,6 +77,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
+    test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
 elif location == 'GCNBHPW8-EDIR':
     # test notepbook - eDirectory (EDIR)
     test_server = ['edir1.hyperv',
@@ -102,6 +103,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
 elif location == 'GCNBHPW8':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
@@ -126,6 +128,7 @@ elif location == 'GCNBHPW8':
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc999pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.FOREST.LAB', 'WIN2.FOREST.LAB']
 elif location == 'GCNBHPW8-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
@@ -148,6 +151,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.104']
 elif location == 'GCW89227':
     # test camera
     # test_server = ['sl08',
@@ -175,6 +179,7 @@ elif location == 'GCW89227':
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['sl10.intra.camera.it']
 else:
     raise Exception('testing location ' + location + ' is not valid')
 

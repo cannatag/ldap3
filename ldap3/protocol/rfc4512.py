@@ -659,6 +659,8 @@ class AttributeTypeInfo(BaseObjectInfo):
         r += (linesep + '  Substring rule: ' + list_to_string(self.substring)) if self.substring else ''
         r += (linesep + '  Syntax: ' + (self.syntax + (' [' + str(decode_syntax(self.syntax)))) + ']') if self.syntax else ''
         r += (linesep + '  Minimum Length: ' + str(self.min_length)) if isinstance(self.min_length, int) else ''
+    #    r += linesep + '  Mandatory in: '
+    #    r += linesep + '  Optional in: '
         return 'Attribute type' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 

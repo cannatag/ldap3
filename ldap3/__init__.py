@@ -31,8 +31,8 @@ NTLM = 'NTLM'
 
 SASL_AVAILABLE_MECHANISMS = ['EXTERNAL', 'DIGEST-MD5', 'GSSAPI']
 
-AUTO_BIND_NONE = 'NONE'
-AUTO_BIND_NO_TLS = 'NO_TLS'
+AUTO_BIND_NONE = 'NONE'  # same as False
+AUTO_BIND_NO_TLS = 'NO_TLS'  # same as True
 AUTO_BIND_TLS_BEFORE_BIND = 'TLS_BEFORE_BIND'
 AUTO_BIND_TLS_AFTER_BIND = 'TLS_AFTER_BIND'
 
@@ -83,7 +83,8 @@ ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
                                   'supportedSASLMechanisms',
                                   'vendorName',
                                   'vendorVersion',
-                                  'subschemaSubentry']
+                                  'subschemaSubentry',
+                                  'ACL']
 
 # modify type
 MODIFY_ADD = 'MODIFY_ADD'
@@ -127,6 +128,7 @@ ROUND_ROBIN = 'ROUND_ROBIN'
 RANDOM = 'RANDOM'
 
 POOLING_STRATEGIES = [FIRST, ROUND_ROBIN, RANDOM]
+POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool
 
 # communication
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'

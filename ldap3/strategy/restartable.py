@@ -73,7 +73,7 @@ class RestartableStrategy(SyncStrategy):
         if not self._restarting:  # if not already performing a restart
             self._restarting = True
             counter = self.restartable_tries
-            while counter > 0:
+            while counter > 0:  # includes restartable_tries == True
                 if log_enabled(BASIC):
                     log(BASIC, 'try #%d to open Restartable connection <%s>', self.restartable_tries - counter, self.connection)
                 sleep(self.restartable_sleep_time)

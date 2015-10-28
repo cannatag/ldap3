@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
-from functools import reduce
 from threading import RLock
 import json
 from functools import reduce
@@ -55,7 +54,7 @@ from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.sync import SyncStrategy
 from ..strategy.restartable import RestartableStrategy
 from ..operation.unbind import unbind_operation
-from ..protocol.rfc2696 import RealSearchControlValue, Cookie, Size
+from ..protocol.rfc2696 import paged_search_control
 from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
@@ -63,7 +62,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
-from ..utils.asn1 import encoder
+
 try:
     from ..strategy.mockSync import MockSyncStrategy  # not used yet
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
@@ -228,7 +227,7 @@ class Connection(object):
             self.raise_exceptions = raise_exceptions
             self.auto_range = True if auto_range else False
             self.extend = ExtendedOperationsRoot(self)
-            self._entries = None
+            self._entries = []
             self.fast_decoder = fast_decoder
 
             if isinstance(server, STRING_TYPES):
@@ -515,7 +514,7 @@ class Connection(object):
 
                 if read_server_info and self.bound:
                     self.refresh_server_info()
-            self._entries = None
+            self._entries = []
 
             if log_enabled(BASIC):
                 log(BASIC, 'done BIND operation, result <%s>', self.bound)
@@ -586,7 +585,7 @@ class Connection(object):
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
             elif attributes == ALL_ATTRIBUTES:
-                attributes = ['*']
+                attributes = []
 
             if get_operational_attributes and isinstance(attributes, list):
                 attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
@@ -596,18 +595,19 @@ class Connection(object):
             if isinstance(paged_size, int):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
-                real_search_control_value = RealSearchControlValue()
-                real_search_control_value['size'] = Size(paged_size)
-                real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
+                # real_search_control_value = RealSearchControlValue()
+                # real_search_control_value['size'] = Size(paged_size)
+                # real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
                 if controls is None:
                     controls = []
-                controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
+                # controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
+                controls.append(paged_search_control(paged_criticality, paged_size, paged_cookie))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
             response = self.post_send_search(self.send('searchRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, int):
                 return_value = response
@@ -644,7 +644,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
-            self._entries = None
+            self._entries = []
             if isinstance(response, int):
                 return_value = response
                 if log_enabled(PROTOCOL):
@@ -706,7 +706,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -743,7 +743,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'DELETE request <%s> sent via <%s>', delete_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('delRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -816,7 +816,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -863,7 +863,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY DN request <%s> sent via <%s>', modify_dn_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modDNRequest', request, controls))
-            self._entries = None
+            self._entries = []
 
             if isinstance(response, STRING_TYPES + (int, )):
                 return_value = response
@@ -899,7 +899,7 @@ class Connection(object):
                     self.send('abandonRequest', request, controls)
                     self.result = None
                     self.response = None
-                    self._entries = None
+                    self._entries = []
                     return_value = True
                 else:
                     if log_enabled(ERROR):
@@ -926,7 +926,7 @@ class Connection(object):
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'EXTENDED request <%s> sent via <%s>', extended_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('extendedReq', request, controls))
-            self._entries = None
+            self._entries = []
             if isinstance(response, int):
                 return_value = response
                 if log_enabled(PROTOCOL):

@@ -72,6 +72,7 @@ class Test(unittest.TestCase):
             json_entries = json.loads(json_response)['entries']
             self.assertTrue(len(json_entries) >= 2)
 
+
     def test_search_present(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
@@ -102,7 +103,10 @@ class Test(unittest.TestCase):
         json_entries = json.loads(json_response)['entries']
 
         if self.connection.check_names:
-            self.assertEqual(json_entries[0]['attributes']['entryDN'][0], self.delete_at_teardown[0][0])
+            if test_server_type == 'AD':
+                self.assertEqual(json_entries[0]['dn'].lower(), self.delete_at_teardown[0][0].lower())
+            else:
+                self.assertEqual(json_entries[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-3', attributes={'givenName': 'givenname-3'}))
@@ -115,7 +119,10 @@ class Test(unittest.TestCase):
         json_entries = json.loads(json_response)['entries']
 
         self.assertEqual(len(json_entries), 1)
-        self.assertEqual(json_entries[0]['attributes'][test_name_attr][0], testcase_id + '(search)-3')
+        if test_server_type == 'AD':
+            self.assertEqual(json_entries[0]['attributes'][test_name_attr], testcase_id + '(search)-3')
+        else:
+            self.assertEqual(json_entries[0]['attributes'][test_name_attr][0], testcase_id + '(search)-3')
 
     def test_search_integer_exact_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '=0))', attributes=[test_name_attr, test_int_attr])

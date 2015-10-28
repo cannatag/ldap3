@@ -51,20 +51,18 @@ class Test(unittest.TestCase):
 
     def test_move_dn(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-2'))
-        done = False
         counter = 20
         result = None
-        while not done:  # tries move operation for at maximum 20 times - partition may be busy while moving (at least on eDirectory)
+        while counter > 0:  # tries move operation for at maximum 20 times - partition may be busy while moving (at least on eDirectory)
+            sleep(3)
             result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modify-dn-2', new_superior=test_moved)
             if not self.connection.strategy.sync:
                 _, result = self.connection.get_response(result)
             else:
                 result = self.connection.result
-            if result['description'] == 'other' and counter > 0:
-                counter -= 1
-                if counter > 0:
-                    sleep(2)
-                    continue
-            done = True
+            if result['description'] == 'success':
+                break
+            counter -= 1
+
         self.assertEqual('success', result['description'])
         self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace(test_base, test_moved), self.delete_at_teardown[0][1])

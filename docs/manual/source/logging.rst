@@ -63,7 +63,8 @@ logging:
 
 At EXTENDED level every LDAP message is logged and printed in a proper way (thanks to pyasn1 prettyPrint feature).
 The flow of the network conversation can be easily guessed by the prefix of the message lines: >> for outgoing messages
-(to the LDAP server) and << for incoming messages (from the LDAP server).
+(to the LDAP server) and << for incoming messages (from the LDAP server). To get a full descriptive logging of outgoing
+messages you must set ``fast_decoder=False`` in the connection object.
 
 Each log record contains the detail level and when available information on the active connection used. So the log size grows very easily.
 ldap3 performance degrades when logging is active, especially at level greater than ERROR, so it's better to use it only when needed.

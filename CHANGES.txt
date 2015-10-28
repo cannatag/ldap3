@@ -1,6 +1,21 @@
 # changes file for ldap3
-# generated on 2015-09-23 21:35:23.993878
-# version 0.9.9.1
+# generated on 2015-10-28 22:29:04.358051
+# version 0.9.9.2
+
+* 0.9.9.2 2015.10.19
+    - Fixed hasattr() behaviour for Entry object in Python 3
+    - Allows empty sasl_credentials in sasl bind
+    - Added POOLING_LOOP_TIMEOUT constant to specify how many seconds the server pooling strategy has to wait before retrying if it did not find an active server (defaults to 10)
+    - Pooling strategy now allows to specify the number of cycles to try when finding a server (with active=N)
+    - Pooling strategy now allows to specify how many seconds a server must be considered offline before retrying to check for availabiliry (with exhaust=N)
+    - Connection.entries defaults to empty list
+    - ALL_ATTRIBUTES don't send any attribute in the attribute list (was sending '*') while searching
+    - Added DirSync extended function for Microsoft Active Directory
+    - Added LDAP_SERVER_DIRSYNC_OID control for Microsoft Active Directory
+    - Added LDAP_SERVER_EXTENDED_DN_OID control for Microsoft Active Directory
+    - Added LDAP_SERVER_SHOW_DELETED_OID control for Microsoft Active Directory
+    - Fixed AD tests for single valued attributes
+    - Added ACL attribute in the ATTRIBUTES_EXCLUDED_FROM_CHECK list
 
 * 0.9.9.1 2015.09.21
     - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)

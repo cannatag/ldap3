@@ -143,7 +143,10 @@ With the connection object you can perform all the standard LDAP operations:
         * DEREF_ALWAYS: always returns the referenced entries, not the alias object.
 
     * attributes: a single attribute or a list of attributes to be returned by the search (defaults to None).
-      If attributes is None no attribute is returned. If attributes is ALL_ATTRIBUTES all attributes are returned.
+      If attributes is None no attribute is returned. If attributes=ALL_ATTRIBUTES all attributes are returned,
+      if attributes=ALL_OPERATIONAL_ATTRIBUTES all operational attributes are returned. To get both use
+      attributes=[ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES].
+
 
     * size_limit: maximum number of entries returned by the search (defaults to None).
       If None the whole set of found entries is returned, unless the server has a more restrictive constrain.

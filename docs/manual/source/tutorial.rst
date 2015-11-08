@@ -386,10 +386,10 @@ SASL provides additional methods to identify the user, as an external certificat
 .. note::
     With ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
 
-        # import class and constants
-        >>> from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, NTLM
+        >>> # import class and constants
+        >>> from ldap3 import Server, Connection, ALL, NTLM
 
-        # define the server and the connection
+        >>> # define the server and the connection
         >>> server = Server('servername', get_info=ALL)
         >>> conn = Connection(server, user="Domain\\User", password="password", authentication=NTLM)
 
@@ -708,7 +708,7 @@ Connections respond to the context manager protocol, so you can have automatic o
                  ipaSshGroupOfPubKeys
     sn: Administrator
 
-When using context managers the Connection object retains its previous state after exiting the context. The connection is always open and bound while in context.
+When using context managers the Connection object retains its previous state after exiting the context. The connection is open and bound while in context.
 If the connection was not bound to the server when entering the context the Unbind operation will be tried when you leave the context even if the operations
 in the context raise an exception.
 
@@ -717,4 +717,17 @@ The Add operation
 
 Let's try to add some data to the LDAP server::
 
+    >>> # Create a container for our new entries
+    >>> conn.add('ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
+    >>> True
+    >>> # Add some users
+    >>> conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber':'DEV', 'telephoneNumber': 1111})
+    >>> True
+    >>> conn.add('cn=j.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'John', 'sn': 'Smith', 'departmentNumber':'DEV',  'telephoneNumber': 2222})
+    >>> True
+    >>> conn.add('cn=m.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'Marianne', 'sn': 'Smith', 'departmentNumber':'QA',  'telephoneNumber': 3333})
+    >>> True
+    >>> conn.add('cn=quentin.cat,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'Quentin', 'sn': 'Cat', 'departmentNumber':'CC',  'telephoneNumber': 4444})
+
+As you can see we have added some users
 ... work in progress ...

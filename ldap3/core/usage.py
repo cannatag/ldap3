@@ -66,6 +66,8 @@ class ConnectionUsage(object):
         self.initial_connection_start_time = None
         self.open_socket_start_time = None
         self.connection_stop_time = None
+        self.last_transmitted_time = None
+        self.last_received_time = None
         self.open_sockets = 0
         self.closed_sockets = 0
         self.wrapped_sockets = 0
@@ -95,38 +97,40 @@ class ConnectionUsage(object):
 
     def __repr__(self):
         r = 'Connection Usage:' + linesep
-        r += '  Time: [elapsed:        ' + str(self.elapsed_time) + ']' + linesep
-        r += '    Initial start time:  ' + (str(self.initial_connection_start_time.isoformat()) if self.initial_connection_start_time else '') + linesep
-        r += '    Open socket time:    ' + (str(self.open_socket_start_time.isoformat()) if self.open_socket_start_time else '') + linesep
-        r += '    Close socket time:   ' + (str(self.connection_stop_time.isoformat()) if self.connection_stop_time else '') + linesep
+        r += '  Time: [elapsed:          ' + str(self.elapsed_time) + ']' + linesep
+        r += '    Initial start time:    ' + (str(self.initial_connection_start_time.isoformat()) if self.initial_connection_start_time else '') + linesep
+        r += '    Open socket time:      ' + (str(self.open_socket_start_time.isoformat()) if self.open_socket_start_time else '') + linesep
+        r += '    Last transmitted time: ' + (str(self.last_transmitted_time.isoformat()) if self.last_transmitted_time else '') + linesep
+        r += '    Last received time:    ' + (str(self.last_received_time.isoformat()) if self.last_received_time else '') + linesep
+        r += '    Close socket time:     ' + (str(self.connection_stop_time.isoformat()) if self.connection_stop_time else '') + linesep
         r += '  Server:' + linesep
-        r += '    Servers from pool:   ' + str(self.servers_from_pool) + linesep
-        r += '    Sockets open:        ' + str(self.open_sockets) + linesep
-        r += '    Sockets closed:      ' + str(self.closed_sockets) + linesep
-        r += '    Sockets wrapped:     ' + str(self.wrapped_sockets) + linesep
-        r += '  Bytes:                 ' + str(self.bytes_transmitted + self.bytes_received) + linesep
-        r += '    Transmitted:         ' + str(self.bytes_transmitted) + linesep
-        r += '    Received:            ' + str(self.bytes_received) + linesep
-        r += '  Messages:              ' + str(self.messages_transmitted + self.messages_received) + linesep
-        r += '    Transmitted:         ' + str(self.messages_transmitted) + linesep
-        r += '    Received:            ' + str(self.messages_received) + linesep
-        r += '  Operations:            ' + str(self.operations) + linesep
-        r += '    Abandon:             ' + str(self.abandon_operations) + linesep
-        r += '    Bind:                ' + str(self.bind_operations) + linesep
-        r += '    Add:                 ' + str(self.add_operations) + linesep
-        r += '    Compare:             ' + str(self.compare_operations) + linesep
-        r += '    Delete:              ' + str(self.delete_operations) + linesep
-        r += '    Extended:            ' + str(self.extended_operations) + linesep
-        r += '    Modify:              ' + str(self.modify_operations) + linesep
-        r += '    ModifyDn:            ' + str(self.modify_dn_operations) + linesep
-        r += '    Search:              ' + str(self.search_operations) + linesep
-        r += '    Unbind:              ' + str(self.unbind_operations) + linesep
-        r += '  Referrals:             ' + linesep
-        r += '    Received:            ' + str(self.referrals_received) + linesep
-        r += '    Followed:            ' + str(self.referrals_followed) + linesep
-        r += '  Restartable tries:     ' + str(self.restartable_failures + self.restartable_successes) + linesep
-        r += '    Failed restarts:     ' + str(self.restartable_failures) + linesep
-        r += '    Successful restarts: ' + str(self.restartable_successes) + linesep
+        r += '    Servers from pool:     ' + str(self.servers_from_pool) + linesep
+        r += '    Sockets open:          ' + str(self.open_sockets) + linesep
+        r += '    Sockets closed:        ' + str(self.closed_sockets) + linesep
+        r += '    Sockets wrapped:       ' + str(self.wrapped_sockets) + linesep
+        r += '  Bytes:                   ' + str(self.bytes_transmitted + self.bytes_received) + linesep
+        r += '    Transmitted:           ' + str(self.bytes_transmitted) + linesep
+        r += '    Received:              ' + str(self.bytes_received) + linesep
+        r += '  Messages:                ' + str(self.messages_transmitted + self.messages_received) + linesep
+        r += '    Transmitted:           ' + str(self.messages_transmitted) + linesep
+        r += '    Received:              ' + str(self.messages_received) + linesep
+        r += '  Operations:              ' + str(self.operations) + linesep
+        r += '    Abandon:               ' + str(self.abandon_operations) + linesep
+        r += '    Bind:                  ' + str(self.bind_operations) + linesep
+        r += '    Add:                   ' + str(self.add_operations) + linesep
+        r += '    Compare:               ' + str(self.compare_operations) + linesep
+        r += '    Delete:                ' + str(self.delete_operations) + linesep
+        r += '    Extended:              ' + str(self.extended_operations) + linesep
+        r += '    Modify:                ' + str(self.modify_operations) + linesep
+        r += '    ModifyDn:              ' + str(self.modify_dn_operations) + linesep
+        r += '    Search:                ' + str(self.search_operations) + linesep
+        r += '    Unbind:                ' + str(self.unbind_operations) + linesep
+        r += '  Referrals:               ' + linesep
+        r += '    Received:              ' + str(self.referrals_received) + linesep
+        r += '    Followed:              ' + str(self.referrals_followed) + linesep
+        r += '  Restartable tries:       ' + str(self.restartable_failures + self.restartable_successes) + linesep
+        r += '    Failed restarts:       ' + str(self.restartable_failures) + linesep
+        r += '    Successful restarts:   ' + str(self.restartable_successes) + linesep
         return r
 
     def __str__(self):
@@ -162,6 +166,7 @@ class ConnectionUsage(object):
         return self
 
     def update_transmitted_message(self, message, length):
+        self.last_transmitted_time = datetime.now()
         self.bytes_transmitted += length
         self.operations += 1
         self.messages_transmitted += 1
@@ -191,6 +196,7 @@ class ConnectionUsage(object):
             raise LDAPMetricsError('unable to collect usage for unknown message type')
 
     def update_received_message(self, length):
+        self.last_received_time = datetime.now()
         self.bytes_received += length
         self.messages_received += 1
 

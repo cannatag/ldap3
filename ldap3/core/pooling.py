@@ -88,7 +88,7 @@ class ServerPoolState(object):
                     self.last_used_server = self.find_active_random_server()
                 else:
                     # returns a random server in the pool
-                    self.last_used_server = randint(0, len(self.servers))
+                    self.last_used_server = randint(0, len(self.servers) - 1)
             else:
                 if log_enabled(ERROR):
                     log(ERROR, 'unknown server pooling strategy <%s>', self.server_pool.strategy)

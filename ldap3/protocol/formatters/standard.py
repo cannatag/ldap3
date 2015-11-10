@@ -183,4 +183,7 @@ def format_attribute_values(schema, name, values, custom_formatter):
         formatter = format_unicode  # default formatter
 
     formatted_values = [formatter(raw_value) for raw_value in values]
-    return formatted_values[0] if (attr_type and attr_type.single_value) else formatted_values
+    if formatted_values:
+        return formatted_values[0] if (attr_type and attr_type.single_value) else formatted_values
+    else:  # RFCs states that attributes must always have values, but AD return empty values in DirSync
+        return []

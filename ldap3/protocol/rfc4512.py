@@ -291,6 +291,13 @@ class SchemaInfo(BaseServerInfo):
         self.ldap_syntaxes = LdapSyntaxInfo.from_definition(attributes.pop('ldapSyntaxes', []))
         self.other = attributes  # remaining schema definition attributes not in RFC4512
 
+        # links attributes to objects
+        for object_class in self.object_classes:
+            for attribute in self.object_classes[object_class].must_contain:
+                self.attribute_types[attribute].mandatory_in.append(object_class)
+            for attribute in self.object_classes[object_class].may_contain:
+                self.attribute_types[attribute].optional_in.append(object_class)
+
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
         r += linesep
@@ -594,8 +601,8 @@ class ObjectClassInfo(BaseObjectInfo):
                                 definition=definition)
         self.superior = superior
         self.kind = kind
-        self.must_contain = must_contain
-        self.may_contain = may_contain
+        self.must_contain = must_contain or []
+        self.may_contain = may_contain or []
 
     def __repr__(self):
         r = ''
@@ -647,6 +654,8 @@ class AttributeTypeInfo(BaseObjectInfo):
         self.collective = collective
         self.no_user_modification = no_user_modification
         self.usage = usage
+        self.mandatory_in = []
+        self.optional_in = []
 
     def __repr__(self):
         r = ''
@@ -659,8 +668,8 @@ class AttributeTypeInfo(BaseObjectInfo):
         r += (linesep + '  Substring rule: ' + list_to_string(self.substring)) if self.substring else ''
         r += (linesep + '  Syntax: ' + (self.syntax + (' [' + str(decode_syntax(self.syntax)))) + ']') if self.syntax else ''
         r += (linesep + '  Minimum Length: ' + str(self.min_length)) if isinstance(self.min_length, int) else ''
-    #    r += linesep + '  Mandatory in: '
-    #    r += linesep + '  Optional in: '
+        r += linesep + '  Mandatory in: ' + list_to_string(self.mandatory_in) if self.mandatory_in else ''
+        r += linesep + '  Optional in: ' + list_to_string(self.optional_in) if self.optional_in else ''
         return 'Attribute type' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 

@@ -27,8 +27,7 @@ from random import SystemRandom
 from tempfile import gettempdir
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND
-
+    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -37,17 +36,18 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = True
-test_log_detail = EXTENDED
+test_log_detail = OFF
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
 
+test_fast_decoder = True
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
 test_check_names = True  # check attribute names in operations
-test_get_info = NONE  # get info from DSA
+test_get_info = ALL  # get info from DSA
 test_usage = True
 
 try:
@@ -61,6 +61,7 @@ if location.startswith('TRAVIS'):
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
     test_server_type = 'EDIR'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -76,6 +77,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
+    test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
 elif location == 'GCNBHPW8-EDIR':
     # test notepbook - eDirectory (EDIR)
     test_server = ['edir1.hyperv',
@@ -83,6 +85,7 @@ elif location == 'GCNBHPW8-EDIR':
                    'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
     # test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -100,12 +103,14 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
 elif location == 'GCNBHPW8':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
     test_server = 'win1.hyperv'
     test_server_type = 'AD'
+    test_root_partition = 'DC=FOREST,DC=LAB'  # partition to use in DirSync
     test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
     test_moved = 'ou=moved,OU=test,DC=FOREST,DC=LAB'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -123,10 +128,12 @@ elif location == 'GCNBHPW8':
     test_ntlm_user = 'FOREST\\Administrator'
     test_ntlm_password = 'Rc999pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.FOREST.LAB', 'WIN2.FOREST.LAB']
 elif location == 'GCNBHPW8-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -144,6 +151,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['192.168.137.104']
 elif location == 'GCW89227':
     # test camera
     # test_server = ['sl08',
@@ -153,6 +161,7 @@ elif location == 'GCW89227':
     test_server_type = 'EDIR'
     # test_server = 'nova01.amm.intra.camera.it'
     # test_server_type = 'AD'
+    test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
@@ -170,26 +179,7 @@ elif location == 'GCW89227':
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
-elif location == 'GCW89227-AD':
-    test_server = 'nova01.amm.intra.camera.it'
-    test_server_type = 'AD'
-    test_base = 'o=test'  # base context where test objects are created
-    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
-    test_name_attr = 'cn'  # naming attribute for test objects
-    test_int_attr = 'loginGraceLimit'
-    test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
-    test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=services'  # the user that performs the tests
-    test_password = 'camera'  # user password
-    test_sasl_user = 'testSASL.services'
-    test_sasl_password = 'password'
-    test_sasl_realm = None
-    test_ca_cert_file = 'local-edir-ca-cert.pem'
-    test_user_cert_file = 'local-edir-admin-cert.pem'
-    test_user_key_file = 'local-edir-admin-key.pem'
-    test_ntlm_user = 'AMM\\Administrator'
-    test_ntlm_password = 'xxx'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['sl10.intra.camera.it']
 else:
     raise Exception('testing location ' + location + ' is not valid')
 
@@ -237,7 +227,8 @@ def get_connection(bind=None,
                    sasl_credentials=None,
                    ntlm_credentials=None,
                    get_info=None,
-                   usage=None):
+                   usage=None,
+                   fast_decoder=None):
     if bind is None:
         if test_server_type == 'AD':
             bind = AUTO_BIND_TLS_BEFORE_BIND
@@ -253,6 +244,8 @@ def get_connection(bind=None,
         get_info = test_get_info
     if usage is None:
         usage = test_usage
+    if fast_decoder is None:
+        fast_decoder = test_fast_decoder
 
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
@@ -282,7 +275,8 @@ def get_connection(bind=None,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names,
-                          collect_usage=usage)
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder)
     elif authentication == NTLM:
         return Connection(server,
                           auto_bind=bind,
@@ -294,7 +288,8 @@ def get_connection(bind=None,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names,
-                          collect_usage=usage)
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder)
     else:
         return Connection(server,
                           auto_bind=bind,
@@ -306,7 +301,8 @@ def get_connection(bind=None,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names,
-                          collect_usage=usage)
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder)
 
 
 def drop_connection(connection, dn_to_delete=None):

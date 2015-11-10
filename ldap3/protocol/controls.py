@@ -31,9 +31,10 @@ def build_control(oid, criticality, value, encode_control_value=True):
     control = Control()
     control.setComponentByName('controlType', LDAPOID(oid))
     control.setComponentByName('criticality', Criticality(criticality))
-    if encode_control_value:
-        control.setComponentByName('controlValue', encoder.encode(value))
-    else:
-        control.setComponentByName('controlValue', value)
+    if value is not None:
+        if encode_control_value:
+            control.setComponentByName('controlValue', encoder.encode(value))
+        else:
+            control.setComponentByName('controlValue', value)
 
     return control

@@ -48,24 +48,6 @@ from pyasn1.codec.ber import encoder, decoder
 
 # a fast BER decoder for LDAP responses only
 
-# for testing
-# def compare_dicts(d1=dict(), d2=dict()):
-#     if len(list(d1.keys())) != len(list(d2.keys())):
-#         return False
-#
-#     for k in d1.keys():
-#         if isinstance(d1[k], dict):
-#             compare_dicts(d1[k], d2[k])
-#         elif d2[k] != d1[k]:
-#             return False
-#
-#     return True
-
-
-# def compare_ldap_responses(r1, r2):
-#     if not compare_dicts(r1, r2):
-#         print('NO')
-
 
 def compute_ber_size(data):
     """

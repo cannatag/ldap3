@@ -28,8 +28,9 @@ from .. import HASHED_NONE, HASHED_MD5, HASHED_SALTED_MD5, HASHED_SALTED_SHA, HA
 
 import hashlib
 from os import urandom
-from ldap3.core.exceptions import LDAPInvalidHashAlgorithmError
 from base64 import b64encode
+
+from ..core.exceptions import LDAPInvalidHashAlgorithmError
 
 # each tuple: (the string to include between braces in the digest, the name of the algorithm to invoke with the new() function)
 

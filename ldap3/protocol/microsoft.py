@@ -23,31 +23,31 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+import ctypes
 
-# SicilyBindResponse ::= [APPLICATION 1] SEQUENCE {
-#
-#     resultCode   ENUMERATED {
-#                      success                     (0),
-#                      protocolError               (2),
-#                      adminLimitExceeded          (11),
-#                      inappropriateAuthentication (48),
-#                      invalidCredentials          (49),
-#                      busy                        (51),
-#                      unavailable                 (52),
-#                      unwillingToPerform          (53),
-#                      other                       (80) },
-#
-#     serverCreds  OCTET STRING,
-#     errorMessage LDAPString }
 from pyasn1.type.namedtype import NamedTypes, NamedType
-from pyasn1.type.tag import Tag, tagClassApplication, tagFormatConstructed
+from pyasn1.type.tag import Tag, tagClassApplication, tagFormatConstructed, tagFormatSimple
 from pyasn1.type.univ import Sequence, OctetString, Integer
-from .rfc4511 import ResultCode, LDAPString, Control
-from ..utils.asn1 import encoder
+from .rfc4511 import ResultCode, LDAPString
 from .controls import build_control
 
 
 class SicilyBindResponse(Sequence):
+    # SicilyBindResponse ::= [APPLICATION 1] SEQUENCE {
+    #
+    #     resultCode   ENUMERATED {
+    #                      success                     (0),
+    #                      protocolError               (2),
+    #                      adminLimitExceeded          (11),
+    #                      inappropriateAuthentication (48),
+    #                      invalidCredentials          (49),
+    #                      busy                        (51),
+    #                      unavailable                 (52),
+    #                      unwillingToPerform          (53),
+    #                      other                       (80) },
+    #
+    #     serverCreds  OCTET STRING,
+    #     errorMessage LDAPString }
     # BindResponse ::= [APPLICATION 1] SEQUENCE {
     #     COMPONENTS OF LDAPResult,
     #     serverSaslCreds    [7] OCTET STRING OPTIONAL }
@@ -58,15 +58,26 @@ class SicilyBindResponse(Sequence):
                                )
 
 
-class DirSyncControlValue(Sequence):
-    # realReplControlValue ::= SEQUENCE {
-    #    parentsFirst		integer
-    #    maxReturnlength	integer
-    #    cookie			    OCTET STRING }
+class DirSyncControlRequestValue(Sequence):
+    # DirSyncRequestValue  ::= SEQUENCE {
+    #    Flags      integer
+    #    MaxBytes   integer
+    #    Cookie     OCTET STRING }
+    componentType = NamedTypes(NamedType('Flags', Integer()),
+                               NamedType('MaxBytes', Integer()),
+                               NamedType('Cookie', OctetString())
+                               )
 
-    componentType = NamedTypes(NamedType('parentsFirst', Integer()),
-                               NamedType('maxReturnLength', Integer()),
-                               NamedType('cookie', OctetString())
+
+class DirSyncControlResponseValue(Sequence):
+    # DirSyncResponseValue ::= SEQUENCE {
+    #    MoreResults     INTEGER
+    #    unused          INTEGER
+    #    CookieServer    OCTET STRING
+    #     }
+    componentType = NamedTypes(NamedType('MoreResults', Integer()),
+                               NamedType('unused', Integer()),
+                               NamedType('CookieServer', OctetString())
                                )
 
 
@@ -77,12 +88,30 @@ class ExtendedDN(Sequence):
                                )
 
 
-def dir_sync_control(criticality=False, parent_first=True, max_length=65535, cookie=None):
-    control_value = DirSyncControlValue()
-    control_value.setComponentByName('parentFirst', int(parent_first))
-    control_value.setComponentByName('maxReturnLength', int(max_length))
-    control_value.setComponentByName('cookie', cookie)
+def dir_sync_control(criticality, object_security, ancestors_first, public_data_only, incremental_values, max_length, cookie):
+    control_value = DirSyncControlRequestValue()
+    flags = 0x0
+    if object_security:
+        flags |= 0x00000001
 
+    if ancestors_first:
+        flags |= 0x00000800
+
+    if public_data_only:
+        flags |= 0x00002000
+
+    if incremental_values:
+        flags |= 0x80000000
+        # converts flags to signed 32 bit (AD expects a 4 bytes long unsigned integer, but ASN.1 Integer type is signed
+        # so the BER encoder gives back a 5 bytes long signed integer
+        flags = ctypes.c_long(flags & 0xFFFFFFFF).value
+
+    control_value.setComponentByName('Flags', flags)
+    control_value.setComponentByName('MaxBytes', max_length)
+    if cookie:
+        control_value.setComponentByName('Cookie', cookie)
+    else:
+        control_value.setComponentByName('Cookie', OctetString(''))
     return build_control('1.2.840.113556.1.4.841', criticality, control_value)
 
 
@@ -93,6 +122,4 @@ def extended_dn_control(criticality=False, hex_format=False):
 
 
 def show_deleted_control(criticality=False):
-    return build_control('1.2.840.113556.1.4.417', criticality, '', False)
-
-    return control
+    return build_control('1.2.840.113556.1.4.417', criticality, value=None)

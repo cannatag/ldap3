@@ -170,6 +170,26 @@ elif location == 'GCW89227':
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
+elif location == 'GCW89227-AD':
+    test_server = 'nova01.amm.intra.camera.it'
+    test_server_type = 'AD'
+    test_base = 'o=test'  # base context where test objects are created
+    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'loginGraceLimit'
+    test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
+    test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
+    test_user = 'cn=admin,o=services'  # the user that performs the tests
+    test_password = 'camera'  # user password
+    test_sasl_user = 'testSASL.services'
+    test_sasl_password = 'password'
+    test_sasl_realm = None
+    test_ca_cert_file = 'local-edir-ca-cert.pem'
+    test_user_cert_file = 'local-edir-admin-cert.pem'
+    test_user_key_file = 'local-edir-admin-key.pem'
+    test_ntlm_user = 'AMM\\Administrator'
+    test_ntlm_password = 'xxx'
+    test_logging_filename = join(gettempdir(), 'ldap3.log')
 else:
     raise Exception('testing location ' + location + ' is not valid')
 

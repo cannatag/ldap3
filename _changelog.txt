@@ -1,6 +1,7 @@
 * 0.9.9.3 2015.11.08
     - Added mandatory_in and optional_in in server schema for attribute types. Now you can see in which classes attributes are used
     - Added last_transmitted_time and last_received_time to Usage object to track time of the last sent and received operation
+    - Exception SessionTerminatedByServer renamed to SessionTerminatedByServerError and added to ldap3 namespace
 
 * 0.9.9.2 2015.10.19
     - Fixed hasattr() behaviour for Entry object in Python 3

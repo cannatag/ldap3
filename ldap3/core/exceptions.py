@@ -511,7 +511,7 @@ class LDAPSocketSendError(LDAPCommunicationError, socket.error):
     pass
 
 
-class LDAPSessionTerminatedByServer(LDAPCommunicationError):
+class LDAPSessionTerminatedByServerError(LDAPCommunicationError):
     pass
 
 

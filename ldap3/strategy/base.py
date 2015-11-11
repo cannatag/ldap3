@@ -31,7 +31,7 @@ from datetime import datetime
 
 from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS,\
     DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
-from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
+from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
 from ..utils.uri import parse_uri
@@ -310,7 +310,7 @@ class BaseStrategy(object):
                     self.connection.last_error = 'session terminated by server'
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                    raise LDAPSessionTerminatedByServer(self.connection.last_error)
+                    raise LDAPSessionTerminatedByServerError(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
                 if responses[-2]['result'] == RESULT_REFERRAL:

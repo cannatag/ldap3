@@ -60,8 +60,8 @@ ALL_ATTRIBUTES = '*'
 NO_ATTRIBUTES = '1.1'  # as per RFC 4511
 ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
 
-CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
-CASE_INSENSITIVE_SCHEMA_NAMES = True
+CASE_INSENSITIVE_ATTRIBUTE_NAMES = True  # configurable parameter
+CASE_INSENSITIVE_SCHEMA_NAMES = True  # configurable parameter
 
 # checks
 ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
@@ -120,7 +120,7 @@ OFFLINE_SLAPD_2_4 = 'SLAPD_2_4'
 OFFLINE_DS389_1_3_3 = 'DS389_1_3_3'
 
 # abstraction layer
-ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OPER_'
+ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OPER_'  # configurable parameter
 
 # server pooling
 FIRST = 'FIRST'
@@ -128,24 +128,24 @@ ROUND_ROBIN = 'ROUND_ROBIN'
 RANDOM = 'RANDOM'
 
 POOLING_STRATEGIES = [FIRST, ROUND_ROBIN, RANDOM]
-POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool
+POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool - configurable parameter
 
 # communication
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 RESPONSE_COMPLETE = 'RESPONSE_FROM_SERVER_COMPLETE'
-RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies
-RESPONSE_WAITING_TIMEOUT = 20  # waiting timeout for receiving a response in asynchronous strategies
-SOCKET_SIZE = 4096  # socket byte size
-CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
+RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies - configurable parameter
+RESPONSE_WAITING_TIMEOUT = 20  # waiting timeout for receiving a response in asynchronous strategies - configurable parameter
+SOCKET_SIZE = 4096  # socket byte size - configurable parameter
+CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability - configurable parameter
 
 # restartable strategy
-RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
-RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request - configurable parameter
+RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries - configurable parameter
 
 # reusable strategies (Threaded)
 TERMINATE_REUSABLE = 'TERMINATE_REUSABLE_CONNECTION'
-REUSABLE_THREADED_POOL_SIZE = 10
-REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
+REUSABLE_THREADED_POOL_SIZE = 10  # configurable parameter
+REUSABLE_THREADED_LIFETIME = 3600  # 1 hour - configurable parameter
 DEFAULT_THREADED_POOL_NAME = 'reusable_default_pool'
 
 # LDAP protocol
@@ -153,6 +153,19 @@ LDAP_MAX_INT = 2147483647
 
 # LDIF
 LDIF_LINE_LENGTH = 78
+
+# Hashed password
+HASHED_NONE = 'PLAIN'
+HASHED_SHA = 'SHA'
+HASHED_SHA256 = 'SHA256'
+HASHED_SHA384 = 'SHA384'
+HASHED_SHA512 = 'SHA512'
+HASHED_MD5 = 'MD5'
+HASHED_SALTED_SHA = 'SALTED_SHA'
+HASHED_SALTED_SHA256 = 'SALTED_SHA256'
+HASHED_SALTED_SHA384 = 'SALTED_SHA384'
+HASHED_SALTED_SHA512 = 'SALTED_SHA512'
+HASHED_SALTED_MD5 = 'SALTED_MD5'
 
 # result codes
 RESULT_SUCCESS = 0
@@ -304,19 +317,36 @@ GET_DSA_INFO = DSA
 GET_SCHEMA_INFO = SCHEMA
 GET_ALL_INFO = ALL
 
-# Hashed password
-HASHED_NONE = 'PLAIN'
-HASHED_SHA = 'SHA'
-HASHED_SHA256 = 'SHA256'
-HASHED_SHA384 = 'SHA384'
-HASHED_SHA512 = 'SHA512'
-HASHED_MD5 = 'MD5'
-HASHED_SALTED_SHA = 'SALTED_SHA'
-HASHED_SALTED_SHA256 = 'SALTED_SHA256'
-HASHED_SALTED_SHA384 = 'SALTED_SHA384'
-HASHED_SALTED_SHA512 = 'SALTED_SHA512'
-HASHED_SALTED_MD5 = 'SALTED_MD5'
 
+def get_config_parameter(parameter):
+    if parameter == 'CASE_INSENSITIVE_ATTRIBUTE_NAMES':
+        return CASE_INSENSITIVE_ATTRIBUTE_NAMES
+    elif parameter == 'CASE_INSENSITIVE_SCHEMA_NAMES':
+        return CASE_INSENSITIVE_SCHEMA_NAMES
+    elif parameter == 'ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX':
+        return ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX
+    elif parameter == 'POOLING_LOOP_TIMEOUT':
+        return POOLING_LOOP_TIMEOUT
+    elif parameter == 'RESPONSE_SLEEPTIME':
+        return RESPONSE_SLEEPTIME
+    elif parameter == 'RESPONSE_WAITING_TIMEOUT':
+        return RESPONSE_WAITING_TIMEOUT
+    elif parameter == 'SOCKET_SIZE':
+        return SOCKET_SIZE
+    elif parameter == 'CHECK_AVAILABILITY_TIMEOUT':
+        return CHECK_AVAILABILITY_TIMEOUT
+    elif parameter == 'RESTARTABLE_SLEEPTIME':
+        return RESTARTABLE_SLEEPTIME
+    elif parameter == 'RESTARTABLE_TRIES':
+        return RESTARTABLE_TRIES
+    elif parameter == 'REUSABLE_THREADED_POOL_SIZE':
+        return REUSABLE_THREADED_POOL_SIZE
+    elif parameter == 'REUSABLE_THREADED_LIFETIME':
+        return REUSABLE_THREADED_LIFETIME
+    elif parameter == 'DEFAULT_THREADED_POOL_NAME':
+        return DEFAULT_THREADED_POOL_NAME
+
+    raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
 # centralized imports
 from .version import __author__, __version__, __email__, __description__, __status__, __license__, __url__
@@ -328,7 +358,7 @@ from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalA
 from .protocol.rfc4512 import DsaInfo, SchemaInfo
 
 # imports error Exceptions
-from .core.exceptions import LDAPException, LDAPExceptionError, LDAPSocketCloseError, LDAPReferralError, \
+from .core.exceptions import LDAPException, LDAPExceptionError, LDAPConfigurationError, LDAPSocketCloseError, LDAPReferralError, \
     LDAPAttributeError, LDAPBindError, LDAPCertificateError, LDAPChangesError, LDAPCommunicationError, LDAPConnectionIsReadOnlyError, \
     LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPControlsError, LDAPEntryError, \
     LDAPInvalidDereferenceAliasesError, LDAPInvalidFilterError, LDAPInvalidScopeError, LDAPInvalidServerError, LDAPKeyError,\
@@ -337,7 +367,8 @@ from .core.exceptions import LDAPException, LDAPExceptionError, LDAPSocketCloseE
     LDAPServerPoolExhaustedError, LDAPSocketOpenError, LDAPSocketReceiveError, LDAPSocketSendError, LDAPSSLConfigurationError,\
     LDAPSSLNotSupportedError, LDAPStartTLSError, LDAPTypeError, LDAPUnknownAuthenticationMethodError, LDAPUnknownRequestError, \
     LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError, LDAPResponseTimeoutError, LDAPInvalidHashAlgorithmError, \
-    LDAPSessionTerminatedByServerError
+    LDAPSessionTerminatedByServerError, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError, LDAPInvalidPortError, \
+    LDAPPackageUnavailableError, LDAPConfigurationParameterError, LDAPInvalidTlsSpecificationError
 
 # imports result code Exceptions
 from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSASResult, LDAPAliasDereferencingProblemResult,\
@@ -352,5 +383,6 @@ from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSA
     LDAPObjectClassViolationResult, LDAPOperationResult, LDAPOperationsErrorResult, LDAPOtherResult, LDAPProtocolErrorResult, \
     LDAPReferralResult, LDAPSASLBindInProgressResult, LDAPSizeLimitExceededResult, LDAPStrongerAuthRequiredResult, \
     LDAPTimeLimitExceededResult, LDAPTooLateResult, LDAPUnavailableCriticalExtensionResult, LDAPUnavailableResult, \
-    LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError, \
-    LDAPPackageUnavailableError
+    LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult
+
+

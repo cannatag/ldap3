@@ -27,7 +27,7 @@ from string import whitespace
 from os import linesep
 
 from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, \
-    CASE_INSENSITIVE_ATTRIBUTE_NAMES, SEQUENCE_TYPES
+    SEQUENCE_TYPES, get_config_parameter
 
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..protocol.formatters.formatters import format_unicode
@@ -377,7 +377,7 @@ def decode_vals_fast(vals):
 
 
 def attributes_to_dict(attribute_list):
-    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_vals(attribute['vals'])
 
@@ -385,7 +385,7 @@ def attributes_to_dict(attribute_list):
 
 
 def attributes_to_dict_fast(attribute_list):
-    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
     for attribute in attribute_list:
         attributes[attribute[3][0][3].decode('utf-8')] = decode_vals_fast(attribute[3][1][3])
 
@@ -401,7 +401,7 @@ def decode_raw_vals_fast(vals):
 
 
 def raw_attributes_to_dict(attribute_list):
-    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_raw_vals(attribute['vals'])
 
@@ -409,7 +409,7 @@ def raw_attributes_to_dict(attribute_list):
 
 
 def raw_attributes_to_dict_fast(attribute_list):
-    attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
     for attribute in attribute_list:
         attributes[attribute[3][0][3].decode('utf-8')] = decode_raw_vals_fast(attribute[3][1][3])
 
@@ -417,7 +417,7 @@ def raw_attributes_to_dict_fast(attribute_list):
 
 
 def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=None):
-    checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    checked_attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
     for attribute in attribute_list:
         name = str(attribute['type'])
         checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals(attribute['vals']) or [], custom_formatter)
@@ -425,7 +425,7 @@ def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=Non
 
 
 def checked_attributes_to_dict_fast(attribute_list, schema=None, custom_formatter=None):
-    checked_attributes = CaseInsensitiveDict() if CASE_INSENSITIVE_ATTRIBUTE_NAMES else dict()
+    checked_attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
     for attribute in attribute_list:
         name = attribute[3][0][3].decode('utf-8')
         checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals_fast(attribute[3][1][3]) or [], custom_formatter)

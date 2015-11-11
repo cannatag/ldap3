@@ -28,7 +28,7 @@ from os import linesep
 from threading import Thread, Lock
 from time import sleep
 
-from .. import REUSABLE_THREADED_POOL_SIZE, REUSABLE_THREADED_LIFETIME, RESTARTABLE, TERMINATE_REUSABLE, RESPONSE_WAITING_TIMEOUT, LDAP_MAX_INT, RESPONSE_SLEEPTIME
+from .. import RESTARTABLE, TERMINATE_REUSABLE, LDAP_MAX_INT, get_config_parameter
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
@@ -98,8 +98,8 @@ class ReusableStrategy(BaseStrategy):
                 self.master_schema = None
                 self.master_info = None
                 self.connections = []
-                self.pool_size = connection.pool_size or REUSABLE_THREADED_POOL_SIZE
-                self.lifetime = connection.pool_lifetime or REUSABLE_THREADED_LIFETIME
+                self.pool_size = connection.pool_size or get_config_parameter('REUSABLE_THREADED_POOL_SIZE')
+                self.lifetime = connection.pool_lifetime or get_config_parameter('REUSABLE_THREADED_LIFETIME')
                 self.request_queue = Queue()
                 self.open_pool = False
                 self.bind_pool = False
@@ -369,7 +369,9 @@ class ReusableStrategy(BaseStrategy):
             log(ERROR, 'reusable connection pool not started')
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
-    def get_response(self, counter, timeout=RESPONSE_WAITING_TIMEOUT):
+    def get_response(self, counter, timeout=None):
+        if timeout is None:
+            timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         if counter == -1:  # send a bogus bindResponse
             response = list()
             result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': None}
@@ -387,8 +389,8 @@ class ReusableStrategy(BaseStrategy):
                     with self.connection.strategy.pool.lock:
                         response, result = self.connection.strategy.pool._incoming.pop(counter)
                 except KeyError:
-                    sleep(RESPONSE_SLEEPTIME)
-                    timeout -= RESPONSE_SLEEPTIME
+                    sleep(get_config_parameter('RESPONSE_SLEEPTIME'))
+                    timeout -= get_config_parameter('RESPONSE_SLEEPTIME')
                     continue
                 break
 

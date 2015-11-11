@@ -29,7 +29,7 @@ import json
 
 from .oid import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, \
     ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
-from .. import CASE_INSENSITIVE_SCHEMA_NAMES, SEQUENCE_TYPES, STRING_TYPES
+from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, check_escape
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.formatters.standard import format_attribute_values
@@ -120,7 +120,7 @@ class BaseServerInfo(object):
         if 'raw' not in definition or 'type' not in definition:
             raise LDAPDefinitionError('invalid JSON definition')
 
-        if CASE_INSENSITIVE_SCHEMA_NAMES:
+        if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES'):
             attributes = CaseInsensitiveDict()
         else:
             attributes = dict()
@@ -403,7 +403,7 @@ class BaseObjectInfo(object):
         if not definitions:
             return None
 
-        ret_dict = CaseInsensitiveDict() if CASE_INSENSITIVE_SCHEMA_NAMES else dict()
+        ret_dict = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES') else dict()
         for object_definition in definitions:
             if [object_definition[0] == ')' and object_definition[:-1] == ')']:
                 if cls is MatchingRuleInfo:

@@ -355,6 +355,10 @@ class LDAPPackageUnavailableError(LDAPConfigurationError, ImportError):
     pass
 
 
+class LDAPConfigurationParameterError(LDAPConfigurationError):
+    pass
+
+
 # abstract layer exceptions
 class LDAPKeyError(LDAPExceptionError, KeyError, AttributeError):
     pass
@@ -422,7 +426,7 @@ class LDAPServerPoolExhaustedError(LDAPExceptionError):
     pass
 
 
-class LDAPInvalidPort(LDAPExceptionError):
+class LDAPInvalidPortError(LDAPExceptionError):
     pass
 
 

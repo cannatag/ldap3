@@ -27,10 +27,10 @@ import socket
 from threading import Lock
 from datetime import datetime, MINYEAR
 
-from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT,\
-    CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
+from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT, get_config_parameter, \
+    OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
     SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
-from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPort, LDAPInvalidTlsSpecificationError
+from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
@@ -87,7 +87,7 @@ class Server(object):
             except ValueError:
                 if log_enabled(ERROR):
                     log(ERROR, 'port <%s> must be an integer', port)
-                raise LDAPInvalidPort('port must be an integer')
+                raise LDAPInvalidPortError('port must be an integer')
             self.host = hostname
         elif url_given and self.host.startswith('['):
             hostname, sep, hostport = self.host[1:].partition(']')
@@ -103,7 +103,7 @@ class Server(object):
                 if not hostport[1:].isdecimal():
                     if log_enabled(ERROR):
                         log(ERROR, 'port must be an integer for <%s>', self.host)
-                    raise LDAPInvalidPort('port must be an integer')
+                    raise LDAPInvalidPortError('port must be an integer')
                 port = int(hostport[1:])
             self.host = hostname
         elif not url_given and self._is_ipv6(self.host):
@@ -126,11 +126,11 @@ class Server(object):
             else:
                 if log_enabled(ERROR):
                     log(ERROR, 'port <%s> must be in range from 0 to 65535', port)
-                raise LDAPInvalidPort('port must in range from 0 to 65535')
+                raise LDAPInvalidPortError('port must in range from 0 to 65535')
         else:
             if log_enabled(ERROR):
                 log(ERROR, 'port <%s> must be an integer', port)
-            raise LDAPInvalidPort('port must be an integer')
+            raise LDAPInvalidPortError('port must be an integer')
 
         if isinstance(allowed_referral_hosts, SEQUENCE_TYPES):
             self.allowed_referral_hosts = []
@@ -252,7 +252,7 @@ class Server(object):
                 if self.connect_timeout:
                     temp_socket.settimeout(self.connect_timeout)
                 else:
-                    temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to default
+                    temp_socket.settimeout(get_config_parameter('CHECK_AVAILABILITY_TIMEOUT'))  # set timeout for checking availability to default
                 try:
                     temp_socket.connect(address[4])
                 except socket.error:

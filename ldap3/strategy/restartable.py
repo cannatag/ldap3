@@ -28,7 +28,7 @@ from time import sleep
 import socket
 from datetime import datetime
 
-from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
+from .. import get_config_parameter
 from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
 from ..utils.log import log, log_enabled, ERROR, BASIC
@@ -42,8 +42,8 @@ class RestartableStrategy(SyncStrategy):
         self.no_real_dsa = False
         self.pooled = False
         self.can_stream = False
-        self.restartable_sleep_time = RESTARTABLE_SLEEPTIME
-        self.restartable_tries = RESTARTABLE_TRIES
+        self.restartable_sleep_time = get_config_parameter('RESTARTABLE_SLEEPTIME')
+        self.restartable_tries = get_config_parameter('RESTARTABLE_TRIES')
         self._restarting = False
         self._last_bind_controls = None
         self._current_message_type = None

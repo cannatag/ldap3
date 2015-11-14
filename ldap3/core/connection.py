@@ -32,7 +32,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -349,7 +349,7 @@ class Connection(object):
         r += '' if self.strategy_type is None else ', client_strategy={0.strategy_type!r}'.format(self)
         r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
         r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.sasl_mechanism!r}'.format(self)
-        if self.sasl_mechanism == 'DIGEST-MD5':
+        if self.sasl_mechanism == DIGEST_MD5:
             r += '' if self.sasl_credentials is None else ", sasl_credentials=({0!r}, {1!r}, '{2}', {3!r})".format(self.sasl_credentials[0], self.sasl_credentials[1], '*' * len(self.sasl_credentials[2]), self.sasl_credentials[3])
         else:
             r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
@@ -585,7 +585,7 @@ class Connection(object):
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
             elif attributes == ALL_ATTRIBUTES:
-                attributes = []
+                attributes = [ALL_ATTRIBUTES]
 
             if get_operational_attributes and isinstance(attributes, list):
                 attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
@@ -595,12 +595,8 @@ class Connection(object):
             if isinstance(paged_size, int):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
-                # real_search_control_value = RealSearchControlValue()
-                # real_search_control_value['size'] = Size(paged_size)
-                # real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
                 if controls is None:
                     controls = []
-                # controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
                 controls.append(paged_search_control(paged_criticality, paged_size, paged_cookie))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
@@ -980,11 +976,11 @@ class Connection(object):
             result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True
-                if self.sasl_mechanism == 'EXTERNAL':
+                if self.sasl_mechanism == EXTERNAL:
                     result = sasl_external(self, controls)
-                elif self.sasl_mechanism == 'DIGEST-MD5':
+                elif self.sasl_mechanism == DIGEST_MD5:
                     result = sasl_digest_md5(self, controls)
-                elif self.sasl_mechanism == 'GSSAPI':
+                elif self.sasl_mechanism == GSSAPI:
                     from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
                     result = sasl_gssapi(self, controls)
 

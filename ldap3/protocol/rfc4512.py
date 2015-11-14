@@ -294,10 +294,15 @@ class SchemaInfo(BaseServerInfo):
         # links attributes to objects
         for object_class in self.object_classes:
             for attribute in self.object_classes[object_class].must_contain:
-                self.attribute_types[attribute].mandatory_in.append(object_class)
+                try:
+                    self.attribute_types[attribute].mandatory_in.append(object_class)
+                except KeyError:
+                    pass
             for attribute in self.object_classes[object_class].may_contain:
-                self.attribute_types[attribute].optional_in.append(object_class)
-
+                try:
+                    self.attribute_types[attribute].optional_in.append(object_class)
+                except KeyError:
+                    pass
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
         r += linesep

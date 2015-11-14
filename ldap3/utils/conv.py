@@ -31,6 +31,15 @@ from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
 
+def escape_filter_chars(text):
+    """ Escape chars mentioned in RFC4515. """
+    output = text.replace('\\', r'\5c')
+    output = output.replace(r'*', r'\2a')
+    output = output.replace(r'(', r'\28')
+    output = output.replace(r')', r'\29')
+    output = output.replace('\x00', r'\00')
+    return output
+
 def escape_bytes(bytes_value):
     if bytes_value:
         if str != bytes:  # Python 3

@@ -117,7 +117,7 @@ class BaseStrategy(object):
                     try:
                         if log_enabled(BASIC):
                             log(BASIC, 'try to open candidate address %s', candidate_address[:-2])
-                        self._open_socket(candidate_address, self.connection.server.ssl, unix_socket=self.connection.server.is_unix_socket)
+                        self._open_socket(candidate_address, self.connection.server.ssl, unix_socket=self.connection.server.ipc)
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
                         break
@@ -181,49 +181,46 @@ class BaseStrategy(object):
         raise LDAPExceptionError if unable to open or connect socket
         """
         exc = None
-        if unix_socket:
-            raise NotImplementedError ('ldapi still not imolemented')
-        else:
+        try:
+            self.connection.socket = socket.socket(*address[:3])
+        except Exception as e:
+            self.connection.last_error = 'socket creation error: ' + str(e)
+            exc = e
+
+        if exc:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+
+            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+
+        try:
+            if self.connection.server.connect_timeout:
+                self.connection.socket.settimeout(self.connection.server.connect_timeout)
+            self.connection.socket.connect(address[4])
+            if self.connection.server.connect_timeout:
+                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode
+        except socket.error as e:
+            self.connection.last_error = 'socket connection error: ' + str(e)
+            exc = e
+
+        if exc:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+
+        if use_ssl:
             try:
-                self.connection.socket = socket.socket(*address[:3])
+                self.connection.server.tls.wrap_socket(self.connection, do_handshake=True)
+                if self.connection.usage:
+                    self.connection._usage.wrapped_sockets += 1
             except Exception as e:
-                self.connection.last_error = 'socket creation error: ' + str(e)
-                exc = e
-
-            if exc:
-                if log_enabled(ERROR):
-                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-
-                raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
-
-            try:
-                if self.connection.server.connect_timeout:
-                    self.connection.socket.settimeout(self.connection.server.connect_timeout)
-                self.connection.socket.connect(address[4])
-                if self.connection.server.connect_timeout:
-                    self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode
-            except socket.error as e:
-                self.connection.last_error = 'socket connection error: ' + str(e)
+                self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 exc = e
 
             if exc:
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
-
-            if use_ssl:
-                try:
-                    self.connection.server.tls.wrap_socket(self.connection, do_handshake=True)
-                    if self.connection.usage:
-                        self.connection._usage.wrapped_sockets += 1
-                except Exception as e:
-                    self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
-                    exc = e
-
-                if exc:
-                    if log_enabled(ERROR):
-                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                    raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         if self.connection.usage:
             self.connection._usage.open_sockets += 1

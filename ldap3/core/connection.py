@@ -77,6 +77,11 @@ def _format_socket_endpoint(endpoint):
     elif endpoint and len(endpoint) == 4:  # IPv6
         return '[' + str(endpoint[0]) + ']:' + str(endpoint[1])
 
+    try:
+        return str(endpoint)
+    except Exception:
+        return '?'
+
 
 def _format_socket_endpoints(sock):
     if sock:
@@ -595,8 +600,12 @@ class Connection(object):
             if isinstance(paged_size, int):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
+                # real_search_control_value = RealSearchControlValue()
+                # real_search_control_value['size'] = Size(paged_size)
+                # real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
                 if controls is None:
                     controls = []
+                # controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
                 controls.append(paged_search_control(paged_criticality, paged_size, paged_cookie))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)

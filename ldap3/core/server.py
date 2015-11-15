@@ -37,11 +37,15 @@ from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
 
 try:
+    from urllib.parse import unquote
+except ImportError:
+    from urllib import unquote
+
+try:
     from socket import AF_UNIX
     unix_socket_available = True
 except ImportError:
     unix_socket_available = False
-
 
 class Server(object):
     """
@@ -74,7 +78,7 @@ class Server(object):
                  connect_timeout=None,
                  mode=IP_V6_PREFERRED):
 
-        self.is_unix_socket = False
+        self.ipc = False
         url_given = False
         if host.lower().startswith('ldap://'):
             self.host = host[7:]
@@ -85,8 +89,7 @@ class Server(object):
             use_ssl = True
             url_given = True
         elif host.lower().startswith('ldapi://') and unix_socket_available:
-            self.host = host[8:]
-            self.is_unix_socket = True
+            self.ipc = True
             use_ssl = False
             url_given = True
         elif host.lower().startswith('ldapi://') and not unix_socket_available:
@@ -94,8 +97,11 @@ class Server(object):
         else:
             self.host = host
 
-        if self.is_unix_socket:
-            self.host = None
+        if self.ipc:
+            if str == bytes:  # Python 2
+                self.host = unquote(host[7:]).decode('utf-8')
+            else:
+                self.host = unquote(host[7:], encoding='utf-8')
             self.port = None
         elif ':' in self.host and self.host.count(':') == 1:
             hostname, _, hostport = self.host.partition(':')
@@ -130,7 +136,7 @@ class Server(object):
                 log(ERROR, 'invalid server address for <%s>', self.host)
             raise LDAPInvalidServerError()
 
-        if not self.is_unix_socket:
+        if not self.ipc:
             self.host.rstrip('/')
             if not use_ssl and not port:
                 port = 389
@@ -169,13 +175,13 @@ class Server(object):
 
         self.tls = Tls() if self.ssl and not tls else tls
 
-        if not self.is_unix_socket:
+        if not self.ipc:
             if self._is_ipv6(self.host):
                 self.name = ('ldaps' if self.ssl else 'ldap') + '://[' + self.host + ']:' + str(self.port)
             else:
                 self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
         else:
-            self.name = self.host
+            self.name = host
 
         self.get_info = get_info
         self._dsa_info = None
@@ -201,7 +207,7 @@ class Server(object):
 
     def __str__(self):
         if self.host:
-            s = self.name + (' - ssl' if self.ssl else ' - cleartext') + (' - unix socket' if self.is_unix_socket else '')
+            s = self.name + (' - ssl' if self.ssl else ' - cleartext') + (' - unix socket' if self.ipc else '')
         else:
             s = object.__str__(self)
         return s
@@ -221,8 +227,8 @@ class Server(object):
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
             addresses = None
             try:
-                if self.is_unix_socket:
-                    addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNIX, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
+                if self.ipc:
+                    addresses = [(socket.AF_UNIX, socket.SOCK_STREAM, 0, None, self.host, None)]
                 else:
                     addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
             except (socket.gaierror, AttributeError):
@@ -487,10 +493,10 @@ class Server(object):
         return dummy
 
     def candidate_addresses(self):
-        if self.is_unix_socket:
-            candidates = [socket.AF_UNIX, socket.SOCK_STREAM, socket.IPPROTO_TCP, self.host, None, None]
+        if self.ipc:
+            candidates = self.address_info
             if log_enabled(BASIC):
-               log(BASIC, 'candidate address for <%s>: <%s> with mode UNIX_SOCKET', self, self.host)
+               log(BASIC, 'candidate address for <%s>: <%s> with mode UNIX_SOCKET', self, self.name)
         else:
             # selects server address based on server mode and availability (in address[5])
             addresses = self.address_info[:]  # copy to avoid refreshing while searching candidates

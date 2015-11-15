@@ -1,9 +1,12 @@
-* 0.9.9.3 2015.11.08
+* 0.9.9.3 2015.11.15
+    - Added LDAPI (LDAP over IPC) support for unix socket communication
     - Added mandatory_in and optional_in in server schema for attribute types. Now you can see in which classes attributes are used
     - Added last_transmitted_time and last_received_time to Usage object to track time of the last sent and received operation
     - Exception SessionTerminatedByServer renamed to SessionTerminatedByServerError and added to ldap3 namespace
-    - added get_config_parameter() in ldap3 to read the current value of parameters modified in ldap3 namespace
-    - added SASL mechanism name as constants in init
+    - Added get_config_parameter() in ldap3 to read the current value of parameters modified in the ldap3 namespace
+    - Added SASL mechanism name as constants in the ldap3 namespace
+    - Added escape_filter_chars in utils.conv (thanks Peter)
+    - reverted ALL_ATTRIBUTES behaviour in search to 0.9.9.1 (thanks Petros)
 
 * 0.9.9.2 2015.10.19
     - Fixed hasattr() behaviour for Entry object in Python 3

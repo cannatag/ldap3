@@ -82,6 +82,9 @@ class CaseInsensitiveDict(collections.MutableMapping):
     def values(self):
         return self._store.values()
 
+    def items(self):
+        return self._store.items()
+
     def __eq__(self, other):
         if not isinstance(other, (collections.Mapping, dict)):
             return NotImplemented

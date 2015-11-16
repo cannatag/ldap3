@@ -27,15 +27,25 @@ import socket
 from threading import Lock
 from datetime import datetime, MINYEAR
 
-from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT,\
-    CHECK_AVAILABILITY_TIMEOUT, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
+from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT, get_config_parameter, \
+    OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
     SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
-from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPort, LDAPInvalidTlsSpecificationError
+from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError, LDAPSocketOpenError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
 
+try:
+    from urllib.parse import unquote
+except ImportError:
+    from urllib import unquote
+
+try:
+    from socket import AF_UNIX
+    unix_socket_available = True
+except ImportError:
+    unix_socket_available = False
 
 class Server(object):
     """
@@ -68,26 +78,39 @@ class Server(object):
                  connect_timeout=None,
                  mode=IP_V6_PREFERRED):
 
+        self.ipc = False
         url_given = False
-        if host.startswith('ldap://'):
+        if host.lower().startswith('ldap://'):
             self.host = host[7:]
             use_ssl = False
             url_given = True
-        elif host.startswith('ldaps://'):
+        elif host.lower().startswith('ldaps://'):
             self.host = host[8:]
             use_ssl = True
             url_given = True
+        elif host.lower().startswith('ldapi://') and unix_socket_available:
+            self.ipc = True
+            use_ssl = False
+            url_given = True
+        elif host.lower().startswith('ldapi://') and not unix_socket_available:
+            raise LDAPSocketOpenError('LDAP over IPC not available')
         else:
             self.host = host
 
-        if ':' in self.host and self.host.count(':') == 1:
+        if self.ipc:
+            if str == bytes:  # Python 2
+                self.host = unquote(host[7:]).decode('utf-8')
+            else:
+                self.host = unquote(host[7:], encoding='utf-8')
+            self.port = None
+        elif ':' in self.host and self.host.count(':') == 1:
             hostname, _, hostport = self.host.partition(':')
             try:
                 port = int(hostport) or port
             except ValueError:
                 if log_enabled(ERROR):
                     log(ERROR, 'port <%s> must be an integer', port)
-                raise LDAPInvalidPort('port must be an integer')
+                raise LDAPInvalidPortError('port must be an integer')
             self.host = hostname
         elif url_given and self.host.startswith('['):
             hostname, sep, hostport = self.host[1:].partition(']')
@@ -103,7 +126,7 @@ class Server(object):
                 if not hostport[1:].isdecimal():
                     if log_enabled(ERROR):
                         log(ERROR, 'port must be an integer for <%s>', self.host)
-                    raise LDAPInvalidPort('port must be an integer')
+                    raise LDAPInvalidPortError('port must be an integer')
                 port = int(hostport[1:])
             self.host = hostname
         elif not url_given and self._is_ipv6(self.host):
@@ -113,24 +136,24 @@ class Server(object):
                 log(ERROR, 'invalid server address for <%s>', self.host)
             raise LDAPInvalidServerError()
 
-        self.host.rstrip('/')
+        if not self.ipc:
+            self.host.rstrip('/')
+            if not use_ssl and not port:
+                port = 389
+            elif use_ssl and not port:
+                port = 636
 
-        if not use_ssl and not port:
-            port = 389
-        elif use_ssl and not port:
-            port = 636
-
-        if isinstance(port, int):
-            if port in range(0, 65535):
-                self.port = port
+            if isinstance(port, int):
+                if port in range(0, 65535):
+                    self.port = port
+                else:
+                    if log_enabled(ERROR):
+                        log(ERROR, 'port <%s> must be in range from 0 to 65535', port)
+                    raise LDAPInvalidPortError('port must in range from 0 to 65535')
             else:
                 if log_enabled(ERROR):
-                    log(ERROR, 'port <%s> must be in range from 0 to 65535', port)
-                raise LDAPInvalidPort('port must in range from 0 to 65535')
-        else:
-            if log_enabled(ERROR):
-                log(ERROR, 'port <%s> must be an integer', port)
-            raise LDAPInvalidPort('port must be an integer')
+                    log(ERROR, 'port <%s> must be an integer', port)
+                raise LDAPInvalidPortError('port must be an integer')
 
         if isinstance(allowed_referral_hosts, SEQUENCE_TYPES):
             self.allowed_referral_hosts = []
@@ -152,10 +175,13 @@ class Server(object):
 
         self.tls = Tls() if self.ssl and not tls else tls
 
-        if self._is_ipv6(self.host):
-            self.name = ('ldaps' if self.ssl else 'ldap') + '://[' + self.host + ']:' + str(self.port)
+        if not self.ipc:
+            if self._is_ipv6(self.host):
+                self.name = ('ldaps' if self.ssl else 'ldap') + '://[' + self.host + ']:' + str(self.port)
+            else:
+                self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
         else:
-            self.name = ('ldaps' if self.ssl else 'ldap') + '://' + self.host + ':' + str(self.port)
+            self.name = host
 
         self.get_info = get_info
         self._dsa_info = None
@@ -181,7 +207,7 @@ class Server(object):
 
     def __str__(self):
         if self.host:
-            s = self.name + (' - ssl' if self.ssl else ' - cleartext')
+            s = self.name + (' - ssl' if self.ssl else ' - cleartext') + (' - unix socket' if self.ipc else '')
         else:
             s = object.__str__(self)
         return s
@@ -201,7 +227,10 @@ class Server(object):
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
             addresses = None
             try:
-                addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
+                if self.ipc:
+                    addresses = [(socket.AF_UNIX, socket.SOCK_STREAM, 0, None, self.host, None)]
+                else:
+                    addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
             except (socket.gaierror, AttributeError):
                 pass
 
@@ -252,7 +281,7 @@ class Server(object):
                 if self.connect_timeout:
                     temp_socket.settimeout(self.connect_timeout)
                 else:
-                    temp_socket.settimeout(CHECK_AVAILABILITY_TIMEOUT)  # set timeout for checking availability to default
+                    temp_socket.settimeout(get_config_parameter('CHECK_AVAILABILITY_TIMEOUT'))  # set timeout for checking availability to default
                 try:
                     temp_socket.connect(address[4])
                 except socket.error:
@@ -464,28 +493,33 @@ class Server(object):
         return dummy
 
     def candidate_addresses(self):
-        # selects server address based on server mode and availability (in address[5])
-        addresses = self.address_info[:]  # copy to avoid refreshing while searching candidates
-        candidates = []
-        if addresses:
-            if self.mode == IP_SYSTEM_DEFAULT:
-                candidates.append(addresses[0])
-            elif self.mode == IP_V4_ONLY:
-                candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
-            elif self.mode == IP_V6_ONLY:
-                candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
-            elif self.mode == IP_V4_PREFERRED:
-                candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
-                candidates += [address for address in addresses if address[0] == socket.AF_INET6 and (addresses[5] or address[5] is None)]
-            elif self.mode == IP_V6_PREFERRED:
-                candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
-                candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
-            else:
-                if log_enabled(ERROR):
-                    log(ERROR, 'invalid server mode for <%s>', self)
-                raise LDAPInvalidServerError('invalid server mode')
+        if self.ipc:
+            candidates = self.address_info
+            if log_enabled(BASIC):
+               log(BASIC, 'candidate address for <%s>: <%s> with mode UNIX_SOCKET', self, self.name)
+        else:
+            # selects server address based on server mode and availability (in address[5])
+            addresses = self.address_info[:]  # copy to avoid refreshing while searching candidates
+            candidates = []
+            if addresses:
+                if self.mode == IP_SYSTEM_DEFAULT:
+                    candidates.append(addresses[0])
+                elif self.mode == IP_V4_ONLY:
+                    candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
+                elif self.mode == IP_V6_ONLY:
+                    candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
+                elif self.mode == IP_V4_PREFERRED:
+                    candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
+                    candidates += [address for address in addresses if address[0] == socket.AF_INET6 and (addresses[5] or address[5] is None)]
+                elif self.mode == IP_V6_PREFERRED:
+                    candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
+                    candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
+                else:
+                    if log_enabled(ERROR):
+                        log(ERROR, 'invalid server mode for <%s>', self)
+                    raise LDAPInvalidServerError('invalid server mode')
 
-        if log_enabled(BASIC):
-            for candidate in candidates:
-                log(BASIC, 'obtained candidate address for <%s>: <%r> with mode %s', self, candidate[:-2], self.mode)
+            if log_enabled(BASIC):
+                for candidate in candidates:
+                    log(BASIC, 'obtained candidate address for <%s>: <%r> with mode %s', self, candidate[:-2], self.mode)
         return candidates

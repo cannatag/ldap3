@@ -29,7 +29,7 @@ import json
 
 from .oid import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, \
     ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
-from .. import CASE_INSENSITIVE_SCHEMA_NAMES, SEQUENCE_TYPES, STRING_TYPES
+from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, check_escape
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.formatters.standard import format_attribute_values
@@ -120,7 +120,7 @@ class BaseServerInfo(object):
         if 'raw' not in definition or 'type' not in definition:
             raise LDAPDefinitionError('invalid JSON definition')
 
-        if CASE_INSENSITIVE_SCHEMA_NAMES:
+        if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES'):
             attributes = CaseInsensitiveDict()
         else:
             attributes = dict()
@@ -291,6 +291,18 @@ class SchemaInfo(BaseServerInfo):
         self.ldap_syntaxes = LdapSyntaxInfo.from_definition(attributes.pop('ldapSyntaxes', []))
         self.other = attributes  # remaining schema definition attributes not in RFC4512
 
+        # links attributes to objects
+        for object_class in self.object_classes:
+            for attribute in self.object_classes[object_class].must_contain:
+                try:
+                    self.attribute_types[attribute].mandatory_in.append(object_class)
+                except KeyError:
+                    pass
+            for attribute in self.object_classes[object_class].may_contain:
+                try:
+                    self.attribute_types[attribute].optional_in.append(object_class)
+                except KeyError:
+                    pass
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
         r += linesep
@@ -396,7 +408,7 @@ class BaseObjectInfo(object):
         if not definitions:
             return None
 
-        ret_dict = CaseInsensitiveDict() if CASE_INSENSITIVE_SCHEMA_NAMES else dict()
+        ret_dict = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES') else dict()
         for object_definition in definitions:
             if [object_definition[0] == ')' and object_definition[:-1] == ')']:
                 if cls is MatchingRuleInfo:
@@ -594,8 +606,8 @@ class ObjectClassInfo(BaseObjectInfo):
                                 definition=definition)
         self.superior = superior
         self.kind = kind
-        self.must_contain = must_contain
-        self.may_contain = may_contain
+        self.must_contain = must_contain or []
+        self.may_contain = may_contain or []
 
     def __repr__(self):
         r = ''
@@ -647,6 +659,8 @@ class AttributeTypeInfo(BaseObjectInfo):
         self.collective = collective
         self.no_user_modification = no_user_modification
         self.usage = usage
+        self.mandatory_in = []
+        self.optional_in = []
 
     def __repr__(self):
         r = ''
@@ -659,8 +673,8 @@ class AttributeTypeInfo(BaseObjectInfo):
         r += (linesep + '  Substring rule: ' + list_to_string(self.substring)) if self.substring else ''
         r += (linesep + '  Syntax: ' + (self.syntax + (' [' + str(decode_syntax(self.syntax)))) + ']') if self.syntax else ''
         r += (linesep + '  Minimum Length: ' + str(self.min_length)) if isinstance(self.min_length, int) else ''
-    #    r += linesep + '  Mandatory in: '
-    #    r += linesep + '  Optional in: '
+        r += linesep + '  Mandatory in: ' + list_to_string(self.mandatory_in) if self.mandatory_in else ''
+        r += linesep + '  Optional in: ' + list_to_string(self.optional_in) if self.optional_in else ''
         return 'Attribute type' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
 
 

@@ -29,9 +29,8 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_SLEEPTIME, RESPONSE_WAITING_TIMEOUT, SYNC, ANONYMOUS,\
-    DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
-from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServer,\
+from .. import SESSION_TERMINATED_BY_SERVER, SYNC, ANONYMOUS, get_config_parameter, DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
+from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
 from ..utils.uri import parse_uri
@@ -118,7 +117,7 @@ class BaseStrategy(object):
                     try:
                         if log_enabled(BASIC):
                             log(BASIC, 'try to open candidate address %s', candidate_address[:-2])
-                        self._open_socket(candidate_address, self.connection.server.ssl)
+                        self._open_socket(candidate_address, self.connection.server.ssl, unix_socket=self.connection.server.ipc)
                         self.connection.server.current_address = candidate_address
                         self.connection.server.update_availability(candidate_address, True)
                         break
@@ -176,7 +175,7 @@ class BaseStrategy(object):
         if self.connection.usage:
             self.connection._usage.stop()
 
-    def _open_socket(self, address, use_ssl=False):
+    def _open_socket(self, address, use_ssl=False, unix_socket=False):
         """
         Tries to open and connect a socket to a Server
         raise LDAPExceptionError if unable to open or connect socket
@@ -191,6 +190,7 @@ class BaseStrategy(object):
         if exc:
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         try:
@@ -283,7 +283,7 @@ class BaseStrategy(object):
 
         return message_id
 
-    def get_response(self, message_id, timeout=RESPONSE_WAITING_TIMEOUT):
+    def get_response(self, message_id, timeout=None):
         """
         Get response LDAP messages
         Responses are returned by the underlying connection strategy
@@ -292,14 +292,16 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         A tuple (responses, result) is returned
         """
+        if timeout is None:
+            timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         response = None
         result = None
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
                 if not responses:
-                    sleep(RESPONSE_SLEEPTIME)
-                    timeout -= RESPONSE_SLEEPTIME
+                    sleep(get_config_parameter('RESPONSE_SLEEPTIME'))
+                    timeout -= get_config_parameter('RESPONSE_SLEEPTIME')
                     continue
 
                 if responses == SESSION_TERMINATED_BY_SERVER:
@@ -310,7 +312,7 @@ class BaseStrategy(object):
                     self.connection.last_error = 'session terminated by server'
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                    raise LDAPSessionTerminatedByServer(self.connection.last_error)
+                    raise LDAPSessionTerminatedByServerError(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
                 if responses[-2]['result'] == RESULT_REFERRAL:

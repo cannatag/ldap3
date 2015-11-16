@@ -26,7 +26,7 @@
 from threading import Thread, Lock
 import socket
 
-from .. import RESPONSE_COMPLETE, SOCKET_SIZE
+from .. import RESPONSE_COMPLETE, get_config_parameter
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
@@ -61,6 +61,7 @@ class AsyncStrategy(BaseStrategy):
             Wait for data on socket, compute the length of the message and wait for enough bytes to decode the message
             Message are appended to strategy._responses
             """
+            socket_size = get_config_parameter('SOCKET_SIZE')
             unprocessed = b''
             get_more_data = True
             listen = True
@@ -68,7 +69,7 @@ class AsyncStrategy(BaseStrategy):
             while listen:
                 if get_more_data:
                     try:
-                        data = self.connection.socket.recv(SOCKET_SIZE)
+                        data = self.connection.socket.recv(socket_size)
                     except (OSError, socket.error):
                         listen = False
                     except Exception as e:

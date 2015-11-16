@@ -25,7 +25,7 @@
 
 import socket
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SOCKET_SIZE, SEQUENCE_TYPES
+from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SEQUENCE_TYPES, get_config_parameter
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
 from ..strategy.base import BaseStrategy
 from ..protocol.rfc4511 import LDAPMessage
@@ -75,10 +75,11 @@ class SyncStrategy(BaseStrategy):
         data = b''
         get_more_data = True
         exc = None
+        socket_size = get_config_parameter('SOCKET_SIZE')
         while receiving:
             if get_more_data:
                 try:
-                    data = self.connection.socket.recv(SOCKET_SIZE)
+                    data = self.connection.socket.recv(socket_size)
                 except (OSError, socket.error, AttributeError) as e:
                     self.connection.last_error = 'error receiving data: ' + str(e)
                     exc = e

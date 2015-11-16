@@ -28,11 +28,11 @@ from threading import RLock
 import json
 from functools import reduce
 
-from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, \
+from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, \
     DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, DEFAULT_THREADED_POOL_NAME, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
+    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -76,6 +76,11 @@ def _format_socket_endpoint(endpoint):
         return str(endpoint[0]) + ':' + str(endpoint[1])
     elif endpoint and len(endpoint) == 4:  # IPv6
         return '[' + str(endpoint[0]) + ']:' + str(endpoint[1])
+
+    try:
+        return str(endpoint)
+    except Exception:
+        return '?'
 
 
 def _format_socket_endpoints(sock):
@@ -219,7 +224,7 @@ class Connection(object):
             self._bind_controls = None
             self._executing_deferred = False
             self.lazy = lazy
-            self.pool_name = pool_name if pool_name else DEFAULT_THREADED_POOL_NAME
+            self.pool_name = pool_name if pool_name else get_config_parameter('DEFAULT_THREADED_POOL_NAME')
             self.pool_size = pool_size
             self.pool_lifetime = pool_lifetime
             self.starting_tls = False
@@ -328,7 +333,7 @@ class Connection(object):
         r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
-        r += '' if (self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(self)
+        r += '' if (self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
@@ -349,7 +354,7 @@ class Connection(object):
         r += '' if self.strategy_type is None else ', client_strategy={0.strategy_type!r}'.format(self)
         r += '' if self.auto_referrals is None else ', auto_referrals={0.auto_referrals!r}'.format(self)
         r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.sasl_mechanism!r}'.format(self)
-        if self.sasl_mechanism == 'DIGEST-MD5':
+        if self.sasl_mechanism == DIGEST_MD5:
             r += '' if self.sasl_credentials is None else ", sasl_credentials=({0!r}, {1!r}, '{2}', {3!r})".format(self.sasl_credentials[0], self.sasl_credentials[1], '*' * len(self.sasl_credentials[2]), self.sasl_credentials[3])
         else:
             r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
@@ -359,7 +364,7 @@ class Connection(object):
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
         r += '' if (
-            self.pool_name is None or self.pool_name == DEFAULT_THREADED_POOL_NAME) else ', pool_name={0.pool_name!r}'.format(
+            self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(
             self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
@@ -585,7 +590,7 @@ class Connection(object):
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
             elif attributes == ALL_ATTRIBUTES:
-                attributes = []
+                attributes = [ALL_ATTRIBUTES]
 
             if get_operational_attributes and isinstance(attributes, list):
                 attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
@@ -980,11 +985,11 @@ class Connection(object):
             result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True
-                if self.sasl_mechanism == 'EXTERNAL':
+                if self.sasl_mechanism == EXTERNAL:
                     result = sasl_external(self, controls)
-                elif self.sasl_mechanism == 'DIGEST-MD5':
+                elif self.sasl_mechanism == DIGEST_MD5:
                     result = sasl_digest_md5(self, controls)
-                elif self.sasl_mechanism == 'GSSAPI':
+                elif self.sasl_mechanism == GSSAPI:
                     from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
                     result = sasl_gssapi(self, controls)
 

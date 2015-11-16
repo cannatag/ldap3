@@ -205,7 +205,7 @@ By default the library attempts to bind against the service principal for the do
 NTLM
 ----
 
-The ldap3 library support an additional method to bind to Active Directory servers via the NTLM method::
+The ldap3 library supports an additional method to bind to Active Directory servers via the NTLM method::
 
     # import class and constants
     from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, SASL, NTLM)
@@ -219,6 +219,26 @@ The ldap3 library support an additional method to bind to Active Directory serve
 
 This authentication method is specific for Active Directory and uses a proprietary authentication protocol named SICILY
 that breaks the LDAP RFC but can be used to access AD.
+
+
+LDAPI (LDAP over IPC)
+---------------------
+
+If your LDAP server provides a UNIX socket connection (*Interprocess Communication*) you can use the **ldapi:** schema to access it from the
+same machine::
+
+    >>> # accessing OpenLDAP server in a root user session
+    >>> s = Server('ldapi:///var/run/slapd/ldapi')
+    >>> c = Connection(s, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials='')
+    >>> c.bind()
+    >>> True
+    >>> c.extend.standard.who_am_i()
+    >>> dn:cn=config
+
+Using the SASL *EXTERNAL* mechanism allows you to provide to the server the credentials of the logged user.
+
+While accessing your LDAP server via a UNIX socket you can perform any usual LDAP operation. This should be faster than using a TCP connection.
+You don't need to use SSL when connecting via a socket because all the communication is in the server memory and is not exposed on the wire.
 
 
 Extended logging

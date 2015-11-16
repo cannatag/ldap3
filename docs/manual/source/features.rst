@@ -71,3 +71,9 @@ ldap3 Features
 6. Simplified query construction language:
 
     * The library includes an  optional **abstraction layer** for performing LDAP queries.
+
+7. Clear or secured access
+
+    * ldap3 allows plaintext (**ldap:**), secure (**ldaps:**) and UNIX socket (**ldapi:**) access to the LDAP server.
+
+    * The NTLM access method is available to connect to Active Directory servers

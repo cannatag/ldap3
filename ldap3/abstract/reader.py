@@ -26,7 +26,7 @@
 from datetime import datetime
 from os import linesep
 
-from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX, STRING_TYPES, SEQUENCE_TYPES
+from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, STRING_TYPES, SEQUENCE_TYPES, get_config_parameter
 from .attribute import Attribute
 from .entry import Entry
 from ..core.exceptions import LDAPReaderError
@@ -331,11 +331,11 @@ class Reader(object):
 
         for name in response['attributes']:
             if name not in used_attribute_names:
-                attribute = OperationalAttribute(ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name, entry)
+                attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name, entry)
                 attribute.__dict__['raw_values'] = response['raw_attributes'][name]
                 attribute.__dict__['values'] = response['attributes'][name]
-                if (ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name) not in attributes:
-                    attributes[ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX + name] = attribute
+                if (get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name) not in attributes:
+                    attributes[get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name] = attribute
 
         return attributes
 

@@ -28,7 +28,7 @@ from time import sleep
 import socket
 from datetime import datetime
 
-from .. import RESTARTABLE_SLEEPTIME, RESTARTABLE_TRIES
+from .. import get_config_parameter
 from .sync import SyncStrategy
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult, LDAPMaximumRetriesError
 from ..utils.log import log, log_enabled, ERROR, BASIC
@@ -42,8 +42,8 @@ class RestartableStrategy(SyncStrategy):
         self.no_real_dsa = False
         self.pooled = False
         self.can_stream = False
-        self.restartable_sleep_time = RESTARTABLE_SLEEPTIME
-        self.restartable_tries = RESTARTABLE_TRIES
+        self.restartable_sleep_time = get_config_parameter('RESTARTABLE_SLEEPTIME')
+        self.restartable_tries = get_config_parameter('RESTARTABLE_TRIES')
         self._restarting = False
         self._last_bind_controls = None
         self._current_message_type = None
@@ -55,14 +55,14 @@ class RestartableStrategy(SyncStrategy):
     def open(self, reset_usage=False, read_server_info=True):
         SyncStrategy.open(self, reset_usage, read_server_info)
 
-    def _open_socket(self, address, use_ssl=False):
+    def _open_socket(self, address, use_ssl=False, unix_socket=False):
         """
         Try to open and connect a socket to a Server
         raise LDAPExceptionError if unable to open or connect socket
         if connection is restartable tries for the number of restarting requested or forever
         """
         try:
-            SyncStrategy._open_socket(self, address, use_ssl)  # try to open socket using SyncWait
+            SyncStrategy._open_socket(self, address, use_ssl, unix_socket)  # try to open socket using SyncWait
             self._reset_exception_history()
             return
         except Exception as e:  # machinery for restartable connection
@@ -91,7 +91,7 @@ class RestartableStrategy(SyncStrategy):
                             self.connection.server = new_server
                             if self.connection.usage:
                                 self.connection._usage.servers_from_pool += 1
-                    SyncStrategy._open_socket(self, address, use_ssl)  # calls super (not restartable) _open_socket()
+                    SyncStrategy._open_socket(self, address, use_ssl, unix_socket)  # calls super (not restartable) _open_socket()
                     if self.connection.usage:
                         self.connection._usage.restartable_successes += 1
                     self.connection.closed = False

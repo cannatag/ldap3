@@ -104,7 +104,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -129,7 +129,7 @@ elif location == 'GCNBHPW8':
     test_ntlm_password = 'Rc999pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.FOREST.LAB', 'WIN2.FOREST.LAB']
-elif location == 'GCNBHPW8-SLAPD':
+elif location == 'GCNBHPW8':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'

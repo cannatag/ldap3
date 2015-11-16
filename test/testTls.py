@@ -23,7 +23,7 @@
 import unittest
 import ssl
 
-from ldap3 import Server, Connection, ServerPool, Tls, SASL
+from ldap3 import Server, Connection, ServerPool, Tls, SASL, EXTERNAL
 from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, \
     test_strategy, test_lazy_connection, test_get_info, test_server_mode, test_valid_names, \
     test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_ca_cert_file, test_user_cert_file, test_user_key_file
@@ -123,7 +123,7 @@ class Test(unittest.TestCase):
                 server.add(Server(host=host, port=test_port_ssl, use_ssl=True, tls=tls, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
         else:
             server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
-        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=SASL, sasl_mechanism='EXTERNAL')
+        connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, authentication=SASL, sasl_mechanism=EXTERNAL)
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)

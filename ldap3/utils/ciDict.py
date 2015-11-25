@@ -90,16 +90,13 @@ class CaseInsensitiveDict(collections.MutableMapping):
             return NotImplemented
 
         if isinstance(other, CaseInsensitiveDict):
-            if isinstance(self.items(), SEQUENCE_TYPES):  # python 2
-                if len(self.items()) != len(other.items()):
-                    return False
-                else:
-                    for key, value in self.items():
-                        if not (key in other and other[key] == value):
-                            return False
-                    return True
+            if len(self.items()) != len(other.items()):
+                return False
             else:
-                return self.items() == other.items()
+                for key, value in self.items():
+                    if not (key in other and other[key] == value):
+                        return False
+                return True
 
         return self == CaseInsensitiveDict(other)
 

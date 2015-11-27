@@ -225,10 +225,11 @@ def get_connection(bind=None,
                    authentication=None,
                    sasl_mechanism=None,
                    sasl_credentials=None,
-                   ntlm_credentials=None,
+                   ntlm_credentials=(None, None),
                    get_info=None,
                    usage=None,
-                   fast_decoder=None):
+                   fast_decoder=None,
+                   simple_credentials=(None, None)):
     if bind is None:
         if test_server_type == 'AD':
             bind = AUTO_BIND_TLS_BEFORE_BIND
@@ -295,8 +296,8 @@ def get_connection(bind=None,
                           auto_bind=bind,
                           version=3,
                           client_strategy=test_strategy,
-                          user=test_user,
-                          password=test_password,
+                          user=test_user or simple_credentials[0],
+                          password=test_password or simple_credentials[1],
                           authentication=authentication,
                           lazy=lazy_connection,
                           pool_name='pool1',

@@ -23,10 +23,9 @@
 import unittest
 from time import sleep
 
-from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
-from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control, dir_sync_control
-from test import test_base, test_name_attr, random_id, get_connection, \
-    add_user, drop_connection, test_server_type, test_root_partition
+from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SIMPLE
+from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control
+from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition
 
 testcase_id = random_id()
 
@@ -169,3 +168,16 @@ class Test(unittest.TestCase):
                     break
 
             self.assertTrue(found)
+
+    def test_modify_password(self):
+        if test_server_type == 'AD':
+            dn, _ = add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'})
+            new_password = 'Rc5678efgh'
+            self.connection.extend.microsoft.modify_password(dn, new_password)
+            # creates a second connection and tries to bind with the new password
+            test_connection = get_connection(authentication=SIMPLE, simple_credentials=(dn, new_password))
+            test_connection.bind()
+            bound = test_connection.bound
+            test_connection.unbind()
+
+            self.assertTrue(bound)

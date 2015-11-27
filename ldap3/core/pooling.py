@@ -124,7 +124,7 @@ class ServerPoolState(object):
                 if server[0].check_availability():
                     # returns a random active server in the pool
                     server[2] = True
-                    return self.servers.index(server)[0]
+                    return self.servers.index(server)
                 else:
                     server[2] = False
             if not isinstance(self.server_pool.active, bool):

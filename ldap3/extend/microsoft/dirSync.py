@@ -26,7 +26,6 @@
 from ...core.exceptions import LDAPExtensionError
 from ...protocol.microsoft import dir_sync_control, extended_dn_control, show_deleted_control
 from ... import SUBTREE, DEREF_NEVER
-#from ...utils.asn1 import decode_sequence
 
 
 class DirSync(object):
@@ -78,9 +77,6 @@ class DirSync(object):
             result = self.connection.result
 
         if result['description'] == 'success' and 'controls' in result and '1.2.840.113556.1.4.841' in result['controls']:
-            # decoded_value = decode_sequence(result['controls']['1.2.840.113556.1.4.841']['value'], 0, len(result['controls']['1.2.840.113556.1.4.841']['value']))
-            #self.more_results = True if decoded_value[0][3][0][3] else False  # more_result if nonzero
-            #self.cookie = decoded_value[0][3][2][3]  # cookie returned by the fast decoder
             self.more_results = result['controls']['1.2.840.113556.1.4.841']['value']['more_results']
             self.cookie = result['controls']['1.2.840.113556.1.4.841']['value']['cookie']
             return response

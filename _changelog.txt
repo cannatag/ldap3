@@ -1,6 +1,8 @@
 * 0.9.9.4 2015.11.22
-    . added items() to CaseInsensitiveDict class (thanks Jan-Hendrik)
-    . added set_config_parameter() in ldap3 namespace to modify the values of the configurable parameters of ldap3
+    - added items() to CaseInsensitiveDict class (thanks Jan-Hendrik)
+    - added set_config_parameter() in ldap3 namespace to modify the values of the configurable parameters of ldap3
+    - added microsoft.extend.modify_password() extended operation to change AD password
+    - fixed find_active_random_server() in pooling (thanks Sargul)
 
 * 0.9.9.3 2015.11.15
     - Added LDAPI (LDAP over IPC) support for unix socket communication

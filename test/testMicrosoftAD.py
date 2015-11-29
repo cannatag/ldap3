@@ -32,7 +32,7 @@ testcase_id = random_id()
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection()
+        self.connection = get_connection(use_ssl=True)
         self.delete_at_teardown = []
         if test_server_type == 'AD':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
@@ -169,15 +169,50 @@ class Test(unittest.TestCase):
 
             self.assertTrue(found)
 
-    def test_modify_password(self):
+    def test_modify_password_as_administrator(self):
         if test_server_type == 'AD':
-            dn, _ = add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'})
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
+            dn = self.delete_at_teardown[-1][0]
+            # test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, 'Rc1234abcd'))
+            # test_connection.bind()
+            # self.assertTrue(test_connection.bound)
+            # connected_user = test_connection.extend.standard.who_am_i()
+            # test_connection.unbind()
+            # self.assertTrue('changed-password-1' in connected_user)
+
             new_password = 'Rc5678efgh'
-            self.connection.extend.microsoft.modify_password(dn, new_password)
+            result = self.connection.extend.microsoft.modify_password(dn, new_password)
+            self.assertEqual(result, True)
             # creates a second connection and tries to bind with the new password
-            test_connection = get_connection(authentication=SIMPLE, simple_credentials=(dn, new_password))
+            test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, new_password))
             test_connection.bind()
-            bound = test_connection.bound
+            connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
 
-            self.assertTrue(bound)
+            self.assertEqual('changed-password-1' in connected_user)
+
+    def test_modify_password_as_normal_user(self):
+        if test_server_type == 'AD':
+            old_password = 'Ab1234cdef!'
+            new_password = 'Gh5678ijkl%'
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-2', password=old_password, attributes={'givenName': 'changed-password-2'}))
+            dn = self.delete_at_teardown[-1][0]
+            # creates a second connection and tries to bind with the new password
+            test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, old_password))
+            test_connection.bind()
+            self.assertTrue(test_connection.bound)
+            connected_user = test_connection.extend.standard.who_am_i()
+            test_connection.unbind()
+            self.assertTrue('changed-password-2' in connected_user)
+
+            # changee the password
+            result = self.connection.extend.microsoft.modify_password(dn, new_password, old_password)
+            self.assertEqual(result, True)
+
+            # tries to bind with the new password
+            test_connection.password =  new_password
+            test_connection.bind()
+            connected_user = test_connection.extend.standard.who_am_i()
+            test_connection.unbind()
+
+            self.assertEqual('changed-password-2' in connected_user)

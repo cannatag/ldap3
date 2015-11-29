@@ -104,32 +104,33 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
-elif location == 'GCNBHPW8-AD':
+elif location == 'GCNBHPW8':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
     test_server = 'win1.hyperv'
     test_server_type = 'AD'
-    test_root_partition = 'DC=FOREST,DC=LAB'  # partition to use in DirSync
-    test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
-    test_moved = 'ou=moved,OU=test,DC=FOREST,DC=LAB'  # base context where objects are moved in ModifyDN operations
+    test_domain_name = 'FOREST.LAB'  # Active Directory Domain name
+    test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+    test_base = 'OU=test,' + test_root_partition  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'logonCount'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
-    test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
+    test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
     test_password = 'Rc999pfop'  # user password
-    test_sasl_user = 'CN=testLAB,CN=Users,DC=FOREST,DC=LAB'
+    test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_sasl_password = 'Rc999pfop'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
-    test_ntlm_user = 'FOREST\\Administrator'
+    test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
     test_ntlm_password = 'Rc999pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
-    test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.FOREST.LAB', 'WIN2.FOREST.LAB']
-elif location == 'GCNBHPW8':
+    test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
+elif location == 'GCNBHPW8-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
@@ -220,6 +221,7 @@ def generate_dn(base, batch_id, name):
 
 
 def get_connection(bind=None,
+                   use_ssl=False,
                    check_names=None,
                    lazy_connection=None,
                    authentication=None,
@@ -231,10 +233,10 @@ def get_connection(bind=None,
                    fast_decoder=None,
                    simple_credentials=(None, None)):
     if bind is None:
-        if test_server_type == 'AD':
-            bind = AUTO_BIND_TLS_BEFORE_BIND
-        else:
-            bind = True
+        # if test_server_type == 'AD':
+        #     bind = AUTO_BIND_TLS_BEFORE_BIND
+        # else:
+        bind = True
     if check_names is None:
         check_names = test_check_names
     if lazy_connection is None:
@@ -254,13 +256,15 @@ def get_connection(bind=None,
                             exhaust=test_pooling_exhaust)
         for host in test_server:
             server.add(Server(host=host,
-                              port=test_port,
+                              use_ssl=use_ssl,
+                              port=test_port_ssl if use_ssl else test_port,
                               allowed_referral_hosts=('*', True),
                               get_info=get_info,
                               mode=test_server_mode))
     else:
         server = Server(host=test_server,
-                        port=test_port,
+                        use_ssl=use_ssl,
+                        port=test_port_ssl if use_ssl else test_port,
                         allowed_referral_hosts=('*', True),
                         get_info=get_info,
                         mode=test_server_mode)
@@ -296,8 +300,8 @@ def get_connection(bind=None,
                           auto_bind=bind,
                           version=3,
                           client_strategy=test_strategy,
-                          user=test_user or simple_credentials[0],
-                          password=test_password or simple_credentials[1],
+                          user=simple_credentials[0] or test_user,
+                          password=simple_credentials[1] or test_password,
                           authentication=authentication,
                           lazy=lazy_connection,
                           pool_name='pool1',
@@ -340,25 +344,34 @@ def get_operation_result(connection, operation_result):
     return result
 
 
-def add_user(connection, batch_id, username, attributes=None):
+def add_user(connection, batch_id, username, password=None, attributes=None):
+    if password is None:
+        password = 'Rc1234abcd'
+
     if attributes is None:
         attributes = dict()
 
     if test_server_type == 'EDIR':
-        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
+        attributes.update({'objectClass': 'inetOrgPerson',
+                           'sn': username})
     elif test_server_type == 'AD':
-        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username, 'unicodePwd': '"Rc1234abcd"'.encode('utf-16-le'), 'userAccountControl': 512})
+        attributes.update({'objectClass': ['Person', 'User'],
+                           'sn': username,
+                           'sAMAccountName': (batch_id[1: -1] + username)[-20:],
+                           'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,
+                           'displayName': (batch_id[1: -1] + username)[-20:],
+                           'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
+                           'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
         attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)
-    operation_result = connection.add(dn, 'inetOrgPerson', attributes)
+    operation_result = connection.add(dn, None, attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        pass
-        '''raise Exception('unable to create user ' + dn + ': ' + str(result))
-        '''
+        raise Exception('unable to create user ' + dn + ': ' + str(result))
+
     return dn, result
 
 

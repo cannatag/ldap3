@@ -27,6 +27,7 @@ from os import linesep
 
 from .. import SUBTREE, DEREF_ALWAYS, ALL_ATTRIBUTES
 from .microsoft.dirSync import DirSync
+from .microsoft.modifyPassword import modify_ad_password
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
@@ -127,8 +128,8 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
                        max_length=max_length,
                        hex_guid=hex_guid)
 
-    def modify_password(self, user, new_password):
-            pass
+    def modify_password(self, user, new_password, old_password=None):
+        return modify_ad_password(self._connection, user, old_password, new_password)
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

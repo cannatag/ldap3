@@ -78,12 +78,12 @@ if location.startswith('TRAVIS'):
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
     test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
-elif location == 'GCNBHPW8-EDIR':
+elif location == 'GCNBHPW8':
     # test notepbook - eDirectory (EDIR)
-    test_server = ['edir1.hyperv',
-                   'edir2.hyperv',
-                   'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
-    # test_server = 'edir1.hyperv'
+    # test_server = ['edir1.hyperv',
+    #               'edir2.hyperv',
+    #               'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
+    test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
@@ -104,7 +104,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -233,11 +233,6 @@ def get_connection(bind=None,
                    fast_decoder=None,
                    simple_credentials=(None, None)):
     if bind is None:
-        if test_server_type == 'AD':
-            use_ssl = True
-        # if test_server_type == 'AD':
-        #     bind = AUTO_BIND_TLS_BEFORE_BIND
-        # else:
         bind = True
     if check_names is None:
         check_names = test_check_names
@@ -251,7 +246,9 @@ def get_connection(bind=None,
         usage = test_usage
     if fast_decoder is None:
         fast_decoder = test_fast_decoder
-
+    if test_server_type == 'AD':
+        # use_ssl = True  # Active directory forbids Add operations in cleartext
+        bind = AUTO_BIND_TLS_BEFORE_BIND
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
                             active=test_pooling_active,
@@ -348,7 +345,7 @@ def get_operation_result(connection, operation_result):
 
 def add_user(connection, batch_id, username, password=None, attributes=None):
     if password is None:
-        password = 'Rc1234abcd'
+        password = 'Rc2597pfop'
 
     if attributes is None:
         attributes = dict()
@@ -357,7 +354,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
         attributes.update({'objectClass': 'inetOrgPerson',
                            'sn': username})
     elif test_server_type == 'AD':
-        attributes.update({'objectClass': ['Person', 'User'],
+        attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top'],
                            'sn': username,
                            'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD
                            'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,

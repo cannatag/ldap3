@@ -59,8 +59,8 @@ class Server(object):
     authentication to that server is allowed; if False only anonymous
     bind will be used.
 
-    Per RFC 4516. Use ('*', False) to allow any host with anonymous
-    bind, use ('*', True) to allow any host with same authentication of
+    Per RFC 4516. Use [('*', False)] to allow any host with anonymous
+    bind, use [('*', True)] to allow any host with same authentication of
     Server.
     """
 

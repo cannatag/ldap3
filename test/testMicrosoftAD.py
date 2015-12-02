@@ -189,12 +189,12 @@ class Test(unittest.TestCase):
             connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
 
-            self.assertEqual('changed-password-1' in connected_user)
+            self.assertTrue('changed-password-1' in connected_user)
 
     def test_modify_password_as_normal_user(self):
         if test_server_type == 'AD':
-            old_password = 'Ab1234cdef!'
-            new_password = 'Gh5678ijkl%'
+            old_password = 'Ab1234cdef'
+            new_password = 'Gh5678ijkl'
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-2', password=old_password, attributes={'givenName': 'changed-password-2'}))
             dn = self.delete_at_teardown[-1][0]
             # creates a second connection and tries to bind with the new password

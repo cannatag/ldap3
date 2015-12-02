@@ -119,7 +119,7 @@ elif location == 'GCNBHPW8':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
-    test_password = 'Rc999pfop'  # user password
+    test_password = 'Rc8888pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_sasl_password = 'Rc999pfop'
     test_sasl_realm = None
@@ -127,7 +127,7 @@ elif location == 'GCNBHPW8':
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
-    test_ntlm_password = 'Rc999pfop'
+    test_ntlm_password = 'Rc8888pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
 elif location == 'GCNBHPW8-SLAPD':
@@ -233,6 +233,8 @@ def get_connection(bind=None,
                    fast_decoder=None,
                    simple_credentials=(None, None)):
     if bind is None:
+        if test_server_type == 'AD':
+            use_ssl = True
         # if test_server_type == 'AD':
         #     bind = AUTO_BIND_TLS_BEFORE_BIND
         # else:
@@ -357,7 +359,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
     elif test_server_type == 'AD':
         attributes.update({'objectClass': ['Person', 'User'],
                            'sn': username,
-                           'sAMAccountName': (batch_id[1: -1] + username)[-20:],
+                           'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD
                            'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,
                            'displayName': (batch_id[1: -1] + username)[-20:],
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),

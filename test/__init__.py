@@ -35,8 +35,8 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
 
-test_logging = True
-test_log_detail = OFF
+test_logging = False
+test_log_detail = EXTENDED
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
@@ -78,7 +78,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
     test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
     #               'edir2.hyperv',
@@ -104,7 +104,7 @@ elif location == 'GCNBHPW8':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
-elif location == 'GCNBHPW8-AD':
+elif location == 'GCNBHPW8':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -247,8 +247,8 @@ def get_connection(bind=None,
     if fast_decoder is None:
         fast_decoder = test_fast_decoder
     if test_server_type == 'AD':
-        # use_ssl = True  # Active directory forbids Add operations in cleartext
-        bind = AUTO_BIND_TLS_BEFORE_BIND
+        use_ssl = True  # Active directory forbids Add operations in cleartext
+        # bind = AUTO_BIND_TLS_BEFORE_BIND
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
                             active=test_pooling_active,
@@ -354,7 +354,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
         attributes.update({'objectClass': 'inetOrgPerson',
                            'sn': username})
     elif test_server_type == 'AD':
-        attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top'],
+        attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
                            'sn': username,
                            'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD
                            'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,

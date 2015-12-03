@@ -39,17 +39,17 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_search_filter_with_object_class(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-2'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-member-3'))
-        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abstract-group', self.delete_at_teardown))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abs-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abs-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abs-3'))
+        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'abs-grp', self.delete_at_teardown))
         reverse = lambda a, e: e[::-1]
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
         o += AttrDef('givenName', 'Given Name', post_query=reverse)
 
-        query_text = 'Common Name:=' + testcase_id + 'abstract-member-*'
+        query_text = 'Common Name:=' + testcase_id + 'abs-*'
         r = Reader(self.connection, o, query_text, test_base)
 
         results = r.search()

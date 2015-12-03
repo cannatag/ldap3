@@ -215,4 +215,4 @@ class Test(unittest.TestCase):
             connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
 
-            self.assertEqual('changed-password-2' in connected_user)
+            self.assertTrue('changed-password-2' in connected_user)

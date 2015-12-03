@@ -149,7 +149,7 @@ With the connection object you can perform all the standard LDAP operations:
 
 
     * size_limit: maximum number of entries returned by the search (defaults to None).
-      If None the whole set of found entries is returned, unless the server has a more restrictive constrain.
+      If None the whole set of found entries is returned, unless the server has a more restrictive constrai.
 
     * time_limit: number of seconds allowed for the search (defaults to None).
       If None the search can take an unlimited amount of time, unless the server has a more restrictive constrain.

@@ -1,9 +1,14 @@
 # changes file for ldap3
-# generated on 2015-12-06 20:11:33.682102
-# version 1.0.0
+# generated on 2015-12-06 20:32:25.092564
+# version 1.0.1
 
-* 1.0.0 2015.12.03
+* 1.0.1 2015.12.06
+    - Removed the compat package
+    - Refactored docs for extend operations
+
+* 1.0.0 2015.12.06
     - private RC for production
+    - Status moved to 5 - Production/Stable
 
 * 0.9.9.4 2015.12.02
     - Added items() to CaseInsensitiveDict class (thanks Jan-Hendrik)
@@ -24,7 +29,7 @@
 
 * 0.9.9.2 2015.10.19
     - Fixed hasattr() behaviour for Entry object in Python 3
-    - Allows empty sasl_credentials in sasl bind
+    - Allows empty sasl_credentials in SASL bind
     - Added POOLING_LOOP_TIMEOUT constant to specify how many seconds the server pooling strategy has to wait before retrying if it did not find an active server (defaults to 10)
     - Pooling strategy now allows to specify the number of cycles to try when finding a server (with active=N)
     - Pooling strategy now allows to specify how many seconds a server must be considered offline before retrying to check for availabiliry (with exhaust=N)

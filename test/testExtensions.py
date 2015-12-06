@@ -67,15 +67,8 @@ class Test(unittest.TestCase):
             self.assertEqual(result['description'], 'success')
 
     def test_start_tls_extension(self):
-        if test_server_type == 'AD':  # already in tls
-            old_connection = self.connection
-            self.connection = get_connection(bind=AUTO_BIND_NO_TLS)
-        self.connection.server.tls = Tls()
-        result = self.connection.extended('1.3.6.1.4.1.1466.20037')
-        if not self.connection.strategy.sync:
-            _, result = self.connection.get_response(result)
-        else:
-            result = self.connection.result
-        if test_server_type == 'AD':
-            self.connection = old_connection
-        self.assertEqual(result['description'], 'success')
+        connection = get_connection(use_ssl=False)
+        connection.server.tls = Tls()
+        result = self.connection.start_tls()
+        self.assertTrue(result)
+        connection.unbind()

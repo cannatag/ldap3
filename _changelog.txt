@@ -1,9 +1,13 @@
-* 0.9.9.4 2015.11.22
+* 1.0.0 2015.12.06
+    - private RC for production
+    - Status moved to 5 - Production/Stable
+
+* 0.9.9.4 2015.12.02
     - Added items() to CaseInsensitiveDict class (thanks Jan-Hendrik)
     - Added set_config_parameter() in ldap3 namespace to modify the values of the configurable parameters of ldap3
     - Added microsoft.extend.modify_password() extended operation to change AD password
     - Fixed find_active_random_server() in pooling (thanks Sargul)
-    - Fixed referrals in fast ber decoder (thanks TWAC)
+    - Fixed referral decoding in fast ber decoder (thanks TWAC)
 
 * 0.9.9.3 2015.11.15
     - Added LDAPI (LDAP over IPC) support for unix socket communication

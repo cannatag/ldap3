@@ -55,12 +55,37 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
+test_server_type = 'EDIR'  # possible choices:
+                           # EDIR (Novell eDirectory)
+                           # AD (Microsoft Active Directory)
+                           # SLAPD (OpenLDAP)
+
+test_lazy_connection = False
+test_strategy = SYNC  # possible choices:
+                      # ASYNC
+                      # REUSABLE
+                      # RESTARTABLE
+                      # not used on TRAVIS - look at .travis.yml
+
+if 'TRAVIS,' in location:
+    _, strategy, lazy = location.split(',')
+    test_strategy = strategy
+    test_lazy_connection = bool(int(lazy))
+
+location += '-' + test_server_type
+
 if location.startswith('TRAVIS'):
     # test in the cloud
-    test_server = 'labldap02.cloudapp.net'
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
-    test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
-    test_server_type = 'EDIR'
+    if test_server_type == 'EDIR':
+        test_server = 'labldap02.cloudapp.net'
+        test_server_edir_name = 'SLES1'
+    elif test_server_type == 'AD':
+        test_server = 'labldap01.cloudapp.net'
+        test_server_edir_name = ''
+    else:
+        raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
+
     test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
@@ -104,7 +129,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
-elif location == 'GCNBHPW8':
+elif location == 'GCNBHPW8-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -153,7 +178,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.104']
-elif location == 'GCW89227':
+elif location == 'GCW89227-EDIR':
     # test camera
     # test_server = ['sl08',
     #               'sl09',
@@ -183,17 +208,6 @@ elif location == 'GCW89227':
     test_valid_names = ['sl10.intra.camera.it']
 else:
     raise Exception('testing location ' + location + ' is not valid')
-
-if location.startswith('TRAVIS,'):
-    _, strategy, lazy = location.split(',')
-    test_strategy = strategy
-    test_lazy_connection = bool(int(lazy))
-else:
-    test_strategy = SYNC  # sync strategy for executing tests
-    # test_strategy = ASYNC  # uncomment this line to test the async strategy
-    # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
-    # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
-    test_lazy_connection = False  # connection lazy
 
 if test_logging:
     try:
@@ -246,9 +260,8 @@ def get_connection(bind=None,
         usage = test_usage
     if fast_decoder is None:
         fast_decoder = test_fast_decoder
-    if test_server_type == 'AD':
+    if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
-        # bind = AUTO_BIND_TLS_BEFORE_BIND
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
                             active=test_pooling_active,

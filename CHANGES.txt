@@ -1,20 +1,35 @@
 # changes file for ldap3
-# generated on 2015-11-15 23:24:19.725251
-# version 0.9.9.3
+# generated on 2015-12-06 20:32:25.092564
+# version 1.0.1
+
+* 1.0.1 2015.12.06
+    - Removed the compat package
+    - Refactored docs for extend operations
+
+* 1.0.0 2015.12.06
+    - private RC for production
+    - Status moved to 5 - Production/Stable
+
+* 0.9.9.4 2015.12.02
+    - Added items() to CaseInsensitiveDict class (thanks Jan-Hendrik)
+    - Added set_config_parameter() in ldap3 namespace to modify the values of the configurable parameters of ldap3
+    - Added microsoft.extend.modify_password() extended operation to change AD password
+    - Fixed find_active_random_server() in pooling (thanks Sargul)
+    - Fixed referral decoding in fast ber decoder (thanks TWAC)
 
 * 0.9.9.3 2015.11.15
     - Added LDAPI (LDAP over IPC) support for unix socket communication
     - Added mandatory_in and optional_in in server schema for attribute types. Now you can see in which classes attributes are used
     - Added last_transmitted_time and last_received_time to Usage object to track time of the last sent and received operation
     - Exception SessionTerminatedByServer renamed to SessionTerminatedByServerError and added to ldap3 namespace
-    - Added get_config_parameter() in ldap3 to read the current value of parameters modified in the ldap3 namespace
+    - Added get_config_parameter() in ldap3 namespace to read the current value of ldap3 configurable parameters
     - Added SASL mechanism name as constants in the ldap3 namespace
     - Added escape_filter_chars in utils.conv (thanks Peter)
     - reverted ALL_ATTRIBUTES behaviour in search to 0.9.9.1 (thanks Petros)
 
 * 0.9.9.2 2015.10.19
     - Fixed hasattr() behaviour for Entry object in Python 3
-    - Allows empty sasl_credentials in sasl bind
+    - Allows empty sasl_credentials in SASL bind
     - Added POOLING_LOOP_TIMEOUT constant to specify how many seconds the server pooling strategy has to wait before retrying if it did not find an active server (defaults to 10)
     - Pooling strategy now allows to specify the number of cycles to try when finding a server (with active=N)
     - Pooling strategy now allows to specify how many seconds a server must be considered offline before retrying to check for availabiliry (with exhaust=N)

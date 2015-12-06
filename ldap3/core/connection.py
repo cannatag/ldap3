@@ -173,7 +173,7 @@ class Connection(object):
                  pool_lifetime=None,
                  fast_decoder=True):
 
-        self.lock = RLock()  # re-entrant lock to assure that operations in the Connection object are executed atomically in the same thread
+        self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
             if client_strategy not in CLIENT_STRATEGIES:
                 self.last_error = 'unknown client connection strategy'

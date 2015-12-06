@@ -79,7 +79,7 @@ class BaseStrategy(object):
             'sync' if self.sync else 'async',
             'no real DSA' if self.no_real_dsa else 'real DSA',
             'pooled' if self.pooled else 'not pooled',
-            'can stream output' if self.pooled else 'cannot stream output',
+            'can stream output' if self.can_stream else 'cannot stream output',
         ]
         return ' - '.join(s)
 

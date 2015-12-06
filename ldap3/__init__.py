@@ -353,6 +353,50 @@ def get_config_parameter(parameter):
 
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
+
+def set_config_parameter(parameter):
+    if parameter == 'CASE_INSENSITIVE_ATTRIBUTE_NAMES':
+        global CASE_INSENSITIVE_ATTRIBUTE_NAMES
+        CASE_INSENSITIVE_ATTRIBUTE_NAMES = parameter
+    elif parameter == 'CASE_INSENSITIVE_SCHEMA_NAMES':
+        global CASE_INSENSITIVE_SCHEMA_NAMES
+        CASE_INSENSITIVE_SCHEMA_NAMES = parameter
+    elif parameter == 'ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX':
+        global ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX
+        ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = parameter
+    elif parameter == 'POOLING_LOOP_TIMEOUT':
+        global POOLING_LOOP_TIMEOUT
+        POOLING_LOOP_TIMEOUT = parameter
+    elif parameter == 'RESPONSE_SLEEPTIME':
+        global RESPONSE_SLEEPTIME
+        RESPONSE_SLEEPTIME = parameter
+    elif parameter == 'RESPONSE_WAITING_TIMEOUT':
+        global RESPONSE_WAITING_TIMEOUT
+        RESPONSE_WAITING_TIMEOUT = parameter
+    elif parameter == 'SOCKET_SIZE':
+        global SOCKET_SIZE
+        SOCKET_SIZE = parameter
+    elif parameter == 'CHECK_AVAILABILITY_TIMEOUT':
+        global CHECK_AVAILABILITY_TIMEOUT
+        CHECK_AVAILABILITY_TIMEOUT = parameter
+    elif parameter == 'RESTARTABLE_SLEEPTIME':
+        global RESTARTABLE_SLEEPTIME
+        RESTARTABLE_SLEEPTIME = parameter
+    elif parameter == 'RESTARTABLE_TRIES':
+        global RESTARTABLE_TRIES
+        RESTARTABLE_TRIES = parameter
+    elif parameter == 'REUSABLE_THREADED_POOL_SIZE':
+        global REUSABLE_THREADED_POOL_SIZE
+        REUSABLE_THREADED_POOL_SIZE = parameter
+    elif parameter == 'REUSABLE_THREADED_LIFETIME':
+        global REUSABLE_THREADED_LIFETIME
+        REUSABLE_THREADED_LIFETIME = parameter
+    elif parameter == 'DEFAULT_THREADED_POOL_NAME':
+        global DEFAULT_THREADED_POOL_NAME
+        DEFAULT_THREADED_POOL_NAME = parameter
+
+    raise LDAPConfigurationParameterError('unable to set configuration parameter %s' % parameter)
+
 # centralized imports
 from .version import __author__, __version__, __email__, __description__, __status__, __license__, __url__
 from .core.server import Server

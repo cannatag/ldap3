@@ -35,8 +35,8 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 # test_server_mode = IP_SYSTEM_DEFAULT
 test_server_mode = IP_V6_PREFERRED
 
-test_logging = True
-test_log_detail = OFF
+test_logging = False
+test_log_detail = EXTENDED
 
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
@@ -55,12 +55,37 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
+test_server_type = 'EDIR'  # possible choices:
+                           # EDIR (Novell eDirectory)
+                           # AD (Microsoft Active Directory)
+                           # SLAPD (OpenLDAP)
+
+test_lazy_connection = False
+test_strategy = SYNC  # possible choices:
+                      # ASYNC
+                      # REUSABLE
+                      # RESTARTABLE
+                      # not used on TRAVIS - look at .travis.yml
+
+if 'TRAVIS,' in location:
+    _, strategy, lazy = location.split(',')
+    test_strategy = strategy
+    test_lazy_connection = bool(int(lazy))
+
+location += '-' + test_server_type
+
 if location.startswith('TRAVIS'):
     # test in the cloud
-    test_server = 'labldap02.cloudapp.net'
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
-    test_server_edir_name = 'SLES1'  # used in novell eDirectory extended operations
-    test_server_type = 'EDIR'
+    if test_server_type == 'EDIR':
+        test_server = 'labldap02.cloudapp.net'
+        test_server_edir_name = 'SLES1'
+    elif test_server_type == 'AD':
+        test_server = 'labldap01.cloudapp.net'
+        test_server_edir_name = ''
+    else:
+        raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
+
     test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
@@ -80,10 +105,10 @@ if location.startswith('TRAVIS'):
     test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
 elif location == 'GCNBHPW8-EDIR':
     # test notepbook - eDirectory (EDIR)
-    test_server = ['edir1.hyperv',
-                   'edir2.hyperv',
-                   'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
-    # test_server = 'edir1.hyperv'
+    # test_server = ['edir1.hyperv',
+    #               'edir2.hyperv',
+    #               'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
+    test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
     test_base = 'o=test'  # base context where test objects are created
@@ -110,26 +135,27 @@ elif location == 'GCNBHPW8-AD':
     #                'win2']
     test_server = 'win1.hyperv'
     test_server_type = 'AD'
-    test_root_partition = 'DC=FOREST,DC=LAB'  # partition to use in DirSync
-    test_base = 'OU=test,DC=FOREST,DC=LAB'  # base context where test objects are created
-    test_moved = 'ou=moved,OU=test,DC=FOREST,DC=LAB'  # base context where objects are moved in ModifyDN operations
+    test_domain_name = 'FOREST.LAB'  # Active Directory Domain name
+    test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+    test_base = 'OU=test,' + test_root_partition  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'logonCount'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
-    test_user = 'CN=Administrator,CN=Users,DC=FOREST,DC=LAB'  # the user that performs the tests
-    test_password = 'Rc999pfop'  # user password
-    test_sasl_user = 'CN=testLAB,CN=Users,DC=FOREST,DC=LAB'
+    test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
+    test_password = 'Rc8888pfop'  # user password
+    test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_sasl_password = 'Rc999pfop'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
-    test_ntlm_user = 'FOREST\\Administrator'
-    test_ntlm_password = 'Rc999pfop'
+    test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
+    test_ntlm_password = 'Rc8888pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
-    test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.FOREST.LAB', 'WIN2.FOREST.LAB']
-elif location == 'GCNBHPW8':
+    test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
+elif location == 'GCNBHPW8-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
@@ -152,7 +178,7 @@ elif location == 'GCNBHPW8':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.104']
-elif location == 'GCW89227':
+elif location == 'GCW89227-EDIR':
     # test camera
     # test_server = ['sl08',
     #               'sl09',
@@ -183,17 +209,6 @@ elif location == 'GCW89227':
 else:
     raise Exception('testing location ' + location + ' is not valid')
 
-if location.startswith('TRAVIS,'):
-    _, strategy, lazy = location.split(',')
-    test_strategy = strategy
-    test_lazy_connection = bool(int(lazy))
-else:
-    test_strategy = SYNC  # sync strategy for executing tests
-    # test_strategy = ASYNC  # uncomment this line to test the async strategy
-    # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
-    # test_strategy = REUSABLE  # uncomment this line to test the sync_reusable_threaded strategy
-    test_lazy_connection = False  # connection lazy
-
 if test_logging:
     try:
         remove(test_logging_filename)
@@ -220,20 +235,19 @@ def generate_dn(base, batch_id, name):
 
 
 def get_connection(bind=None,
+                   use_ssl=False,
                    check_names=None,
                    lazy_connection=None,
                    authentication=None,
                    sasl_mechanism=None,
                    sasl_credentials=None,
-                   ntlm_credentials=None,
+                   ntlm_credentials=(None, None),
                    get_info=None,
                    usage=None,
-                   fast_decoder=None):
+                   fast_decoder=None,
+                   simple_credentials=(None, None)):
     if bind is None:
-        if test_server_type == 'AD':
-            bind = AUTO_BIND_TLS_BEFORE_BIND
-        else:
-            bind = True
+        bind = True
     if check_names is None:
         check_names = test_check_names
     if lazy_connection is None:
@@ -246,20 +260,23 @@ def get_connection(bind=None,
         usage = test_usage
     if fast_decoder is None:
         fast_decoder = test_fast_decoder
-
+    if test_server_type == 'AD' and use_ssl is None:
+        use_ssl = True  # Active directory forbids Add operations in cleartext
     if isinstance(test_server, (list, tuple)):
         server = ServerPool(pool_strategy=test_pooling_strategy,
                             active=test_pooling_active,
                             exhaust=test_pooling_exhaust)
         for host in test_server:
             server.add(Server(host=host,
-                              port=test_port,
+                              use_ssl=use_ssl,
+                              port=test_port_ssl if use_ssl else test_port,
                               allowed_referral_hosts=('*', True),
                               get_info=get_info,
                               mode=test_server_mode))
     else:
         server = Server(host=test_server,
-                        port=test_port,
+                        use_ssl=use_ssl,
+                        port=test_port_ssl if use_ssl else test_port,
                         allowed_referral_hosts=('*', True),
                         get_info=get_info,
                         mode=test_server_mode)
@@ -295,8 +312,8 @@ def get_connection(bind=None,
                           auto_bind=bind,
                           version=3,
                           client_strategy=test_strategy,
-                          user=test_user,
-                          password=test_password,
+                          user=simple_credentials[0] or test_user,
+                          password=simple_credentials[1] or test_password,
                           authentication=authentication,
                           lazy=lazy_connection,
                           pool_name='pool1',
@@ -339,25 +356,34 @@ def get_operation_result(connection, operation_result):
     return result
 
 
-def add_user(connection, batch_id, username, attributes=None):
+def add_user(connection, batch_id, username, password=None, attributes=None):
+    if password is None:
+        password = 'Rc2597pfop'
+
     if attributes is None:
         attributes = dict()
 
     if test_server_type == 'EDIR':
-        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
+        attributes.update({'objectClass': 'inetOrgPerson',
+                           'sn': username})
     elif test_server_type == 'AD':
-        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username, 'unicodePwd': '"Rc1234abcd"'.encode('utf-16-le'), 'userAccountControl': 512})
+        attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
+                           'sn': username,
+                           'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD
+                           'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,
+                           'displayName': (batch_id[1: -1] + username)[-20:],
+                           'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
+                           'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
         attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)
-    operation_result = connection.add(dn, 'inetOrgPerson', attributes)
+    operation_result = connection.add(dn, None, attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        pass
-        '''raise Exception('unable to create user ' + dn + ': ' + str(result))
-        '''
+        raise Exception('unable to create user ' + dn + ': ' + str(result))
+
     return dn, result
 
 

@@ -27,6 +27,7 @@ from os import linesep
 
 from .. import SUBTREE, DEREF_ALWAYS, ALL_ATTRIBUTES
 from .microsoft.dirSync import DirSync
+from .microsoft.modifyPassword import modify_ad_password
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
@@ -104,7 +105,17 @@ class NovellExtendedOperations(ExtendedOperationContainer):
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):
-    def dir_sync(self, sync_base, sync_filter='(objectclass=*)', attributes=ALL_ATTRIBUTES, cookie=None, object_security=False, ancestors_first=True, public_data_only=False, incremental_values=True, max_length=2147483647, hex_guid=False):
+    def dir_sync(self,
+                 sync_base,
+                 sync_filter='(objectclass=*)',
+                 attributes=ALL_ATTRIBUTES,
+                 cookie=None,
+                 object_security=False,
+                 ancestors_first=True,
+                 public_data_only=False,
+                 incremental_values=True,
+                 max_length=2147483647,
+                 hex_guid=False):
         return DirSync(self._connection,
                        sync_base=sync_base,
                        sync_filter=sync_filter,
@@ -116,6 +127,9 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
                        incremental_values=incremental_values,
                        max_length=max_length,
                        hex_guid=hex_guid)
+
+    def modify_password(self, user, new_password, old_password=None):
+        return modify_ad_password(self._connection, user, old_password, new_password)
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

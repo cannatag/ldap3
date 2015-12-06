@@ -1,11 +1,11 @@
 {
     "package_folder": ".",
     "email": "cannatag@gmail.com",
-    "status": "development - beta",
+    "status": "5 - Production/Stable",
     "package_name": "ldap3",
     "url": "https://github.com/cannatag/ldap3",
-    "description": "A strictly RFC 4510 conforming LDAP V3 pure Python client. Same codebase for Python 2, Python3, PyPy and PyPy 3",
+    "description": "A strictly RFC 4510 conforming LDAP V3 pure Python client. Same codebase for Python 2, Python 3, PyPy, PyPy3 and Nuikta",
     "author": "Giovanni Cannata",
-    "version": "0.9.9.3",
+    "version": "1.0.1",
     "license": "LGPL v3"
 }

@@ -39,12 +39,13 @@ CLASSES = {(False, False): 0,  # Universal
 
 
 # Monkeypatching of pyasn1 for encoding Boolean with the value 0xFF for TRUE
+# THIS IS NOT PART OF THE FAST BER DECODER
 class BooleanCEREncoder(BooleanEncoder):
     _true = ints2octs((255,))
 
 tagMap[Boolean.tagSet] = BooleanCEREncoder()
 
-from pyasn1.codec.ber import encoder, decoder
+from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
 
 # a fast BER decoder for LDAP responses only
 
@@ -91,7 +92,13 @@ def decode_sequence(message, start, stop, context_decoders=None):
         if ber_decoder:
             value = ber_decoder(message, start, start + ber_len, context_decoders)  # call value decode function
         else:
+            # try:
             value = context_decoders[ber_type](message, start, start + ber_len)  # call value decode function for context class
+            # except KeyError:
+            #     if ber_type == 3:  # Referral in result
+            #         value = decode_sequence(message, start, start + ber_len)
+            #     else:
+            #         raise  # re-raise, should never happen
         decoded.append((ber_class, ber_constructed, ber_type, value))
         start += ber_len
 
@@ -138,7 +145,7 @@ def ldap_result_to_dict_fast(response):
     response_dict['dn'] = response[1][3].decode('utf-8')  # matchedDN
     response_dict['message'] = response[2][3].decode('utf-8')  # diagnosticMessage
     if len(response) == 4:
-        response_dict['referrals'] = referrals_to_list(response[3][3])  # referrals
+        response_dict['referrals'] = referrals_to_list([referral[3].decode('utf-8') for referral in response[3][3]])  # referrals
     else:
         response_dict['referrals'] = None
 
@@ -179,7 +186,8 @@ DECODERS = {
     (1, 15): decode_sequence,  # Compare response
     (1, 19): decode_sequence,  # Search result reference
     (1, 24): decode_extended_response,  # Extended response
-    (1, 25): decode_intermediate_response  # intermediate response
+    (1, 25): decode_intermediate_response,  # intermediate response
+    (2, 3): decode_octet_string  #
 }
 
 BIND_RESPONSE_CONTEXT = {
@@ -197,7 +205,8 @@ INTERMEDIATE_RESPONSE_CONTEXT = {
 }
 
 LDAP_MESSAGE_CONTEXT = {
-    0: decode_controls  # Controls
+    0: decode_controls,  # Controls
+    3: decode_sequence  # Referral
 }
 
 CONTROLS_CONTEXT = {

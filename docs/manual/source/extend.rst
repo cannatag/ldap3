@@ -1,6 +1,6 @@
-###############
-LDAP Operations
-###############
+################
+Extend namespace
+################
 
 .. toctree::
    :maxdepth: 2

@@ -1,6 +1,6 @@
-#################
-Extend  Namespace
-#################
+################
+Extend Namespace
+################
 
 Extended operations are defined in the Connection object in the 'extend' attribute.
 
@@ -18,6 +18,7 @@ To use an extended operation just call it in the usual way, the payload is prope
 
 When available you should get the response value as the return value of the function and as an additional field of
 the ``result`` dictionary.
+
 
 .. toctree::
    :maxdepth: 2

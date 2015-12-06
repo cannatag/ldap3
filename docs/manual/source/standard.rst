@@ -1,3 +1,7 @@
+#################################
+Extended standard RFCs operations
+#################################
+
 The extend.standard namespace contains extended operation defined in current RFCs::
 
     extend.standard

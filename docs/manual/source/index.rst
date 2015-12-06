@@ -27,7 +27,7 @@ Contents
    ssltls
    metrics
    operations
-   extended
+   extend
    abstraction
    ldif
    exceptions

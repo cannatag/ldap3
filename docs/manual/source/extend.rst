@@ -1,4 +1,8 @@
-Some extended operations are defined in the Connection object in the 'extend' attribute.
+#################
+Extend  Namespace
+#################
+
+Extended operations are defined in the Connection object in the 'extend' attribute.
 
 You can call the requested operation and get the extended result back as specified in the relevant RFC or documentation
 The result dictionary is augmented with the specific keys of the extended response.
@@ -14,3 +18,10 @@ To use an extended operation just call it in the usual way, the payload is prope
 
 When available you should get the response value as the return value of the function and as an additional field of
 the ``result`` dictionary.
+
+.. toctree::
+   :maxdepth: 2
+
+   standard
+   novell
+   microsoft

@@ -5,9 +5,9 @@ Extend namespace
 .. toctree::
    :maxdepth: 2
 
-   bind
-   unbind
-   add
+   standard
+   novell
+   microsoft
    delete
    modify
    modifydn

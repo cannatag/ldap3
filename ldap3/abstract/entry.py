@@ -72,7 +72,11 @@ class Entry(object):
         raise StopIteration
 
     def __contains__(self, item):
-        return True if self.__getitem__(item) else False
+        try:
+            if self.__getitem__(item):
+                return True
+        except LDAPKeyError:
+            return False
 
     def __getattr__(self, item):
         if isinstance(item, STRING_TYPES):

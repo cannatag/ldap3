@@ -13,9 +13,9 @@ LDAP3
     :target: https://pypi.python.org/pypi/ldap3/
     :alt: License
 
-ldap3 is a strictly RFC 4510 conforming LDAP V3 pure Python **client**. The same codebase works with Python 2, Python 3, PyPy, PyPy3 and Nuikta.
+ldap3 is a strictly RFC 4510 conforming LDAP V3 pure Python **client** library. The same codebase works with Python 2, Python 3, PyPy, PyPy3 and Nuikta.
 
-[This project was formerly named **python3-ldap**]
+[This project was previously named **python3-ldap**]
 
 Home Page
 ---------

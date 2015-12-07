@@ -1,6 +1,7 @@
 * 1.0.2 2015.12.07
     - allowed_referral_hosts in Server objects defaults to [('*', True)] to accept any referral server with authentication
     - referral uri is now properly percent-undecoded (thanks TWAC)
+    - referral Server object now use the same configuration of the original Server object
 
 * 1.0.1 2015.12.06
     - Removed the compat package

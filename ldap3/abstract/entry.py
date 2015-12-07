@@ -73,8 +73,7 @@ class Entry(object):
 
     def __contains__(self, item):
         try:
-            if self.__getitem__(item):
-                return True
+            return True if self.__getitem__(item) else False
         except LDAPKeyError:
             return False
 

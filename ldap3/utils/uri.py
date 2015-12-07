@@ -23,7 +23,13 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+try:
+    from urllib.parse import unquote  # Python3
+except ImportError:
+    from urllib import unquote  # Python 2
+
 from .. import SUBTREE, BASE, LEVEL
+
 
 
 def parse_uri(uri):
@@ -76,7 +82,7 @@ def parse_uri(uri):
     # QUESTION    = %x3F              ; question mark ("?")
 
     uri_components = dict()
-    parts = uri.split('?')
+    parts = unquote(uri).split('?')  # encoding defaults to utf-8 in Python 3
     scheme, sep, remain = parts[0].partition('://')
     if sep != '://' or scheme not in ['ldap', 'ldaps']:
         return None

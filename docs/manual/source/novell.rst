@@ -1,3 +1,7 @@
+##########################
+Extended Novell operations
+##########################
+
 Novell extended operations are specific for the Novell (NetIq) eDirectory LDAP Server and return and set the universal
 password of the specified user::
 

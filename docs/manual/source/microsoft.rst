@@ -1,3 +1,8 @@
+#############################
+Extended Microsoft operations
+#############################
+
+
 Microsoft extended operations are intended for Active Directory::
 
     extend.microsoft

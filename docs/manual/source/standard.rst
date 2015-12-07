@@ -1,4 +1,8 @@
-Extend.standard contains extended operation defined in current RFCs::
+#################################
+Extended standard RFCs operations
+#################################
+
+The extend.standard namespace contains extended operation defined in current RFCs::
 
     extend.standard
         extend.standard.who_am_i()

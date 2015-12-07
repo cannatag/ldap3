@@ -9,7 +9,7 @@ Welcome to ldap3's documentation
 ldap3 is a pure Python LDAP 3 client library strictly conforming to RFC4510 and is released under the LGPL v3 open source license.
 RFC4510 is the current LDAP specification (June 2006) from IETF and obsoletes the previous LDAP RFCs 2251, 2830, 3771 (December 1997).
 
-ldap3 can be used with any Python version later than 2.6, including all Python 3 versions. It also works with PyPy, PyPy3 and Nuikta.
+ldap3 can be used with any Python version starting from 2.6, including all Python 3 versions. It also works with PyPy, PyPy3 and Nuikta.
 
 Contents
 
@@ -27,7 +27,7 @@ Contents
    ssltls
    metrics
    operations
-   extended
+   extend
    abstraction
    ldif
    exceptions

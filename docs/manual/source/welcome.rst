@@ -1,8 +1,8 @@
 The ldap3 project
 #################
 
-ldap3 is a strictly RFC 4510 conforming LDAP v3 pure Python client. The whole ldap3 library has been **written from scratch**
-and the **same identical codebase works with Python 2, Python 3, PyPy, PyPy3 and Nuikta** on any system where it can gain access to
+ldap3 is a strictly RFC 4510 conforming LDAP v3 pure Python client library. The whole ldap3 library has been **written from scratch**
+and the **same codebase works with Python 2, Python 3, PyPy, PyPy3 and Nuikta** on any system where it can gain access to
 the network via a Python interpreter and the Python Standard Library.
 
 
@@ -28,7 +28,10 @@ follow the specification in RFC4511 (4.5.1.8.1) that states that in a Search ope
 the return of all user attributes.". Instead you must explicitly request the attributes you need or use the ldap3.ALL_ATTRIBUTES
 value in the Search operation.
 
-The library also allows to send an empty member list while creating a GroupOfNames object, even if this is not allowed in the official LDAP v3 schema.
+The library allows to send an empty member list while creating a GroupOfNames object, even if this is not allowed in the
+official LDAP v3 schema.
+
+ldap3 allows communication over Unix sockets (ldapi:// scheme, LDAP over IPC) even if this is not required by any official LDAP RFCs.
 
 
 PEP8 Compliance
@@ -61,10 +64,10 @@ you can get the universal wheel package, and install it on any supported Python 
 Install
 -------
 
-Install with **pip install ldap3**. If needed the library installs the ```pyasn1``` package. If you need Kerberos support you must
-install the ```gssapi``` package. ldap3 includes a backport (from Python 3.4.3) of ssl.check_hostnames to use on older
+Install with **pip install ldap3**. If needed the library installs the ``pyasn1`` package. If you need Kerberos support you must
+install the ``gssapi`` package. ldap3 includes a backport (from Python 3.4.3) of ssl.check_hostnames to use on older
 (< 2.7.10) Python version. If you want to use a newer version of the check_hostnames feature you can
-install the ```backports.ssl_check_hostnames``` package that should be kept updated by its author with the latest Python release.
+install the ``backports.ssl_check_hostnames`` package that should be kept updated by its author with the latest Python release.
 
 
 GIT repository
@@ -73,11 +76,11 @@ GIT repository
 You can download the latest released source code at https://github.com/cannatag/ldap3/tree/master
 
 
-Contribute to the project
--------------------------
+Contribuiting to this project
+-----------------------------
 
-ldap3 source is hosted on github. You can contribute to the ldap3 project on https://github.com/cannatag/ldap3/dev forking the project and
-submitting *pull requests+ with your modifications.
+ldap3 source is hosted on github. You can contribute to the ldap3 project on https://github.com/cannatag/ldap3/dev
+forking the project and submitting a *pull request+ with your modifications.
 
 
 Continuous integration

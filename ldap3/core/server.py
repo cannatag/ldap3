@@ -37,15 +37,16 @@ from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
 
 try:
-    from urllib.parse import unquote
+    from urllib.parse import unquote  # Python 3
 except ImportError:
-    from urllib import unquote
+    from urllib import unquote  # Python 2
 
-try:
+try:  # try to discover if unix sockets are available for LDAP over IPC (ldapi:// scheme)
     from socket import AF_UNIX
     unix_socket_available = True
 except ImportError:
     unix_socket_available = False
+
 
 class Server(object):
     """
@@ -101,7 +102,7 @@ class Server(object):
             if str == bytes:  # Python 2
                 self.host = unquote(host[7:]).decode('utf-8')
             else:
-                self.host = unquote(host[7:], encoding='utf-8')
+                self.host = unquote(host[7:])  # encoding defaults to utf-8 in python3
             self.port = None
         elif ':' in self.host and self.host.count(':') == 1:
             hostname, _, hostport = self.host.partition(':')
@@ -154,6 +155,9 @@ class Server(object):
                 if log_enabled(ERROR):
                     log(ERROR, 'port <%s> must be an integer', port)
                 raise LDAPInvalidPortError('port must be an integer')
+
+        if allowed_referral_hosts is None:  # defaults to any server with authentication
+            allowed_referral_hosts = [('*', True)]
 
         if isinstance(allowed_referral_hosts, SEQUENCE_TYPES):
             self.allowed_referral_hosts = []

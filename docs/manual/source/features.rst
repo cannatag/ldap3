@@ -36,7 +36,7 @@ ldap3 Features
     * No need to install binaries or non Python code. The very same code works on Windows, Linux, Mac OS X, FreeBSD,
       OpenBSD and other systems, either in Python 2 or Python 3.
 
-    * ldap3 **doesn't need a C compiler neither the OpenLDAP client library**.
+    * ldap3 **doesn't need a C compiler neither the OpenLDAP library**.
 
     * The library is self-contained and its installation is the same on any platform.
 

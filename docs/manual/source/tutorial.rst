@@ -62,6 +62,11 @@ specifications was revised in 2006. THis specifications are strictly followed by
 The ldap3 package
 =================
 
+asciicast:
+
+[![asciicast](https://asciinema.org/a/14.png)](https://asciinema.org/a/7cbl2fr136ggkmqh1tdbm0gli)
+
+
 ldap3 is a fully compliant LDAP v3 client library and follows the latest standard RFCs. It's written from scratch to be
 compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can access the network via the Python
 standard library.

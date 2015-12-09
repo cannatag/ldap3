@@ -184,7 +184,8 @@ class Connection(object):
             self.strategy_type = client_strategy
             self.user = user
             self.password = password
-            if self.user and self.password and not authentication:
+
+            if not authentication and self.user:
                 self.authentication = SIMPLE
             elif not authentication:
                 self.authentication = ANONYMOUS
@@ -195,6 +196,7 @@ class Connection(object):
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPUnknownAuthenticationMethodError(self.last_error)
+
             self.version = version
             self.auto_referrals = True if auto_referrals else False
             self.request = None
@@ -456,7 +458,7 @@ class Connection(object):
                 if self.authentication == ANONYMOUS:
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing anonymous BIND for <%s>', self)
-                    request = bind_operation(self.version, self.authentication, '', '')
+                    request = bind_operation(self.version, self.authentication, self.user, '')
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                     response = self.post_send_single_response(self.send('bindRequest', request, controls))

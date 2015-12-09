@@ -417,7 +417,8 @@ from .core.exceptions import LDAPException, LDAPExceptionError, LDAPConfiguratio
     LDAPSSLNotSupportedError, LDAPStartTLSError, LDAPTypeError, LDAPUnknownAuthenticationMethodError, LDAPUnknownRequestError, \
     LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError, LDAPResponseTimeoutError, LDAPInvalidHashAlgorithmError, \
     LDAPSessionTerminatedByServerError, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError, LDAPInvalidPortError, \
-    LDAPPackageUnavailableError, LDAPConfigurationParameterError, LDAPInvalidTlsSpecificationError
+    LDAPPackageUnavailableError, LDAPConfigurationParameterError, LDAPInvalidTlsSpecificationError, LDAPUserNameNotAllowedError, \
+    LDAPUserNameIsMandatoryError
 
 # imports result code Exceptions
 from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSASResult, LDAPAliasDereferencingProblemResult,\

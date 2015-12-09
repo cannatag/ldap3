@@ -438,6 +438,14 @@ class LDAPCertificateError(LDAPExceptionError):
     pass
 
 
+class LDAPUserNameNotAllowedError(LDAPExceptionError):
+    pass
+
+
+class LDAPUserNameIsMandatoryError(LDAPExceptionError):
+    pass
+
+
 class LDAPPasswordIsMandatoryError(LDAPExceptionError):
     pass
 

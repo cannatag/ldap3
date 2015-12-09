@@ -40,11 +40,14 @@ class Test(unittest.TestCase):
 
     def test_bind_anonymous(self):
         connection = get_connection(bind=False, lazy_connection=False, authentication=ANONYMOUS)
+        old_user = connection.user
+        connection.user = None
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         drop_connection(connection)
         self.assertFalse(connection.bound)
+        connection.user = old_user
 
     def test_bind_sasl_digest_md5(self):
         connection = get_connection(bind=False, authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))

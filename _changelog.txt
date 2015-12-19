@@ -1,4 +1,4 @@
-* 1.0.3 2015.12.08
+* 1.0.3 2015.12.19
     - fixed set_config_parameter (thanks Sigmunau)
     - disabled unauthenticated authentication, see RFC 4513 section 5.1.2 (thanks Petros)
     - Fixed falsey value in abstract Entry object __contains__() (thanks Vampouille)

@@ -1,11 +1,17 @@
 # changes file for ldap3
-# generated on 2015-12-07 19:18:28.224952
-# version 1.0.2
+# generated on 2015-12-19 21:58:56.009812
+# version 1.0.3
+
+* 1.0.3 2015.12.19
+    - fixed set_config_parameter (thanks Sigmunau)
+    - disabled unauthenticated authentication, see RFC 4513 section 5.1.2 (thanks Petros)
+    - Fixed falsey value in abstract Entry object __contains__() (thanks Vampouille)
 
 * 1.0.2 2015.12.07
     - allowed_referral_hosts in Server objects defaults to [('*', True)] to accept any referral server with authentication
     - referral uri is now properly percent-undecoded (thanks TWAC)
     - referral Server object now use the same configuration of the original Server object
+    - fixed __contains__() in Entry object (thanks Vampouille)
 
 * 1.0.1 2015.12.06
     - Removed the compat package

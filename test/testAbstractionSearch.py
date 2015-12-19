@@ -31,7 +31,7 @@ testcase_id = random_id()
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(use_ssl=True)
+        self.connection = get_connection()
         self.delete_at_teardown = []
 
     def tearDown(self):

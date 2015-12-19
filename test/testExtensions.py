@@ -69,6 +69,6 @@ class Test(unittest.TestCase):
     def test_start_tls_extension(self):
         connection = get_connection(use_ssl=False)
         connection.server.tls = Tls()
-        result = self.connection.start_tls()
+        result = connection.start_tls()
         self.assertTrue(result)
         connection.unbind()

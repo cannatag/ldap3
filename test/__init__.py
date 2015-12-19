@@ -55,7 +55,7 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
-test_server_type = 'EDIR'  # possible choices:
+test_server_type = 'AD'  # possible choices:
                            # EDIR (Novell eDirectory)
                            # AD (Microsoft Active Directory)
                            # SLAPD (OpenLDAP)
@@ -235,7 +235,7 @@ def generate_dn(base, batch_id, name):
 
 
 def get_connection(bind=None,
-                   use_ssl=False,
+                   use_ssl=None,
                    check_names=None,
                    lazy_connection=None,
                    authentication=None,

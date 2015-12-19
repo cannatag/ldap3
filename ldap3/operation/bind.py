@@ -24,7 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import SIMPLE, ANONYMOUS, SASL, RESULT_CODES
-from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError
+from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError, LDAPUserNameNotAllowedError, \
+    LDAPUserNameIsMandatoryError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
@@ -48,10 +49,12 @@ def bind_operation(version,
         name = ''
     request['name'] = name
     if authentication == SIMPLE:
+        if not name:
+            raise LDAPUserNameIsMandatoryError('user name is mandatory in simple bind')
         if password:
             request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(validate_simple_password(password)))
         else:
-            raise LDAPPasswordIsMandatoryError('password is mandatory')
+            raise LDAPPasswordIsMandatoryError('password is mandatory in simple bind')
     elif authentication == SASL:
         sasl_creds = SaslCredentials()
         sasl_creds['mechanism'] = sasl_mechanism
@@ -59,6 +62,8 @@ def bind_operation(version,
             sasl_creds['credentials'] = sasl_credentials
         request['authentication'] = AuthenticationChoice().setComponentByName('sasl', sasl_creds)
     elif authentication == ANONYMOUS:
+        if name:
+            raise LDAPUserNameNotAllowedError('user name not allowed in anonymous bind')
         request['name'] = ''
         request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(''))
     elif authentication == 'SICILY_PACKAGE_DISCOVERY':  # https://msdn.microsoft.com/en-us/library/cc223501.aspx

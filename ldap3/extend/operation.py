@@ -29,7 +29,7 @@ from ..utils.asn1 import decoder
 
 
 class ExtendedOperation(object):
-    def __init__(self, connection):
+    def __init__(self, connection, controls=None):
         self.connection = connection
         self.decoded_response = None
         self.result = None
@@ -39,6 +39,7 @@ class ExtendedOperation(object):
         self.request_value = None
         self.response_value = None
         self.response_attribute = None
+        self.controls = controls
         self.config()
 
     def send(self):
@@ -49,7 +50,7 @@ class ExtendedOperation(object):
             else:
                 raise LDAPExtensionError('extension not in DSA list of supported extensions')
 
-        resp = self.connection.extended(self.request_name, self.request_value)
+        resp = self.connection.extended(self.request_name, self.request_value, self.controls)
         if not self.connection.strategy.sync:
             _, self.result = self.connection.get_response(resp)
         else:

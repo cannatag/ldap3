@@ -35,8 +35,8 @@ class NmasSetUniversalPassword(ExtendedOperation):
         self.asn1_spec = NmasSetUniversalPasswordResponseValue()
         self.response_attribute = 'password'
 
-    def __init__(self, connection, user, new_password):
-        ExtendedOperation.__init__(self, connection)  # calls super __init__()
+    def __init__(self, connection, user, new_password, controls=None):
+        ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
         self.request_value['nmasver'] = NMAS_LDAP_EXT_VERSION
         if user:
             self.request_value['reqdn'] = user

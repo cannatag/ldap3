@@ -41,8 +41,8 @@ class ReplicaInfo(ExtendedOperation):
         self.request_value = ReplicaInfoRequestValue()
         self.response_attribute = 'partition_dn'
 
-    def __init__(self, connection, server_dn, partition_dn):
-        ExtendedOperation.__init__(self, connection)  # calls super __init__()
+    def __init__(self, connection, server_dn, partition_dn, controls=None):
+        ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
         self.request_value['server_dn'] = server_dn
         self.request_value['partition_dn'] = partition_dn
 

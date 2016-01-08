@@ -38,8 +38,8 @@ class PartitionEntryCount(ExtendedOperation):
         self.request_value = LDAPDN()
         self.response_attribute = 'entry_count'
 
-    def __init__(self, connection, partition_dn):
-        ExtendedOperation.__init__(self, connection)  # calls super __init__()
+    def __init__(self, connection, partition_dn, controls=None):
+        ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
         self.request_value = LDAPDN(partition_dn)
 
     def populate_result(self):

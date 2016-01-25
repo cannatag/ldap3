@@ -39,8 +39,8 @@ class ModifyPassword(ExtendedOperation):
         self.asn1_spec = PasswdModifyResponseValue()
         self.response_attribute = 'new_password'
 
-    def __init__(self, connection, user=None, old_password=None, new_password=None, hash_algorithm=None, salt=None):
-        ExtendedOperation.__init__(self, connection)  # calls super __init__()
+    def __init__(self, connection, user=None, old_password=None, new_password=None, hash_algorithm=None, salt=None, controls=None):
+        ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
         if user:
             self.request_value['userIdentity'] = user
         if old_password:

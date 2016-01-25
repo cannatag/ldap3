@@ -55,7 +55,7 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
-test_server_type = 'AD'  # possible choices:
+test_server_type = 'EDIR'  # possible choices:
                            # EDIR (Novell eDirectory)
                            # AD (Microsoft Active Directory)
                            # SLAPD (OpenLDAP)

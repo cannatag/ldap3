@@ -51,17 +51,25 @@ class ExtendedOperationContainer(object):
 
 
 class StandardExtendedOperations(ExtendedOperationContainer):
-    def who_am_i(self):
-        return WhoAmI(self._connection).send()
+    def who_am_i(self, controls=None):
+        return WhoAmI(self._connection,
+                      controls).send()
 
     def modify_password(self,
                         user=None,
                         old_password=None,
                         new_password=None,
                         hash_algorithm=None,
-                        salt=None):
+                        salt=None,
+                        controls=None):
 
-        return ModifyPassword(self._connection, user, old_password, new_password, hash_algorithm, salt).send()
+        return ModifyPassword(self._connection,
+                              user,
+                              old_password,
+                              new_password,
+                              hash_algorithm,
+                              salt,
+                              controls).send()
 
     def paged_search(self,
                      search_base,
@@ -79,29 +87,66 @@ class StandardExtendedOperations(ExtendedOperationContainer):
                      generator=True):
 
         if generator:
-            return paged_search_generator(self._connection, search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality)
+            return paged_search_generator(self._connection,
+                                          search_base,
+                                          search_filter,
+                                          search_scope,
+                                          dereference_aliases,
+                                          attributes,
+                                          size_limit,
+                                          time_limit,
+                                          types_only,
+                                          get_operational_attributes,
+                                          controls,
+                                          paged_size,
+                                          paged_criticality)
         else:
-            return paged_search_accumulator(self._connection, search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, get_operational_attributes, controls, paged_size, paged_criticality)
+            return paged_search_accumulator(self._connection,
+                                            search_base,
+                                            search_filter,
+                                            search_scope,
+                                            dereference_aliases,
+                                            attributes,
+                                            size_limit,
+                                            time_limit,
+                                            types_only,
+                                            get_operational_attributes,
+                                            controls,
+                                            paged_size,
+                                            paged_criticality)
 
 
 class NovellExtendedOperations(ExtendedOperationContainer):
-    def get_bind_dn(self):
-        return GetBindDn(self._connection).send()
+    def get_bind_dn(self, controls=None):
+        return GetBindDn(self._connection,
+                         controls).send()
 
-    def get_universal_password(self, user):
-        return NmasGetUniversalPassword(self._connection, user).send()
+    def get_universal_password(self, user, controls=None):
+        return NmasGetUniversalPassword(self._connection,
+                                        user,
+                                        controls).send()
 
-    def set_universal_password(self, user, new_password=None):
-        return NmasSetUniversalPassword(self._connection, user, new_password).send()
+    def set_universal_password(self, user, new_password=None, controls=None):
+        return NmasSetUniversalPassword(self._connection,
+                                        user,
+                                        new_password,
+                                        controls).send()
 
-    def list_replicas(self, server_dn):
-        return ListReplicas(self._connection, server_dn).send()
+    def list_replicas(self, server_dn, controls=None):
+        return ListReplicas(self._connection,
+                            server_dn,
+                            controls).send()
 
-    def partition_entry_count(self, partition_dn):
-        return PartitionEntryCount(self._connection, partition_dn).send()
+    def partition_entry_count(self, partition_dn, controls=None):
+        return PartitionEntryCount(self._connection,
+                                   partition_dn,
+                                   controls).send()
 
-    def replica_info(self, server_dn, partition_dn):
-        return ReplicaInfo(self._connection, server_dn, partition_dn).send()
+    def replica_info(self, server_dn, partition_dn, controls=None):
+        return ReplicaInfo(self._connection,
+                           server_dn,
+                           partition_dn,
+                           controls).send()
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):
@@ -128,8 +173,12 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
                        max_length=max_length,
                        hex_guid=hex_guid)
 
-    def modify_password(self, user, new_password, old_password=None):
-        return modify_ad_password(self._connection, user, old_password, new_password)
+    def modify_password(self, user, new_password, old_password=None, controls=None):
+        return modify_ad_password(self._connection,
+                                  user,
+                                  old_password,
+                                  new_password,
+                                  controls)
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

@@ -36,8 +36,8 @@ class ListReplicas(ExtendedOperation):
         self.asn1_spec = ReplicaList()
         self.response_attribute = 'replicas'
 
-    def __init__(self, connection, server_dn):
-        ExtendedOperation.__init__(self, connection)  # calls super __init__()
+    def __init__(self, connection, server_dn, controls=None):
+        ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
         self.request_value = LDAPDN(server_dn)
 
     def populate_result(self):

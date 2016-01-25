@@ -1,3 +1,6 @@
+* 1.0.4 2016.01.25
+    - controls can be added to extended operation in the extend package (thanks Hinel)
+
 * 1.0.3 2015.12.19
     - fixed set_config_parameter (thanks Sigmunau)
     - disabled unauthenticated authentication, see RFC 4513 section 5.1.2 (thanks Petros)

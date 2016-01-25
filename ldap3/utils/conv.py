@@ -40,6 +40,7 @@ def escape_filter_chars(text):
     output = output.replace('\x00', r'\00')
     return output
 
+
 def escape_bytes(bytes_value):
     if bytes_value:
         if str != bytes:  # Python 3

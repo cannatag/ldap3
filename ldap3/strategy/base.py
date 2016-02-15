@@ -686,11 +686,11 @@ class BaseStrategy(object):
             elif request['type'] == 'delRequest':
                 referral_connection.delete(selected_referral['base'] or request['entry'],
                                            controls=request['controls'])
-            elif request['type'] == 'extendedRequest':
-                # TODO
-                if log_enabled(ERROR):
-                    log(ERROR, 'follow referrals on extended operation is not implemented for <%s>', self.connection)
-                raise NotImplementedError()
+            elif request['type'] == 'extendedReq':
+                referral_connection.extended(request['requestName'],
+                                             request['requestValue'],
+                                             controls=request['controls']
+                                             )
             elif request['type'] == 'modifyRequest':
                 referral_connection.modify(selected_referral['base'] or request['entry'],
                                            prepare_changes_for_request(request['changes']),

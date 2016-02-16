@@ -193,12 +193,14 @@ class BaseStrategy(object):
 
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        try:
-            if self.connection.server.connect_timeout:
+        try:  # set socket timeout - connection receive timeout has precedence over server connect_timeout
+            if self.connection.receive_timeout:
+                self.connection.socket.settimeout(self.connection.receive_timeout)
+            elif self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)
             self.connection.socket.connect(address[4])
-            if self.connection.server.connect_timeout:
-                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode
+            if self.connection.server.connect_timeout and not self.connection.receive_timeout:
+                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specifice in connection
         except socket.error as e:
             self.connection.last_error = 'socket connection error: ' + str(e)
             exc = e

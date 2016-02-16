@@ -70,7 +70,10 @@ class AsyncStrategy(BaseStrategy):
                 if get_more_data:
                     try:
                         data = self.connection.socket.recv(socket_size)
-                    except (OSError, socket.error):
+                    except socket.timeout:
+                        # print(self.connection.socket)
+                        continue
+                    except (OSError, socket.error, AttributeError):
                         listen = False
                     except Exception as e:
                         if log_enabled(ERROR):

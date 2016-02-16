@@ -49,6 +49,7 @@ test_authentication = SIMPLE  # authentication type
 test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
+test_receive_timeout = None
 
 try:
     location = environ['USERDOMAIN']
@@ -245,7 +246,8 @@ def get_connection(bind=None,
                    get_info=None,
                    usage=None,
                    fast_decoder=None,
-                   simple_credentials=(None, None)):
+                   simple_credentials=(None, None),
+                   receive_timeout=None):
     if bind is None:
         bind = True
     if check_names is None:
@@ -260,6 +262,8 @@ def get_connection(bind=None,
         usage = test_usage
     if fast_decoder is None:
         fast_decoder = test_fast_decoder
+    if receive_timeout is None:
+        receive_timeout = test_receive_timeout
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
     if isinstance(test_server, (list, tuple)):
@@ -293,7 +297,8 @@ def get_connection(bind=None,
                           pool_name='pool1',
                           check_names=check_names,
                           collect_usage=usage,
-                          fast_decoder=fast_decoder)
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
     elif authentication == NTLM:
         return Connection(server,
                           auto_bind=bind,
@@ -306,7 +311,8 @@ def get_connection(bind=None,
                           pool_name='pool1',
                           check_names=check_names,
                           collect_usage=usage,
-                          fast_decoder=fast_decoder)
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
     else:
         return Connection(server,
                           auto_bind=bind,
@@ -319,7 +325,8 @@ def get_connection(bind=None,
                           pool_name='pool1',
                           check_names=check_names,
                           collect_usage=usage,
-                          fast_decoder=fast_decoder)
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
 
 
 def drop_connection(connection, dn_to_delete=None):

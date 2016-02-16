@@ -171,7 +171,8 @@ class Connection(object):
                  pool_name=None,
                  pool_size=None,
                  pool_lifetime=None,
-                 fast_decoder=True):
+                 fast_decoder=True,
+                 receive_timeout=None):
 
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
@@ -236,6 +237,7 @@ class Connection(object):
             self.extend = ExtendedOperationsRoot(self)
             self._entries = []
             self.fast_decoder = fast_decoder
+            self.receive_timeout = receive_timeout
 
             if isinstance(server, STRING_TYPES):
                 server = Server(server)

@@ -1,5 +1,6 @@
 * 1.1.0 2016.02.15
     - extended operations followed on referrals
+    - added receive_timeout parameter in Connection object to set socket in non-blocking mode with a specified timeout
 
 * 1.0.4 2016.01.25
     - controls can be added to extended operation in the extend package (thanks Hinel)

@@ -24,6 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+from struct import pack
+from platform import system
 from sys import exc_info
 from time import sleep
 from random import choice
@@ -195,7 +197,10 @@ class BaseStrategy(object):
 
         try:  # set socket timeout - connection receive timeout has precedence over server connect_timeout
             if self.connection.receive_timeout:
-                self.connection.socket.settimeout(self.connection.receive_timeout)
+                if system().lower() == 'windows':
+                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, int(1000 * self.connection.receive_timeout))
+                else:
+                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, pack('LL', self.connection.receive_timeout, 0))
             elif self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)
             self.connection.socket.connect(address[4])
@@ -689,8 +694,8 @@ class BaseStrategy(object):
                 referral_connection.delete(selected_referral['base'] or request['entry'],
                                            controls=request['controls'])
             elif request['type'] == 'extendedReq':
-                referral_connection.extended(request['requestName'],
-                                             request['requestValue'],
+                referral_connection.extended(request['name'],
+                                             request['value'],
                                              controls=request['controls']
                                              )
             elif request['type'] == 'modifyRequest':

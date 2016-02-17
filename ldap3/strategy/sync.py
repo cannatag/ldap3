@@ -101,6 +101,7 @@ class SyncStrategy(BaseStrategy):
                     continue
                 if len(unprocessed) < length:
                     get_more_data = True
+                else:
                     if log_enabled(NETWORK):
                         log(NETWORK, 'received %d bytes via <%s>', len(unprocessed[:length]), self.connection)
                     messages.append(unprocessed[:length])

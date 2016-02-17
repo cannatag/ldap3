@@ -1,3 +1,6 @@
+- 1.1.1 2016.02.17
+    - Fixed a silly bug introduced in 1.1.0
+
 * 1.1.0 2016.02.15
     - extended operations followed on referrals (thanks Pavel)
     - added receive_timeout parameter in Connection object to set socket in non-blocking mode with a specified timeout (thanks Antho)

@@ -195,19 +195,29 @@ class BaseStrategy(object):
 
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        try:  # set socket timeout - connection receive timeout has precedence over server connect_timeout
+        try:  # set socket timeout for opening connection
+            if self.connection.server.connect_timeout:
+                self.connection.socket.settimeout(self.connection.server.connect_timeout)
+            self.connection.socket.connect(address[4])
+            if self.connection.server.connect_timeout:
+                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specifice in connection
+        except socket.error as e:
+            self.connection.last_error = 'socket connection error while opening: ' + str(e)
+            exc = e
+
+        if exc:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+
+        try:  # set receive timeout for the connection socket
             if self.connection.receive_timeout:
                 if system().lower() == 'windows':
                     self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, int(1000 * self.connection.receive_timeout))
                 else:
                     self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, pack('LL', self.connection.receive_timeout, 0))
-            elif self.connection.server.connect_timeout:
-                self.connection.socket.settimeout(self.connection.server.connect_timeout)
-            self.connection.socket.connect(address[4])
-            if self.connection.server.connect_timeout and not self.connection.receive_timeout:
-                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specifice in connection
         except socket.error as e:
-            self.connection.last_error = 'socket connection error: ' + str(e)
+            self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
             exc = e
 
         if exc:
@@ -660,7 +670,11 @@ class BaseStrategy(object):
                                              authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else ANONYMOUS,
                                              client_strategy=SYNC,
                                              auto_referrals=True,
-                                             read_only=self.connection.read_only)
+                                             read_only=self.connection.read_only,
+                                             check_names=self.connection.check_names,
+                                             raise_exceptions=self.connection.raise_exceptions,
+                                             fast_decoder=self.connection.fast_decoder,
+                                             receive_timeout=self.connection.receive_timeout)
 
             if self.connection.usage:
                 self.connection._usage.referrals_followed += 1

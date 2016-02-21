@@ -49,7 +49,7 @@ test_authentication = SIMPLE  # authentication type
 test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
-test_receive_timeout = None
+test_receive_timeout = 1
 
 try:
     location = environ['USERDOMAIN']
@@ -62,7 +62,7 @@ test_server_type = 'EDIR'  # possible choices:
                            # SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-test_strategy = SYNC  # possible choices:
+test_strategy = ASYNC  # possible choices:
                       # ASYNC
                       # REUSABLE
                       # RESTARTABLE
@@ -77,7 +77,7 @@ location += '-' + test_server_type
 
 if location.startswith('TRAVIS'):
     # test in the cloud
-    test_server_context = 'o=resources'  # used in novell eDirectory extended operations
+    test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
     if test_server_type == 'EDIR':
         test_server = 'labldap02.cloudapp.net'
         test_server_edir_name = 'SLES1'

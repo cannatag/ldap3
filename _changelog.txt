@@ -1,5 +1,6 @@
 - 1.1.1 2016.02.17
     - Fixed a silly bug introduced in 1.1.0
+    - additional connection parameters honored in referrals and in the restartable strategy
 
 * 1.1.0 2016.02.15
     - extended operations followed on referrals (thanks Pavel)

@@ -298,7 +298,9 @@ class ReusableStrategy(BaseStrategy):
                                          collect_usage=True if self.master_connection._usage else False,
                                          read_only=self.master_connection.read_only,
                                          raise_exceptions=self.master_connection.raise_exceptions,
-                                         lazy=True)
+                                         lazy=True,
+                                         fast_decoder=self.master_connection.fast_decoder,
+                                         receive_timeout=self.master_connection.receive_timeout)
 
             if self.master_connection.server_pool:
                 self.connection.server_pool = self.master_connection.server_pool

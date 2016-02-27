@@ -342,6 +342,7 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
+        r += '' if self.receive_timeout is None else (', receive_timeout' + 'True' if self.receive_timeout else 'False')
         r += ')'
 
         return r
@@ -372,7 +373,9 @@ class Connection(object):
             self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(
             self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
-        r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
+        r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self),
+        r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
+        r += '' if self.receive_timeout is None else (', receive_timeout' + 'True' if self.receive_timeout else 'False')
         r += ')'
 
         return r
@@ -530,6 +533,40 @@ class Connection(object):
                 log(BASIC, 'done BIND operation, result <%s>', self.bound)
 
             return self.bound
+
+    def bind_as(self,
+                user=None,
+                password=None,
+                authentication=None,
+                sasl_mechanism=None,
+                sasl_credentials=None,
+                read_server_info=True,
+                controls=None
+                ):
+
+        if log_enabled(BASIC):
+            log(BASIC, 'start BIND (AS) operation via <%s>', self)
+
+        with self.lock:
+            if user:
+                self.user = user
+            if password:
+                self.password = password
+            if not authentication and user:
+                self.authentication = SIMPLE
+            if authentication in [SIMPLE, ANONYMOUS, SASL, NTLM]:
+                self.authentication = authentication
+            elif authentication is not None:
+                self.last_error = 'unknown authentication method'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPUnknownAuthenticationMethodError(self.last_error)
+            if sasl_mechanism:
+                self.sasl_mechanism = sasl_mechanism
+            if sasl_credentials:
+                self.sasl_credentials = sasl_credentials
+
+            return self.bind(read_server_info, controls)
 
     def unbind(self,
                controls=None):

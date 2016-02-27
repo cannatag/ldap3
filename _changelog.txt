@@ -1,3 +1,6 @@
+- 1.2.0 2016.02.27
+    - Added bind_as() method to Connection object to rebind with a different user (thanks Lorenzo)
+
 - 1.1.1 2016.02.17
     - Fixed a silly bug introduced in 1.1.0
     - additional connection parameters honored in referrals and in the restartable strategy
@@ -11,7 +14,7 @@
 * 1.0.4 2016.01.25
     - controls can be added to extended operation in the extend package (thanks Hinel)
 
-* 1.0.3 2015.12.19
+* 1.0.3 2015.12.1
     - fixed set_config_parameter (thanks Sigmunau)
     - disabled unauthenticated authentication, see RFC 4513 section 5.1.2 (thanks Petros)
     - Fixed falsey value in abstract Entry object __contains__() (thanks Vampouille)

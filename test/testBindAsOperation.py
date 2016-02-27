@@ -24,27 +24,41 @@ import unittest
 
 from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5
 from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type, \
-    test_ntlm_user, test_ntlm_password, test_user, test_password
+    test_ntlm_user, test_ntlm_password, test_secondary_user, test_secondary_password, test_sasl_secondary_user, test_sasl_secondary_password
 
 testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
-    def test_bind_clear_text(self):
+    def test_bind_clear_text_to_secondary_user(self):
         connection = get_connection(bind=False)
         connection.open()
         connection.bind()
         self.assertTrue(connection.bound)
         drop_connection(connection)
         self.assertFalse(connection.bound)
+        connection.bind_as(test_secondary_user, test_secondary_password)
+        if test_server_type == 'EDIR':
+            bound_dn = connection.extend.novell.get_bind_dn()
+        else:
+            bound_dn = connection.extend.standard.who_am_i()
 
-    def test_bind_anonymous(self):
+        self.assertEqual(connection.user, bound_dn)
+
+    def test_bind_anonymous_to_secondary_user(self):
         connection = get_connection(bind=True, lazy_connection=False, authentication=ANONYMOUS)
         self.assertTrue(connection.bound)
+        connection.bind_as(test_secondary_user, test_secondary_password)
+        if test_server_type == 'EDIR':
+            bound_dn = connection.extend.novell.get_bind_dn()
+        else:
+            bound_dn = connection.extend.standard.who_am_i()
+
+        self.assertEqual(connection.user, bound_dn)
         drop_connection(connection)
         self.assertFalse(connection.bound)
 
-    def test_bind_sasl_digest_md5(self):
+    def test_bind_sasl_digest_md5_to_secondary_sasl_user(self):
         connection = get_connection(bind=False, authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))
         connection.open()
         connection.bind()
@@ -56,6 +70,15 @@ class Test(unittest.TestCase):
         else:
             connected_user = str(connection.extend.standard.who_am_i())
             self.assertEqual(connected_user, test_sasl_user)
+
+        connection.bind_as(authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_secondary_user, test_sasl_secondary_password, None))
+        if test_server_type == 'EDIR':
+            bound_dn = connection.extend.novell.get_bind_dn()
+        else:
+            bound_dn = connection.extend.standard.who_am_i()
+
+        self.assertEqual(self.user, bound_dn)
+
         drop_connection(connection)
         self.assertFalse(connection.bound)
 
@@ -69,19 +92,3 @@ class Test(unittest.TestCase):
             self.assertEqual(connected_user, test_ntlm_user)
             drop_connection(connection)
             self.assertFalse(connection.bound)
-
-    def test_ldapi(self):
-        if test_server_type == 'SLAPD':
-            server = Server('ldapi:///var/run/slapd/ldapi')
-            connection = Connection(server, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials='')
-            connection.open()
-            connection.bind()
-            self.assertTrue(connection.bound)
-
-    def test_ldapi_encoded_url(self):
-        if test_server_type == 'SLAPD':
-            server = Server('ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi')
-            connection = Connection(server, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials='')
-            connection.open()
-            connection.bind()
-            self.assertTrue(connection.bound)

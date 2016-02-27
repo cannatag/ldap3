@@ -27,7 +27,7 @@ from random import SystemRandom
 from tempfile import gettempdir
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL
+    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -94,6 +94,8 @@ if location.startswith('TRAVIS'):
     test_int_attr = 'loginGraceLimit'
     test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
     test_password = 'Rc1234pfop'  # user password
+    test_secondary_user = 'cn=testLAB,o=resources'
+    test_secondary_password = 'Rc1234pfop'
     test_sasl_user = 'testLAB.resources'
     test_sasl_password = 'Rc1234pfop'
     test_sasl_realm = None
@@ -120,8 +122,12 @@ elif location == 'GCNBHPW8-EDIR':
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'password'  # user password
+    test_secondary_user = 'cn=admin,o=services'
+    test_secondary_password = 'password'
     test_sasl_user = 'testSASL.resources'
     test_sasl_password = 'password'
+    test_sasl_secondary_user = 'testSASL.resources'
+    test_sasl_secondary_password = 'password'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
@@ -146,8 +152,12 @@ elif location == 'GCNBHPW8-AD':
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
     test_password = 'Rc7777pfop'  # user password
+    test_secondary_user = 'CN=Administrator,CN=Users,' + test_root_partition
+    test_secondary_password = 'Rc7777pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_sasl_password = 'Rc999pfop'
+    test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_secondary_password = 'Rc999pfop'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
@@ -169,8 +179,12 @@ elif location == 'GCNBHPW8-SLAPD':
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=test'  # the user that performs the tests
     test_password = 'password'  # user password
+    test_secondary_user = 'cn=admin,o=test'  # the user that performs the tests
+    test_secondary_password = 'password'  # user password
     test_sasl_user = 'cn=testSASL,o=test'
     test_sasl_password = 'password'
+    test_sasl_secondary_user = 'cn=testSASL,o=test'
+    test_sasl_secondary_password = 'password'
     test_sasl_realm = 'openldap.hyperv'
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''
@@ -197,8 +211,12 @@ elif location == 'GCW89227-EDIR':
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'camera'  # user password
+    test_secondary_user = 'cn=admin,o=services'  # the user that performs the tests
+    test_secondary_password = 'camera'  # user password
     test_sasl_user = 'testSASL.services'
     test_sasl_password = 'password'
+    test_sasl_secondary_user = 'testSASL.services'
+    test_sasl_secondary_password = 'password'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
@@ -307,6 +325,20 @@ def get_connection(bind=None,
                           user=ntlm_credentials[0],
                           password=ntlm_credentials[1],
                           authentication=NTLM,
+                          lazy=lazy_connection,
+                          pool_name='pool1',
+                          check_names=check_names,
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
+    elif authentication == ANONYMOUS:
+        return Connection(server,
+                          auto_bind=bind,
+                          version=3,
+                          client_strategy=test_strategy,
+                          user=None,
+                          password=None,
+                          authentication=ANONYMOUS,
                           lazy=lazy_connection,
                           pool_name='pool1',
                           check_names=check_names,

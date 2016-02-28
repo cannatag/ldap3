@@ -62,7 +62,7 @@ test_server_type = 'EDIR'  # possible choices:
                            # SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-test_strategy = ASYNC  # possible choices:
+test_strategy = SYNC  # possible choices:
                       # ASYNC
                       # REUSABLE
                       # RESTARTABLE
@@ -98,7 +98,11 @@ if location.startswith('TRAVIS'):
     test_secondary_password = 'Rc1234pfop'
     test_sasl_user = 'testLAB.resources'
     test_sasl_password = 'Rc1234pfop'
+    test_sasl_user_dn = 'cn=testLAB,o=resources'
     test_sasl_realm = None
+    test_sasl_secondary_user = 'testSASL.resources'
+    test_sasl_secondary_password = 'password'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=resources'
     test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
     test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
@@ -122,12 +126,14 @@ elif location == 'GCNBHPW8-EDIR':
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'password'  # user password
-    test_secondary_user = 'cn=admin,o=services'
-    test_secondary_password = 'password'
+    test_secondary_user = 'cn=testSASL2,o=resources'
+    test_secondary_password = 'password2'
     test_sasl_user = 'testSASL.resources'
     test_sasl_password = 'password'
-    test_sasl_secondary_user = 'testSASL.resources'
-    test_sasl_secondary_password = 'password'
+    test_sasl_user_dn = 'cn=testSASL,o=resources'
+    test_sasl_secondary_user = 'testSASL2.resources'
+    test_sasl_secondary_password = 'password2'
+    test_sasl_secondary_user_dn = 'cn=testSASL2,o=resources'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
@@ -152,12 +158,14 @@ elif location == 'GCNBHPW8-AD':
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
     test_password = 'Rc7777pfop'  # user password
-    test_secondary_user = 'CN=Administrator,CN=Users,' + test_root_partition
-    test_secondary_password = 'Rc7777pfop'  # user password
+    test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_secondary_password = 'Rc999pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_sasl_password = 'Rc999pfop'
+    test_sasl_user_dn = 'cn=testLAB,o=resources'
     test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_sasl_secondary_password = 'Rc999pfop'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=services'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
@@ -179,12 +187,14 @@ elif location == 'GCNBHPW8-SLAPD':
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=test'  # the user that performs the tests
     test_password = 'password'  # user password
-    test_secondary_user = 'cn=admin,o=test'  # the user that performs the tests
+    test_secondary_user = 'cn=testSASL,o=test'  # the user that performs the tests
     test_secondary_password = 'password'  # user password
     test_sasl_user = 'cn=testSASL,o=test'
     test_sasl_password = 'password'
+    test_sasl_user_dn = 'cn=testSASL,o=test'
     test_sasl_secondary_user = 'cn=testSASL,o=test'
     test_sasl_secondary_password = 'password'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=test'
     test_sasl_realm = 'openldap.hyperv'
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''
@@ -215,8 +225,10 @@ elif location == 'GCW89227-EDIR':
     test_secondary_password = 'camera'  # user password
     test_sasl_user = 'testSASL.services'
     test_sasl_password = 'password'
+    test_sasl_user_dn = 'cn=testLAB,o=services'
     test_sasl_secondary_user = 'testSASL.services'
     test_sasl_secondary_password = 'password'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=services'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'

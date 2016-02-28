@@ -24,7 +24,7 @@ import unittest
 
 from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5
 from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type, \
-    test_ntlm_user, test_ntlm_password, test_user, test_password
+    test_ntlm_user, test_ntlm_password, test_sasl_user_dn
 
 testcase_id = random_id()
 
@@ -51,11 +51,10 @@ class Test(unittest.TestCase):
         self.assertTrue(connection.bound)
         if test_server_type == 'EDIR':
             connected_user = connection.extend.novell.get_bind_dn()
-            for component in test_sasl_user.split('.'):
-                self.assertTrue(component in connected_user)
         else:
             connected_user = str(connection.extend.standard.who_am_i())
-            self.assertEqual(connected_user, test_sasl_user)
+
+        self.assertEqual(connected_user, test_sasl_user_dn)
         drop_connection(connection)
         self.assertFalse(connection.bound)
 

@@ -33,6 +33,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
     AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
+from .exceptions import LDAPSocketReceiveError
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -534,15 +535,15 @@ class Connection(object):
 
             return self.bound
 
-    def bind_as(self,
-                user=None,
-                password=None,
-                authentication=None,
-                sasl_mechanism=None,
-                sasl_credentials=None,
-                read_server_info=True,
-                controls=None
-                ):
+    def rebind(self,
+               user=None,
+               password=None,
+               authentication=None,
+               sasl_mechanism=None,
+               sasl_credentials=None,
+               read_server_info=True,
+               controls=None
+               ):
 
         if log_enabled(BASIC):
             log(BASIC, 'start BIND (AS) operation via <%s>', self)
@@ -566,7 +567,10 @@ class Connection(object):
             if sasl_credentials:
                 self.sasl_credentials = sasl_credentials
 
-            return self.bind(read_server_info, controls)
+            try:
+                return self.bind(read_server_info, controls)
+            except LDAPSocketReceiveError:
+                raise LDAPBindError('Unable to rebind as a different user, furthermore the server abruptly closed the connection')
 
     def unbind(self,
                controls=None):

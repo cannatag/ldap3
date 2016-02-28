@@ -23,38 +23,39 @@
 import unittest
 
 from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5
-from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type, \
-    test_ntlm_user, test_ntlm_password, test_secondary_user, test_secondary_password, test_sasl_secondary_user, test_sasl_secondary_password
+from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, \
+    test_server_type, test_ntlm_user, test_ntlm_password, test_secondary_user, test_secondary_password, \
+    test_sasl_secondary_user, test_sasl_secondary_password, test_sasl_secondary_user_dn, test_sasl_user_dn
 
 testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def test_bind_clear_text_to_secondary_user(self):
-        connection = get_connection(bind=False)
-        connection.open()
-        connection.bind()
+        connection = get_connection()
         self.assertTrue(connection.bound)
-        drop_connection(connection)
-        self.assertFalse(connection.bound)
-        connection.bind_as(test_secondary_user, test_secondary_password)
+        connection.rebind(test_secondary_user, test_secondary_password)
         if test_server_type == 'EDIR':
             bound_dn = connection.extend.novell.get_bind_dn()
         else:
             bound_dn = connection.extend.standard.who_am_i()
 
-        self.assertEqual(connection.user, bound_dn)
+        self.assertEqual(test_secondary_user, bound_dn)
+
+        drop_connection(connection)
+        self.assertFalse(connection.bound)
 
     def test_bind_anonymous_to_secondary_user(self):
         connection = get_connection(bind=True, lazy_connection=False, authentication=ANONYMOUS)
         self.assertTrue(connection.bound)
-        connection.bind_as(test_secondary_user, test_secondary_password)
+        connection.rebind(test_secondary_user, test_secondary_password)
         if test_server_type == 'EDIR':
             bound_dn = connection.extend.novell.get_bind_dn()
         else:
             bound_dn = connection.extend.standard.who_am_i()
 
-        self.assertEqual(connection.user, bound_dn)
+        self.assertEqual(test_secondary_user, bound_dn)
+
         drop_connection(connection)
         self.assertFalse(connection.bound)
 
@@ -65,19 +66,19 @@ class Test(unittest.TestCase):
         self.assertTrue(connection.bound)
         if test_server_type == 'EDIR':
             connected_user = connection.extend.novell.get_bind_dn()
-            for component in test_sasl_user.split('.'):
-                self.assertTrue(component in connected_user)
         else:
             connected_user = str(connection.extend.standard.who_am_i())
-            self.assertEqual(connected_user, test_sasl_user)
+        self.assertEqual(connected_user, test_sasl_user_dn)
 
-        connection.bind_as(authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_secondary_user, test_sasl_secondary_password, None))
-        if test_server_type == 'EDIR':
-            bound_dn = connection.extend.novell.get_bind_dn()
+        if connection.rebind(authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_secondary_user, test_sasl_secondary_password, None)):
+            if test_server_type == 'EDIR':
+                connected_user = connection.extend.novell.get_bind_dn()
+            else:
+                connected_user = connection.extend.standard.who_am_i()
+
+            self.assertEqual(connected_user, test_sasl_secondary_user_dn)
         else:
-            bound_dn = connection.extend.standard.who_am_i()
-
-        self.assertEqual(self.user, bound_dn)
+            self.fail('secondary user sasl authentication failed')
 
         drop_connection(connection)
         self.assertFalse(connection.bound)

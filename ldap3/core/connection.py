@@ -964,7 +964,8 @@ class Connection(object):
     def extended(self,
                  request_name,
                  request_value=None,
-                 controls=None):
+                 controls=None,
+                 no_encode=None):
         """
         Performs an extended operation
         """
@@ -973,7 +974,7 @@ class Connection(object):
 
         with self.lock:
             self._fire_deferred()
-            request = extended_operation(request_name, request_value)
+            request = extended_operation(request_name, request_value, no_encode=no_encode)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'EXTENDED request <%s> sent via <%s>', extended_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('extendedReq', request, controls))

@@ -334,6 +334,7 @@ class BaseStrategy(object):
                     raise LDAPSessionTerminatedByServerError(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
+
                 if responses[-2]['result'] == RESULT_REFERRAL:
                     if self.connection.usage:
                         self.connection._usage.referrals_received += 1
@@ -683,6 +684,9 @@ class BaseStrategy(object):
 
             referral_connection.open()
             referral_connection.strategy._referrals = self._referrals
+            if self.connection.tls_started and not referral_server.ssl:  # if the original server was in start_tls mode and the referral server is not in ssl then start_tls on the referral connection
+                referral_connection.start_tls()
+
             if self.connection.bound:
                 referral_connection.bind()
 
@@ -712,7 +716,8 @@ class BaseStrategy(object):
             elif request['type'] == 'extendedReq':
                 referral_connection.extended(request['name'],
                                              request['value'],
-                                             controls=request['controls']
+                                             controls=request['controls'],
+                                             no_encode=True
                                              )
             elif request['type'] == 'modifyRequest':
                 referral_connection.modify(selected_referral['base'] or request['entry'],

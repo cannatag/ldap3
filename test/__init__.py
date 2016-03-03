@@ -62,7 +62,7 @@ test_server_type = 'EDIR'  # possible choices:
                            # SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-test_strategy = SYNC  # possible choices:
+test_strategy = RESTARTABLE  # possible choices:
                       # ASYNC
                       # REUSABLE
                       # RESTARTABLE
@@ -113,8 +113,7 @@ if location.startswith('TRAVIS'):
 elif location == 'GCNBHPW8-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
-    #               'edir2.hyperv',
-    #               'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
+    #               'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
@@ -122,14 +121,14 @@ elif location == 'GCNBHPW8-EDIR':
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'loginGraceLimit'
-    test_server_context = 'o=services'  # used in novell eDirectory extended operations
+    test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=services'  # the user that performs the tests
+    test_user = 'cn=admin,o=resources'  # the user that performs the tests
     test_password = 'password'  # user password
     test_secondary_user = 'cn=testSASL2,o=resources'
     test_secondary_password = 'password2'
     test_sasl_user = 'testSASL.resources'
-    test_sasl_password = 'password'
+    test_sasl_password = 'password1'
     test_sasl_user_dn = 'cn=testSASL,o=resources'
     test_sasl_secondary_user = 'testSASL2.resources'
     test_sasl_secondary_password = 'password2'
@@ -141,7 +140,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
-    test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
+    test_valid_names = ['192.168.137.101', '192.168.137.102']
 elif location == 'GCNBHPW8-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',

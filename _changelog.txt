@@ -1,13 +1,10 @@
-- 1.2.0 2016.02.27
+- 1.2.1 2016.03.03
     - Added rebind() method to Connection object to rebind with a different user (thanks Lorenzo)
     - Added Tests for rebind operation
-
-- 1.1.1 2016.02.17
-    - Fixed a silly bug introduced in 1.1.0
+    - start_tls honered in referrals
+    - default ldaps port honored in referrals
     - additional connection parameters honored in referrals and in the restartable strategy
     - server connection timeout is honored while connecting, connection receive timeout while receiving
-
-* 1.1.0 2016.02.15
     - extended operations followed on referrals (thanks Pavel)
     - added receive_timeout parameter in Connection object to set socket in non-blocking mode with a specified timeout (thanks Antho)
     - Fix abstract entry __getattr__() throwing KeyError instead of AttributeError (thanks Kilroy)

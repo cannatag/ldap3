@@ -37,12 +37,15 @@ from ..utils.asn1 import encoder
 
 
 def extended_operation(request_name,
-                       request_value=None):
+                       request_value=None,
+                       no_encode=None):
     request = ExtendedRequest()
     request['requestName'] = RequestName(request_name)
     if request_value and isinstance(request_value, Asn1Item):
         request['requestValue'] = RequestValue(encoder.encode(request_value))
     elif str != bytes and isinstance(request_value, (bytes, bytearray)):  # in python3 doesn't try to encode a byte value
+        request['requestValue'] = request_value
+    elif request_value and no_encode:  # don't encode the value
         request['requestValue'] = request_value
     elif request_value:  # tries to encode as a octet string
         request['requestValue'] = RequestValue(encoder.encode(OctetString(str(request_value))))

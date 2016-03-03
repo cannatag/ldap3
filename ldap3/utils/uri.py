@@ -92,7 +92,10 @@ def parse_uri(uri):
     uri_components['ssl'] = True if scheme == 'ldaps' else False
     uri_components['host'], sep, uri_components['port'] = address.partition(':')
     if sep != ':':
-        uri_components['port'] = None
+        if uri_components['ssl']:
+            uri_components['port'] = 636
+        else:
+            uri_components['port'] = None
     else:
         if not uri_components['port'].isdigit() or not (0 < int(uri_components['port']) < 65536):
             return None

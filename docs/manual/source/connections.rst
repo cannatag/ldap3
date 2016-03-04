@@ -187,6 +187,8 @@ With the connection object you can perform all the standard LDAP operations:
 
     * controls: additional controls to send in the request
 
+    * no_encode: when True the value is passed without any encoding (defaults to False)
+
 
 Additional methods defined:
 

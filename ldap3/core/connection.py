@@ -374,7 +374,7 @@ class Connection(object):
             self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(
             self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
-        r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self),
+        r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
         r += '' if self.receive_timeout is None else (', receive_timeout' + 'True' if self.receive_timeout else 'False')
         r += ')'

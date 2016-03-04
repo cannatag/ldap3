@@ -62,11 +62,7 @@ test_server_type = 'EDIR'  # possible choices:
                            # SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-test_strategy = RESTARTABLE  # possible choices:
-                      # ASYNC
-                      # REUSABLE
-                      # RESTARTABLE
-                      # not used on TRAVIS - look at .travis.yml
+test_strategy = SYNC   # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')

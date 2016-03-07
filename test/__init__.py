@@ -49,20 +49,17 @@ test_authentication = SIMPLE  # authentication type
 test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
-test_receive_timeout = 1
+test_receive_timeout = None
 
 try:
     location = environ['USERDOMAIN']
 except KeyError:
     location = 'UNKNOWN'
 
-test_server_type = 'EDIR'  # possible choices:
-                           # EDIR (Novell eDirectory)
-                           # AD (Microsoft Active Directory)
-                           # SLAPD (OpenLDAP)
+test_server_type = 'EDIR'  # possible choices: # EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-test_strategy = SYNC   # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
+test_strategy = ASYNC   # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')

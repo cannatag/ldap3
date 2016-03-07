@@ -196,13 +196,11 @@ class BaseStrategy(object):
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
         try:  # set receive timeout for the connection socket
-            if self.connection.receive_timeout:
+            if self.connection.receive_timeout is not None:
                 if system().lower() == 'windows':
-                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO,
-                                                      int(1000 * self.connection.receive_timeout))
+                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, int(1000 * self.connection.receive_timeout))
                 else:
-                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO,
-                                                      pack('LL', self.connection.receive_timeout, 0))
+                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, pack('LL', self.connection.receive_timeout, 0))
         except socket.error as e:
             self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
             exc = e

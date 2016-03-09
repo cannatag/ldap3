@@ -1,34 +1,35 @@
-- 1.1.2 2016.03.04
+- 1.1.2 2016.03.10
     - Added rebind() method to Connection object to rebind with a different user (thanks Lorenzo)
     - Added Tests for rebind operation
-    - start_tls honered in referrals
-    - default ldaps port honored in referrals
-    - additional connection parameters honored in referrals and in the restartable strategy
-    - server connection timeout is honored while connecting, connection receive timeout while receiving
-    - extended operations followed on referrals (thanks Pavel)
-    - added receive_timeout parameter in Connection object to set socket in non-blocking mode with a specified timeout (thanks Antho)
-    - Fix abstract entry __getattr__() throwing KeyError instead of AttributeError (thanks Kilroy)
+    - Start_tls honered in referrals
+    - Default ldaps port honored in referrals
+    - Additional connection parameters honored in referrals and in the restartable strategy
+    - Server connection timeout is honored while connecting, connection receive timeout while receiving
+    - Extended operations followed on referrals (thanks Pavel)
+    - Added receive_timeout parameter in Connection object to set socket in non-blocking mode with a specified timeout (thanks Antho)
+    - Fixed abstract entry __getattr__() throwing KeyError instead of AttributeError (thanks Kilroy)
+    - Fixed start_tls() Reusable strategy
 
 * 1.0.4 2016.01.25
-    - controls can be added to extended operation in the extend package (thanks Hinel)
+    - Controls can be added to extended operation in the extend package (thanks Hinel)
 
 * 1.0.3 2015.12.1
-    - fixed set_config_parameter (thanks Sigmunau)
-    - disabled unauthenticated authentication, see RFC 4513 section 5.1.2 (thanks Petros)
+    - Fixed set_config_parameter (thanks Sigmunau)
+    - Disabled unauthenticated authentication, see RFC 4513 section 5.1.2 (thanks Petros)
     - Fixed falsey value in abstract Entry object __contains__() (thanks Vampouille)
 
 * 1.0.2 2015.12.07
-    - allowed_referral_hosts in Server objects defaults to [('*', True)] to accept any referral server with authentication
-    - referral uri is now properly percent-undecoded (thanks TWAC)
-    - referral Server object now use the same configuration of the original Server object
-    - fixed __contains__() in Entry object (thanks Vampouille)
+    - Allowed_referral_hosts in Server objects defaults to [('*', True)] to accept any referral server with authentication
+    - Referral uri is now properly percent-undecoded (thanks TWAC)
+    - Referral Server object now use the same configuration of the original Server object
+    - Fixed __contains__() in Entry object (thanks Vampouille)
 
 * 1.0.1 2015.12.06
     - Removed the compat package
     - Refactored docs for extend operations
 
 * 1.0.0 2015.12.06
-    - private RC for production
+    - Private RC for production
     - Status moved to 5 - Production/Stable
 
 * 0.9.9.4 2015.12.02
@@ -46,7 +47,7 @@
     - Added get_config_parameter() in ldap3 namespace to read the current value of ldap3 configurable parameters
     - Added SASL mechanism name as constants in the ldap3 namespace
     - Added escape_filter_chars in utils.conv (thanks Peter)
-    - reverted ALL_ATTRIBUTES behaviour in search to 0.9.9.1 (thanks Petros)
+    - Reverted ALL_ATTRIBUTES behaviour in search to 0.9.9.1 (thanks Petros)
 
 * 0.9.9.2 2015.10.19
     - Fixed hasattr() behaviour for Entry object in Python 3
@@ -64,8 +65,8 @@
     - Added ACL attribute in the ATTRIBUTES_EXCLUDED_FROM_CHECK list
 
 * 0.9.9.1 2015.09.21
-    - allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)
-    - faster case insensitive dict while getting and setting key (thanks Pierre)
+    - Allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)
+    - Faster case insensitive dict while getting and setting key (thanks Pierre)
     - Updated setuptools to 18.3.2
     - Updated wheel to 0.26
     - Tested against Python 2.6 - Python 2.7 - Python 3.3 - Python 3.4 - Python 3.5 - pypy - pypy3
@@ -80,11 +81,11 @@
     - Highest date correctly managed by the format_ad_timestamp() formatter. (thanks Will)
     - Fix for latest gssapi kerberos authentication module (thanks Alex)
     - Added freeIPA OID descriptors
-    - removed unneeded OidInfo class
+    - Removed unneeded OidInfo class
 
 * 0.9.8.8 2015.08.14
     - Coerce objectClass to a list in Add operation. (thanks Yutaka)
-    - objectClass attribute values mantain their order in the Add operation. (thanks Yutaka)
+    - ObjectClass attribute values mantain their order in the Add operation. (thanks Yutaka)
     - Fixed search filter composition when the value part of the assertion contains = character. (thanks Eero)
     - Fixed modify_password extended operation when no hash method is specified. (thanks midnightlynx)
     - Added credentials to kerberos authentication. (thanks Alex)
@@ -93,20 +94,20 @@
     - Fixed connection.entries error when referrals are in the search response. (thanks WIll)
 
 * 0.9.8.7 2015.07.19
-    - backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10
-    - uses backports.ssl_match_hostname if present instead of static backported functions for matching server names in ssl certificate (thanks Michal)
-    - attributes values are properly printed when not strings in abstract.attribute (thanks hogneh)
-    - checking unicode __repr__() in python2
-    - added hashing capability to Modify Password extended operation (thanks Gawain)
+    - Backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10
+    - Use backports.ssl_match_hostname if present instead of static backported functions for matching server names in ssl certificate (thanks Michal)
+    - Attributes values are properly printed when not strings in abstract.attribute (thanks hogneh)
+    - Checking unicode __repr__() in python2
+    - Added hashing capability to Modify Password extended operation (thanks Gawain)
 
 * 0.9.8.6 2015.06.30
-    - modify operation now accept multiple changes for same attribute (Thanks Lorenzo)
-    - fixed entries property in connection when objects from multiple object classes are returned
-    - hide sensitive data in logging. use the utils.log.set_library_hide_sensitive_data(False) to show sensitive data
+    - Modify operation now accept multiple changes for same attribute (Thanks Lorenzo)
+    - Fixed entries property in connection when objects from multiple object classes are returned
+    - Hide sensitive data in logging. use the utils.log.set_library_hide_sensitive_data(False) to show sensitive data
       and utils.log.get_library_hide_sensitive_data() to get the current value
-    - limited number of characters in a single log line. use the utils.log.set_library_log_max_line_length(length) to set
+    - Limited number of characters in a single log line. use the utils.log.set_library_log_max_line_length(length) to set
       and utils.log.get_library_log_max_line_length(length) to get the current value
-    - added CHANGES.txt with full changelog, latest changes only in README.txt
+    - Added CHANGES.txt with full changelog, latest changes only in README.txt
 
 * 0.9.8.5.post2 2015.06.24
     - Updated pyasn1 to 0.1.8
@@ -120,11 +121,11 @@
 
 * 0.9.8.4 2015.05.19
     - Added EXTENDED log detail level with prettyPrint description of ldap messages
-    - fixed logging of IPv6 address description
-    - fixed checking of open address when dns returns more than one ip for the same host
-    - fixed selection of proper address when failing back from IPv6 to IPv4 and vice-versa
-    - when sending controls controlValue is now optional (as stated in RFC 4511), specify None to not send it
-    - moved badges to shields.io
+    - Fixed logging of IPv6 address description
+    - Fixed checking of open address when dns returns more than one ip for the same host
+    - Fixed selection of proper address when failing back from IPv6 to IPv4 and vice-versa
+    - When sending controls controlValue is now optional (as stated in RFC 4511), specify None to not send it
+    - Moved badges to shields.io
 
 * 0.9.8.3 2015.05.11
     - Added support for logging
@@ -136,12 +137,12 @@
 
 * 0.9.8.2 2015.04.08
     - SaslCred returned as raw bytes (thanks Peter)
-    - search_paged now properly works in abstract.reader (thanks wazboy)
+    - Search_paged now properly works in abstract.reader (thanks wazboy)
 
 * 0.9.8.1 2015.04.04
     - Added NTLMv2 authentication method
     - extend.standard.who_am_i() now try to decode the authzid as unicode
-    - tests for AD (Active Directory) now use tls_before_bind when opening a connection
+    - Tests for AD (Active Directory) now use tls_before_bind when opening a connection
     - 0.9.8 not working for pypi problems
 
 * 0.9.7.12 2015.03.18
@@ -198,7 +199,7 @@
     - Added shortened connection strategy parameters in ldap3 namespace: SYNC, ASYNC, LDIF, RESTARTABLE, REUSABLE
     - Added shortened pooling strategy parameters in ldap3 namespace: FIRST, ROUND_ROBIN, RANDOM
     - Added reentrant lock to avoid race conditions in the Connection object
-    - When run in Python 2.7.9 uses SSLContext
+    - When runs in Python 2.7.9 uses SSLContext
     - Tested against Python 2.7.9, PyPy 2.4.0 and PyPy3 2.4.0
     - setuptools updated to 8.2.1
 

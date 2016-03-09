@@ -140,6 +140,15 @@ class ReusableStrategy(BaseStrategy):
                 with pooled_connection_worker.lock:
                     pooled_connection_worker.get_info_from_server = True
 
+        def rebind_pool(self):
+            for pooled_connection_worker in self.connections:
+                with pooled_connection_worker.lock:
+                    pooled_connection_worker.connection.rebind(self.master_connection.user,
+                                                               self.master_connection.password,
+                                                               self.master_connection.authentication,
+                                                               self.master_connection.sasl_mechanism,
+                                                               self.master_connection.sasl_credentials)
+
         def start_pool(self):
             if not self.started:
                 self.create_pool()
@@ -220,7 +229,9 @@ class ReusableStrategy(BaseStrategy):
                                     self.worker.connection.start_tls(read_server_info=False)
                                 if pool.bind_pool and not self.worker.connection.bound:
                                     self.worker.connection.bind(read_server_info=False)
-
+                            elif pool.open_pool and not self.worker.connection.closed:  # connection already open, issues a start_tls
+                                if pool.tls_pool and not self.worker.connection.tls_started:
+                                    self.worker.connection.start_tls(read_server_info=False)
                             if self.worker.get_info_from_server:
                                 self.worker.connection._fire_deferred()
                                 self.worker.get_info_from_server = False
@@ -351,13 +362,13 @@ class ReusableStrategy(BaseStrategy):
         if self.pool.started:
             if message_type == 'bindRequest':
                 self.pool.bind_pool = True
-                counter = -1  # -1 stands for bind request
+                counter = -1  # -1 stands for bind operation request
             elif message_type == 'unbindRequest':
                 self.pool.bind_pool = False
-                counter = -2  # -1 stands for unbind request
+                counter = -2  # -2 stands for unbind operation request
             elif message_type == 'extendedReq' and self.connection.starting_tls:
                 self.pool.tls_pool = True
-                counter = -3  # -1 stands for start_tls extended request
+                counter = -3  # -3 stands for start_tls extended operation request
             else:
                 with self.pool.lock:
                     self.pool.counter += 1
@@ -377,12 +388,13 @@ class ReusableStrategy(BaseStrategy):
         if counter == -1:  # send a bogus bindResponse
             response = list()
             result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': None}
-        elif counter == -2:  # bogus unbind
+        elif counter == -2:  # bogus unbind response
             response = None
             result = None
-        elif counter == -3:  # bogus startTls extended request
+        elif counter == -3:  # bogus startTls extended response
             response = list()
             result = {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': '<bogus StartTls response>'}
+            self.connection.starting_tls = False
         else:
             response = None
             result = None

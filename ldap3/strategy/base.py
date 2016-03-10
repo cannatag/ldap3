@@ -24,6 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+from struct import pack
+from platform import system
 from sys import exc_info
 from time import sleep
 from random import choice
@@ -193,14 +195,29 @@ class BaseStrategy(object):
 
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        try:
+        try:  # set receive timeout for the connection socket
+            if self.connection.receive_timeout is not None:
+                if system().lower() == 'windows':
+                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, int(1000 * self.connection.receive_timeout))
+                else:
+                    self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, pack('LL', self.connection.receive_timeout, 0))
+        except socket.error as e:
+            self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
+            exc = e
+
+        if exc:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+
+        try:  # set socket timeout for opening connection
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)
             self.connection.socket.connect(address[4])
             if self.connection.server.connect_timeout:
-                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode
+                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specifice in connection
         except socket.error as e:
-            self.connection.last_error = 'socket connection error: ' + str(e)
+            self.connection.last_error = 'socket connection error while opening: ' + str(e)
             exc = e
 
         if exc:
@@ -315,6 +332,7 @@ class BaseStrategy(object):
                     raise LDAPSessionTerminatedByServerError(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
+
                 if responses[-2]['result'] == RESULT_REFERRAL:
                     if self.connection.usage:
                         self.connection._usage.referrals_received += 1
@@ -653,13 +671,20 @@ class BaseStrategy(object):
                                              authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else ANONYMOUS,
                                              client_strategy=SYNC,
                                              auto_referrals=True,
-                                             read_only=self.connection.read_only)
+                                             read_only=self.connection.read_only,
+                                             check_names=self.connection.check_names,
+                                             raise_exceptions=self.connection.raise_exceptions,
+                                             fast_decoder=self.connection.fast_decoder,
+                                             receive_timeout=self.connection.receive_timeout)
 
             if self.connection.usage:
                 self.connection._usage.referrals_followed += 1
 
             referral_connection.open()
             referral_connection.strategy._referrals = self._referrals
+            if self.connection.tls_started and not referral_server.ssl:  # if the original server was in start_tls mode and the referral server is not in ssl then start_tls on the referral connection
+                referral_connection.start_tls()
+
             if self.connection.bound:
                 referral_connection.bind()
 
@@ -686,11 +711,12 @@ class BaseStrategy(object):
             elif request['type'] == 'delRequest':
                 referral_connection.delete(selected_referral['base'] or request['entry'],
                                            controls=request['controls'])
-            elif request['type'] == 'extendedRequest':
-                # TODO
-                if log_enabled(ERROR):
-                    log(ERROR, 'follow referrals on extended operation is not implemented for <%s>', self.connection)
-                raise NotImplementedError()
+            elif request['type'] == 'extendedReq':
+                referral_connection.extended(request['name'],
+                                             request['value'],
+                                             controls=request['controls'],
+                                             no_encode=True
+                                             )
             elif request['type'] == 'modifyRequest':
                 referral_connection.modify(selected_referral['base'] or request['entry'],
                                            prepare_changes_for_request(request['changes']),

@@ -26,7 +26,6 @@ import unittest
 from test import test_base, test_moved, test_name_attr, random_id, \
     get_connection, add_user, drop_connection
 
-
 testcase_id = random_id()
 
 
@@ -54,6 +53,7 @@ class Test(unittest.TestCase):
         counter = 20
         result = None
         while counter > 0:  # tries move operation for at maximum 20 times - partition may be busy while moving (at least on eDirectory)
+            print(counter)
             sleep(3)
             result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modify-dn-2', new_superior=test_moved)
             if not self.connection.strategy.sync:

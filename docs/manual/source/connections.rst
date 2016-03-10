@@ -53,6 +53,10 @@ Connection parameters are:
 
 * raise_exceptions: when True LDAP operations will raise exceptions (subclasses of LDAPOperationResult) when the result is not one of the following: RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL.
 
+* fast_decoder: when False use the pyasn1 decoder instead of the faster internal decoder. Gives a better output in extended log
+
+* receive_timeout: set the socket in non-blocking mode - raising an exception after the specified amount of seconds if nothing is received over the wire
+
 With the connection object you can perform all the standard LDAP operations:
 
 * bind: performs a bind to the LDAP Server with the authentication type and credential specified in the connection:
@@ -182,6 +186,8 @@ With the connection object you can perform all the standard LDAP operations:
     * request_value: optional value sent in the request (defaults to None)
 
     * controls: additional controls to send in the request
+
+    * no_encode: when True the value is passed without any encoding (defaults to False)
 
 
 Additional methods defined:

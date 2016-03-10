@@ -32,15 +32,16 @@ testcase_id = random_id()
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(use_ssl=True)
-        self.delete_at_teardown = []
         if test_server_type == 'AD':
+            self.connection = get_connection(use_ssl=True)
+            self.delete_at_teardown = []
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):
-        drop_connection(self.connection, self.delete_at_teardown)
-        self.assertFalse(self.connection.bound)
+        if test_server_type == 'AD':
+            drop_connection(self.connection, self.delete_at_teardown)
+            self.assertFalse(self.connection.bound)
 
     def test_search_extended_dn_ad(self):
         if test_server_type == 'AD':

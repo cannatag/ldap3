@@ -27,7 +27,7 @@ from random import SystemRandom
 from tempfile import gettempdir
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL
+    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -49,23 +49,17 @@ test_authentication = SIMPLE  # authentication type
 test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
+test_receive_timeout = None
 
 try:
     location = environ['USERDOMAIN']
 except KeyError:
     location = 'UNKNOWN'
 
-test_server_type = 'EDIR'  # possible choices:
-                           # EDIR (Novell eDirectory)
-                           # AD (Microsoft Active Directory)
-                           # SLAPD (OpenLDAP)
+test_server_type = 'EDIR'  # possible choices: # EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-test_strategy = SYNC  # possible choices:
-                      # ASYNC
-                      # REUSABLE
-                      # RESTARTABLE
-                      # not used on TRAVIS - look at .travis.yml
+test_strategy = REUSABLE   # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')
@@ -76,7 +70,7 @@ location += '-' + test_server_type
 
 if location.startswith('TRAVIS'):
     # test in the cloud
-    test_server_context = 'o=resources'  # used in novell eDirectory extended operations
+    test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
     if test_server_type == 'EDIR':
         test_server = 'labldap02.cloudapp.net'
         test_server_edir_name = 'SLES1'
@@ -93,9 +87,15 @@ if location.startswith('TRAVIS'):
     test_int_attr = 'loginGraceLimit'
     test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
     test_password = 'Rc1234pfop'  # user password
+    test_secondary_user = 'cn=testLAB,o=resources'
+    test_secondary_password = 'Rc1234pfop'
     test_sasl_user = 'testLAB.resources'
     test_sasl_password = 'Rc1234pfop'
+    test_sasl_user_dn = 'cn=testLAB,o=resources'
     test_sasl_realm = None
+    test_sasl_secondary_user = 'testSASL.resources'
+    test_sasl_secondary_password = 'password'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=resources'
     test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
     test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
@@ -106,8 +106,7 @@ if location.startswith('TRAVIS'):
 elif location == 'GCNBHPW8-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
-    #               'edir2.hyperv',
-    #               'edir3.hyperv']  # the ldap server where tests are executed, if a list is given a pool will be created
+    #               'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
@@ -115,12 +114,18 @@ elif location == 'GCNBHPW8-EDIR':
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'loginGraceLimit'
-    test_server_context = 'o=services'  # used in novell eDirectory extended operations
+    test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=services'  # the user that performs the tests
+    test_user = 'cn=admin,o=resources'  # the user that performs the tests
     test_password = 'password'  # user password
+    test_secondary_user = 'cn=testSASL2,o=resources'
+    test_secondary_password = 'password2'
     test_sasl_user = 'testSASL.resources'
-    test_sasl_password = 'password'
+    test_sasl_password = 'password1'
+    test_sasl_user_dn = 'cn=testSASL,o=resources'
+    test_sasl_secondary_user = 'testSASL2.resources'
+    test_sasl_secondary_password = 'password2'
+    test_sasl_secondary_user_dn = 'cn=testSASL2,o=resources'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
@@ -128,7 +133,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
-    test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.103']
+    test_valid_names = ['192.168.137.101', '192.168.137.102']
 elif location == 'GCNBHPW8-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
@@ -144,15 +149,21 @@ elif location == 'GCNBHPW8-AD':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
-    test_password = 'Rc8888pfop'  # user password
+    test_password = 'Rc7777pfop'  # user password
+    test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_secondary_password = 'Rc999pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_sasl_password = 'Rc999pfop'
+    test_sasl_user_dn = 'cn=testLAB,o=resources'
+    test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_secondary_password = 'Rc999pfop'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=services'
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
-    test_ntlm_password = 'Rc8888pfop'
+    test_ntlm_password = 'Rc7777pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
 elif location == 'GCNBHPW8-SLAPD':
@@ -168,8 +179,14 @@ elif location == 'GCNBHPW8-SLAPD':
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=test'  # the user that performs the tests
     test_password = 'password'  # user password
+    test_secondary_user = 'cn=testSASL,o=test'  # the user that performs the tests
+    test_secondary_password = 'password'  # user password
     test_sasl_user = 'cn=testSASL,o=test'
     test_sasl_password = 'password'
+    test_sasl_user_dn = 'cn=testSASL,o=test'
+    test_sasl_secondary_user = 'cn=testSASL,o=test'
+    test_sasl_secondary_password = 'password'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=test'
     test_sasl_realm = 'openldap.hyperv'
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''
@@ -196,8 +213,14 @@ elif location == 'GCW89227-EDIR':
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=admin,o=services'  # the user that performs the tests
     test_password = 'camera'  # user password
+    test_secondary_user = 'cn=admin,o=services'  # the user that performs the tests
+    test_secondary_password = 'camera'  # user password
     test_sasl_user = 'testSASL.services'
     test_sasl_password = 'password'
+    test_sasl_user_dn = 'cn=testLAB,o=services'
+    test_sasl_secondary_user = 'testSASL.services'
+    test_sasl_secondary_password = 'password'
+    test_sasl_secondary_user_dn = 'cn=testSASL,o=services'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'
@@ -245,7 +268,8 @@ def get_connection(bind=None,
                    get_info=None,
                    usage=None,
                    fast_decoder=None,
-                   simple_credentials=(None, None)):
+                   simple_credentials=(None, None),
+                   receive_timeout=None):
     if bind is None:
         bind = True
     if check_names is None:
@@ -260,6 +284,8 @@ def get_connection(bind=None,
         usage = test_usage
     if fast_decoder is None:
         fast_decoder = test_fast_decoder
+    if receive_timeout is None:
+        receive_timeout = test_receive_timeout
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
     if isinstance(test_server, (list, tuple)):
@@ -293,7 +319,8 @@ def get_connection(bind=None,
                           pool_name='pool1',
                           check_names=check_names,
                           collect_usage=usage,
-                          fast_decoder=fast_decoder)
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
     elif authentication == NTLM:
         return Connection(server,
                           auto_bind=bind,
@@ -306,7 +333,22 @@ def get_connection(bind=None,
                           pool_name='pool1',
                           check_names=check_names,
                           collect_usage=usage,
-                          fast_decoder=fast_decoder)
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
+    elif authentication == ANONYMOUS:
+        return Connection(server,
+                          auto_bind=bind,
+                          version=3,
+                          client_strategy=test_strategy,
+                          user=None,
+                          password=None,
+                          authentication=ANONYMOUS,
+                          lazy=lazy_connection,
+                          pool_name='pool1',
+                          check_names=check_names,
+                          collect_usage=usage,
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
     else:
         return Connection(server,
                           auto_bind=bind,
@@ -319,7 +361,8 @@ def get_connection(bind=None,
                           pool_name='pool1',
                           check_names=check_names,
                           collect_usage=usage,
-                          fast_decoder=fast_decoder)
+                          fast_decoder=fast_decoder,
+                          receive_timeout=receive_timeout)
 
 
 def drop_connection(connection, dn_to_delete=None):

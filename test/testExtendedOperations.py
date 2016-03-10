@@ -24,7 +24,7 @@ import unittest
 
 from ldap3 import LDAPExtensionError
 from test import test_user, test_server_context, test_server_edir_name, random_id, get_connection, drop_connection, add_user, test_server_type, \
-    test_name_attr, test_base
+    test_name_attr, test_base, test_password
 
 
 testcase_id = random_id()
@@ -92,3 +92,9 @@ class Test(unittest.TestCase):
         if test_server_type == 'EDIR':
             result = self.connection.extend.novell.partition_entry_count(test_base)
             self.assertTrue(result > 0)
+
+    def test_novell_get_universal_password(self):
+        if test_server_type == 'EDIR':
+            self.connection.start_tls()
+            result = self.connection.extend.novell.get_universal_password(test_user)
+            self.assertTrue(result, test_password)

@@ -241,6 +241,33 @@ While accessing your LDAP server via a UNIX socket you can perform any usual LDA
 You don't need to use SSL when connecting via a socket because all the communication is in the server memory and is not exposed on the wire.
 
 
+Bind as a different user while the Connection is open
+-----------------------------------------------------
+
+LDAP protocol allows to bind as a different user while the connection is open. In this case you can use the **rebind()** method
+that let you change the user and the authentication method while the connection is open::
+
+    # import class and constants
+    from ldap3 import Server, Connection, ALL, LDAPBindError
+
+    # define the server
+    s = Server('servername', get_info=ALL)  # define an unsecure LDAP server, requesting info on DSE and schema
+
+    # define the connection
+    c = Connection(s, user='user_dn', password='user_password')
+
+    # perform the Bind operation
+    if not c.bind():
+        print('error in bind', c.result)
+
+    try:
+        c.rebind(user='different_user_dn', password='different_user_password')
+    except LDAPBindError:
+       print('error in rebind', c.result)
+
+In case the credential are invalid or if the server doesn't allow you to rebind the server *could* abruptley close the connection.
+This condition is checked by the rebind() method and it raises an LDAPBindError.
+
 Extended logging
 ----------------
 To get an idea of what's happening when you perform a Simple Bind operation using the StartTLS security feature this is

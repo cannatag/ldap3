@@ -14,3 +14,4 @@ LDAP Operations
    searches
    compare
    abandon
+   extended

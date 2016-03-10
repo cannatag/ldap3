@@ -33,6 +33,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
     AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
+from .exceptions import LDAPSocketReceiveError
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -146,6 +147,7 @@ class Connection(object):
     :type pool_name: str
     :param pool_size: pool size for pooled strategies
     :type pool_size: int
+    :type pool_size: int
     :param pool_lifetime: pool lifetime for pooled strategies
     :type pool_size: int
 
@@ -171,7 +173,8 @@ class Connection(object):
                  pool_name=None,
                  pool_size=None,
                  pool_lifetime=None,
-                 fast_decoder=True):
+                 fast_decoder=True,
+                 receive_timeout=None):
 
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
@@ -236,6 +239,7 @@ class Connection(object):
             self.extend = ExtendedOperationsRoot(self)
             self._entries = []
             self.fast_decoder = fast_decoder
+            self.receive_timeout = receive_timeout
 
             if isinstance(server, STRING_TYPES):
                 server = Server(server)
@@ -339,6 +343,7 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
+        r += '' if self.receive_timeout is None else (', receive_timeout' + 'True' if self.receive_timeout else 'False')
         r += ')'
 
         return r
@@ -370,6 +375,8 @@ class Connection(object):
             self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
+        r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
+        r += '' if self.receive_timeout is None else (', receive_timeout' + 'True' if self.receive_timeout else 'False')
         r += ')'
 
         return r
@@ -528,6 +535,47 @@ class Connection(object):
 
             return self.bound
 
+    def rebind(self,
+               user=None,
+               password=None,
+               authentication=None,
+               sasl_mechanism=None,
+               sasl_credentials=None,
+               read_server_info=True,
+               controls=None
+               ):
+
+        if log_enabled(BASIC):
+            log(BASIC, 'start (RE)BIND operation via <%s>', self)
+
+        with self.lock:
+            if user:
+                self.user = user
+            if password:
+                self.password = password
+            if not authentication and user:
+                self.authentication = SIMPLE
+            if authentication in [SIMPLE, ANONYMOUS, SASL, NTLM]:
+                self.authentication = authentication
+            elif authentication is not None:
+                self.last_error = 'unknown authentication method'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPUnknownAuthenticationMethodError(self.last_error)
+            if sasl_mechanism:
+                self.sasl_mechanism = sasl_mechanism
+            if sasl_credentials:
+                self.sasl_credentials = sasl_credentials
+
+            if not self.strategy.pooled:
+                try:
+                    return self.bind(read_server_info, controls)
+                except LDAPSocketReceiveError:
+                    raise LDAPBindError('Unable to rebind as a different user, furthermore the server abruptly closed the connection')
+            else:
+                self.strategy.pool.rebind_pool()
+                return True
+
     def unbind(self,
                controls=None):
         """Unbind the connected user. Unbind implies closing session as per RFC4511 (4.3)
@@ -602,12 +650,9 @@ class Connection(object):
             if isinstance(paged_size, int):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'performing paged search for %d items with cookie <%s> for <%s>', paged_size, escape_bytes(paged_cookie), self)
-                # real_search_control_value = RealSearchControlValue()
-                # real_search_control_value['size'] = Size(paged_size)
-                # real_search_control_value['cookie'] = Cookie(paged_cookie) if paged_cookie else Cookie('')
+
                 if controls is None:
                     controls = []
-                # controls.append(('1.2.840.113556.1.4.319', paged_criticality if isinstance(paged_criticality, bool) else False, encoder.encode(real_search_control_value)))
                 controls.append(paged_search_control(paged_criticality, paged_size, paged_cookie))
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
@@ -920,7 +965,8 @@ class Connection(object):
     def extended(self,
                  request_name,
                  request_value=None,
-                 controls=None):
+                 controls=None,
+                 no_encode=None):
         """
         Performs an extended operation
         """
@@ -929,7 +975,7 @@ class Connection(object):
 
         with self.lock:
             self._fire_deferred()
-            request = extended_operation(request_name, request_value)
+            request = extended_operation(request_name, request_value, no_encode=no_encode)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'EXTENDED request <%s> sent via <%s>', extended_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('extendedReq', request, controls))

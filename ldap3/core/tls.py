@@ -161,16 +161,22 @@ class Tls(object):
         """
 
         if use_ssl_context:
-            ssl_context = create_default_context(purpose=Purpose.SERVER_AUTH,
-                                                 cafile=self.ca_certs_file,
-                                                 capath=self.ca_certs_path,
-                                                 cadata=self.ca_certs_data)
+            if self.version is None:  # uses the default ssl context for reasonable security
+                ssl_context = create_default_context(purpose=Purpose.SERVER_AUTH,
+                                                     cafile=self.ca_certs_file,
+                                                     capath=self.ca_certs_path,
+                                                     cadata=self.ca_certs_data)
+            else:  # code from create_default_context in the Python standard library 3.5.1, creates a ssl context with the specificd protocol version
+                ssl_context = ssl.SSLContext(self.version)
+                ssl_context.load_verify_locations(self.ca_certs_file, self.ca_certs_path, self.ca_certs_data)
+                if self.validate != ssl.CERT_NONE:
+                    context.load_default_certs(Purpose.SERVER_AUTH)
+
             if self.private_key_file:
                 ssl_context.load_cert_chain(self.certificate_file, keyfile=self.private_key_file, password=self.private_key_password)
             ssl_context.check_hostname = False
             ssl_context.verify_mode = self.validate
-            if self.version is not None:  # if version is present overrides the default context version
-                ssl_context.protocol = self.version
+
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
             if log_enabled(NETWORK):
                 log(NETWORK, 'socket wrapped with SSL using SSLContext for <%s>', connection)

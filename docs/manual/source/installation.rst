@@ -16,7 +16,7 @@ This library has only one dependence on the *pyasn1* module, You can install it 
 
 If you need to access a server with the Kerberos SASL authentication mechanism you must install the *gssapi* package.
 
-ldap3 includes a backport (from Python 3.4.3) of ```ssl.check_hostnames``` to be used on older
+ldap3 includes a backport (from Python 3.4.3) of ``ssl.check_hostnames`` to be used on older
 (version < 2.7.10) Python version. If you want to use a more up to date version of the check_hostnames feature you can
 install the *backports.ssl_check_hostnames* package that should be kept updated with the Standard Library of the latest
 Python release by its maintainers.
@@ -43,6 +43,8 @@ in the *ldap3/__init__.py*  (present in the *site-packages* ldap3 folder) there 
   Set this to ```True``` for unlimited retries.
 
 This parameters are library-wide and usually you should keep the default values.
+
+You can use the ``get_config_parameter()`` and ``set_config_parameter`` functions in the ldap3 namespace to get and the the configurable parameters ar runtime.
 
 
 Importing objects and constants

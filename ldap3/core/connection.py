@@ -174,7 +174,8 @@ class Connection(object):
                  pool_size=None,
                  pool_lifetime=None,
                  fast_decoder=True,
-                 receive_timeout=None):
+                 receive_timeout=None,
+                 return_empty_attributes=False):
 
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
@@ -240,6 +241,7 @@ class Connection(object):
             self._entries = []
             self.fast_decoder = fast_decoder
             self.receive_timeout = receive_timeout
+            self.empty_attributes = return_empty_attributes
 
             if isinstance(server, STRING_TYPES):
                 server = Server(server)
@@ -343,7 +345,8 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
-        r += '' if self.receive_timeout is None else (', receive_timeout' + 'True' if self.receive_timeout else 'False')
+        r += '' if self.receive_timeout is None else (', receive_timeout=' + 'True' if self.receive_timeout else 'False')
+        r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
         r += ')'
 
         return r
@@ -376,7 +379,9 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
-        r += '' if self.receive_timeout is None else (', receive_timeout' + 'True' if self.receive_timeout else 'False')
+        r += '' if self.receive_timeout is None else (', receive_timeout=' + 'True' if self.receive_timeout else 'False')
+        r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
+
         r += ')'
 
         return r
@@ -629,8 +634,9 @@ class Connection(object):
           server
         - Cookie is an opaque string received in the last paged search
           and must be used on the next paged search response
-        - If lazy = True open and bind will be deferred until another
+        - If lazy == True open and bind will be deferred until another
           LDAP operation is performed
+        - If mssing_attributes == True then an attribute not returned by the server is set to None
         """
         if log_enabled(BASIC):
             log(BASIC, 'start SEARCH operation via <%s>', self)
@@ -661,12 +667,13 @@ class Connection(object):
             response = self.post_send_search(self.send('searchRequest', request, controls))
             self._entries = []
 
-            if isinstance(response, int):
+            if isinstance(response, int):  # async strategy
                 return_value = response
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'async SEARCH response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'searchResDone' and len(response) > 0 else False
+
                 if log_enabled(PROTOCOL):
                     for entry in response:
                         if entry['type'] == 'searchResEntry':

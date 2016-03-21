@@ -57,6 +57,8 @@ Connection parameters are:
 
 * receive_timeout: set the socket in non-blocking mode - raising an exception after the specified amount of seconds if nothing is received over the wire
 
+* return_empty_attributes: when a search is performed if an attribute is empty then sets its value to None
+
 With the connection object you can perform all the standard LDAP operations:
 
 * bind: performs a bind to the LDAP Server with the authentication type and credential specified in the connection:

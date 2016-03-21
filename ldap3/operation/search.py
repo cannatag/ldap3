@@ -333,6 +333,7 @@ def search_operation(search_base,
                      time_limit,
                      types_only,
                      schema=None):
+
     request = SearchRequest()
     request['baseObject'] = LDAPDN(search_base)
 

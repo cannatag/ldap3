@@ -1,6 +1,6 @@
-- 1.1.3 2016.03.19
+- 1.2.0 2016.03.19
     - try to use the requested ssl protocol in SSLContext for Python>=3.4 (thanks Patrick)
-
+    - added return_empty_attributes to Connection object to return an empty list when the attribute requested is missing in the retrieved object
 - 1.1.2 2016.03.10
     - Added rebind() method to Connection object to rebind with a different user (thanks Lorenzo)
     - Added Tests for rebind operation

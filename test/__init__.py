@@ -93,9 +93,9 @@ if location.startswith('TRAVIS'):
     test_sasl_password = 'Rc1234pfop'
     test_sasl_user_dn = 'cn=testLAB,o=resources'
     test_sasl_realm = None
-    test_sasl_secondary_user = 'testSASL.resources'
-    test_sasl_secondary_password = 'password'
-    test_sasl_secondary_user_dn = 'cn=testSASL,o=resources'
+    test_sasl_secondary_user = 'testLAB.resources'
+    test_sasl_secondary_password = 'Rc1234pfop'
+    test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
     test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
     test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
     test_user_key_file = 'test/lab-edir-testlab-key.pem'
@@ -103,7 +103,7 @@ if location.startswith('TRAVIS'):
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
     test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
-elif location == 'GCNBHPW8-EDIR':
+elif location == 'GCNBHPW10-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
     #               'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
@@ -134,7 +134,7 @@ elif location == 'GCNBHPW8-EDIR':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102']
-elif location == 'GCNBHPW8-AD':
+elif location == 'GCNBHPW10-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -166,7 +166,7 @@ elif location == 'GCNBHPW8-AD':
     test_ntlm_password = 'Rc7777pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
-elif location == 'GCNBHPW8-SLAPD':
+elif location == 'GCNBHPW10-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
@@ -195,7 +195,7 @@ elif location == 'GCNBHPW8-SLAPD':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.104']
-elif location == 'GCW89227-EDIR':
+elif location == 'GCW109227-EDIR':
     # test camera
     # test_server = ['sl08',
     #               'sl09',

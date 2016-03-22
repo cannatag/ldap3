@@ -28,6 +28,8 @@ from .. import STRING_TYPES
 try:
     from sys import stdout
     repr_encoding = stdout.encoding  # get the encoding of the stdout for printing (repr)
+    if not repr_encoding:
+        repr_encoding = 'ascii'  # default
 except Exception:
     repr_encoding = 'ascii'  # default
 

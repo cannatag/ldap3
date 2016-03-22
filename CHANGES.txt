@@ -1,8 +1,8 @@
 # changes file for ldap3
-# generated on 2016-03-21 22:05:50.239156
-# version 1.2.0
+# generated on 2016-03-21 22:41:42.612524
+# version 1.2.1
 
-- 1.2.0 2016.03.19
+- 1.2.1 2016.03.19
     - try to use the requested ssl protocol in SSLContext for Python>=3.4 (thanks Patrick)
     - added return_empty_attributes to Connection object to return an empty list when the attribute requested is missing in the retrieved object
 

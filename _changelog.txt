@@ -1,3 +1,6 @@
+- 1.2.2 2016.03.23
+    - repr encoding set to 'ascii' when sys.stdout.encoding is None (thanks Jeff)
+
 - 1.2.1 2016.03.19
     - try to use the requested ssl protocol in SSLContext for Python>=3.4 (thanks Patrick)
     - added return_empty_attributes to Connection object to return an empty list when the attribute requested is missing in the retrieved object

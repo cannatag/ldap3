@@ -229,6 +229,12 @@ request it explicitly.
 
 To request the operational attributes you can even set the get_operational_attributes parameter to True.
 
+The standard LDAP RFCs define that if an object doesn't have an attribute it must not be returned at all. This can cause your code
+to become clumsy because you have to check always for existence of an attribute in the *attribute* dictionary of the response.
+To let the library return an attribute even if it is not present in the LDAP object retrieved by the search you can set the
+*return_empty_attributes* parameter to True in the Connection object, in this case all the requested attributes missing in an object
+found by the search are set to an empty list.
+
 Checked Attributes
 ------------------
 

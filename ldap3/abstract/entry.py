@@ -187,8 +187,13 @@ class Entry(object):
         if str == bytes:
             check_json_dict(json_entry)
 
-        json_output = json.dumps(json_entry, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True,
-                                 default=format_json, separators=(',', ': '))
+        json_output = json.dumps(json_entry,
+                                 ensure_ascii=True,
+                                 sort_keys=sort,
+                                 indent=indent,
+                                 check_circular=True,
+                                 default=format_json,
+                                 separators=(',', ': '))
 
         if stream:
             stream.write(json_output)

@@ -379,6 +379,16 @@ class BaseStrategy(object):
                 result = self._auto_range_searching
                 del self._auto_range_searching
 
+            if self.connection.empty_attributes:
+                for entry in response:
+                    if entry['type'] == 'searchResEntry':
+                        for attribute_type in self._outstanding[message_id]['attributes']:
+                            if attribute_type not in entry['raw_attributes']:
+                                entry['raw_attributes'][attribute_type] = list()
+                                entry['attributes'][attribute_type] = list()
+                                if log_enabled(PROTOCOL):
+                                    log(PROTOCOL, 'attribute value set to [] for missing attribute %s in %s', attribute_type, self)
+
             self._outstanding.pop(message_id)
         else:
             if log_enabled(ERROR):

@@ -231,8 +231,8 @@ To request the operational attributes you can even set the get_operational_attri
 
 The standard LDAP RFCs define that if an object doesn't have an attribute it must not be returned at all. This can cause your code
 to become clumsy because you have to check always for existence of an attribute in the *attribute* dictionary of the response.
-To let the library return an attribute even if it is not present in the LDAP object retrieved by the search you can set the
-*return_empty_attributes* parameter to True in the Connection object, in this case all the requested attributes missing in an object
+To let the library return an empty attribute even if it is not present in the LDAP object retrieved by the search you can set the
+*return_empty_attributes* parameter to True in the Connection object, in this case all the requested attributes not present in the objects
 found by the search are set to an empty list.
 
 Checked Attributes
@@ -293,6 +293,13 @@ active.
 You can also request to not get any attribute value in the entries returned by the search with the types_only=True
 parameter.
 
+
+.. note::
+
+Microsoft Active Directory set an hard limit of 1000 entries returned by any search. So it's better to always set up a paged search
+when dealing with AD.
+
+
 Simple paged search
 -------------------
 
@@ -331,13 +338,13 @@ Example::
             print(entry['dn'], entry['attributes'])
     print('Total entries retrieved:', total_entries)
 
-Or you can use the much simpler extended operations package that wraps all this machinery and hides implementation
+Or you can use the much simpler extended operations package that wraps all the machinery and hides implementation
 details, you can choose to get back a generator or the whole list of entries found.
 
 
 Working with a generator is better when you deal with very long list of entries or have memory issues::
 
-    # generator
+    # paged search wrapped in a generator
     total_entries = 0
     entry_generator = c.extend.standard.paged_search(search_base = 'o=test',
                                                      search_filter = '(objectClass=inetOrgPerson)',

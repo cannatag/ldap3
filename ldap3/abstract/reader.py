@@ -301,8 +301,8 @@ class Reader(object):
             for attr_name in response['attributes']:
                 if attr_def.name.lower() == attr_name.lower():
                     name = attr_name
-                    if isinstance(response['attributes'][name], list) and len(response['attributes'][name]) == 0:  # empty attributes returned as empty list with the return_empty_attributes of the Connection object
-                        name = None
+                    # if isinstance(response['attributes'][name], list) and len(response['attributes'][name]) == 0:  # empty attributes returned as empty list with the return_empty_attributes of the Connection object
+                    #    name = None
                     break
 
             if name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default

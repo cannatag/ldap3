@@ -79,6 +79,13 @@ class Attribute(object):
     def __setattr__(self, item, value):
         raise LDAPAttributeError('attribute is read only')
 
+    def __eq__(self, other):
+        try:
+            if self.value == other:
+                return True
+        except:
+            return False
+
     @property
     def value(self):
         """

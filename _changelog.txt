@@ -1,5 +1,6 @@
 - 1.2.3 2016.04.05
     - fixed representation of empty attributes in connection.entries
+    - comparison of entry attributes value is easier
 
 - 1.2.2 2016.03.23
     - repr encoding set to 'ascii' when sys.stdout.encoding is None (thanks Jeff)

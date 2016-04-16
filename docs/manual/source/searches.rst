@@ -216,7 +216,7 @@ entry found in the search the ldap3 library requires that you to specify at leas
 else it will perform a "1.1" Search request that returns only the dn of the entries found. To get all the user attributes
 you can use::
 
-    attributes=ldap3.ALL_ATTRIBUTE
+    attributes=ldap3.ALL_ATTRIBUTES
 
 while to get all the user and all the operational attributes you can use::
 

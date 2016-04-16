@@ -1,6 +1,11 @@
-- 1.2.3 2016.04.05
+- 1.3.0 2016.04.16
     - fixed representation of empty attributes in connection.entries
     - comparison of entry attributes value is easier
+    - Added new extended operation connection.extend.novell.start_transaction()
+    - Added new extended operation connection.extend.novell.end_transaction()
+    - Added new extended operation connection.extend.novell.add_members_to_groups(members, groups, transaction)
+    - Added new exception LDAPTransactionError
+    - Added logic to handle Novell Transaction Error Unsolicited Notice
 
 - 1.2.2 2016.03.23
     - repr encoding set to 'ascii' when sys.stdout.encoding is None (thanks Jeff)

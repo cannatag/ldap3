@@ -31,10 +31,11 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from .. import SESSION_TERMINATED_BY_SERVER, SYNC, ANONYMOUS, get_config_parameter, DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
+from .. import SESSION_TERMINATED_BY_SERVER, SYNC, ANONYMOUS, get_config_parameter, DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE, \
+    TRANSACTION_ERROR
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
+    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError, LDAPTransactionError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
@@ -330,6 +331,11 @@ class BaseStrategy(object):
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                     raise LDAPSessionTerminatedByServerError(self.connection.last_error)
+                elif responses == TRANSACTION_ERROR:
+                    self.connection.last_error = 'transaction error'
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                    raise LDAPTransactionError(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
 

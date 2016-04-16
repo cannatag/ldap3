@@ -56,7 +56,7 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
-test_server_type = 'AD'  # possible choices: # EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
+test_server_type = 'EDIR'  # possible choices: # EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
 test_strategy = SYNC   # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)

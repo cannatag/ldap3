@@ -502,6 +502,10 @@ class LDAPResponseTimeoutError(LDAPExceptionError):
     pass
 
 
+class LDAPTransactionError(LDAPExceptionError):
+    pass
+
+
 # communication exceptions
 class LDAPCommunicationError(LDAPExceptionError):
     pass

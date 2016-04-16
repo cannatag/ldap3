@@ -44,6 +44,15 @@ class Password(OctetString):
     encoding = 'utf-8'
 
 
+class LDAPOID(OctetString):
+    tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassUniversal, tagFormatSimple, 4))
+    encoding = 'utf-8'
+
+
+class GroupCookie(Integer):
+    tagSet = Integer.tagSet.tagImplicitly(Tag(tagClassUniversal, tagFormatSimple, 2))
+
+
 class NmasVer(Integer):
     tagSet = Integer.tagSet.tagImplicitly(Tag(tagClassUniversal, tagFormatSimple, 2))
 
@@ -54,24 +63,28 @@ class Error(Integer):
 
 class NmasGetUniversalPasswordRequestValue(Sequence):
     componentType = NamedTypes(NamedType('nmasver', NmasVer()),
-                               NamedType('reqdn', Identity()))
+                               NamedType('reqdn', Identity())
+                               )
 
 
 class NmasGetUniversalPasswordResponseValue(Sequence):
     componentType = NamedTypes(NamedType('nmasver', NmasVer()),
                                NamedType('err', Error()),
-                               OptionalNamedType('passwd', Password()))
+                               OptionalNamedType('passwd', Password())
+                               )
 
 
 class NmasSetUniversalPasswordRequestValue(Sequence):
     componentType = NamedTypes(NamedType('nmasver', NmasVer()),
                                NamedType('reqdn', Identity()),
-                               NamedType('new_passwd', Password()))
+                               NamedType('new_passwd', Password())
+                               )
 
 
 class NmasSetUniversalPasswordResponseValue(Sequence):
     componentType = NamedTypes(NamedType('nmasver', NmasVer()),
-                               NamedType('err', Error()))
+                               NamedType('err', Error())
+                               )
 
 
 class ReplicaList(SequenceOf):
@@ -81,7 +94,8 @@ class ReplicaList(SequenceOf):
 class ReplicaInfoRequestValue(Sequence):
     tagSet = TagSet()
     componentType = NamedTypes(NamedType('server_dn', LDAPDN()),
-                               NamedType('partition_dn', LDAPDN()))
+                               NamedType('partition_dn', LDAPDN())
+                               )
 
 
 class ReplicaInfoResponseValue(Sequence):
@@ -94,4 +108,34 @@ class ReplicaInfoResponseValue(Sequence):
                                NamedType('local_partition_id', Integer()),
                                NamedType('partition_dn', LDAPDN()),
                                NamedType('replica_type', Integer()),
-                               NamedType('flags', Integer()))
+                               NamedType('flags', Integer())
+                               )
+
+
+class CreateGroupTypeRequestValue(Sequence):
+    componentType = NamedTypes(NamedType('createGroupType', LDAPOID()),
+                               OptionalNamedType('createGroupValue', OctetString())
+                               )
+
+
+class CreateGroupTypeResponseValue(Sequence):
+    componentType = NamedTypes(NamedType('createGroupCookie', GroupCookie()),
+                               OptionalNamedType('createGroupValue', OctetString())
+                               )
+
+
+class EndGroupTypeRequestValue(Sequence):
+    componentType = NamedTypes(NamedType('endGroupCookie', GroupCookie()),
+                               OptionalNamedType('endGroupValue', OctetString())
+                               )
+
+
+class EndGroupTypeResponseValue(Sequence):
+    componentType = NamedTypes(OptionalNamedType('endGroupValue', OctetString())
+                               )
+
+
+class GroupingControlValue(Sequence):
+    componentType = NamedTypes(NamedType('groupingCookie', GroupCookie()),
+                               OptionalNamedType('groupValue', OctetString())
+                               )

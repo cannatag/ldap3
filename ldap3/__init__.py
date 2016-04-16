@@ -137,6 +137,7 @@ POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle
 
 # communication
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
+TRANSACTION_ERROR = 'TRANSACTION_ERROR'
 RESPONSE_COMPLETE = 'RESPONSE_FROM_SERVER_COMPLETE'
 RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies - configurable parameter
 RESPONSE_WAITING_TIMEOUT = 20  # waiting timeout for receiving a response in asynchronous strategies - configurable parameter
@@ -418,7 +419,7 @@ from .core.exceptions import LDAPException, LDAPExceptionError, LDAPConfiguratio
     LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError, LDAPResponseTimeoutError, LDAPInvalidHashAlgorithmError, \
     LDAPSessionTerminatedByServerError, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError, LDAPInvalidPortError, \
     LDAPPackageUnavailableError, LDAPConfigurationParameterError, LDAPInvalidTlsSpecificationError, LDAPUserNameNotAllowedError, \
-    LDAPUserNameIsMandatoryError
+    LDAPUserNameIsMandatoryError, LDAPTransactionError
 
 # imports result code Exceptions
 from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSASResult, LDAPAliasDereferencingProblemResult,\

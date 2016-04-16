@@ -208,7 +208,7 @@ NTLM
 The ldap3 library supports an additional method to bind to Active Directory servers via the NTLM method::
 
     # import class and constants
-    from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, SASL, NTLM)
+    from ldap3 import Server, Connection, SIMPLE, SYNC, ALL, SASL, NTLM
 
     # define the server and the connection
     s = Server('servername', get_info=ALL)

@@ -220,6 +220,9 @@ The ldap3 library supports an additional method to bind to Active Directory serv
 This authentication method is specific for Active Directory and uses a proprietary authentication protocol named SICILY
 that breaks the LDAP RFC but can be used to access AD.
 
+When binding via NTLM, it is also possible to authenticate with an LM:NTLM hash rather than a password::
+
+    c = Connection(s, user="AUTHTEST\\Administrator", password="E52CAC67419A9A224A3B108F3FA6CB6D:8846F7EAEE8FB117AD06BDD830B7586C", authentication=NTLM)
 
 LDAPI (LDAP over IPC)
 ---------------------

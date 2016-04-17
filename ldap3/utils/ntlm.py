@@ -31,6 +31,7 @@ from socket import gethostname
 from time import time
 import hmac
 import hashlib
+import binascii
 from os import urandom
 
 try:
@@ -488,5 +489,10 @@ class NtlmClient(object):
         return nt_challenge_response
 
     def ntowf_v2(self):
-        password_digest = hashlib.new('MD4', self._password.encode('utf-16-le')).digest()
+        passparts = self._password.split(':')
+        if len(passparts) == 2 and len(passparts[0]) == 32 and len(passparts[1]) == 32:
+            #The specified password is an LM:NTLM hash
+            password_digest = binascii.unhexlify(passparts[1])
+        else:
+            password_digest = hashlib.new('MD4', self._password.encode('utf-16-le')).digest()
         return hmac.new(password_digest, (self.user_name.upper() + self.user_domain).encode('utf-16-le')).digest()

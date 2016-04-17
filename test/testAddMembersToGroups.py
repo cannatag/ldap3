@@ -38,25 +38,156 @@ class Test(unittest.TestCase):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
-    def test_add_members_to_groups_transactional(self):
+    def test_add_member_to_group(self):
         if test_server_type == 'EDIR':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
+            self.connection.extend.novell.add_members_to_groups(self.delete_at_teardown[0][0],
+                                                                self.delete_at_teardown[1][0],
+                                                                check=False,
+                                                                transaction=False)
+            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
+            if not self.connection.strategy.sync:
+                response, result = self.connection.get_response(result)
+            else:
+                response, result = self.connection.response, self.connection.result
+
+            if response:
+                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['securityEquals'])
+                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['groupMembership'])
+            else:
+                self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
+
+            result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
+            if not self.connection.strategy.sync:
+                response, result = self.connection.get_response(result)
+            else:
+                response, result = self.connection.response, self.connection.result
+
+            if response:
+                self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['member'])
+                self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['equivalentToMe'])
+            else:
+                self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
+
+    def test_add_members_to_groups(self):
+        if test_server_type == 'EDIR':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-2'))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-3'))
-            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
-            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-2'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-4'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-2', self.delete_at_teardown))
             self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-3'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-4'))
             self.connection.extend.novell.add_members_to_groups([self.delete_at_teardown[0][0],
                                                                  self.delete_at_teardown[1][0],
                                                                  self.delete_at_teardown[2][0]],
                                                                 [self.delete_at_teardown[3][0],
                                                                  self.delete_at_teardown[4][0],
-                                                                 self.delete_at_teardown[5][0]]
+                                                                 self.delete_at_teardown[5][0]],
+                                                                check=True,
+                                                                transaction=False
                                                                 )
+            for i in range(0, 2):
+                result = self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
+                if not self.connection.strategy.sync:
+                    response, result = self.connection.get_response(result)
+                else:
+                    response, result = self.connection.response, self.connection.result
 
+                if response:
+                    for j in range(3, 5):
+                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['securityEquals'])
+                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['groupMembership'])
+                else:
+                    self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
 
-def test_add_member_to_group_transactional(self):
-    if test_server_type == 'EDIR':
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
-        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
-        self.connection.extend.novell.add_members_to_groups(self.delete_at_teardown[0][0], self.delete_at_teardown[3][0])
+            for j in range(3, 5):
+                result = self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
+                if not self.connection.strategy.sync:
+                    response, result = self.connection.get_response(result)
+                else:
+                    response, result = self.connection.response, self.connection.result
+
+                if response:
+                    for i in range(0, 2):
+                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['member'])
+                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['equivalentToMe'])
+                else:
+                    self.assertFalse(True, self.delete_at_teardown[j][0] + ' not found')
+
+    def test_add_member_to_group_transactional(self):
+        if test_server_type == 'EDIR':
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-5'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-5', self.delete_at_teardown))
+            self.connection.extend.novell.add_members_to_groups(self.delete_at_teardown[0][0],
+                                                                self.delete_at_teardown[1][0],
+                                                                check=True,
+                                                                transaction=True)
+            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
+            if not self.connection.strategy.sync:
+                response, result = self.connection.get_response(result)
+            else:
+                response, result = self.connection.response, self.connection.result
+
+            if response:
+                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['securityEquals'])
+                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['groupMembership'])
+            else:
+                self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
+
+        result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response, result = self.connection.response, self.connection.result
+
+        if response:
+            self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['member'])
+            self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['equivalentToMe'])
+        else:
+            self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
+
+    def test_add_members_to_groups_transactional(self):
+        if test_server_type == 'EDIR':
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-6'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-7'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-8'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-6', self.delete_at_teardown))  # this group has members but other attributes are not set
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-7'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-8'))
+            self.connection.extend.novell.add_members_to_groups([self.delete_at_teardown[0][0],
+                                                                 self.delete_at_teardown[1][0],
+                                                                 self.delete_at_teardown[2][0]],
+                                                                [self.delete_at_teardown[3][0],
+                                                                 self.delete_at_teardown[4][0],
+                                                                 self.delete_at_teardown[5][0]],
+                                                                check=True,
+                                                                transaction=True
+                                                                )
+            for i in range(0, 2):
+                result = self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
+                if not self.connection.strategy.sync:
+                    response, result = self.connection.get_response(result)
+                else:
+                    response, result = self.connection.response, self.connection.result
+
+                if response:
+                    for j in range(3, 5):
+                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['securityEquals'])
+                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['groupMembership'])
+                else:
+                    self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
+
+            for j in range(3, 5):
+                result = self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
+                if not self.connection.strategy.sync:
+                    response, result = self.connection.get_response(result)
+                else:
+                    response, result = self.connection.response, self.connection.result
+
+                if response:
+                    for i in range(0, 2):
+                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['member'])
+                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['equivalentToMe'])
+                else:
+                    self.assertFalse(True, self.delete_at_teardown[j][0] + ' not found')

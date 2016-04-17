@@ -160,10 +160,11 @@ class NovellExtendedOperations(ExtendedOperationContainer):
                               commit,
                               controls).send()
 
-    def add_members_to_groups(self, members, groups, transaction=True):
+    def add_members_to_groups(self, members, groups, check=True, transaction=True):
         return add_members_to_groups(self._connection,
                                      members_dn=members,
                                      groups_dn=groups,
+                                     check=check,
                                      transaction=transaction)
 
 

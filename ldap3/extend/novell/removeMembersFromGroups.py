@@ -51,12 +51,7 @@ def remove_members_from_groups(connection,
     error = False
 
     if transaction:
-        result = connection.extend.novell.start_transaction()
-        if not connection.strategy.sync:
-            _, result = connection.get_response(result)
-
-        transaction_control = result
-        # TODO error checking
+        transaction_control = connection.extend.novell.start_transaction()
 
     if not error:
         for member in members_dn:

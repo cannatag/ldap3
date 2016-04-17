@@ -55,4 +55,4 @@ class EndTransaction(ExtendedOperation):
             self.result['value'] = None
 
     def set_response(self):
-        self.response_value = self.connection.result
+        self.response_value = self.result

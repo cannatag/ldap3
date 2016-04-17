@@ -3,7 +3,8 @@
     - comparison of entry attributes value is easier
     - Added new extended operation connection.extend.novell.start_transaction()
     - Added new extended operation connection.extend.novell.end_transaction()
-    - Added new extended operation connection.extend.novell.add_members_to_groups(members, groups, transaction)
+    - Added new extended operation connection.extend.novell.add_members_to_groups(members, groups, check, transaction)
+    - Added new extended operation connection.extend.novell.remove_members_from_groups(members, groups, check, transaction)
     - Added new exception LDAPTransactionError
     - Added logic to handle Novell Transaction Error Unsolicited Notice
 

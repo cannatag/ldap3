@@ -53,8 +53,8 @@ class Test(unittest.TestCase):
                 response, result = self.connection.response, self.connection.result
 
             if response:
-                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['securityEquals'])
-                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['groupMembership'])
+                self.assertTrue(self.delete_at_teardown[1][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
+                self.assertTrue(self.delete_at_teardown[1][0] in (response[0]['attributes']['groupMembership'] if 'groupMembership' in response[0]['attributes'] else []))
             else:
                 self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
 
@@ -65,8 +65,8 @@ class Test(unittest.TestCase):
                 response, result = self.connection.response, self.connection.result
 
             if response:
-                self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['member'])
-                self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['equivalentToMe'])
+                self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
+                self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []))
             else:
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
@@ -96,8 +96,8 @@ class Test(unittest.TestCase):
 
                 if response:
                     for j in range(3, 5):
-                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['securityEquals'])
-                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['groupMembership'])
+                        self.assertTrue(self.delete_at_teardown[j][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
+                        self.assertTrue(self.delete_at_teardown[j][0] in (response[0]['attributes']['groupMembership'] if 'groupMembership' in response[0]['attributes'] else []))
                 else:
                     self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
 
@@ -110,8 +110,8 @@ class Test(unittest.TestCase):
 
                 if response:
                     for i in range(0, 2):
-                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['member'])
-                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['equivalentToMe'])
+                        self.assertTrue(self.delete_at_teardown[i][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
+                        self.assertTrue(self.delete_at_teardown[i][0] in (response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []))
                 else:
                     self.assertFalse(True, self.delete_at_teardown[j][0] + ' not found')
 
@@ -130,8 +130,8 @@ class Test(unittest.TestCase):
                 response, result = self.connection.response, self.connection.result
 
             if response:
-                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['securityEquals'])
-                self.assertTrue(self.delete_at_teardown[1][0] in response[0]['attributes']['groupMembership'])
+                self.assertTrue(self.delete_at_teardown[1][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
+                self.assertTrue(self.delete_at_teardown[1][0] in (response[0]['attributes']['groupMembership'] if 'groupMembership' in response[0]['attributes'] else []))
             else:
                 self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
 
@@ -142,8 +142,8 @@ class Test(unittest.TestCase):
             response, result = self.connection.response, self.connection.result
 
         if response:
-            self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['member'])
-            self.assertTrue(self.delete_at_teardown[0][0] in response[0]['attributes']['equivalentToMe'])
+            self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
+            self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []))
         else:
             self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
@@ -173,8 +173,8 @@ class Test(unittest.TestCase):
 
                 if response:
                     for j in range(3, 5):
-                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['securityEquals'])
-                        self.assertTrue(self.delete_at_teardown[j][0] in response[0]['attributes']['groupMembership'])
+                        self.assertTrue(self.delete_at_teardown[j][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
+                        self.assertTrue(self.delete_at_teardown[j][0] in (response[0]['attributes']['groupMembership'] if 'groupMembership' in response[0]['attributes'] else []))
                 else:
                     self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
 
@@ -187,7 +187,7 @@ class Test(unittest.TestCase):
 
                 if response:
                     for i in range(0, 2):
-                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['member'])
-                        self.assertTrue(self.delete_at_teardown[i][0] in response[0]['attributes']['equivalentToMe'])
+                        self.assertTrue(self.delete_at_teardown[i][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
+                        self.assertTrue(self.delete_at_teardown[i][0] in (response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []))
                 else:
                     self.assertFalse(True, self.delete_at_teardown[j][0] + ' not found')

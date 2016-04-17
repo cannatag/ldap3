@@ -37,6 +37,7 @@ from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
 from .novell.startTransaction import StartTransaction
 from .novell.endTransaction import EndTransaction
 from .novell.addMembersToGroups import add_members_to_groups
+from .novell.removeMembersFromGroups import remove_members_from_groups
 from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
 from .standard.PagedSearch import paged_search_generator, paged_search_accumulator
@@ -166,6 +167,13 @@ class NovellExtendedOperations(ExtendedOperationContainer):
                                      groups_dn=groups,
                                      check=check,
                                      transaction=transaction)
+
+    def remove_members_from_groups(self, members, groups, check=True, transaction=True):
+        return remove_members_from_groups(self._connection,
+                                          members_dn=members,
+                                          groups_dn=groups,
+                                          check=check,
+                                          transaction=transaction)
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):

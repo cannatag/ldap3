@@ -42,7 +42,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_commit_transaction(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
             transaction_control = self.connection.extend.novell.start_transaction()
             self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_REPLACE, ['user-1b'])}, controls=[transaction_control])
@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
     def test_abort_transaction(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
             transaction_control = self.connection.extend.novell.start_transaction()
             self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_REPLACE, ['user-1b'])}, controls=[transaction_control])
@@ -80,7 +80,7 @@ class Test(unittest.TestCase):
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
     def test_invalid_transaction_cookie(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
             transaction_control = self.connection.extend.novell.start_transaction()
             invalid_transaction_control = build_control('2.16.840.1.113719.1.27.103.7', True, Integer(12345678), encode_control_value=True)

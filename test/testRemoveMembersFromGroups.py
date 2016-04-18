@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_remove_member_from_group(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
             self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
             self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1b', self.delete_at_teardown))
@@ -154,7 +154,7 @@ class Test(unittest.TestCase):
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
     def test_remove_members_from_groups(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-2'))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-3'))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-4'))
@@ -237,7 +237,7 @@ class Test(unittest.TestCase):
                     self.assertFalse(True, self.delete_at_teardown[j][0] + ' not found')
 
     def test_remove_member_from_group_transactional(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-5'))
             self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-5', self.delete_at_teardown))
             self.connection.extend.novell.add_members_to_groups(self.delete_at_teardown[0][0],
@@ -298,7 +298,7 @@ class Test(unittest.TestCase):
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
     def test_remove_members_from_groups_transactional(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-6'))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-7'))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-8'))

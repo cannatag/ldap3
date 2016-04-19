@@ -135,17 +135,17 @@ class Test(unittest.TestCase):
             else:
                 self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
 
-        result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response, result = self.connection.response, self.connection.result
+            result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
+            if not self.connection.strategy.sync:
+                response, result = self.connection.get_response(result)
+            else:
+                response, result = self.connection.response, self.connection.result
 
-        if response:
-            self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
-            self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []))
-        else:
-            self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
+            if response:
+                self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
+                self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []))
+            else:
+                self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
     def test_add_members_to_groups_transactional(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.pooled:

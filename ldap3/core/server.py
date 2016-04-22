@@ -419,12 +419,11 @@ class Server(object):
         reads info from DSE and from subschema
         """
         if not connection.closed:
-            if self.get_info in [DSA, ALL, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3]:
+            if self.get_info in [DSA, ALL]:
                 self._get_dsa_info(connection)
-
             if self.get_info in [SCHEMA, ALL]:
                     self._get_schema_info(connection)
-            elif self.get_info == OFFLINE_EDIR_8_8_8:
+            if self.get_info == OFFLINE_EDIR_8_8_8:
                 from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
                 self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
                 self.attach_dsa_info(DsaInfo.from_json(edir_8_8_8_dsa_info))

@@ -23,41 +23,54 @@
 
 import unittest
 
-from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
+from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_SLAPD_2_4
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_dsa_info, edir_8_8_8_schema
 from test import test_base, generate_dn, test_name_attr, test_moved, random_id
-try:
-    from ldap3.strategy.mockSync import Dsa
+testcase_id = random_id()
 
-    testcase_id = random_id()
 
-    class Test(unittest.TestCase):
-        def setUp(self):
-            schema = SchemaInfo.from_json(edir_8_8_8_schema)
-            info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
-            server = Server.from_definition('MockSyncServer', info, schema)
-            self.connection = Connection(server, user='mock_user', password='mock_password', client_strategy=MOCK_SYNC)
+class Test(unittest.TestCase):
+    def setUp(self):
+        schema = SchemaInfo.from_json(edir_8_8_8_schema)
+        info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
+        server_1 = Server.from_definition('MockSyncServer', info, schema)
+        self.connection_1 = Connection(server_1, user='mock_user', password='mock_password', client_strategy=MOCK_SYNC)
+        server_2 = Server('dummy', get_info=OFFLINE_SLAPD_2_4)
+        self.connection_2 = Connection(server_2, user='mock_user', password='mock_password', client_strategy=MOCK_SYNC)
 
-        def tearDown(self):
-            self.connection.unbind()
-            self.assertFalse(self.connection.bound)
+    def tearDown(self):
+        self.connection_1.unbind()
+        self.assertFalse(self.connection_1.bound)
 
-        def test_open(self):
-            self.connection.open()
-            self.assertFalse(self.connection.closed)
+    def test_open_1(self):
+        self.connection_1.open()
+        self.assertFalse(self.connection_1.closed)
 
-        def test_bind(self):
-            self.connection.open()
-            self.connection.bind()
-            self.assertTrue(self.connection.bound)
+    def test_open_2(self):
+        self.connection_2.open()
+        self.assertFalse(self.connection_2.closed)
 
-        def test_unbind(self):
-            self.connection.open()
-            self.connection.bind()
-            self.assertTrue(self.connection.bound)
-            self.connection.unbind()
-            self.assertFalse(self.connection.bound)
+    def test_bind_1(self):
+        self.connection_1.open()
+        self.connection_1.bind()
+        self.assertTrue(self.connection_1.bound)
 
-except ImportError:
-    pass
+    def test_bind_2(self):
+        self.connection_2.open()
+        self.connection_2.bind()
+        self.assertTrue(self.connection_2.bound)
+
+    def test_unbind_1(self):
+        self.connection_1.open()
+        self.connection_1.bind()
+        self.assertTrue(self.connection_1.bound)
+        self.connection_1.unbind()
+        self.assertFalse(self.connection_1.bound)
+
+    def test_unbind_2(self):
+        self.connection_2.open()
+        self.connection_2.bind()
+        self.assertTrue(self.connection_2.bound)
+        self.connection_2.unbind()
+        self.assertFalse(self.connection_2.bound)

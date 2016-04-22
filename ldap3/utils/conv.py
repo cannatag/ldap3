@@ -25,11 +25,16 @@
 
 from base64 import b64encode, b64decode
 import datetime
-
+from codecs import unicode_escape_decode
 from .. import SEQUENCE_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
+
+
+def to_unicode(obj):
+    """Tries to convert object to unicode. Raises an exception if unsuccessful"""
+    return unicode_escape_decode(obj)[0]
 
 def escape_filter_chars(text):
     """ Escape chars mentioned in RFC4515. """
@@ -154,3 +159,5 @@ def format_json(obj):
         pass
 
     raise LDAPDefinitionError('unable to serialize ' + str(obj))
+
+

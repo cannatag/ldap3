@@ -115,7 +115,9 @@ class BaseStrategy(object):
                         self.connection._usage.servers_from_pool += 1
 
             exception_history = []
-            if not self.no_real_dsa:
+            if self.no_real_dsa:
+                self._open_socket(None, None)
+            else:  # try to connect to a real server
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
                         if log_enabled(BASIC):

@@ -37,7 +37,6 @@ from .exceptions import LDAPSocketReceiveError
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
-from ..strategy.reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation, abandon_request_to_dict
 from ..operation.add import add_operation, add_request_to_dict
 from ..operation.bind import bind_operation, bind_request_to_dict
@@ -50,10 +49,12 @@ from ..operation.search import search_operation, search_request_to_dict
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
-from ..strategy.async import AsyncStrategy
-from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.sync import SyncStrategy
+from ..strategy.async import AsyncStrategy
+from ..strategy.reusable import ReusableStrategy
 from ..strategy.restartable import RestartableStrategy
+from ..strategy.ldifProducer import LdifProducerStrategy
+from ..strategy.mockSync import MockSyncStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import paged_search_control
 from .usage import ConnectionUsage
@@ -65,10 +66,8 @@ from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, form
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
 
 try:
-    from ..strategy.mockSync import MockSyncStrategy  # not used yet
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
 except ImportError:
-    MockSyncStrategy = NotImplemented
     MockAsyncStrategy = NotImplemented
 
 

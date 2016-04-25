@@ -1,0 +1,500 @@
+{
+    "entries": [
+        {
+            "attributes": {
+                "ACL": [
+                    "2#subtree#cn=testSASL2,o=resources#[All Attributes Rights]",
+                    "6#entry#cn=testSASL2,o=resources#loginScript",
+                    "2#entry#[Public]#messageServer",
+                    "2#entry#[Root]#groupMembership",
+                    "6#entry#cn=testSASL2,o=resources#printJobConfiguration",
+                    "2#entry#[Root]#networkAddress"
+                ],
+                "GUID": "7f7fa105-20a2-a24f-af41-7f7fa10520a2",
+                "Language": "ITALIANO",
+                "cn": [
+                    "testSASL2"
+                ],
+                "createTimestamp": "2016-03-02 22:37:02+00:00",
+                "creatorsName": "cn=admin,o=resources",
+                "entryDN": "cn=testSASL2,o=resources",
+                "entryFlags": 0,
+                "fullName": [
+                    "test 2 SASL"
+                ],
+                "givenName": [
+                    "test 2"
+                ],
+                "lastLoginTime": "2016-04-18 03:53:55+00:00",
+                "localEntryID": [
+                    "33471"
+                ],
+                "loginTime": "2016-04-18 03:53:55+00:00",
+                "modifiersName": "cn=edir1,o=resources",
+                "modifyTimestamp": "2016-04-18 03:53:55+00:00",
+                "name": [
+                    "testSASL2"
+                ],
+                "objectClass": [
+                    "inetOrgPerson",
+                    "organizationalPerson",
+                    "Person",
+                    "ndsLoginProperties",
+                    "Top"
+                ],
+                "passwordAllowChange": true,
+                "passwordMinimumLength": 0,
+                "passwordRequired": true,
+                "passwordUniqueRequired": false,
+                "publicKey": {
+                    "encoded": "AQAAAAQAAAAYAEoAAADAABgAMgB2AAAAAABPAD0AcgBlAHMAbwB1AHIAYwBlAHMAAABDAE4APQB0AGUAcwB0AFMAQQBTAEwAMgAuAE8APQByAGUAcwBvAHUAcgBjAGUAcwAAAAEAAAADAAEAbABCVgQAMS4wAEJDAQADQkEBADBCTAIApAFOTjUAESnX0COUMMntJGbcN6R6em9YpYlluM3C14DcsW0h/FZAENLJT3xVWc84E8ZOVW6W9ZIeWAxFTgMAAQABTUEIABOzDz4vMhAiZABQVVJTQUY=",
+                    "encoding": "base64"
+                },
+                "pwdChangedTime": "2016-03-02 22:37:02+00:00",
+                "revision": 152,
+                "sn": [
+                    "SASL"
+                ],
+                "structuralObjectClass": "inetOrgPerson",
+                "subordinateCount": 0,
+                "subschemaSubentry": [
+                    "cn=schema"
+                ],
+                "uid": [
+                    "testSASL2"
+                ]
+            },
+            "dn": "cn=testSASL2,o=resources",
+            "raw": {
+                "ACL": [
+                    "2#subtree#cn=testSASL2,o=resources#[All Attributes Rights]",
+                    "6#entry#cn=testSASL2,o=resources#loginScript",
+                    "2#entry#[Public]#messageServer",
+                    "2#entry#[Root]#groupMembership",
+                    "6#entry#cn=testSASL2,o=resources#printJobConfiguration",
+                    "2#entry#[Root]#networkAddress"
+                ],
+                "GUID": [
+                    {
+                        "encoded": "f3+hBSCiok+vQX9/oQUgog==",
+                        "encoding": "base64"
+                    }
+                ],
+                "Language": [
+                    "ITALIANO"
+                ],
+                "cn": [
+                    "testSASL2"
+                ],
+                "createTimestamp": [
+                    "20160302223702Z"
+                ],
+                "creatorsName": [
+                    "cn=admin,o=resources"
+                ],
+                "entryDN": [
+                    "cn=testSASL2,o=resources"
+                ],
+                "entryFlags": [
+                    "0"
+                ],
+                "fullName": [
+                    "test 2 SASL"
+                ],
+                "givenName": [
+                    "test 2"
+                ],
+                "lastLoginTime": [
+                    "20160418035355Z"
+                ],
+                "localEntryID": [
+                    "33471"
+                ],
+                "loginTime": [
+                    "20160418035355Z"
+                ],
+                "modifiersName": [
+                    "cn=edir1,o=resources"
+                ],
+                "modifyTimestamp": [
+                    "20160418035355Z"
+                ],
+                "name": [
+                    "testSASL2"
+                ],
+                "objectClass": [
+                    "inetOrgPerson",
+                    "organizationalPerson",
+                    "Person",
+                    "ndsLoginProperties",
+                    "Top"
+                ],
+                "passwordAllowChange": [
+                    "TRUE"
+                ],
+                "passwordMinimumLength": [
+                    "0"
+                ],
+                "passwordRequired": [
+                    "TRUE"
+                ],
+                "passwordUniqueRequired": [
+                    "FALSE"
+                ],
+                "publicKey": [
+                    {
+                        "encoded": "AQAAAAQAAAAYAEoAAADAABgAMgB2AAAAAABPAD0AcgBlAHMAbwB1AHIAYwBlAHMAAABDAE4APQB0AGUAcwB0AFMAQQBTAEwAMgAuAE8APQByAGUAcwBvAHUAcgBjAGUAcwAAAAEAAAADAAEAbABCVgQAMS4wAEJDAQADQkEBADBCTAIApAFOTjUAESnX0COUMMntJGbcN6R6em9YpYlluM3C14DcsW0h/FZAENLJT3xVWc84E8ZOVW6W9ZIeWAxFTgMAAQABTUEIABOzDz4vMhAiZABQVVJTQUY=",
+                        "encoding": "base64"
+                    }
+                ],
+                "pwdChangedTime": [
+                    "20160302223702Z"
+                ],
+                "revision": [
+                    "152"
+                ],
+                "sn": [
+                    "SASL"
+                ],
+                "structuralObjectClass": [
+                    "inetOrgPerson"
+                ],
+                "subordinateCount": [
+                    "0"
+                ],
+                "subschemaSubentry": [
+                    "cn=schema"
+                ],
+                "uid": [
+                    "testSASL2"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "ACL": [
+                    "2#subtree#cn=testSASL,o=resources#[All Attributes Rights]",
+                    "6#entry#cn=testSASL,o=resources#loginScript",
+                    "2#entry#[Public]#messageServer",
+                    "2#entry#[Root]#groupMembership",
+                    "6#entry#cn=testSASL,o=resources#printJobConfiguration",
+                    "2#entry#[Root]#networkAddress"
+                ],
+                "GUID": "a1358a47-e37e-094a-ac45-a1358a47e37e",
+                "Language": "ITALIANO",
+                "cn": [
+                    "testSASL"
+                ],
+                "createTimestamp": "2016-03-02 22:36:33+00:00",
+                "creatorsName": "cn=admin,o=resources",
+                "entryDN": "cn=testSASL,o=resources",
+                "entryFlags": 0,
+                "fullName": [
+                    "test SASL"
+                ],
+                "givenName": [
+                    "test"
+                ],
+                "lastLoginTime": "2016-04-18 03:53:21+00:00",
+                "localEntryID": [
+                    "33470"
+                ],
+                "loginTime": "2016-04-18 03:53:55+00:00",
+                "modifiersName": "cn=edir1,o=resources",
+                "modifyTimestamp": "2016-04-18 03:53:55+00:00",
+                "name": [
+                    "testSASL"
+                ],
+                "objectClass": [
+                    "inetOrgPerson",
+                    "organizationalPerson",
+                    "Person",
+                    "ndsLoginProperties",
+                    "Top"
+                ],
+                "passwordAllowChange": true,
+                "passwordMinimumLength": 0,
+                "passwordRequired": true,
+                "passwordUniqueRequired": false,
+                "publicKey": {
+                    "encoded": "AQAAAAQAAAAYAEgAAAC+ABgAMAB2AAAAAABPAD0AcgBlAHMAbwB1AHIAYwBlAHMAAABDAE4APQB0AGUAcwB0AFMAQQBTAEwALgBPAD0AcgBlAHMAbwB1AHIAYwBlAHMAAAABAAAAAwABAGwAQlYEADEuMABCQwEAA0JBAQAwQkwCAKQBTk41AKWLkhmzbOGuz4cSCtuUnzaVmdht78CFVczsGDhljgEtrVbT8PWnvxgJF62IPr51shsDaYoMRU4DAAEAAU1BCAAFTZTxelwqmWQAUFVSU0FG",
+                    "encoding": "base64"
+                },
+                "pwdChangedTime": "2016-03-02 22:36:33+00:00",
+                "revision": 68,
+                "sn": [
+                    "SASL"
+                ],
+                "structuralObjectClass": "inetOrgPerson",
+                "subordinateCount": 0,
+                "subschemaSubentry": [
+                    "cn=schema"
+                ],
+                "uid": [
+                    "testSASL"
+                ]
+            },
+            "dn": "cn=testSASL,o=resources",
+            "raw": {
+                "ACL": [
+                    "2#subtree#cn=testSASL,o=resources#[All Attributes Rights]",
+                    "6#entry#cn=testSASL,o=resources#loginScript",
+                    "2#entry#[Public]#messageServer",
+                    "2#entry#[Root]#groupMembership",
+                    "6#entry#cn=testSASL,o=resources#printJobConfiguration",
+                    "2#entry#[Root]#networkAddress"
+                ],
+                "GUID": [
+                    {
+                        "encoded": "oTWKR+N+CUqsRaE1ikfjfg==",
+                        "encoding": "base64"
+                    }
+                ],
+                "Language": [
+                    "ITALIANO"
+                ],
+                "cn": [
+                    "testSASL"
+                ],
+                "createTimestamp": [
+                    "20160302223633Z"
+                ],
+                "creatorsName": [
+                    "cn=admin,o=resources"
+                ],
+                "entryDN": [
+                    "cn=testSASL,o=resources"
+                ],
+                "entryFlags": [
+                    "0"
+                ],
+                "fullName": [
+                    "test SASL"
+                ],
+                "givenName": [
+                    "test"
+                ],
+                "lastLoginTime": [
+                    "20160418035321Z"
+                ],
+                "localEntryID": [
+                    "33470"
+                ],
+                "loginTime": [
+                    "20160418035355Z"
+                ],
+                "modifiersName": [
+                    "cn=edir1,o=resources"
+                ],
+                "modifyTimestamp": [
+                    "20160418035355Z"
+                ],
+                "name": [
+                    "testSASL"
+                ],
+                "objectClass": [
+                    "inetOrgPerson",
+                    "organizationalPerson",
+                    "Person",
+                    "ndsLoginProperties",
+                    "Top"
+                ],
+                "passwordAllowChange": [
+                    "TRUE"
+                ],
+                "passwordMinimumLength": [
+                    "0"
+                ],
+                "passwordRequired": [
+                    "TRUE"
+                ],
+                "passwordUniqueRequired": [
+                    "FALSE"
+                ],
+                "publicKey": [
+                    {
+                        "encoded": "AQAAAAQAAAAYAEgAAAC+ABgAMAB2AAAAAABPAD0AcgBlAHMAbwB1AHIAYwBlAHMAAABDAE4APQB0AGUAcwB0AFMAQQBTAEwALgBPAD0AcgBlAHMAbwB1AHIAYwBlAHMAAAABAAAAAwABAGwAQlYEADEuMABCQwEAA0JBAQAwQkwCAKQBTk41AKWLkhmzbOGuz4cSCtuUnzaVmdht78CFVczsGDhljgEtrVbT8PWnvxgJF62IPr51shsDaYoMRU4DAAEAAU1BCAAFTZTxelwqmWQAUFVSU0FG",
+                        "encoding": "base64"
+                    }
+                ],
+                "pwdChangedTime": [
+                    "20160302223633Z"
+                ],
+                "revision": [
+                    "68"
+                ],
+                "sn": [
+                    "SASL"
+                ],
+                "structuralObjectClass": [
+                    "inetOrgPerson"
+                ],
+                "subordinateCount": [
+                    "0"
+                ],
+                "subschemaSubentry": [
+                    "cn=schema"
+                ],
+                "uid": [
+                    "testSASL"
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "ACL": [
+                    "2#subtree#cn=admin,o=resources#[All Attributes Rights]",
+                    "6#entry#cn=admin,o=resources#loginScript",
+                    "2#entry#[Public]#messageServer",
+                    "6#entry#cn=admin,o=resources#printJobConfiguration"
+                ],
+                "GUID": "63f5f1c8-3953-674e-bf39-63f5f1c83953",
+                "cn": [
+                    "admin"
+                ],
+                "createTimestamp": "2016-03-02 20:45:27+00:00",
+                "entryDN": "cn=admin,o=resources",
+                "entryFlags": 0,
+                "lastLoginTime": "2016-04-23 04:27:07+00:00",
+                "localEntryID": [
+                    "32812"
+                ],
+                "loginTime": "2016-04-23 04:37:55+00:00",
+                "messageServer": "cn=edir1,o=resources",
+                "modifiersName": "cn=edir1,o=resources",
+                "modifyTimestamp": "2016-04-23 04:37:55+00:00",
+                "name": [
+                    "admin"
+                ],
+                "objectClass": [
+                    "inetOrgPerson",
+                    "organizationalPerson",
+                    "Person",
+                    "ndsLoginProperties",
+                    "Top"
+                ],
+                "passwordAllowChange": true,
+                "passwordMinimumLength": 0,
+                "passwordRequired": true,
+                "passwordUniqueRequired": false,
+                "publicKey": {
+                    "encoded": "AQAAAAQAAAAwAHIAAADoADAAQgB2AAAAAABPAD0AcgBlAHMAbwB1AHIAYwBlAHMALgBUAD0ARQBEAEkAUgAtAEwAQQBCAC4AAABDAE4APQBhAGQAbQBpAG4ALgBPAD0AcgBlAHMAbwB1AHIAYwBlAHMALgBUAD0ARQBEAEkAUgAtAEwAQQBCAC4AAAABAAAAAwABAGwAQlYEADEuMABCQwEAA0JBAQAwQkwCAKQBTk41AO1a+lawxlWDSqCgv/4ZtaUFLGzSR1JxAOIP4uaWVNd/yZYC2NjrGtU2gMS3NhTJI9MbQoULRU4DAAEAAU1BCADUhj/XDvumJmQAUFVSU0FG",
+                    "encoding": "base64"
+                },
+                "pwdChangedTime": "2016-03-02 22:33:58+00:00",
+                "rbsOwnedCollections2": [
+                    "cn=Role Based Service 2,o=resources"
+                ],
+                "revision": 5907,
+                "sn": [
+                    "admin"
+                ],
+                "structuralObjectClass": "inetOrgPerson",
+                "subordinateCount": 0,
+                "subschemaSubentry": [
+                    "cn=schema"
+                ],
+                "uid": [
+                    "admin"
+                ]
+            },
+            "dn": "cn=admin,o=resources",
+            "raw": {
+                "ACL": [
+                    "2#subtree#cn=admin,o=resources#[All Attributes Rights]",
+                    "6#entry#cn=admin,o=resources#loginScript",
+                    "2#entry#[Public]#messageServer",
+                    "6#entry#cn=admin,o=resources#printJobConfiguration"
+                ],
+                "GUID": [
+                    {
+                        "encoded": "Y/XxyDlTZ06/OWP18cg5Uw==",
+                        "encoding": "base64"
+                    }
+                ],
+                "cn": [
+                    "admin"
+                ],
+                "createTimestamp": [
+                    "20160302204527Z"
+                ],
+                "entryDN": [
+                    "cn=admin,o=resources"
+                ],
+                "entryFlags": [
+                    "0"
+                ],
+                "lastLoginTime": [
+                    "20160423042707Z"
+                ],
+                "localEntryID": [
+                    "32812"
+                ],
+                "loginTime": [
+                    "20160423043755Z"
+                ],
+                "messageServer": [
+                    "cn=edir1,o=resources"
+                ],
+                "modifiersName": [
+                    "cn=edir1,o=resources"
+                ],
+                "modifyTimestamp": [
+                    "20160423043755Z"
+                ],
+                "name": [
+                    "admin"
+                ],
+                "objectClass": [
+                    "inetOrgPerson",
+                    "organizationalPerson",
+                    "Person",
+                    "ndsLoginProperties",
+                    "Top"
+                ],
+                "passwordAllowChange": [
+                    "TRUE"
+                ],
+                "passwordMinimumLength": [
+                    "0"
+                ],
+                "passwordRequired": [
+                    "TRUE"
+                ],
+                "passwordUniqueRequired": [
+                    "FALSE"
+                ],
+                "publicKey": [
+                    {
+                        "encoded": "AQAAAAQAAAAwAHIAAADoADAAQgB2AAAAAABPAD0AcgBlAHMAbwB1AHIAYwBlAHMALgBUAD0ARQBEAEkAUgAtAEwAQQBCAC4AAABDAE4APQBhAGQAbQBpAG4ALgBPAD0AcgBlAHMAbwB1AHIAYwBlAHMALgBUAD0ARQBEAEkAUgAtAEwAQQBCAC4AAAABAAAAAwABAGwAQlYEADEuMABCQwEAA0JBAQAwQkwCAKQBTk41AO1a+lawxlWDSqCgv/4ZtaUFLGzSR1JxAOIP4uaWVNd/yZYC2NjrGtU2gMS3NhTJI9MbQoULRU4DAAEAAU1BCADUhj/XDvumJmQAUFVSU0FG",
+                        "encoding": "base64"
+                    }
+                ],
+                "pwdChangedTime": [
+                    "20160302223358Z"
+                ],
+                "rbsOwnedCollections2": [
+                    "cn=Role Based Service 2,o=resources"
+                ],
+                "revision": [
+                    "5907"
+                ],
+                "sn": [
+                    "admin"
+                ],
+                "structuralObjectClass": [
+                    "inetOrgPerson"
+                ],
+                "subordinateCount": [
+                    "0"
+                ],
+                "subschemaSubentry": [
+                    "cn=schema"
+                ],
+                "uid": [
+                    "admin"
+                ]
+            }
+        }
+    ]
+}

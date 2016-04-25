@@ -89,7 +89,8 @@ def modify_request_to_dict(request):
 
 
 def modify_response_to_dict(response):
-    return {'result': int(response[0]),
-            'description': ResultCode().getNamedValues().getName(response[0]),
-            'message': str(response['diagnosticMessage']), 'dn': str(response['matchedDN']),
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
+            'message': str(response['diagnosticMessage']),
+            'dn': str(response['matchedDN']),
             'referrals': referrals_to_list(response['referral'])}

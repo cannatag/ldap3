@@ -1161,7 +1161,9 @@ class Connection(object):
                          search_result=None,
                          indent=4,
                          sort=True,
-                         stream=None):
+                         stream=None,
+                         checked_attributes=True):
+
         with self.lock:
             if search_result is None:
                 search_result = self.response
@@ -1175,7 +1177,8 @@ class Connection(object):
                         entry = dict()
 
                         entry['dn'] = response['dn']
-                        entry['attributes'] = dict(response['attributes'])
+                        if checked_attributes:
+                            entry['attributes'] = dict(response['attributes'])
                         if raw:
                             entry['raw'] = dict(response['raw_attributes'])
                         json_dict['entries'].append(entry)

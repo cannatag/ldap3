@@ -115,9 +115,7 @@ class BaseStrategy(object):
                         self.connection._usage.servers_from_pool += 1
 
             exception_history = []
-            if self.no_real_dsa:
-                self._open_socket(None, None)
-            else:  # try to connect to a real server
+            if not self.no_real_dsa:  # tries to connect to a real server
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
                         if log_enabled(BASIC):
@@ -333,7 +331,7 @@ class BaseStrategy(object):
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                     raise LDAPSessionTerminatedByServerError(self.connection.last_error)
-                elif responses == TRANSACTION_ERROR:
+                elif responses == TRANSACTION_ERROR:  # Novell LDAP Transaction unsolicited notification
                     self.connection.last_error = 'transaction error'
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)

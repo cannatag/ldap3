@@ -31,10 +31,10 @@ from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
 
-
 def to_unicode(obj):
     """Tries to convert object to unicode. Raises an exception if unsuccessful"""
     return unicode_escape_decode(obj)[0]
+
 
 def escape_filter_chars(text):
     """ Escape chars mentioned in RFC4515. """

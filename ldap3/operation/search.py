@@ -40,24 +40,6 @@ from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 from ..protocol.formatters.standard import format_attribute_values
 
-# SearchRequest ::= [APPLICATION 3] SEQUENCE {
-# baseObject      LDAPDN,
-#     scope           ENUMERATED {
-#         baseObject              (0),
-#         singleLevel             (1),
-#         wholeSubtree            (2),
-#     ...  },
-#     derefAliases    ENUMERATED {
-#         neverDerefAliases       (0),
-#         derefInSearching        (1),
-#         derefFindingBaseObj     (2),
-#         derefAlways             (3) },
-#     sizeLimit       INTEGER (0 ..  maxInt),
-#     timeLimit       INTEGER (0 ..  maxInt),
-#     typesOnly       BOOLEAN,
-#     filter          Filter,
-#     attributes      AttributeSelection }
-
 ROOT = 0
 AND = 1
 OR = 2
@@ -333,7 +315,23 @@ def search_operation(search_base,
                      time_limit,
                      types_only,
                      schema=None):
-
+    # SearchRequest ::= [APPLICATION 3] SEQUENCE {
+    # baseObject      LDAPDN,
+    #     scope           ENUMERATED {
+    #         baseObject              (0),
+    #         singleLevel             (1),
+    #         wholeSubtree            (2),
+    #     ...  },
+    #     derefAliases    ENUMERATED {
+    #         neverDerefAliases       (0),
+    #         derefInSearching        (1),
+    #         derefFindingBaseObj     (2),
+    #         derefAlways             (3) },
+    #     sizeLimit       INTEGER (0 ..  maxInt),
+    #     timeLimit       INTEGER (0 ..  maxInt),
+    #     typesOnly       BOOLEAN,
+    #     filter          Filter,
+    #     attributes      AttributeSelection }
     request = SearchRequest()
     request['baseObject'] = LDAPDN(search_base)
 
@@ -509,8 +507,8 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
 
 
 def search_result_done_response_to_dict(response):
-    return {'result': int(response[0]),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'message': str(response['diagnosticMessage']),
             'dn': str(response['matchedDN']),
             'referrals': referrals_to_list(response['referral'])}

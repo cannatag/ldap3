@@ -26,10 +26,9 @@
 from ..protocol.rfc4511 import DelRequest, LDAPDN, ResultCode
 from ..operation.bind import referrals_to_list
 
-# DelRequest ::= [APPLICATION 10] LDAPDN
-
 
 def delete_operation(dn):
+    # DelRequest ::= [APPLICATION 10] LDAPDN
     request = DelRequest(LDAPDN(dn))
 
     return request
@@ -40,8 +39,8 @@ def delete_request_to_dict(request):
 
 
 def delete_response_to_dict(response):
-    return {'result': int(response[0]),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral'])}

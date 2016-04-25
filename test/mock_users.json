@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "identity": "cn=user1,ou=test,o=lab",
+      "password": "test1234"
+    },
+    {
+      "identity": "cn=user2,ou=test,o=lab",
+      "password": "test5678"
+    }
+  ]
+}
+

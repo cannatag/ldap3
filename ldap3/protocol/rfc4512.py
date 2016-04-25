@@ -303,6 +303,7 @@ class SchemaInfo(BaseServerInfo):
                     self.attribute_types[attribute].optional_in.append(object_class)
                 except KeyError:
                     pass
+
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
         r += linesep

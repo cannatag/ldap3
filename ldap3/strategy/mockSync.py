@@ -22,9 +22,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from ldap3.operation.bind import bind_response_to_dict
+from time import sleep
+import json
+
+from .. import MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
+from ..operation.bind import bind_request_to_dict, bind_response_to_dict
+from ..operation.delete import delete_request_to_dict, delete_response_to_dict
+from ..operation.add import add_request_to_dict, add_response_to_dict
+from ..operation.compare import compare_request_to_dict, compare_response_to_dict
+from ..operation.modifyDn import modify_dn_request_to_dict, modify_dn_response_to_dict
+from ..operation.modify import modify_request_to_dict, modify_response_to_dict
+from ..operation.search import search_request_to_dict, search_result_done_response_to_dict, search_result_entry_response_to_dict
 from ..strategy.sync import SyncStrategy
 from ..utils.conv import to_unicode
+from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, check_escape
+from ..core.exceptions import LDAPDefinitionError
+from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.dn import to_dn, safe_dn, safe_rdn
 
 
 # LDAPResult ::= SEQUENCE {
@@ -93,6 +107,8 @@ class MockSyncStrategy(SyncStrategy):
         self.no_real_dsa = True
         self.pooled = False
         self.can_stream = False
+        self.users = dict()
+        self.entries = dict()
 
     def send(self, message_type, request, controls=None):
         self.connection.request = None
@@ -103,46 +119,394 @@ class MockSyncStrategy(SyncStrategy):
 
     def _start_listen(self):
         self.connection.listening = True
-
-    def _stop_listen(self):
-        self.connection.listening = False
-
-    def _open_socket(self, address, use_ssl=False, unix_socket=False):
-        self.connection.socket = NotImplemented  # placeholder for a dummy socket
+        self.connection.closed = False
         if self.connection.usage:
             self.connection._usage.open_sockets += 1
 
-        self.connection.closed = False
-
-    def _close_socket(self):
+    def _stop_listen(self):
+        self.connection.listening = False
+        self.connection.closed = True
         if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
-        self.connection.socket = None
-        self.connection.closed = True
+    def add_user(self, identity, password):
+        if identity not in self.users:
+            self.users[identity] = password
+            return True
+        return False
 
-    def post_send_search(self, message_type, request, controls=None):
-        return None
+    def remove_user(self, identity):
+        if identity in self.users:
+            del self.users[identity]
+            return True
+        return False
 
-    def post_send_single_response(self, (message_type, request, controls)):
+    def add_entry(self, dn, attributes):
+        escaped_dn = safe_dn(dn)
+        if escaped_dn not in self.entries:
+            self.entries[escaped_dn] = attributes
+            for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
+                if rdn[0] not in self.entries[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
+                    self.entries[escaped_dn][rdn[0]] = rdn[1]
+                else:
+                    if rdn[1] not in self.entries[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
+                        self.entries[escaped_dn][rdn[0]].append(rdn[1])
+            return True
+        return False
+
+    def remove_entry(self, dn):
+        escaped_dn = safe_dn(dn)
+        if escaped_dn in self.entries:
+            del self.entries[escaped_dn]
+            return True
+        return False
+
+    def users_from_json(self, json_user_file):
+        target = open(json_user_file, 'r')
+        definition = json.load(target, object_hook=json_hook)
+        if 'users' not in definition:
+            raise LDAPDefinitionError('invalid JSON definition, missing "users" section')
+
+        self.users = CaseInsensitiveDict()
+        for user in definition['users']:
+            if 'identity' not in user:
+                raise LDAPDefinitionError('invalid JSON definition, missing "identity" section')
+            if 'password' not in user:
+                raise LDAPDefinitionError('invalid JSON definition, missing "password" section')
+            self.users[user['identity']] = user['password']
+        target.close()
+
+    def entries_from_json(self, json_entry_file):
+        target = open(json_entry_file, 'r')
+        definition = json.load(target, object_hook=json_hook)
+        if 'entries' not in definition:
+            raise LDAPDefinitionError('invalid JSON definition, missing "entries" section')
+
+        self.entries = CaseInsensitiveDict()
+        for entry in definition['entries']:
+            if 'raw' not in entry:
+                raise LDAPDefinitionError('invalid JSON definition, missing "raw" section')
+            attributes = CaseInsensitiveDict()
+
+            for attribute in entry['raw']:
+                attributes[attribute] = check_escape(entry['raw'][attribute])
+
+            if 'dn' not in entry:
+                raise LDAPDefinitionError('invalid JSON definition, missing "raw" section')
+            self.entries[safe_dn(entry['dn'])] = attributes
+        target.close()
+
+    def post_send_search(self, payload):
+        message_type, request, controls = payload
+        responses = []
+        result = None
+        if message_type == 'searchRequest':
+            responses, result = self.mock_search(request, controls)
+            result['type'] = 'searchResDone'
+
+        self.connection.response = responses
+        self.connection.result = result
+        return responses
+
+    def post_send_single_response(self, payload):  # payload is a tuple sent by self.send() made of message_type, request, controls
+        message_type, request, controls = payload
         responses = []
         result = None
         if message_type == 'bindRequest':
-            result = bind_response_to_dict(self.mock_bind_request(message_type, request, controls))
-
+            result = bind_response_to_dict(self.mock_bind(request, controls))
+            result['type'] = 'bindResponse'
+        elif message_type == 'unbindRequest':
+            pass
+        elif message_type == 'abandonRequest':
+            pass
+        elif message_type == 'delRequest':
+            result = delete_response_to_dict(self.mock_delete(request, controls))
+            result['type'] = 'delResponse'
+        elif message_type == 'addRequest':
+            result = add_response_to_dict(self.mock_add(request, controls))
+            result['type'] = 'addResponse'
+        elif message_type == 'compareRequest':
+            result = compare_response_to_dict(self.mock_compare(request, controls))
+            result['type'] = 'compareResponse'
+        elif message_type == 'modDNRequest':
+            result = modify_dn_response_to_dict(self.mock_modify_dn(request, controls))
+            result['type'] = 'modDNResponse'
+        elif message_type == 'modifyRequest':
+            result = modify_response_to_dict(self.mock_modify(request, controls))
+            result['type'] = 'modifyResponse'
         self.connection.result = result
         responses.append(result)
         return responses
 
-    def mock_bind_request(self, message_type, request, controls):
+    def mock_bind(self, request_message, controls):
+        # BindRequest ::= [APPLICATION 0] SEQUENCE {
+        #     version                 INTEGER (1 ..  127),
+        #     name                    LDAPDN,
+        #     authentication          AuthenticationChoice }
+        #
         # BindResponse ::= [APPLICATION 1] SEQUENCE {
         #     COMPONENTS OF LDAPResult,
         #     serverSaslCreds    [7] OCTET STRING OPTIONAL }
-        result = {'resultCode': 0,
-                  'matchedDN': to_unicode(''),
-                  'diagnosticMessage': to_unicode(''),
-                  'referral': None,
-                  'serverSaslCreds': None
-                 }
+        #
+        # request: version, name, authentication
+        # response: LDAPResult + serverSaslCreds
+        request = bind_request_to_dict(request_message)
+        identity = request['name']
+        if 'simple' in request['authentication']:
+            password = request['authentication']['simple']
+        else:
+            raise LDAPDefinitionError('only simple bind allowed in Mock strategy')
 
-        return result
+        if identity in self.users and self.users[request['name']] == password:
+            result_code = 0
+            message = ''
+        else:  # no user found,  waits for 2 seconds returns invalidCredentials
+            result_code = 49
+            message = 'invalid credentials'
+            sleep(2)
+
+        return {'resultCode': result_code,
+                'matchedDN': to_unicode(''),
+                'diagnosticMessage': to_unicode(message),
+                'referral': None,
+                'serverSaslCreds': None
+                }
+
+    def mock_delete(self, request_message, controls):
+        # DelRequest ::= [APPLICATION 10] LDAPDN
+        #
+        # DelResponse ::= [APPLICATION 11] LDAPResult
+        #
+        # request: entry
+        # response: LDAPResult
+        request = delete_request_to_dict(request_message)
+        dn = safe_dn(request['entry'])
+        if dn in self.entries:
+            del self.entries[dn]
+            result_code = 0
+            message = ''
+        else:
+            result_code = 32
+            message = 'object not found'
+
+        return {'resultCode': result_code,
+                'matchedDN': to_unicode(''),
+                'diagnosticMessage': to_unicode(message),
+                'referral': None
+                }
+
+    def mock_add(self, request_message, controls):
+        # AddRequest ::= [APPLICATION 8] SEQUENCE {
+        #     entry           LDAPDN,
+        #     attributes      AttributeList }
+        #
+        # AddResponse ::= [APPLICATION 9] LDAPResult
+        #
+        # request: entry, attributes
+        # response: LDAPResult
+        request = add_request_to_dict(request_message)
+        dn = safe_dn(request['entry'])
+        attributes = request['attributes']
+        if dn not in self.entries:
+            self.entries[dn] = CaseInsensitiveDict(attributes)
+            result_code = 0
+            message = ''
+        else:
+            result_code = 68
+            message = 'entry already exist'
+
+        return {'resultCode': result_code,
+                'matchedDN': to_unicode(''),
+                'diagnosticMessage': to_unicode(message),
+                'referral': None
+                }
+
+    def mock_compare(self, request_message, controls):
+        # CompareRequest ::= [APPLICATION 14] SEQUENCE {
+        #     entry           LDAPDN,
+        #     ava             AttributeValueAssertion }
+        #
+        # CompareResponse ::= [APPLICATION 15] LDAPResult
+        #
+        # request: entry, attribute, value
+        # response: LDAPResult
+        request = compare_request_to_dict(request_message)
+        dn = safe_dn(request['entry'])
+        attribute = request['attribute']
+        value = request['value']
+        if dn in self.entries:
+            if attribute in self.entries[dn]:
+                if self.entries[dn][attribute] == value:
+                    result_code = 6
+                    message = ''
+                else:
+                    result_code = 5
+                    message = ''
+        else:
+            result_code = 32
+            message = 'object not found'
+
+        return {'resultCode': result_code,
+                'matchedDN': to_unicode(''),
+                'diagnosticMessage': to_unicode(message),
+                'referral': None
+                }
+
+    def mock_modify_dn(self, request_message, controls):
+        # ModifyDNRequest ::= [APPLICATION 12] SEQUENCE {
+        #     entry           LDAPDN,
+        #     newrdn          RelativeLDAPDN,
+        #     deleteoldrdn    BOOLEAN,
+        #     newSuperior     [0] LDAPDN OPTIONAL }
+        #
+        # ModifyDNResponse ::= [APPLICATION 13] LDAPResult
+        #
+        # request: entry, newRdn, deleteOldRdn, newSuperior
+        # response: LDAPResult
+        request = modify_dn_request_to_dict(request_message)
+        dn = safe_dn(request['entry'])
+        new_rdn = request['newRdn']
+        delete_old_rdn = request['deleteOldRdn']
+        new_superior = safe_dn(request['newSuperior']) if request['newSuperior'] else ''
+        dn_components = to_dn(dn)
+        if dn in self.entries:
+            if new_superior and new_rdn:  # performs move in the DIT
+                self.entries[safe_dn(dn_components[0] + ',' + new_superior)] = self.entries[dn].copy()
+                if delete_old_rdn:
+                    del self.entries[dn]
+                result_code = 0
+                message = 'entry moved'
+            elif new_rdn and not new_superior:  # performs rename
+                self.entries[safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))] = self.entries[dn].copy()
+                del self.entries[dn]
+                result_code = 0
+                message = 'entry rdn renamed'
+            else:
+                result_code = 53
+                message = 'newRdn or newSuperior missing'
+        else:
+            result_code = 32
+            message = 'object not found'
+
+        return {'resultCode': result_code,
+                'matchedDN': to_unicode(''),
+                'diagnosticMessage': to_unicode(message),
+                'referral': None
+                }
+
+    def mock_modify(self, request_message, controls):
+        # ModifyRequest ::= [APPLICATION 6] SEQUENCE {
+        #     object          LDAPDN,
+        #     changes         SEQUENCE OF change SEQUENCE {
+        #         operation       ENUMERATED {
+        #             add     (0),
+        #             delete  (1),
+        #             replace (2),
+        #             ...  },
+        #         modification    PartialAttribute } }
+        #
+        # ModifyResponse ::= [APPLICATION 7] LDAPResult
+        #
+        # request: entry, changes
+        # response: LDAPResult
+        #
+        # changes is a dictionary in the form {'attribute': [(operation, [val1, ...]), ...], ...}
+        # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
+        request = modify_request_to_dict(request_message)
+        dn = safe_dn(request['entry'])
+        changes = request['changes']
+        result_code = 0
+        message = ''
+        rdns = [rdn[0] for rdn in safe_rdn(dn, decompose=True)]
+        if dn in self.entries:
+            original_entry = self.entries[dn].copy()  # to preserve atomicity of operation
+            for modification in changes:
+                operation = modification['operation']
+                attribute = modification['attribute']['type']
+                elements = modification['attribute']['value']
+                if operation == 0:  # add
+                    if attribute not in self.entries[dn] and elements:  # attribute not present, creates the new attribute and add elements
+                        self.entries[dn][attribute] = elements
+                    else:  # attribute present, adds elements to current values
+                        self.entries[dn][attribute].extend(elements)
+                elif operation == 1:  # delete
+                    if attribute not in self.entries[dn]:  # attribute must exist
+                        result_code = 16
+                        message = 'attribute must exists for deleting its values'
+                    elif attribute in rdns:  # attribute can't be used in dn
+                        result_code = 67
+                        message = 'cannot delete an rdn'
+                    else:
+                        if not elements:  # deletes whole attribute if element list is empty
+                            del self.entries[dn][attribute]
+                        else:
+                            for element in elements:
+                                if element in self.entries[dn][attribute]:  # removes single element
+                                    self.entries[dn][attribute].remove(element)
+                                else:
+                                    result_code = 1
+                                    message = 'value to delete not found'
+                            if not self.entries[dn][attribute]:  # removes the whole attribute if no elements remained
+                                del self.entries[dn][attribute]
+                elif operation == 2:  # replace
+                    if attribute not in self.entries[dn] and elements:  # attribute not present, creates the new attribute and add elements
+                        self.entries[dn][attribute] = elements
+                    elif not elements and attribute in rdns:  # attribute can't be used in dn
+                        result_code = 67
+                        message = 'cannot replace an rdn'
+                    elif not elements:  # deletes whole attribute if element list is empty
+                        if attribute in self.entries[dn]:
+                            del self.entries[dn][attribute]
+                    else:  # substitutes elements
+                        self.entries[dn][attribute] = elements
+
+            if result_code:  # an error has happened, restores the original dn
+                self.entries[dn] = original_entry
+        else:
+            result_code = 32
+            message = 'object not found'
+
+        return {'resultCode': result_code,
+                'matchedDN': to_unicode(''),
+                'diagnosticMessage': to_unicode(message),
+                'referral': None
+                }
+
+    def mock_search(self, request_message, controls):
+        # SearchRequest ::= [APPLICATION 3] SEQUENCE {
+        #     baseObject      LDAPDN,
+        #     scope           ENUMERATED {
+        #         baseObject              (0),
+        #         singleLevel             (1),
+        #         wholeSubtree            (2),
+        #     ...  },
+        #     derefAliases    ENUMERATED {
+        #         neverDerefAliases       (0),
+        #         derefInSearching        (1),
+        #         derefFindingBaseObj     (2),
+        #         derefAlways             (3) },
+        #     sizeLimit       INTEGER (0 ..  maxInt),
+        #     timeLimit       INTEGER (0 ..  maxInt),
+        #     typesOnly       BOOLEAN,
+        #     filter          Filter,
+        #     attributes      AttributeSelection }
+        #
+        # SearchResultEntry ::= [APPLICATION 4] SEQUENCE {
+        #     objectName      LDAPDN,
+        #     attributes      PartialAttributeList }
+        #
+        #
+        # SearchResultReference ::= [APPLICATION 19] SEQUENCE
+        #     SIZE (1..MAX) OF uri URI
+        #
+        # SearchResultDone ::= [APPLICATION 5] LDAPResult
+        #
+        # request: base, scope, dereferenceAlias, sizeLimit, timeLimit, typesOnly, filter, attributes
+        # response_entry: object, attributes
+        # response_done: LDAPResult
+        request = search_request_to_dict(request_message)
+        print(request)
+        responses = []
+        result = dict()
+
+        return responses, result

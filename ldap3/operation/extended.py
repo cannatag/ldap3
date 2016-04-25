@@ -59,10 +59,10 @@ def extended_request_to_dict(request):
 
 
 def extended_response_to_dict(response):
-    return {'result': int(response[0]),
+    return {'result': int(response['resultCode']),
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'referrals': decode_referrals(response['referral']),
             'responseName': str(response['responseName']) if response['responseName'] else None,
             'responseValue': bytes(response['responseValue']) if response['responseValue'] else bytes()}

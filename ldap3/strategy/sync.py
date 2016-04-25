@@ -178,7 +178,7 @@ class SyncStrategy(BaseStrategy):
                         elif int(ldap_resp['messageID']) == 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
                             if dict_response['responseName'] == '1.3.6.1.4.1.1466.20036':  # Notice of Disconnection as per RFC4511 (paragraph 4.4.1)
                                 return SESSION_TERMINATED_BY_SERVER
-                            elif dict_response['responseName'] == '2.16.840.1.113719.1.27.103.4':  # Novell transaction error
+                            elif dict_response['responseName'] == '2.16.840.1.113719.1.27.103.4':  # Novell LDAP transaction error unsolicited notification
                                 return TRANSACTION_ERROR
                             else:
                                 self.connection.last_error = 'unknown unsolicited notification from server'

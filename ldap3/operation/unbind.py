@@ -27,5 +27,6 @@ from ..protocol.rfc4511 import UnbindRequest
 
 
 def unbind_operation():
+    # UnbindRequest ::= [APPLICATION 2] NULL
     request = UnbindRequest()
     return request

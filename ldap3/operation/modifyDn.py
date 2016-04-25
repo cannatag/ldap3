@@ -55,8 +55,8 @@ def modify_dn_request_to_dict(request):
 
 
 def modify_dn_response_to_dict(response):
-    return {'result': int(response[0]),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'dn': str(response['matchedDN']),
             'referrals': referrals_to_list(response['referral']),
             'message': str(response['diagnosticMessage'])}

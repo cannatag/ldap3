@@ -25,6 +25,7 @@
 
 from string import hexdigits, ascii_letters, digits
 
+from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPInvalidDnError
 
 
@@ -65,11 +66,11 @@ def to_dn(iterator, decompose=False, remove_space=False, space_around_equal=Fals
     component = ''
     escape_sequence = False
     for c in iterator:
-        if c in '\\':  # escape sequence
+        if c == '\\':  # escape sequence
             escape_sequence = True
-        elif escape_sequence and c not in ' ':
+        elif escape_sequence and c != ' ':
             escape_sequence = False
-        elif c in '+' and separate_rdn:
+        elif c == '+' and separate_rdn:
             dn.append(_add_ava(component, decompose, remove_space, space_around_equal))
             component = ''
             continue
@@ -294,9 +295,47 @@ def parse_dn(dn, escape=False, strip=True):
     return rdns
 
 
-def safe_dn(dn):
-    escaped_dn = ''
-    for rdn in parse_dn(dn, escape=True):
-        escaped_dn += rdn[0] + '=' + rdn[1] + rdn[2]
+def safe_dn(dn, decompose=False, reverse=False):
+    """
+    normalize and escape a dn, if dn is a sequence is joined.
+    the reverse parameter change the join direction of the sequence
+    """
+    if isinstance(dn, SEQUENCE_TYPES):
+        components = [rdn for rdn in dn]
+        if reverse:
+            dn = ','.join(reversed(components))
+        else:
+            dn = ','.join(components)
+    if decompose:
+        escaped_dn = []
+    else:
+        escaped_dn = ''
+    for component in parse_dn(dn, escape=True):
+        if decompose:
+            escaped_dn.append((component[0], component[1], component[2]))
+        else:
+            escaped_dn += component[0] + '=' + component[1] + component[2]
 
     return escaped_dn
+
+
+def safe_rdn(dn, decompose=False):
+    """Returns a list of rdn for the dn, usually there is only one rdn, but it can be more than one when the + sign is used"""
+    escaped_rdn = []
+    one_more = True
+    for component in parse_dn(dn, escape=True):
+        if component[2] == '+' or one_more:
+            if decompose:
+                escaped_rdn.append((component[0], component[1]))
+            else:
+                escaped_rdn.append(component[0] + '=' + component[1])
+            if component[2] == '+':
+                one_more = True
+            else:
+                one_more = False
+                break
+
+    if one_more:
+        raise LDAPInvalidDnError('bad dn')
+
+    return escaped_rdn

@@ -39,7 +39,7 @@ AttrDefs can be accessed either as a dictionary or as a property, spaces are rem
 This eases the use at interactive prompt where you don't have to remember the case of the attribute name. *Autocompletion feature* is enabled, so you can get
 a list of all defined attributes as property just pressing TAB at the interactive prompt.
 
-Each class has a useful representation that summarize the istance status. You can access it directly at the interactive prompt, or in a program with the str() function.
+Each class has a useful representation that summarize the instance status. You can access it directly at the interactive prompt, or in a program with the str() function.
 
 AttrDef class
 -------------

@@ -12,7 +12,7 @@ The following strategies are available:
 
 * LDIF: the request is transformed in a *ldif-change* format and an LDIF output is returned.
 
-* RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times of forever.
+* RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times or forever.
 
 .. sidebar:: Lazy connections
 
@@ -52,6 +52,12 @@ Connection parameters are:
 * check_names: when True attribute names in assertions and filters will be checked against the schema (Server must have schema loaded with the get_info=ALL or get_info=SCHEMA parameter) and search result will be formatted as specified in schema.
 
 * raise_exceptions: when True LDAP operations will raise exceptions (subclasses of LDAPOperationResult) when the result is not one of the following: RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_TRUE, RESULT_REFERRAL.
+
+* pool_name: an optional identifier for the Connection pool when using a pooled connection strategy
+
+* pool_size: size of the connection pool used in a pooled connection strategy
+
+* pool_lifetime: number of seconds before recreating a new connection in a pooled connection strategy
 
 * fast_decoder: when False use the pyasn1 decoder instead of the faster internal decoder. Gives a better output in extended log
 
@@ -252,11 +258,11 @@ Connection attributes:
 
 * check_names: True if you want to check the attribute and object class names against the schema in filters and in add/compare/modify operations
 
-* pool_name: anoptional identifier for the Connection pool when using a pooled connection strategy
+* pool_name: an optional identifier for the Connection pool when using a pooled connection strategy
 
 * pool_size: size of the connection pool used in a pooled connection strategy
 
-* pool_lifetime: number of second before recreating a new connection in a pooled connection strategy
+* pool_lifetime: number of seconds before recreating a new connection in a pooled connection strategy
 
 Controls
 ========

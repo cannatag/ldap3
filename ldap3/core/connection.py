@@ -147,9 +147,8 @@ class Connection(object):
     :type pool_name: str
     :param pool_size: pool size for pooled strategies
     :type pool_size: int
-    :type pool_size: int
     :param pool_lifetime: pool lifetime for pooled strategies
-    :type pool_size: int
+    :type pool_lifetime: int
 
     """
 

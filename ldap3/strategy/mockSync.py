@@ -25,7 +25,6 @@
 from time import sleep
 import json
 
-from .. import MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
 from ..operation.bind import bind_request_to_dict, bind_response_to_dict
 from ..operation.delete import delete_request_to_dict, delete_response_to_dict
 from ..operation.add import add_request_to_dict, add_response_to_dict
@@ -35,7 +34,7 @@ from ..operation.modify import modify_request_to_dict, modify_response_to_dict
 from ..operation.search import search_request_to_dict, search_result_done_response_to_dict, search_result_entry_response_to_dict
 from ..strategy.sync import SyncStrategy
 from ..utils.conv import to_unicode
-from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, check_escape
+from ..utils.conv import json_hook, check_escape
 from ..core.exceptions import LDAPDefinitionError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
@@ -199,12 +198,18 @@ class MockSyncStrategy(SyncStrategy):
     def post_send_search(self, payload):
         message_type, request, controls = payload
         responses = []
-        result = None
+        self.connection.response = []
+        self.connection.result = dict()
         if message_type == 'searchRequest':
             responses, result = self.mock_search(request, controls)
             result['type'] = 'searchResDone'
 
-        self.connection.response = responses
+        for entry in responses:
+            response = search_result_entry_response_to_dict(entry, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
+            response['type'] = 'searchResEntry'
+            self.connection.response.append(response)
+        result = search_result_done_response_to_dict(result)
+        result['type'] = 'searchResDone'
         self.connection.result = result
         return responses
 
@@ -506,7 +511,19 @@ class MockSyncStrategy(SyncStrategy):
         # response_done: LDAPResult
         request = search_request_to_dict(request_message)
         print(request)
-        responses = []
-        result = dict()
+        responses = [{'object': 'cn=test100,ou=test,o=lab',
+                      'attributes': [{'type': 'sn', 'vals': [b'a0', b'b0']},
+                                     {'type': 'cn', 'vals': [b'test100']}]},
+                     {'object': 'cn=test101,ou=test,o=lab',
+                      'attributes': [{'type': 'sn', 'vals': [b'a1', b'b1']},
+                                     {'type': 'cn', 'vals': [b'test101']}]}
+                    ]
+        result_code = 0
+        message = ''
+        result = {'resultCode': result_code,
+                  'matchedDN': to_unicode(''),
+                  'diagnosticMessage': to_unicode(message),
+                  'referral': None
+                  }
 
         return responses, result

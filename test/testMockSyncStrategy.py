@@ -424,9 +424,9 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_single_attribute_1(self):
         self.connection_1.bind()
-        self.connection_1.search('ou=resources', '(cn=admin)', attributes=['sn'])
+        self.connection_1.search('ou=resources', '(cn=admin)', attributes=['cn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-
+        self.assertEqual('admin', self.connection_1.response[0]['attributes']['cn'][0])
 
     def test_search_exact_match_single_attribute_2(self):
         self.connection_2.bind()

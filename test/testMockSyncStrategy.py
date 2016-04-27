@@ -111,7 +111,7 @@ class Test(unittest.TestCase):
         self.connection_1.rebind('cn=user2,ou=test,o=lab', 'test9876')
         self.assertFalse(self.connection_1.bound)
 
-    def test_remove_user_1(self):
+    def test_remove_user_2(self):
         self.connection_2.strategy.remove_user('cn=user1,ou=test,o=lab')
         self.connection_2.bind()
         self.assertTrue(self.connection_2.bound)
@@ -128,6 +128,18 @@ class Test(unittest.TestCase):
         self.connection_2.add('cn=user4,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user4'})
         self.assertTrue('cn=user4,ou=test,o=lab' in self.connection_2.strategy.entries)
 
+    def test_add_entry_already_exists_1(self):
+        self.connection_1.bind()
+        self.connection_1.strategy.add_entry('cn=user5,ou=test,o=lab', {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user5'})
+        self.connection_1.add('cn=user5,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user5'})
+        self.assertEqual(self.connection_1.result['description'], 'entryAlreadyExists')
+
+    def test_add_entry_already_exists_2(self):
+        self.connection_2.bind()
+        self.connection_2.strategy.add_entry('cn=user5,ou=test,o=lab', {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user5'})
+        self.connection_2.add('cn=user5,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user5'})
+        self.assertEqual(self.connection_2.result['description'], 'entryAlreadyExists')
+
     def test_delete_entry_1(self):
         self.connection_1.bind()
         self.connection_1.delete('cn=admin,o=resources')
@@ -137,6 +149,20 @@ class Test(unittest.TestCase):
         self.connection_2.bind()
         self.connection_2.delete('cn=admin,o=resources')
         self.assertTrue('cn=admin,o=resources' not in self.connection_2.strategy.entries)
+
+    def test_delete_entry_nonexisting_1(self):
+        self.connection_1.bind()
+        self.connection_1.strategy.remove_entry('cn=admin,o=resources')
+        self.assertTrue('cn=admin,o=resources' not in self.connection_1.strategy.entries)
+        self.connection_1.delete('cn=admin,o=resources')
+        self.assertEqual(self.connection_1.result['description'], 'noSuchObject')
+
+    def test_delete_entry_nonexisting_2(self):
+        self.connection_2.bind()
+        self.connection_2.strategy.remove_entry('cn=admin,o=resources')
+        self.assertTrue('cn=admin,o=resources' not in self.connection_2.strategy.entries)
+        self.connection_2.delete('cn=admin,o=resources')
+        self.assertEqual(self.connection_2.result['description'], 'noSuchObject')
 
     def test_compare_entry_1(self):
         self.connection_1.bind()
@@ -412,7 +438,7 @@ class Test(unittest.TestCase):
         self.assertTrue('title1' in self.connection_1.strategy.entries[dn]['title'])
         self.assertTrue('title2' in self.connection_1.strategy.entries[dn]['title'])
 
-    def test_modify_replace_not_existing_singlevalue_2(self):
+    def test_modify_replace_not_existing_multivalue_2(self):
         dn = 'cn=user11,ou=test,o=lab'
         self.connection_2.bind()
         self.connection_2.add(dn, 'inetOrgPerson', attributes={'givenname': 'user', 'sn': 'user_sn'})
@@ -432,3 +458,4 @@ class Test(unittest.TestCase):
         self.connection_2.bind()
         self.connection_2.search('ou=resources', '(cn=admin)', attributes=['sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
+

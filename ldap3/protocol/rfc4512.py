@@ -806,7 +806,7 @@ class NameFormInfo(BaseObjectInfo):
         self.may_contain = may_contain
 
     def __repr__(self):
-        r = (linesep + '  Object class: ' + self.object_class) if self.object_class else ''
+        r = (linesep + '  Object class: ' + list_to_string(self.object_class)) if self.object_class else ''
         r += (linesep + '  Must contain: ' + list_to_string(self.must_contain)) if self.must_contain else ''
         r += (linesep + '  May contain: ' + list_to_string(self.may_contain)) if self.may_contain else ''
         return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)

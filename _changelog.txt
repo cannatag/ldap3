@@ -7,6 +7,7 @@
     - MockSyncStrategy performs delete()
     - MockSyncStrategy accepts bind identities in json file
     - MockSyncStrategy accepts directory entries in json file
+    - Fixed schema representation (thanks Conrado)
 
 
 - 1.3.1 2016.04.18

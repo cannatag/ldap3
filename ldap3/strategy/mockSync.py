@@ -22,7 +22,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from time import sleep
 import json
 
 from ..operation.bind import bind_request_to_dict, bind_response_to_dict
@@ -268,7 +267,6 @@ class MockSyncStrategy(SyncStrategy):
         else:  # no user found,  waits for 2 seconds returns invalidCredentials
             result_code = 49
             message = 'invalid credentials'
-            sleep(2)
 
         return {'resultCode': result_code,
                 'matchedDN': to_unicode(''),

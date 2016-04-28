@@ -7,6 +7,10 @@
     {
       "identity": "cn=user2,ou=test,o=lab",
       "password": "test5678"
+    },
+    {
+      "identity": "cn=user3,ou=test,o=lab",
+      "password": "test9012"
     }
   ]
 }

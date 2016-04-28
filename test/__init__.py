@@ -195,7 +195,7 @@ elif location == 'GCNBHPW10-SLAPD':
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.104']
-elif location == 'GCW109227-EDIR':
+elif location == 'W10GC9227-EDIR':
     # test camera
     # test_server = ['sl08',
     #               'sl09',

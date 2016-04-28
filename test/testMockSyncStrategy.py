@@ -124,36 +124,36 @@ class Test(unittest.TestCase):
         self.assertTrue(self.connection_3.result['description'], 'success')
 
     def test_add_user_1(self):
-        self.connection_1.strategy.add_user('cn=user4,ou=test,o=lab', 'test4444')
+        self.connection_1.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444'})
         self.connection_1.rebind('cn=user4,ou=test,o=lab', 'test4444')
         self.assertTrue(self.connection_1.bound)
 
     def test_add_user_2(self):
-        self.connection_2.strategy.add_user('cn=user4,ou=test,o=lab', 'test4444')
+        self.connection_2.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444'})
         self.connection_2.rebind('cn=user4,ou=test,o=lab', 'test4444')
         self.assertTrue(self.connection_2.bound)
 
     def test_add_user_3(self):
-        self.connection_3.strategy.add_user('cn=user4,ou=test,o=lab', 'test4444')
+        self.connection_3.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444'})
         self.connection_3.rebind('cn=user4,ou=test,o=lab', 'test4444')
         self.assertTrue(self.connection_3.bound)
 
     def test_remove_user_1(self):
-        self.connection_1.strategy.remove_user('cn=user2,ou=test,o=lab')
+        self.connection_1.strategy.remove_entry('cn=user2,ou=test,o=lab')
         self.connection_1.bind()
         self.assertTrue(self.connection_1.bound)
         self.connection_1.rebind('cn=user2,ou=test,o=lab', 'test9876')
         self.assertFalse(self.connection_1.bound)
 
     def test_remove_user_2(self):
-        self.connection_2.strategy.remove_user('cn=user1,ou=test,o=lab')
+        self.connection_2.strategy.remove_entry('cn=user1,ou=test,o=lab')
         self.connection_2.bind()
         self.assertTrue(self.connection_2.bound)
         self.connection_2.rebind('cn=user1,ou=test,o=lab', 'test9876')
         self.assertFalse(self.connection_1.bound)
 
     def test_remove_user_3(self):
-        self.connection_3.strategy.remove_user('cn=user1,ou=test,o=lab')
+        self.connection_3.strategy.remove_entry('cn=user1,ou=test,o=lab')
         self.connection_3.bind()
         self.assertTrue(self.connection_3.bound)
         self.connection_3.rebind('cn=user1,ou=test,o=lab', 'test1111')

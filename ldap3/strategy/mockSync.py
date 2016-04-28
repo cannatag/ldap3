@@ -525,8 +525,12 @@ class MockSyncStrategy(SyncStrategy):
                 if entry.endswith(base):
                     candidates.append(entry)
         print(candidates)
-        found = self.evaluate_filter_node(filter_root, candidates)
-        print(found)
+        matched = self.evaluate_filter_node(filter_root, candidates)
+        for match in matched:
+            responses.append({
+                'object': match,
+                'attributes': [{'type': attribute, 'vals': self.entries[match][attribute]} for attribute in self.entries[match] if attribute in attributes]
+            })
         # responses = [{'object': 'cn=test100,ou=test,o=lab',
         #               'attributes': [{'type': 'sn', 'vals': [b'a0', b'b0']},
         #                              {'type': 'cn', 'vals': [b'test100']}]},
@@ -541,6 +545,18 @@ class MockSyncStrategy(SyncStrategy):
         #           'diagnosticMessage': to_unicode(message),
         #           'referral': None
         #           }
+        if responses:
+            result_code = 0
+            message = ''
+        else:
+            result_code = 32
+            message = ''
+
+        result = {'resultCode': result_code,
+                  'matchedDN': to_unicode(''),
+                  'diagnosticMessage': to_unicode(message),
+                  'referral': None
+                  }
 
         return responses, result
 

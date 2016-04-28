@@ -656,18 +656,18 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_single_attribute_1(self):
         self.connection_1.bind()
-        self.connection_1.search('o=lab', '(cn=*)', search_scope=LEVEL, attributes=['cn'])
+        self.connection_1.search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
         self.assertEqual('user0', self.connection_1.response[0]['attributes']['cn'][0])
 
     def test_search_exact_match_single_attribute_2(self):
         self.connection_2.bind()
-        self.connection_2.search('o=lab', '(cn=user2)', attributes=['cn'])
+        self.connection_2.search('o=lab', '(cn=user2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
         self.assertEqual('admin', self.connection_2.response[0]['attributes']['cn'][0])
 
     def test_search_exact_match_single_attribute_3(self):
         self.connection_3.bind()
-        self.connection_3.search('o=lab', '(cn=user3)', attributes=['cn'])
+        self.connection_3.search('o=lab', '(cn=user3)', search_scope=SUBTREE, attributes=['cn', sn])
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertEqual('admin', self.connection_3.response[0]['attributes']['cn'][0])

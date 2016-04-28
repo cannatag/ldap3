@@ -5,6 +5,9 @@
             "raw": {
                 "userPassword": [
                   "test0000"
+                ],
+                "sn": [
+                  "user0_sn"
                 ]
             }
         },
@@ -13,6 +16,9 @@
             "raw": {
                 "userPassword": [
                   "test1111"
+                ],
+                "sn": [
+                  "user1_sn"
                 ]
             }
         },
@@ -21,6 +27,9 @@
             "raw": {
                 "userPassword": [
                   "test2222"
+                ],
+                "sn": [
+                  "user2_sn"
                 ]
             }
         },
@@ -29,6 +38,9 @@
             "raw": {
                 "userPassword": [
                   "test3333"
+                ],
+                "sn": [
+                  "user4_sn"
                 ]
             }
         },

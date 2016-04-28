@@ -105,8 +105,8 @@ class MockSyncStrategy(SyncStrategy):
         self.no_real_dsa = True
         self.pooled = False
         self.can_stream = False
-        self.users = dict()
         self.entries = dict()
+        self.bound = None
 
     def send(self, message_type, request, controls=None):
         self.connection.request = None
@@ -128,14 +128,14 @@ class MockSyncStrategy(SyncStrategy):
             self.connection._usage.closed_sockets += 1
 
     def add_user(self, identity, password):
-        if identity not in self.users:
-            self.users[identity] = password
+        if identity not in self.entries:
+            self.add_entry(identity, {'userPassword': password})
             return True
         return False
 
     def remove_user(self, identity):
-        if identity in self.users:
-            del self.users[identity]
+        if identity in self.entries:
+            del self.entries[identity]
             return True
         return False
 
@@ -165,13 +165,14 @@ class MockSyncStrategy(SyncStrategy):
         if 'users' not in definition:
             raise LDAPDefinitionError('invalid JSON definition, missing "users" section')
 
-        self.users = CaseInsensitiveDict()
+        if not self.entries:
+            self.entries = CaseInsensitiveDict()
         for user in definition['users']:
             if 'identity' not in user:
                 raise LDAPDefinitionError('invalid JSON definition, missing "identity" section')
             if 'password' not in user:
                 raise LDAPDefinitionError('invalid JSON definition, missing "password" section')
-            self.users[user['identity']] = user['password']
+            self.add_entry(user['identity'], {'userPassword': user['password']})
         target.close()
 
     def entries_from_json(self, json_entry_file):
@@ -180,7 +181,9 @@ class MockSyncStrategy(SyncStrategy):
         if 'entries' not in definition:
             raise LDAPDefinitionError('invalid JSON definition, missing "entries" section')
 
-        self.entries = CaseInsensitiveDict()
+        if not self.entries:
+            self.entries = CaseInsensitiveDict()
+
         for entry in definition['entries']:
             if 'raw' not in entry:
                 raise LDAPDefinitionError('invalid JSON definition, missing "raw" section')
@@ -220,7 +223,7 @@ class MockSyncStrategy(SyncStrategy):
             result = bind_response_to_dict(self.mock_bind(request, controls))
             result['type'] = 'bindResponse'
         elif message_type == 'unbindRequest':
-            pass
+            self.bound = None
         elif message_type == 'abandonRequest':
             pass
         elif message_type == 'delRequest':
@@ -259,11 +262,12 @@ class MockSyncStrategy(SyncStrategy):
         if 'simple' in request['authentication']:
             password = request['authentication']['simple']
         else:
-            raise LDAPDefinitionError('only simple bind allowed in Mock strategy')
-
-        if identity in self.users and self.users[request['name']] == password:
+            raise LDAPDefinitionError('only Simple bind allowed in Mock strategy')
+        # checks userPassword for password. userPassword must be a clear text string or a list of clear text strings
+        if identity in self.entries and 'userPassword' in self.entries[identity] and (self.entries[identity]['userPassword'] == password or password in self.entries[identity]['userPassword']):
             result_code = 0
             message = ''
+            self.bound = identity
         else:  # no user found,  waits for 2 seconds returns invalidCredentials
             result_code = 49
             message = 'invalid credentials'

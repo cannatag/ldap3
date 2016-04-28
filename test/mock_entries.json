@@ -1,6 +1,14 @@
 {
     "entries": [
         {
+            "dn": "cn=user0,o=lab",
+            "raw": {
+                "userPassword": [
+                  "test0000"
+                ]
+            }
+        },
+        {
             "dn": "cn=user1,ou=test,o=lab",
             "raw": {
                 "userPassword": [

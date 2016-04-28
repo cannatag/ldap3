@@ -31,7 +31,9 @@ from ..operation.add import add_request_to_dict, add_response_to_dict
 from ..operation.compare import compare_request_to_dict, compare_response_to_dict
 from ..operation.modifyDn import modify_dn_request_to_dict, modify_dn_response_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
-from ..operation.search import search_request_to_dict, search_result_done_response_to_dict, search_result_entry_response_to_dict
+from ..operation.search import search_request_to_dict, search_result_done_response_to_dict, search_result_entry_response_to_dict,\
+    parse_filter, ROOT, AND, OR, NOT, MATCH_APPROX, MATCH_GREATER_OR_EQUAL, MATCH_LESS_OR_EQUAL, MATCH_EXTENSIBLE, MATCH_PRESENT,\
+    MATCH_SUBSTRING, MATCH_EQUAL
 from ..strategy.sync import SyncStrategy
 from ..utils.conv import to_unicode
 from ..utils.conv import json_hook, check_escape
@@ -143,7 +145,9 @@ class MockSyncStrategy(SyncStrategy):
     def add_entry(self, dn, attributes):
         escaped_dn = safe_dn(dn)
         if escaped_dn not in self.entries:
-            self.entries[escaped_dn] = attributes
+            self.entries[escaped_dn] = CaseInsensitiveDict()
+            for attribute in attributes:
+                self.entries[escaped_dn][attribute] = check_escape(attributes[attribute])
             for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
                 if rdn[0] not in self.entries[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
                     self.entries[escaped_dn][rdn[0]] = rdn[1]
@@ -172,14 +176,10 @@ class MockSyncStrategy(SyncStrategy):
         for entry in definition['entries']:
             if 'raw' not in entry:
                 raise LDAPDefinitionError('invalid JSON definition, missing "raw" section')
-            attributes = CaseInsensitiveDict()
-
-            for attribute in entry['raw']:
-                attributes[attribute] = check_escape(entry['raw'][attribute])
 
             if 'dn' not in entry:
                 raise LDAPDefinitionError('invalid JSON definition, missing "dn" section')
-            self.entries[safe_dn(entry['dn'])] = attributes
+            self.add_entry(entry['dn'], entry['raw'])
         target.close()
 
     def post_send_search(self, payload):
@@ -505,20 +505,83 @@ class MockSyncStrategy(SyncStrategy):
         # response_entry: object, attributes
         # response_done: LDAPResult
         request = search_request_to_dict(request_message)
+        responses = []
+        result = dict()
         print(request)
-        responses = [{'object': 'cn=test100,ou=test,o=lab',
-                      'attributes': [{'type': 'sn', 'vals': [b'a0', b'b0']},
-                                     {'type': 'cn', 'vals': [b'test100']}]},
-                     {'object': 'cn=test101,ou=test,o=lab',
-                      'attributes': [{'type': 'sn', 'vals': [b'a1', b'b1']},
-                                     {'type': 'cn', 'vals': [b'test101']}]}
-                    ]
-        result_code = 0
-        message = ''
-        result = {'resultCode': result_code,
-                  'matchedDN': to_unicode(''),
-                  'diagnosticMessage': to_unicode(message),
-                  'referral': None
-                  }
+        base = safe_dn(request['base'])
+        scope = request['scope']
+        attributes = request['attributes']
+        filter_root = parse_filter(request['filter'], self.connection.server.schema)
+        candidates = []
+        if scope == 0:  # base object
+            if base in self.entries:
+                candidates.append(base)
+        elif scope == 1:  # single level
+            for entry in self.entries:
+                if entry.endswith(base) and ',' not in entry[:-len(base)-1]:  # only leafs without commas in the remaining dn
+                    candidates.append(entry)
+        elif scope == 2:  # whole subtree
+            for entry in self.entries:
+                if entry.endswith(base):
+                    candidates.append(entry)
+        print(candidates)
+        found = self.evaluate_filter_node(filter_root, candidates)
+        print(found)
+        # responses = [{'object': 'cn=test100,ou=test,o=lab',
+        #               'attributes': [{'type': 'sn', 'vals': [b'a0', b'b0']},
+        #                              {'type': 'cn', 'vals': [b'test100']}]},
+        #              {'object': 'cn=test101,ou=test,o=lab',
+        #               'attributes': [{'type': 'sn', 'vals': [b'a1', b'b1']},
+        #                              {'type': 'cn', 'vals': [b'test101']}]}
+        #             ]
+        # result_code = 0
+        # message = ''
+        # result = {'resultCode': result_code,
+        #           'matchedDN': to_unicode(''),
+        #           'diagnosticMessage': to_unicode(message),
+        #           'referral': None
+        #           }
 
         return responses, result
+
+    def evaluate_filter_node(self, node, candidates):
+        """After evaluation each 2 sets are added to each MATCH node, one for the matched object and one for unmatched object.
+        The unmatched object set is needed if a superior node is a NOT that reverts the evaluation. The BOOLEAN nodes mix the sets
+        returned by the MATCH nodes"""
+        node.matched = set()
+        node.unmatched = set()
+
+        if node.elements:
+            for element in node.elements:
+                self.evaluate_filter_node(element, candidates)
+
+        if node.tag == ROOT:
+            return node.elements[0].matched
+        elif node.tag == AND:
+            pass
+        elif node.tag == OR:
+            pass
+        elif node.tag == NOT:
+            pass
+        elif node.tag == MATCH_APPROX:
+            pass
+        elif node.tag == MATCH_GREATER_OR_EQUAL:
+            pass
+        elif node.tag == MATCH_LESS_OR_EQUAL:
+            pass
+        elif node.tag == MATCH_EXTENSIBLE:
+            pass
+        elif node.tag == MATCH_PRESENT:
+            for candidate in candidates:
+                if node.assertion['attr'] in self.entries[candidate]:
+                    node.matched.add(candidate)
+                else:
+                    node.unmatched.add(candidate)
+        elif node.tag == MATCH_SUBSTRING:
+            pass
+        elif node.tag == MATCH_EQUAL:
+            for candidate in candidates:
+                if node.assertion['attr'] in self.entries[candidate] and to_unicode(node.assertion['value']) == self.entries[candidate][node.assertion['attr']]:
+                    node.matched.add(candidate)
+                else:
+                    node.unmatched.add(candidate)

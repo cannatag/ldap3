@@ -1,6 +1,30 @@
 {
     "entries": [
         {
+            "dn": "cn=user1,ou=test,o=lab",
+            "raw": {
+                "userPassword": [
+                  "test1111"
+                ]
+            }
+        },
+        {
+            "dn": "cn=user2,ou=test,o=lab",
+            "raw": {
+                "userPassword": [
+                  "test2222"
+                ]
+            }
+        },
+        {
+            "dn": "cn=user3,ou=test,o=lab",
+            "raw": {
+                "userPassword": [
+                  "test3333"
+                ]
+            }
+        },
+        {
             "attributes": {
                 "ACL": [
                     "2#subtree#cn=testSASL2,o=resources#[All Attributes Rights]",

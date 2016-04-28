@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 import json
 
+from .. import SEQUENCE_TYPES
 from ..operation.bind import bind_request_to_dict, bind_response_to_dict
 from ..operation.delete import delete_request_to_dict, delete_response_to_dict
 from ..operation.add import add_request_to_dict, add_response_to_dict
@@ -159,22 +160,6 @@ class MockSyncStrategy(SyncStrategy):
             return True
         return False
 
-    def users_from_json(self, json_user_file):
-        target = open(json_user_file, 'r')
-        definition = json.load(target, object_hook=json_hook)
-        if 'users' not in definition:
-            raise LDAPDefinitionError('invalid JSON definition, missing "users" section')
-
-        if not self.entries:
-            self.entries = CaseInsensitiveDict()
-        for user in definition['users']:
-            if 'identity' not in user:
-                raise LDAPDefinitionError('invalid JSON definition, missing "identity" section')
-            if 'password' not in user:
-                raise LDAPDefinitionError('invalid JSON definition, missing "password" section')
-            self.add_entry(user['identity'], {'userPassword': user['password']})
-        target.close()
-
     def entries_from_json(self, json_entry_file):
         target = open(json_entry_file, 'r')
         definition = json.load(target, object_hook=json_hook)
@@ -193,7 +178,7 @@ class MockSyncStrategy(SyncStrategy):
                 attributes[attribute] = check_escape(entry['raw'][attribute])
 
             if 'dn' not in entry:
-                raise LDAPDefinitionError('invalid JSON definition, missing "raw" section')
+                raise LDAPDefinitionError('invalid JSON definition, missing "dn" section')
             self.entries[safe_dn(entry['dn'])] = attributes
         target.close()
 
@@ -264,13 +249,21 @@ class MockSyncStrategy(SyncStrategy):
         else:
             raise LDAPDefinitionError('only Simple bind allowed in Mock strategy')
         # checks userPassword for password. userPassword must be a clear text string or a list of clear text strings
-        if identity in self.entries and 'userPassword' in self.entries[identity] and (self.entries[identity]['userPassword'] == password or password in self.entries[identity]['userPassword']):
-            result_code = 0
-            message = ''
-            self.bound = identity
-        else:  # no user found,  waits for 2 seconds returns invalidCredentials
+        if identity in self.entries:
+            if 'userPassword' in self.entries[identity]:
+                if self.entries[identity]['userPassword'] == password or password in self.entries[identity]['userPassword']:
+                    result_code = 0
+                    message = ''
+                    self.bound = identity
+                else:
+                    result_code = 49
+                    message = 'invalid credentials'
+            else:  # no user found,  waits for 2 seconds returns invalidCredentials
+                result_code = 49
+                message = 'missing userPassword attribute'
+        else:
             result_code = 49
-            message = 'invalid credentials'
+            message = 'missing object'
 
         return {'resultCode': result_code,
                 'matchedDN': to_unicode(''),

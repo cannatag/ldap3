@@ -130,18 +130,6 @@ class MockSyncStrategy(SyncStrategy):
         if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
-    def add_user(self, identity, password):
-        if identity not in self.entries:
-            self.add_entry(identity, {'userPassword': password})
-            return True
-        return False
-
-    def remove_user(self, identity):
-        if identity in self.entries:
-            del self.entries[identity]
-            return True
-        return False
-
     def add_entry(self, dn, attributes):
         escaped_dn = safe_dn(dn)
         if escaped_dn not in self.entries:

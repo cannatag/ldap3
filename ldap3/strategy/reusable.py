@@ -28,12 +28,21 @@ from os import linesep
 from threading import Thread, Lock
 from time import sleep
 
-from .. import RESTARTABLE, TERMINATE_REUSABLE, LDAP_MAX_INT, get_config_parameter
+from .. import RESTARTABLE, LDAP_MAX_INT, get_config_parameter
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
 from ..utils.log import log, log_enabled, ERROR, BASIC
 
+TERMINATE_REUSABLE = 'TERMINATE_REUSABLE_CONNECTION'
+
+BOGUS_BIND = -1
+BOGUS_UNBIND = -2
+BOGUS_EXTENDED = -3
+BOGUS_ABANDON = -4
+TEST_BIND = -5
+TEST_BIND_SUCCESSFUL = -6
+TEST_BIND_UNSUCCESSFUL = -7
 
 try:
     from queue import Queue
@@ -222,8 +231,14 @@ class ReusableStrategy(BaseStrategy):
                             self.worker.new_connection()
                             if log_enabled(BASIC):
                                 log(BASIC, 'thread respawn')
-                        if message_type not in ['bindRequest', 'unbindRequest']:
-                            if pool.open_pool and self.worker.connection.closed:
+                        if message_type not in ['bindRequest', 'unbindRequest'] or counter == TEST_BIND:
+                            close_worker_connection = False
+                            if counter == TEST_BIND:  # disable lazy worker connection for testing bind
+                                self.worker.connection.lazy = False
+                                if self.worker.connection.closed:  # open connection if closed for testing lazy
+                                    self.worker.connection.open(read_server_info=False)
+                                close_worker_connection = True
+                            elif pool.open_pool and self.worker.connection.closed:
                                 self.worker.connection.open(read_server_info=False)
                                 if pool.tls_pool and not self.worker.connection.tls_started:
                                     self.worker.connection.start_tls(read_server_info=False)
@@ -232,17 +247,16 @@ class ReusableStrategy(BaseStrategy):
                             elif pool.open_pool and not self.worker.connection.closed:  # connection already open, issues a start_tls
                                 if pool.tls_pool and not self.worker.connection.tls_started:
                                     self.worker.connection.start_tls(read_server_info=False)
-                            if self.worker.get_info_from_server:
+                            if self.worker.get_info_from_server and counter != TEST_BIND:
                                 self.worker.connection._fire_deferred()
                                 self.worker.get_info_from_server = False
-
                             exc = None
                             response = None
                             result = None
                             try:
                                 if message_type == 'searchRequest':
                                     response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
-                                elif message_type != 'bindRequest':
+                                else:
                                     response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
                                 result = self.worker.connection.result
                             except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
@@ -253,6 +267,11 @@ class ReusableStrategy(BaseStrategy):
                                     pool._incoming[counter] = (exc, None)
                                 else:
                                     pool._incoming[counter] = (response, result)
+                            if close_worker_connection:  # close the connection open for testing bind
+                                self.worker.connection.unbind()
+                            if TEST_BIND:
+                                self.worker.connection.lazy = True
+
                     self.worker.busy = False
                     pool.request_queue.task_done()
                     self.worker.task_counter += 1
@@ -311,7 +330,8 @@ class ReusableStrategy(BaseStrategy):
                                          raise_exceptions=self.master_connection.raise_exceptions,
                                          lazy=True,
                                          fast_decoder=self.master_connection.fast_decoder,
-                                         receive_timeout=self.master_connection.receive_timeout)
+                                         receive_timeout=self.master_connection.receive_timeout,
+                                         return_empty_attributes=self.master_connection.empty_attributes)
 
             if self.master_connection.server_pool:
                 self.connection.server_pool = self.master_connection.server_pool
@@ -361,14 +381,18 @@ class ReusableStrategy(BaseStrategy):
     def send(self, message_type, request, controls=None):
         if self.pool.started:
             if message_type == 'bindRequest':
-                self.pool.bind_pool = True
-                counter = -1  # -1 stands for bind operation request
+                # a test bind is executed in a single worker only. if successful the pool is bound
+                self.pool.request_queue.put((TEST_BIND, message_type, request, controls))
+                response, result = self.get_response(TEST_BIND)
+                counter = TEST_BIND_SUCCESSFUL if result['result'] == 0 else TEST_BIND_UNSUCCESSFUL
             elif message_type == 'unbindRequest':
                 self.pool.bind_pool = False
-                counter = -2  # -2 stands for unbind operation request
+                counter = BOGUS_UNBIND
+            elif message_type == 'abandonRequest':
+                counter = BOGUS_ABANDON
             elif message_type == 'extendedReq' and self.connection.starting_tls:
                 self.pool.tls_pool = True
-                counter = -3  # -3 stands for start_tls extended operation request
+                counter = BOGUS_EXTENDED
             else:
                 with self.pool.lock:
                     self.pool.counter += 1
@@ -385,16 +409,22 @@ class ReusableStrategy(BaseStrategy):
     def get_response(self, counter, timeout=None):
         if timeout is None:
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
-        if counter == -1:  # send a bogus bindResponse
-            response = list()
-            result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '<bogus Bind response>', 'saslCreds': None}
-        elif counter == -2:  # bogus unbind response
+        if counter == BOGUS_UNBIND:  # bogus unbind response
             response = None
             result = None
-        elif counter == -3:  # bogus startTls extended response
+        elif counter == BOGUS_ABANDON:  # abandon cannot be executed because of multiple connections
+            respone = list()
+            result = {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': '<bogus StartTls response>'}
+        elif counter == BOGUS_EXTENDED:  # bogus startTls extended response
             response = list()
             result = {'result': 0, 'referrals': None, 'responseName': '1.3.6.1.4.1.1466.20037', 'type': 'extendedResp', 'description': 'success', 'responseValue': 'None', 'dn': '', 'message': '<bogus StartTls response>'}
             self.connection.starting_tls = False
+        elif counter == TEST_BIND_SUCCESSFUL:
+            response = list()
+            result = {'description': 'success', 'referrals': None, 'type': 'bindResponse', 'result': 0, 'dn': '', 'message': '', 'saslCreds': None}
+        elif counter == TEST_BIND_UNSUCCESSFUL:
+            response = list()
+            result = {'description': 'invalidCredentials', 'referrals': None, 'type': 'bindResponse', 'result': 49, 'dn': '', 'message': 'invalid credentials', 'saslCreds': None}
         else:
             response = None
             result = None

@@ -97,7 +97,6 @@ class BaseStrategy(object):
             self.connection.closed = False
             if log_enabled(NETWORK):
                 log(NETWORK, 'deferring open connection for <%s>', self.connection)
-
         else:
             if not self.connection.closed and not self.connection._executing_deferred:  # try to close connection if still open
                 self.close()

@@ -264,6 +264,7 @@ class Connection(object):
                 self.strategy = RestartableStrategy(self)
             elif self.strategy_type == REUSABLE:
                 self.strategy = ReusableStrategy(self)
+                self.lazy = False
             elif self.strategy_type == MOCK_SYNC:
                 self.strategy = MockSyncStrategy(self)
             elif self.strategy_type == MOCK_ASYNC:
@@ -310,6 +311,7 @@ class Connection(object):
         s = [
             str(self.server) if self.server else 'None',
             'user: ' + str(self.user),
+            'lazy' if self.lazy else 'not lazy',
             'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
             'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
             _format_socket_endpoints(self.socket),
@@ -948,8 +950,10 @@ class Connection(object):
         with self.lock:
             self._fire_deferred()
             return_value = False
-            if self.strategy._outstanding:
-                if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
+            if self.strategy._outstanding or message_id == 0:
+                # only current  operation should be abandoned, abandon, bind and unbind cannot ever be abandoned,
+                # messagiId 0 is invalid and should be used as a "ping" to keep alive the connection
+                if (message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']) or message_id == 0:
                     request = abandon_operation(message_id)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'ABANDON request: <%s> sent via <%s>', abandon_request_to_dict(request), self)

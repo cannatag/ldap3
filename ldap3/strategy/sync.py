@@ -59,7 +59,6 @@ class SyncStrategy(BaseStrategy):
             except LDAPOperationResult:  # catch errors from server if raise_exception = True
                 self.connection.server._dsa_info = None
                 self.connection.server._schema_info = None
-
     def _start_listen(self):
         if not self.connection.listening and not self.connection.closed:
             self.connection.listening = True

@@ -138,7 +138,7 @@ class RestartableStrategy(SyncStrategy):
                 sleep(self.restartable_sleep_time)
                 if not self.connection.closed:
                     try:  # resetting connection
-                        self.connection.close()
+                        self.connection.unbind()
                     except (socket.error, LDAPSocketOpenError):  # don't trace socket errors because socket could already be closed
                         pass
                     except Exception as e:

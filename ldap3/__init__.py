@@ -149,7 +149,6 @@ RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retry
 RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries - configurable parameter
 
 # reusable strategies (Threaded)
-TERMINATE_REUSABLE = 'TERMINATE_REUSABLE_CONNECTION'
 REUSABLE_THREADED_POOL_SIZE = 10  # configurable parameter
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour - configurable parameter
 DEFAULT_THREADED_POOL_NAME = 'reusable_default_pool'

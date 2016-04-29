@@ -668,6 +668,6 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_single_attribute_3(self):
         self.connection_3.bind()
-        self.connection_3.search('o=lab', '(cn=user3)', search_scope=SUBTREE, attributes=['cn', sn])
+        self.connection_3.search('o=lab', '(cn=user3)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertEqual('admin', self.connection_3.response[0]['attributes']['cn'][0])

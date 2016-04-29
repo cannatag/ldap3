@@ -33,4 +33,4 @@ def abandon_operation(msg_id):
 
 
 def abandon_request_to_dict(request):
-    return {'messageId': str(request[0]), }
+    return {'messageId': str(request)}

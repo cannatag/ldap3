@@ -269,7 +269,7 @@ class ReusableStrategy(BaseStrategy):
                                     pool._incoming[counter] = (response, result)
                             if close_worker_connection:  # close the connection open for testing bind
                                 self.worker.connection.unbind()
-                            if TEST_BIND:
+                            if counter == TEST_BIND:
                                 self.worker.connection.lazy = True
 
                     self.worker.busy = False

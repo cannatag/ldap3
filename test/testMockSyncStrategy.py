@@ -23,7 +23,7 @@
 
 import unittest
 
-from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_SLAPD_2_4, BASE, LEVEL, SUBTREE
+from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_EDIR_8_8_8, BASE, LEVEL, SUBTREE
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_dsa_info, edir_8_8_8_schema
 from test import random_id
@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
         server_1 = Server.from_definition('MockSyncServer', info, schema)
         self.connection_1 = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_SYNC)
-        server_2 = Server('dummy', get_info=OFFLINE_SLAPD_2_4)
+        server_2 = Server('dummy', get_info=OFFLINE_EDIR_8_8_8)
         self.connection_2 = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_SYNC)
         server_3 = Server('dummy')
         self.connection_3 = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC)
@@ -726,85 +726,92 @@ class Test(unittest.TestCase):
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertTrue('user' in self.connection_3.response[0]['attributes']['cn'][0])
 
-def test_search_greater_or_equal_than_string_1(self):
-    self.connection_1.bind()
-    self.connection_1.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_1.result['description'], 'success')
-    self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+    def test_search_greater_or_equal_than_string_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
+    def test_search_greater_or_equal_than_string_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
-def test_search_greater_or_equal_than_string_2(self):
-    self.connection_2.bind()
-    self.connection_2.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_2.result['description'], 'success')
-    self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+    def test_search_greater_or_equal_than_string_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
+    def test_search_greater_or_equal_than_int_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
-def test_search_greater_or_equal_than_string_3(self):
-    self.connection_3.bind()
-    self.connection_3.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_3.result['description'], 'success')
-    self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+    def test_search_greater_or_equal_than_int_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
+    def test_search_greater_or_equal_than_int_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
-def test_search_greater_or_equal_than_int_1(self):
-    self.connection_1.bind()
-    self.connection_1.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_1.result['description'], 'success')
-    self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+    def test_search_less_or_equal_than_string_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
 
+    def test_search_less_or_equal_than_string_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
 
-def test_search_greater_or_equal_than_int_2(self):
-    self.connection_2.bind()
-    self.connection_2.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_2.result['description'], 'success')
-    self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+    def test_search_less_or_equal_than_string_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
 
+    def test_search_less_or_equal_than_int_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
 
-def test_search_greater_or_equal_than_int_3(self):
-    self.connection_3.bind()
-    self.connection_3.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_3.result['description'], 'success')
-    self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+    def test_search_less_or_equal_than_int_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
 
+    def test_search_less_or_equal_than_int_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
 
-def test_search_less_or_equal_than_string_1(self):
-    self.connection_1.bind()
-    self.connection_1.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_1.result['description'], 'success')
-    self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+    def test_search_substring_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(cn=*ser*2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2'])
 
+    def test_search_substring_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(cn=*ser*2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2'])
 
-def test_search_less_or_equal_than_string_2(self):
-    self.connection_2.bind()
-    self.connection_2.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_2.result['description'], 'success')
-    self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
-
-
-def test_search_less_or_equal_than_string_3(self):
-    self.connection_3.bind()
-    self.connection_3.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_3.result['description'], 'success')
-    self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
-
-
-def test_search_less_or_equal_than_int_1(self):
-    self.connection_1.bind()
-    self.connection_1.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_1.result['description'], 'success')
-    self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
-
-
-def test_search_less_or_equal_than_int_2(self):
-    self.connection_2.bind()
-    self.connection_2.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_2.result['description'], 'success')
-    self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
-
-
-def test_search_less_or_equal_than_int_3(self):
-    self.connection_3.bind()
-    self.connection_3.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-    self.assertEqual(self.connection_3.result['description'], 'success')
-    self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+    def test_search_substring_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(cn=*ser*2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2'])

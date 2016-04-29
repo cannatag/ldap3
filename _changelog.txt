@@ -1,16 +1,16 @@
 - 1.3.0 2016.04.29
-    - Added support for MockSyncStrategy (thanks Roxana)
+    - Added support for MockSync strategy (thanks Roxana)
     - Added checked_attributes=True parameter to connection.response_to_json()
     - Added checked_attributes=True parameter to connection.entry_to_json()
-    - MockSyncStrategy performs bind()
-    - MockSyncStrategy performs unbind()
-    - MockSyncStrategy performs delete()
-    - MockSyncStrategy performs compare()
-    - MockSyncStrategy performs modify()
-    - MockSyncStrategy performs modify_dn()
-    - MockSyncStrategy performs abandon()
-    - MockSyncStrategy performs add()
-    - MockSyncStrategy accepts directory entries in json file
+    - MockSync strategy performs bind()
+    - MockSync strategy performs unbind()
+    - MockSync strategy performs delete()
+    - MockSync strategy performs compare()
+    - MockSync strategy performs modify()
+    - MockSync strategy performs modify_dn()
+    - MockSync strategy performs abandon()
+    - MockSync strategy performs add()
+    - MockSync strategy accepts directory entries in json file
     - Fixed schema representation (thanks Conrado)
     - Allow connection.abandon(0), useful to "ping" the server
     - Added connection.abandon() test suite

@@ -23,6 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 import json
+import re
 
 from .. import SEQUENCE_TYPES
 from ..operation.bind import bind_request_to_dict, bind_response_to_dict
@@ -581,7 +582,6 @@ class MockSyncStrategy(SyncStrategy):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            a = to_unicode(node.assertion['attr']).lower()
                             if to_unicode(value).lower() >= to_unicode(attr_value).lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
@@ -598,7 +598,6 @@ class MockSyncStrategy(SyncStrategy):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            a = to_unicode(node.assertion['attr']).lower()
                             if to_unicode(value).lower() <= to_unicode(attr_value).lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
@@ -606,16 +605,42 @@ class MockSyncStrategy(SyncStrategy):
         elif node.tag == MATCH_EXTENSIBLE:
             pass
         elif node.tag == MATCH_PRESENT:
+            attr_name = node.assertion['attr']
             for candidate in candidates:
-                if node.assertion['attr'] in self.entries[candidate]:
+                if attr_name in self.entries[candidate]:
                     node.matched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
         elif node.tag == MATCH_SUBSTRING:
-            pass
-        elif node.tag == MATCH_EQUAL:
+            attr_name = node.assertion['attr']
+            # rebuild the original substring filter
+            if node.assertion['initial']:
+                substring_filter = to_unicode(node.assertion['initial'])
+            else:
+                substring_filter = ''
+
+            if node.assertion['any']:
+                for middle in node.assertion['any']:
+                    substring_filter += '.*' + to_unicode(middle)
+
+            if node.assertion['final']:
+                substring_filter += '.*' + to_unicode(node.assertion['final'])
+
+            regex_filter = re.compile(substring_filter, flags=re.UNICODE)
             for candidate in candidates:
-                if node.assertion['attr'] in self.entries[candidate] and node.assertion['value'] in self.entries[candidate][node.assertion['attr']]:
+                if attr_name in self.entries[candidate]:
+                    for value in self.entries[candidate][attr_name]:
+                        if regex_filter.match(to_unicode(value)):
+                            node.matched.add(candidate)
+                        else:
+                            node.unmatched.add(candidate)
+                else:
+                    node.unmatched.add(candidate)
+        elif node.tag == MATCH_EQUAL:
+            attr_name = node.assertion['attr']
+            attr_value = node.assertion['value']
+            for candidate in candidates:
+                if attr_name in self.entries[candidate] and attr_value in self.entries[candidate][attr_name]:
                     node.matched.add(candidate)
                 else:
                     node.unmatched.add(candidate)

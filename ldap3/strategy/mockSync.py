@@ -570,9 +570,39 @@ class MockSyncStrategy(SyncStrategy):
         elif node.tag == MATCH_APPROX:
             pass
         elif node.tag == MATCH_GREATER_OR_EQUAL:
-            pass
+            attr_name = node.assertion['attr']
+            attr_value = node.assertion['value']
+            for candidate in candidates:
+                if attr_name in self.entries[candidate]:
+                    for value in self.entries[candidate][attr_name]:
+                        if value.isdigit() and attr_value.isdigit():  # int comparison
+                            if int(value) >= int(attr_value):
+                                node.matched.add(candidate)
+                            else:
+                                node.unmatched.add(candidate)
+                        else:
+                            a = to_unicode(node.assertion['attr']).lower()
+                            if to_unicode(value).lower() >= to_unicode(attr_value).lower():  # case insentive string comparison
+                                node.matched.add(candidate)
+                            else:
+                                node.unmatched.add(candidate)
         elif node.tag == MATCH_LESS_OR_EQUAL:
-            pass
+            attr_name = node.assertion['attr']
+            attr_value = node.assertion['value']
+            for candidate in candidates:
+                if attr_name in self.entries[candidate]:
+                    for value in self.entries[candidate][attr_name]:
+                        if value.isdigit() and attr_value.isdigit():  # int comparison
+                            if int(value) <= int(attr_value):
+                                node.matched.add(candidate)
+                            else:
+                                node.unmatched.add(candidate)
+                        else:
+                            a = to_unicode(node.assertion['attr']).lower()
+                            if to_unicode(value).lower() <= to_unicode(attr_value).lower():  # case insentive string comparison
+                                node.matched.add(candidate)
+                            else:
+                                node.unmatched.add(candidate)
         elif node.tag == MATCH_EXTENSIBLE:
             pass
         elif node.tag == MATCH_PRESENT:

@@ -497,7 +497,6 @@ class MockSyncStrategy(SyncStrategy):
         request = search_request_to_dict(request_message)
         responses = []
         result = dict()
-        print(request)
         base = safe_dn(request['base'])
         scope = request['scope']
         attributes = request['attributes']
@@ -514,27 +513,13 @@ class MockSyncStrategy(SyncStrategy):
             for entry in self.entries:
                 if entry.endswith(base):
                     candidates.append(entry)
-        print(candidates)
         matched = self.evaluate_filter_node(filter_root, candidates)
         for match in matched:
             responses.append({
                 'object': match,
                 'attributes': [{'type': attribute, 'vals': self.entries[match][attribute]} for attribute in self.entries[match] if attribute in attributes]
             })
-        # responses = [{'object': 'cn=test100,ou=test,o=lab',
-        #               'attributes': [{'type': 'sn', 'vals': [b'a0', b'b0']},
-        #                              {'type': 'cn', 'vals': [b'test100']}]},
-        #              {'object': 'cn=test101,ou=test,o=lab',
-        #               'attributes': [{'type': 'sn', 'vals': [b'a1', b'b1']},
-        #                              {'type': 'cn', 'vals': [b'test101']}]}
-        #             ]
-        # result_code = 0
-        # message = ''
-        # result = {'resultCode': result_code,
-        #           'matchedDN': to_unicode(''),
-        #           'diagnosticMessage': to_unicode(message),
-        #           'referral': None
-        #           }
+
         if responses:
             result_code = 0
             message = ''
@@ -564,11 +549,22 @@ class MockSyncStrategy(SyncStrategy):
         if node.tag == ROOT:
             return node.elements[0].matched
         elif node.tag == AND:
-            pass
+            for element in node.elements:
+                if not node.matched:
+                    node.matched.update(element.matched)
+                else:
+                    node.matched.intersection_update(element.matched)
+                if not node.unmatched:
+                    node.unmatched.update(element.unmatched)
+                else:
+                    node.unmatched.intersection_update(element.unmatched)
         elif node.tag == OR:
-            pass
+            for element in node.elements:
+                node.matched.update(element.matched)
+                node.unmatched.update(element.unmatched)
         elif node.tag == NOT:
-            pass
+            node.matched = node.elements[0].unmatched
+            node.unmatched = node.elements[0].matched
         elif node.tag == MATCH_APPROX:
             pass
         elif node.tag == MATCH_GREATER_OR_EQUAL:
@@ -587,12 +583,6 @@ class MockSyncStrategy(SyncStrategy):
             pass
         elif node.tag == MATCH_EQUAL:
             for candidate in candidates:
-                print('a', node.assertion['attr'])
-                print('b',  self.entries[candidate])
-                print('c',  node.assertion['value'])
-                print('d', self.entries[candidate][node.assertion['attr']])
-                print('e', node.assertion['attr'] in self.entries[candidate])
-                print('f', node.assertion['value'] in self.entries[candidate][node.assertion['attr']])
                 if node.assertion['attr'] in self.entries[candidate] and node.assertion['value'] in self.entries[candidate][node.assertion['attr']]:
                     node.matched.add(candidate)
                 else:

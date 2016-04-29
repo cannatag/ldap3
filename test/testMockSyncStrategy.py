@@ -671,3 +671,57 @@ class Test(unittest.TestCase):
         self.connection_3.search('o=lab', '(cn=user3)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertEqual('user3', self.connection_3.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_single_attribute_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue('user' in self.connection_1.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_single_attribute_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue('user' in self.connection_2.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_single_attribute_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue('user' in self.connection_3.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_and_filter_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue('user' in self.connection_1.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_and_filter_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue('user' in self.connection_2.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_and_filter_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue('user' in self.connection_3.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_not_filter_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertTrue('user' in self.connection_1.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_not_filter_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertTrue('user' in self.connection_2.response[0]['attributes']['cn'][0])
+
+    def test_search_presence_not_filter_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertTrue('user' in self.connection_3.response[0]['attributes']['cn'][0])

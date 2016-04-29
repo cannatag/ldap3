@@ -568,8 +568,6 @@ class MockSyncStrategy(SyncStrategy):
         elif node.tag == NOT:
             node.matched = node.elements[0].unmatched
             node.unmatched = node.elements[0].matched
-        elif node.tag == MATCH_APPROX:
-            pass
         elif node.tag == MATCH_GREATER_OR_EQUAL:
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
@@ -636,7 +634,7 @@ class MockSyncStrategy(SyncStrategy):
                             node.unmatched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
-        elif node.tag == MATCH_EQUAL:
+        elif node.tag == MATCH_EQUAL or node.tag == MATCH_APPROX:
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
             for candidate in candidates:

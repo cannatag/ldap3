@@ -488,7 +488,7 @@ def search_request_to_dict(request):
             'dereferenceAlias': int(request['derefAliases']),
             'sizeLimit': int(request['sizeLimit']),
             'timeLimit': int(request['timeLimit']),
-            'typeOnly': bool(request['typesOnly']),
+            'typesOnly': bool(request['typesOnly']),
             'filter': filter_to_string(request['filter']),
             'attributes': attributes_to_list(request['attributes'])}
 

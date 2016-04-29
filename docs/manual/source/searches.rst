@@ -558,7 +558,7 @@ server from a Windows client with dual stack IP::
     # Performing the Search operation:
 
     DEBUG:ldap3:BASIC:start SEARCH operation via <ldap://openldap:389 - cleartext - user: cn=admin,o=services - unbound - open - <local: 192.168.137.1:49445 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
-    DEBUG:ldap3:PROTOCOL:SEARCH request <{'attributes': ['objectClass', 'sn'], 'dereferenceAlias': 3, 'filter': '(cn=test*)', 'timeLimit': 0, 'sizeLimit': 0, 'scope': 2, 'typeOnly': False, 'base': 'o=test'}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=services - unbound - open - <local: 192.168.137.1:49445 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
+    DEBUG:ldap3:PROTOCOL:SEARCH request <{'attributes': ['objectClass', 'sn'], 'dereferenceAlias': 3, 'filter': '(cn=test*)', 'timeLimit': 0, 'sizeLimit': 0, 'scope': 2, 'typesOnly': False, 'base': 'o=test'}> sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=services - unbound - open - <local: 192.168.137.1:49445 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:PROTOCOL:new message id <2> generated
     DEBUG:ldap3:NETWORK:sending 1 ldap message for <ldap://openldap:389 - cleartext - user: cn=admin,o=services - unbound - open - <local: 192.168.137.1:49445 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>
     DEBUG:ldap3:EXTENDED:ldap message sent via <ldap://openldap:389 - cleartext - user: cn=admin,o=services - unbound - open - <local: 192.168.137.1:49445 - remote: 192.168.137.104:389> - tls not started - listening - SyncStrategy>:

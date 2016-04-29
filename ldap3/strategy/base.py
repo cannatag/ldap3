@@ -711,7 +711,7 @@ class BaseStrategy(object):
                                            selected_referral['attributes'] or request['attributes'],
                                            request['sizeLimit'],
                                            request['timeLimit'],
-                                           request['typeOnly'],
+                                           request['typesOnly'],
                                            controls=request['controls'])
             elif request['type'] == 'addRequest':
                 referral_connection.add(selected_referral['base'] or request['entry'],

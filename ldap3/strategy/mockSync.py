@@ -496,7 +496,6 @@ class MockSyncStrategy(SyncStrategy):
         # response_done: LDAPResult
         request = search_request_to_dict(request_message)
         responses = []
-        result = dict()
         base = safe_dn(request['base'])
         scope = request['scope']
         attributes = request['attributes']
@@ -517,7 +516,10 @@ class MockSyncStrategy(SyncStrategy):
         for match in matched:
             responses.append({
                 'object': match,
-                'attributes': [{'type': attribute, 'vals': self.entries[match][attribute]} for attribute in self.entries[match] if attribute in attributes]
+                'attributes': [{'type': attribute,
+                                'vals': [] if request['typesOnly'] else self.entries[match][attribute]}
+                               for attribute in self.entries[match]
+                               if attribute in attributes]
             })
 
         if responses:
@@ -533,7 +535,7 @@ class MockSyncStrategy(SyncStrategy):
                   'referral': None
                   }
 
-        return responses, result
+        return responses[:request['sizeLimit']] if request['sizeLimit'] > 0 else responses, result
 
     def evaluate_filter_node(self, node, candidates):
         """After evaluation each 2 sets are added to each MATCH node, one for the matched object and one for unmatched object.

@@ -35,11 +35,11 @@ from ..operation.search import search_request_to_dict, search_result_done_respon
     parse_filter, ROOT, AND, OR, NOT, MATCH_APPROX, MATCH_GREATER_OR_EQUAL, MATCH_LESS_OR_EQUAL, MATCH_EXTENSIBLE, MATCH_PRESENT,\
     MATCH_SUBSTRING, MATCH_EQUAL
 from ..strategy.sync import SyncStrategy
-from ..utils.conv import to_unicode
-from ..utils.conv import json_hook, check_escape
+from ..utils.conv import json_hook, check_escape, to_unicode, to_raw
 from ..core.exceptions import LDAPDefinitionError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
+from ..protocol.sasl.sasl import validate_simple_password
 
 
 # LDAPResult ::= SEQUENCE {
@@ -135,13 +135,15 @@ class MockSyncStrategy(SyncStrategy):
         if escaped_dn not in self.entries:
             self.entries[escaped_dn] = CaseInsensitiveDict()
             for attribute in attributes:
-                self.entries[escaped_dn][attribute] = check_escape(attributes[attribute])
+                if not isinstance(attributes[attribute], SEQUENCE_TYPES):
+                    attributes[attribute] = [attributes[attribute]]
+                self.entries[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
             for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
                 if rdn[0] not in self.entries[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
-                    self.entries[escaped_dn][rdn[0]] = rdn[1]
+                    self.entries[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
                 else:
                     if rdn[1] not in self.entries[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                        self.entries[escaped_dn][rdn[0]].append(rdn[1])
+                        self.entries[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
             return True
         return False
 
@@ -233,7 +235,7 @@ class MockSyncStrategy(SyncStrategy):
         request = bind_request_to_dict(request_message)
         identity = request['name']
         if 'simple' in request['authentication']:
-            password = request['authentication']['simple']
+            password = validate_simple_password(request['authentication']['simple'])
         else:
             raise LDAPDefinitionError('only Simple bind allowed in Mock strategy')
         # checks userPassword for password. userPassword must be a clear text string or a list of clear text strings
@@ -585,7 +587,13 @@ class MockSyncStrategy(SyncStrategy):
             pass
         elif node.tag == MATCH_EQUAL:
             for candidate in candidates:
-                if node.assertion['attr'] in self.entries[candidate] and to_unicode(node.assertion['value']) == self.entries[candidate][node.assertion['attr']]:
+                print('a', node.assertion['attr'])
+                print('b',  self.entries[candidate])
+                print('c',  node.assertion['value'])
+                print('d', self.entries[candidate][node.assertion['attr']])
+                print('e', node.assertion['attr'] in self.entries[candidate])
+                print('f', node.assertion['value'] in self.entries[candidate][node.assertion['attr']])
+                if node.assertion['attr'] in self.entries[candidate] and node.assertion['value'] in self.entries[candidate][node.assertion['attr']]:
                     node.matched.add(candidate)
                 else:
                     node.unmatched.add(candidate)

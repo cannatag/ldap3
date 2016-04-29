@@ -127,10 +127,10 @@ class BaseServerInfo(object):
 
         if schema:
             for attribute in definition['raw']:
-                attributes[attribute] = format_attribute_values(schema, check_escape(attribute), check_escape(definition['raw'][attribute]), custom_formatter)
+                attributes[attribute] = format_attribute_values(schema, check_escape(attribute), [check_escape(value) for value in definition['raw'][attribute]], custom_formatter)
         else:
             for attribute in definition['raw']:
-                attributes[attribute] = check_escape(definition['raw'][attribute])
+                attributes[attribute] = [check_escape(value) for value in definition['raw'][attribute]]
 
         if cls.__name__ != definition['type']:
             raise LDAPDefinitionError('JSON info not of type ' + cls.__name__)

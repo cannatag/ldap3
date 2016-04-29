@@ -36,6 +36,16 @@ def to_unicode(obj):
     return unicode_escape_decode(obj)[0]
 
 
+def to_raw(obj):
+    """Tries to convert to raw bytes"""
+    if isinstance(obj, bytes) or  str == bytes:  # python2
+        return obj
+    else:  # python3
+        if isinstance(obj, SEQUENCE_TYPES):
+            return [to_raw(element) for element in obj]
+        return obj.encode('utf-8')
+
+
 def escape_filter_chars(text):
     """ Escape chars mentioned in RFC4515. """
     output = text.replace('\\', r'\5c')
@@ -70,7 +80,7 @@ def prepare_for_stream(value):
 
 
 def check_escape(raw_string):
-    if '\\' not in raw_string:
+    if '\\' not in raw_string or isinstance(raw_string, bytes):
         return raw_string
 
     escaped = ''

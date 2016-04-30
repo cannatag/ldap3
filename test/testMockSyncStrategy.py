@@ -694,37 +694,52 @@ class Test(unittest.TestCase):
         self.connection_1.bind()
         self.connection_1.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-        self.assertTrue('user' in self.connection_1.response[0]['attributes']['cn'][0])
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
     def test_search_presence_and_filter_2(self):
         self.connection_2.bind()
         self.connection_2.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
-        self.assertTrue('user' in self.connection_2.response[0]['attributes']['cn'][0])
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
     def test_search_presence_and_filter_3(self):
         self.connection_3.bind()
         self.connection_3.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
-        self.assertTrue('user' in self.connection_3.response[0]['attributes']['cn'][0])
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user0', 'user1'])
+
+    def test_search_presence_and_filter_no_such_object_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'noSuchObject')
+
+    def test_search_presence_and_filter_no_such_object_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'noSuchObject')
+
+    def test_search_presence_and_filter_no_such_object_3(self):
+        self.connection_3.bind()
+        self.connection_3.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'noSuchObject')
 
     def test_search_exact_match_not_filter_1(self):
         self.connection_1.bind()
         self.connection_1.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-        self.assertTrue('user' in self.connection_1.response[0]['attributes']['cn'][0])
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
     def test_search_exact_match_not_filter_2(self):
         self.connection_2.bind()
         self.connection_2.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
-        self.assertTrue('user' in self.connection_2.response[0]['attributes']['cn'][0])
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
     def test_search_exact_match_not_filter_3(self):
         self.connection_3.bind()
         self.connection_3.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
-        self.assertTrue('user' in self.connection_3.response[0]['attributes']['cn'][0])
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
 
     def test_search_greater_or_equal_than_string_1(self):
         self.connection_1.bind()
@@ -815,3 +830,4 @@ class Test(unittest.TestCase):
         self.connection_3.search('o=lab', '(cn=*ser*2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2'])
+

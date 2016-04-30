@@ -33,7 +33,7 @@ testcase_id = random_id()
 
 class Test(unittest.TestCase):
     def setUp(self):
-        # The mock server can be defined in two different ways, so tests are duplicated
+        # The mock server can be defined in two different ways, so tests are duplicated, connection_3 is without schema
         schema = SchemaInfo.from_json(edir_8_8_8_schema)
         info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
         server_1 = Server.from_definition('MockSyncServer', info, schema)
@@ -708,20 +708,38 @@ class Test(unittest.TestCase):
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
-    def test_search_presence_and_filter_no_such_object_1(self):
+    def test_search_incorrect_base_1(self):
         self.connection_1.bind()
-        self.connection_1.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_1.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'noSuchObject')
 
-    def test_search_presence_and_filter_no_such_object_2(self):
+    def test_search_incorrect_base_2(self):
         self.connection_2.bind()
-        self.connection_2.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_2.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'noSuchObject')
 
-    def test_search_presence_and_filter_no_such_object_3(self):
+    def test_search_incorrect_base_3(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'noSuchObject')
+
+    def test_search_presence_and_filter_no_entries_found_1(self):
+        self.connection_1.bind()
+        self.connection_1.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_1.result['description'], 'success')
+        self.assertEqual(len(self.connection_1.response), 0)
+
+    def test_search_presence_and_filter_no_entries_found_2(self):
+        self.connection_2.bind()
+        self.connection_2.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_2.result['description'], 'success')
+        self.assertEqual(len(self.connection_2.response), 0)
+
+    def test_search_presence_and_filter_no_entries_found_3(self):
         self.connection_3.bind()
         self.connection_3.search('o=lab', '(&(cn=*)(sn=user_nonexistant))', search_scope=SUBTREE, attributes=['cn', 'sn'])
-        self.assertEqual(self.connection_3.result['description'], 'noSuchObject')
+        self.assertEqual(self.connection_3.result['description'], 'success')
+        self.assertEqual(len(self.connection_3.response), 0)
 
     def test_search_exact_match_not_filter_1(self):
         self.connection_1.bind()

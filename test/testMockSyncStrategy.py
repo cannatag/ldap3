@@ -42,9 +42,22 @@ class Test(unittest.TestCase):
         self.connection_2 = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_SYNC)
         server_3 = Server('dummy')
         self.connection_3 = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC)
-        self.connection_1.strategy.entries_from_json('mock_entries.json')
-        self.connection_2.strategy.entries_from_json('mock_entries.json')
-        self.connection_3.strategy.entries_from_json('mock_entries.json')
+        # creates fixtures
+        self.connection_1.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
+        self.connection_2.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
+        self.connection_3.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
+        self.connection_1.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1})
+        self.connection_2.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1})
+        self.connection_3.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1})
+        self.connection_1.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2})
+        self.connection_2.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2})
+        self.connection_3.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2})
+        self.connection_1.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3})
+        self.connection_2.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3})
+        self.connection_3.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3})
+        self.connection_1.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4})
+        self.connection_2.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4})
+        self.connection_3.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4})
 
     def tearDown(self):
         self.connection_1.unbind()
@@ -110,18 +123,21 @@ class Test(unittest.TestCase):
 
     def test_delete_1(self):
         self.connection_1.bind()
-        self.connection_1.delete('cn=admin,o=resources')
+        self.connection_1.delete('cn=user1,ou=test,o=lab')
         self.assertTrue(self.connection_1.result['description'], 'success')
+        self.assertTrue('cn=user1,ou=test,o=lab' not in self.connection_1.strategy.entries)
 
     def test_delete_2(self):
         self.connection_2.bind()
-        self.connection_2.delete('cn=admin,o=resources')
+        self.connection_2.delete('cn=user2,ou=test,o=lab')
         self.assertTrue(self.connection_2.result['description'], 'success')
+        self.assertTrue('cn=user2,ou=test,o=lab' not in self.connection_2.strategy.entries)
 
     def test_delete_3(self):
         self.connection_3.bind()
-        self.connection_3.delete('cn=admin,o=resources')
+        self.connection_3.delete('cn=user3,ou=test,o=lab')
         self.assertTrue(self.connection_3.result['description'], 'success')
+        self.assertTrue('cn=user3,ou=test,o=lab' not in self.connection_3.strategy.entries)
 
     def test_add_user_1(self):
         self.connection_1.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444'})
@@ -150,14 +166,14 @@ class Test(unittest.TestCase):
         self.connection_2.bind()
         self.assertTrue(self.connection_2.bound)
         self.connection_2.rebind('cn=user1,ou=test,o=lab', 'test9876')
-        self.assertFalse(self.connection_1.bound)
+        self.assertFalse(self.connection_2.bound)
 
     def test_remove_user_3(self):
         self.connection_3.strategy.remove_entry('cn=user1,ou=test,o=lab')
         self.connection_3.bind()
         self.assertTrue(self.connection_3.bound)
         self.connection_3.rebind('cn=user1,ou=test,o=lab', 'test1111')
-        self.assertFalse(self.connection_1.bound)
+        self.assertFalse(self.connection_3.bound)
 
     def test_add_entry_1(self):
         self.connection_1.bind()
@@ -192,61 +208,46 @@ class Test(unittest.TestCase):
         self.connection_3.add('cn=user_test,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user_test_sn'})
         self.assertEqual(self.connection_3.result['description'], 'entryAlreadyExists')
 
-    def test_delete_entry_1(self):
-        self.connection_1.bind()
-        self.connection_1.delete('cn=admin,o=resources')
-        self.assertTrue('cn=admin,o=resources' not in self.connection_1.strategy.entries)
-
-    def test_delete_entry_2(self):
-        self.connection_2.bind()
-        self.connection_2.delete('cn=admin,o=resources')
-        self.assertTrue('cn=admin,o=resources' not in self.connection_2.strategy.entries)
-
-    def test_delete_entry_3(self):
-        self.connection_3.bind()
-        self.connection_3.delete('cn=admin,o=resources')
-        self.assertTrue('cn=admin,o=resources' not in self.connection_3.strategy.entries)
-
     def test_delete_entry_nonexisting_1(self):
         self.connection_1.bind()
-        self.connection_1.strategy.remove_entry('cn=admin,o=resources')
-        self.assertTrue('cn=admin,o=resources' not in self.connection_1.strategy.entries)
-        self.connection_1.delete('cn=admin,o=resources')
+        self.connection_1.strategy.remove_entry('cn=user1,ou=test,o=lab')
+        self.assertTrue('cn=user1,ou=test,o=lab' not in self.connection_1.strategy.entries)
+        self.connection_1.delete('cn=user1,ou=test,o=lab')
         self.assertEqual(self.connection_1.result['description'], 'noSuchObject')
 
     def test_delete_entry_nonexisting_2(self):
         self.connection_2.bind()
-        self.connection_2.strategy.remove_entry('cn=admin,o=resources')
-        self.assertTrue('cn=admin,o=resources' not in self.connection_2.strategy.entries)
-        self.connection_2.delete('cn=admin,o=resources')
+        self.connection_2.strategy.remove_entry('cn=user2,ou=test,o=lab')
+        self.assertTrue('cn=user2,ou=test,o=lab' not in self.connection_2.strategy.entries)
+        self.connection_2.delete('cn=user2,ou=test,o=lab')
         self.assertEqual(self.connection_2.result['description'], 'noSuchObject')
 
     def test_delete_entry_nonexisting_3(self):
         self.connection_3.bind()
-        self.connection_3.strategy.remove_entry('cn=admin,o=resources')
-        self.assertTrue('cn=admin,o=resources' not in self.connection_3.strategy.entries)
-        self.connection_3.delete('cn=admin,o=resources')
+        self.connection_3.strategy.remove_entry('cn=user3,ou=test,o=lab')
+        self.assertTrue('cn=user3,ou=test,o=lab' not in self.connection_3.strategy.entries)
+        self.connection_3.delete('cn=user3,ou=test,o=lab')
         self.assertEqual(self.connection_3.result['description'], 'noSuchObject')
 
     def test_compare_entry_1(self):
         self.connection_1.bind()
-        self.connection_1.compare('cn=admin,o=resources', 'sn', 'admin')
+        self.connection_1.compare('cn=user1,ou=test,o=lab', 'sn', 'user1_sn')
         self.assertTrue(self.connection_1.result['description'], 'compareTrue')
-        self.connection_1.compare('cn=admin,o=resources', 'sn', 'bad_value')
+        self.connection_1.compare('cn=user1,ou=test,o=lab', 'sn', 'bad_sn')
         self.assertTrue(self.connection_1.result['description'], 'compareFalse')
 
     def test_compare_entry_2(self):
         self.connection_2.bind()
-        self.connection_2.compare('cn=admin,o=resources', 'sn', 'admin')
+        self.connection_2.compare('cn=user2,ou=test,o=lab', 'sn', 'user2_sn')
         self.assertTrue(self.connection_2.result['description'], 'compareTrue')
-        self.connection_2.compare('cn=admin,o=resources', 'sn', 'bad_value')
+        self.connection_2.compare('cn=user2,ou=test,o=lab', 'sn', 'bad_sn')
         self.assertTrue(self.connection_2.result['description'], 'compareFalse')
 
     def test_compare_entry_3(self):
         self.connection_3.bind()
-        self.connection_3.compare('cn=admin,o=resources', 'sn', 'admin')
+        self.connection_3.compare('cn=user3,ou=test,o=lab', 'sn', 'user3_sn')
         self.assertTrue(self.connection_3.result['description'], 'compareTrue')
-        self.connection_3.compare('cn=admin,o=resources', 'sn', 'bad_value')
+        self.connection_3.compare('cn=user2,ou=test,o=lab', 'sn', 'bad_sn')
         self.assertTrue(self.connection_3.result['description'], 'compareFalse')
 
     def test_move_dn_1(self):
@@ -295,7 +296,7 @@ class Test(unittest.TestCase):
         self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_3.strategy.entries)
         self.connection_3.modify_dn('cn=user_test,ou=test,o=lab', relative_dn='cn=user_test_renamed')
         self.assertTrue('cn=user_test_renamed,ou=test,o=lab' in self.connection_3.strategy.entries)
-        self.assertFalse('cn=user_test,ou=test,o=lab' in self.connection_1.strategy.entries)
+        self.assertFalse('cn=user_test,ou=test,o=lab' in self.connection_3.strategy.entries)
 
     def test_modify_add_existing_singlevalue_1(self):
         dn = 'cn=user_test,ou=test,o=lab'
@@ -368,9 +369,9 @@ class Test(unittest.TestCase):
         self.connection_3.bind()
         self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added3'])})
+        self.connection_3.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added2'])})
         self.assertTrue('sn_added1' in self.connection_3.strategy.entries[dn]['sn'])
-        self.assertTrue('sn_added3' in self.connection_3.strategy.entries[dn]['sn'])
+        self.assertTrue('sn_added2' in self.connection_3.strategy.entries[dn]['sn'])
 
     def test_modify_add_nonexisting_multivalue_1(self):
         dn = 'cn=user_test,ou=test,o=lab'
@@ -395,9 +396,9 @@ class Test(unittest.TestCase):
         self.connection_3.bind()
         self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added3'])})
+        self.connection_3.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added2'])})
         self.assertTrue('title_added1' in self.connection_3.strategy.entries[dn]['title'])
-        self.assertTrue('title_added3' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertTrue('title_added2' in self.connection_3.strategy.entries[dn]['title'])
 
     def test_modify_delete_nonexisting_attribute_1(self):
         dn = 'cn=user_test,ou=test,o=lab'
@@ -420,7 +421,7 @@ class Test(unittest.TestCase):
         self.connection_3.bind()
         self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added3'])})
+        self.connection_3.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added2'])})
         self.assertEqual(self.connection_3.result['description'], 'noSuchAttribute')
 
     def test_modify_delete_existing_singlevalue_1(self):
@@ -466,9 +467,9 @@ class Test(unittest.TestCase):
     def test_modify_delete_existing_multivalue_3(self):
         dn = 'cn=user_test,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': ['user_test_sn1', 'user_test_sn3', 'user_test_sn3']})
+        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': ['user_test_sn1', 'user_test_sn2', 'user_test_sn3']})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'sn': (MODIFY_DELETE, ['user_test_sn1', 'user_test_sn3'])})
+        self.connection_3.modify(dn, {'sn': (MODIFY_DELETE, ['user_test_sn1', 'user_test_sn2'])})
         self.assertEqual(self.connection_3.result['description'], 'success')
 
     def test_modify_replace_existing_singlevalue_1(self):
@@ -532,12 +533,12 @@ class Test(unittest.TestCase):
     def test_modify_replace_existing_multivalue_3(self):
         dn = 'cn=user_test,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': ['user_test_sn1', 'user_test_sn3', 'user_test_sn3']})
+        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': ['user_test_sn1', 'user_test_sn2', 'user_test_sn3']})
         self.assertTrue(dn in self.connection_3.strategy.entries)
         self.connection_3.modify(dn, {'sn': (MODIFY_REPLACE, ['user_test_sn4', 'user_test_sn5'])})
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertFalse('user_test_sn1' in self.connection_3.strategy.entries[dn]['sn'])
-        self.assertFalse('user_test_sn3' in self.connection_3.strategy.entries[dn]['sn'])
+        self.assertFalse('user_test_sn2' in self.connection_3.strategy.entries[dn]['sn'])
         self.assertFalse('user_test_sn3' in self.connection_3.strategy.entries[dn]['sn'])
         self.assertTrue('user_test_sn4' in self.connection_3.strategy.entries[dn]['sn'])
         self.assertTrue('user_test_sn5' in self.connection_3.strategy.entries[dn]['sn'])
@@ -564,7 +565,7 @@ class Test(unittest.TestCase):
     def test_modify_replace_existing_novalue_3(self):
         dn = 'cn=user_test,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn', 'title': ['title1', 'title3']})
+        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn', 'title': ['title1', 'title2']})
         self.assertTrue(dn in self.connection_3.strategy.entries)
         self.connection_3.modify(dn, {'title': (MODIFY_REPLACE, [])})
         self.assertEqual(self.connection_3.result['description'], 'success')
@@ -649,10 +650,10 @@ class Test(unittest.TestCase):
         self.connection_3.bind()
         self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'title': (MODIFY_REPLACE, ['title1', 'title3'])})
+        self.connection_3.modify(dn, {'title': (MODIFY_REPLACE, ['title1', 'title2'])})
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertTrue('title1' in self.connection_3.strategy.entries[dn]['title'])
-        self.assertTrue('title3' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertTrue('title2' in self.connection_3.strategy.entries[dn]['title'])
 
     def test_search_exact_match_single_attribute_1(self):
         self.connection_1.bind()
@@ -692,19 +693,19 @@ class Test(unittest.TestCase):
 
     def test_search_presence_and_filter_1(self):
         self.connection_1.bind()
-        self.connection_1.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_1.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
         self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
     def test_search_presence_and_filter_2(self):
         self.connection_2.bind()
-        self.connection_2.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_2.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
         self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
     def test_search_presence_and_filter_3(self):
         self.connection_3.bind()
-        self.connection_3.search('o=lab', '(&(cn=*)(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_3.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
         self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
@@ -719,9 +720,9 @@ class Test(unittest.TestCase):
         self.assertEqual(self.connection_2.result['description'], 'noSuchObject')
 
     def test_search_incorrect_base_3(self):
-        self.connection_1.bind()
-        self.connection_1.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
-        self.assertEqual(self.connection_1.result['description'], 'noSuchObject')
+        self.connection_3.bind()
+        self.connection_3.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.assertEqual(self.connection_3.result['description'], 'noSuchObject')
 
     def test_search_presence_and_filter_no_entries_found_1(self):
         self.connection_1.bind()
@@ -743,93 +744,93 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_not_filter_1(self):
         self.connection_1.bind()
-        self.connection_1.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_1.search('o=lab', '(!(sn=user0_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertNotEqual(self.connection_1.response[0]['attributes']['cn'][0], 'user0')
 
     def test_search_exact_match_not_filter_2(self):
         self.connection_2.bind()
-        self.connection_2.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_2.search('o=lab', '(!(sn=user0_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
-        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertNotEqual(self.connection_2.response[0]['attributes']['cn'][0], 'user0')
 
     def test_search_exact_match_not_filter_3(self):
         self.connection_3.bind()
-        self.connection_3.search('o=lab', '(!(sn=user_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        self.connection_3.search('o=lab', '(!(sn=user0_sn))', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
-        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertNotEqual(self.connection_3.response[0]['attributes']['cn'][0], 'user0')
 
     def test_search_greater_or_equal_than_string_1(self):
         self.connection_1.bind()
         self.connection_1.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3', 'user4'])
 
     def test_search_greater_or_equal_than_string_2(self):
         self.connection_2.bind()
         self.connection_2.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
-        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3', 'user4'])
 
     def test_search_greater_or_equal_than_string_3(self):
         self.connection_3.bind()
         self.connection_3.search('o=lab', '(userPassword>=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
-        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3', 'user4'])
 
     def test_search_greater_or_equal_than_int_1(self):
         self.connection_1.bind()
         self.connection_1.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user3', 'user4'])
 
     def test_search_greater_or_equal_than_int_2(self):
         self.connection_2.bind()
         self.connection_2.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
-        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user3', 'user4'])
 
     def test_search_greater_or_equal_than_int_3(self):
         self.connection_3.bind()
         self.connection_3.search('o=lab', '(revision>=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
-        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3'])
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user3', 'user4'])
 
     def test_search_less_or_equal_than_string_1(self):
         self.connection_1.bind()
         self.connection_1.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user0', 'user1', 'user2'])
 
     def test_search_less_or_equal_than_string_2(self):
         self.connection_2.bind()
         self.connection_2.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
-        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user0', 'user1', 'user2'])
 
     def test_search_less_or_equal_than_string_3(self):
         self.connection_3.bind()
         self.connection_3.search('o=lab', '(userPassword<=test2222)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
-        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user0', 'user1', 'user2'])
 
     def test_search_less_or_equal_than_int_1(self):
         self.connection_1.bind()
         self.connection_1.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_1.result['description'], 'success')
-        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+        self.assertTrue(self.connection_1.response[0]['attributes']['cn'][0] in ['user0', 'user1', 'user2'])
 
     def test_search_less_or_equal_than_int_2(self):
         self.connection_2.bind()
         self.connection_2.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_2.result['description'], 'success')
-        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+        self.assertTrue(self.connection_2.response[0]['attributes']['cn'][0] in ['user0', 'user1', 'user2'])
 
     def test_search_less_or_equal_than_int_3(self):
         self.connection_3.bind()
         self.connection_3.search('o=lab', '(revision<=2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
         self.assertEqual(self.connection_3.result['description'], 'success')
-        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user2', 'user1', 'user0'])
+        self.assertTrue(self.connection_3.response[0]['attributes']['cn'][0] in ['user0', 'user1', 'user2'])
 
     def test_search_substring_1(self):
         self.connection_1.bind()

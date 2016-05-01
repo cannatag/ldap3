@@ -443,7 +443,7 @@ def filter_to_string(filter_object):
         for f in filter_object['and']:
             filter_string += filter_to_string(f)
     elif filter_type == 'or':
-        filter_string += '!'
+        filter_string += '|'
         for f in filter_object['or']:
             filter_string += filter_to_string(f)
     elif filter_type == 'notFilter':

@@ -26,7 +26,7 @@
 from base64 import b64encode, b64decode
 import datetime
 from codecs import unicode_escape_decode
-from .. import SEQUENCE_TYPES
+from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
@@ -38,13 +38,16 @@ def to_unicode(obj):
 
 def to_raw(obj):
     """Tries to convert to raw bytes"""
-    if isinstance(obj, bytes) or  str == bytes:  # python2
-        return obj
-    else:  # python3
+    if isinstance(obj, NUMERIC_TYPES):
+        obj = str(obj)
+
+    if not (isinstance(obj, bytes) or str == bytes):  # python2
         if isinstance(obj, SEQUENCE_TYPES):
             return [to_raw(element) for element in obj]
-        return obj.encode('utf-8')
+        elif isinstance(obj, STRING_TYPES):
+            return obj.encode('utf-8')
 
+    return obj
 
 def escape_filter_chars(text):
     """ Escape chars mentioned in RFC4515. """

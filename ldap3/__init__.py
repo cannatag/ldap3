@@ -23,6 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from types import GeneratorType
+
 # authentication
 ANONYMOUS = 'ANONYMOUS'
 SIMPLE = 'SIMPLE'
@@ -288,8 +290,8 @@ if str != bytes:  # python 3
 else:  # python 2
     STRING_TYPES = (str, unicode)
 
-from types import GeneratorType
 SEQUENCE_TYPES = (list, tuple, GeneratorType)
+NUMERIC_TYPES = (int, float)
 
 # older and longer constants
 AUTH_ANONYMOUS = ANONYMOUS

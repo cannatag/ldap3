@@ -74,7 +74,7 @@ class MockBaseStrategy(object):
         if escaped_dn not in self.entries:
             self.entries[escaped_dn] = CaseInsensitiveDict()
             for attribute in attributes:
-                if not isinstance(attributes[attribute], SEQUENCE_TYPES):
+                if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entries attributes are always lists of bytes values
                     attributes[attribute] = [attributes[attribute]]
                 self.entries[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
             for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes

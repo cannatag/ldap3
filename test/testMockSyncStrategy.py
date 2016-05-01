@@ -121,24 +121,6 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection_3.bound)
         self.assertTrue(self.connection_3.closed)
 
-    def test_delete_1(self):
-        self.connection_1.bind()
-        self.connection_1.delete('cn=user1,ou=test,o=lab')
-        self.assertTrue(self.connection_1.result['description'], 'success')
-        self.assertTrue('cn=user1,ou=test,o=lab' not in self.connection_1.strategy.entries)
-
-    def test_delete_2(self):
-        self.connection_2.bind()
-        self.connection_2.delete('cn=user2,ou=test,o=lab')
-        self.assertTrue(self.connection_2.result['description'], 'success')
-        self.assertTrue('cn=user2,ou=test,o=lab' not in self.connection_2.strategy.entries)
-
-    def test_delete_3(self):
-        self.connection_3.bind()
-        self.connection_3.delete('cn=user3,ou=test,o=lab')
-        self.assertTrue(self.connection_3.result['description'], 'success')
-        self.assertTrue('cn=user3,ou=test,o=lab' not in self.connection_3.strategy.entries)
-
     def test_add_user_1(self):
         self.connection_1.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444'})
         self.connection_1.rebind('cn=user4,ou=test,o=lab', 'test4444')
@@ -175,278 +157,477 @@ class Test(unittest.TestCase):
         self.connection_3.rebind('cn=user1,ou=test,o=lab', 'test1111')
         self.assertFalse(self.connection_3.bound)
 
-    def test_add_entry_1(self):
+    def test_delete_1(self):
         self.connection_1.bind()
-        self.connection_1.add('cn=user_test,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_1.strategy.entries)
+        result = self.connection_1.delete('cn=user1,ou=test,o=lab')
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user1,ou=test,o=lab' not in self.connection_1.strategy.entries)
+
+    def test_delete_2(self):
+        self.connection_2.bind()
+        result = self.connection_2.delete('cn=user2,ou=test,o=lab')
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(['description'], 'success')
+        self.assertTrue('cn=user2,ou=test,o=lab' not in self.connection_2.strategy.entries)
+
+    def test_delete_3(self):
+        self.connection_3.bind()
+        result = self.connection_3.delete('cn=user3,ou=test,o=lab')
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user3,ou=test,o=lab' not in self.connection_3.strategy.entries)
+
+    def test_add_entry_1(self):
+        dn = 'cn=user5,ou=test,o=lab'
+        self.connection_1.bind()
+        result = self.connection_1.add(dn, ['inetOrgPerson', 'top'], {'sn': 'user5_sn'})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue(dn in self.connection_1.strategy.entries)
 
     def test_add_entry_2(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add('cn=user_test,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_2.strategy.entries)
+        result = self.connection_2.add(dn, ['inetOrgPerson', 'top'], {'sn': 'user5_sn'})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue(dn in self.connection_2.strategy.entries)
 
     def test_add_entry_3(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add('cn=user_test,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_3.strategy.entries)
+        result = self.connection_3.add(dn, ['inetOrgPerson', 'top'], {'sn': 'user5_sn'})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue(dn in self.connection_3.strategy.entries)
 
     def test_add_entry_already_exists_1(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.strategy.add_entry('cn=user_test,ou=test,o=lab', {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user_test_sn'})
-        self.connection_1.add('cn=user_test,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user_test_sn'})
-        self.assertEqual(self.connection_1.result['description'], 'entryAlreadyExists')
+        self.connection_1.strategy.add_entry(dn, {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user5_sn'})
+        result = self.connection_1.add(dn, ['inetOrgPerson', 'top'], {'sn': 'user5_sn'})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertEqual(result['description'], 'entryAlreadyExists')
 
     def test_add_entry_already_exists_2(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.strategy.add_entry('cn=user_test,ou=test,o=lab', {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user_test_sn'})
-        self.connection_2.add('cn=user_test,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user_test_sn'})
-        self.assertEqual(self.connection_2.result['description'], 'entryAlreadyExists')
+        self.connection_2.strategy.add_entry(dn, {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user5_sn'})
+        result = self.connection_2.add(dn, ['inetOrgPerson', 'top'], {'sn': 'user5_sn'})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertEqual(result['description'], 'entryAlreadyExists')
 
     def test_add_entry_already_exists_3(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.strategy.add_entry('cn=user_test,ou=test,o=lab', {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user_test_sn'})
-        self.connection_3.add('cn=user_test,ou=test,o=lab', ['inetOrgPerson', 'top'], {'sn': 'user_test_sn'})
-        self.assertEqual(self.connection_3.result['description'], 'entryAlreadyExists')
+        self.connection_3.strategy.add_entry(dn, {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user5_sn'})
+        result = self.connection_3.add(dn, ['inetOrgPerson', 'top'], {'sn': 'user5_sn'})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertEqual(result['description'], 'entryAlreadyExists')
 
     def test_delete_entry_nonexisting_1(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.strategy.remove_entry('cn=user1,ou=test,o=lab')
-        self.assertTrue('cn=user1,ou=test,o=lab' not in self.connection_1.strategy.entries)
-        self.connection_1.delete('cn=user1,ou=test,o=lab')
-        self.assertEqual(self.connection_1.result['description'], 'noSuchObject')
+        self.assertTrue(dn not in self.connection_1.strategy.entries)
+        result = self.connection_1.delete(dn)
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertEqual(result['description'], 'noSuchObject')
 
     def test_delete_entry_nonexisting_2(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.strategy.remove_entry('cn=user2,ou=test,o=lab')
-        self.assertTrue('cn=user2,ou=test,o=lab' not in self.connection_2.strategy.entries)
-        self.connection_2.delete('cn=user2,ou=test,o=lab')
-        self.assertEqual(self.connection_2.result['description'], 'noSuchObject')
+        self.assertTrue(dn not in self.connection_2.strategy.entries)
+        result = self.connection_2.delete(dn)
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertEqual(result['description'], 'noSuchObject')
 
     def test_delete_entry_nonexisting_3(self):
+        dn = 'cn=user5,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.strategy.remove_entry('cn=user3,ou=test,o=lab')
-        self.assertTrue('cn=user3,ou=test,o=lab' not in self.connection_3.strategy.entries)
-        self.connection_3.delete('cn=user3,ou=test,o=lab')
-        self.assertEqual(self.connection_3.result['description'], 'noSuchObject')
+        self.assertTrue(dn not in self.connection_3.strategy.entries)
+        result = self.connection_3.delete(dn)
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertEqual(result['description'], 'noSuchObject')
 
     def test_compare_entry_1(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.compare('cn=user1,ou=test,o=lab', 'sn', 'user1_sn')
-        self.assertTrue(self.connection_1.result['description'], 'compareTrue')
-        self.connection_1.compare('cn=user1,ou=test,o=lab', 'sn', 'bad_sn')
-        self.assertTrue(self.connection_1.result['description'], 'compareFalse')
+        result = self.connection_1.compare(dn, 'sn', 'user4_sn')
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'compareTrue')
+        result = self.connection_1.compare(dn, 'sn', 'bad_sn')
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'compareFalse')
 
     def test_compare_entry_2(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.compare('cn=user2,ou=test,o=lab', 'sn', 'user2_sn')
-        self.assertTrue(self.connection_2.result['description'], 'compareTrue')
-        self.connection_2.compare('cn=user2,ou=test,o=lab', 'sn', 'bad_sn')
-        self.assertTrue(self.connection_2.result['description'], 'compareFalse')
+        result = self.connection_2.compare(dn, 'sn', 'user4_sn')
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'compareTrue')
+        result = self.connection_2.compare(dn, 'sn', 'bad_sn')
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'compareFalse')
 
     def test_compare_entry_3(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.compare('cn=user3,ou=test,o=lab', 'sn', 'user3_sn')
-        self.assertTrue(self.connection_3.result['description'], 'compareTrue')
-        self.connection_3.compare('cn=user2,ou=test,o=lab', 'sn', 'bad_sn')
-        self.assertTrue(self.connection_3.result['description'], 'compareFalse')
+        result = self.connection_3.compare(dn, 'sn', 'user4_sn')
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'compareTrue')
+        result = self.connection_3.compare(dn, 'sn', 'bad_sn')
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'compareFalse')
 
     def test_move_dn_1(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add('cn=user_test,ou=test,o=lab', 'inetOrgPerson', attributes = {'givenname': 'user_test', 'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_1.strategy.entries)
-        self.connection_1.modify_dn('cn=user_test,ou=test,o=lab', relative_dn='cn=user_test', new_superior='ou=moved,o=lab')
-        self.assertTrue('cn=user_test,ou=moved,o=lab' in self.connection_1.strategy.entries)
-        self.assertFalse('cn=user_test,ou=test,o=lab' in self.connection_1.strategy.entries)
+        self.assertTrue(dn in self.connection_1.strategy.entries)
+        result = self.connection_1.modify_dn(dn, relative_dn='cn=user4', new_superior='ou=moved,o=lab')
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user4,ou=moved,o=lab' in self.connection_1.strategy.entries)
+        self.assertFalse(dn in self.connection_1.strategy.entries)
 
     def test_move_dn_2(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add('cn=user_test,ou=test,o=lab', 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_2.strategy.entries)
-        self.connection_2.modify_dn('cn=user_test,ou=test,o=lab', relative_dn='cn=user_test', new_superior='ou=moved,o=lab')
-        self.assertTrue('cn=user_test,ou=moved,o=lab' in self.connection_2.strategy.entries)
-        self.assertFalse('cn=user,ou=test,o=lab' in self.connection_2.strategy.entries)
+        self.assertTrue(dn in self.connection_2.strategy.entries)
+        result = self.connection_2.modify_dn(dn, relative_dn='cn=user4', new_superior='ou=moved,o=lab')
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user4,ou=moved,o=lab' in self.connection_2.strategy.entries)
+        self.assertFalse(dn in self.connection_2.strategy.entries)
 
     def test_move_dn_3(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add('cn=user_test,ou=test,o=lab', 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_3.strategy.entries)
-        self.connection_3.modify_dn('cn=user_test,ou=test,o=lab', relative_dn='cn=user_test', new_superior='ou=moved,o=lab')
-        self.assertTrue('cn=user_test,ou=moved,o=lab' in self.connection_3.strategy.entries)
-        self.assertFalse('cn=user_test,ou=test,o=lab' in self.connection_3.strategy.entries)
+        self.assertTrue(dn in self.connection_3.strategy.entries)
+        result = self.connection_3.modify_dn(dn, relative_dn='cn=user4', new_superior='ou=moved,o=lab')
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user4,ou=moved,o=lab' in self.connection_3.strategy.entries)
+        self.assertFalse(dn in self.connection_3.strategy.entries)
 
     def test_rename_dn_1(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add('cn=user_test,ou=test,o=lab', 'inetOrgPerson', attributes = {'givenname': 'user_test', 'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_1.strategy.entries)
-        self.connection_1.modify_dn('cn=user_test,ou=test,o=lab', relative_dn='cn=user_test_renamed')
-        self.assertTrue('cn=user_test_renamed,ou=test,o=lab' in self.connection_1.strategy.entries)
-        self.assertFalse('cn=user_test,ou=test,o=lab' in self.connection_1.strategy.entries)
+        self.assertTrue(dn in self.connection_1.strategy.entries)
+        result = self.connection_1.modify_dn(dn, relative_dn='cn=user_renamed')
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user_renamed,ou=test,o=lab' in self.connection_1.strategy.entries)
+        self.assertFalse(dn in self.connection_1.strategy.entries)
 
     def test_rename_dn_2(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add('cn=user_test,ou=test,o=lab', 'inetOrgPerson', attributes = {'givenname': 'user_test', 'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_2.strategy.entries)
-        self.connection_2.modify_dn('cn=user_test,ou=test,o=lab', relative_dn='cn=user_test_renamed')
-        self.assertTrue('cn=user_test_renamed,ou=test,o=lab' in self.connection_2.strategy.entries)
-        self.assertFalse('cn=user_test,ou=test,o=lab' in self.connection_2.strategy.entries)
+        self.assertTrue(dn in self.connection_2.strategy.entries)
+        result = self.connection_2.modify_dn(dn, relative_dn='cn=user_renamed')
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user_renamed,ou=test,o=lab' in self.connection_2.strategy.entries)
+        self.assertFalse(dn in self.connection_2.strategy.entries)
 
     def test_rename_dn_3(self):
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add('cn=user_test,ou=test,o=lab', 'inetOrgPerson', attributes = {'givenname': 'user_test', 'sn': 'user_test_sn'})
-        self.assertTrue('cn=user_test,ou=test,o=lab' in self.connection_3.strategy.entries)
-        self.connection_3.modify_dn('cn=user_test,ou=test,o=lab', relative_dn='cn=user_test_renamed')
-        self.assertTrue('cn=user_test_renamed,ou=test,o=lab' in self.connection_3.strategy.entries)
-        self.assertFalse('cn=user_test,ou=test,o=lab' in self.connection_3.strategy.entries)
+        self.assertTrue(dn in self.connection_3.strategy.entries)
+        result = self.connection_3.modify_dn(dn, relative_dn='cn=user_renamed')
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
+        self.assertTrue('cn=user_renamed,ou=test,o=lab' in self.connection_3.strategy.entries)
+        self.assertFalse(dn in self.connection_3.strategy.entries)
 
     def test_modify_add_existing_singlevalue_1(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_1.strategy.entries)
-        self.connection_1.modify(dn, {'sn': (MODIFY_ADD, ['sn_added'])})
+        result = self.connection_1.modify(dn, {'sn': (MODIFY_ADD, ['sn_added'])})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('sn_added' in self.connection_1.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_singlevalue_2(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_2.strategy.entries)
-        self.connection_2.modify(dn, {'sn': (MODIFY_ADD, ['sn_added'])})
+        result = self.connection_2.modify(dn, {'sn': (MODIFY_ADD, ['sn_added'])})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('sn_added' in self.connection_2.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_singlevalue_3(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'sn': (MODIFY_ADD, ['sn_added'])})
+        result = self.connection_3.modify(dn, {'sn': (MODIFY_ADD, ['sn_added'])})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('sn_added' in self.connection_3.strategy.entries[dn]['sn'])
 
     def test_modify_add_nonexisting_singlevalue_1(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_1.strategy.entries)
-        self.connection_1.modify(dn, {'title': (MODIFY_ADD, ['title_added'])})
+        result = self.connection_1.modify(dn, {'title': (MODIFY_ADD, ['title_added'])})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('title_added' in self.connection_1.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_singlevalue_2(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_2.strategy.entries)
-        self.connection_2.modify(dn, {'title': (MODIFY_ADD, ['title_added'])})
+        result = self.connection_2.modify(dn, {'title': (MODIFY_ADD, ['title_added'])})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('title_added' in self.connection_2.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_singlevalue_3(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'title': (MODIFY_ADD, ['title_added'])})
+        result = self.connection_3.modify(dn, {'title': (MODIFY_ADD, ['title_added'])})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('title_added' in self.connection_3.strategy.entries[dn]['title'])
 
     def test_modify_add_existing_multivalue_1(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_1.strategy.entries)
-        self.connection_1.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added2'])})
+        result = self.connection_1.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added2'])})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('sn_added1' in self.connection_1.strategy.entries[dn]['sn'])
         self.assertTrue('sn_added2' in self.connection_1.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_multivalue_2(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_2.strategy.entries)
-        self.connection_2.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added2'])})
+        result = self.connection_2.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added2'])})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('sn_added1' in self.connection_2.strategy.entries[dn]['sn'])
         self.assertTrue('sn_added2' in self.connection_2.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_multivalue_3(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added2'])})
+        result = self.connection_3.modify(dn, {'sn': (MODIFY_ADD, ['sn_added1', 'sn_added2'])})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('sn_added1' in self.connection_3.strategy.entries[dn]['sn'])
         self.assertTrue('sn_added2' in self.connection_3.strategy.entries[dn]['sn'])
 
     def test_modify_add_nonexisting_multivalue_1(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_1.strategy.entries)
-        self.connection_1.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added2'])})
+        result = self.connection_1.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added2'])})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('title_added1' in self.connection_1.strategy.entries[dn]['title'])
         self.assertTrue('title_added2' in self.connection_1.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_multivalue_2(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_2.strategy.entries)
-        self.connection_2.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added2'])})
+        result = self.connection_2.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added2'])})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('title_added1' in self.connection_2.strategy.entries[dn]['title'])
         self.assertTrue('title_added2' in self.connection_2.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_multivalue_3(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added2'])})
+        result = self.connection_3.modify(dn, {'title': (MODIFY_ADD, ['title_added1', 'title_added2'])})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertTrue(result['description'], 'success')
         self.assertTrue('title_added1' in self.connection_3.strategy.entries[dn]['title'])
         self.assertTrue('title_added2' in self.connection_3.strategy.entries[dn]['title'])
 
     def test_modify_delete_nonexisting_attribute_1(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_1.strategy.entries)
-        self.connection_1.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added2'])})
-        self.assertEqual(self.connection_1.result['description'], 'noSuchAttribute')
+        result = self.connection_1.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added2'])})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertEqual(result['description'], 'noSuchAttribute')
 
     def test_modify_delete_nonexisting_attribute_2(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_2.strategy.entries)
-        self.connection_2.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added2'])})
-        self.assertEqual(self.connection_2.result['description'], 'noSuchAttribute')
+        result = self.connection_2.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added2'])})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertEqual(result['description'], 'noSuchAttribute')
 
     def test_modify_delete_nonexisting_attribute_3(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added2'])})
-        self.assertEqual(self.connection_3.result['description'], 'noSuchAttribute')
+        result = self.connection_3.modify(dn, {'title': (MODIFY_DELETE, ['title_added1', 'title_added2'])})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertEqual(result['description'], 'noSuchAttribute')
 
     def test_modify_delete_existing_singlevalue_1(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_1.bind()
-        self.connection_1.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_1.strategy.entries)
-        self.connection_1.modify(dn, {'sn': (MODIFY_DELETE, ['user_test_sn'])})
-        self.assertEqual(self.connection_1.result['description'], 'success')
+        result = self.connection_1.modify(dn, {'sn': (MODIFY_DELETE, ['user4_sn'])})
+        if not self.connection_1.strategy.sync:
+            _, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertEqual(result['description'], 'success')
 
     def test_modify_delete_existing_singlevalue_2(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_2.bind()
-        self.connection_2.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_2.strategy.entries)
-        self.connection_2.modify(dn, {'sn': (MODIFY_DELETE, ['user_test_sn'])})
-        self.assertEqual(self.connection_2.result['description'], 'success')
+        result = self.connection_2.modify(dn, {'sn': (MODIFY_DELETE, ['user4_sn'])})
+        if not self.connection_2.strategy.sync:
+            _, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertEqual(result['description'], 'success')
 
     def test_modify_delete_existing_singlevalue_3(self):
-        dn = 'cn=user_test,ou=test,o=lab'
+        dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
-        self.connection_3.add(dn, 'inetOrgPerson', attributes={'givenname': 'user_test', 'sn': 'user_test_sn'})
         self.assertTrue(dn in self.connection_3.strategy.entries)
-        self.connection_3.modify(dn, {'sn': (MODIFY_DELETE, ['user_test_sn'])})
-        self.assertEqual(self.connection_3.result['description'], 'success')
+        result = self.connection_3.modify(dn, {'sn': (MODIFY_DELETE, ['user4_sn'])})
+        if not self.connection_3.strategy.sync:
+            _, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertEqual(result['description'], 'success')
 
     def test_modify_delete_existing_multivalue_1(self):
         dn = 'cn=user_test,ou=test,o=lab'

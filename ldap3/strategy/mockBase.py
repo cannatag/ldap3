@@ -235,10 +235,10 @@ class MockBaseStrategy(object):
         request = compare_request_to_dict(request_message)
         dn = safe_dn(request['entry'])
         attribute = request['attribute']
-        value = request['value']
+        value = to_raw(request['value'])
         if dn in self.entries:
             if attribute in self.entries[dn]:
-                if self.entries[dn][attribute] == value:
+                if value in self.entries[dn][attribute]:
                     result_code = 6
                     message = ''
                 else:
@@ -526,16 +526,19 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             # rebuild the original substring filter
             if node.assertion['initial']:
-                substring_filter = to_unicode(node.assertion['initial'])
+                substring_filter = re.escape(to_unicode(node.assertion['initial']))
             else:
                 substring_filter = ''
 
             if node.assertion['any']:
                 for middle in node.assertion['any']:
-                    substring_filter += '.*' + to_unicode(middle)
+                    substring_filter += '.*' + re.escape(to_unicode(middle))
 
             if node.assertion['final']:
-                substring_filter += '.*' + to_unicode(node.assertion['final'])
+                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final']))
+
+            if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # onyly initial, adds .*
+                substring_filter += '.*'
 
             regex_filter = re.compile(substring_filter, flags=re.UNICODE)
             for candidate in candidates:

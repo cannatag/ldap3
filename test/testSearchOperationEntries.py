@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         self.assertEqual(entries[0].GIVENNAME.value, 'givenname-1')
 
     def test_search_extensible_match(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)

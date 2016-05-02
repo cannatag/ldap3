@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(json_entries), 1)
 
     def test_search_extensible_match(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
@@ -71,7 +71,6 @@ class Test(unittest.TestCase):
 
             json_entries = json.loads(json_response)['entries']
             self.assertTrue(len(json_entries) >= 2)
-
 
     def test_search_present(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'])

@@ -416,7 +416,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('sn_added' in self.connection_1.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added' in self.connection_1.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_singlevalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -427,7 +427,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('sn_added' in self.connection_2.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added' in self.connection_2.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_singlevalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -438,7 +438,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('sn_added' in self.connection_3.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added' in self.connection_3.strategy.entries[dn]['sn'])
 
     def test_modify_add_nonexisting_singlevalue_1(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -449,7 +449,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('title_added' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added' in self.connection_1.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_singlevalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -460,7 +460,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('title_added' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added' in self.connection_2.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_singlevalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -471,7 +471,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('title_added' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added' in self.connection_3.strategy.entries[dn]['title'])
 
     def test_modify_add_existing_multivalue_1(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -482,8 +482,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('sn_added1' in self.connection_1.strategy.entries[dn]['sn'])
-        self.assertTrue('sn_added2' in self.connection_1.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added1' in self.connection_1.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added2' in self.connection_1.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_multivalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -494,8 +494,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('sn_added1' in self.connection_2.strategy.entries[dn]['sn'])
-        self.assertTrue('sn_added2' in self.connection_2.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added1' in self.connection_2.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added2' in self.connection_2.strategy.entries[dn]['sn'])
 
     def test_modify_add_existing_multivalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -506,8 +506,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('sn_added1' in self.connection_3.strategy.entries[dn]['sn'])
-        self.assertTrue('sn_added2' in self.connection_3.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added1' in self.connection_3.strategy.entries[dn]['sn'])
+        self.assertTrue(b'sn_added2' in self.connection_3.strategy.entries[dn]['sn'])
 
     def test_modify_add_nonexisting_multivalue_1(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -518,8 +518,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('title_added1' in self.connection_1.strategy.entries[dn]['title'])
-        self.assertTrue('title_added2' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added1' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added2' in self.connection_1.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_multivalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -530,8 +530,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('title_added1' in self.connection_2.strategy.entries[dn]['title'])
-        self.assertTrue('title_added2' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added1' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added2' in self.connection_2.strategy.entries[dn]['title'])
 
     def test_modify_add_nonexisting_multivalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -542,8 +542,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertTrue(result['description'], 'success')
-        self.assertTrue('title_added1' in self.connection_3.strategy.entries[dn]['title'])
-        self.assertTrue('title_added2' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added1' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertTrue(b'title_added2' in self.connection_3.strategy.entries[dn]['title'])
 
     def test_modify_delete_nonexisting_attribute_1(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -647,7 +647,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('user_test_sn' in self.connection_1.strategy.entries[dn]['sn'])
+        self.assertTrue(b'user_test_sn' in self.connection_1.strategy.entries[dn]['sn'])
         self.assertEqual(len(self.connection_1.strategy.entries[dn]['sn']), 1)
 
     def test_modify_replace_existing_singlevalue_2(self):
@@ -659,7 +659,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('user_test_sn' in self.connection_2.strategy.entries[dn]['sn'])
+        self.assertTrue(b'user_test_sn' in self.connection_2.strategy.entries[dn]['sn'])
         self.assertEqual(len(self.connection_2.strategy.entries[dn]['sn']), 1)
 
     def test_modify_replace_existing_singlevalue_3(self):
@@ -671,7 +671,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('user_test_sn' in self.connection_3.strategy.entries[dn]['sn'])
+        self.assertTrue(b'user_test_sn' in self.connection_3.strategy.entries[dn]['sn'])
         self.assertEqual(len(self.connection_3.strategy.entries[dn]['sn']), 1)
 
     def test_modify_replace_existing_multivalue_1(self):
@@ -683,11 +683,11 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('title1' in self.connection_1.strategy.entries[dn]['title'])
-        self.assertFalse('title2' in self.connection_1.strategy.entries[dn]['title'])
-        self.assertFalse('title3' in self.connection_1.strategy.entries[dn]['title'])
-        self.assertTrue('title4' in self.connection_1.strategy.entries[dn]['title'])
-        self.assertTrue('title5' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertFalse(b'title1' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertFalse(b'title2' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertFalse(b'title3' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertTrue(b'title4' in self.connection_1.strategy.entries[dn]['title'])
+        self.assertTrue(b'title5' in self.connection_1.strategy.entries[dn]['title'])
         self.assertEqual(len(self.connection_1.strategy.entries[dn]['title']), 2)
 
     def test_modify_replace_existing_multivalue_2(self):
@@ -699,11 +699,11 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('title1' in self.connection_2.strategy.entries[dn]['title'])
-        self.assertFalse('title2' in self.connection_2.strategy.entries[dn]['title'])
-        self.assertFalse('title3' in self.connection_2.strategy.entries[dn]['title'])
-        self.assertTrue('title4' in self.connection_2.strategy.entries[dn]['title'])
-        self.assertTrue('title5' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertFalse(b'title1' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertFalse(b'title2' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertFalse(b'title3' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertTrue(b'title4' in self.connection_2.strategy.entries[dn]['title'])
+        self.assertTrue(b'title5' in self.connection_2.strategy.entries[dn]['title'])
         self.assertEqual(len(self.connection_2.strategy.entries[dn]['title']), 2)
 
 
@@ -716,11 +716,11 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('title1' in self.connection_3.strategy.entries[dn]['title'])
-        self.assertFalse('title2' in self.connection_3.strategy.entries[dn]['title'])
-        self.assertFalse('title3' in self.connection_3.strategy.entries[dn]['title'])
-        self.assertTrue('title4' in self.connection_3.strategy.entries[dn]['title'])
-        self.assertTrue('title5' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertFalse(b'title1' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertFalse(b'title2' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertFalse(b'title3' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertTrue(b'title4' in self.connection_3.strategy.entries[dn]['title'])
+        self.assertTrue(b'title5' in self.connection_3.strategy.entries[dn]['title'])
         self.assertEqual(len(self.connection_3.strategy.entries[dn]['title']), 2)
 
     def test_modify_replace_existing_novalue_1(self):
@@ -732,7 +732,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('title' in self.connection_1.strategy.entries[dn])
+        self.assertFalse(b'title' in self.connection_1.strategy.entries[dn])
 
     def test_modify_replace_existing_novalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -743,7 +743,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('title' in self.connection_2.strategy.entries[dn])
+        self.assertFalse(b'title' in self.connection_2.strategy.entries[dn])
 
     def test_modify_replace_existing_novalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -754,7 +754,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('title' in self.connection_3.strategy.entries[dn])
+        self.assertFalse(b'title' in self.connection_3.strategy.entries[dn])
 
     def test_modify_replace_not_existing_novalue_1(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -765,7 +765,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('initials' in self.connection_1.strategy.entries[dn])
+        self.assertFalse(b'initials' in self.connection_1.strategy.entries[dn])
 
     def test_modify_replace_not_existing_novalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -776,7 +776,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('initials' in self.connection_2.strategy.entries[dn])
+        self.assertFalse(b'initials' in self.connection_2.strategy.entries[dn])
 
     def test_modify_replace_not_existing_novalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -787,7 +787,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
-        self.assertFalse('initials' in self.connection_3.strategy.entries[dn])
+        self.assertFalse(b'initials' in self.connection_3.strategy.entries[dn])
 
     def test_modify_replace_not_existing_singlevalue_1(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -798,7 +798,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('initials1' in self.connection_1.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials1' in self.connection_1.strategy.entries[dn]['initials'])
 
     def test_modify_replace_not_existing_singlevalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -809,7 +809,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('initials1' in self.connection_2.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials1' in self.connection_2.strategy.entries[dn]['initials'])
 
     def test_modify_replace_not_existing_singlevalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -820,7 +820,7 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('initials1' in self.connection_3.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials1' in self.connection_3.strategy.entries[dn]['initials'])
 
     def test_modify_replace_not_existing_multivalue_1(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -831,8 +831,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_1.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('initials1' in self.connection_1.strategy.entries[dn]['initials'])
-        self.assertTrue('initials2' in self.connection_1.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials1' in self.connection_1.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials2' in self.connection_1.strategy.entries[dn]['initials'])
 
     def test_modify_replace_not_existing_multivalue_2(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -843,8 +843,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_2.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('initials1' in self.connection_2.strategy.entries[dn]['initials'])
-        self.assertTrue('initials2' in self.connection_2.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials1' in self.connection_2.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials2' in self.connection_2.strategy.entries[dn]['initials'])
 
     def test_modify_replace_not_existing_multivalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
@@ -855,8 +855,8 @@ class Test(unittest.TestCase):
         else:
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
-        self.assertTrue('initials1' in self.connection_3.strategy.entries[dn]['initials'])
-        self.assertTrue('initials2' in self.connection_3.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials1' in self.connection_3.strategy.entries[dn]['initials'])
+        self.assertTrue(b'initials2' in self.connection_3.strategy.entries[dn]['initials'])
 
     def test_search_exact_match_single_attribute_1(self):
         self.connection_1.bind()
@@ -1135,7 +1135,6 @@ class Test(unittest.TestCase):
             response, result = self.connection_2.get_response(result)
         else:
             result = self.connection_2.result
-        self.assertEqual(result['description'], 'success')
         self.assertEqual(result['description'], 'success')
         self.assertTrue(response[0]['attributes']['cn'][0] in ['user0', 'user1', 'user2'])
 

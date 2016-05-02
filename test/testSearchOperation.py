@@ -65,7 +65,7 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-1')
 
     def test_search_extensible_match(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
@@ -110,7 +110,7 @@ class Test(unittest.TestCase):
                 self.assertEqual(response[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
 
     def test_search_simple_paged(self):
-        if not self.connection.strategy.pooled:
+        if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-3', attributes={'givenName': 'givenname-3'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-4', attributes={'givenName': 'givenname-4'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-5'}))

@@ -328,9 +328,9 @@ class MockBaseStrategy(object):
                 elements = modification['attribute']['value']
                 if operation == 0:  # add
                     if attribute not in self.entries[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.entries[dn][attribute] = elements
+                        self.entries[dn][attribute] = [to_raw(element) for element in elements]
                     else:  # attribute present, adds elements to current values
-                        self.entries[dn][attribute].extend(elements)
+                        self.entries[dn][attribute].extend([to_raw(element) for element in elements])
                 elif operation == 1:  # delete
                     if attribute not in self.entries[dn]:  # attribute must exist
                         result_code = 16
@@ -353,7 +353,7 @@ class MockBaseStrategy(object):
                                 del self.entries[dn][attribute]
                 elif operation == 2:  # replace
                     if attribute not in self.entries[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.entries[dn][attribute] = elements
+                        self.entries[dn][attribute] = [to_raw(element) for element in elements]
                     elif not elements and attribute in rdns:  # attribute can't be used in dn
                         result_code = 67
                         message = 'cannot replace an rdn'
@@ -361,7 +361,7 @@ class MockBaseStrategy(object):
                         if attribute in self.entries[dn]:
                             del self.entries[dn][attribute]
                     else:  # substitutes elements
-                        self.entries[dn][attribute] = elements
+                        self.entries[dn][attribute] = [to_raw(element) for element in elements]
 
             if result_code:  # an error has happened, restores the original dn
                 self.entries[dn] = original_entry

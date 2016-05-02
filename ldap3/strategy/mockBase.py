@@ -37,7 +37,7 @@ from ..operation.search import search_request_to_dict, parse_filter, ROOT, AND, 
     MATCH_GREATER_OR_EQUAL, MATCH_LESS_OR_EQUAL, MATCH_EXTENSIBLE, MATCH_PRESENT,\
     MATCH_SUBSTRING, MATCH_EQUAL
 from ..utils.conv import json_hook, check_escape, to_unicode, to_raw
-from ..core.exceptions import LDAPDefinitionError
+from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
@@ -132,9 +132,12 @@ class MockBaseStrategy(object):
         request = bind_request_to_dict(request_message)
         identity = request['name']
         if 'simple' in request['authentication']:
-            password = validate_simple_password(request['authentication']['simple'])
+            try:
+                password = validate_simple_password(request['authentication']['simple'])
+            except LDAPPasswordIsMandatoryError:
+                identity = '<anonymous>'
         else:
-            self.connection.last_error = 'nly Simple Bind allowed in Mock strategy'
+            self.connection.last_error = 'only Simple Bind allowed in Mock strategy'
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPDefinitionError(self.connection.last_error)
@@ -151,6 +154,10 @@ class MockBaseStrategy(object):
             else:  # no user found,  waits for 2 seconds returns invalidCredentials
                 result_code = 49
                 message = 'missing userPassword attribute'
+        elif identity == '<anonymous>':
+            result_code = 0
+            message = ''
+            self.bound = identity
         else:
             result_code = 49
             message = 'missing object'
@@ -331,8 +338,9 @@ class MockBaseStrategy(object):
                             del self.entries[dn][attribute]
                         else:
                             for element in elements:
-                                if element in self.entries[dn][attribute]:  # removes single element
-                                    self.entries[dn][attribute].remove(element)
+                                raw_element = to_raw(element)
+                                if raw_element in self.entries[dn][attribute]:  # removes single element
+                                    self.entries[dn][attribute].remove(raw_element)
                                 else:
                                     result_code = 1
                                     message = 'value to delete not found'
@@ -439,10 +447,9 @@ class MockBaseStrategy(object):
         return responses[:request['sizeLimit']] if request['sizeLimit'] > 0 else responses, result
 
     def evaluate_filter_node(self, node, candidates):
-        """After evaluation two sets are added to each MATCH node, the first for matched objects and the second for unmatched objects.
-        The unmatched object set is needed if a superior node is a NOT that reverts the evaluation. The AND and OR nodes mix the sets
+        """After evaluation each 2 sets are added to each MATCH node, one for the matched object and one for unmatched object.
+        The unmatched object set is needed if a superior node is a NOT that reverts the evaluation. The BOOLEAN nodes mix the sets
         returned by the MATCH nodes"""
-
         node.matched = set()
         node.unmatched = set()
 
@@ -543,3 +550,5 @@ class MockBaseStrategy(object):
                     node.matched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
+
+

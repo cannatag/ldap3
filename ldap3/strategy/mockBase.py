@@ -74,7 +74,7 @@ class MockBaseStrategy(object):
         if escaped_dn not in self.entries:
             self.entries[escaped_dn] = CaseInsensitiveDict()
             for attribute in attributes:
-                if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entries attributes are always lists of bytes values
+                if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
                     attributes[attribute] = [attributes[attribute]]
                 self.entries[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
             for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
@@ -204,10 +204,15 @@ class MockBaseStrategy(object):
         request = add_request_to_dict(request_message)
         dn = safe_dn(request['entry'])
         attributes = request['attributes']
+        # converts attributes values to bytes
+
         if dn not in self.entries:
-            self.entries[dn] = CaseInsensitiveDict(attributes)
-            result_code = 0
-            message = ''
+            if self.add_entry(dn, attributes):
+                result_code = 0
+                message = ''
+            else:
+                result_code = 1
+                message = 'error adding entry'
         else:
             result_code = 68
             message = 'entry already exist'

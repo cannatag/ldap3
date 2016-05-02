@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_get_replica_list_extension(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.extended('2.16.840.1.113719.1.27.100.19', ('cn=' + test_server_edir_name + ',' + test_server_context))
 
             if not self.connection.strategy.sync:
@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
             self.assertEqual(result['description'], 'success')
 
     def test_who_am_i_extension(self):
-        if not test_server_type == 'EDIR':
+        if not test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.extended('1.3.6.1.4.1.4203.1.11.3')
             if not self.connection.strategy.sync:
                 _, result = self.connection.get_response(result)
@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
             self.assertEqual(result['description'], 'success')
 
     def test_get_bind_dn_extension(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.extended('2.16.840.1.113719.1.27.100.31')
             if not self.connection.strategy.sync:
                 _, result = self.connection.get_response(result)
@@ -67,8 +67,9 @@ class Test(unittest.TestCase):
             self.assertEqual(result['description'], 'success')
 
     def test_start_tls_extension(self):
-        connection = get_connection(use_ssl=False)
-        connection.server.tls = Tls()
-        result = connection.start_tls()
-        self.assertTrue(result)
-        connection.unbind()
+        if not self.connection.strategy.no_real_dsa:
+            connection = get_connection(use_ssl=False)
+            connection.server.tls = Tls()
+            result = connection.start_tls()
+            self.assertTrue(result)
+            connection.unbind()

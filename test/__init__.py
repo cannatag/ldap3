@@ -27,7 +27,11 @@ from random import SystemRandom
 from tempfile import gettempdir
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, REUSABLE, RESTARTABLE, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS
+    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS
+from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
+from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
+from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
+from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
 
 # test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
@@ -288,82 +292,109 @@ def get_connection(bind=None,
         receive_timeout = test_receive_timeout
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
-    if isinstance(test_server, (list, tuple)):
-        server = ServerPool(pool_strategy=test_pooling_strategy,
-                            active=test_pooling_active,
-                            exhaust=test_pooling_exhaust)
-        for host in test_server:
-            server.add(Server(host=host,
-                              use_ssl=use_ssl,
-                              port=test_port_ssl if use_ssl else test_port,
-                              allowed_referral_hosts=('*', True),
-                              get_info=get_info,
-                              mode=test_server_mode))
+
+    if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        # define real server
+        if isinstance(test_server, (list, tuple)):
+            server = ServerPool(pool_strategy=test_pooling_strategy,
+                                active=test_pooling_active,
+                                exhaust=test_pooling_exhaust)
+            for host in test_server:
+                server.add(Server(host=host,
+                                  use_ssl=use_ssl,
+                                  port=test_port_ssl if use_ssl else test_port,
+                                  allowed_referral_hosts=('*', True),
+                                  get_info=get_info,
+                                  mode=test_server_mode))
+        else:
+            server = Server(host=test_server,
+                            use_ssl=use_ssl,
+                            port=test_port_ssl if use_ssl else test_port,
+                            allowed_referral_hosts=('*', True),
+                            get_info=get_info,
+                            mode=test_server_mode)
     else:
-        server = Server(host=test_server,
-                        use_ssl=use_ssl,
-                        port=test_port_ssl if use_ssl else test_port,
-                        allowed_referral_hosts=('*', True),
-                        get_info=get_info,
-                        mode=test_server_mode)
+        if test_server_type == 'EDIR':
+            schema = SchemaInfo.from_json(edir_8_8_8_schema)
+            info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
+            server = Server.from_definition('MockSyncServer', info, schema)
+        elif test_server_type == 'AD':
+            schema = SchemaInfo.from_json(ad_2012_r2_schema)
+            info = DsaInfo.from_json(ad_2012_r2_dsa_info, schema)
+            server = Server.from_definition('MockSyncServer', info, schema)
+        elif test_server_type == 'SLAPD':
+            schema = SchemaInfo.from_json(slapd_2_4_schema)
+            info = DsaInfo.from_json(slapd_2_4_dsa_info, schema)
+            server = Server.from_definition('MockSyncServer', info, schema)
 
     if authentication == SASL:
-        return Connection(server,
-                          auto_bind=bind,
-                          version=3,
-                          client_strategy=test_strategy,
-                          authentication=SASL,
-                          sasl_mechanism=sasl_mechanism,
-                          sasl_credentials=sasl_credentials,
-                          lazy=lazy_connection,
-                          pool_name='pool1',
-                          check_names=check_names,
-                          collect_usage=usage,
-                          fast_decoder=fast_decoder,
-                          receive_timeout=receive_timeout)
+        connection = Connection(server,
+                                auto_bind=bind,
+                                version=3,
+                                client_strategy=test_strategy,
+                                authentication=SASL,
+                                sasl_mechanism=sasl_mechanism,
+                                sasl_credentials=sasl_credentials,
+                                lazy=lazy_connection,
+                                pool_name='pool1',
+                                check_names=check_names,
+                                collect_usage=usage,
+                                fast_decoder=fast_decoder,
+                                receive_timeout=receive_timeout)
     elif authentication == NTLM:
-        return Connection(server,
-                          auto_bind=bind,
-                          version=3,
-                          client_strategy=test_strategy,
-                          user=ntlm_credentials[0],
-                          password=ntlm_credentials[1],
-                          authentication=NTLM,
-                          lazy=lazy_connection,
-                          pool_name='pool1',
-                          check_names=check_names,
-                          collect_usage=usage,
-                          fast_decoder=fast_decoder,
-                          receive_timeout=receive_timeout)
+        connection = Connection(server,
+                                auto_bind=bind,
+                                version=3,
+                                client_strategy=test_strategy,
+                                user=ntlm_credentials[0],
+                                password=ntlm_credentials[1],
+                                authentication=NTLM,
+                                lazy=lazy_connection,
+                                pool_name='pool1',
+                                check_names=check_names,
+                                collect_usage=usage,
+                                fast_decoder=fast_decoder,
+                                receive_timeout=receive_timeout)
     elif authentication == ANONYMOUS:
-        return Connection(server,
-                          auto_bind=bind,
-                          version=3,
-                          client_strategy=test_strategy,
-                          user=None,
-                          password=None,
-                          authentication=ANONYMOUS,
-                          lazy=lazy_connection,
-                          pool_name='pool1',
-                          check_names=check_names,
-                          collect_usage=usage,
-                          fast_decoder=fast_decoder,
-                          receive_timeout=receive_timeout)
+        connection = Connection(server,
+                                auto_bind=bind,
+                                version=3,
+                                client_strategy=test_strategy,
+                                user=None,
+                                password=None,
+                                authentication=ANONYMOUS,
+                                lazy=lazy_connection,
+                                pool_name='pool1',
+                                check_names=check_names,
+                                collect_usage=usage,
+                                fast_decoder=fast_decoder,
+                                receive_timeout=receive_timeout)
     else:
-        return Connection(server,
-                          auto_bind=bind,
-                          version=3,
-                          client_strategy=test_strategy,
-                          user=simple_credentials[0] or test_user,
-                          password=simple_credentials[1] or test_password,
-                          authentication=authentication,
-                          lazy=lazy_connection,
-                          pool_name='pool1',
-                          check_names=check_names,
-                          collect_usage=usage,
-                          fast_decoder=fast_decoder,
-                          receive_timeout=receive_timeout)
+        connection = Connection(server,
+                                auto_bind=bind,
+                                version=3,
+                                client_strategy=test_strategy,
+                                user=simple_credentials[0] or test_user,
+                                password=simple_credentials[1] or test_password,
+                                authentication=authentication,
+                                lazy=lazy_connection,
+                                pool_name='pool1',
+                                check_names=check_names,
+                                collect_usage=usage,
+                                fast_decoder=fast_decoder,
+                                receive_timeout=receive_timeout)
 
+    if test_strategy in [MOCK_SYNC, MOCK_ASYNC]:
+        # create authentication identities for testing mock strategies
+        connection.strategy.add_entry(test_user, {'objectClass': 'inetOrgPerson', 'userPassword': test_password})
+        connection.strategy.add_entry(test_secondary_user, {'objectClass': 'inetOrgPerson', 'userPassword': test_secondary_password})
+        connection.strategy.add_entry(test_sasl_user_dn, {'objectClass': 'inetOrgPerson', 'userPassword': test_sasl_password})
+        connection.strategy.add_entry(test_sasl_secondary_user_dn, {'objectClass': 'inetOrgPerson', 'userPassword': test_sasl_secondary_password})
+        # connection.strategy.add_entry(test_ntlm_user, {'objectClass': 'inetOrgPerson', 'userPassword': test_ntlm_password})
+        if bind:
+            connection.bind()
+
+    return connection
 
 def drop_connection(connection, dn_to_delete=None):
     if dn_to_delete:

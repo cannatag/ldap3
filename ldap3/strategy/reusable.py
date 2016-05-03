@@ -235,7 +235,7 @@ class ReusableStrategy(BaseStrategy):
                             close_worker_connection = False
                             if counter == TEST_BIND:  # disable lazy worker connection for testing bind
                                 self.worker.connection.lazy = False
-                                if self.worker.connection.closed:  # open connection if closed for testing lazy
+                                if self.worker.connection.closed or self.worker.connection._deferred_open:  # open connection if closed for testing lazy
                                     self.worker.connection.open(read_server_info=False)
                                 close_worker_connection = True
                             elif pool.open_pool and self.worker.connection.closed:

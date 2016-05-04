@@ -48,8 +48,6 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_search_checked_attributes(self):
-        log(BASIC, 'yyy')
-        log(BASIC, str(self.connection.strategy.pool))
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'checked-attributes-1*)', attributes=[test_name_attr, 'sn', test_int_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)

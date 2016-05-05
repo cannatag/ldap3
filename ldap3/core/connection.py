@@ -477,15 +477,21 @@ class Connection(object):
                 elif self.authentication == SIMPLE:
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing simple BIND for <%s>', self)
-                    request = bind_operation(self.version, self.authentication, self.user, self.password)
-                    if log_enabled(PROTOCOL):
-                        log(PROTOCOL, 'simple BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
-                    response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    if not self.strategy.pooled:
+                        request = bind_operation(self.version, self.authentication, self.user, self.password)
+                        if log_enabled(PROTOCOL):
+                            log(PROTOCOL, 'simple BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
+                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    else:
+                        response = self.strategy.validate_bind(controls)  # only for REUSABLE
                 elif self.authentication == SASL:
                     if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'performing SASL BIND for <%s>', self)
-                        response = self.do_sasl_bind(controls)
+                        if not self.strategy.pooled:
+                            response = self.do_sasl_bind(controls)
+                        else:
+                            response = self.strategy.validate_bind(controls)  # only for REUSABLE
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
                         if log_enabled(ERROR):
@@ -495,7 +501,10 @@ class Connection(object):
                     if self.user and self.password:
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'performing NTLM BIND for <%s>', self)
-                        response = self.do_ntlm_bind(controls)
+                        if not self.strategy.pooled:
+                            response = self.do_ntlm_bind(controls)
+                        else:
+                            response = self.strategy.validate_bind(controls)  # only for REUSABLE
                     else:  # user or password missing
                         self.last_error = 'NTLM needs domain\\username and a password'
                         if log_enabled(ERROR):
@@ -524,12 +533,16 @@ class Connection(object):
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if result is None:
-                    self.bound = True if self.strategy_type == REUSABLE else False
+                    #self.bound = True if self.strategy_type == REUSABLE else False
+                    self.bound = False
+                elif result is True:
+                    self.bound = True
+                elif result is False:
+                    self.bound = False
                 else:
                     self.bound = True if result['result'] == RESULT_SUCCESS else False
-
-                if not self.bound and result and result['description']:
-                    self.last_error = result['description']
+                    if not self.bound and result and result['description']:
+                        self.last_error = result['description']
 
                 if read_server_info and self.bound:
                     self.refresh_server_info()

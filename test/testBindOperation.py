@@ -22,7 +22,7 @@
 
 import unittest
 
-from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5, MOCK_SYNC, MOCK_ASYNC
+from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5, MOCK_SYNC, MOCK_ASYNC, REUSABLE
 from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type, \
     test_ntlm_user, test_ntlm_password, test_sasl_user_dn, test_strategy
 
@@ -50,12 +50,12 @@ class Test(unittest.TestCase):
             connection.open()
             connection.bind()
             self.assertTrue(connection.bound)
-            if test_server_type == 'EDIR':
-                connected_user = connection.extend.novell.get_bind_dn()
-            else:
-                connected_user = str(connection.extend.standard.who_am_i())
-
-            self.assertEqual(connected_user, test_sasl_user_dn)
+            if not connection.strategy.pooled:
+                if test_server_type == 'EDIR':
+                    connected_user = connection.extend.novell.get_bind_dn()
+                else:
+                    connected_user = str(connection.extend.standard.who_am_i())
+                self.assertEqual(connected_user, test_sasl_user_dn)
             drop_connection(connection)
             self.assertFalse(connection.bound)
 

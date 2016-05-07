@@ -27,7 +27,7 @@
     - Added new extended operation connection.extend.novell.remove_members_from_groups(members, groups, check, transaction)
     - Added new exception LDAPTransactionError
     - Added logic to handle Novell Transaction Error Unsolicited Notice
-
+    - Ignore cheching of ssl context when cadata, cafile and capath are not provided (thanks DelboyJan)
 
 
 - 1.2.2 2016.03.23

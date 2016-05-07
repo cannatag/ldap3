@@ -1,21 +1,15 @@
 - 1.3.0 2016.04.29
+    - Added support for mocking the ldap3 library
     - Added support for MockSync strategy (thanks Roxana)
     - Added checked_attributes=True parameter to connection.response_to_json()
-    - Added checked_attributes=True parameter to connection.entry_to_json()
-    - MockSync strategy performs bind()
-    - MockSync strategy performs unbind()
-    - MockSync strategy performs delete()
-    - MockSync strategy performs compare()
-    - MockSync strategy performs modify()
-    - MockSync strategy performs modify_dn()
-    - MockSync strategy performs abandon()
-    - MockSync strategy performs add()
-    - MockSync strategy accepts directory entries in json file
+    - Added checked_attributes=True parameter to entry.entry_to_json()
+    - MockSyncBase strategy supports bind(), unbind(), delete(), compare(), modify(), modify_dn(), abandon(), add()
+    - MockSyncBase strategy accepts directory entries in json file
     - Fixed schema representation (thanks Conrado)
     - Allow connection.abandon(0), useful to "ping" the server
     - Added connection.abandon() test suite
     - Reusable strategy checks bind credential at bind() time, only on one worker connection
-    - Reusable strategy ignores abandon() operation because of multiple connection worker
+    - Reusable strategy ignores abandon() operation because of multiple connection workers
     - Reusable strategy honours return_empty_attributes connection parameter
     - Added lazy information to connection representation
     - Added support for hash (LM:NTLM) Windows NTLM authentication (thanks Dirk)
@@ -40,7 +34,7 @@
 - 1.1.2 2016.03.10
     - Added rebind() method to Connection object to rebind with a different user (thanks Lorenzo)
     - Added Tests for rebind operation
-    - Start_tls honered in referrals
+    - Start_tls honored in referrals
     - Default ldaps port honored in referrals
     - Additional connection parameters honored in referrals and in the restartable strategy
     - Server connection timeout is honored while connecting, connection receive timeout while receiving

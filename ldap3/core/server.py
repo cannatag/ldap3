@@ -24,12 +24,14 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
+from json.decoder import JSONDecoder
 from threading import Lock
 from datetime import datetime, MINYEAR
 
 from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT, get_config_parameter, \
     OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
-    SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, ADDRESS_INFO_REFRESH_TIME
+    SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, \
+    ADDRESS_INFO_REFRESH_TIME, STRING_TYPES
 from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError, LDAPSocketOpenError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
@@ -465,8 +467,8 @@ class Server(object):
         """
         Define a dummy server with preloaded schema and info
         :param host: host name
-        :param dsa_info: DsaInfo preloaded object
-        :param dsa_schema: SchemaInfo preloaded object
+        :param dsa_info: DsaInfo preloaded object or a json formatted string or a file name
+        :param dsa_schema: SchemaInfo preloaded object or a json formatted string or a file name
         :param port: dummy port
         :param use_ssl: use_ssl
         :param formatter: custom formatter
@@ -478,14 +480,26 @@ class Server(object):
             dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter)
         if isinstance(dsa_info, DsaInfo):
             dummy._dsa_info = dsa_info
-        else:
+        elif isinstance(dsa_info, STRING_TYPES):
+            try:
+                dummy._dsa_info = DsaInfo.from_json(dsa_info)  # tries to use dsa_info as a json configuration string
+            except Exception:
+                dummy._dsa_info = DsaInfo.from_file(dsa_info)  # tries to use dsa_info as a file name
+
+        if not dummy.info:
             if log_enabled(ERROR):
                 log(ERROR, 'invalid DSA info for %s', host)
             raise LDAPDefinitionError('invalid dsa info')
 
         if isinstance(dsa_schema, SchemaInfo):
             dummy._schema_info = dsa_schema
-        else:
+        elif isinstance(dsa_schema, STRING_TYPES):
+            try:
+                dummy._schema_info = SchemaInfo.from_json(dsa_schema)
+            except Exception:
+                dummy._schema_info = SchemaInfo.from_file(dsa_schema)
+
+        if not dummy.schema:
             if log_enabled(ERROR):
                 log(ERROR, 'invalid schema info for %s', host)
             raise LDAPDefinitionError('invalid schema info')

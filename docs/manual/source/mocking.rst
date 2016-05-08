@@ -2,12 +2,12 @@
 Mocking
 #######
 
-You can easily mock ldap3 in your project using the MockSyncStrategy or the MockAsyncStrategy. Both of these strategies are based
+You can mock ldap3 in your project using the MockSyncStrategy or the MockAsyncStrategy. Both of these strategies are based
 on the MockBaseStreategy that emulates a simple LDAP server and can be used to test the LDAP functionalities in your project. If you need
 you can even speficy a specific kind of LDAP server to emulate and MockBaseStrategy will provide a suitable schema and the relevant DSA info.
 
 To populate the DIT (the Directory Information Tree, the hierarchical database that contains the LDAP data) you can provide data from an
-actual LDAP server via a JSON import file or you can create at runtime only the entries needed for your test suite.
+actual LDAP server via a JSON data file or you can create at runtime only the entries needed for your test suite.
 
 Anyway you must provide users and passwords needed by the test.
 
@@ -29,7 +29,8 @@ or add entries dynamically at runtime::
     connection.strategy.add_entry('cn=user2,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 0})
 
 .. note::
-    MockBaseStrategy doesn't check against the schema the validity of the added entries, so you can just add the entries needed to perform your tests.
+    MockBaseStrategy doesn't check  the validity of the added entries against the schema, so you can just add the entries and the attribute
+    values needed to perform your tests.
 
 Then you can use the mock connection as a normal connection to a real ldap server.
 
@@ -37,19 +38,43 @@ Then you can use the mock connection as a normal connection to a real ldap serve
     The MockBaseStrategy provides only Simple Authentication bind. You can bind to any object in the dict that has a **userPassword** attribute (either single or multi-valuee).
     The password must be stored as cleartext.
 
-MockBaseStrategy supports the Bind, Unbind, Add, Modify, ModifyDn, Compare, Delete and Search operations (except the
+MockBaseStrategy supports the Bind, Unbind, Add, Modify, ModifyDn, Compare, Delete and Search operations (except for the
 extensible match). Abandon and Extended are not supported.
 
-You can replicate the DIT of a real server (or just the portions of the Tree that you need in your tests) using the response_to_json() method
-of the Connection object with *raw* output. Just perform a SUBTREE search with ALL_ATTRIBUTES with the needed base and a filter similar
-to ``(objectclass=*)`` that captures every object in the DIT::
+.. note::
+    You can replicate the DIT of a real server (or just the portions of the Tree that you need in your tests) using the response_to_json() method
+    of the Connection object with *raw* output. Just perform a SUBTREE search with ALL_ATTRIBUTES with the needed base and a filter similar
+    to ``(objectclass=*)`` that captures every object in the DIT::
 
-    from ldap3 import Server, Connection, ALL_ATTRIBUTES
-    server = Server('my_real_server')
+        from ldap3 import Server, Connection, ALL_ATTRIBUTES
+        server = Server('my_real_server')
+        connection = Connection(server, 'cn=my_user,ou=test,o=lab', 'my_real_password', auto_bind=True)
+        if connection.search('ou=test,o=lab', '(objectclass=*)', attributes=ALL_ATTRIBUTES):
+            connection.response_to_json('my_entries.json', raw=True, checked_attributes=False)
+
+    The *my_entries.json* can then be used in the ``entries_from_json()`` method of the MockBaseStrategy
+
+While defining the mock server you can specify a predefined schema with the ``get_info`` parameter::
+
+    from ldap3 import Server, Connection. OFFLINE_SLAPD_2_4
+    server = Server('my_fake_server', get_info=OFFLINE_SLAPD_2_4)
+
+The available offline schemas are OFFLINE_SLAPD_2_4 (OpenLDAP), OFFLINE_EDIR_8_8_8 (eDirectory), OFFLINE_AD_2012_R2 (Active Directory) and
+OFFLINE_DS389_1_3_3 (389 Directory Server).
+
+You can also speficy a previously saved schema and info retrieved from a real server::
+
+    from ldap3 import Server, Connection, ALL
+
+    # Retrieve server info and schema from a real server
+    server = Server('my_real_server', get_info=ALL)
     connection = Connection(server, 'cn=my_user,ou=test,o=lab', 'my_real_password', auto_bind=True)
-    if connection.search('ou=test,o=lab', '(objectclass=*)', attributes=ALL_ATTRIBUTES):
-        connection.response_to_json('my_entries.json', raw=True, checked_attributes=False)
 
-The *my_entries.json* can then be used in the ``entries_from_json()`` method of the MockBaseStrategy
+    # Store server info and schema to json files
+    server.info.to_file('my_real_server_info.json')
+    server.schema.to_file('my_real_server_schema.json')
+
+    # Create a fake server from the info and schema json files
+    server = Server.from_definition('my_fake_server', 'my_real_server_info.json', 'my_real_server_schema.json'
 
 

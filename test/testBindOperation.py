@@ -30,7 +30,7 @@ testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
-    def test_bind_clear_text(self):
+    def test_bind_cleartext(self):
         connection = get_connection(bind=False)
         connection.open()
         connection.bind()

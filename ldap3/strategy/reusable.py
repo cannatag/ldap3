@@ -397,6 +397,8 @@ class ReusableStrategy(BaseStrategy):
         result = self.pool.connections[0].connection.bind(controls=controls)
         temp_connection.unbind()
         temp_connection.lazy = True
+        if result:
+            self.pool.bind_pool = True  # bind pool if bind is validated
         return result
 
     def get_response(self, counter, timeout=None):

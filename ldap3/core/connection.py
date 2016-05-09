@@ -470,10 +470,13 @@ class Connection(object):
                 if self.authentication == ANONYMOUS:
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing anonymous BIND for <%s>', self)
-                    request = bind_operation(self.version, self.authentication, self.user, '')
-                    if log_enabled(PROTOCOL):
-                        log(PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
-                    response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    if not self.strategy.pooled:
+                        request = bind_operation(self.version, self.authentication, self.user, '')
+                        if log_enabled(PROTOCOL):
+                            log(PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
+                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    else:
+                        response = self.strategy.validate_bind(controls)  # only for REUSABLE
                 elif self.authentication == SIMPLE:
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing simple BIND for <%s>', self)
@@ -516,7 +519,7 @@ class Connection(object):
                         log(ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
+                if not self.strategy.sync and not self.strategy.pooled and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
                     _, result = self.get_response(response)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'async BIND response id <%s> received via <%s>', result, self)
@@ -524,7 +527,7 @@ class Connection(object):
                     result = self.result
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'BIND response <%s> received via <%s>', result, self)
-                elif self.authentication == SASL or self.authentication == NTLM:  # async SASL and NTLM
+                elif self.strategy.pooled or self.authentication in (SASL, NTLM):  # async SASL and NTLM or reusable strtegy get the bind result synchronously
                     result = response
                 else:
                     self.last_error = 'unknown authentication method'

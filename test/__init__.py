@@ -34,12 +34,10 @@ from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
 
-# test_server = ['server1', 'server2', 'server3']  # the ldap server where tests are executed, if a list is given a pool will be created
-
-# test_server_mode = IP_SYSTEM_DEFAULT
+test_strategy = REUSABLE  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 test_server_mode = IP_V6_PREFERRED
 
-test_logging = True
+test_logging = False
 test_log_detail = EXTENDED
 
 test_pooling_strategy = ROUND_ROBIN
@@ -63,7 +61,6 @@ except KeyError:
 test_server_type = 'EDIR'  # possible choices: # EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-test_strategy = REUSABLE  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')

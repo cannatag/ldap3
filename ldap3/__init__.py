@@ -287,10 +287,11 @@ DO_NOT_RAISE_EXCEPTIONS = [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_
 # types for string and sequence
 if str != bytes:  # python 3
     STRING_TYPES = (str, )
+    SEQUENCE_TYPES = (list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
 else:  # python 2
+    SEQUENCE_TYPES = (list, tuple, GeneratorType)
     STRING_TYPES = (str, unicode)
 
-SEQUENCE_TYPES = (list, tuple, GeneratorType)
 NUMERIC_TYPES = (int, float)
 
 # older and longer constants

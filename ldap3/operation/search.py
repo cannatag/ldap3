@@ -27,7 +27,7 @@ from string import whitespace
 from os import linesep
 
 from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, \
-    SEQUENCE_TYPES, get_config_parameter
+    STRING_TYPES, get_config_parameter
 
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..protocol.formatters.formatters import format_unicode
@@ -361,7 +361,8 @@ def search_operation(search_base,
     request['timeLimit'] = Integer0ToMax(time_limit)
     request['typesOnly'] = TypesOnly(True) if types_only else TypesOnly(False)
     request['filter'] = build_filter(search_filter, schema)  # parse the searchFilter string and compile it starting from the root node
-    if not isinstance(attributes, SEQUENCE_TYPES):
+    # Allow any iterable as attributes, except from string types
+    if isinstance(attributes, STRING_TYPES) or not hasattr(attributes, '__iter__'):
         attributes = [NO_ATTRIBUTES]
 
     request['attributes'] = build_attribute_selection(attributes, schema)

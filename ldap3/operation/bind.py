@@ -31,11 +31,6 @@ from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindReques
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
 
-# BindRequest ::= [APPLICATION 0] SEQUENCE {
-#                                           version        INTEGER (1 ..  127),
-#                                           name           LDAPDN,
-#                                           authentication AuthenticationChoice }
-
 
 def bind_operation(version,
                    authentication,
@@ -43,14 +38,16 @@ def bind_operation(version,
                    password=None,
                    sasl_mechanism=None,
                    sasl_credentials=None):
+    # BindRequest ::= [APPLICATION 0] SEQUENCE {
+    #                                           version        INTEGER (1 ..  127),
+    #                                           name           LDAPDN,
+    #                                           authentication AuthenticationChoice }
     request = BindRequest()
     request['version'] = Version(version)
     if name is None:
         name = ''
     request['name'] = name
     if authentication == SIMPLE:
-        if not name:
-            raise LDAPUserNameIsMandatoryError('user name is mandatory in simple bind')
         if password:
             request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(validate_simple_password(password)))
         else:
@@ -91,17 +88,15 @@ def bind_request_to_dict(request):
             'name': str(request['name']),
             'authentication': authentication_choice_to_dict(request['authentication'])}
 
-# BindResponse ::= [APPLICATION 1] SEQUENCE {
-#                                            COMPONENTS OF LDAPResult,
-#                                            serverSaslCreds    [7] OCTET STRING OPTIONAL }
-
 
 def bind_response_operation(result_code,
                             matched_dn='',
                             diagnostic_message='',
                             referral=None,
                             server_sasl_credentials=None):
-
+    # BindResponse ::= [APPLICATION 1] SEQUENCE {
+    #                                            COMPONENTS OF LDAPResult,
+    #                                            serverSaslCreds    [7] OCTET STRING OPTIONAL }
     response = BindResponse()
     response['resultCode'] = ResultCode(result_code)
     response['matchedDN'] = LDAPDN(matched_dn)

@@ -57,7 +57,7 @@ class Attribute(object):
             for value in self.values[1:]:
                 r += linesep + filler + to_stdout_encoding(value)
         else:
-            r = ''
+            r = self.key + ': ' + to_stdout_encoding('<no value>')
 
         return r
 
@@ -78,6 +78,13 @@ class Attribute(object):
 
     def __setattr__(self, item, value):
         raise LDAPAttributeError('attribute is read only')
+
+    def __eq__(self, other):
+        try:
+            if self.value == other:
+                return True
+        except:
+            return False
 
     @property
     def value(self):

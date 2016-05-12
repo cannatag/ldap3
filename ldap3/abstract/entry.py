@@ -176,11 +176,13 @@ class Entry(object):
                       raw=False,
                       indent=4,
                       sort=True,
-                      stream=None):
+                      stream=None,
+                      checked_attributes=True):
 
         json_entry = dict()
         json_entry['dn'] = self.entry_get_dn()
-        json_entry['attributes'] = self.entry_get_attributes_dict()
+        if checked_attributes:
+            json_entry['attributes'] = self.entry_get_attributes_dict()
         if raw:
             json_entry['raw'] = dict(self.entry_get_raw_attributes())
 

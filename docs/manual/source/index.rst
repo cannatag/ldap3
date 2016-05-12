@@ -33,6 +33,7 @@ Contents
    exceptions
    utils
    logging
+   mocking
    testing
    changelog
    modules

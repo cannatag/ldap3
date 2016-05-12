@@ -2,9 +2,10 @@
 The MODIFY-DN operation
 #######################
 
-The **ModifyDN** operation allows a client to change the Relative Distinguished Name (RDN) or to move an entry in the LDAP directory.
+The **ModifyDN** operation allows a client to change the Relative Distinguished Name (RDN) of an entry
+or to move an entry in the LDAP directory.
 
-ModifyDN is really a two-flavours operation: you can rename the last part of the dn *or* you move the entry
+ModifyDN is really a two-flavours operation: you rename the last part of the dn *or* you move the entry
 in another container but you cannot perform both operations at the same time.
 
 To perform a ModifyDN operation you must specify the dn of the entry and the new relative dn requested.
@@ -38,7 +39,7 @@ the get_response(message_id) method of the connection object.
 
 You can rename an entry with a ModifyDN operation as in the following example (using the default synchronous strategy)::
 
-    # import class and constants
+    # import classes and constants
     from ldap3 import Server, Connection, ALL
 
     # define the server

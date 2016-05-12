@@ -45,7 +45,7 @@ def extended_operation(request_name,
         request['requestValue'] = RequestValue(encoder.encode(request_value))
     elif str != bytes and isinstance(request_value, (bytes, bytearray)):  # in python3 doesn't try to encode a byte value
         request['requestValue'] = request_value
-    elif request_value and no_encode:  # don't encode the value
+    elif request_value and no_encode:  # doesn't encode the value
         request['requestValue'] = request_value
     elif request_value:  # tries to encode as a octet string
         request['requestValue'] = RequestValue(encoder.encode(OctetString(str(request_value))))
@@ -59,10 +59,10 @@ def extended_request_to_dict(request):
 
 
 def extended_response_to_dict(response):
-    return {'result': int(response[0]),
+    return {'result': int(response['resultCode']),
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'referrals': decode_referrals(response['referral']),
             'responseName': str(response['responseName']) if response['responseName'] else None,
             'responseValue': bytes(response['responseValue']) if response['responseValue'] else bytes()}

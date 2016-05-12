@@ -23,6 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from types import GeneratorType
+
 # authentication
 ANONYMOUS = 'ANONYMOUS'
 SIMPLE = 'SIMPLE'
@@ -137,6 +139,7 @@ POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle
 
 # communication
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
+TRANSACTION_ERROR = 'TRANSACTION_ERROR'
 RESPONSE_COMPLETE = 'RESPONSE_FROM_SERVER_COMPLETE'
 RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies - configurable parameter
 RESPONSE_WAITING_TIMEOUT = 20  # waiting timeout for receiving a response in asynchronous strategies - configurable parameter
@@ -148,7 +151,6 @@ RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retry
 RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries - configurable parameter
 
 # reusable strategies (Threaded)
-TERMINATE_REUSABLE = 'TERMINATE_REUSABLE_CONNECTION'
 REUSABLE_THREADED_POOL_SIZE = 10  # configurable parameter
 REUSABLE_THREADED_LIFETIME = 3600  # 1 hour - configurable parameter
 DEFAULT_THREADED_POOL_NAME = 'reusable_default_pool'
@@ -285,11 +287,12 @@ DO_NOT_RAISE_EXCEPTIONS = [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_
 # types for string and sequence
 if str != bytes:  # python 3
     STRING_TYPES = (str, )
+    SEQUENCE_TYPES = (list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
 else:  # python 2
+    SEQUENCE_TYPES = (list, tuple, GeneratorType)
     STRING_TYPES = (str, unicode)
 
-from types import GeneratorType
-SEQUENCE_TYPES = (list, tuple, GeneratorType)
+NUMERIC_TYPES = (int, float)
 
 # older and longer constants
 AUTH_ANONYMOUS = ANONYMOUS
@@ -418,7 +421,7 @@ from .core.exceptions import LDAPException, LDAPExceptionError, LDAPConfiguratio
     LDAPUnknownResponseError, LDAPUnknownStrategyError, LDAPDefinitionError, LDAPResponseTimeoutError, LDAPInvalidHashAlgorithmError, \
     LDAPSessionTerminatedByServerError, LDAPMaximumRetriesError, LDAPExtensionError, LDAPInvalidDnError, LDAPInvalidPortError, \
     LDAPPackageUnavailableError, LDAPConfigurationParameterError, LDAPInvalidTlsSpecificationError, LDAPUserNameNotAllowedError, \
-    LDAPUserNameIsMandatoryError
+    LDAPUserNameIsMandatoryError, LDAPTransactionError
 
 # imports result code Exceptions
 from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSASResult, LDAPAliasDereferencingProblemResult,\

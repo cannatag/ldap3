@@ -41,7 +41,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
         try:
             self.__getitem__(item)
             return True
-        except Exception:
+        except KeyError:
             return False
 
     @staticmethod

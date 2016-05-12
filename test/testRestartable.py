@@ -23,43 +23,45 @@
 
 import unittest
 
-from test import test_server, test_user, test_password, test_lazy_connection, test_get_info, test_server_mode, test_base
-from ldap3 import Server, Connection, ServerPool, RESTARTABLE, ROUND_ROBIN, BASE
+from test import test_server, test_user, test_password, test_lazy_connection, test_get_info, test_server_mode, test_base, test_strategy
+from ldap3 import Server, Connection, ServerPool, RESTARTABLE, ROUND_ROBIN, BASE, MOCK_SYNC, MOCK_ASYNC
 
 
 class Test(unittest.TestCase):
     def test_restartable_invalid_server(self):
-        if isinstance(test_server, (list, tuple)):
-            hosts = ['a.b.c.d'] + list(test_server)
-        else:
-            hosts = ['a.b.c.d', test_server]
-        search_results = []
-        servers = [Server(host=host, port=636, use_ssl=True, get_info=test_get_info, mode=test_server_mode) for host in hosts]
-        connection = Connection(ServerPool(servers, ROUND_ROBIN, active=True, exhaust=True), user=test_user, password=test_password, client_strategy=RESTARTABLE, lazy=test_lazy_connection, pool_name='pool1')
+        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+            if isinstance(test_server, (list, tuple)):
+                hosts = ['a.b.c.d'] + list(test_server)
+            else:
+                hosts = ['a.b.c.d', test_server]
+            search_results = []
+            servers = [Server(host=host, port=636, use_ssl=True, get_info=test_get_info, mode=test_server_mode) for host in hosts]
+            connection = Connection(ServerPool(servers, ROUND_ROBIN, active=True, exhaust=True), user=test_user, password=test_password, client_strategy=RESTARTABLE, lazy=test_lazy_connection, pool_name='pool1')
 
-        with connection as c:
-            c.search(search_base=test_base, search_filter='(' + test_base.split(',')[0] + ')', search_scope=BASE, attributes='*')
+            with connection as c:
+                c.search(search_base=test_base, search_filter='(' + test_base.split(',')[0] + ')', search_scope=BASE, attributes='*')
 
-            for resp in connection.response:
-                if resp['type'] == 'searchResEntry':
-                    search_results.append(resp['dn'])
-        self.assertEqual(len(search_results), 1)
+                for resp in connection.response:
+                    if resp['type'] == 'searchResEntry':
+                        search_results.append(resp['dn'])
+            self.assertEqual(len(search_results), 1)
 
     def test_restartable_invalid_server2(self):
-        if isinstance(test_server, (list, tuple)):
-            hosts = ['a.b.c.d'] + list(test_server)
-        else:
-            hosts = ['a.b.c.d', test_server]
-        search_results = []
-        servers = [Server(host=host, port=389, use_ssl=False) for host in hosts]
-        server_pool = ServerPool(servers, ROUND_ROBIN, active=True, exhaust=True)
-        connection = Connection(server_pool, user=test_user, password=test_password, client_strategy=RESTARTABLE, lazy=False)
-        connection.open()
-        connection.bind()
-        connection.search(search_base=test_base, search_filter='(' + test_base.split(',')[0] + ')', search_scope=BASE)
-        if connection.response:
-            for resp in connection.response:
-                if resp['type'] == 'searchResEntry':
-                    search_results.append(resp['dn'])
-        connection.unbind()
-        self.assertEqual(len(search_results), 1)
+        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+            if isinstance(test_server, (list, tuple)):
+                hosts = ['a.b.c.d'] + list(test_server)
+            else:
+                hosts = ['a.b.c.d', test_server]
+            search_results = []
+            servers = [Server(host=host, port=389, use_ssl=False) for host in hosts]
+            server_pool = ServerPool(servers, ROUND_ROBIN, active=True, exhaust=True)
+            connection = Connection(server_pool, user=test_user, password=test_password, client_strategy=RESTARTABLE, lazy=False)
+            connection.open()
+            connection.bind()
+            connection.search(search_base=test_base, search_filter='(' + test_base.split(',')[0] + ')', search_scope=BASE)
+            if connection.response:
+                for resp in connection.response:
+                    if resp['type'] == 'searchResEntry':
+                        search_results.append(resp['dn'])
+            connection.unbind()
+            self.assertEqual(len(search_results), 1)

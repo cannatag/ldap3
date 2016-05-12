@@ -59,6 +59,20 @@ class LdifProducerStrategy(BaseStrategy):
         self._header_added = False
         random.seed()
 
+    def _open_socket(self, address, use_ssl=False, unix_socket=False):  # fake open socket
+        self.connection.socket = NotImplemented  # placeholder for a dummy socket
+        if self.connection.usage:
+            self.connection._usage.open_sockets += 1
+
+        self.connection.closed = False
+
+    def _close_socket(self):
+        if self.connection.usage:
+            self.connection._usage.closed_sockets += 1
+
+        self.connection.socket = None
+        self.connection.closed = True
+
     def _start_listen(self):
         self.connection.listening = True
         self.connection.closed = False

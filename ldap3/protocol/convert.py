@@ -27,6 +27,7 @@ from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
 
+
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
 

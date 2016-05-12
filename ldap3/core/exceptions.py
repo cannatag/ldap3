@@ -23,6 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from os import sep
 from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT_EXCEEDED, RESULT_SIZE_LIMIT_EXCEEDED, \
     RESULT_STRONGER_AUTH_REQUIRED, RESULT_REFERRAL, RESULT_ADMIN_LIMIT_EXCEEDED, RESULT_UNAVAILABLE_CRITICAL_EXTENSION, \
     RESULT_AUTH_METHOD_NOT_SUPPORTED, RESULT_UNDEFINED_ATTRIBUTE_TYPE, RESULT_NO_SUCH_ATTRIBUTE, \
@@ -502,6 +503,10 @@ class LDAPResponseTimeoutError(LDAPExceptionError):
     pass
 
 
+class LDAPTransactionError(LDAPExceptionError):
+    pass
+
+
 # communication exceptions
 class LDAPCommunicationError(LDAPExceptionError):
     pass
@@ -551,18 +556,25 @@ class LDAPConnectionPoolNotStartedError(LDAPExceptionError):
 # restartable strategy
 class LDAPMaximumRetriesError(LDAPExceptionError):
     def __str__(self):
+        s = []
         if self.args:
             if isinstance(self.args, tuple):
                 if len(self.args) > 0:
-                    print('LDAPMaximumRetriesError: ' + self.args[0])
+                    s.append('LDAPMaximumRetriesError: ' + str(self.args[0]))
                 if len(self.args) > 1:
-                    print('Exception history:')
+                    s.append('Exception history:')
+                    prev_exc = ''
                     for i, exc in enumerate(self.args[1]):  # args[1] contains exception history
-                        print(str(i).rjust(5), str(exc[0]), ':', exc[1], '-', exc[2])
+                        if str(exc[1]) != prev_exc:
+                            s.append((str(i).rjust(5) + ' ' + str(exc[0]) + ': ' + str(exc[1]) + ' - ' + str(exc[2])))
+                            prev_exc = str(exc[1])
+
                 if len(self.args) > 2:
-                    print('Maximum number of retries reached: ' + str(self.args[2]))
+                    s.append('Maximum number of retries reached: ' + str(self.args[2]))
         else:
-            LDAPExceptionError.__str__(self)
+            s = [LDAPExceptionError.__str__(self)]
+
+        return sep.join(s)
 
 
 # exception factories

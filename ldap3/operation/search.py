@@ -40,24 +40,6 @@ from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 from ..protocol.formatters.standard import format_attribute_values
 
-# SearchRequest ::= [APPLICATION 3] SEQUENCE {
-# baseObject      LDAPDN,
-#     scope           ENUMERATED {
-#         baseObject              (0),
-#         singleLevel             (1),
-#         wholeSubtree            (2),
-#     ...  },
-#     derefAliases    ENUMERATED {
-#         neverDerefAliases       (0),
-#         derefInSearching        (1),
-#         derefFindingBaseObj     (2),
-#         derefAlways             (3) },
-#     sizeLimit       INTEGER (0 ..  maxInt),
-#     timeLimit       INTEGER (0 ..  maxInt),
-#     typesOnly       BOOLEAN,
-#     filter          Filter,
-#     attributes      AttributeSelection }
-
 ROOT = 0
 AND = 1
 OR = 2
@@ -333,7 +315,23 @@ def search_operation(search_base,
                      time_limit,
                      types_only,
                      schema=None):
-
+    # SearchRequest ::= [APPLICATION 3] SEQUENCE {
+    # baseObject      LDAPDN,
+    #     scope           ENUMERATED {
+    #         baseObject              (0),
+    #         singleLevel             (1),
+    #         wholeSubtree            (2),
+    #     ...  },
+    #     derefAliases    ENUMERATED {
+    #         neverDerefAliases       (0),
+    #         derefInSearching        (1),
+    #         derefFindingBaseObj     (2),
+    #         derefAlways             (3) },
+    #     sizeLimit       INTEGER (0 ..  maxInt),
+    #     timeLimit       INTEGER (0 ..  maxInt),
+    #     typesOnly       BOOLEAN,
+    #     filter          Filter,
+    #     attributes      AttributeSelection }
     request = SearchRequest()
     request['baseObject'] = LDAPDN(search_base)
 
@@ -445,7 +443,7 @@ def filter_to_string(filter_object):
         for f in filter_object['and']:
             filter_string += filter_to_string(f)
     elif filter_type == 'or':
-        filter_string += '!'
+        filter_string += '|'
         for f in filter_object['or']:
             filter_string += filter_to_string(f)
     elif filter_type == 'notFilter':
@@ -490,7 +488,7 @@ def search_request_to_dict(request):
             'dereferenceAlias': int(request['derefAliases']),
             'sizeLimit': int(request['sizeLimit']),
             'timeLimit': int(request['timeLimit']),
-            'typeOnly': bool(request['typesOnly']),
+            'typesOnly': bool(request['typesOnly']),
             'filter': filter_to_string(request['filter']),
             'attributes': attributes_to_list(request['attributes'])}
 
@@ -509,8 +507,8 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
 
 
 def search_result_done_response_to_dict(response):
-    return {'result': int(response[0]),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'message': str(response['diagnosticMessage']),
             'dn': str(response['matchedDN']),
             'referrals': referrals_to_list(response['referral'])}

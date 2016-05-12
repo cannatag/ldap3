@@ -34,6 +34,10 @@ from .novell.listReplicas import ListReplicas
 from .novell.getBindDn import GetBindDn
 from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
 from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
+from .novell.startTransaction import StartTransaction
+from .novell.endTransaction import EndTransaction
+from .novell.addMembersToGroups import add_members_to_groups
+from .novell.removeMembersFromGroups import remove_members_from_groups
 from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
 from .standard.PagedSearch import paged_search_generator, paged_search_accumulator
@@ -147,6 +151,29 @@ class NovellExtendedOperations(ExtendedOperationContainer):
                            server_dn,
                            partition_dn,
                            controls).send()
+
+    def start_transaction(self, controls=None):
+        return StartTransaction(self._connection,
+                                controls).send()
+
+    def end_transaction(self, commit=True, controls=None):  # attach the groupingControl to commit, None to abort transaction
+        return EndTransaction(self._connection,
+                              commit,
+                              controls).send()
+
+    def add_members_to_groups(self, members, groups, check=True, transaction=True):
+        return add_members_to_groups(self._connection,
+                                     members_dn=members,
+                                     groups_dn=groups,
+                                     check=check,
+                                     transaction=transaction)
+
+    def remove_members_from_groups(self, members, groups, check=True, transaction=True):
+        return remove_members_from_groups(self._connection,
+                                          members_dn=members,
+                                          groups_dn=groups,
+                                          check=check,
+                                          transaction=transaction)
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):

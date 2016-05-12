@@ -60,14 +60,15 @@ requested modifications have been performed if the Modify Response indicates suc
 You perform a Modify operation as in the following example (using the default synchronous strategy)::
 
     # import class and constants
-    from ldap3 import Server, Connection, ALL
+    from ldap3 import Server, Connection, ALL, MODIFY_REPLACE
 
     # define the server
     s = Server('servername', get_info=ALL)  # define an unsecure LDAP server, requesting info on DSE and schema
 
     # define the connection
     c = Connection(s, user='user_dn', password='user_password')
-
+    c.bind()
+    
     # perform the Modify operation
     c.modify('cn=user1,ou=users,o=company',
              {'givenName': [(MODIFY_REPLACE, ['givenname-1-replaced'])],

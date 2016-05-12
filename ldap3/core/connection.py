@@ -37,7 +37,6 @@ from .exceptions import LDAPSocketReceiveError
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
-from ..strategy.reusable import ReusableStrategy
 from ..operation.abandon import abandon_operation, abandon_request_to_dict
 from ..operation.add import add_operation, add_request_to_dict
 from ..operation.bind import bind_operation, bind_request_to_dict
@@ -50,10 +49,12 @@ from ..operation.search import search_operation, search_request_to_dict
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
-from ..strategy.async import AsyncStrategy
-from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.sync import SyncStrategy
+from ..strategy.async import AsyncStrategy
+from ..strategy.reusable import ReusableStrategy
 from ..strategy.restartable import RestartableStrategy
+from ..strategy.ldifProducer import LdifProducerStrategy
+from ..strategy.mockSync import MockSyncStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import paged_search_control
 from .usage import ConnectionUsage
@@ -65,10 +66,8 @@ from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, form
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
 
 try:
-    from ..strategy.mockSync import MockSyncStrategy  # not used yet
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
 except ImportError:
-    MockSyncStrategy = NotImplemented
     MockAsyncStrategy = NotImplemented
 
 
@@ -265,6 +264,7 @@ class Connection(object):
                 self.strategy = RestartableStrategy(self)
             elif self.strategy_type == REUSABLE:
                 self.strategy = ReusableStrategy(self)
+                self.lazy = False
             elif self.strategy_type == MOCK_SYNC:
                 self.strategy = MockSyncStrategy(self)
             elif self.strategy_type == MOCK_ASYNC:
@@ -311,6 +311,7 @@ class Connection(object):
         s = [
             str(self.server) if self.server else 'None',
             'user: ' + str(self.user),
+            'lazy' if self.lazy else 'not lazy',
             'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
             'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),
             _format_socket_endpoints(self.socket),
@@ -469,22 +470,31 @@ class Connection(object):
                 if self.authentication == ANONYMOUS:
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing anonymous BIND for <%s>', self)
-                    request = bind_operation(self.version, self.authentication, self.user, '')
-                    if log_enabled(PROTOCOL):
-                        log(PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
-                    response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    if not self.strategy.pooled:
+                        request = bind_operation(self.version, self.authentication, self.user, '')
+                        if log_enabled(PROTOCOL):
+                            log(PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
+                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    else:
+                        response = self.strategy.validate_bind(controls)  # only for REUSABLE
                 elif self.authentication == SIMPLE:
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing simple BIND for <%s>', self)
-                    request = bind_operation(self.version, self.authentication, self.user, self.password)
-                    if log_enabled(PROTOCOL):
-                        log(PROTOCOL, 'simple BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
-                    response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    if not self.strategy.pooled:
+                        request = bind_operation(self.version, self.authentication, self.user, self.password)
+                        if log_enabled(PROTOCOL):
+                            log(PROTOCOL, 'simple BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
+                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    else:
+                        response = self.strategy.validate_bind(controls)  # only for REUSABLE
                 elif self.authentication == SASL:
                     if self.sasl_mechanism in SASL_AVAILABLE_MECHANISMS:
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'performing SASL BIND for <%s>', self)
-                        response = self.do_sasl_bind(controls)
+                        if not self.strategy.pooled:
+                            response = self.do_sasl_bind(controls)
+                        else:
+                            response = self.strategy.validate_bind(controls)  # only for REUSABLE
                     else:
                         self.last_error = 'requested SASL mechanism not supported'
                         if log_enabled(ERROR):
@@ -494,7 +504,10 @@ class Connection(object):
                     if self.user and self.password:
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'performing NTLM BIND for <%s>', self)
-                        response = self.do_ntlm_bind(controls)
+                        if not self.strategy.pooled:
+                            response = self.do_ntlm_bind(controls)
+                        else:
+                            response = self.strategy.validate_bind(controls)  # only for REUSABLE
                     else:  # user or password missing
                         self.last_error = 'NTLM needs domain\\username and a password'
                         if log_enabled(ERROR):
@@ -506,7 +519,7 @@ class Connection(object):
                         log(ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
+                if not self.strategy.sync and not self.strategy.pooled and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
                     _, result = self.get_response(response)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'async BIND response id <%s> received via <%s>', result, self)
@@ -514,7 +527,7 @@ class Connection(object):
                     result = self.result
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'BIND response <%s> received via <%s>', result, self)
-                elif self.authentication == SASL or self.authentication == NTLM:  # async SASL and NTLM
+                elif self.strategy.pooled or self.authentication in (SASL, NTLM):  # async SASL and NTLM or reusable strtegy get the bind result synchronously
                     result = response
                 else:
                     self.last_error = 'unknown authentication method'
@@ -523,12 +536,16 @@ class Connection(object):
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if result is None:
-                    self.bound = True if self.strategy_type == REUSABLE else False
+                    #self.bound = True if self.strategy_type == REUSABLE else False
+                    self.bound = False
+                elif result is True:
+                    self.bound = True
+                elif result is False:
+                    self.bound = False
                 else:
                     self.bound = True if result['result'] == RESULT_SUCCESS else False
-
-                if not self.bound and result and result['description']:
-                    self.last_error = result['description']
+                    if not self.bound and result and result['description']:
+                        self.last_error = result['description']
 
                 if read_server_info and self.bound:
                     self.refresh_server_info()
@@ -949,8 +966,10 @@ class Connection(object):
         with self.lock:
             self._fire_deferred()
             return_value = False
-            if self.strategy._outstanding:
-                if message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']:
+            if self.strategy._outstanding or message_id == 0:
+                # only current  operation should be abandoned, abandon, bind and unbind cannot ever be abandoned,
+                # messagiId 0 is invalid and should be used as a "ping" to keep alive the connection
+                if (message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']) or message_id == 0:
                     request = abandon_operation(message_id)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'ABANDON request: <%s> sent via <%s>', abandon_request_to_dict(request), self)
@@ -1161,7 +1180,9 @@ class Connection(object):
                          search_result=None,
                          indent=4,
                          sort=True,
-                         stream=None):
+                         stream=None,
+                         checked_attributes=True):
+
         with self.lock:
             if search_result is None:
                 search_result = self.response
@@ -1175,7 +1196,8 @@ class Connection(object):
                         entry = dict()
 
                         entry['dn'] = response['dn']
-                        entry['attributes'] = dict(response['attributes'])
+                        if checked_attributes:
+                            entry['attributes'] = dict(response['attributes'])
                         if raw:
                             entry['raw'] = dict(response['raw_attributes'])
                         json_dict['entries'].append(entry)

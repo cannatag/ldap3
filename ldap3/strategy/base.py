@@ -31,10 +31,11 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from .. import SESSION_TERMINATED_BY_SERVER, SYNC, ANONYMOUS, get_config_parameter, DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE
+from .. import SESSION_TERMINATED_BY_SERVER, SYNC, ANONYMOUS, get_config_parameter, DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE, \
+    TRANSACTION_ERROR
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError
+    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError, LDAPTransactionError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
@@ -96,7 +97,6 @@ class BaseStrategy(object):
             self.connection.closed = False
             if log_enabled(NETWORK):
                 log(NETWORK, 'deferring open connection for <%s>', self.connection)
-
         else:
             if not self.connection.closed and not self.connection._executing_deferred:  # try to close connection if still open
                 self.close()
@@ -114,7 +114,7 @@ class BaseStrategy(object):
                         self.connection._usage.servers_from_pool += 1
 
             exception_history = []
-            if not self.no_real_dsa:
+            if not self.no_real_dsa:  # tries to connect to a real server
                 for candidate_address in self.connection.server.candidate_addresses():
                     try:
                         if log_enabled(BASIC):
@@ -330,6 +330,11 @@ class BaseStrategy(object):
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                     raise LDAPSessionTerminatedByServerError(self.connection.last_error)
+                elif responses == TRANSACTION_ERROR:  # Novell LDAP Transaction unsolicited notification
+                    self.connection.last_error = 'transaction error'
+                    if log_enabled(ERROR):
+                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                    raise LDAPTransactionError(self.connection.last_error)
 
                 # if referral in response opens a new connection to resolve referrals if requested
 
@@ -706,7 +711,7 @@ class BaseStrategy(object):
                                            selected_referral['attributes'] or request['attributes'],
                                            request['sizeLimit'],
                                            request['timeLimit'],
-                                           request['typeOnly'],
+                                           request['typesOnly'],
                                            controls=request['controls'])
             elif request['type'] == 'addRequest':
                 referral_connection.add(selected_referral['base'] or request['entry'],

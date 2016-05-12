@@ -27,14 +27,14 @@ from .. import SEQUENCE_TYPES
 from ..protocol.rfc4511 import AddRequest, LDAPDN, AttributeList, Attribute, AttributeDescription, ResultCode, Vals
 from ..protocol.convert import referrals_to_list, attributes_to_dict, validate_attribute_value
 
-# AddRequest ::= [APPLICATION 8] SEQUENCE {
-#     entry           LDAPDN,
-#     attributes      AttributeList }
-
 
 def add_operation(dn,
                   attributes,
                   schema=None):
+    # AddRequest ::= [APPLICATION 8] SEQUENCE {
+    #     entry           LDAPDN,
+    #     attributes      AttributeList }
+    #
     # attributes is a dictionary in the form 'attribute': ['val1', 'val2', 'valN']
     attribute_list = AttributeList()
     for pos, attribute in enumerate(attributes):
@@ -63,8 +63,8 @@ def add_request_to_dict(request):
 
 
 def add_response_to_dict(response):
-    return {'result': int(response[0]),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral'])}

@@ -127,10 +127,10 @@ class BaseServerInfo(object):
 
         if schema:
             for attribute in definition['raw']:
-                attributes[attribute] = format_attribute_values(schema, check_escape(attribute), check_escape(definition['raw'][attribute]), custom_formatter)
+                attributes[attribute] = format_attribute_values(schema, check_escape(attribute), [check_escape(value) for value in definition['raw'][attribute]], custom_formatter)
         else:
             for attribute in definition['raw']:
-                attributes[attribute] = check_escape(definition['raw'][attribute])
+                attributes[attribute] = [check_escape(value) for value in definition['raw'][attribute]]
 
         if cls.__name__ != definition['type']:
             raise LDAPDefinitionError('JSON info not of type ' + cls.__name__)
@@ -303,6 +303,7 @@ class SchemaInfo(BaseServerInfo):
                     self.attribute_types[attribute].optional_in.append(object_class)
                 except KeyError:
                     pass
+
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
         r += linesep
@@ -805,7 +806,7 @@ class NameFormInfo(BaseObjectInfo):
         self.may_contain = may_contain
 
     def __repr__(self):
-        r = (linesep + '  Object class: ' + self.object_class) if self.object_class else ''
+        r = (linesep + '  Object class: ' + list_to_string(self.object_class)) if self.object_class else ''
         r += (linesep + '  Must contain: ' + list_to_string(self.must_contain)) if self.must_contain else ''
         r += (linesep + '  May contain: ' + list_to_string(self.may_contain)) if self.may_contain else ''
         return 'DIT content rule' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)

@@ -28,15 +28,14 @@ from ..protocol.rfc4511 import CompareRequest, AttributeValueAssertion, Attribut
 from ..operation.search import ava_to_dict
 from ..operation.bind import referrals_to_list
 
-# CompareRequest ::= [APPLICATION 14] SEQUENCE {
-#     entry           LDAPDN,
-#     ava             AttributeValueAssertion }
-
 
 def compare_operation(dn,
                       attribute,
                       value,
                       schema=None):
+    # CompareRequest ::= [APPLICATION 14] SEQUENCE {
+    #     entry           LDAPDN,
+    #     ava             AttributeValueAssertion }
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
     ava['assertionValue'] = AssertionValue(validate_attribute_value(schema, attribute, value))
@@ -56,7 +55,7 @@ def compare_request_to_dict(request):
 
 
 def compare_response_to_dict(response):
-    return {'result': int(response[0]),
-            'description': ResultCode().getNamedValues().getName(response[0]),
+    return {'result': int(response['resultCode']),
+            'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'dn': str(response['matchedDN']), 'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral'])}

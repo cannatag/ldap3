@@ -25,11 +25,29 @@
 
 from base64 import b64encode, b64decode
 import datetime
-
-from .. import SEQUENCE_TYPES
+from codecs import unicode_escape_decode
+from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
+
+def to_unicode(obj):
+    """Tries to convert object to unicode. Raises an exception if unsuccessful"""
+    return unicode_escape_decode(obj)[0]
+
+
+def to_raw(obj):
+    """Tries to convert to raw bytes"""
+    if isinstance(obj, NUMERIC_TYPES):
+        obj = str(obj)
+
+    if not (isinstance(obj, bytes) or str == bytes):  # python2
+        if isinstance(obj, SEQUENCE_TYPES):
+            return [to_raw(element) for element in obj]
+        elif isinstance(obj, STRING_TYPES):
+            return obj.encode('utf-8')
+
+    return obj
 
 def escape_filter_chars(text):
     """ Escape chars mentioned in RFC4515. """
@@ -65,7 +83,7 @@ def prepare_for_stream(value):
 
 
 def check_escape(raw_string):
-    if '\\' not in raw_string:
+    if '\\' not in raw_string or isinstance(raw_string, bytes):
         return raw_string
 
     escaped = ''
@@ -154,3 +172,5 @@ def format_json(obj):
         pass
 
     raise LDAPDefinitionError('unable to serialize ' + str(obj))
+
+

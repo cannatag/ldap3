@@ -25,14 +25,12 @@
 
 from ..protocol.rfc4511 import AbandonRequest, MessageID
 
-# AbandonRequest ::= [APPLICATION 16] MessageID
-
 
 def abandon_operation(msg_id):
+    # AbandonRequest ::= [APPLICATION 16] MessageID
     request = AbandonRequest(MessageID(msg_id))
-
     return request
 
 
 def abandon_request_to_dict(request):
-    return {'messageId': str(request[0]), }
+    return {'messageId': str(request)}

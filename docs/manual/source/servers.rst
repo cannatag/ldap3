@@ -133,7 +133,7 @@ If your LDAP server doesn't return the DSA info or the Schema you can load pre-b
 You can also save the schema and info in a json string::
 
     json_info = server.info.to_json()
-    json_schema = server.schema.to_json('')
+    json_schema = server.schema.to_json()
 
 or can have them saved on file::
 

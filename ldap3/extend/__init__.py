@@ -38,6 +38,7 @@ from .novell.startTransaction import StartTransaction
 from .novell.endTransaction import EndTransaction
 from .novell.addMembersToGroups import add_members_to_groups
 from .novell.removeMembersFromGroups import remove_members_from_groups
+from .novell.checkGroupsMemberships import check_groups_memberships
 from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
 from .standard.PagedSearch import paged_search_generator, paged_search_accumulator
@@ -161,19 +162,26 @@ class NovellExtendedOperations(ExtendedOperationContainer):
                               commit,
                               controls).send()
 
-    def add_members_to_groups(self, members, groups, check=True, transaction=True):
+    def add_members_to_groups(self, members, groups, fix=True, transaction=True):
         return add_members_to_groups(self._connection,
                                      members_dn=members,
                                      groups_dn=groups,
-                                     check=check,
+                                     fix=fix,
                                      transaction=transaction)
 
-    def remove_members_from_groups(self, members, groups, check=True, transaction=True):
+    def remove_members_from_groups(self, members, groups, fix=True, transaction=True):
         return remove_members_from_groups(self._connection,
                                           members_dn=members,
                                           groups_dn=groups,
-                                          check=check,
+                                          fix=fix,
                                           transaction=transaction)
+
+    def check_groups_memberships(self, members, groups, fix=False, transaction=True):
+        return check_groups_memberships(self._connection,
+                                        members_dn=members,
+                                        groups_dn=groups,
+                                        fix=fix,
+                                        transaction=transaction)
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):

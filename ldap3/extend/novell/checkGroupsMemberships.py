@@ -119,7 +119,7 @@ def check_groups_memberships(connection,
     :param connection: a bound Connection object
     :param members_dn: the list of members to add to groups
     :param groups_dn: the list of groups where members are to be added
-    :param check: checks for inconsistences in the users-groups relation and fixes them
+    :param fix: checks for inconsistences in the users-groups relation and fixes them
     :param transaction: activates an LDAP transaction when fixing
     :return: a boolean where True means that the operation was successful and False means an error has happened
     Checks and fixes users-groups relations following the eDirectory rules: groups are checked against 'groupMembership'

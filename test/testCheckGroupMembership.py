@@ -86,57 +86,57 @@ class Test(unittest.TestCase):
             self.assertFalse(result)
 
 
-def test_check_group_memberships(self):
-    if test_server_type == 'EDIR' and not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-2'))
-        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-3'))
-        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-2'))
-        self.connection.extend.novell.add_members_to_groups((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]),
-                                                            self.delete_at_teardown[2][0],
-                                                            fix=True,
-                                                            transaction=True)
+    def test_check_group_memberships(self):
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-2'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-3'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-2'))
+            self.connection.extend.novell.add_members_to_groups((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]),
+                                                                self.delete_at_teardown[2][0],
+                                                                fix=True,
+                                                                transaction=True)
 
-        # valid users in valid group
-        result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]), self.delete_at_teardown[2][0])
-        self.assertTrue(result)
+            # valid users in valid group
+            result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]), self.delete_at_teardown[2][0])
+            self.assertTrue(result)
 
-        # invalid users in valid group
-        result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[3][0]), self.delete_at_teardown[2][0])
-        self.assertFalse(result)
+            # invalid users in valid group
+            result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[3][0]), self.delete_at_teardown[2][0])
+            self.assertFalse(result)
 
-        # invalid users in invalid group
-        result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[3][0]), self.delete_at_teardown[4][0])
-        self.assertFalse(result)
+            # invalid users in invalid group
+            result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[3][0]), self.delete_at_teardown[4][0])
+            self.assertFalse(result)
 
 
-def test_check_groups_memberships(self):
-    if test_server_type == 'EDIR' and not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-2'))
-        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
-        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-2'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-3'))
-        self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-3'))
-        self.connection.extend.novell.add_members_to_groups((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]),
-                                                            self.delete_at_teardown[2][0],
-                                                            fix=True,
-                                                            transaction=True)
+    def test_check_groups_memberships(self):
+        if test_server_type == 'EDIR' and not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-2'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-2'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-3'))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-3'))
+            self.connection.extend.novell.add_members_to_groups((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]),
+                                                                self.delete_at_teardown[2][0],
+                                                                fix=True,
+                                                                transaction=True)
 
-        self.connection.extend.novell.add_members_to_groups((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]),
-                                                            self.delete_at_teardown[3][0],
-                                                            fix=True,
-                                                            transaction=True)
+            self.connection.extend.novell.add_members_to_groups((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]),
+                                                                self.delete_at_teardown[3][0],
+                                                                fix=True,
+                                                                transaction=True)
 
-        # valid users in valid groups
-        result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]), (self.delete_at_teardown[2][0],self.delete_at_teardown[3][0]))
-        self.assertTrue(result)
+            # valid users in valid groups
+            result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[1][0]), (self.delete_at_teardown[2][0],self.delete_at_teardown[3][0]))
+            self.assertTrue(result)
 
-        # invalid users in valid groups
-        result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[3][0]), (self.delete_at_teardown[2][0],self.delete_at_teardown[3][0]))
-        self.assertFalse(result)
+            # invalid users in valid groups
+            result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[3][0]), (self.delete_at_teardown[2][0],self.delete_at_teardown[3][0]))
+            self.assertFalse(result)
 
-        # invalid users in invalid groups
-        result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[4][0]), (self.delete_at_teardown[2][0], self.delete_at_teardown[5][0]))
-        self.assertFalse(result)
+            # invalid users in invalid groups
+            result = self.connection.extend.novell.check_groups_memberships((self.delete_at_teardown[0][0], self.delete_at_teardown[4][0]), (self.delete_at_teardown[2][0], self.delete_at_teardown[5][0]))
+            self.assertFalse(result)

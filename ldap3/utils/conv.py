@@ -49,6 +49,7 @@ def to_raw(obj):
 
     return obj
 
+
 def escape_filter_chars(text):
     """ Escape chars mentioned in RFC4515. """
     output = text.replace('\\', r'\5c')

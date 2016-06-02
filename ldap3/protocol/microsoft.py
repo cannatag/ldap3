@@ -26,7 +26,7 @@
 import ctypes
 
 from pyasn1.type.namedtype import NamedTypes, NamedType
-from pyasn1.type.tag import Tag, tagClassApplication, tagFormatConstructed, tagFormatSimple
+from pyasn1.type.tag import Tag, tagClassApplication, tagFormatConstructed
 from pyasn1.type.univ import Sequence, OctetString, Integer
 from .rfc4511 import ResultCode, LDAPString
 from .controls import build_control

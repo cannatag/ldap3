@@ -44,7 +44,7 @@ from ..protocol.sasl.sasl import validate_simple_password
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 
 
-# noinspection PyProtectedMember
+# noinspection PyProtectedMember,PyUnresolvedReferences
 class MockBaseStrategy(object):
     """
     Base class for connection strategy
@@ -135,6 +135,7 @@ class MockBaseStrategy(object):
             try:
                 password = validate_simple_password(request['authentication']['simple'])
             except LDAPPasswordIsMandatoryError:
+                password = ''
                 identity = '<anonymous>'
         else:
             self.connection.last_error = 'only Simple Bind allowed in Mock strategy'
@@ -244,6 +245,9 @@ class MockBaseStrategy(object):
                 else:
                     result_code = 5
                     message = ''
+            else:
+                result_code = 16
+                message = 'attribute not found'
         else:
             result_code = 32
             message = 'object not found'

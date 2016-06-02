@@ -24,9 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from ...extend.operation import ExtendedOperation
-from ...protocol.novell import CreateGroupTypeRequestValue, CreateGroupTypeResponseValue, Integer, GroupingControlValue
+from ...protocol.novell import CreateGroupTypeRequestValue, CreateGroupTypeResponseValue, GroupingControlValue
 from ...protocol.controls import build_control
-from pyasn1.type.univ import Sequence
 
 
 class StartTransaction(ExtendedOperation):

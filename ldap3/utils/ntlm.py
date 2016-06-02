@@ -491,7 +491,7 @@ class NtlmClient(object):
     def ntowf_v2(self):
         passparts = self._password.split(':')
         if len(passparts) == 2 and len(passparts[0]) == 32 and len(passparts[1]) == 32:
-            #The specified password is an LM:NTLM hash
+            # The specified password is an LM:NTLM hash
             password_digest = binascii.unhexlify(passparts[1])
         else:
             password_digest = hashlib.new('MD4', self._password.encode('utf-16-le')).digest()

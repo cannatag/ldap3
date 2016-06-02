@@ -31,7 +31,6 @@ except ImportError:
 from .. import SUBTREE, BASE, LEVEL
 
 
-
 def parse_uri(uri):
     """
     Decode LDAP URI as specified in RFC 4516 relaxing specifications

@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .rfc4511 import Control, Criticality, ControlValue, LDAPOID
+from .rfc4511 import Control, Criticality, LDAPOID
 from ..utils.asn1 import encoder
 
 

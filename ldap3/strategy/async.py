@@ -70,7 +70,7 @@ class AsyncStrategy(BaseStrategy):
                 if get_more_data:
                     try:
                         data = self.connection.socket.recv(socket_size)
-                    except (OSError, socket.error, AttributeError) as e:
+                    except (OSError, socket.error, AttributeError):
                         if self.connection.receive_timeout:  # a receive timeout has been detected - keep kistening on the socket
                             continue
                     except Exception as e:

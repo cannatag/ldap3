@@ -536,7 +536,7 @@ class Connection(object):
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
                 if result is None:
-                    #self.bound = True if self.strategy_type == REUSABLE else False
+                    # self.bound = True if self.strategy_type == REUSABLE else False
                     self.bound = False
                 elif result is True:
                     self.bound = True

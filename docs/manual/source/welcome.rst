@@ -80,7 +80,7 @@ Contribuiting to this project
 -----------------------------
 
 ldap3 source is hosted on github. You can contribute to the ldap3 project on https://github.com/cannatag/ldap3
-forking the project and submitting a *pull request+ with your modifications.
+forking the project and submitting a *pull request* with your modifications.
 
 
 Continuous integration

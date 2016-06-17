@@ -260,9 +260,13 @@ class Tls(object):
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()
-    host_names = [server_name] + (additional_names if isinstance(additional_names, SEQUENCE_TYPES) else [additional_names])
+    if additional_names:
+        host_names = [server_name] + (additional_names if isinstance(additional_names, SEQUENCE_TYPES) else [additional_names])
+    else:
+        host_names = [server_name]
+
     for host_name in host_names:
-        if host_name is None:
+        if not host_name:
             continue
         elif host_name == '*':
             if log_enabled(NETWORK):

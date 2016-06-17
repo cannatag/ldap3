@@ -527,7 +527,7 @@ class Server(object):
                     candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                 elif self.mode == IP_V4_PREFERRED:
                     candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
-                    candidates += [address for address in addresses if address[0] == socket.AF_INET6 and (addresses[5] or address[5] is None)]
+                    candidates += [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                 elif self.mode == IP_V6_PREFERRED:
                     candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                     candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]

@@ -84,7 +84,7 @@ def prepare_for_stream(value):
 
 
 def check_escape(raw_string):
-    if '\\' not in raw_string or isinstance(raw_string, bytes):
+    if isinstance(raw_string, bytes) or '\\' not in raw_string:
         return raw_string
 
     escaped = ''

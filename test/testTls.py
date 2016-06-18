@@ -140,8 +140,7 @@ class Test(unittest.TestCase):
 
     def test_bind_ssl_cert_none(self):
         if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
-            tls = Tls(validate=ssl.CERT_OPTIONAL,
-                      ca_certs_file=test_ca_cert_file)
+            tls = Tls(validate=ssl.CERT_NONE)
             if isinstance(test_server, (list, tuple)):
                 server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
                 for host in test_server:

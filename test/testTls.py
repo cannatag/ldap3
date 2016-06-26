@@ -155,3 +155,10 @@ class Test(unittest.TestCase):
             if connection.strategy.pooled:
                 connection.strategy.terminate()
             self.assertFalse(connection.bound)
+
+    # def test_hostname_doesnt_match(self):
+    #     tls_config = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1)
+    #     server = Server('edir1.hyperv', use_ssl=True, tls=tls_config)
+    #     conn = Connection(server)
+    #     conn.open()
+    #     self.assertTrue(conn.bound)

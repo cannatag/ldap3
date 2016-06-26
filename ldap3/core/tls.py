@@ -260,6 +260,8 @@ class Tls(object):
 
 def check_hostname(sock, server_name, additional_names):
     server_certificate = sock.getpeercert()
+    if log_enabled(NETWORK):
+        log(NETWORK, 'certificate found for %s: %s', sock, server_certificate)
     if additional_names:
         host_names = [server_name] + (additional_names if isinstance(additional_names, SEQUENCE_TYPES) else [additional_names])
     else:
@@ -278,10 +280,10 @@ def check_hostname(sock, server_name, additional_names):
             if log_enabled(NETWORK):
                 log(NETWORK, 'certificate matches host name <%s>', host_name)
             return  # valid
-        except CertificateError:
+        except CertificateError as e:
             if log_enabled(NETWORK):
-                log(NETWORK, "certificate doesn't match host name <%s>", host_name)
+                log(NETWORK, str(e))
 
     if log_enabled(ERROR):
-        log(ERROR, "host name doesn't match")
-    raise LDAPCertificateError("hostname doesn't match")
+        log(ERROR, "hostname doesn't match certificate")
+    raise LDAPCertificateError("certificate %s doesn't match any name in %s " % (server_certificate, str(host_names)))

@@ -6,7 +6,7 @@ Server object
 -------------
 The Server object specifies the DSA (Directory Server Agent) LDAP server that will be used by the connection. To create a new Server object the following parameters are available:
 
-* host: name or ip or the complete url in the scheme://hostname:hostport format of the server (required) - port and scheme (ldap or ldaps) defined here have precedence over the parameters port and use_tls
+* host: name or ip or the complete url in the scheme://hostname:hostport format of the server (required) - port and scheme (ldap or ldaps) defined here have precedence over the parameters port and use_ssl
 
 * port: the port where the DSA server is listening (defaults to 389, for a cleartext connection, 636 for a secured connection)
 

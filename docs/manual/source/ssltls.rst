@@ -34,7 +34,7 @@ Tls object uses the ssl module of the Python standard library with additional ch
 
 The needed constants are defined in the ssl package.
 
-IF you don't use a specific Tls object and set use_tls=True in the Server definition, a default Tls object will be used, it has no certificate
+IF you don't use a specific Tls object and set use_ssl=True in the Server definition, a default Tls object will be used, it has no certificate
 files, uses the ssl.PROTOCOL_SSLv23 (if available in your Python interpreter) and performs no validation of the server certificate.
 It's recommended to set validate=ssl.CERT_REQUIRED to verify the certificate server. Example::
 

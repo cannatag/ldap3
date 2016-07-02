@@ -1,4 +1,4 @@
-- 1.3.2 2016.07.01
+- 1.3.2 2016.07.02
     - Change paameter name from 'check' to 'fix' in connection.extend.novell.add_members_to_groups() and connection.extend.novell.remove_members_from_groups
     - Added connection.extend.novell.check_groups_memberships() that check if members are in groups and fixes the user-group relation if incorrect
     - Updated docs link to ldap3.readthedocs.io

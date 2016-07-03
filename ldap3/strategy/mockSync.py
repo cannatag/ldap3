@@ -111,7 +111,6 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
 
     def post_send_search(self, payload):
         message_type, request, controls = payload
-        responses = []
         self.connection.response = []
         self.connection.result = dict()
         if message_type == 'searchRequest':

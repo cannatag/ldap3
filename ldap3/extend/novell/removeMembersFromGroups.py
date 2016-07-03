@@ -29,17 +29,19 @@ from ... import SEQUENCE_TYPES, MODIFY_DELETE, BASE, DEREF_NEVER
 def remove_members_from_groups(connection,
                                members_dn,
                                groups_dn,
-                               check,
+                               fix,
                                transaction):
     """
     :param connection: a bound Connection object
     :param members_dn: the list of members to remove from groups
     :param groups_dn: the list of groups where members are to be removed
-    :param check: checks for inconsistences in the users-groups relation and fixes them
+    :param fix: checks for inconsistences in the users-groups relation and fixes them
     :param transaction: activates an LDAP transaction
     :return: a boolean where True means that the operation was successful and False means an error has happened
     Removes users-groups relations following the eDirectory rules: groups are removed from securityEquals and groupMembership
-    attributes in the member object while members are removed from member and equivalentToMe attributes in the group object
+    attributes in the member object while members are removed from member and equivalentToMe attributes in the group object.
+    Raises LDAPInvalidDnError if members or groups are not found in the DIT.
+
     """
     if not isinstance(members_dn, SEQUENCE_TYPES):
         members_dn = [members_dn]
@@ -55,7 +57,7 @@ def remove_members_from_groups(connection,
 
     if not error:
         for member in members_dn:
-            if check:  # checks for existance of member and for already assigned groups
+            if fix:  # checks for existance of member and for already assigned groups
                 result = connection.search(member, '(objectclass=*)', BASE, dereference_aliases=DEREF_NEVER, attributes=['securityEquals', 'groupMembership'])
 
                 if not connection.strategy.sync:
@@ -90,7 +92,7 @@ def remove_members_from_groups(connection,
 
     if not error:
         for group in groups_dn:
-            if check:  # checks for existance of group and for already assigned members
+            if fix:  # checks for existance of group and for already assigned members
                 result = connection.search(group, '(objectclass=*)', BASE, dereference_aliases=DEREF_NEVER, attributes=['member', 'equivalentToMe'])
 
                 if not connection.strategy.sync:

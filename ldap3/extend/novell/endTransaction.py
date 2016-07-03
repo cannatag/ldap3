@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from ...extend.operation import ExtendedOperation
-from ...protocol.novell import EndGroupTypeRequestValue, EndGroupTypeResponseValue, Integer, Sequence
+from ...protocol.novell import EndGroupTypeRequestValue, EndGroupTypeResponseValue, Sequence
 from ...utils.asn1 import decoder
 
 

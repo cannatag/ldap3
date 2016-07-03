@@ -26,9 +26,7 @@
 from pyasn1.type.univ import OctetString, Integer, Sequence
 from pyasn1.type.namedtype import NamedTypes, NamedType
 from pyasn1.type.constraint import ValueRangeConstraint
-from .rfc4511 import Control
 from .controls import build_control
-from ..utils.asn1 import encoder
 
 # constants
 # maxInt INTEGER ::= 2147483647 -- (2^^31 - 1) --

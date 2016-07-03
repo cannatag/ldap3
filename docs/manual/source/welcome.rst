@@ -51,7 +51,7 @@ The home page of the ldap3 project is https://github.com/cannatag/ldap3
 Documentation
 -------------
 
-Documentation is available at http://ldap3.readthedocs.org. You can download a PDF copy of the manual at https://media.readthedocs.org/pdf/ldap3/stable/ldap3.pdf
+Documentation is available at http://ldap3.readthedocs.io. You can download a PDF copy of the manual at https://media.readthedocs.org/pdf/ldap3/stable/ldap3.pdf
 
 
 Download
@@ -79,8 +79,8 @@ You can download the latest released source code at https://github.com/cannatag/
 Contribuiting to this project
 -----------------------------
 
-ldap3 source is hosted on github. You can contribute to the ldap3 project on https://github.com/cannatag/ldap3/dev
-forking the project and submitting a *pull request+ with your modifications.
+ldap3 source is hosted on github. You can contribute to the ldap3 project on https://github.com/cannatag/ldap3
+forking the project and submitting a *pull request* with your modifications.
 
 
 Continuous integration

@@ -1652,10 +1652,7 @@ RFC 4511                         LDAPv3                        June 2006
      SearchResultDone (success)
 
    Client implementors should note that when following a
-   SearchResultReference, additional SearchResultReference may be
-   generated.  Continuing the example, if the client contacted the
-   server (hostb) and issued the Search request for the subtree
-   <OU=People,DC=Example,DC=NET>, the server might respond as follows:
+   SearchResultReference,referral
 
      SearchResultEntry for OU=People,DC=Example,DC=NET
      SearchResultReference {

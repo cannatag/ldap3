@@ -38,6 +38,14 @@ class Test(unittest.TestCase):
         drop_connection(connection)
         self.assertFalse(connection.bound)
 
+    def test_bind_ssl_cert_none(self):
+        connection = get_connection(bind=False, use_ssl=True)
+        connection.open()
+        connection.bind()
+        self.assertTrue(connection.bound)
+        drop_connection(connection)
+        self.assertFalse(connection.bound)
+
     def test_bind_anonymous(self):
         connection = get_connection(bind=True, lazy_connection=False, authentication=ANONYMOUS)
         self.assertTrue(connection.bound)

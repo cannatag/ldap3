@@ -80,7 +80,7 @@ from .async import AsyncStrategy
 #     referral           [3] Referral OPTIONAL }
 
 
-class MockSyncStrategy(MockBaseStrategy, AsyncStrategy):  # class inheritance sequence is important, MockBaseStrategy must be the first one
+class MockAsyncStrategy(MockBaseStrategy, AsyncStrategy):  # class inheritance sequence is important, MockBaseStrategy must be the first one
     """
     This strategy create a mock LDAP server, with asynchronous access
     It can be useful to test LDAP without accessing a real Server

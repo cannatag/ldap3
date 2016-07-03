@@ -25,8 +25,6 @@
 
 import collections
 
-from .. import SEQUENCE_TYPES
-
 
 class CaseInsensitiveDict(collections.MutableMapping):
     def __init__(self, other=None, **kwargs):

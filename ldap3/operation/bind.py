@@ -24,14 +24,14 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import SIMPLE, ANONYMOUS, SASL, RESULT_CODES
-from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError, LDAPUserNameNotAllowedError, \
-    LDAPUserNameIsMandatoryError
+from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError, LDAPUserNameNotAllowedError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
 
 
+# noinspection PyUnresolvedReferences
 def bind_operation(version,
                    authentication,
                    name='',

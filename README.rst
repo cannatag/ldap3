@@ -26,7 +26,7 @@ Project home page is https://github.com/cannatag/ldap3
 Documentation
 -------------
 
-Documentation is available at http://ldap3.readthedocs.org
+Documentation is available at http://ldap3.readthedocs.io
 
 
 License
@@ -89,4 +89,4 @@ For information and suggestions you can contact me at cannatag@gmail.com or you 
 Changelog
 ---------
 
-You can read the current changelog at http://ldap3.readthedocs.org/changelog.html
+You can read the current changelog at http://ldap3.readthedocs.io/changelog.html

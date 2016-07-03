@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
             self.connection.extend.novell.add_members_to_groups(self.delete_at_teardown[0][0],
                                                                 [self.delete_at_teardown[1][0],
                                                                  self.delete_at_teardown[2][0]],
-                                                                check=True,
+                                                                fix=True,
                                                                 transaction=False)
             # verifies user in group-1
             result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
@@ -100,7 +100,7 @@ class Test(unittest.TestCase):
 
             self.connection.extend.novell.remove_members_from_groups(self.delete_at_teardown[0][0],
                                                                      self.delete_at_teardown[1][0],
-                                                                     check=False,
+                                                                     fix=False,
                                                                      transaction=False)
 
             # verifies users not in group-1
@@ -167,7 +167,7 @@ class Test(unittest.TestCase):
                                                                 [self.delete_at_teardown[3][0],
                                                                  self.delete_at_teardown[4][0],
                                                                  self.delete_at_teardown[5][0]],
-                                                                check=True,
+                                                                fix=True,
                                                                 transaction=False
                                                                 )
             for i in range(0, 2):
@@ -204,7 +204,7 @@ class Test(unittest.TestCase):
                                                                      [self.delete_at_teardown[3][0],
                                                                       self.delete_at_teardown[4][0],
                                                                       self.delete_at_teardown[5][0]],
-                                                                     check=True,
+                                                                     fix=True,
                                                                      transaction=False
                                                                      )
 
@@ -242,7 +242,7 @@ class Test(unittest.TestCase):
             self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-5', self.delete_at_teardown))
             self.connection.extend.novell.add_members_to_groups(self.delete_at_teardown[0][0],
                                                                 self.delete_at_teardown[1][0],
-                                                                check=True,
+                                                                fix=True,
                                                                 transaction=True)
             result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
             if not self.connection.strategy.sync:
@@ -270,7 +270,7 @@ class Test(unittest.TestCase):
 
             self.connection.extend.novell.remove_members_from_groups(self.delete_at_teardown[0][0],
                                                                      self.delete_at_teardown[1][0],
-                                                                     check=False,
+                                                                     fix=False,
                                                                      transaction=False)
 
             result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
@@ -311,7 +311,7 @@ class Test(unittest.TestCase):
                                                                 [self.delete_at_teardown[3][0],
                                                                  self.delete_at_teardown[4][0],
                                                                  self.delete_at_teardown[5][0]],
-                                                                check=True,
+                                                                fix=True,
                                                                 transaction=True
                                                                 )
             for i in range(0, 2):
@@ -348,7 +348,7 @@ class Test(unittest.TestCase):
                                                                      [self.delete_at_teardown[3][0],
                                                                       self.delete_at_teardown[4][0],
                                                                       self.delete_at_teardown[5][0]],
-                                                                     check=True,
+                                                                     fix=True,
                                                                      transaction=False
                                                                      )
 

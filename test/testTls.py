@@ -137,3 +137,28 @@ class Test(unittest.TestCase):
             if connection.strategy.pooled:
                 connection.strategy.terminate()
             self.assertFalse(connection.bound)
+
+    def test_bind_ssl_cert_none(self):
+        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+            tls = Tls(validate=ssl.CERT_NONE)
+            if isinstance(test_server, (list, tuple)):
+                server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+                for host in test_server:
+                    server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
+            else:
+                server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
+            connection = Connection(server, auto_bind=False, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+            connection.open()
+            connection.bind()
+            self.assertTrue(connection.bound)
+            connection.unbind()
+            if connection.strategy.pooled:
+                connection.strategy.terminate()
+            self.assertFalse(connection.bound)
+
+    # def test_hostname_doesnt_match(self):
+    #     tls_config = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1)
+    #     server = Server('edir1.hyperv', use_ssl=True, tls=tls_config)
+    #     conn = Connection(server)
+    #     conn.open()
+    #     self.assertTrue(conn.bound)

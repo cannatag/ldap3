@@ -150,7 +150,7 @@ elif location == 'GCNBHPW10-AD':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
-    test_password = 'Rc7777pfop'  # user password
+    test_password = 'Rc6666pfop'  # user password
     test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
     test_secondary_password = 'Rc999pfop'  # user password
     test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
@@ -164,7 +164,7 @@ elif location == 'GCNBHPW10-AD':
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
-    test_ntlm_password = 'Rc7777pfop'
+    test_ntlm_password = 'Rc6666pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
 elif location == 'GCNBHPW10-SLAPD':

@@ -475,7 +475,7 @@ certificate validity. You can customize the TLS behaviour providing a Tls object
     ...
     ldap3.core.exceptions.LDAPSocketOpenError: (LDAPSocketOpenError('socket ssl wrapping error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)',),)
 
-In this specific case, using the FreeIPA demo server we get a LDAPSocketOpenError exception because the certificate cannot be verified.
+In this case, using the FreeIPA demo server we get a LDAPSocketOpenError exception because the certificate cannot be verified.
 You can configure the Tls object with a number of options. Look at :ref:`the SSL and TLS documentation <ssltls>` for more information.
 
 Database Operations

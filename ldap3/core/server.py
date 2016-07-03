@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import socket
-from json.decoder import JSONDecoder
 from threading import Lock
 from datetime import datetime, MINYEAR
 
@@ -44,6 +43,7 @@ except ImportError:
     from urllib import unquote  # Python 2
 
 try:  # try to discover if unix sockets are available for LDAP over IPC (ldapi:// scheme)
+    # noinspection PyUnresolvedReferences
     from socket import AF_UNIX
     unix_socket_available = True
 except ImportError:
@@ -513,7 +513,7 @@ class Server(object):
         if self.ipc:
             candidates = self.address_info
             if log_enabled(BASIC):
-               log(BASIC, 'candidate address for <%s>: <%s> with mode UNIX_SOCKET', self, self.name)
+                log(BASIC, 'candidate address for <%s>: <%s> with mode UNIX_SOCKET', self, self.name)
         else:
             # selects server address based on server mode and availability (in address[5])
             addresses = self.address_info[:]  # copy to avoid refreshing while searching candidates
@@ -527,7 +527,7 @@ class Server(object):
                     candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                 elif self.mode == IP_V4_PREFERRED:
                     candidates = [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]
-                    candidates += [address for address in addresses if address[0] == socket.AF_INET6 and (addresses[5] or address[5] is None)]
+                    candidates += [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                 elif self.mode == IP_V6_PREFERRED:
                     candidates = [address for address in addresses if address[0] == socket.AF_INET6 and (address[5] or address[5] is None)]
                     candidates += [address for address in addresses if address[0] == socket.AF_INET and (address[5] or address[5] is None)]

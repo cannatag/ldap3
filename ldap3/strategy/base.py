@@ -540,7 +540,7 @@ class BaseStrategy(object):
         elif control_type == '1.2.840.113556.1.4.841':  # DirSync AD
             control_resp, unprocessed = decoder.decode(control_value, asn1Spec=DirSyncControlResponseValue())
             control_value = dict()
-            control_value['more_results'] = bool(control_resp['MoreResults']) # more_result if nonzero
+            control_value['more_results'] = bool(control_resp['MoreResults'])  # more_result if nonzero
             control_value['cookie'] = bytes(control_resp['CookieServer'])
         if unprocessed:
                 if log_enabled(ERROR):

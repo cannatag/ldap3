@@ -26,6 +26,8 @@
 import json
 import re
 
+from threading import Lock
+
 from .. import SEQUENCE_TYPES
 from ..operation.bind import bind_request_to_dict
 from ..operation.delete import delete_request_to_dict
@@ -52,6 +54,7 @@ class MockBaseStrategy(object):
 
     def __init__(self):
         if not hasattr(self.connection.server, 'dit'):  # create entries dict if not already present
+            self.connection.server.dit_lock = Lock()
             self.connection.server.dit = dict()
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
@@ -72,28 +75,30 @@ class MockBaseStrategy(object):
             self.connection._usage.closed_sockets += 1
 
     def add_entry(self, dn, attributes):
-        escaped_dn = safe_dn(dn)
-        if escaped_dn not in self.connection.server.dit:
-            self.connection.server.dit[escaped_dn] = CaseInsensitiveDict()
-            for attribute in attributes:
-                if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
-                    attributes[attribute] = [attributes[attribute]]
-                self.connection.server.dit[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
-            for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
-                if rdn[0] not in self.connection.server.dit[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
-                    self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
-                else:
-                    if rdn[1] not in self.connection.server.dit[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                        self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
-            return True
-        return False
+        with self.connection.server.dit_lock:
+            escaped_dn = safe_dn(dn)
+            if escaped_dn not in self.connection.server.dit:
+                self.connection.server.dit[escaped_dn] = CaseInsensitiveDict()
+                for attribute in attributes:
+                    if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
+                        attributes[attribute] = [attributes[attribute]]
+                    self.connection.server.dit[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
+                for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
+                    if rdn[0] not in self.connection.server.dit[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
+                        self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
+                    else:
+                        if rdn[1] not in self.connection.server.dit[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
+                            self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
+                return True
+            return False
 
     def remove_entry(self, dn):
-        escaped_dn = safe_dn(dn)
-        if escaped_dn in self.connection.server.dit:
-            del self.connection.server.dit[escaped_dn]
-            return True
-        return False
+        with self.connection.server.dit_lock:
+            escaped_dn = safe_dn(dn)
+            if escaped_dn in self.connection.server.dit:
+                del self.connection.server.dit[escaped_dn]
+                return True
+            return False
 
     def entries_from_json(self, json_entry_file):
         target = open(json_entry_file, 'r')

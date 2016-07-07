@@ -38,10 +38,13 @@ class Test(unittest.TestCase):
         info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
         server_1 = Server.from_definition('MockSyncServer', info, schema)
         self.connection_1 = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_SYNC)
+        self.connection_1b = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_SYNC)
         server_2 = Server('dummy', get_info=OFFLINE_EDIR_8_8_8)
         self.connection_2 = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_SYNC)
+        self.connection_2b = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_SYNC)
         server_3 = Server('dummy')
         self.connection_3 = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC)
+        self.connection_3b = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC)
         # creates fixtures
         self.connection_1.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
         self.connection_2.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
@@ -198,6 +201,8 @@ class Test(unittest.TestCase):
             result = self.connection_1.result
         self.assertTrue(result['description'], 'success')
         self.assertTrue(dn in self.connection_1.strategy.entries)
+        self.connection_1b.bind()
+        self.assertTrue(dn in self.connection_1b.strategy.entries)
 
     def test_add_entry_2(self):
         dn = 'cn=user5,ou=test,o=lab'
@@ -209,6 +214,8 @@ class Test(unittest.TestCase):
             result = self.connection_2.result
         self.assertTrue(result['description'], 'success')
         self.assertTrue(dn in self.connection_2.strategy.entries)
+        self.connection_2b.bind()
+        self.assertTrue(dn in self.connection_2b.strategy.entries)
 
     def test_add_entry_3(self):
         dn = 'cn=user5,ou=test,o=lab'
@@ -220,6 +227,8 @@ class Test(unittest.TestCase):
             result = self.connection_3.result
         self.assertTrue(result['description'], 'success')
         self.assertTrue(dn in self.connection_3.strategy.entries)
+        self.connection_3b.bind()
+        self.assertTrue(dn in self.connection_3b.strategy.entries)
 
     def test_add_entry_already_exists_1(self):
         dn = 'cn=user5,ou=test,o=lab'
@@ -706,7 +715,6 @@ class Test(unittest.TestCase):
         self.assertTrue(b'title5' in self.connection_2.strategy.entries[dn]['title'])
         self.assertEqual(len(self.connection_2.strategy.entries[dn]['title']), 2)
 
-
     def test_modify_replace_existing_multivalue_3(self):
         dn = 'cn=user4,ou=test,o=lab'
         self.connection_3.bind()
@@ -935,6 +943,16 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertTrue(response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
+        self.connection_1b.bind()
+        result = self.connection_1b.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_1b.response
+        if not self.connection_1b.strategy.sync:
+            response, result = self.connection_1b.get_response(result)
+        else:
+            result = self.connection_1b.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(response[0]['attributes']['cn'][0] in ['user0', 'user1'])
+
     def test_search_presence_and_filter_2(self):
         self.connection_2.bind()
         result = self.connection_2.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
@@ -946,6 +964,16 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertTrue(response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 
+        self.connection_2b.bind()
+        result = self.connection_2b.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_2b.response
+        if not self.connection_2b.strategy.sync:
+            response, result = self.connection_2b.get_response(result)
+        else:
+            result = self.connection_2b.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(response[0]['attributes']['cn'][0] in ['user0', 'user1'])
+
     def test_search_presence_and_filter_3(self):
         self.connection_3.bind()
         result = self.connection_3.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
@@ -954,6 +982,16 @@ class Test(unittest.TestCase):
             response, result = self.connection_3.get_response(result)
         else:
             result = self.connection_3.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(response[0]['attributes']['cn'][0] in ['user0', 'user1'])
+
+        self.connection_3b.bind()
+        result = self.connection_3b.search('o=lab', '(&(cn=*)(|(sn=user0_sn)(sn=user1_sn)))', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_3b.response
+        if not self.connection_3b.strategy.sync:
+            response, result = self.connection_3b.get_response(result)
+        else:
+            result = self.connection_3b.result
         self.assertEqual(result['description'], 'success')
         self.assertTrue(response[0]['attributes']['cn'][0] in ['user0', 'user1'])
 

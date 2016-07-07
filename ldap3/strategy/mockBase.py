@@ -51,7 +51,9 @@ class MockBaseStrategy(object):
     """
 
     def __init__(self):
-        self.entries = dict()
+        if not hasattr(self.connection.server, 'dit'):  # create entries dict if not already present
+            self.connection.server.dit = dict()
+        self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
         self.bound = None
         if log_enabled(BASIC):
@@ -71,25 +73,25 @@ class MockBaseStrategy(object):
 
     def add_entry(self, dn, attributes):
         escaped_dn = safe_dn(dn)
-        if escaped_dn not in self.entries:
-            self.entries[escaped_dn] = CaseInsensitiveDict()
+        if escaped_dn not in self.connection.server.dit:
+            self.connection.server.dit[escaped_dn] = CaseInsensitiveDict()
             for attribute in attributes:
                 if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
                     attributes[attribute] = [attributes[attribute]]
-                self.entries[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
+                self.connection.server.dit[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
             for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
-                if rdn[0] not in self.entries[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
-                    self.entries[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
+                if rdn[0] not in self.connection.server.dit[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
+                    self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
                 else:
-                    if rdn[1] not in self.entries[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                        self.entries[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
+                    if rdn[1] not in self.connection.server.dit[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
+                        self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
             return True
         return False
 
     def remove_entry(self, dn):
         escaped_dn = safe_dn(dn)
-        if escaped_dn in self.entries:
-            del self.entries[escaped_dn]
+        if escaped_dn in self.connection.server.dit:
+            del self.connection.server.dit[escaped_dn]
             return True
         return False
 
@@ -101,8 +103,8 @@ class MockBaseStrategy(object):
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPDefinitionError(self.connection.last_error)
-        if not self.entries:
-            self.entries = CaseInsensitiveDict()
+        if not self.connection.server.dit:
+            self.connection.server.dit = CaseInsensitiveDict()
         for entry in definition['entries']:
             if 'raw' not in entry:
                 self.connection.last_error = 'invalid JSON definition, missing "raw" section'
@@ -143,9 +145,9 @@ class MockBaseStrategy(object):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPDefinitionError(self.connection.last_error)
         # checks userPassword for password. userPassword must be a clear text string or a list of clear text strings
-        if identity in self.entries:
-            if 'userPassword' in self.entries[identity]:
-                if self.entries[identity]['userPassword'] == password or password in self.entries[identity]['userPassword']:
+        if identity in self.connection.server.dit:
+            if 'userPassword' in self.connection.server.dit[identity]:
+                if self.connection.server.dit[identity]['userPassword'] == password or password in self.connection.server.dit[identity]['userPassword']:
                     result_code = 0
                     message = ''
                     self.bound = identity
@@ -179,8 +181,8 @@ class MockBaseStrategy(object):
         # response: LDAPResult
         request = delete_request_to_dict(request_message)
         dn = safe_dn(request['entry'])
-        if dn in self.entries:
-            del self.entries[dn]
+        if dn in self.connection.server.dit:
+            del self.connection.server.dit[dn]
             result_code = 0
             message = ''
         else:
@@ -207,7 +209,7 @@ class MockBaseStrategy(object):
         attributes = request['attributes']
         # converts attributes values to bytes
 
-        if dn not in self.entries:
+        if dn not in self.connection.server.dit:
             if self.add_entry(dn, attributes):
                 result_code = 0
                 message = ''
@@ -237,9 +239,9 @@ class MockBaseStrategy(object):
         dn = safe_dn(request['entry'])
         attribute = request['attribute']
         value = to_raw(request['value'])
-        if dn in self.entries:
-            if attribute in self.entries[dn]:
-                if value in self.entries[dn][attribute]:
+        if dn in self.connection.server.dit:
+            if attribute in self.connection.server.dit[dn]:
+                if value in self.connection.server.dit[dn][attribute]:
                     result_code = 6
                     message = ''
                 else:
@@ -275,16 +277,16 @@ class MockBaseStrategy(object):
         delete_old_rdn = request['deleteOldRdn']
         new_superior = safe_dn(request['newSuperior']) if request['newSuperior'] else ''
         dn_components = to_dn(dn)
-        if dn in self.entries:
+        if dn in self.connection.server.dit:
             if new_superior and new_rdn:  # performs move in the DIT
-                self.entries[safe_dn(dn_components[0] + ',' + new_superior)] = self.entries[dn].copy()
+                self.connection.server.dit[safe_dn(dn_components[0] + ',' + new_superior)] = self.connection.server.dit[dn].copy()
                 if delete_old_rdn:
-                    del self.entries[dn]
+                    del self.connection.server.dit[dn]
                 result_code = 0
                 message = 'entry moved'
             elif new_rdn and not new_superior:  # performs rename
-                self.entries[safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))] = self.entries[dn].copy()
-                del self.entries[dn]
+                self.connection.server.dit[safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))] = self.connection.server.dit[dn].copy()
+                del self.connection.server.dit[dn]
                 result_code = 0
                 message = 'entry rdn renamed'
             else:
@@ -324,19 +326,19 @@ class MockBaseStrategy(object):
         result_code = 0
         message = ''
         rdns = [rdn[0] for rdn in safe_rdn(dn, decompose=True)]
-        if dn in self.entries:
-            original_entry = self.entries[dn].copy()  # to preserve atomicity of operation
+        if dn in self.connection.server.dit:
+            original_entry = self.connection.server.dit[dn].copy()  # to preserve atomicity of operation
             for modification in changes:
                 operation = modification['operation']
                 attribute = modification['attribute']['type']
                 elements = modification['attribute']['value']
                 if operation == 0:  # add
-                    if attribute not in self.entries[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.entries[dn][attribute] = [to_raw(element) for element in elements]
+                    if attribute not in self.connection.server.dit[dn] and elements:  # attribute not present, creates the new attribute and add elements
+                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
                     else:  # attribute present, adds elements to current values
-                        self.entries[dn][attribute].extend([to_raw(element) for element in elements])
+                        self.connection.server.dit[dn][attribute].extend([to_raw(element) for element in elements])
                 elif operation == 1:  # delete
-                    if attribute not in self.entries[dn]:  # attribute must exist
+                    if attribute not in self.connection.server.dit[dn]:  # attribute must exist
                         result_code = 16
                         message = 'attribute must exists for deleting its values'
                     elif attribute in rdns:  # attribute can't be used in dn
@@ -344,31 +346,31 @@ class MockBaseStrategy(object):
                         message = 'cannot delete an rdn'
                     else:
                         if not elements:  # deletes whole attribute if element list is empty
-                            del self.entries[dn][attribute]
+                            del self.connection.server.dit[dn][attribute]
                         else:
                             for element in elements:
                                 raw_element = to_raw(element)
-                                if raw_element in self.entries[dn][attribute]:  # removes single element
-                                    self.entries[dn][attribute].remove(raw_element)
+                                if raw_element in self.connection.server.dit[dn][attribute]:  # removes single element
+                                    self.connection.server.dit[dn][attribute].remove(raw_element)
                                 else:
                                     result_code = 1
                                     message = 'value to delete not found'
-                            if not self.entries[dn][attribute]:  # removes the whole attribute if no elements remained
-                                del self.entries[dn][attribute]
+                            if not self.connection.server.dit[dn][attribute]:  # removes the whole attribute if no elements remained
+                                del self.connection.server.dit[dn][attribute]
                 elif operation == 2:  # replace
-                    if attribute not in self.entries[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.entries[dn][attribute] = [to_raw(element) for element in elements]
+                    if attribute not in self.connection.server.dit[dn] and elements:  # attribute not present, creates the new attribute and add elements
+                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
                     elif not elements and attribute in rdns:  # attribute can't be used in dn
                         result_code = 67
                         message = 'cannot replace an rdn'
                     elif not elements:  # deletes whole attribute if element list is empty
-                        if attribute in self.entries[dn]:
-                            del self.entries[dn][attribute]
+                        if attribute in self.connection.server.dit[dn]:
+                            del self.connection.server.dit[dn][attribute]
                     else:  # substitutes elements
-                        self.entries[dn][attribute] = [to_raw(element) for element in elements]
+                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
 
             if result_code:  # an error has happened, restores the original dn
-                self.entries[dn] = original_entry
+                self.connection.server.dit[dn] = original_entry
         else:
             result_code = 32
             message = 'object not found'
@@ -419,14 +421,14 @@ class MockBaseStrategy(object):
         filter_root = parse_filter(request['filter'], self.connection.server.schema)
         candidates = []
         if scope == 0:  # base object
-            if base in self.entries:
+            if base in self.connection.server.dit:
                 candidates.append(base)
         elif scope == 1:  # single level
-            for entry in self.entries:
+            for entry in self.connection.server.dit:
                 if entry.endswith(base) and ',' not in entry[:-len(base) - 1]:  # only leafs without commas in the remaining dn
                     candidates.append(entry)
         elif scope == 2:  # whole subtree
-            for entry in self.entries:
+            for entry in self.connection.server.dit:
                 if entry.endswith(base):
                     candidates.append(entry)
 
@@ -439,8 +441,8 @@ class MockBaseStrategy(object):
                 responses.append({
                     'object': match,
                     'attributes': [{'type': attribute,
-                                    'vals': [] if request['typesOnly'] else self.entries[match][attribute]}
-                                   for attribute in self.entries[match]
+                                    'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
+                                   for attribute in self.connection.server.dit[match]
                                    if attribute in attributes]
                 })
 
@@ -489,8 +491,8 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
             for candidate in candidates:
-                if attr_name in self.entries[candidate]:
-                    for value in self.entries[candidate][attr_name]:
+                if attr_name in self.connection.server.dit[candidate]:
+                    for value in self.connection.server.dit[candidate][attr_name]:
                         if value.isdigit() and attr_value.isdigit():  # int comparison
                             if int(value) >= int(attr_value):
                                 node.matched.add(candidate)
@@ -505,8 +507,8 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
             for candidate in candidates:
-                if attr_name in self.entries[candidate]:
-                    for value in self.entries[candidate][attr_name]:
+                if attr_name in self.connection.server.dit[candidate]:
+                    for value in self.connection.server.dit[candidate][attr_name]:
                         if value.isdigit() and attr_value.isdigit():  # int comparison
                             if int(value) <= int(attr_value):
                                 node.matched.add(candidate)
@@ -522,7 +524,7 @@ class MockBaseStrategy(object):
         elif node.tag == MATCH_PRESENT:
             attr_name = node.assertion['attr']
             for candidate in candidates:
-                if attr_name in self.entries[candidate]:
+                if attr_name in self.connection.server.dit[candidate]:
                     node.matched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
@@ -546,8 +548,8 @@ class MockBaseStrategy(object):
 
             regex_filter = re.compile(substring_filter, flags=re.UNICODE)
             for candidate in candidates:
-                if attr_name in self.entries[candidate]:
-                    for value in self.entries[candidate][attr_name]:
+                if attr_name in self.connection.server.dit[candidate]:
+                    for value in self.connection.server.dit[candidate][attr_name]:
                         if regex_filter.match(to_unicode(value)):
                             node.matched.add(candidate)
                         else:
@@ -558,7 +560,7 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
             for candidate in candidates:
-                if attr_name in self.entries[candidate] and attr_value in self.entries[candidate][attr_name]:
+                if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
                     node.matched.add(candidate)
                 else:
                     node.unmatched.add(candidate)

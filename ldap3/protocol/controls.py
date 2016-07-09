@@ -1,7 +1,7 @@
 """
 """
 
-# Created on 2015.10-20
+# Created on 2015.10.20
 #
 # Author: Giovanni Cannata
 #

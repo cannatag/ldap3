@@ -666,7 +666,10 @@ class Operation(Enumerated):
     #     delete  (1),
     #     replace (2),
     #     ...  }
-    namedValues = NamedValues(('add', 0), ('delete', 1), ('replace', 2), ('increment', 3))
+    namedValues = NamedValues(('add', 0),
+                              ('delete', 1),
+                              ('replace', 2),
+                              ('increment', 3))
 
 
 class Change(Sequence):

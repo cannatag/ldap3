@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from .. import SUBTREE, DEREF_ALWAYS, ALL_ATTRIBUTES
+from .. import SUBTREE, DEREF_ALWAYS, ALL_ATTRIBUTES, DEREF_NEVER
 from .microsoft.dirSync import DirSync
 from .microsoft.modifyPassword import modify_ad_password
 from .novell.partition_entry_count import PartitionEntryCount
@@ -42,6 +42,7 @@ from .novell.checkGroupsMemberships import check_groups_memberships
 from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
 from .standard.PagedSearch import paged_search_generator, paged_search_accumulator
+from .standard.PersistentSearch import PersistentSearch
 
 
 class ExtendedOperationContainer(object):
@@ -119,6 +120,45 @@ class StandardExtendedOperations(ExtendedOperationContainer):
                                             controls,
                                             paged_size,
                                             paged_criticality)
+
+    def persistent_search(self,
+                          search_base='',
+                          search_filter='(objectclass=*)',
+                          search_scope=SUBTREE,
+                          dereference_aliases=DEREF_NEVER,
+                          attributes=ALL_ATTRIBUTES,
+                          size_limit=0,
+                          time_limit=0,
+                          changes_only=True,
+                          show_additions=True,
+                          show_deletions=True,
+                          show_modifications=True,
+                          show_dn_modifications=True,
+                          notifications=True,
+                          controls=None
+                          ):
+        events_type = 0
+        if show_additions:
+            events_type += 1
+        if show_deletions:
+            events_type += 2
+        if show_modifications:
+            events_type += 4
+        if show_dn_modifications:
+            events_type += 8
+
+        return PersistentSearch(self._connection,
+                                search_base,
+                                search_filter,
+                                search_scope,
+                                dereference_aliases,
+                                attributes,
+                                size_limit,
+                                time_limit,
+                                changes_only,
+                                events_type,
+                                notifications,
+                                controls)
 
 
 class NovellExtendedOperations(ExtendedOperationContainer):

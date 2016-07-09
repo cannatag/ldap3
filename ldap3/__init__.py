@@ -107,13 +107,15 @@ RESTARTABLE = 'RESTARTABLE'
 REUSABLE = 'REUSABLE'
 MOCK_SYNC = 'MOCK_SYNC'
 MOCK_ASYNC = 'MOCK_ASYNC'
+ASYNC_STREAM = 'ASYNC_STREAM'
 
 CLIENT_STRATEGIES = [SYNC,
                      ASYNC,
                      LDIF,
                      RESTARTABLE,
                      REUSABLE,
-                     MOCK_SYNC]
+                     MOCK_SYNC,
+                     ASYNC_STREAM]
 
 # get rootDSE info
 NONE = 'NO_INFO'

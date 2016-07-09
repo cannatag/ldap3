@@ -123,7 +123,8 @@ class AsyncStrategy(BaseStrategy):
                                 self.connection.strategy._responses[message_id] = [dict_response]
                             if dict_response['type'] not in ['searchResEntry', 'searchResRef', 'intermediateResponse']:
                                 self.connection.strategy._responses[message_id].append(RESPONSE_COMPLETE)
-
+                        if self.connection.strategy.can_stream:  # for AsyncStreamStrategy, used for PersistentSearch
+                            self.connection.strategy.accumulate_stream(message_id, dict_response)
                         unprocessed = unprocessed[length:]
                         get_more_data = False if unprocessed else True
                         listen = True if self.connection.listening or unprocessed else False

@@ -24,9 +24,12 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from base64 import b64encode
+from binascii import hexlify
 
 from .. import LDIF_LINE_LENGTH, STRING_TYPES
 from ..core.exceptions import LDAPLDIFError
+from ..protocol.persistentSearch import EntryChangeNotificationControl
+from ..utils.asn1 import decoder
 
 # LDIF converter RFC 2849 compliant
 
@@ -227,3 +230,19 @@ def ldif_sort(line, sort_order):
             return i
 
     return len(sort_order) + 1
+
+
+def persistent_search_response_to_ldif(change):
+    if 'controls' in change and '2.16.840.1.113730.3.4.7' in change['controls']:
+        decoded_control, unprocessed = decoder.decode(change['controls']['2.16.840.1.113730.3.4.7']['value'], asn1Spec=EntryChangeNotificationControl())
+        if unprocessed:
+            raise LDAPLDIFError('unprocessed value in EntryChangeNotificationControl')
+        if decoded_control['changeType'] == 1:  # add
+            print('add', change['dn'], change['attributes'])
+        elif decoded_control['changeType'] == 2:  # delete
+            print('delete', change['dn'], change['attributes'])
+        elif decoded_control['changeType'] == 4:  # modify
+            print('modify', change['dn'], change['attributes'])
+        elif decoded_control['changeType'] == 8:  # modify_dn
+            print('modify_dn', change['dn'], change['attributes'])
+    return str(change)

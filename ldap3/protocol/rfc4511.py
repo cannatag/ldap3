@@ -464,7 +464,9 @@ class Scope(Enumerated):
     #     baseObject              (0),
     #     singleLevel             (1),
     #     wholeSubtree            (2),
-    namedValues = NamedValues(('baseObject', 0), ('singleLevel', 1), ('wholeSubtree', 2))
+    namedValues = NamedValues(('baseObject', 0),
+                              ('singleLevel', 1),
+                              ('wholeSubtree', 2))
 
 
 class DerefAliases(Enumerated):
@@ -473,7 +475,10 @@ class DerefAliases(Enumerated):
     #     derefInSearching        (1),
     #     derefFindingBaseObj     (2),
     #     derefAlways             (3) },
-    namedValues = NamedValues(('neverDerefAliases', 0), ('derefInSearching', 1), ('derefFindingBaseObj', 2), ('derefAlways', 3))
+    namedValues = NamedValues(('neverDerefAliases', 0),
+                              ('derefInSearching', 1),
+                              ('derefFindingBaseObj', 2),
+                              ('derefAlways', 3))
 
 
 class TypesOnly(Boolean):

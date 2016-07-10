@@ -29,7 +29,7 @@ from os import linesep
 from ..strategy.async import AsyncStrategy
 from ..core.exceptions import LDAPLDIFError
 from ..utils.conv import prepare_for_stream
-from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
+from ..protocol.rfc2849 import persistent_search_response_to_ldif, add_ldif_header
 
 
 # noinspection PyProtectedMember
@@ -56,13 +56,13 @@ class AsyncStreamStrategy(AsyncStrategy):
         AsyncStrategy._stop_listen(self)
         self.stream.close()
 
-    def accumulate_stream(self, message_id, fragment):
-        # if not self._header_added and self.stream.tell() == 0:
-        #     header = add_ldif_header(['-'])[0]
-        #     self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
-        # self.stream.write(prepare_for_stream(fragment + self.line_separator + self.line_separator))
+    def accumulate_stream(self, message_id, change):
+        if not self._header_added and self.stream.tell() == 0:
+            header = add_ldif_header(['-'])[0]
+            self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
         if message_id == self.persistent_search_message_id:
-            print(message_id, fragment)
+            ldif_lines = persistent_search_response_to_ldif(change)
+            self.stream.write(prepare_for_stream(ldif_lines + self.line_separator + self.line_separator))
             with self.lock:
                 self._responses[message_id] = []
 

@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.type.namedtype import NamedTypes, NamedType, OptionalNamedType
-from pyasn1.type.tag import Tag, tagClassApplication, tagFormatConstructed
+from pyasn1.type.tag import TagSet, Tag, tagClassContext, tagFormatConstructed, tagClassUniversal
 from pyasn1.type.namedval import NamedValues
 from pyasn1.type.univ import Sequence, OctetString, Integer, Boolean, Enumerated
 from .rfc4511 import ResultCode, LDAPString, LDAPDN
@@ -54,8 +54,8 @@ class ChangeType(Enumerated):
 
     namedValues = NamedValues(('add', 1),
                               ('delete', 2),
-                              ('replace', 4),
-                              ('increment', 8))
+                              ('modify', 4),
+                              ('modDN', 8))
 
 
 class EntryChangeNotificationControl(Sequence):
@@ -70,9 +70,11 @@ class EntryChangeNotificationControl(Sequence):
     #     changeNumber INTEGER OPTIONAL     -- if supported
     # }
 
-    componentType = NamedTypes(('changeType', ChangeType()),
+    # tagSet = TagSet()
+    # tagSet = Sequence.tagSet.tagImplicitly(Tag(tagClassUniversal, tagFormatConstructed, 16))
+    componentType = NamedTypes(NamedType('changeType', ChangeType()),
                                OptionalNamedType('previousDN', LDAPDN()),
-                               NamedType('changeNumber', Integer())
+                               OptionalNamedType('changeNumber', Integer())
                                )
 
 

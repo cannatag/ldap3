@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from base64 import b64encode
-from binascii import hexlify
+from datetime import datetime
 
 from .. import LDIF_LINE_LENGTH, STRING_TYPES
 from ..core.exceptions import LDAPLDIFError
@@ -233,16 +233,23 @@ def ldif_sort(line, sort_order):
 
 
 def persistent_search_response_to_ldif(change):
+    ldif_lines = ['# ' + datetime.now().isoformat()]
     if 'controls' in change and '2.16.840.1.113730.3.4.7' in change['controls']:
         decoded_control, unprocessed = decoder.decode(change['controls']['2.16.840.1.113730.3.4.7']['value'], asn1Spec=EntryChangeNotificationControl())
         if unprocessed:
             raise LDAPLDIFError('unprocessed value in EntryChangeNotificationControl')
+        if decoded_control['changeNumber']:
+            ldif_lines.append('# change number: ' + str(decoded_control['changeNumber']))
         if decoded_control['changeType'] == 1:  # add
-            print('add', change['dn'], change['attributes'])
+            ldif_lines.append('# add')
         elif decoded_control['changeType'] == 2:  # delete
-            print('delete', change['dn'], change['attributes'])
+            ldif_lines.append('# delete')
         elif decoded_control['changeType'] == 4:  # modify
-            print('modify', change['dn'], change['attributes'])
+            ldif_lines.append('# modify')
         elif decoded_control['changeType'] == 8:  # modify_dn
-            print('modify_dn', change['dn'], change['attributes'])
-    return str(change)
+            ldif_lines.append('# modify dn')
+            if decoded_control['previousDN']:
+                ldif_lines.append('# previous dn: ' + str(decoded_control['previousDN']))
+    ldif_lines += operation_to_ldif('searchResponse', [change])
+
+    return ldif_lines[:-1]  # removes "total number of entries"

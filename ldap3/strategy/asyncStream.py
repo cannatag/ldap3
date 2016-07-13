@@ -93,7 +93,6 @@ class AsyncStreamStrategy(AsyncStrategy):
                 if not self.callback:
                     self.events.put(change)
                 else:
-                    print('calling ' + str(self.callback))
                     self.callback(change)
 
     def get_stream(self):

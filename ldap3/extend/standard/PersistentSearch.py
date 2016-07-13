@@ -23,16 +23,15 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+try:
+    from queue import Empty
+except ImportError:  # Python 2
+    # noinspection PyUnresolvedReferences
+    from Queue import Empty
 
 from ...core.exceptions import LDAPExtensionError
 from ...protocol.persistentSearch import persistent_search_control
 from ... import SUBTREE, DEREF_ALWAYS, SEQUENCE_TYPES
-
-try:
-    from queue import Queue
-except ImportError:  # Python 2
-    # noinspection PyUnresolvedReferences
-    from Queue import Queue
 
 
 class PersistentSearch(object):
@@ -45,13 +44,15 @@ class PersistentSearch(object):
                  attributes,
                  size_limit,
                  time_limit,
+                 controls,
                  changes_only,
                  events_type,
                  notifications,
-                 controls
+                 streaming,
+                 callback
                  ):
         if connection.strategy.sync:
-            raise LDAPExtensionError('For Persistent Searches you must provide an asynchronous connection')
+            raise LDAPExtensionError('Persistent Search needs an asynchronous streaming connection')
 
         self.connection = connection
         self.changes_only = changes_only
@@ -64,6 +65,11 @@ class PersistentSearch(object):
         self.attributes = attributes
         self.size_limit = size_limit
         self.time_limit = time_limit
+        self.connection.strategy.streaming = streaming
+        if callback and callable(callback):
+            self.connection.strategy.callback = callback
+        elif callback:
+            raise LDAPExtensionError('callback is not callable')
 
         if not isinstance(controls, SEQUENCE_TYPES):
             self.controls = []
@@ -98,3 +104,12 @@ class PersistentSearch(object):
             del self.connection.strategy._responses[self.message_id]
         self.connection.strategy.persistent_search_message_id = None
         self.message_id = None
+
+    def next(self):
+        if not self.connection.strategy.streaming and not self.connection.strategy.callback:
+            try:
+                return self.connection.strategy.events.get_nowait()
+            except Empty:
+                return None
+
+        raise LDAPExtensionError('Persistent search is not accumulating events in queue')

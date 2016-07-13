@@ -129,13 +129,15 @@ class StandardExtendedOperations(ExtendedOperationContainer):
                           attributes=ALL_ATTRIBUTES,
                           size_limit=0,
                           time_limit=0,
+                          controls=None,
                           changes_only=True,
                           show_additions=True,
                           show_deletions=True,
                           show_modifications=True,
                           show_dn_modifications=True,
                           notifications=True,
-                          controls=None
+                          streaming=True,
+                          callback=None
                           ):
         events_type = 0
         if show_additions:
@@ -147,6 +149,8 @@ class StandardExtendedOperations(ExtendedOperationContainer):
         if show_dn_modifications:
             events_type += 8
 
+        if callback:
+            streaming = False
         return PersistentSearch(self._connection,
                                 search_base,
                                 search_filter,
@@ -155,10 +159,12 @@ class StandardExtendedOperations(ExtendedOperationContainer):
                                 attributes,
                                 size_limit,
                                 time_limit,
+                                controls,
                                 changes_only,
                                 events_type,
                                 notifications,
-                                controls)
+                                streaming,
+                                callback)
 
 
 class NovellExtendedOperations(ExtendedOperationContainer):

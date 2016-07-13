@@ -23,9 +23,16 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+try:
+    from queue import Queue
+except ImportError:  # Python 2
+    # noinspection PyUnresolvedReferences
+    from Queue import Queue
+
 from io import StringIO
 from os import linesep
 
+from ..protocol.rfc2849 import decode_persistent_search_control
 from ..strategy.async import AsyncStrategy
 from ..core.exceptions import LDAPLDIFError
 from ..utils.conv import prepare_for_stream
@@ -46,34 +53,53 @@ class AsyncStreamStrategy(AsyncStrategy):
         self.order = dict()
         self._header_added = False
         self.persistent_search_message_id = None
+        self.streaming = False
+        self.callback=None
+        self.events = Queue()
 
     def _start_listen(self):
         AsyncStrategy._start_listen(self)
-        if not self.stream or (isinstance(self.stream, StringIO) and self.stream.closed):
-            self.set_stream(StringIO())
+        if self.streaming:
+            if not self.stream or (isinstance(self.stream, StringIO) and self.stream.closed):
+                self.set_stream(StringIO())
 
     def _stop_listen(self):
         AsyncStrategy._stop_listen(self)
-        self.stream.close()
+        if self.streaming:
+            self.stream.close()
 
     def accumulate_stream(self, message_id, change):
-        if not self._header_added and self.stream.tell() == 0:
-            header = add_ldif_header(['-'])[0]
-            self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
         if message_id == self.persistent_search_message_id:
-            ldif_lines = persistent_search_response_to_ldif(change)
-            if self.stream and ldif_lines and not self.connection.closed:
-                fragment = self.line_separator.join(ldif_lines)
-                if not self._header_added and self.stream.tell() == 0:
-                    self._header_added = True
-                    header = add_ldif_header(['-'])[0]
-                    self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
-                self.stream.write(prepare_for_stream(fragment + self.line_separator + self.line_separator))
             with self.lock:
                 self._responses[message_id] = []
+            if self.streaming:
+                if not self._header_added and self.stream.tell() == 0:
+                    header = add_ldif_header(['-'])[0]
+                    self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
+
+                ldif_lines = persistent_search_response_to_ldif(change)
+                if self.stream and ldif_lines and not self.connection.closed:
+                    fragment = self.line_separator.join(ldif_lines)
+                    if not self._header_added and self.stream.tell() == 0:
+                        self._header_added = True
+                        header = add_ldif_header(['-'])[0]
+                        self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
+                    self.stream.write(prepare_for_stream(fragment + self.line_separator + self.line_separator))
+            else:  # strategy is not streaming, events are added to a queue
+                notification = decode_persistent_search_control(change)
+                if notification:
+                    change.update(notification)
+                    del change['controls']['2.16.840.1.113730.3.4.7']
+                if not self.callback:
+                    self.events.put(change)
+                else:
+                    print('calling ' + str(self.callback))
+                    self.callback(change)
 
     def get_stream(self):
-        return self.stream
+        if self.streaming:
+            return self.stream
+        return None
 
     def set_stream(self, value):
         error = False
@@ -87,3 +113,4 @@ class AsyncStreamStrategy(AsyncStrategy):
             raise LDAPLDIFError('stream must be writable')
 
         self.stream = value
+        self.streaming = True

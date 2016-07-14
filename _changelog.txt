@@ -2,6 +2,10 @@
     - Multiple Mock strategies now share entries when using the same Server object
     - Added AsyncStreamStrategy
     - Added Connection.extend.standard.persistent_search() (Thanks martinrm77)
+    - Added escaping of character > 0x7F in filter validation (thanks cfelder)
+    - Added better descriptions of Exception in abstraction layer (thanks cfelder)
+    - Added queue in Persistent Search
+    - Added callback in Persistent Search
 
 - 1.3.3 2016.07.03
     - Change paameter name from 'check' to 'fix' in connection.extend.novell.add_members_to_groups() and connection.extend.novell.remove_members_from_groups

@@ -61,12 +61,12 @@ class ObjectDef(object):
             if item == attr.lower():
                 break
         else:
-            raise LDAPKeyError('key not present')
+            raise LDAPKeyError('key \'%s\' not present' % item)
 
         return self._attributes[attr]
 
     def __setattr__(self, key, value):
-        raise LDAPObjectError('object is read only')
+        raise LDAPObjectError('object \'%s\' is read only' % key)
 
     def __iadd__(self, other):
         self.add(other)
@@ -108,7 +108,8 @@ class ObjectDef(object):
             key = definition.key
             for attr in self._attributes:
                 if key.lower() == attr.lower():
-                    raise LDAPAttributeError('attribute already present')
+                    raise LDAPAttributeError('attribute \'%s\' already present'
+                                             % key)
             self._attributes[key] = definition
             self.__dict__[key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):
@@ -134,9 +135,10 @@ class ObjectDef(object):
                     del self._attributes[attr]
                     break
             else:
-                raise LDAPKeyError('key ' + str(key) + 'not present')
+                raise LDAPKeyError('key \'%s\' not present' % key)
         else:
-            raise LDAPTypeError('key must be str or AttrDef not ' + str(type(key)))
+            raise LDAPTypeError('key must be str or AttrDef not '
+                                + str(type(key)))
 
     def clear(self):
         """Empty the ObjectDef attribute list

@@ -77,7 +77,7 @@ class Attribute(object):
         return self.values[item]
 
     def __setattr__(self, item, value):
-        raise LDAPAttributeError('attribute is read only')
+        raise LDAPAttributeError('attribute \'%s\' is read only' % item)
 
     def __eq__(self, other):
         try:

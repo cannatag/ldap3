@@ -94,6 +94,6 @@ class AttrDef(object):
 
     def __setattr__(self, key, value):
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is being used for __hash__
-            raise LDAPKeyError('key already set')
+            raise LDAPKeyError('key \'%s\' already set' % key)
         else:
             object.__setattr__(self, key, value)

@@ -85,16 +85,16 @@ class Entry(object):
                 if item == attr.lower():
                     break
             else:
-                raise LDAPAttributeError('attribute not found')
+                raise LDAPAttributeError('attribute \'%s\' not found' % item)
             return self._attributes[attr]
 
         raise LDAPAttributeError('attribute must be a string')
 
     def __setattr__(self, item, value):
         if item in self._attributes:
-            raise LDAPAttributeError('attribute is read only')
+            raise LDAPAttributeError('attribute \'%s\' is read only' % item)
         else:
-            raise LDAPEntryError('entry is read only')
+            raise LDAPEntryError('entry \'%s\' is read only' % item)
 
     def __getitem__(self, item):
         if isinstance(item, STRING_TYPES):
@@ -103,7 +103,7 @@ class Entry(object):
                 if item == attr.lower():
                     break
             else:
-                raise LDAPKeyError('key not found')
+                raise LDAPKeyError('key \'%s\' not found' % item)
             return self._attributes[attr]
 
         raise LDAPKeyError('key must be a string')

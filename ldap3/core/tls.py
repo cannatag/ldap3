@@ -170,7 +170,7 @@ class Tls(object):
                 ssl_context = ssl.SSLContext(self.version)
                 if self.ca_certs_file or self.ca_certs_path or self.ca_certs_data:
                     ssl_context.load_verify_locations(self.ca_certs_file, self.ca_certs_path, self.ca_certs_data)
-                if self.validate != ssl.CERT_NONE:
+                elif self.validate != ssl.CERT_NONE:
                     ssl_context.load_default_certs(Purpose.SERVER_AUTH)
 
             if self.private_key_file:

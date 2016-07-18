@@ -24,9 +24,12 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from base64 import b64encode
+from datetime import datetime
 
 from .. import LDIF_LINE_LENGTH, STRING_TYPES
-from ..core.exceptions import LDAPLDIFError
+from ..core.exceptions import LDAPLDIFError, LDAPExtensionError
+from ..protocol.persistentSearch import EntryChangeNotificationControl
+from ..utils.asn1 import decoder
 
 # LDIF converter RFC 2849 compliant
 
@@ -227,3 +230,39 @@ def ldif_sort(line, sort_order):
             return i
 
     return len(sort_order) + 1
+
+
+def decode_persistent_search_control(change):
+    if 'controls' in change and '2.16.840.1.113730.3.4.7' in change['controls']:
+        decoded = dict()
+        decoded_control, unprocessed = decoder.decode(change['controls']['2.16.840.1.113730.3.4.7']['value'], asn1Spec=EntryChangeNotificationControl())
+        if unprocessed:
+            raise LDAPExtensionError('unprocessed value in EntryChangeNotificationControl')
+        if decoded_control['changeType'] == 1:  # add
+            decoded['changeType'] = 'add'
+        elif decoded_control['changeType'] == 2:  # delete
+            decoded['changeType'] = 'delete'
+        elif decoded_control['changeType'] == 4:  # modify
+            decoded['changeType'] = 'modify'
+        elif decoded_control['changeType'] == 8:  # modify_dn
+            decoded['changeType'] = 'modify dn'
+        else:
+            raise LDAPExtensionError('unknown Persistent Search changeType ' + str(decoded_control['changeType']))
+        decoded['changeNumber'] = decoded_control['changeNumber'] if 'changeNumber' in decoded_control else None
+        decoded['previousDN'] = decoded_control['previousDN'] if 'previousDN' in decoded_control else None
+        return decoded
+
+    return None
+
+def persistent_search_response_to_ldif(change):
+    ldif_lines = ['# ' + datetime.now().isoformat()]
+    control = decode_persistent_search_control(change)
+    if control :
+        if control['changeNumber']:
+            ldif_lines.append('# change number: ' + str(control['changeNumber']))
+        ldif_lines.append(control['changeType'])
+        if control['previousDN']:
+            ldif_lines.append('# previous dn: ' + str(control['previousDN']))
+    ldif_lines += operation_to_ldif('searchResponse', [change])
+
+    return ldif_lines[:-1]  # removes "total number of entries"

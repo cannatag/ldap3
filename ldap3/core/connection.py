@@ -30,7 +30,7 @@ from functools import reduce
 
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, \
     DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
-    ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, \
+    ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, ASYNC_STREAM, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
     AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
 from .exceptions import LDAPSocketReceiveError
@@ -55,6 +55,7 @@ from ..strategy.reusable import ReusableStrategy
 from ..strategy.restartable import RestartableStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
 from ..strategy.mockSync import MockSyncStrategy
+from ..strategy.asyncStream import AsyncStreamStrategy
 from ..operation.unbind import unbind_operation
 from ..protocol.rfc2696 import paged_search_control
 from .usage import ConnectionUsage
@@ -269,6 +270,8 @@ class Connection(object):
                 self.strategy = MockSyncStrategy(self)
             elif self.strategy_type == MOCK_ASYNC:
                 self.strategy = MockAsyncStrategy(self)
+            elif self.strategy_type == ASYNC_STREAM:
+                self.strategy = AsyncStreamStrategy(self)
             else:
                 self.last_error = 'unknown strategy'
                 if log_enabled(ERROR):

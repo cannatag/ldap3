@@ -45,7 +45,7 @@ except ImportError:
 
 try:  # try to use SSLContext
     # noinspection PyUnresolvedReferences
-    from ssl import create_default_context, Purpose  # defined in Python 3.4
+    from ssl import create_default_context, Purpose  # defined in Python 3.4 and Python 2.7.9
     use_ssl_context = True
 except ImportError:
     use_ssl_context = False

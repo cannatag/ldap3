@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-
+from .. import DO_NOT_RAISE_EXCEPTIONS
 from .mockBase import MockBaseStrategy
 from .sync import SyncStrategy
 from ..operation.bind import bind_response_to_dict
@@ -33,7 +33,7 @@ from ..operation.compare import compare_response_to_dict
 from ..operation.modifyDn import modify_dn_response_to_dict
 from ..operation.modify import modify_response_to_dict
 from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
-from ..core.exceptions import LDAPSocketOpenError
+from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 
 # LDAPResult ::= SEQUENCE {
@@ -116,7 +116,6 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         if message_type == 'searchRequest':
             responses, result = self.mock_search(request, controls)
             result['type'] = 'searchResDone'
-
             for entry in responses:
                 response = search_result_entry_response_to_dict(entry, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
                 response['type'] = 'searchResEntry'
@@ -124,6 +123,11 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
             result = search_result_done_response_to_dict(result)
             result['type'] = 'searchResDone'
             self.connection.result = result
+            if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
+                if log_enabled(PROTOCOL):
+                    log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
+                raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
+
         return self.connection.response
 
     def post_send_single_response(self, payload):  # payload is a tuple sent by self.send() made of message_type, request, controls
@@ -154,5 +158,9 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
             result['type'] = 'modifyResponse'
         self.connection.result = result
         responses.append(result)
+        if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
+            if log_enabled(PROTOCOL):
+                log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
+            raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
         return responses
 

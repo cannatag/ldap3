@@ -173,7 +173,7 @@ class Tls(object):
                 elif self.validate != ssl.CERT_NONE:
                     ssl_context.load_default_certs(Purpose.SERVER_AUTH)
 
-            if self.private_key_file:
+            if self.certificate_file:
                 ssl_context.load_cert_chain(self.certificate_file, keyfile=self.private_key_file, password=self.private_key_password)
             ssl_context.check_hostname = False
             ssl_context.verify_mode = self.validate

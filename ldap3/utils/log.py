@@ -200,6 +200,3 @@ logger.addHandler(NullHandler())
 set_library_log_activation_level(DEBUG)
 set_library_log_detail_level(OFF)
 set_library_log_hide_sensitive_data(True)
-
-# emits a info message to let the application know that ldap3 logging is available when the log level is set to _logging_level
-logger.info('ldap3 library initialized - logging emitted with loglevel set to ' + getLevelName(_logging_level) + ' - available detail levels are: ' + ', '.join([get_detail_level_name(level) for level in DETAIL_LEVELS]) + ' - sensitive data will ' + ('' if _hide_sensitive_data else 'not ') + 'be hidden')

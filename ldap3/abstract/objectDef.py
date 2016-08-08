@@ -26,9 +26,9 @@
 from os import linesep
 
 from .attrDef import AttrDef
-from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError
-from .. import STRING_TYPES, SEQUENCE_TYPES
-
+from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError, LDAPSchemaError
+from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
+from ..protocol.rfc4512 import SchemaInfo
 
 class ObjectDef(object):
     """Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.
@@ -38,10 +38,30 @@ class ObjectDef(object):
     ObjectDef can be accessed either as a sequence and a dictionary. When accessed the whole AttrDef instance is returned
 
     """
-    def __init__(self, object_class=None):
+    def __init__(self, object_class=None, schema=None):
         self.__dict__['object_class'] = object_class
         self.__dict__['_attributes'] = dict()
+        if isinstance(schema, Server):
+            schema = schema.schema
+        elif isinstance(schema, Connection):
+            schema = schema.server.schema
+        elif isinstance(schema, SchemaInfo):
+            schema = schema
+        elif schema:
+            raise LDAPSchemaError('unable to read schema')
 
+        if schema:
+            if not isinstance(object_class, SEQUENCE_TYPES):
+                object_class = [object_class]
+
+            for element in object_class:
+                if element in schema.object_classes:
+                    for attribute_type in schema.object_classes[element].must_contain:
+                        self.add(attribute_type)
+                    for attribute_type in schema.object_classes[element].may_contain:
+                        self.add(attribute_type)
+                else:
+                    raise LDAPObjectError('object %s non present in schema' % element)
     def __repr__(self):
         r = 'object_class: ' + str(self.object_class) if self.object_class else ''
         for attr in self._attributes:

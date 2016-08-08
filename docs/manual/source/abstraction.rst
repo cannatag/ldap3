@@ -186,9 +186,9 @@ Simplified Query Language
 In the Reader you can express the query filter using the standard LDAP filter syntax or using a *Simplified Query Language* that resembles a dictionary structure.
 If you use the standard LDAP filter syntax you must use the real attribute names because the filter is directly passed to the Search operation.
 
-Tee Simplified Query Language filter is a string of key-values couples separated with a ',' (comma), in each of the couples the left part is the attribute key defined
+The Simplified Query Language filter is a string of key-values couples separated with a ',' (comma), in each of the couples the left part is the attribute key defined
 in an AttrDef object while the right part is the value (or values) to be searched. Parts are separed with a ':' (colon). Keys can be prefixed with a '&' (AND) or a '|' (OR)
-or searching all the values or at least one of them. Values can be prefixed with an optional exclamation mark '!' (NOT) for negating the search followed by the needed search
+for searching all the values or at least one of them. Values can be prefixed with an optional exclamation mark '!' (NOT) for negating the search followed by the needed search
 operator ('=', '<', '>', '~'). The default operator is '=' and can be omitted. Multiple values are separated by a ';' (semi-colon).
 
     A few examples::

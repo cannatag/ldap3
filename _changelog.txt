@@ -1,5 +1,6 @@
 - 1.4.1 2016.07.26
     - allows cert and key file in the same file (thanks Jan-Philip)
+    - removed logging info when logging is disabled (thanks Dan)
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013 - 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -57,11 +57,10 @@ class ObjectDef(object):
             for element in object_class:
                 if element in schema.object_classes:
                     for attribute_type in schema.object_classes[element].must_contain:
-                        self.add(attribute_type)
+                        self.add(attribute_type, schema)
                     for attribute_type in schema.object_classes[element].may_contain:
-                        self.add(attribute_type)
-                else:
-                    raise LDAPObjectError('object %s non present in schema' % element)
+                        self.add(attribute_type, schema)
+
     def __repr__(self):
         r = 'object_class: ' + str(self.object_class) if self.object_class else ''
         for attr in self._attributes:
@@ -115,26 +114,25 @@ class ObjectDef(object):
 
         return True
 
-    def add(self, definition=None):
+    def add(self, definition=None, schema=None):
         """Add an AttrDef to the ObjectDef. Can be called with the += operator.
         :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add
 
         """
 
         if isinstance(definition, STRING_TYPES):
-            element = AttrDef(definition)
+            element = AttrDef(definition, validate_input=True if schema else False)
             self.add(element)
         elif isinstance(definition, AttrDef):
             key = definition.key
             for attr in self._attributes:
                 if key.lower() == attr.lower():
-                    raise LDAPAttributeError('attribute \'%s\' already present'
-                                             % key)
+                    raise LDAPAttributeError('attribute \'%s\' already present' % key)
             self._attributes[key] = definition
             self.__dict__[key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
-                self.add(element)
+                self.add(element, schema)
         else:
             raise LDAPObjectError('unable to add element to object definition')
 

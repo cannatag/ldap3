@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013 - 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -92,7 +92,8 @@ class Entry(object):
 
     def __setattr__(self, item, value):
         if item in self._attributes:
-            raise LDAPAttributeError('attribute \'%s\' is read only' % item)
+            # raise LDAPAttributeError('attribute \'%s\' is read only' % item)
+            self._attributes[item].set_new_value(value)  # try to add to new_values
         else:
             raise LDAPEntryError('entry \'%s\' is read only' % item)
 

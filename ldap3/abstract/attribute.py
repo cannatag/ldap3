@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013 - 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -27,6 +27,7 @@ from os import linesep
 
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
+from ..protocol.formatters.standard import validate_attribute_values
 
 
 # noinspection PyUnresolvedReferences
@@ -41,12 +42,13 @@ class Attribute(object):
 
     """
 
-    def __init__(self, attr_def, entry):
+    def __init__(self, attr_def, entry, reader):
         self.__dict__['key'] = attr_def.key
         self.__dict__['definition'] = attr_def
         self.__dict__['values'] = []
         self.__dict__['raw_values'] = []
         self.__dict__['entry'] = entry
+        self.__dict__['reader'] = reader
 
     def __repr__(self):
         if len(self.values) == 1:
@@ -77,7 +79,7 @@ class Attribute(object):
         return self.values[item]
 
     def __setattr__(self, item, value):
-        raise LDAPAttributeError('attribute \'%s\' is read only' % item)
+        raise # LDAPAttributeError('attribute \'%s\' is read only, use set_new_value()' % item)
 
     def __eq__(self, other):
         try:
@@ -85,6 +87,12 @@ class Attribute(object):
                 return True
         except:
             return False
+
+    def set_new_value(self, value):
+        if self.definition.validate_input:
+            if not validate_attribute_values(self.__dict__['reader'].connection.server.schema, self.__dict__['definition'].name, value, None):
+               raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
+        self.__dict__['new_values'] = value
 
     @property
     def value(self):

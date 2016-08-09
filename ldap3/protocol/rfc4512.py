@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013 - 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -291,8 +291,8 @@ class SchemaInfo(BaseServerInfo):
         self.ldap_syntaxes = LdapSyntaxInfo.from_definition(attributes.pop('ldapSyntaxes', []))
         self.other = attributes  # remaining schema definition attributes not in RFC4512
 
-        # links attributes to objects
-        for object_class in self.object_classes:
+        # links attributes to class objects
+        for object_class in self.object_classes:  # CaseInsensitiveDict return keys while iterating
             for attribute in self.object_classes[object_class].must_contain:
                 try:
                     self.attribute_types[attribute].mandatory_in.append(object_class)

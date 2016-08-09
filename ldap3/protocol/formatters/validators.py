@@ -1,7 +1,7 @@
 """
 """
 
-# Created on 2014.01.06
+# Created on 2016.08.09
 #
 # Author: Giovanni Cannata
 #
@@ -23,9 +23,22 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .attribute import Attribute
-from .operationalAttribute import OperationalAttribute
-from .attrDef import AttrDef
-from .objectDef import ObjectDef
-from .entry import Entry
-from .reader import Reader
+from ... import SEQUENCE_TYPES
+
+def check_standard_type(input_value, value_type):
+    if isinstance(input_value, value_type):
+        return True
+
+    if isinstance(input_value, SEQUENCE_TYPES):
+        for value in input_value:
+            if not isinstance(value, value_type):
+                return False
+        return True
+
+    return False
+
+def validate_integer(input_value):
+    return check_standard_type(input_value, int)
+
+def validate_bytes(input_value):
+    return check_standard_type(input_value, bytes)

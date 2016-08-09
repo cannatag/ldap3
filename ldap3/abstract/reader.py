@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013 - 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -306,7 +306,7 @@ class Reader(object):
                     break
 
             if name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default
-                attribute = Attribute(attr_def, entry)
+                attribute = Attribute(attr_def, entry, reader=self)
                 attribute.__dict__['_response'] = response
                 attribute.__dict__['raw_values'] = response['raw_attributes'][name] if name else None
                 if attr_def.post_query and attr_def.name in response['attributes']:
@@ -326,7 +326,6 @@ class Reader(object):
                             temp_values.append(temp_reader.search_object(element))
                         del temp_reader  # remove the temporary Reader
                         attribute.__dict__['values'] = temp_values
-
                 # noinspection PyUnresolvedReferences
                 attributes[attribute.key] = attribute
                 used_attribute_names.append(name)

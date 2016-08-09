@@ -25,6 +25,7 @@
 
 from ... import SEQUENCE_TYPES
 
+
 def check_standard_type(input_value, value_type):
     if isinstance(input_value, value_type):
         return True
@@ -37,8 +38,10 @@ def check_standard_type(input_value, value_type):
 
     return False
 
+
 def validate_integer(input_value):
     return check_standard_type(input_value, int)
+
 
 def validate_bytes(input_value):
     return check_standard_type(input_value, bytes)

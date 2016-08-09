@@ -127,7 +127,8 @@ class ObjectDef(object):
             key = definition.key
             for attr in self._attributes:
                 if key.lower() == attr.lower():
-                    raise LDAPAttributeError('attribute \'%s\' already present' % key)
+                    pass
+                    # raise LDAPAttributeError('attribute \'%s\' already present' % key)
             self._attributes[key] = definition
             self.__dict__[key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):

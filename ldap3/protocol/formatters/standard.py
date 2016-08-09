@@ -123,6 +123,7 @@ standard_formatter = {
     '1.2.840.113556.1.4.1696': (format_ad_timestamp, None) # lastLogonTimestamp (Microsoft)
 }
 
+
 def find_attribute_formatter(attr_type, name, values, custom_formatter):
     """
     Tries to format following the OIDs info and format_helper specification.
@@ -185,7 +186,6 @@ def find_attribute_formatter(attr_type, name, values, custom_formatter):
         formatter = standard_formatter[attr_type.syntax]
         key = attr_type.syntax
 
-    # print(key)
     return formatter
 
 
@@ -210,6 +210,7 @@ def format_attribute_values(schema, name, values, custom_formatter):
     else:  # RFCs states that attributes must always have values, but AD return empty values in DirSync
         return []
 
+
 def validate_attribute_values(schema, name, values, custom_validator):
     if schema and schema.attribute_types is not None and name in schema.attribute_types:
         attr_type = schema.attribute_types[name]
@@ -224,5 +225,5 @@ def validate_attribute_values(schema, name, values, custom_validator):
             validator = lambda dummy:True # unknown validator, accepts any values
     else:
         validator = attribute_helpers[1]
-    # print(name, values, validator)
+    print(name, values, validator)
     return validator(values)  # validator is executed and its boolean value is returned

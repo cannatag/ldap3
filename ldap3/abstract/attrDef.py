@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from ..core.exceptions import LDAPKeyError, LDAPObjectError
-from ..protocol.formatters.standard import validate_attribute_values
+
 
 class AttrDef(object):
     """Hold the definition of an attribute

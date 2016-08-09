@@ -1,8 +1,8 @@
-# Created on 2013.06.06
+# Created on 2016.08.09
 #
 # @author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -22,22 +22,31 @@
 
 import unittest
 
-from test import get_connection, drop_connection, add_user, random_id
-
+from ldap3.abstract import ObjectDef, AttrDef, Reader
+from ldap3.abstract.reader import _create_query_dict
+from test import test_base, get_connection, drop_connection, random_id, add_user
+from ldap3 import ALL
 
 testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection()
+        self.connection = get_connection(get_info=ALL, check_names=True)
         self.delete_at_teardown = []
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
-    def test_add(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-1'))
+    def test_create_objectdef_from_schema(self):
+        o = ObjectDef(['inetorgPerson', 'person'], self.connection)
+        self.assertEqual(o.cn.name, 'cn')
 
-        self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
+    def test_search_object_with_schema(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-1'))
+        o = ObjectDef(['inetorgPerson', 'person'], self.connection)
+        r = Reader(self.connection, o, '(cn=*abstract-1*)', test_base)
+        r.search()
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r.entries[0].cn, testcase_id + 'abstract-1')

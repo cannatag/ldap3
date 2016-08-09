@@ -92,7 +92,7 @@ class Attribute(object):
         if self.definition.validate_input:
             if not validate_attribute_values(self.__dict__['reader'].connection.server.schema, self.__dict__['definition'].name, value, None):
                raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
-        self.__dict__['new_values'] = value
+        self.__dict__['new_value'] = value
 
     @property
     def value(self):

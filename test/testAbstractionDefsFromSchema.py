@@ -43,10 +43,20 @@ class Test(unittest.TestCase):
         o = ObjectDef(['inetorgPerson', 'person'], self.connection)
         self.assertEqual(o.cn.name, 'cn')
 
-    def test_search_object_with_schema(self):
+    def test_search_object(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-1'))
         o = ObjectDef(['inetorgPerson', 'person'], self.connection)
         r = Reader(self.connection, o, '(cn=*abstract-1*)', test_base)
         r.search()
         self.assertEqual(len(r), 1)
         self.assertEqual(r.entries[0].cn, testcase_id + 'abstract-1')
+
+    def test_update_single_value(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-2'))
+        o = ObjectDef(['inetorgPerson', 'person'], self.connection)
+        r = Reader(self.connection, o, '(cn=*abstract-1*)', test_base)
+        r.search()
+        self.assertEqual(len(r.entries), 1)
+        e = r.entries[0]
+        e.uid = 'abstract-2-uid'
+        self.assertEqual(e.uid.new_value, 'abstract-2-uid')

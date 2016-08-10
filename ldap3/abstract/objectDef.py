@@ -64,8 +64,10 @@ class ObjectDef(object):
                         self._attributes[attribute_type].validate = lambda name, value: validator(value)  # validate expect 2 parameters but validator only 1
                         self._attributes[attribute_type].mandatory = True
                     for attribute_type in schema.object_classes[element].may_contain:
-                        self.add(attribute_type)
-                        validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+                        if attribute_type not in self._attributes:
+                            self.add(attribute_type)
+                            validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+                            self._attributes[attribute_type].validate = lambda name, value: validator(value)  # validate expect 2 parameters but validator only 1
 
 
     def __repr__(self):

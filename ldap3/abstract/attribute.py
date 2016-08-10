@@ -88,7 +88,7 @@ class Attribute(object):
             return False
 
     def set_new_value(self, value):
-        if not self.__dict__['definition'].validate(self.__dict__['definition'].name, value):
+        if not self.definition.validate(self.definition.name, value):
             raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
         self.__dict__['new_value'] = value
 

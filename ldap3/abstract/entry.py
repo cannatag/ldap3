@@ -30,6 +30,7 @@ from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
+from .attribute import Attribute
 
 
 class Entry(object):
@@ -91,11 +92,16 @@ class Entry(object):
         raise LDAPAttributeError('attribute must be a string')
 
     def __setattr__(self, item, value):
-        if item in self._attributes:
-            # raise LDAPAttributeError('attribute \'%s\' is read only' % item)
+        if item in self._reader.definition._attributes:
+            if item not in self._attributes:  # adding value to an attribute not present
+                new_attribute = Attribute(self._reader.definition._attributes[item], self, reader=self._reader)
+                new_attribute.__dict__['_response'] = None
+                new_attribute.__dict__['raw_values'] = None
+                new_attribute.__dict__['values'] = None
+                self._attributes[item] = new_attribute
             self._attributes[item].set_new_value(value)  # try to add to new_values
         else:
-            raise LDAPEntryError('entry \'%s\' is read only' % item)
+            raise LDAPEntryError('attribute \'%s\' not allowed' % item)
 
     def __getitem__(self, item):
         if isinstance(item, STRING_TYPES):

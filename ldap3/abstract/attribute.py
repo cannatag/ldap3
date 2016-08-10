@@ -27,7 +27,6 @@ from os import linesep
 
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
-from ..protocol.formatters.standard import validate_attribute_values
 
 
 # noinspection PyUnresolvedReferences
@@ -89,9 +88,8 @@ class Attribute(object):
             return False
 
     def set_new_value(self, value):
-        if self.definition.validate_input:
-            if not validate_attribute_values(self.__dict__['reader'].connection.server.schema, self.__dict__['definition'].name, value, None):
-               raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
+        if not self.__dict__['definition'].validate(self.__dict__['definition'].name, value):
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
         self.__dict__['new_value'] = value
 
     @property

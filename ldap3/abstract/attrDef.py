@@ -48,7 +48,7 @@ class AttrDef(object):
 
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, validate_input=False):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, mandatory=False):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
@@ -57,7 +57,7 @@ class AttrDef(object):
         self.default = default
         self.dereference_dn = dereference_dn
         self.description = description
-        self.validate_input = True if validate_input else False
+        self.mandatory = mandatory
 
     def __repr__(self):
         r = 'AttrDef(key={0.key!r}'.format(self)
@@ -68,7 +68,7 @@ class AttrDef(object):
         r += '' if self.default is None else ', default={0.default!r}'.format(self)
         r += '' if self.dereference_dn is None else ', dereference_dn={0.dereference_dn!r}'.format(self)
         r += '' if self.description is None else ', description={0.d!r}'.format(self)
-        r += ', validate_input=True' if self.validate_input else ''
+        r += ', mandatory=True' if self.mandatory else ''
         r += ')'
 
         return r

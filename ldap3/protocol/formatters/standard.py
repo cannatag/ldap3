@@ -25,7 +25,7 @@
 
 from ... import SEQUENCE_TYPES
 from .formatters import format_ad_timestamp, format_binary, format_boolean, format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
-from .validators import validate_integer
+from .validators import validate_integer, validate_bytes, always_valid, validate_generic_single_value
 # for each syntax can be specified a format function and a input validation function
 
 standard_formatter = {
@@ -124,7 +124,7 @@ standard_formatter = {
 }
 
 
-def find_attribute_formatter(attr_type, name, values, custom_formatter):
+def find_attribute_formatter(attr_type, name, custom_formatter):
     """
     Tries to format following the OIDs info and format_helper specification.
     Search for attribute oid, then attribute name (can be multiple), then attribute syntax
@@ -195,7 +195,7 @@ def format_attribute_values(schema, name, values, custom_formatter):
     else:
         attr_type = None
 
-    attribute_helpers = find_attribute_formatter(attr_type, name, values, custom_formatter)
+    attribute_helpers = find_attribute_formatter(attr_type, name, custom_formatter)
     if not attribute_helpers:
         formatter = format_unicode  # default formatter
     else:
@@ -211,19 +211,18 @@ def format_attribute_values(schema, name, values, custom_formatter):
         return []
 
 
-def validate_attribute_values(schema, name, values, custom_validator):
+def find_attribute_validator(schema, name, custom_validator):
     if schema and schema.attribute_types is not None and name in schema.attribute_types:
         attr_type = schema.attribute_types[name]
     else:
         attr_type = None
 
-    attribute_helpers = find_attribute_formatter(attr_type, name, values, custom_validator)
+    attribute_helpers = find_attribute_formatter(attr_type, name, custom_validator)
     if not attribute_helpers:
-        if attr_type and attr_type.single_value and isinstance(values, SEQUENCE_TYPES):
-            validator = lambda dummy:False # invalid, attribute type is single valued but there are multiple values
+        if attr_type and attr_type.single_value:
+            validator = validate_generic_single_value  # validate only single value
         else:
-            validator = lambda dummy:True # unknown validator, accepts any values
+            validator = always_valid  # unknown syntax, accepts single and multi value
     else:
         validator = attribute_helpers[1]
-    print(name, values, validator)
-    return validator(values)  # validator is executed and its boolean value is returned
+    return validator

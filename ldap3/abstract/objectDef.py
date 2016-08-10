@@ -29,6 +29,7 @@ from .attrDef import AttrDef
 from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError, LDAPSchemaError
 from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo
+from ..protocol.formatters.standard import find_attribute_validator
 
 class ObjectDef(object):
     """Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.
@@ -38,9 +39,10 @@ class ObjectDef(object):
     ObjectDef can be accessed either as a sequence and a dictionary. When accessed the whole AttrDef instance is returned
 
     """
-    def __init__(self, object_class=None, schema=None):
+    def __init__(self, object_class=None, schema=None, custom_validator=None):
         self.__dict__['object_class'] = object_class
         self.__dict__['_attributes'] = dict()
+        self.__dict__['custom_validator'] = custom_validator
         if isinstance(schema, Server):
             schema = schema.schema
         elif isinstance(schema, Connection):
@@ -57,9 +59,14 @@ class ObjectDef(object):
             for element in object_class:
                 if element in schema.object_classes:
                     for attribute_type in schema.object_classes[element].must_contain:
-                        self.add(attribute_type, schema)
+                        self.add(attribute_type)
+                        validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+                        self._attributes[attribute_type].validate = lambda name, value: validator(value)  # validate expect 2 parameters but validator only 1
+                        self._attributes[attribute_type].mandatory = True
                     for attribute_type in schema.object_classes[element].may_contain:
-                        self.add(attribute_type, schema)
+                        self.add(attribute_type)
+                        validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+
 
     def __repr__(self):
         r = 'object_class: ' + str(self.object_class) if self.object_class else ''
@@ -114,14 +121,14 @@ class ObjectDef(object):
 
         return True
 
-    def add(self, definition=None, schema=None):
+    def add(self, definition=None):
         """Add an AttrDef to the ObjectDef. Can be called with the += operator.
         :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add
 
         """
 
         if isinstance(definition, STRING_TYPES):
-            element = AttrDef(definition, validate_input=True if schema else False)
+            element = AttrDef(definition)
             self.add(element)
         elif isinstance(definition, AttrDef):
             key = definition.key
@@ -133,7 +140,7 @@ class ObjectDef(object):
             self.__dict__[key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
-                self.add(element, schema)
+                self.add(element)
         else:
             raise LDAPObjectError('unable to add element to object definition')
 

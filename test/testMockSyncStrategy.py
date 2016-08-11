@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2015.02.3
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #

@@ -1,6 +1,9 @@
+"""
+"""
+
 # Created on 2016.08.09
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
 # Copyright 2016 Giovanni Cannata
 #

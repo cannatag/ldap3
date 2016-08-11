@@ -4,7 +4,7 @@
     - updated copyright notice
     - added custom validators for attribute values
     - update capability added to abstraction layer
-    - entry now can commit their changes
+    - entry now can commit changes
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

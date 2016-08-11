@@ -25,6 +25,7 @@
 
 from os import linesep
 
+from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
 
@@ -78,7 +79,7 @@ class Attribute(object):
         return self.values[item]
 
     def __setattr__(self, item, value):
-        raise # LDAPAttributeError('attribute \'%s\' is read only, use set_new_value()' % item)
+        raise LDAPAttributeError('attribute \'%s\' is read only, use add_value(), set_value() or delete_value()' % item)
 
     def __eq__(self, other):
         try:
@@ -87,10 +88,24 @@ class Attribute(object):
         except:
             return False
 
-    def set_new_value(self, value):
-        if not self.definition.validate(self.definition.name, value):
+    def add_value(self, value):
+        # new value for attribute to commit with a MODIFY_ADD
+        if value is not None and not self.definition.validate(self.definition.name, value):
             raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
-        self.__dict__['new_value'] = value
+        self.__dict__['values_to_add'] = value if isinstance(value, SEQUENCE_TYPES) else [value]
+
+    def set_value(self, value):
+        # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
+        if value is not None and not self.definition.validate(self.definition.name, value):
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
+        self.__dict__['values_to_replace'] = value if isinstance(value, SEQUENCE_TYPES) else [value]
+
+    def delete_value(self, value):
+        # value for attribute to delete in commit with a MODIFY_DELETE
+        if value is not None and not self.definition.validate(self.definition.name, value):
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
+        self.__dict__['values_to_delete'] = value if isinstance(value, SEQUENCE_TYPES) else [value]
+
 
     @property
     def value(self):

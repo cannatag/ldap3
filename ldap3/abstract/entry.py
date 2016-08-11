@@ -25,7 +25,7 @@
 
 from os import linesep
 import json
-from .. import STRING_TYPES
+from .. import STRING_TYPES, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
@@ -37,8 +37,6 @@ class Entry(object):
     """The Entry object contains a single entry from the result of an LDAP
     search.  Attributes can be accessed either by sequence, by assignment
     or as dictionary keys. Keys are not case sensitive.
-
-    The Entry object is read only
 
     - The DN is retrieved by get_entry_dn()
     - The Reader reference is in get_entry_reader()
@@ -93,13 +91,13 @@ class Entry(object):
 
     def __setattr__(self, item, value):
         if item in self._reader.definition._attributes:
-            if item not in self._attributes:  # adding value to an attribute not present
+            if item not in self._attributes:  # adding value to an attribute still without values
                 new_attribute = Attribute(self._reader.definition._attributes[item], self, reader=self._reader)
                 new_attribute.__dict__['_response'] = None
                 new_attribute.__dict__['raw_values'] = None
                 new_attribute.__dict__['values'] = None
                 self._attributes[item] = new_attribute
-            self._attributes[item].set_new_value(value)  # try to add to new_values
+            self._attributes[item].set_value(value)  # try to add to new_values
         else:
             raise LDAPEntryError('attribute \'%s\' not allowed' % item)
 
@@ -170,7 +168,7 @@ class Entry(object):
         return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._attributes.items())
 
     # noinspection PyProtectedMember
-    def entry_refresh_from_reader(self):
+    def entry_refresh(self):
         """Re-read the entry from the LDAP Server
         """
         if self.entry_get_reader():
@@ -178,6 +176,9 @@ class Entry(object):
             self.__dict__['_attributes'] = temp_entry._attributes
             self.__dict__['_raw_attributes'] = temp_entry._raw_attributes
             del temp_entry
+
+    def entry_refresh_from_reader(self):  # for compatability before 1.4.1
+        self.entry_refresh()
 
     def entry_to_json(self,
                       raw=False,
@@ -225,3 +226,23 @@ class Entry(object):
                 stream.write(prepare_for_stream(header + line_separator + line_separator))
             stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
         return ldif_output
+
+    def entry_commit(self, controls=None):
+        changes = dict()
+        for key in self._attributes:
+            attribute = self._attributes[key]
+            change = []
+            if 'values_to_replace' in attribute.__dict__:
+                change.append((MODIFY_REPLACE, attribute.values_to_replace))
+            if 'values_to_add' in attribute.__dict__:
+                change.append((MODIFY_ADD, attribute.values_to_add))
+            if 'values_to_delete' in attribute.__dict__:
+                change.append((MODIFY_DELETE, attribute.values_to_delete))
+            if change:
+                changes[attribute.definition.name] = change
+
+        if changes:
+            if self._reader.connection.modify(self._dn, changes, controls):
+                self.entry_refresh()
+            else:
+                raise LDAPEntryError('unable to commit entry')

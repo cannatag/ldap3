@@ -124,7 +124,7 @@ standard_formatter = {
 }
 
 
-def find_attribute_formatter(attr_type, name, custom_formatter):
+def find_attribute_helpers(attr_type, name, custom_formatter):
     """
     Tries to format following the OIDs info and format_helper specification.
     Search for attribute oid, then attribute name (can be multiple), then attribute syntax
@@ -137,54 +137,43 @@ def find_attribute_formatter(attr_type, name, custom_formatter):
     If no formatter is found the raw_value is returned as bytes.
     Attributes defined as SINGLE_VALUE in schema are returned as a single object, otherwise are returned as a list of object
     Formatter functions can return any kind of object
+    return a tuple (formatter, validator)
     """
-    formatter = None
-    key = None
-
+    formatter = (None, None)
     if custom_formatter and isinstance(custom_formatter, dict):  # if custom formatters are defined they have precedence over the standard formatters
         if name in custom_formatter:  # search for attribute name, as returned by the search operation
             formatter = custom_formatter[name]
-            key = name
 
         if not formatter and attr_type and attr_type.oid in custom_formatter:  # search for attribute oid as returned by schema
             formatter = custom_formatter[attr_type.oid]
-            key = attr_type.oid
         if not formatter and attr_type and attr_type.oid_info:
             if isinstance(attr_type.oid_info[2], SEQUENCE_TYPES):  # search for multiple names defined in oid_info
                 for attr_name in attr_type.oid_info[2]:
                     if attr_name in custom_formatter:
                         formatter = custom_formatter[attr_name]
-                        key = attr_name
                         break
             elif attr_type.oid_info[2] in custom_formatter:  # search for name defined in oid_info
                 formatter = custom_formatter[attr_type.oid_info[2]]
-                key = attr_type.oid_info[2]
 
         if not formatter and attr_type and attr_type.syntax in custom_formatter:  # search for syntax defined in schema
             formatter = custom_formatter[attr_type.syntax]
-            key = attr_type.syntax
 
     if not formatter and name in standard_formatter:  # search for attribute name, as returned by the search operation
         formatter = standard_formatter[name]
-        key = name
 
     if not formatter and attr_type and attr_type.oid in standard_formatter:  # search for attribute oid as returned by schema
         formatter = standard_formatter[attr_type.oid]
-        key = attr_type.oid
 
     if not formatter and attr_type and attr_type.oid_info:
         if isinstance(attr_type.oid_info[2], SEQUENCE_TYPES):  # search for multiple names defined in oid_info
             for attr_name in attr_type.oid_info[2]:
                 if attr_name in standard_formatter:
                     formatter = standard_formatter[attr_name]
-                    key = attr_name
                     break
         elif attr_type.oid_info[2] in standard_formatter:  # search for name defined in oid_info
             formatter = standard_formatter[attr_type.oid_info[2]]
-            key = attr_type.oid_info[2]
     if not formatter and attr_type and attr_type.syntax in standard_formatter:  # search for syntax defined in schema
         formatter = standard_formatter[attr_type.syntax]
-        key = attr_type.syntax
 
     return formatter
 
@@ -195,8 +184,8 @@ def format_attribute_values(schema, name, values, custom_formatter):
     else:
         attr_type = None
 
-    attribute_helpers = find_attribute_formatter(attr_type, name, custom_formatter)
-    if not attribute_helpers:
+    attribute_helpers = find_attribute_helpers(attr_type, name, custom_formatter)
+    if not attribute_helpers[0]:
         formatter = format_unicode  # default formatter
     else:
         if isinstance(attribute_helpers, tuple):
@@ -217,8 +206,8 @@ def find_attribute_validator(schema, name, custom_validator):
     else:
         attr_type = None
 
-    attribute_helpers = find_attribute_formatter(attr_type, name, custom_validator)
-    if not attribute_helpers:
+    attribute_helpers = find_attribute_helpers(attr_type, name, custom_validator)
+    if not attribute_helpers[1]:
         if attr_type and attr_type.single_value:
             validator = validate_generic_single_value  # validate only single value
         else:

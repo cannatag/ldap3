@@ -69,7 +69,6 @@ class ObjectDef(object):
                             validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
                             self._attributes[attribute_type].validate = lambda name, value: validator(value)  # validate expect 2 parameters but validator only 1
 
-
     def __repr__(self):
         r = 'object_class: ' + str(self.object_class) if self.object_class else ''
         for attr in self._attributes:
@@ -133,13 +132,12 @@ class ObjectDef(object):
             element = AttrDef(definition)
             self.add(element)
         elif isinstance(definition, AttrDef):
-            key = definition.key
-            for attr in self._attributes:
-                if key.lower() == attr.lower():
-                    pass
+            # for attr in self._attributes:
+                # if key.lower() == attr.lower():
+                #    pass
                     # raise LDAPAttributeError('attribute \'%s\' already present' % key)
-            self._attributes[key] = definition
-            self.__dict__[key] = definition
+            self._attributes[definition.key] = definition
+            self.__dict__[definition.key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
                 self.add(element)

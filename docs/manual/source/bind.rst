@@ -67,7 +67,7 @@ Refer to the Server and Connections docs for info about the default parameters.
 Anonymous Bind
 --------------
 
-Anonymous bind performs a simple bind with the username and the user passwrod set to empty strings. The ldap3 library has
+Anonymous bind performs a simple bind with the username and the user password set to empty strings. The ldap3 library has
 a specific authentication option to do that::
 
     # import class and constants

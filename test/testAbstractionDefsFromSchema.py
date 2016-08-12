@@ -25,8 +25,7 @@
 
 import unittest
 
-from ldap3.abstract import ObjectDef, AttrDef, Reader
-from ldap3.abstract.reader import _create_query_dict
+from ldap3.abstract import ObjectDef, AttrDef, Reader, Writer
 from test import test_base, get_connection, drop_connection, random_id, add_user
 from ldap3 import ALL
 
@@ -57,7 +56,7 @@ class Test(unittest.TestCase):
     def test_set_single_value(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-2'))
         o = ObjectDef(['inetorgPerson', 'person'], self.connection)
-        r = Reader(self.connection, o, '(cn=' + testcase_id + 'abstract-2)', test_base)
+        r = Writer(self.connection, o, '(cn=' + testcase_id + 'abstract-2)', test_base)
         r.search()
         self.assertEqual(len(r.entries), 1)
         e = r.entries[0]
@@ -69,7 +68,7 @@ class Test(unittest.TestCase):
     def test_set_multi_value(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-3'))
         o = ObjectDef(['inetorgPerson', 'person'], self.connection)
-        r = Reader(self.connection, o, '(cn=' + testcase_id + 'abstract-3)', test_base)
+        r = Writer(self.connection, o, '(cn=' + testcase_id + 'abstract-3)', test_base)
         r.search()
         self.assertEqual(len(r.entries), 1)
         e = r.entries[0]

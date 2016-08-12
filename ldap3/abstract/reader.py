@@ -73,6 +73,9 @@ class Reader(object):
     :type controls: tuple
 
     """
+    entry_class = Entry  # entries are read_only
+    attribute_class = Attribute
+
     def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, controls=None):
         self.connection = connection
         self._definition = object_def
@@ -344,7 +347,7 @@ class Reader(object):
         if not response['type'] == 'searchResEntry':
             return None
 
-        entry = Entry(response['dn'], self)
+        entry = self.entry_class(response['dn'], self)
         entry.__dict__['_attributes'] = self._get_attributes(response, self._definition, entry)
         entry.__dict__['_raw_attributes'] = response['raw_attributes']
         for attr in entry:  # returns the whole attribute object

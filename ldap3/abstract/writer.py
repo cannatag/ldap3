@@ -22,3 +22,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+
+from .reader import Reader
+from .writableEntry import WritableEntry
+from .writableAttribute import WritableAttribute
+
+
+class Writer(Reader):
+    entry_class = WritableEntry
+    attribute_class = WritableAttribute
+
+    def commit(self, controls):
+        for entry in self.entries:
+            entry.entry_commit(controls)

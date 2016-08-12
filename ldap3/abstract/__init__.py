@@ -29,3 +29,6 @@ from .attrDef import AttrDef
 from .objectDef import ObjectDef
 from .entry import Entry
 from .reader import Reader
+from .writableAttribute import WritableAttribute
+from .writableEntry import WritableEntry
+from .writer import Writer

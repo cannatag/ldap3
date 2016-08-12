@@ -399,6 +399,7 @@ def get_connection(bind=None,
 
 def drop_connection(connection, dn_to_delete=None):
     if dn_to_delete:
+        connection.read_only = False
         for dn in dn_to_delete:
             done = False
             counter = 30

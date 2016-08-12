@@ -396,6 +396,7 @@ def get_connection(bind=None,
 
     return connection
 
+
 def drop_connection(connection, dn_to_delete=None):
     if dn_to_delete:
         for dn in dn_to_delete:

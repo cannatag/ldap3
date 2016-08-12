@@ -139,7 +139,7 @@ def find_attribute_helpers(attr_type, name, custom_formatter):
     Formatter functions can return any kind of object
     return a tuple (formatter, validator)
     """
-    formatter = (None, None)
+    formatter = None
     if custom_formatter and isinstance(custom_formatter, dict):  # if custom formatters are defined they have precedence over the standard formatters
         if name in custom_formatter:  # search for attribute name, as returned by the search operation
             formatter = custom_formatter[name]
@@ -175,6 +175,9 @@ def find_attribute_helpers(attr_type, name, custom_formatter):
     if not formatter and attr_type and attr_type.syntax in standard_formatter:  # search for syntax defined in schema
         formatter = standard_formatter[attr_type.syntax]
 
+    if formatter is None:
+        return None, None
+
     return formatter
 
 
@@ -185,13 +188,10 @@ def format_attribute_values(schema, name, values, custom_formatter):
         attr_type = None
 
     attribute_helpers = find_attribute_helpers(attr_type, name, custom_formatter)
-    if not attribute_helpers[0]:
-        formatter = format_unicode  # default formatter
+    if not isinstance(attribute_helpers, tuple):  # custom formatter
+        formatter = attribute_helpers
     else:
-        if isinstance(attribute_helpers, tuple):
-            formatter = attribute_helpers[0]
-        else: # for compatability with custom_formatter before 1.4.1
-            formatter = attribute_helpers
+        formatter = format_unicode if not attribute_helpers[0] else attribute_helpers[0]
 
     formatted_values = [formatter(raw_value) for raw_value in values]  # executes formatter
     if formatted_values:
@@ -207,11 +207,14 @@ def find_attribute_validator(schema, name, custom_validator):
         attr_type = None
 
     attribute_helpers = find_attribute_helpers(attr_type, name, custom_validator)
-    if not attribute_helpers[1]:
-        if attr_type and attr_type.single_value:
-            validator = validate_generic_single_value  # validate only single value
-        else:
-            validator = always_valid  # unknown syntax, accepts single and multi value
+    if not isinstance(attribute_helpers, tuple):  # custom validator
+        validator = attribute_helpers
     else:
-        validator = attribute_helpers[1]
+        if not attribute_helpers[1]:
+            if attr_type and attr_type.single_value:
+                validator = validate_generic_single_value  # validate only single value
+            else:
+                validator = always_valid  # unknown syntax, accepts single and multi value
+        else:
+            validator = attribute_helpers[1]
     return validator

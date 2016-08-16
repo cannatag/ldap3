@@ -35,3 +35,7 @@ class Writer(Reader):
     def commit(self, controls):
         for entry in self.entries:
             entry.entry_commit(controls)
+
+    def discard(self):
+        for entry in self.entries:
+            entry.entry_discard()

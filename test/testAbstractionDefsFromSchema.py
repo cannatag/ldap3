@@ -27,7 +27,7 @@ import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader, Writer
 from test import test_base, get_connection, drop_connection, random_id, add_user
-from ldap3 import ALL
+from ldap3 import ALL, MODIFY_REPLACE
 
 testcase_id = random_id()
 
@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(r.entries), 1)
         e = r.entries[0]
         e.uid = ['abstract-2-uid']
-        self.assertEqual(e.uid.values_to_replace, ['abstract-2-uid'])
+        self.assertEqual(e.uid.changes, [(MODIFY_REPLACE, ['abstract-2-uid'])])
         e.entry_commit()
         self.assertEqual(e.uid, 'abstract-2-uid')
 
@@ -73,6 +73,6 @@ class Test(unittest.TestCase):
         self.assertEqual(len(r.entries), 1)
         e = r.entries[0]
         e.uid = ['abstract-3a-uid', 'abstract-3b-uid']
-        self.assertEqual(e.uid.values_to_replace, ['abstract-3a-uid', 'abstract-3b-uid'])
+        self.assertEqual(e.uid.changes, [(MODIFY_REPLACE, ['abstract-3a-uid', 'abstract-3b-uid'])])
         e.entry_commit()
         self.assertEqual(e.uid, ['abstract-3a-uid', 'abstract-3b-uid'])

@@ -31,6 +31,7 @@ from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo
 from ..protocol.formatters.standard import find_attribute_validator
 
+
 class ObjectDef(object):
     """Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.
 
@@ -43,14 +44,17 @@ class ObjectDef(object):
         self.__dict__['object_class'] = object_class
         self.__dict__['_attributes'] = dict()
         self.__dict__['custom_validator'] = custom_validator
-        if isinstance(schema, Server):
-            schema = schema.schema
-        elif isinstance(schema, Connection):
-            schema = schema.server.schema
-        elif isinstance(schema, SchemaInfo):
-            schema = schema
-        elif schema:
-            raise LDAPSchemaError('unable to read schema')
+        if schema is not None:
+            if isinstance(schema, Server):
+                schema = schema.schema
+            elif isinstance(schema, Connection):
+                schema = schema.server.schema
+            elif isinstance(schema, SchemaInfo):
+                schema = schema
+            elif schema:
+                raise LDAPSchemaError('unable to read schema')
+            if schema is None:
+                raise LDAPSchemaError('schema not present')
 
         if schema:
             if not isinstance(object_class, SEQUENCE_TYPES):
@@ -58,23 +62,31 @@ class ObjectDef(object):
 
             for element in object_class:
                 if element in schema.object_classes:
-                    for attribute_type in schema.object_classes[element].must_contain:
-                        self.add(attribute_type)
-                        validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
-                        self._attributes[attribute_type].validate = lambda name, value: validator(value)  # validate expect 2 parameters but validator only 1
-                        self._attributes[attribute_type].mandatory = True
-                    for attribute_type in schema.object_classes[element].may_contain:
-                        if attribute_type not in self._attributes:
-                            self.add(attribute_type)
-                            validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
-                            self._attributes[attribute_type].validate = lambda name, value: validator(value)  # validate expect 2 parameters but validator only 1
+                    self._populate_attr_defs(element, schema)
+
+    def _populate_attr_defs(self, element, schema):
+        if schema.object_classes[element].superior:
+            for sup in schema.object_classes[element].superior:
+                self._populate_attr_defs(sup, schema)
+        for attribute_type in schema.object_classes[element].must_contain:
+            self.add(attribute_type)
+            validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+            self._attributes[attribute_type].validate = validator  # validate expect 2 parameters but validator only 1
+            self._attributes[attribute_type].mandatory = True
+        for attribute_type in schema.object_classes[element].may_contain:
+            if attribute_type not in self._attributes:
+                self.add(attribute_type)
+                validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+                self._attributes[attribute_type].validate = validator  # validate expect 2 parameters but validator only 1
 
     def __repr__(self):
-        r = 'object_class: ' + str(self.object_class) if self.object_class else ''
-        for attr in self._attributes:
-            r += linesep + '    ' + self._attributes[attr].__repr__() + ', '
-
-        return r[:-2] if r[-2] == ',' else r
+        if self.object_class:
+            r = 'OBJ: ' + str(self.object_class)
+        else:
+            r= 'OBJ: <none>'
+        for attr in sorted(self._attributes):
+            r += linesep + '    ' + self._attributes[attr].__repr__()
+        return r
 
     def __str__(self):
         return self.__repr__()
@@ -137,7 +149,7 @@ class ObjectDef(object):
                 #    pass
                     # raise LDAPAttributeError('attribute \'%s\' already present' % key)
             self._attributes[definition.key] = definition
-            self.__dict__[definition.key] = definition
+            # self.__dict__[definition.key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
                 self.add(element)

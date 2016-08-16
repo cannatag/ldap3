@@ -1295,15 +1295,15 @@ class Connection(object):
                         if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
                             entry = Entry(response['dn'], self)
                             try:
-                                entry.__dict__['_attributes'] = Reader._get_attributes(None, response, object_def[1], entry)
+                                entry._state.attributes = Reader._get_attributes(Reader, response, object_def[1], entry)
                             except TypeError:  # patch for python 2 - unbound method
-                                entry.__dict__['_attributes'] = Reader._get_attributes.__func__(None, response, object_def[1], entry)
-                            entry.__dict__['_raw_attributes'] = response['raw_attributes']
-                            entry.__dict__['_response'] = response
+                                entry._state.attributes = Reader._get_attributes.__func__(Reader, response, object_def[1], entry)
+                            entry._state.raw_attributes = response['raw_attributes']
+                            entry._state.response = response
                             for attr in entry:  # returns the whole attribute object
                                 attr_name = attr.key
                                 entry.__dict__[attr_name] = attr
-                            entry.__dict__['_reader'] = None  # not used
+                            entry._state.cursor = None  # not used
                             entries.append(entry)
                             break
                     else:

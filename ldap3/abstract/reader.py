@@ -76,12 +76,12 @@ class Reader(object):
     entry_class = Entry  # entries are read_only
     attribute_class = Attribute
 
-    def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, controls=None):
+    def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
         self._definition = object_def
         self.base = base
+        self.attributes = attributes if attributes else sorted([attr.name for attr in self._definition])
         self._components_in_and = components_in_and
-        self.attributes = sorted([attr.name for attr in self._definition])
         self.get_operational_attributes = get_operational_attributes
         self.controls = controls
         self.sub_tree = sub_tree
@@ -191,7 +191,6 @@ class Reader(object):
                 if ''.join(attr.split()).lower() == attr_def.key.lower():
                     attr = attr_def.key
                     break
-
             if attr in self._definition:
                 vals = sorted(self._query_dict[d].split(';'))
 
@@ -224,12 +223,13 @@ class Reader(object):
 
                     query += ';'
                 query = query[:-1] + ', '
-
+            else:
+                raise LDAPReaderError('attribute \'%s\' not in definition' % attr)
         self.validated_query = query[:-2]
         self._validated_query_dict = _create_query_dict(self.validated_query)
 
     def _create_query_filter(self):
-        """Converts the query dictionary in the filter text"""
+        """Converts the query dictionary to the filter text"""
         if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
             self.query_filter = self._query
             return
@@ -309,35 +309,36 @@ class Reader(object):
                     break
 
             if name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default
-                attribute = Attribute(attr_def, entry, reader=self)
-                attribute.__dict__['_response'] = response
-                attribute.__dict__['raw_values'] = response['raw_attributes'][name] if name else None
+                attribute = self.attribute_class(attr_def, entry, self)
+                attribute.response = response
+                attribute.raw_values = response['raw_attributes'][name] if name else None
                 if attr_def.post_query and attr_def.name in response['attributes']:
-                    attribute.__dict__['values'] = attr_def.post_query(attr_def.key, response['attributes'][name])
+                    attribute.values = attr_def.post_query(attr_def.key, response['attributes'][name])
                 else:
-                    attribute.__dict__['values'] = response['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
-                if not isinstance(attribute.__dict__['values'], list):  # force attribute values to list (if attribute is single-valued)
-                    attribute.__dict__['values'] = [attribute.__dict__['values']]
+                    attribute.values = response['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
+                if not isinstance(attribute.values, list):  # force attribute values to list (if attribute is single-valued)
+                    attribute.values = [attribute.values]
                 if attr_def.dereference_dn:  # try to get object referenced in value
                     # noinspection PyUnresolvedReferences
                     if attribute.values:
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, query='', base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []
-
                         # noinspection PyUnresolvedReferences
                         for element in attribute.values:
                             temp_values.append(temp_reader.search_object(element))
                         del temp_reader  # remove the temporary Reader
-                        attribute.__dict__['values'] = temp_values
+                        attribute.values = temp_values
                 # noinspection PyUnresolvedReferences
                 attributes[attribute.key] = attribute
                 used_attribute_names.append(name)
 
+        if self.attributes:
+            used_attribute_names.extend(self.attributes)
         for name in response['attributes']:
             if name not in used_attribute_names:
                 attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name, entry)
-                attribute.__dict__['raw_values'] = response['raw_attributes'][name]
-                attribute.__dict__['values'] = response['attributes'][name]
+                attribute.raw_values = response['raw_attributes'][name]
+                attribute.values = response['attributes'][name]
                 if (get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name) not in attributes:
                     attributes[get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name] = attribute
 
@@ -347,16 +348,16 @@ class Reader(object):
         if not response['type'] == 'searchResEntry':
             return None
 
-        entry = self.entry_class(response['dn'], self)
-        entry.__dict__['_attributes'] = self._get_attributes(response, self._definition, entry)
-        entry.__dict__['_raw_attributes'] = response['raw_attributes']
+        entry = self.entry_class(response['dn'], self)  # define an Entry writable or readonly, as specified in the cursor definition
+        entry._state.attributes = self._get_attributes(response, self._definition, entry)
+        entry._state.raw_attributes = response['raw_attributes']
         for attr in entry:  # returns the whole attribute object
             attr_name = attr.key
             entry.__dict__[attr_name] = attr
 
         return entry
 
-    def _execute_query(self, query_scope):
+    def _execute_query(self, query_scope, attributes):
         if not self.connection:
             raise LDAPReaderError('no connection established')
 
@@ -366,7 +367,7 @@ class Reader(object):
                                             search_filter=self.query_filter,
                                             search_scope=query_scope,
                                             dereference_aliases=self.dereference_aliases,
-                                            attributes=self.attributes,
+                                            attributes=attributes if attributes else self.attributes,
                                             size_limit=self.size_limit,
                                             time_limit=self.time_limit,
                                             types_only=self.types_only,
@@ -385,7 +386,7 @@ class Reader(object):
             self.last_sub_tree = self.sub_tree
             self.execution_time = datetime.now()
 
-    def search(self):
+    def search(self, attributes=None):
         """Perform the LDAP search
 
         :return: Entries found in search
@@ -393,33 +394,33 @@ class Reader(object):
         """
         self.clear()
         query_scope = SUBTREE if self.sub_tree else LEVEL
-        self._execute_query(query_scope)
+        self._execute_query(query_scope, attributes)
 
         return self.entries
 
-    def search_level(self):
+    def search_level(self, attributes=None):
         """Perform the LDAP search operation with SINGLE_LEVEL scope
 
         :return: Entries found in search
 
         """
         self.clear()
-        self._execute_query(LEVEL)
+        self._execute_query(LEVEL, attributes)
 
         return self.entries
 
-    def search_subtree(self):
+    def search_subtree(self, attributes=None):
         """Perform the LDAP search operation WHOLE_SUBTREE scope
 
         :return: Entries found in search
 
         """
         self.clear()
-        self._execute_query(SUBTREE)
+        self._execute_query(SUBTREE, attributes)
 
         return self.entries
 
-    def search_object(self, entry_dn=None):  # base must be a single dn
+    def search_object(self, entry_dn=None, attributes=None):  # base must be a single dn
         """Perform the LDAP search operation SINGLE_OBJECT scope
 
         :return: Entry found in search
@@ -429,14 +430,14 @@ class Reader(object):
         if entry_dn:
             old_base = self.base
             self.base = entry_dn
-            self._execute_query(BASE)
+            self._execute_query(BASE, attributes)
             self.base = old_base
         else:
-            self._execute_query(BASE)
+            self._execute_query(BASE, attributes)
 
         return self.entries[0] if len(self.entries) > 0 else None
 
-    def search_size_limit(self, size_limit):
+    def search_size_limit(self, size_limit, attributes=None):
         """Perform the LDAP search with limit of entries found
 
         :param size_limit: maximum number of entries returned
@@ -447,11 +448,11 @@ class Reader(object):
         self.clear()
         self.size_limit = size_limit
         query_scope = SUBTREE if self.sub_tree else LEVEL
-        self._execute_query(query_scope)
+        self._execute_query(query_scope, attributes)
 
         return self.entries
 
-    def search_time_limit(self, time_limit):
+    def search_time_limit(self, time_limit, attributes=None):
         """Perform the LDAP search with limit of time spent in searching by the server
 
         :param time_limit: maximum number of seconds to wait for a search
@@ -461,11 +462,11 @@ class Reader(object):
         self.clear()
         self.time_limit = time_limit
         query_scope = SUBTREE if self.sub_tree else LEVEL
-        self._execute_query(query_scope)
+        self._execute_query(query_scope, attributes)
 
         return self.entries
 
-    def search_types_only(self):
+    def search_types_only(self, attributes=None):
         """Perform the search returning attribute names only.
 
         :return: Entries found in search
@@ -474,11 +475,11 @@ class Reader(object):
         self.clear()
         self.types_only = True
         query_scope = SUBTREE if self.sub_tree else LEVEL
-        self._execute_query(query_scope)
+        self._execute_query(query_scope, attributes)
 
         return self.entries
 
-    def search_paged(self, paged_size, paged_criticality=True, generator=True):
+    def search_paged(self, paged_size, paged_criticality=True, generator=True, attributes=None):
         """Perform a paged search, can be called as an Iterator
 
         :param paged_size: number of entries returned in each search
@@ -503,7 +504,7 @@ class Reader(object):
                                                                      search_filter=self.query_filter,
                                                                      search_scope=SUBTREE if self.sub_tree else LEVEL,
                                                                      dereference_aliases=self.dereference_aliases,
-                                                                     attributes=self.attributes,
+                                                                     attributes=attributes if attributes else self.attributes,
                                                                      size_limit=self.size_limit,
                                                                      time_limit=self.time_limit,
                                                                      types_only=self.types_only,

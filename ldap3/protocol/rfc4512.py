@@ -613,6 +613,7 @@ class ObjectClassInfo(BaseObjectInfo):
     def __repr__(self):
         r = ''
         r += (linesep + '  Type: ' + constant_to_class_kind(self.kind)) if isinstance(self.kind, int) else ''
+        r += (linesep + '  Superior: ' + list_to_string(self.superior)) if self.superior else ''
         r += (linesep + '  Must contain attributes: ' + list_to_string(self.must_contain)) if self.must_contain else ''
         r += (linesep + '  May contain attributes: ' + list_to_string(self.may_contain)) if self.may_contain else ''
         return 'Object Class' + BaseObjectInfo.__repr__(self).replace('<__desc__>', r)
@@ -667,6 +668,7 @@ class AttributeTypeInfo(BaseObjectInfo):
         r = ''
         r += linesep + '  Single Value: True' if self.single_value else ''
         r += linesep + '  Collective: True' if self.collective else ''
+        r += (linesep + '  Superior: ' + list_to_string(self.superior)) if self.superior else ''
         r += linesep + '  No user modification: True' if self.no_user_modification else ''
         r += (linesep + '  Usage: ' + constant_to_attribute_usage(self.usage)) if self.usage else ''
         r += (linesep + '  Equality rule: ' + list_to_string(self.equality)) if self.equality else ''

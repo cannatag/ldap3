@@ -39,21 +39,21 @@ def check_standard_type(input_value, value_type):
     return False
 
 
-def always_valid(input_value):
+def always_valid(name, input_value):
     return True
 
 
-def validate_generic_single_value(input_value):
+def validate_generic_single_value(name, input_value):
     if not isinstance(input_value, SEQUENCE_TYPES):
         return True
     if len(input_value) == 1:
         return True
     return False
 
-def validate_integer(input_value):
+
+def validate_integer(name, input_value):
     return check_standard_type(input_value, int)
 
 
-def validate_bytes(input_value):
+def validate_bytes(name, input_value):
     return check_standard_type(input_value, bytes)
-

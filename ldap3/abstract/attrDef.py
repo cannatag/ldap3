@@ -61,17 +61,25 @@ class AttrDef(object):
         self.mandatory = mandatory
 
     def __repr__(self):
-        r = 'AttrDef(key={0.key!r}'.format(self)
-        r += ', name={0.name!r}'.format(self)
-        r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
-        r += '' if self.pre_query is None else ', pre_query={0.pre_query!r}'.format(self)
-        r += '' if self.post_query is None else ', post_query={0.post_query!r}'.format(self)
-        r += '' if self.default is None else ', default={0.default!r}'.format(self)
-        r += '' if self.dereference_dn is None else ', dereference_dn={0.dereference_dn!r}'.format(self)
-        r += '' if self.description is None else ', description={0.d!r}'.format(self)
-        r += ', mandatory=True' if self.mandatory else ''
-        r += ')'
-
+        # r = 'AttrDef(key={0.key!r}'.format(self)
+        # r += ', name={0.name!r}'.format(self)
+        # r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
+        # r += '' if self.pre_query is None else ', pre_query={0.pre_query!r}'.format(self)
+        # r += '' if self.post_query is None else ', post_query={0.post_query!r}'.format(self)
+        # r += '' if self.default is None else ', default={0.default!r}'.format(self)
+        # r += '' if self.dereference_dn is None else ', dereference_dn={0.dereference_dn!r}'.format(self)
+        # r += '' if self.description is None else ', description={0.d!r}'.format(self)
+        # r += ', mandatory=True' if self.mandatory else ''
+        # r += ')'
+        r = 'ATTR: ' + self.key
+        r += '' if self.name == self.key else ' [' + self.name + ']'
+        r += '' if self.default is NotImplemented else ' - default: ' + str(default)
+        r += '' if not self.mandatory else ' - mandatory: ' + str(self.mandatory)
+        r += '' if not self.dereference_dn else ' - dereference_dn: ' + str(self.dereference_dn)
+        r += '' if not self.validate else ' - validate'
+        r += '' if not self.pre_query else ' - pre_query'
+        r += '' if not self.post_query else ' - post_query'
+        r += '' if not self.description else ' - description: ' + str(self.description)
         return r
 
     def __str__(self):

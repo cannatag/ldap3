@@ -408,7 +408,7 @@ from .core.server import Server
 from .core.connection import Connection
 from .core.tls import Tls
 from .core.pooling import ServerPool
-from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalAttribute
+from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalAttribute, Writer
 from .protocol.rfc4512 import DsaInfo, SchemaInfo
 
 # imports error Exceptions

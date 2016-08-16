@@ -23,29 +23,36 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SEQUENCE_TYPES
+from .. import SEQUENCE_TYPES, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 from .attribute import Attribute
 from ..core.exceptions import LDAPAttributeError
 
 
 class WritableAttribute(Attribute):
-    def __setattr__(self, item, value):
-        raise LDAPAttributeError('attribute \'%s\' is read only, use add_value(), set_value() or delete_value()' % item)
+    # def __setattr__(self, item, value):
+    #     raise LDAPAttributeError('attribute \'%s\' is read only, use add_value(), set_value() or delete_value()' % item)
+
+    def __init__(self, attr_def, entry, cursor):
+        Attribute.__init__(self, attr_def, entry, cursor)
+        self.changes  = []
 
     def add_value(self, value):
         # new value for attribute to commit with a MODIFY_ADD
         if value is not None and not self.definition.validate(self.definition.name, value):
-            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
-        self.__dict__['values_to_add'] = value if isinstance(value, SEQUENCE_TYPES) else [value]
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, self.key))
+        self.changes.append((MODIFY_ADD, value if isinstance(value, SEQUENCE_TYPES) else [value]))
 
     def set_value(self, value):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
         if value is not None and not self.definition.validate(self.definition.name, value):
-            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
-        self.__dict__['values_to_replace'] = value if isinstance(value, SEQUENCE_TYPES) else [value]
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, self.key))
+        self.changes.append((MODIFY_REPLACE, value if isinstance(value, SEQUENCE_TYPES) else [value]))
 
     def delete_value(self, value):
         # value for attribute to delete in commit with a MODIFY_DELETE
         if value is not None and not self.definition.validate(self.definition.name, value):
-            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, item))
-        self.__dict__['values_to_delete'] = value if isinstance(value, SEQUENCE_TYPES) else [value]
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, self.key))
+        self.changes.append((MODIFY_DELETE, value if isinstance(value, SEQUENCE_TYPES) else [value]))
+
+    def discard_changes(self):
+        self.changes = []

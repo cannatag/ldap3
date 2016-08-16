@@ -30,11 +30,24 @@ from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
+from ..utils.ciDict import CaseInsensitiveDict
+
+
+class EntryState(object):
+    """Contains data on the status of the entry. Does not pollute the Entry __dict__.
+
+    """
+    def __init__(self, dn, cursor):
+        self.dn = dn
+        self.attributes = CaseInsensitiveDict()
+        self.raw_attributes = dict()
+        self.response = None
+        self.cursor = cursor
 
 
 class Entry(object):
-    """The Entry object contains a single entry from the result of an LDAP
-    search.  Attributes can be accessed either by sequence, by assignment
+    """The Entry object contains a single LDAP entry.
+    Attributes can be accessed either by sequence, by assignment
     or as dictionary keys. Keys are not case sensitive.
 
     The Entry object is read only
@@ -47,18 +60,14 @@ class Entry(object):
     """
 
     def __init__(self, dn, reader):
-        self.__dict__['_attributes'] = dict()
-        self.__dict__['_dn'] = dn
-        self.__dict__['_raw_attributes'] = None
-        self.__dict__['_response'] = None
-        self.__dict__['_reader'] = reader
+        self.__dict__['_state'] = EntryState(dn, reader)
 
     def __repr__(self):
-        if self._dn is not None:
-            r = 'DN: ' + to_stdout_encoding(self._dn) + linesep
-            if self._attributes:
-                for attr in sorted(self._attributes):
-                    r += ' ' * 4 + repr(self._attributes[attr]) + linesep
+        if self.entry_get_dn() is not None:
+            r = 'DN: ' + to_stdout_encoding(self.entry_get_dn()) + linesep
+            if self._state.attributes:
+                for attr in sorted(self._state.attributes):
+                    r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
             return r
         else:
             return object.__repr__(self)
@@ -67,8 +76,8 @@ class Entry(object):
         return self.__repr__()
 
     def __iter__(self):
-        for attribute in self._attributes:
-            yield self._attributes[attribute]
+        for attribute in self._state.attributes:
+            yield self._state.attributes[attribute]
         raise StopIteration
 
     def __contains__(self, item):
@@ -80,18 +89,20 @@ class Entry(object):
 
     def __getattr__(self, item):
         if isinstance(item, STRING_TYPES):
+            if item == '_state':
+                return self.__dict__['_state']
             item = ''.join(item.split()).lower()
-            for attr in self._attributes:
+            for attr in self._state.attributes.keys():
                 if item == attr.lower():
                     break
             else:
                 raise LDAPAttributeError('attribute \'%s\' not found' % item)
-            return self._attributes[attr]
+            return self._state.attributes[attr]
 
-        raise LDAPAttributeError('attribute must be a string')
+        raise LDAPAttributeError('attribute name must be a string')
 
     def __setattr__(self, item, value):
-        if item in self._attributes:
+        if item in self._state.attributes:
             raise LDAPAttributeError('attribute \'%s\' is read only' % item)
         else:
             raise LDAPEntryError('entry \'%s\' is read only' % item)
@@ -99,24 +110,24 @@ class Entry(object):
     def __getitem__(self, item):
         if isinstance(item, STRING_TYPES):
             item = ''.join(item.split()).lower()
-            for attr in self._attributes:
+            for attr in self._state.attributes.keys():
                 if item == attr.lower():
                     break
             else:
                 raise LDAPKeyError('key \'%s\' not found' % item)
-            return self._attributes[attr]
+            return self._state.attributes[attr]
 
         raise LDAPKeyError('key must be a string')
 
     def __eq__(self, other):
         if isinstance(other, Entry):
-            return self._dn == other.entry_get_dn()
+            return self.entry_get_dn() == other.entry_get_dn()
 
         return False
 
     def __lt__(self, other):
         if isinstance(other, Entry):
-            return self._dn <= other.entry_get_dn()
+            return self.entry_get_dn() <= other.entry_get_dn()
 
         return False
 
@@ -125,28 +136,31 @@ class Entry(object):
 
         :return: The distinguished name of the Entry
         """
-        return self._dn
+        return self._state.dn
 
     def entry_get_response(self):
         """
 
         :return: The origininal search response for the Entry
         """
-        return self._dn
+        return self._state.response
 
-    def entry_get_reader(self):
+    def entry_get_cursor(self):
         """
 
         :return: the Reader object of the Entry
         """
-        return self._reader
+        return self._state.cursor
+
+    def entry_get_reader(self):  # for compatability with versions < 1.4.1
+        return self.entry_get_cursor()
 
     def entry_get_raw_attributes(self):
         """
 
         :return: The raw (unencoded) attributes of the Entry as bytes
         """
-        return self._raw_attributes
+        return self._state.raw_attributes
 
     def entry_get_raw_attribute(self, name):
         """
@@ -154,22 +168,22 @@ class Entry(object):
         :param name: name of the attribute
         :return: raw (unencoded) value of the attribute, None if attribute is not found
         """
-        return self._raw_attributes[name] if name in self._raw_attributes else None
+        return self._state.raw_attributes[name] if name in self._state.raw_attributes else None
 
     def entry_get_attribute_names(self):
-        return list(self._raw_attributes.keys())
+        return list(self._state.attributes.keys())
 
     def entry_get_attributes_dict(self):
-        return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._attributes.items())
+        return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._state.attributes.items())
 
     # noinspection PyProtectedMember
     def entry_refresh(self):
         """Re-read the entry from the LDAP Server
         """
         if self.entry_get_reader():
-            temp_entry = self.entry_get_reader().search_object(self.entry_get_dn())
-            self.__dict__['_attributes'] = temp_entry._attributes
-            self.__dict__['_raw_attributes'] = temp_entry._raw_attributes
+            temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn())
+            self._state.attributes = temp_entry._state.attributes
+            self._state.raw_attributes = temp_entry._state.raw_attributes
             del temp_entry
 
     def entry_refresh_from_reader(self):  # for compatability before 1.4.1

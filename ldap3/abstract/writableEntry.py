@@ -31,33 +31,27 @@ from ..core.exceptions import LDAPEntryError
 
 class WritableEntry(Entry):
     def __setattr__(self, item, value):
-        if item in self._reader.definition._attributes:
-            if item not in self._attributes:  # adding value to an attribute still without values
-                new_attribute = WritableAttribute(self._reader.definition._attributes[item], self, reader=self._reader)
-                new_attribute.__dict__['_response'] = None
-                new_attribute.__dict__['raw_values'] = None
-                new_attribute.__dict__['values'] = None
-                self._attributes[item] = new_attribute
-            self._attributes[item].set_value(value)  # try to add to new_values
+        if item in self._state.cursor.definition._attributes:
+            if item not in self._state.attributes:  # adding value to an attribute still without values
+                new_attribute = WritableAttribute(self._state.cursor.definition._attributes[item], self, cursor=self._state.cursor)
+                self._state.attributes[item] = new_attribute
+            self._state.attributes[item].set_value(value)  # try to add to new_values
         else:
             raise LDAPEntryError('attribute \'%s\' not allowed' % item)
 
     def entry_commit(self, controls=None):
         changes = dict()
-        for key in self._attributes:
-            attribute = self._attributes[key]
-            change = []
-            if 'values_to_replace' in attribute.__dict__:
-                change.append((MODIFY_REPLACE, attribute.values_to_replace))
-            if 'values_to_add' in attribute.__dict__:
-                change.append((MODIFY_ADD, attribute.values_to_add))
-            if 'values_to_delete' in attribute.__dict__:
-                change.append((MODIFY_DELETE, attribute.values_to_delete))
-            if change:
-                changes[attribute.definition.name] = change
+        for key in self._state.attributes:
+            attribute = self._state.attributes[key]
+            if attribute.changes:
+                changes[attribute.definition.name] = attribute.changes
 
         if changes:
-            if self._reader.connection.modify(self._dn, changes, controls):
+            if self._state.cursor.connection.modify(self.entry_get_dn(), changes, controls):
                 self.entry_refresh()
             else:
                 raise LDAPEntryError('unable to commit entry')
+
+    def entry_discard(self):
+        for key in self,_state.attributes:
+            self._state.attributes[key].discard_changes()

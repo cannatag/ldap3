@@ -42,13 +42,14 @@ class Attribute(object):
 
     """
 
-    def __init__(self, attr_def, entry, reader):
-        self.__dict__['key'] = attr_def.key
-        self.__dict__['definition'] = attr_def
-        self.__dict__['values'] = []
-        self.__dict__['raw_values'] = []
-        self.__dict__['entry'] = entry
-        self.__dict__['reader'] = reader
+    def __init__(self, attr_def, entry, cursor):
+        self.key = attr_def.key
+        self.definition = attr_def
+        self.values = []
+        self.raw_values = []
+        self.response = None
+        self.entry = entry
+        self.cursor = cursor
 
     def __repr__(self):
         if len(self.values) == 1:
@@ -78,8 +79,8 @@ class Attribute(object):
     def __getitem__(self, item):
         return self.values[item]
 
-    def __setattr__(self, item, value):
-        raise LDAPAttributeError('attribute \'%s\' is read only' % item)
+    # def __setattr__(self, item, value):
+    #     raise LDAPAttributeError('attribute \'%s\' is read only' % item)
 
     def __eq__(self, other):
         try:
@@ -93,4 +94,4 @@ class Attribute(object):
         """
         :return: The single value or a list of values of the attribute.
         """
-        return self.__dict__['values'][0] if len(self.__dict__['values']) == 1 else self.__dict__['values']
+        return self.values[0] if len(self.values) == 1 else self.values

@@ -332,8 +332,11 @@ class Reader(object):
                 attributes[attribute.key] = attribute
                 used_attribute_names.append(name)
 
-        if self.attributes:
-            used_attribute_names.extend(self.attributes)
+        try:  # temporary fix
+            if self.attributes:
+                used_attribute_names.extend(self.attributes)
+        except AttributeError:
+            pass
         for name in response['attributes']:
             if name not in used_attribute_names:
                 attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name, entry)

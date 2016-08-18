@@ -214,8 +214,6 @@ class BaseStrategy(object):
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)
             self.connection.socket.connect(address[4])
-            if self.connection.server.connect_timeout:
-                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specifice in connection
         except socket.error as e:
             self.connection.last_error = 'socket connection error while opening: ' + str(e)
             exc = e
@@ -238,6 +236,9 @@ class BaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+
+        if self.connection.server.connect_timeout:
+            self.connection.socket.settimeout(None)  # disable socket connection timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specified in connection
 
         if self.connection.usage:
             self.connection._usage.open_sockets += 1

@@ -52,26 +52,6 @@ def _create_query_dict(query_text):
 
 
 class Cursor(object):
-    """Reader object to perform searches:
-
-    :param connection: the LDAP connection object to use
-    :type connection: LDAPConnection
-    :param object_def: the ObjectDef of the LDAP object returned
-    :type object_def: ObjectDef
-    :param query: the simplified query (will be transformed in an LDAP filter)
-    :type query: str
-    :param base: starting base of the search
-    :type base: str
-    :param components_in_and: specify if assertions in the query mus be all satisfied or not (AND/OR)
-    :type components_in_and: bool
-    :param sub_tree: specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
-    :type sub_tree: bool
-    :param get_operational_attributes: specify if operational attributes are returned or not
-    :type get_operational_attributes: bool
-    :param controls: controls to be used in search
-    :type controls: tuple
-
-    """
     # entry_class and attribute_class define the type of entry and attribute used by the cursor
     # entry_class = Entry
     # attribute_class = Attribute
@@ -520,11 +500,31 @@ class Cursor(object):
 
 
 class Reader(Cursor):
+    """Reader object to perform searches:
+
+    :param connection: the LDAP connection object to use
+    :type connection: LDAPConnection
+    :param object_def: the ObjectDef of the LDAP object returned
+    :type object_def: ObjectDef
+    :param query: the simplified query (will be transformed in an LDAP filter)
+    :type query: str
+    :param base: starting base of the search
+    :type base: str
+    :param components_in_and: specify if assertions in the query mus be all satisfied or not (AND/OR)
+    :type components_in_and: bool
+    :param sub_tree: specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
+    :type sub_tree: bool
+    :param get_operational_attributes: specify if operational attributes are returned or not
+    :type get_operational_attributes: bool
+    :param controls: controls to be used in search
+    :type controls: tuple
+
+    """
     entry_class = Entry  # entries are read_only
     attribute_class = Attribute  # attributes are read_only
 
 
-class Writer(Reader):
+class Writer(Cursor):
     entry_class = WritableEntry
     attribute_class = WritableAttribute
 

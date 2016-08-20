@@ -25,8 +25,10 @@
 
 from os import linesep
 import json
-from .attribute import WritableAttribute
 from .. import STRING_TYPES
+
+from .attribute import WritableAttribute
+
 from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
@@ -271,6 +273,7 @@ class Entry(EntryBase):
 
     """
     def make_writable(self):
+        from .cursor import Writer  # local import to avoid circular referecence in import at startup
         # return a newly created WritableEntry and its relevant Writer
         writable_cursor = Writer(self.entry_get_cursor().connection, self.entry_get_cursor().definition, None, None, attributes=self.entry_get_attribute_names())
         writable_entry = writable_cursor._get_entry(self.entry_get_response())

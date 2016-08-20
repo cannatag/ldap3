@@ -334,6 +334,7 @@ class Cursor(object):
         entry = self.entry_class(response['dn'], self)  # define an Entry writable or readonly, as specified in the cursor definition
         entry._state.attributes = self._get_attributes(response, self._definition, entry)
         entry._state.raw_attributes = response['raw_attributes']
+        entry._state.response = response
         for attr in entry:  # returns the whole attribute object
             attr_name = attr.key
             entry.__dict__[attr_name] = attr

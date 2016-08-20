@@ -26,7 +26,7 @@
 import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader
-from ldap3.abstract.reader import _create_query_dict
+from ldap3.abstract.cursor import _create_query_dict
 from test import test_base
 
 

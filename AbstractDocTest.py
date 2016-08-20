@@ -33,8 +33,8 @@ person += AttrDef('employeeStatus', key='Department', validate=validDepartment, 
 department = ObjectDef('groupOfNames')
 department += 'cn'
 department += AttrDef('member', key='employeer', dereference_dn=person)  # values of 'employeer' will be the 'Person' entries members of the found department
-s = Server('edir')
-c = Connection(s, user='cn=admin,o=risorse', password='password')
+s = Server('edir1')
+c = Connection(s, user='cn=admin,o=resources', password='password')
 query = 'Department: Accounting'  # explained in next paragraph
 personReader = Reader(c, person, query, 'o=test')
 personReader.search()

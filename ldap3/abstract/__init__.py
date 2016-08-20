@@ -23,12 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .attribute import Attribute
-from .operationalAttribute import OperationalAttribute
+from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
 from .objectDef import ObjectDef
-from .entry import Entry
-from .reader import Reader
-from .writableAttribute import WritableAttribute
-from .writableEntry import WritableEntry
-from .writer import Writer
+from .entry import Entry, WritableEntry
+from .cursor import Reader, Writer

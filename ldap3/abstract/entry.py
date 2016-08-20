@@ -1,11 +1,11 @@
 """
 """
 
-# Created on 2014.01.06
+# Created on 2016.08.19
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -25,6 +25,7 @@
 
 from os import linesep
 import json
+from .attribute import WritableAttribute
 from .. import STRING_TYPES
 from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
@@ -37,6 +38,7 @@ class EntryState(object):
     """Contains data on the status of the entry. Does not pollute the Entry __dict__.
 
     """
+
     def __init__(self, dn, cursor):
         self.dn = dn
         self.attributes = CaseInsensitiveDict()
@@ -44,8 +46,26 @@ class EntryState(object):
         self.response = None
         self.cursor = cursor
 
+    def __repr__(self):
+        if self.dn is not None:
+            r = 'DN: ' + to_stdout_encoding(self.dn) + linesep
+            if self.attributes:
+                for attr in sorted(self.attributes):
+                    r += ' ' * 4 + repr(self.attributes[attr]) + linesep
+            if self.raw_attributes:
+                for attr in sorted(self.raw_attributes):
+                    r += ' ' * 4 + repr(self.raw_attributes[attr]) + linesep
+            if self.cursor:
+                r += str(self.cursor)
+            return r
+        else:
+            return object.__repr__(self)
 
-class Entry(object):
+    def __str__(self):
+        return self.__repr__()
+
+
+class EntryBase(object):
     """The Entry object contains a single LDAP entry.
     Attributes can be accessed either by sequence, by assignment
     or as dictionary keys. Keys are not case sensitive.
@@ -53,14 +73,14 @@ class Entry(object):
     The Entry object is read only
 
     - The DN is retrieved by get_entry_dn()
-    - The Reader reference is in get_entry_reader()
+    - The cursor reference is in get_entry_cursor()
     - Raw attributes values are retrieved by the get_raw_attributes() and
       get_raw_attribute() methods
 
     """
 
-    def __init__(self, dn, reader):
-        self.__dict__['_state'] = EntryState(dn, reader)
+    def __init__(self, dn, cursor):
+        self.__dict__['_state'] = EntryState(dn, cursor)
 
     def __repr__(self):
         if self.entry_get_dn() is not None:
@@ -120,13 +140,13 @@ class Entry(object):
         raise LDAPKeyError('key must be a string')
 
     def __eq__(self, other):
-        if isinstance(other, Entry):
+        if isinstance(other, EntryBase):
             return self.entry_get_dn() == other.entry_get_dn()
 
         return False
 
     def __lt__(self, other):
-        if isinstance(other, Entry):
+        if isinstance(other, EntryBase):
             return self.entry_get_dn() <= other.entry_get_dn()
 
         return False
@@ -148,7 +168,7 @@ class Entry(object):
     def entry_get_cursor(self):
         """
 
-        :return: the Reader object of the Entry
+        :return: the cursor object of the Entry
         """
         return self._state.cursor
 
@@ -180,7 +200,7 @@ class Entry(object):
     def entry_refresh(self):
         """Re-read the entry from the LDAP Server
         """
-        if self.entry_get_reader():
+        if self.entry_get_cursor():
             temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn())
             self._state.attributes = temp_entry._state.attributes
             self._state.raw_attributes = temp_entry._state.raw_attributes
@@ -236,3 +256,50 @@ class Entry(object):
             stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
         return ldif_output
 
+
+class Entry(EntryBase):
+    """The Entry object contains a single LDAP entry.
+    Attributes can be accessed either by sequence, by assignment
+    or as dictionary keys. Keys are not case sensitive.
+
+    The Entry object is read only
+
+    - The DN is retrieved by get_entry_dn()
+    - The Reader reference is in get_entry_reader()
+    - Raw attributes values are retrieved by the get_raw_attributes() and
+      get_raw_attribute() methods
+
+    """
+    def make_writable(self):
+        # return a newly created WritableEntry and its relevant Writer
+        writable_cursor = Writer(self.entry_get_cursor().connection, self.entry_get_cursor().definition, None, None, attributes=self.entry_get_attribute_names())
+        writable_entry = writable_cursor._get_entry(self.entry_get_response())
+        return writable_entry
+
+
+class WritableEntry(EntryBase):
+    def __setattr__(self, item, value):
+        if item in self._state.cursor.definition._attributes:
+            if item not in self._state.attributes:  # adding value to an attribute still without values
+                new_attribute = WritableAttribute(self._state.cursor.definition._attributes[item], self, cursor=self._state.cursor)
+                self._state.attributes[item] = new_attribute
+            self._state.attributes[item].set_value(value)  # try to add to new_values
+        else:
+            raise LDAPEntryError('attribute \'%s\' not allowed' % item)
+
+    def entry_commit(self, controls=None):
+        changes = dict()
+        for key in self._state.attributes:
+            attribute = self._state.attributes[key]
+            if attribute.changes:
+                changes[attribute.definition.name] = attribute.changes
+
+        if changes:
+            if self._state.cursor.connection.modify(self.entry_get_dn(), changes, controls):
+                self.entry_refresh()
+            else:
+                raise LDAPEntryError('unable to commit entry')
+
+    def entry_discard(self):
+        for key in self,_state.attributes:
+            self._state.attributes[key].discard_changes()

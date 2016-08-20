@@ -11,6 +11,7 @@
     - ObjectDef automatically populates attributes from schema, following objectClass hierarchy
     - Added attributes parameter to search* methods of Cursor, so that only needed attributes are read even if attr_defs defines more
     - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
+    - Added 'set' to SEQUENCE_TYPES (thanks Christian)
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

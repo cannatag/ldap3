@@ -1285,7 +1285,8 @@ class Connection(object):
             for attr_set in unique_attr_sets:
                 object_def = ObjectDef()
                 object_def += list(attr_set)  # converts the set in a list to be added to the object definition
-                object_defs.append((attr_set, object_def))  # objects_defs contains a tuple with the set and the ObjectDef
+                cursor = Reader(self, object_def, self.request['filter'], self.request['base'], attributes=attr_set)
+                object_defs.append((attr_set, object_def, cursor))  # objects_defs contains a tuple with the set, the ObjectDef and a cursor
 
             entries = []
             for response in search_response:
@@ -1293,17 +1294,7 @@ class Connection(object):
                     resp_attr_set = set(response['attributes'].keys())
                     for object_def in object_defs:
                         if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
-                            entry = Entry(response['dn'], self)
-                            try:
-                                entry._state.attributes = Reader._get_attributes(Reader, response, object_def[1], entry)
-                            except TypeError:  # patch for python 2 - unbound method
-                                entry._state.attributes = Reader._get_attributes.__func__(Reader, response, object_def[1], entry)
-                            entry._state.raw_attributes = response['raw_attributes']
-                            entry._state.response = response
-                            for attr in entry:  # returns the whole attribute object
-                                attr_name = attr.key
-                                entry.__dict__[attr_name] = attr
-                            entry._state.cursor = None  # not used
+                            entry = object_def[2]._get_entry(response)
                             entries.append(entry)
                             break
                     else:

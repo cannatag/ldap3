@@ -45,8 +45,9 @@ class AttrDef(object):
     :param dereference_dn: reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry
     :type dereference_dn: ObjectDef
     :param description: custom attribute description
-    :type dereference_dn: string
-
+    :type description: string
+    :param mandatory: specify if attribute is defined as mandatory in LDAP schema
+    :type mandatory: boolean
     """
 
     def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, mandatory=False):

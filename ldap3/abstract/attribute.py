@@ -24,8 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
-
-from .. import SEQUENCE_TYPES
+from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
 
@@ -95,3 +94,67 @@ class Attribute(object):
         :return: The single value or a list of values of the attribute.
         """
         return self.values[0] if len(self.values) == 1 else self.values
+
+
+class OperationalAttribute(Attribute):
+   """Operational attribute/values object. Include the search result of an
+   operational attribute in an entry
+
+   OperationalAttribute object is read only
+
+   - values: contains the processed attribute values
+   - raw_values: contains the unprocessed attribute values
+
+   It may not have an AttrDef
+
+   """
+   # def __init__(self, key, entry):
+   #     self.key = key
+   #     self.entry = entry
+   #     self.values = []
+   #     self.raw_values = []
+
+   def __repr__(self):
+       if len(self.values) == 1:
+           r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+       elif len(self.values) > 1:
+           r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+           filler = ' ' * (len(self.key) + 6)
+           for value in sorted(self.values[1:]):
+               r += linesep + filler + to_stdout_encoding(value)
+       else:
+           r = ''
+
+       return r
+
+
+class WritableAttribute(Attribute):
+    # def __setattr__(self, item, value):
+    #     raise LDAPAttributeError('attribute \'%s\' is read only, use add_value(), set_value() or delete_value()' % item)
+
+    def __init__(self, attr_def, entry, cursor):
+        Attribute.__init__(self, attr_def, entry, cursor)
+        self.changes  = []
+
+    def add_value(self, value):
+        # new value for attribute to commit with a MODIFY_ADD
+        if value is not None and not self.definition.validate(self.definition.name, value):
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, self.key))
+        self.changes.append((MODIFY_ADD, value if isinstance(value, SEQUENCE_TYPES) else [value]))
+
+    def set_value(self, value):
+        # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
+        if value is not None and not self.definition.validate(self.definition.name, value):
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, self.key))
+        self.changes.append((MODIFY_REPLACE, value if isinstance(value, SEQUENCE_TYPES) else [value]))
+
+    def delete_value(self, value):
+        # value for attribute to delete in commit with a MODIFY_DELETE
+        if value is not None and not self.definition.validate(self.definition.name, value):
+            raise LDAPAttributeError('value %s non valid for attribute \'%s\'' % (value, self.key))
+        self.changes.append((MODIFY_DELETE, value if isinstance(value, SEQUENCE_TYPES) else [value]))
+
+    def discard_changes(self):
+        self.changes = []
+
+#

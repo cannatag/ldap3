@@ -27,10 +27,9 @@ from datetime import datetime
 from os import linesep
 
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, STRING_TYPES, SEQUENCE_TYPES, get_config_parameter
-from .attribute import Attribute
-from .entry import Entry
+from .attribute import Attribute, OperationalAttribute, WritableAttribute
+from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPReaderError
-from .operationalAttribute import OperationalAttribute
 
 
 def _ret_search_value(value):
@@ -52,7 +51,7 @@ def _create_query_dict(query_text):
     return query_dict
 
 
-class Reader(object):
+class Cursor(object):
     """Reader object to perform searches:
 
     :param connection: the LDAP connection object to use
@@ -73,8 +72,9 @@ class Reader(object):
     :type controls: tuple
 
     """
-    entry_class = Entry  # entries are read_only
-    attribute_class = Attribute
+    # entry_class and attribute_class define the type of entry and attribute used by the cursor
+    # entry_class = Entry
+    # attribute_class = Attribute
 
     def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
@@ -130,8 +130,8 @@ class Reader(object):
         if r[-2] == ',':
             r = r[:-2]
         r += ']' + linesep
-        r += 'QUERY  : ' + repr(self._query) + (' [AND]' if self.components_in_and else ' [OR]') + linesep
-        r += 'PARSED : ' + repr(self.validated_query) + (' [AND]' if self.components_in_and else ' [OR]') + linesep
+        r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
+        r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
         r += 'ATTRS  : ' + repr(self.attributes) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
         r += 'FILTER : ' + repr(self.query_filter) + linesep
         if self.execution_time:
@@ -517,3 +517,21 @@ class Reader(object):
                                                                      paged_criticality=paged_criticality,
                                                                      generator=generator):
             yield self._get_entry(response)
+
+
+class Reader(Cursor):
+    entry_class = Entry  # entries are read_only
+    attribute_class = Attribute  # attributes are read_only
+
+
+class Writer(Reader):
+    entry_class = WritableEntry
+    attribute_class = WritableAttribute
+
+    def commit(self, controls):
+        for entry in self.entries:
+            entry.entry_commit(controls)
+
+    def discard(self):
+        for entry in self.entries:
+            entry.entry_discard()

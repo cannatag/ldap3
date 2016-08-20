@@ -71,14 +71,14 @@ class ObjectDef(object):
         for attribute_type in schema.object_classes[element].must_contain:
             self.add(attribute_type)
             validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
-            self._attributes[attribute_type].validate = validator  # validate expect 2 parameters but validator only 1
+            self._attributes[attribute_type].validate = validator
             self._attributes[attribute_type].mandatory = True
         for attribute_type in schema.object_classes[element].may_contain:
             if attribute_type not in self._attributes:
                 self.add(attribute_type)
                 validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
-                self._attributes[attribute_type].validate = validator  # validate expect 2 parameters but validator only 1
-
+                self._attributes[attribute_type].validate = validator
+                
     def __repr__(self):
         if self.object_class:
             r = 'OBJ: ' + str(self.object_class)

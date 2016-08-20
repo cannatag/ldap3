@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from types import GeneratorType
+from collections import Iterable
 
 # authentication
 ANONYMOUS = 'ANONYMOUS'
@@ -289,9 +290,9 @@ DO_NOT_RAISE_EXCEPTIONS = [RESULT_SUCCESS, RESULT_COMPARE_FALSE, RESULT_COMPARE_
 # types for string and sequence
 if str != bytes:  # python 3
     STRING_TYPES = (str, )
-    SEQUENCE_TYPES = (list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
+    SEQUENCE_TYPES = (set, list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
 else:  # python 2
-    SEQUENCE_TYPES = (list, tuple, GeneratorType)
+    SEQUENCE_TYPES = (set, list, tuple, GeneratorType)
     STRING_TYPES = (str, unicode)
 
 NUMERIC_TYPES = (int, float)
@@ -439,5 +440,3 @@ from .core.exceptions import LDAPAdminLimitExceededResult, LDAPAffectMultipleDSA
     LDAPReferralResult, LDAPSASLBindInProgressResult, LDAPSizeLimitExceededResult, LDAPStrongerAuthRequiredResult, \
     LDAPTimeLimitExceededResult, LDAPTooLateResult, LDAPUnavailableCriticalExtensionResult, LDAPUnavailableResult, \
     LDAPUndefinedAttributeTypeResult, LDAPUnwillingToPerformResult
-
-

@@ -41,9 +41,9 @@ class ObjectDef(object):
 
     """
     def __init__(self, object_class=None, schema=None, custom_validator=None):
-        self.__dict__['object_class'] = object_class
+        self.__dict__['_object_class'] = object_class
         self.__dict__['_attributes'] = dict()
-        self.__dict__['custom_validator'] = custom_validator
+        self.__dict__['_custom_validator'] = custom_validator
         if schema is not None:
             if isinstance(schema, Server):
                 schema = schema.schema
@@ -55,6 +55,7 @@ class ObjectDef(object):
                 raise LDAPSchemaError('unable to read schema')
             if schema is None:
                 raise LDAPSchemaError('schema not present')
+        self.__dict__['_schema'] = schema
 
         if schema:
             if not isinstance(object_class, SEQUENCE_TYPES):
@@ -64,24 +65,24 @@ class ObjectDef(object):
                 if element in schema.object_classes:
                     self._populate_attr_defs(element, schema)
 
-    def _populate_attr_defs(self, element, schema):
-        if schema.object_classes[element].superior:
-            for sup in schema.object_classes[element].superior:
+    def _populate_attr_defs(self, object_class, schema):
+        if schema.object_classes[object_class].superior:
+            for sup in schema.object_classes[object_class].superior:
                 self._populate_attr_defs(sup, schema)
-        for attribute_type in schema.object_classes[element].must_contain:
+        for attribute_type in schema.object_classes[object_class].must_contain:
             self.add(attribute_type)
-            validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+            validator = find_attribute_validator(schema, attribute_type, self._custom_validator)
             self._attributes[attribute_type].validate = validator
             self._attributes[attribute_type].mandatory = True
-        for attribute_type in schema.object_classes[element].may_contain:
+        for attribute_type in schema.object_classes[object_class].may_contain:
             if attribute_type not in self._attributes:
                 self.add(attribute_type)
-                validator = find_attribute_validator(schema, attribute_type, self.custom_validator)
+                validator = find_attribute_validator(schema, attribute_type, self._custom_validator)
                 self._attributes[attribute_type].validate = validator
-                
+
     def __repr__(self):
-        if self.object_class:
-            r = 'OBJ: ' + str(self.object_class)
+        if self._object_class:
+            r = 'OBJ: ' + str(self._object_class)
         else:
             r= 'OBJ: <none>'
         for attr in sorted(self._attributes):
@@ -149,6 +150,9 @@ class ObjectDef(object):
                 #    pass
                     # raise LDAPAttributeError('attribute \'%s\' already present' % key)
             self._attributes[definition.key] = definition
+            if not definition.validate:
+                validator = find_attribute_validator(self._schema, definition.key, self._custom_validator)
+                self._attributes[definition.key].validate = validator
             # self.__dict__[definition.key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:

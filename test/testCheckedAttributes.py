@@ -28,8 +28,6 @@ import unittest
 from ldap3 import ALL
 from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
 
-from ldap3.utils.log import log, BASIC
-
 testcase_id = random_id()
 
 

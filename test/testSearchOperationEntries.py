@@ -25,10 +25,12 @@
 
 import unittest
 
+from ldap3 import SUBTREE
 from ldap3.utils.conv import escape_bytes
+
 from test import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_int_attr
-from ldap3 import SUBTREE
+
 
 testcase_id = random_id()
 

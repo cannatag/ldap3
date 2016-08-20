@@ -28,7 +28,6 @@ import unittest
 from test import test_base, test_name_attr, get_connection, random_id, add_user, \
     drop_connection
 
-
 testcase_id = random_id()
 
 

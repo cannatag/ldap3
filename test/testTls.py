@@ -29,7 +29,8 @@ import ssl
 from ldap3 import Server, Connection, ServerPool, Tls, SASL, EXTERNAL, MOCK_ASYNC, MOCK_SYNC
 from test import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, \
     test_strategy, test_lazy_connection, test_get_info, test_server_mode, test_valid_names, \
-    test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_ca_cert_file, test_user_cert_file, test_user_key_file
+    test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_ca_cert_file, \
+    test_user_cert_file, test_user_key_file
 
 
 class Test(unittest.TestCase):

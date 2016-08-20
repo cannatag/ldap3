@@ -60,7 +60,7 @@ class Cursor(object):
         self.connection = connection
         self._definition = object_def
         self.base = base
-        self.attributes = attributes if attributes else sorted([attr.name for attr in self._definition])
+        self.attributes = sorted(attributes) if attributes else sorted([attr.name for attr in self._definition])
         self._components_in_and = components_in_and
         self.get_operational_attributes = get_operational_attributes
         self.controls = controls
@@ -104,14 +104,16 @@ class Cursor(object):
     def __repr__(self):
         r = 'CONN   : ' + str(self.connection) + linesep
         r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
-        r += 'DEFS   : ' + repr(self._definition.object_class) + ' ['
+        r += 'DEFS   : ' + repr(self._definition._object_class) + ' ['
         for attr_def in sorted(self._definition):
             r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
         r += ']' + linesep
-        r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
-        r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
+        if self._query:
+            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
+        if self.validated_query:
+            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
         r += 'ATTRS  : ' + repr(self.attributes) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
         r += 'FILTER : ' + repr(self.query_filter) + linesep
         if self.execution_time:
@@ -216,13 +218,13 @@ class Cursor(object):
 
         self.query_filter = ''
 
-        if self._definition.object_class:
+        if self._definition._object_class:
             self.query_filter += '(&'
-            if isinstance(self._definition.object_class, STRING_TYPES):
-                self.query_filter += '(objectClass=' + self._definition.object_class + ')'
-            elif isinstance(self._definition.object_class, SEQUENCE_TYPES):
+            if isinstance(self._definition._object_class, STRING_TYPES):
+                self.query_filter += '(objectClass=' + self._definition._object_class + ')'
+            elif isinstance(self._definition._object_class, SEQUENCE_TYPES):
                 self.query_filter += '(&'
-                for object_class in self._definition.object_class:
+                for object_class in self._definition._object_class:
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
@@ -230,7 +232,7 @@ class Cursor(object):
 
         if not self.components_in_and:
             self.query_filter += '(|'
-        elif not self._definition.object_class:
+        elif not self._definition._object_class:
             self.query_filter += '(&'
 
         self._validate_query()
@@ -265,8 +267,11 @@ class Cursor(object):
         else:
             self.query_filter += ')'
 
-        if not self._definition.object_class and attr_counter == 1:  # remove unneeded starting filter
+        if not self._definition._object_class and attr_counter == 1:  # remove unneeded starting filter
             self.query_filter = self.query_filter[2: -1]
+
+        if self.query_filter == '(|)' or self.query_filter == '(&)':  # remove empty filter
+            self.query_filter = ''
 
     def _get_attributes(self, response, attr_defs, entry):
         """Assign the result of the LDAP query to the Entry object dictionary.
@@ -344,8 +349,11 @@ class Cursor(object):
     def _execute_query(self, query_scope, attributes):
         if not self.connection:
             raise LDAPReaderError('no connection established')
-
-        self._create_query_filter()
+        if query_scope == BASE:  # requesting a single object so an always-valid filter is set
+            old_query_filter = self.query_filter
+            self.query_filter = '(objectclass=*)'
+        else:
+            self._create_query_filter()
         with self.connection:
             result = self.connection.search(search_base=self.base,
                                             search_filter=self.query_filter,
@@ -369,6 +377,9 @@ class Cursor(object):
 
             self.last_sub_tree = self.sub_tree
             self.execution_time = datetime.now()
+
+        if query_scope == BASE:  # requesting a single object so an always-valid filter is set
+            self.query_filter = old_query_filter
 
     def search(self, attributes=None):
         """Perform the LDAP search

@@ -198,11 +198,10 @@ class EntryBase(object):
     def entry_get_attributes_dict(self):
         return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._state.attributes.items())
 
-    # noinspection PyProtectedMember
     def entry_refresh(self):
         """Re-read the entry from the LDAP Server
         """
-        if self.entry_get_cursor():
+        if self.entry_get_cursor().connection:
             temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn())
             self._state.attributes = temp_entry._state.attributes
             self._state.raw_attributes = temp_entry._state.raw_attributes
@@ -274,9 +273,10 @@ class Entry(EntryBase):
     """
     def make_writable(self):
         from .cursor import Writer  # local import to avoid circular referecence in import at startup
-        # return a newly created WritableEntry and its relevant Writer
+        # returns a newly created WritableEntry and its relevant Writer
         writable_cursor = Writer(self.entry_get_cursor().connection, self.entry_get_cursor().definition, None, None, attributes=self.entry_get_attribute_names())
         writable_entry = writable_cursor._get_entry(self.entry_get_response())
+
         return writable_entry
 
 
@@ -290,7 +290,7 @@ class WritableEntry(EntryBase):
         else:
             raise LDAPEntryError('attribute \'%s\' not allowed' % item)
 
-    def entry_commit(self, controls=None):
+    def entry_commit(self, refresh=True, controls=None):
         changes = dict()
         for key in self._state.attributes:
             attribute = self._state.attributes[key]
@@ -299,10 +299,13 @@ class WritableEntry(EntryBase):
 
         if changes:
             if self._state.cursor.connection.modify(self.entry_get_dn(), changes, controls):
-                self.entry_refresh()
+                if refresh:
+                    self.entry_refresh()
+                return True
             else:
-                raise LDAPEntryError('unable to commit entry')
+                raise LDAPEntryError('unable to commit entry, ' + self._state.cursor.connection.result['description'])
+        return False
 
     def entry_discard(self):
-        for key in self,_state.attributes:
+        for key in self._state.attributes:
             self._state.attributes[key].discard_changes()

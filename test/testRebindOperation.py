@@ -25,7 +25,7 @@
 
 import unittest
 
-from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5
+from ldap3 import ANONYMOUS, SASL, NTLM, DIGEST_MD5
 from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, \
     test_server_type, test_ntlm_user, test_ntlm_password, test_secondary_user, test_secondary_password, \
     test_sasl_secondary_user, test_sasl_secondary_password, test_sasl_secondary_user_dn, test_sasl_user_dn

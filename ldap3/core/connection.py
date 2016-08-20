@@ -1264,7 +1264,7 @@ class Connection(object):
 
     def _get_entries(self, search_response):
         with self.lock:
-            from ..abstract import Entry, ObjectDef, Reader
+            from ..abstract import ObjectDef, Reader
 
             # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset
             attr_sets = []
@@ -1283,7 +1283,7 @@ class Connection(object):
                     unique_attr_sets.append(attr_set)
             object_defs = []
             for attr_set in unique_attr_sets:
-                object_def = ObjectDef()
+                object_def = ObjectDef(schema=self.server.schema)
                 object_def += list(attr_set)  # converts the set in a list to be added to the object definition
                 cursor = Reader(self, object_def, self.request['filter'], self.request['base'], attributes=attr_set)
                 object_defs.append((attr_set, object_def, cursor))  # objects_defs contains a tuple with the set, the ObjectDef and a cursor

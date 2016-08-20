@@ -29,7 +29,6 @@ from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
 from test import random_id, get_connection, add_user, \
     drop_connection
 
-
 testcase_id = random_id()
 
 

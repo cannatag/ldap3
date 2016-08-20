@@ -25,9 +25,9 @@
 
 import unittest
 
+from ldap3 import ALL, MODIFY_REPLACE
 from ldap3.abstract import ObjectDef, AttrDef, Reader, Writer
 from test import test_base, get_connection, drop_connection, random_id, add_user
-from ldap3 import ALL, MODIFY_REPLACE
 
 testcase_id = random_id()
 

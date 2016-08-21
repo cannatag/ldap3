@@ -1285,8 +1285,10 @@ class Connection(object):
             for attr_set in unique_attr_sets:
                 object_def = ObjectDef(schema=self.server.schema)
                 object_def += list(attr_set)  # converts the set in a list to be added to the object definition
-                cursor = Reader(self, object_def, self.request['filter'], self.request['base'], attributes=attr_set)
-                object_defs.append((attr_set, object_def, cursor))  # objects_defs contains a tuple with the set, the ObjectDef and a cursor
+                object_defs.append((attr_set,
+                                    object_def,
+                                    Reader(self, object_def, self.request['filter'], self.request['base'], attributes=attr_set))
+                                   )  # objects_defs contains a tuple with the set, the ObjectDef and a cursor
 
             entries = []
             for response in search_response:

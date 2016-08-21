@@ -50,7 +50,7 @@ class AttrDef(object):
     :type mandatory: boolean
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, mandatory=False):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, mandatory=False, single_value=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
@@ -60,6 +60,8 @@ class AttrDef(object):
         self.dereference_dn = dereference_dn
         self.description = description
         self.mandatory = mandatory
+        self.single_value = single_value
+        self.schema_definition = None
 
     def __repr__(self):
         # r = 'AttrDef(key={0.key!r}'.format(self)
@@ -75,12 +77,14 @@ class AttrDef(object):
         r = 'ATTR: ' + self.key
         r += '' if self.name == self.key else ' [' + self.name + ']'
         r += '' if self.default is NotImplemented else ' - default: ' + str(default)
-        r += '' if not self.mandatory else ' - mandatory: ' + str(self.mandatory)
+        r += '' if self.mandatory is None else ' - mandatory: ' + str(self.mandatory)
+        r += '' if self.single_value is None else ' - single_value: ' + str(self.single_value)
         r += '' if not self.dereference_dn else ' - dereference_dn: ' + str(self.dereference_dn)
-        r += '' if not self.validate else ' - validate'
-        r += '' if not self.pre_query else ' - pre_query'
-        r += '' if not self.post_query else ' - post_query'
+        # r += '' if not self.validate else ' - validate'
+        # r += '' if not self.pre_query else ' - pre_query'
+        # r += '' if not self.post_query else ' - post_query'
         r += '' if not self.description else ' - description: ' + str(self.description)
+        r += '' if not self.schema_definition else ' - SCHEMA: ' + str(self.schema_definition)
         return r
 
     def __str__(self):

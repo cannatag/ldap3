@@ -44,6 +44,8 @@ class ObjectDef(object):
         self.__dict__['_object_class'] = object_class
         self.__dict__['_attributes'] = dict()
         self.__dict__['_custom_validator'] = custom_validator
+        self.__dict__['_schema_definition'] = []
+
         if schema is not None:
             if isinstance(schema, Server):
                 schema = schema.schema
@@ -61,30 +63,30 @@ class ObjectDef(object):
             if not isinstance(object_class, SEQUENCE_TYPES):
                 object_class = [object_class]
 
-            for element in object_class:
-                if element in schema.object_classes:
-                    self._populate_attr_defs(element, schema)
+            for object_name in object_class:
+                if object_name:
+                    self._populate_attr_defs(object_name, schema)
 
-    def _populate_attr_defs(self, object_class, schema):
-        if schema.object_classes[object_class].superior:
-            for sup in schema.object_classes[object_class].superior:
-                self._populate_attr_defs(sup, schema)
-        for attribute_type in schema.object_classes[object_class].must_contain:
-            self.add(attribute_type)
-            validator = find_attribute_validator(schema, attribute_type, self._custom_validator)
-            self._attributes[attribute_type].validate = validator
-            self._attributes[attribute_type].mandatory = True
-        for attribute_type in schema.object_classes[object_class].may_contain:
-            if attribute_type not in self._attributes:
-                self.add(attribute_type)
-                validator = find_attribute_validator(schema, attribute_type, self._custom_validator)
-                self._attributes[attribute_type].validate = validator
+    def _populate_attr_defs(self, object_name, schema):
+        if object_name in schema.object_classes:
+            object_schema = schema.object_classes[object_name]
+            self.__dict__['_schema_definition'].append(str(object_name) + ' SCHEMA: ' + object_schema.raw_definition)
+            if object_schema.superior:
+                for sup in object_schema.superior:
+                    self._populate_attr_defs(sup, schema)
+            for attribute_name in object_schema.must_contain:
+                self.add_from_schema(attribute_name, schema, True)
+            for attribute_name in object_schema.may_contain:
+                if attribute_name not in self._attributes:  # the attribute could already be definied as "mandatory" in a superclass
+                    self.add_from_schema(attribute_name, schema, False)
 
     def __repr__(self):
         if self._object_class:
             r = 'OBJ: ' + str(self._object_class)
         else:
-            r= 'OBJ: <none>'
+            r = 'OBJ: <none>'
+        for definition in self._schema_definition:
+            r += linesep + '  ' + definition
         for attr in sorted(self._attributes):
             r += linesep + '    ' + self._attributes[attr].__repr__()
         return r
@@ -134,6 +136,14 @@ class ObjectDef(object):
             return False
 
         return True
+
+    def add_from_schema(self, attribute_name, schema, mandatory=False, custom_validator=None):
+        attr_def = AttrDef(attribute_name)
+        attr_def.validate = find_attribute_validator(schema, attribute_name, custom_validator if custom_validator else self._custom_validator)
+        attr_def.mandatory = mandatory  # in schema mandatory is specified in the object class, not in the attribute class
+        attr_def.single_value = schema.attribute_types[attribute_name].single_value
+        attr_def.schema_definition = schema.attribute_types[attribute_name].raw_definition
+        self.add(attr_def)
 
     def add(self, definition=None):
         """Add an AttrDef to the ObjectDef. Can be called with the += operator.

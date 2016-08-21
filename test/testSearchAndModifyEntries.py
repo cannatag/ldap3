@@ -64,3 +64,4 @@ class Test(unittest.TestCase):
         result = writable_entry.entry_commit()
         self.assertTrue(result)
         self.assertEqual(writable_entry.givenname, ['givenname-1', 'added-givenname-1'])
+

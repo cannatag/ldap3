@@ -47,18 +47,19 @@ class EntryState(object):
         self.raw_attributes = dict()
         self.response = None
         self.cursor = cursor
+        if cursor.definition:
+            self.definition = cursor.definition
+        else:
+            self.definition = None
 
     def __repr__(self):
         if self.dn is not None:
             r = 'DN: ' + to_stdout_encoding(self.dn) + linesep
-            if self.attributes:
-                for attr in sorted(self.attributes):
-                    r += ' ' * 4 + repr(self.attributes[attr]) + linesep
-            if self.raw_attributes:
-                for attr in sorted(self.raw_attributes):
-                    r += ' ' * 4 + repr(self.raw_attributes[attr]) + linesep
-            if self.cursor:
-                r += str(self.cursor)
+            r += 'attributes: ' + ', '.join(sorted(self.attributes.keys())) + linesep
+            r += 'attr defs: ' + ', '.join(sorted(self.definition._attributes.keys())) + linesep
+            r += 'response: ' + ('present' if self.response else 'None') + linesep
+            r += 'cursor: ' + (self.cursor.__class__.__name__ if self.cursor else 'None')
+
             return r
         else:
             return object.__repr__(self)

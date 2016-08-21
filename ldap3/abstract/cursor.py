@@ -158,6 +158,13 @@ class Cursor(object):
     def __len__(self):
         return len(self.entries)
 
+    if str != bytes:  # python 3
+        def __bool__(self):  # needed to make the cursor appears as existing in "if cursor:" even if there are no entries
+            return True
+    else:  # python 2
+        def __nonzero__(self):
+            return True
+
     def _validate_query(self):
         """Processes the text query and verifies that the requested friendly names are in the Reader dictionary
         If the AttrDef has a 'validate' property the callable is executed and if it returns False an Exception is raised
@@ -285,22 +292,22 @@ class Cursor(object):
         attributes = dict()
         used_attribute_names = []
         for attr_def in attr_defs:
-            name = None
+            attribute_name = None
             for attr_name in response['attributes']:
                 if attr_def.name.lower() == attr_name.lower():
-                    name = attr_name
+                    attribute_name = attr_name
                     # if isinstance(response['attributes'][name], list) and len(response['attributes'][name]) == 0:  # empty attributes returned as empty list with the return_empty_attributes of the Connection object
                     #    name = None
                     break
 
-            if name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default
+            if attribute_name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default
                 attribute = self.attribute_class(attr_def, entry, self)
                 attribute.response = response
-                attribute.raw_values = response['raw_attributes'][name] if name else None
+                attribute.raw_values = response['raw_attributes'][attribute_name] if attribute_name else None
                 if attr_def.post_query and attr_def.name in response['attributes']:
-                    attribute.values = attr_def.post_query(attr_def.key, response['attributes'][name])
+                    attribute.values = attr_def.post_query(attr_def.key, response['attributes'][attribute_name])
                 else:
-                    attribute.values = response['attributes'][name] if name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
+                    attribute.values = response['attributes'][attribute_name] if attribute_name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
                 if not isinstance(attribute.values, list):  # force attribute values to list (if attribute is single-valued)
                     attribute.values = [attribute.values]
                 if attr_def.dereference_dn:  # try to get object referenced in value
@@ -315,20 +322,20 @@ class Cursor(object):
                         attribute.values = temp_values
                 # noinspection PyUnresolvedReferences
                 attributes[attribute.key] = attribute
-                used_attribute_names.append(name)
+                used_attribute_names.append(attribute_name)
 
         try:  # temporary fix
             if self.attributes:
                 used_attribute_names.extend(self.attributes)
         except AttributeError:
             pass
-        for name in response['attributes']:
-            if name not in used_attribute_names:
-                attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name, entry)
-                attribute.raw_values = response['raw_attributes'][name]
-                attribute.values = response['attributes'][name]
-                if (get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name) not in attributes:
-                    attributes[get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + name] = attribute
+        for attribute_name in response['attributes']:
+            if attribute_name not in used_attribute_names:
+                attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name, entry)
+                attribute.raw_values = response['raw_attributes'][attribute_name]
+                attribute.values = response['attributes'][attribute_name]
+                if (get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name) not in attributes:
+                    attributes[get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name] = attribute
 
         return attributes
 

@@ -324,11 +324,9 @@ class Cursor(object):
                 attributes[attribute.key] = attribute
                 used_attribute_names.append(attribute_name)
 
-        try:  # temporary fix
-            if self.attributes:
-                used_attribute_names.extend(self.attributes)
-        except AttributeError:
-            pass
+        if self.attributes:
+            used_attribute_names.extend(self.attributes)
+
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
                 attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name, entry)
@@ -343,7 +341,7 @@ class Cursor(object):
         if not response['type'] == 'searchResEntry':
             return None
 
-        entry = self.entry_class(response['dn'], self)  # define an Entry writable or readonly, as specified in the cursor definition
+        entry = self.entry_class(response['dn'], self)  # define an Entry (writable or readonly), as specified in the cursor definition
         entry._state.attributes = self._get_attributes(response, self._definition, entry)
         entry._state.raw_attributes = response['raw_attributes']
         entry._state.response = response

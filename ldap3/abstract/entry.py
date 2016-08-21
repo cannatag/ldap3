@@ -44,7 +44,7 @@ class EntryState(object):
     def __init__(self, dn, cursor):
         self.dn = dn
         self.attributes = CaseInsensitiveDict()
-        self.raw_attributes = dict()
+        self.raw_attributes = CaseInsensitiveDict()
         self.response = None
         self.cursor = cursor
         if cursor.definition:

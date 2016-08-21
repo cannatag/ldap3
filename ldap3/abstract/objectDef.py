@@ -30,7 +30,7 @@ from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError,
 from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo
 from ..protocol.formatters.standard import find_attribute_validator
-
+from ..utils.ciDict import CaseInsensitiveDict
 
 class ObjectDef(object):
     """Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.
@@ -42,7 +42,7 @@ class ObjectDef(object):
     """
     def __init__(self, object_class=None, schema=None, custom_validator=None):
         self.__dict__['_object_class'] = object_class
-        self.__dict__['_attributes'] = dict()
+        self.__dict__['_attributes'] = CaseInsensitiveDict()
         self.__dict__['_custom_validator'] = custom_validator
         self.__dict__['_schema_definition'] = []
 
@@ -59,26 +59,26 @@ class ObjectDef(object):
                 raise LDAPSchemaError('schema not present')
         self.__dict__['_schema'] = schema
 
-        if schema:
+        if self._schema:
             if not isinstance(object_class, SEQUENCE_TYPES):
                 object_class = [object_class]
 
             for object_name in object_class:
                 if object_name:
-                    self._populate_attr_defs(object_name, schema)
+                    self._populate_attr_defs(object_name)
 
-    def _populate_attr_defs(self, object_name, schema):
-        if object_name in schema.object_classes:
-            object_schema = schema.object_classes[object_name]
+    def _populate_attr_defs(self, object_name):
+        if object_name in self._schema.object_classes:
+            object_schema = self._schema.object_classes[object_name]
             self.__dict__['_schema_definition'].append(str(object_name) + ' SCHEMA: ' + object_schema.raw_definition)
             if object_schema.superior:
                 for sup in object_schema.superior:
-                    self._populate_attr_defs(sup, schema)
+                    self._populate_attr_defs(sup)
             for attribute_name in object_schema.must_contain:
-                self.add_from_schema(attribute_name, schema, True)
+                self.add_from_schema(attribute_name, True)
             for attribute_name in object_schema.may_contain:
                 if attribute_name not in self._attributes:  # the attribute could already be definied as "mandatory" in a superclass
-                    self.add_from_schema(attribute_name, schema, False)
+                    self.add_from_schema(attribute_name, False)
 
     def __repr__(self):
         if self._object_class:
@@ -137,12 +137,14 @@ class ObjectDef(object):
 
         return True
 
-    def add_from_schema(self, attribute_name, schema, mandatory=False, custom_validator=None):
+    def add_from_schema(self, attribute_name, mandatory=False):
         attr_def = AttrDef(attribute_name)
-        attr_def.validate = find_attribute_validator(schema, attribute_name, custom_validator if custom_validator else self._custom_validator)
+        attr_def.validate = find_attribute_validator(self._schema, attribute_name, self._custom_validator)
         attr_def.mandatory = mandatory  # in schema mandatory is specified in the object class, not in the attribute class
-        attr_def.single_value = schema.attribute_types[attribute_name].single_value
-        attr_def.schema_definition = schema.attribute_types[attribute_name].raw_definition
+        if self._schema:
+            if attribute_name in self._schema.attribute_types:
+                attr_def.single_value = self._schema.attribute_types[attribute_name].single_value
+                attr_def.schema_definition = self._schema.attribute_types[attribute_name].raw_definition
         self.add(attr_def)
 
     def add(self, definition=None):
@@ -152,18 +154,12 @@ class ObjectDef(object):
         """
 
         if isinstance(definition, STRING_TYPES):
-            element = AttrDef(definition)
-            self.add(element)
+            self.add_from_schema(definition)
         elif isinstance(definition, AttrDef):
-            # for attr in self._attributes:
-                # if key.lower() == attr.lower():
-                #    pass
-                    # raise LDAPAttributeError('attribute \'%s\' already present' % key)
             self._attributes[definition.key] = definition
             if not definition.validate:
                 validator = find_attribute_validator(self._schema, definition.key, self._custom_validator)
                 self._attributes[definition.key].validate = validator
-            # self.__dict__[definition.key] = definition
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
                 self.add(element)

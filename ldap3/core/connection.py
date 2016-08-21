@@ -1295,7 +1295,7 @@ class Connection(object):
                 if response['type'] == 'searchResEntry':
                     resp_attr_set = set(response['attributes'].keys())
                     for object_def in object_defs:
-                        if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
+                        if resp_attr_set <= object_def[0]:  # finds the objectdef for the attribute set of this entry
                             entry = object_def[2]._get_entry(response)
                             entries.append(entry)
                             break

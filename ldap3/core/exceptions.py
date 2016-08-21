@@ -381,9 +381,16 @@ class LDAPTypeError(LDAPExceptionError, TypeError):
     pass
 
 
-class LDAPReaderError(LDAPExceptionError):
+class LDAPCursorError(LDAPExceptionError):
     pass
 
+
+class LDAPReaderError(LDAPCursorError):
+    pass
+
+
+class LDAPWriterError(LDAPCursorError):
+    pass
 
 # security exceptions
 class LDAPSSLNotSupportedError(LDAPExceptionError, ImportError):

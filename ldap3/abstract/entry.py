@@ -25,11 +25,12 @@
 
 from os import linesep
 import json
-from .. import STRING_TYPES
+
+from .. import STRING_TYPES, SEQUENCE_TYPES
 
 from .attribute import WritableAttribute
-
-from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError
+from .objectDef import ObjectDef
+from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError, LDAPReaderError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
@@ -175,6 +176,13 @@ class EntryBase(object):
         """
         return self._state.cursor
 
+    def entry_get_definition(self):
+        """
+
+        :return: the definition  of the Entry
+        """
+        return self._state.definition
+
     def entry_get_reader(self):  # for compatability with versions < 1.4.1
         return self.entry_get_cursor()
 
@@ -200,7 +208,9 @@ class EntryBase(object):
         return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._state.attributes.items())
 
     def entry_refresh(self):
-        """Re-read the entry from the LDAP Server
+        """
+
+        Read the entry from the LDAP Server
         """
         if self.entry_get_cursor().connection:
             temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn())
@@ -272,10 +282,13 @@ class Entry(EntryBase):
       get_raw_attribute() methods
 
     """
-    def make_writable(self):
+    def make_writable(self, object_class, custom_validator=None):
+        if not self.entry_get_cursor().schema:
+            raise LDAPReaderError('The schema must be available to make an entry writable')
         from .cursor import Writer  # local import to avoid circular referecence in import at startup
         # returns a newly created WritableEntry and its relevant Writer
-        writable_cursor = Writer(self.entry_get_cursor().connection, self.entry_get_cursor().definition, None, None, attributes=self.entry_get_attribute_names())
+        object_def = ObjectDef(object_class, self.entry_get_cursor().schema, custom_validator)
+        writable_cursor = Writer(self.entry_get_cursor().connection, object_def, None, None, attributes=self.entry_get_attribute_names())
         writable_entry = writable_cursor._get_entry(self.entry_get_response())
 
         return writable_entry
@@ -290,6 +303,22 @@ class WritableEntry(EntryBase):
             self._state.attributes[item].set_value(value)  # try to add to new_values
         else:
             raise LDAPEntryError('attribute \'%s\' not allowed' % item)
+
+    def __getattr__(self, item):
+        if isinstance(item, STRING_TYPES):
+            if item == '_state':
+                return self.__dict__['_state']
+            item = ''.join(item.split()).lower()
+            for attr in self._state.attributes.keys():
+                if item == attr.lower():
+                    break
+            else:
+                if item in self._state.definition._attributes:  # item is a new attribute to commit, creates the AttrDef and add to the attributes to retrive
+                    self._state.attributes[attr] = WritableAttribute(self._state.definition._attributes[item], self, self.entry_get_cursor())
+                    self.entry_get_cursor().attributes.add(item)
+            return self._state.attributes[attr]
+
+        raise LDAPAttributeError('attribute name must be a string')
 
     def entry_commit(self, refresh=True, controls=None):
         changes = dict()

@@ -27,10 +27,16 @@ import unittest
 
 from ldap3.abstract import ObjectDef, AttrDef, Reader
 from ldap3.abstract.cursor import _create_query_dict
-from test import test_base
+from test import test_base, get_connection, drop_connection
 
 
 class Test(unittest.TestCase):
+    def setUp(self):
+        self.connection = get_connection(check_names=True)
+
+    def tearDown(self):
+        drop_connection(self.connection)
+
     def test_create_query_dict(self):
         query_text = 'Common Name:=|john;Bob, Surname:=smith'
         query_dict = _create_query_dict(query_text)
@@ -45,7 +51,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, query_text, base=test_base)
 
         r._validate_query()
 
@@ -58,7 +64,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, query_text, base=test_base)
 
         r._create_query_filter()
 
@@ -69,7 +75,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = 'Common Name:John'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, query_text, base=test_base)
 
         r._create_query_filter()
 
@@ -80,7 +86,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = '|Common Name:=john;=Bob'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, query_text, base=test_base)
 
         r._create_query_filter()
 
@@ -93,7 +99,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, query_text, base=test_base)
 
         r._create_query_filter()
 

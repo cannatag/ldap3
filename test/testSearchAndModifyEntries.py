@@ -59,9 +59,24 @@ class Test(unittest.TestCase):
             entries = self.connection.entries
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(entries), 1)
-        writable_entry = entries[0].make_writable()
+        writable_entry = entries[0].make_writable('inetorgperson')
         writable_entry.givenname.add_value('added-givenname-1')
         result = writable_entry.entry_commit()
         self.assertTrue(result)
         self.assertEqual(writable_entry.givenname, ['givenname-1', 'added-givenname-1'])
 
+    def test_search_and_add_value_to_single_valued(self):
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-and-modify-1)', attributes=[test_name_attr, 'givenName'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+            entries = self.connection._get_entries(response)
+        else:
+            result = self.connection.result
+            entries = self.connection.entries
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(entries), 1)
+        writable_entry = entries[0].make_writable('inetorgperson')
+        writable_entry.preferredDeliveryMethod.add_value('any')  # single valued in organizationalPerson, defined in rfc4519
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertEqual(writable_entry.preferredDeliveryMethod, 'any')

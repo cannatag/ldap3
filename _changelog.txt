@@ -4,6 +4,7 @@
     - Updated copyright notice
     - Refactored abstraction layer
     - Added WritableEntry and WritableAttribute to abstraction layer
+    . Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
     - Added custom validators for attribute values
     - Added update capability to abstraction layer
     - Fixed typo in docs (thanks Gerardwx)
@@ -13,6 +14,9 @@
     - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
     - Added 'set' to SEQUENCE_TYPES (thanks Christian)
     - Entries returned by search can be writable via the abstraction layer
+    - Added LDAPCursorError exception
+    - Added LDAPWriterError exception, inherits from LDAPCursorError
+    - LDAPReaderError exception now inherits from LDAPCursorError
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

@@ -32,6 +32,7 @@ from ..protocol.rfc4512 import SchemaInfo
 from ..protocol.formatters.standard import find_attribute_validator
 from ..utils.ciDict import CaseInsensitiveDict
 
+
 class ObjectDef(object):
     """Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.
 
@@ -149,7 +150,7 @@ class ObjectDef(object):
 
     def add(self, definition=None):
         """Add an AttrDef to the ObjectDef. Can be called with the += operator.
-        :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add
+        :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add. Can be a list of both
 
         """
 

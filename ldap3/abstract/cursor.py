@@ -29,7 +29,7 @@ from os import linesep
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, STRING_TYPES, SEQUENCE_TYPES, get_config_parameter
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .entry import Entry, WritableEntry
-from ..core.exceptions import LDAPReaderError
+from ..core.exceptions import LDAPReaderError, LDAPWriterError
 
 
 def _ret_search_value(value):
@@ -53,14 +53,16 @@ def _create_query_dict(query_text):
 
 class Cursor(object):
     # entry_class and attribute_class define the type of entry and attribute used by the cursor
-    # entry_class = Entry
-    # attribute_class = Attribute
+    # cursor_exception defines the exception to raise when there is a Cursor error
+    # entry_class = Entry, must be defined in subclasses
+    # attribute_class = Attribute, must be defined in subclasses
+    # cursor_exception = LDAPReaderError, must be defined in subclasses
 
     def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
         self._definition = object_def
         self.base = base
-        self.attributes = sorted(attributes) if attributes else sorted([attr.name for attr in self._definition])
+        self.attributes = set(attributes) if attributes else set([attr.name for attr in self._definition])
         self._components_in_and = components_in_and
         self.get_operational_attributes = get_operational_attributes
         self.controls = controls
@@ -77,6 +79,7 @@ class Cursor(object):
         self.query_filter = None
         self.entries = []
         self.last_sub_tree = None
+        self.schema = self.connection.server.schema
         self.reset()
 
     @property
@@ -114,11 +117,11 @@ class Cursor(object):
             r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
         if self.validated_query:
             r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
-        r += 'ATTRS  : ' + repr(self.attributes) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
+        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
         r += 'FILTER : ' + repr(self.query_filter) + linesep
         if self.execution_time:
             r += 'ENTRIES: ' + str(len(self.entries))
-            r += ' [SUB]' if self.last_sub_tree else ' [level]'
+            r += ' [SUB]' if self.last_sub_tree else ' [LEVEL]'
             r += ' [SIZE LIMIT: ' + str(self.size_limit) + ']' if self.size_limit else ''
             r += ' [TIME LIMIT: ' + str(self.time_limit) + ']' if self.time_limit else ''
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
@@ -203,7 +206,7 @@ class Cursor(object):
 
                     if self._definition[attr].validate:
                         if not self._definition[attr].validate(self._definition[attr].key, value):
-                            raise LDAPReaderError('validation failed for attribute %s and value %s' % (d, val))
+                            raise cursor_exception('validation failed for attribute %s and value %s' % (d, val))
 
                     if val_not:
                         query += '!' + val_search_operator + value
@@ -213,7 +216,7 @@ class Cursor(object):
                     query += ';'
                 query = query[:-1] + ', '
             else:
-                raise LDAPReaderError('attribute \'%s\' not in definition' % attr)
+                raise cursor_exception('attribute \'%s\' not in definition' % attr)
         self.validated_query = query[:-2]
         self._validated_query_dict = _create_query_dict(self.validated_query)
 
@@ -235,7 +238,7 @@ class Cursor(object):
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
-                raise LDAPReaderError('object_class must be a string or a list')
+                raise cursor_exception('object_class must be a string or a list')
 
         if not self.components_in_and:
             self.query_filter += '(|'
@@ -290,7 +293,7 @@ class Cursor(object):
 
         """
         attributes = dict()
-        used_attribute_names = []
+        used_attribute_names = set()
         for attr_def in attr_defs:
             attribute_name = None
             for attr_name in response['attributes']:
@@ -322,10 +325,10 @@ class Cursor(object):
                         attribute.values = temp_values
                 # noinspection PyUnresolvedReferences
                 attributes[attribute.key] = attribute
-                used_attribute_names.append(attribute_name)
+                used_attribute_names.add(attribute_name)
 
         if self.attributes:
-            used_attribute_names.extend(self.attributes)
+            used_attribute_names.update(self.attributes)
 
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
@@ -353,7 +356,7 @@ class Cursor(object):
 
     def _execute_query(self, query_scope, attributes):
         if not self.connection:
-            raise LDAPReaderError('no connection established')
+            raise cursor_exception('no connection established')
         if query_scope == BASE:  # requesting a single object so an always-valid filter is set
             old_query_filter = self.query_filter
             self.query_filter = '(objectclass=*)'
@@ -493,7 +496,7 @@ class Cursor(object):
 
         """
         if not self.connection:
-            raise LDAPReaderError('no connection established')
+            raise cursor_exception('no connection established')
 
         self.clear()
         self._create_query_filter()
@@ -539,11 +542,12 @@ class Reader(Cursor):
     """
     entry_class = Entry  # entries are read_only
     attribute_class = Attribute  # attributes are read_only
-
+    cursor_exception = LDAPReaderError  # exception to raise from Cursor
 
 class Writer(Cursor):
     entry_class = WritableEntry
     attribute_class = WritableAttribute
+    cursor_exception = LDAPWriterError  # exception to raise from Cursor
 
     def commit(self, controls):
         for entry in self.entries:

@@ -26,7 +26,7 @@
 from os import linesep
 
 from .attrDef import AttrDef
-from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPTypeError, LDAPSchemaError
+from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPTypeError, LDAPSchemaError
 from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo
 from ..protocol.formatters.standard import find_attribute_validator
@@ -45,7 +45,7 @@ class ObjectDef(object):
         self.__dict__['_object_class'] = object_class
         self.__dict__['_attributes'] = CaseInsensitiveDict()
         self.__dict__['_custom_validator'] = custom_validator
-        self.__dict__['_schema_definition'] = []
+        self.__dict__['_oid_info'] = []
 
         if schema is not None:
             if isinstance(schema, Server):
@@ -71,7 +71,8 @@ class ObjectDef(object):
     def _populate_attr_defs(self, object_name):
         if object_name in self._schema.object_classes:
             object_schema = self._schema.object_classes[object_name]
-            self.__dict__['_schema_definition'].append(str(object_name) + ' SCHEMA: ' + object_schema.raw_definition)
+            self.__dict__['_oid_info'].append(object_name + ' OID: ' + str(object_schema))
+
             if object_schema.superior:
                 for sup in object_schema.superior:
                     self._populate_attr_defs(sup)
@@ -86,10 +87,12 @@ class ObjectDef(object):
             r = 'OBJ: ' + str(self._object_class)
         else:
             r = 'OBJ: <none>'
-        for definition in self._schema_definition:
-            r += linesep + '  ' + definition
+        for oid in self._oid_info:
+            for line in oid.split(linesep):
+                r += linesep + '  ' + line
         for attr in sorted(self._attributes):
-            r += linesep + '    ' + self._attributes[attr].__repr__()
+            for line in str(self._attributes[attr]).split(linesep):
+                r += linesep + '  ' + line
         return r
 
     def __str__(self):
@@ -130,6 +133,13 @@ class ObjectDef(object):
     def __len__(self):
         return len(self._attributes)
 
+    if str != bytes:  # python 3
+        def __bool__(self):  # needed to make the objectDef appears as existing in "if cursor:" even if there are no entries
+            return True
+    else:  # python 2
+        def __nonzero__(self):
+            return True
+
     def __contains__(self, item):
         try:
             self.__getitem__(item)
@@ -145,7 +155,7 @@ class ObjectDef(object):
         if self._schema:
             if attribute_name in self._schema.attribute_types:
                 attr_def.single_value = self._schema.attribute_types[attribute_name].single_value
-                attr_def.schema_definition = self._schema.attribute_types[attribute_name].raw_definition
+                attr_def.oid_info = self._schema.attribute_types[attribute_name]
         self.add(attr_def)
 
     def add(self, definition=None):

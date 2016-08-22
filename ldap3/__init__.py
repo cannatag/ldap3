@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from types import GeneratorType
-from collections import Iterable
 
 # authentication
 ANONYMOUS = 'ANONYMOUS'

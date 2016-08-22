@@ -311,14 +311,14 @@ class WritableEntry(EntryBase):
             item = ''.join(item.split()).lower()
             for attr in self._state.attributes.keys():
                 if item == attr.lower():
-                    break
-            else:
-                if item in self._state.definition._attributes:  # item is a new attribute to commit, creates the AttrDef and add to the attributes to retrive
-                    self._state.attributes[attr] = WritableAttribute(self._state.definition._attributes[item], self, self.entry_get_cursor())
-                    self.entry_get_cursor().attributes.add(item)
-            return self._state.attributes[attr]
-
-        raise LDAPAttributeError('attribute name must be a string')
+                    return self._state.attributes[attr]
+            if item in self._state.definition._attributes:  # item is a new attribute to commit, creates the AttrDef and add to the attributes to retrive
+                self._state.attributes[attr] = WritableAttribute(self._state.definition._attributes[item], self, self.entry_get_cursor())
+                self.entry_get_cursor().attributes.add(item)
+                return self._state.attributes[attr]
+            raise LDAPAttributeError('attribute not present')
+        else:
+            raise LDAPAttributeError('attribute must be a string')
 
     def entry_commit(self, refresh=True, controls=None):
         changes = dict()

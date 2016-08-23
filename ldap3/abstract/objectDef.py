@@ -81,6 +81,8 @@ class ObjectDef(object):
             for attribute_name in object_schema.may_contain:
                 if attribute_name not in self._attributes:  # the attribute could already be definied as "mandatory" in a superclass
                     self.add_from_schema(attribute_name, False)
+        else:
+            raise LDAPObjectError('object class \'%s\' not defined in schema' % object_name)
 
     def __repr__(self):
         if self._object_class:

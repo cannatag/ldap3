@@ -30,7 +30,7 @@ from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, STRING_TYPES, SEQUENCE_TYPES,
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPReaderError, LDAPWriterError
-
+from ..utils.ciDict import CaseInsensitiveDict
 
 def _ret_search_value(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -292,7 +292,7 @@ class Cursor(object):
         If the 'dereference_dn' in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value.
 
         """
-        attributes = dict()
+        attributes = CaseInsensitiveDict()
         used_attribute_names = set()
         for attr_def in attr_defs:
             attribute_name = None

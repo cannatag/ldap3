@@ -128,9 +128,22 @@ class WritableAttribute(Attribute):
     #     raise LDAPAttributeError('attribute \'%s\' is read only, use add_value(), set_value() or delete_value()' % item)
 
     def __init__(self, attr_def, entry, cursor):
-        print('writable attribute init', attr_def.name, entry)
         Attribute.__init__(self, attr_def, entry, cursor)
         self.changes  = []
+
+    def __repr__(self):
+        filler = ' ' * (len(self.key) + 6)
+        if len(self.values) == 1:
+            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+        elif len(self.values) > 1:
+            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            for value in self.values[1:]:
+                r += linesep + filler + to_stdout_encoding(value)
+        else:
+            r = self.key + ': ' + to_stdout_encoding('<None>')
+
+        r += linesep + filler + 'CHANGES: ' + (str(self.changes) if self.changes else ' <None>')
+        return r
 
     def __iadd__(self, other):
         self.add_value(other)

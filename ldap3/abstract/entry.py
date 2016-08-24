@@ -85,8 +85,6 @@ class EntryBase(object):
     """
 
     def __init__(self, dn, cursor):
-        print('entrybase init', dn)
-
         self.__dict__['_state'] = EntryState(dn, cursor)
 
     def __repr__(self):
@@ -115,7 +113,6 @@ class EntryBase(object):
             return False
 
     def __getattr__(self, item):
-        print('entry getattr', item, type(item))
         if isinstance(item, STRING_TYPES):
             if item == '_state':
                 return self.__dict__['_state']
@@ -218,10 +215,11 @@ class EntryBase(object):
         """
         if self.entry_get_cursor().connection:
             temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn())
+            self.__dict__.clear()
             self._state = temp_entry._state
             for attr in self:  # returns the whole attribute object
                 attr_name = attr.key
-                entry.__dict__[attr_name] = attr
+                self.__dict__[attr_name] = attr
 
     def entry_refresh_from_reader(self):  # for compatability before 1.4.1
         self.entry_refresh()
@@ -296,7 +294,7 @@ class Entry(EntryBase):
         for attribute in self.entry_get_attribute_names():
             if attribute not in object_def._attributes:
                 raise LDAPWriterError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
-        writable_cursor = Writer(self.entry_get_cursor().connection, object_def, None, None, attributes=self.entry_get_attribute_names())
+        writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names())
         writable_entry = writable_cursor._get_entry(self.entry_get_response())
         return writable_entry
 
@@ -314,7 +312,7 @@ class WritableEntry(EntryBase):
                     self._state.attributes[str(item)] = new_attribute  # force item to a string for key in attributes dict
                 self._state.attributes[item].set_value(value)  # try to add to new_values
             else:
-                raise LDAPEntryError('attribute \'%s\' not allowed' % item)
+                raise LDAPEntryError('attribute \'%s\' not defined' % item)
 
     def __getattr__(self, item):
         if isinstance(item, STRING_TYPES):

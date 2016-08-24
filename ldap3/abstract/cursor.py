@@ -26,11 +26,12 @@
 from datetime import datetime
 from os import linesep
 
-from .. import SUBTREE, LEVEL, DEREF_ALWAYS, BASE, STRING_TYPES, SEQUENCE_TYPES, get_config_parameter
+from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, get_config_parameter
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPReaderError, LDAPWriterError
 from ..utils.ciDict import CaseInsensitiveDict
+
 
 def _ret_search_value(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -58,99 +59,22 @@ class Cursor(object):
     # attribute_class = Attribute, must be defined in subclasses
     # cursor_exception = LDAPReaderError, must be defined in subclasses
 
-    def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
+    def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
         self._definition = object_def
-        self.base = base
         self.attributes = set(attributes) if attributes else set([attr.name for attr in self._definition])
-        self._components_in_and = components_in_and
         self.get_operational_attributes = get_operational_attributes
         self.controls = controls
-        self.sub_tree = sub_tree
-        self._query = query
-        self.dereference_aliases = DEREF_ALWAYS
-        self.size_limit = 0
-        self.time_limit = 0
-        self.types_only = False
-        self.validated_query = None
-        self._query_dict = dict()
-        self._validated_query_dict = dict()
         self.execution_time = None
-        self.query_filter = None
         self.entries = []
-        self.last_sub_tree = None
         self.schema = self.connection.server.schema
-        self.reset()
 
     @property
     def definition(self):
         return self._definition
 
-    @property
-    def query(self):
-        return self._query
-
-    @query.setter
-    def query(self, value):
-        self._query = value
-        self.reset()
-
-    @property
-    def components_in_and(self):
-        return self._components_in_and
-
-    @components_in_and.setter
-    def components_in_and(self, value):
-        self._components_in_and = value
-        self.reset()
-
-    def __repr__(self):
-        r = 'CONN   : ' + str(self.connection) + linesep
-        r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
-        r += 'DEFS   : ' + repr(self._definition._object_class) + ' ['
-        for attr_def in sorted(self._definition):
-            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
-        if r[-2] == ',':
-            r = r[:-2]
-        r += ']' + linesep
-        if self._query:
-            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
-        if self.validated_query:
-            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
-        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
-        r += 'FILTER : ' + repr(self.query_filter) + linesep
-        if self.execution_time:
-            r += 'ENTRIES: ' + str(len(self.entries))
-            r += ' [SUB]' if self.last_sub_tree else ' [LEVEL]'
-            r += ' [SIZE LIMIT: ' + str(self.size_limit) + ']' if self.size_limit else ''
-            r += ' [TIME LIMIT: ' + str(self.time_limit) + ']' if self.time_limit else ''
-            r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
-        return r
-
     def __str__(self):
         return self.__repr__()
-
-    def clear(self):
-        """Clear the Reader search parameters
-
-        """
-        self.dereference_aliases = DEREF_ALWAYS
-        self.size_limit = 0
-        self.time_limit = 0
-        self.types_only = False
-
-    def reset(self):
-        """Clear all the Reader parameters
-        """
-        self.clear()
-        self.validated_query = None
-        self._query_dict = dict()
-        self._validated_query_dict = dict()
-        self.execution_time = None
-        self.query_filter = None
-        self.entries = []
-        self.last_sub_tree = None
-        self._create_query_filter()
 
     def __iter__(self):
         return self.entries.__iter__()
@@ -167,121 +91,6 @@ class Cursor(object):
     else:  # python 2
         def __nonzero__(self):
             return True
-
-    def _validate_query(self):
-        """Processes the text query and verifies that the requested friendly names are in the Reader dictionary
-        If the AttrDef has a 'validate' property the callable is executed and if it returns False an Exception is raised
-
-        """
-        if not self._query_dict:
-            self._query_dict = _create_query_dict(self._query)
-
-        query = ''
-        for d in sorted(self._query_dict):
-            attr = d[1:] if d[0] in '&|' else d
-            for attr_def in self._definition:
-                if ''.join(attr.split()).lower() == attr_def.key.lower():
-                    attr = attr_def.key
-                    break
-            if attr in self._definition:
-                vals = sorted(self._query_dict[d].split(';'))
-
-                query += (d[0] + attr if d[0] in '&|' else attr) + ': '
-                for val in vals:
-                    val = val.strip()
-                    val_not = True if val[0] == '!' else False
-                    val_search_operator = '='  # default
-                    if val_not:
-                        if val[1:].lstrip()[0] not in '=<>~':
-                            value = val[1:].lstrip()
-                        else:
-                            val_search_operator = val[1:].lstrip()[0]
-                            value = val[1:].lstrip()[1:]
-                    else:
-                        if val[0] not in '=<>~':
-                            value = val.lstrip()
-                        else:
-                            val_search_operator = val[0]
-                            value = val[1:].lstrip()
-
-                    if self._definition[attr].validate:
-                        if not self._definition[attr].validate(self._definition[attr].key, value):
-                            raise cursor_exception('validation failed for attribute %s and value %s' % (d, val))
-
-                    if val_not:
-                        query += '!' + val_search_operator + value
-                    else:
-                        query += val_search_operator + value
-
-                    query += ';'
-                query = query[:-1] + ', '
-            else:
-                raise cursor_exception('attribute \'%s\' not in definition' % attr)
-        self.validated_query = query[:-2]
-        self._validated_query_dict = _create_query_dict(self.validated_query)
-
-    def _create_query_filter(self):
-        """Converts the query dictionary to the filter text"""
-        if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
-            self.query_filter = self._query
-            return
-
-        self.query_filter = ''
-
-        if self._definition._object_class:
-            self.query_filter += '(&'
-            if isinstance(self._definition._object_class, STRING_TYPES):
-                self.query_filter += '(objectClass=' + self._definition._object_class + ')'
-            elif isinstance(self._definition._object_class, SEQUENCE_TYPES):
-                self.query_filter += '(&'
-                for object_class in self._definition._object_class:
-                    self.query_filter += '(objectClass=' + object_class + ')'
-                self.query_filter += ')'
-            else:
-                raise cursor_exception('object_class must be a string or a list')
-
-        if not self.components_in_and:
-            self.query_filter += '(|'
-        elif not self._definition._object_class:
-            self.query_filter += '(&'
-
-        self._validate_query()
-
-        attr_counter = 0
-        for attr in sorted(self._validated_query_dict):
-            attr_counter += 1
-            multi = True if ';' in self._validated_query_dict[attr] else False
-            vals = sorted(self._validated_query_dict[attr].split(';'))
-            attr_def = self._definition[attr[1:]] if attr[0] in '&|' else self._definition[attr]
-            if attr_def.pre_query:
-                modvals = []
-                for val in vals:
-                    modvals.append(val[0] + attr_def.pre_query(attr_def.key, val[1:]))
-                vals = modvals
-            if multi:
-                if attr[0] in '&|':
-                    self.query_filter += '(' + attr[0]
-                else:
-                    self.query_filter += '(|'
-
-            for val in vals:
-                if val[0] == '!':
-                    self.query_filter += '(!(' + attr_def.name + _ret_search_value(val[1:]) + '))'
-                else:
-                    self.query_filter += '(' + attr_def.name + _ret_search_value(val) + ')'
-            if multi:
-                self.query_filter += ')'
-
-        if not self.components_in_and:
-            self.query_filter += '))'
-        else:
-            self.query_filter += ')'
-
-        if not self._definition._object_class and attr_counter == 1:  # remove unneeded starting filter
-            self.query_filter = self.query_filter[2: -1]
-
-        if self.query_filter == '(|)' or self.query_filter == '(&)':  # remove empty filter
-            self.query_filter = ''
 
     def _get_attributes(self, response, attr_defs, entry):
         """Assign the result of the LDAP query to the Entry object dictionary.
@@ -357,8 +166,10 @@ class Cursor(object):
     def _execute_query(self, query_scope, attributes):
         if not self.connection:
             raise cursor_exception('no connection established')
+        old_query_filter=None
         if query_scope == BASE:  # requesting a single object so an always-valid filter is set
-            old_query_filter = self.query_filter
+            if hasattr(self, 'query_filter'):  # only Reader has a query filter
+                old_query_filter = self.query_filter
             self.query_filter = '(objectclass=*)'
         else:
             self._create_query_filter()
@@ -386,8 +197,229 @@ class Cursor(object):
             self.last_sub_tree = self.sub_tree
             self.execution_time = datetime.now()
 
-        if query_scope == BASE:  # requesting a single object so an always-valid filter is set
+        if old_query_filter:  # requesting a single object so an always-valid filter is set
             self.query_filter = old_query_filter
+
+
+class Reader(Cursor):
+    """Reader object to perform searches:
+
+    :param connection: the LDAP connection object to use
+    :type connection: LDAPConnection
+    :param object_def: the ObjectDef of the LDAP object returned
+    :type object_def: ObjectDef
+    :param query: the simplified query (will be transformed in an LDAP filter)
+    :type query: str
+    :param base: starting base of the search
+    :type base: str
+    :param components_in_and: specify if assertions in the query mus be all satisfied or not (AND/OR)
+    :type components_in_and: bool
+    :param sub_tree: specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
+    :type sub_tree: bool
+    :param get_operational_attributes: specify if operational attributes are returned or not
+    :type get_operational_attributes: bool
+    :param controls: controls to be used in search
+    :type controls: tuple
+
+    """
+    entry_class = Entry  # entries are read_only
+    attribute_class = Attribute  # attributes are read_only
+    cursor_exception = LDAPReaderError  # exception to raise from Cursor
+
+    def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
+        Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
+        self._components_in_and = components_in_and
+        self.sub_tree = sub_tree
+        self._query = query
+        self.base = base
+        self.dereference_aliases = DEREF_ALWAYS
+        self.size_limit = 0
+        self.time_limit = 0
+        self.types_only = False
+        self.validated_query = None
+        self._query_dict = dict()
+        self._validated_query_dict = dict()
+        self.query_filter = None
+        self.last_sub_tree = None
+        self.reset()
+
+    @property
+    def query(self):
+        return self._query
+
+    @query.setter
+    def query(self, value):
+        self._query = value
+        self.reset()
+
+    @property
+    def components_in_and(self):
+        return self._components_in_and
+
+    @components_in_and.setter
+    def components_in_and(self, value):
+        self._components_in_and = value
+        self.reset()
+
+    def __repr__(self):
+        r = 'CONN   : ' + str(self.connection) + linesep
+        r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
+        r += 'DEFS   : ' + repr(self._definition._object_class) + ' ['
+        for attr_def in sorted(self._definition):
+            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
+        if r[-2] == ',':
+            r = r[:-2]
+        r += ']' + linesep
+        if self._query:
+            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
+        if self.validated_query:
+            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
+        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
+        r += 'FILTER : ' + repr(self.query_filter) + linesep
+        if self.execution_time:
+            r += 'ENTRIES: ' + str(len(self.entries))
+            r += ' [SUB]' if self.last_sub_tree else ' [LEVEL]'
+            r += ' [SIZE LIMIT: ' + str(self.size_limit) + ']' if self.size_limit else ''
+            r += ' [TIME LIMIT: ' + str(self.time_limit) + ']' if self.time_limit else ''
+            r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
+        return r
+
+    def clear(self):
+        """Clear the Reader search parameters
+
+        """
+        self.dereference_aliases = DEREF_ALWAYS
+        self.size_limit = 0
+        self.time_limit = 0
+        self.types_only = False
+
+    def reset(self):
+        """Clear all the Reader parameters
+        """
+        self.clear()
+        self.validated_query = None
+        self._query_dict = dict()
+        self._validated_query_dict = dict()
+        self.execution_time = None
+        self.query_filter = None
+        self.entries = []
+        self.last_sub_tree = None
+        self._create_query_filter()
+
+    def _validate_query(self):
+        """Processes the text query and verifies that the requested friendly names are in the Reader dictionary
+        If the AttrDef has a 'validate' property the callable is executed and if it returns False an Exception is raised
+
+        """
+        if not self._query_dict:
+            self._query_dict = _create_query_dict(self._query)
+
+        query = ''
+        for d in sorted(self._query_dict):
+            attr = d[1:] if d[0] in '&|' else d
+            for attr_def in self._definition:
+                if ''.join(attr.split()).lower() == attr_def.key.lower():
+                    attr = attr_def.key
+                    break
+            if attr in self._definition:
+                vals = sorted(self._query_dict[d].split(';'))
+
+                query += (d[0] + attr if d[0] in '&|' else attr) + ': '
+                for val in vals:
+                    val = val.strip()
+                    val_not = True if val[0] == '!' else False
+                    val_search_operator = '='  # default
+                    if val_not:
+                        if val[1:].lstrip()[0] not in '=<>~':
+                            value = val[1:].lstrip()
+                        else:
+                            val_search_operator = val[1:].lstrip()[0]
+                            value = val[1:].lstrip()[1:]
+                    else:
+                        if val[0] not in '=<>~':
+                            value = val.lstrip()
+                        else:
+                            val_search_operator = val[0]
+                            value = val[1:].lstrip()
+
+                    if self._definition[attr].validate:
+                        if not self._definition[attr].validate(self._definition[attr].key, value):
+                            raise cursor_exception('validation failed for attribute %s and value %s' % (d, val))
+
+                    if val_not:
+                        query += '!' + val_search_operator + value
+                    else:
+                        query += val_search_operator + value
+
+                    query += ';'
+                query = query[:-1] + ', '
+            else:
+                raise cursor_exception('attribute \'%s\' not in definition' % attr)
+        self.validated_query = query[:-2]
+        self._validated_query_dict = _create_query_dict(self.validated_query)
+
+    def _create_query_filter(self):
+        """Converts the query dictionary to the filter text"""
+        if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
+            self.query_filter = self._query
+            return
+
+        self.query_filter = ''
+
+        if self._definition._object_class:
+            self.query_filter += '(&'
+            if isinstance(self._definition._object_class, SEQUENCE_TYPES) and len(self._definition._object_class) == 1:
+                self.query_filter += '(objectClass=' + self._definition._object_class[0] + ')'
+            elif isinstance(self._definition._object_class, SEQUENCE_TYPES):
+                self.query_filter += '(&'
+                for object_class in self._definition._object_class:
+                    self.query_filter += '(objectClass=' + object_class + ')'
+                self.query_filter += ')'
+            else:
+                raise cursor_exception('object_class must be a string or a list')
+
+        if not self.components_in_and:
+            self.query_filter += '(|'
+        elif not self._definition._object_class:
+            self.query_filter += '(&'
+
+        self._validate_query()
+
+        attr_counter = 0
+        for attr in sorted(self._validated_query_dict):
+            attr_counter += 1
+            multi = True if ';' in self._validated_query_dict[attr] else False
+            vals = sorted(self._validated_query_dict[attr].split(';'))
+            attr_def = self._definition[attr[1:]] if attr[0] in '&|' else self._definition[attr]
+            if attr_def.pre_query:
+                modvals = []
+                for val in vals:
+                    modvals.append(val[0] + attr_def.pre_query(attr_def.key, val[1:]))
+                vals = modvals
+            if multi:
+                if attr[0] in '&|':
+                    self.query_filter += '(' + attr[0]
+                else:
+                    self.query_filter += '(|'
+
+            for val in vals:
+                if val[0] == '!':
+                    self.query_filter += '(!(' + attr_def.name + _ret_search_value(val[1:]) + '))'
+                else:
+                    self.query_filter += '(' + attr_def.name + _ret_search_value(val) + ')'
+            if multi:
+                self.query_filter += ')'
+
+        if not self.components_in_and:
+            self.query_filter += '))'
+        else:
+            self.query_filter += ')'
+
+        if not self._definition._object_class and attr_counter == 1:  # remove unneeded starting filter
+            self.query_filter = self.query_filter[2: -1]
+
+        if self.query_filter == '(|)' or self.query_filter == '(&)':  # remove empty filter
+            self.query_filter = ''
 
     def search(self, attributes=None):
         """Perform the LDAP search
@@ -400,6 +432,23 @@ class Cursor(object):
         self._execute_query(query_scope, attributes)
 
         return self.entries
+
+    def search_object(self, entry_dn=None, attributes=None):  # base must be a single dn
+        """Perform the LDAP search operation SINGLE_OBJECT scope
+
+        :return: Entry found in search
+
+        """
+        self.clear()
+        if entry_dn:
+            old_base = self.base
+            self.base = entry_dn
+            self._execute_query(BASE, attributes)
+            self.base = old_base
+        else:
+            self._execute_query(BASE, attributes)
+
+        return self.entries[0] if len(self.entries) > 0 else None
 
     def search_level(self, attributes=None):
         """Perform the LDAP search operation with SINGLE_LEVEL scope
@@ -422,23 +471,6 @@ class Cursor(object):
         self._execute_query(SUBTREE, attributes)
 
         return self.entries
-
-    def search_object(self, entry_dn=None, attributes=None):  # base must be a single dn
-        """Perform the LDAP search operation SINGLE_OBJECT scope
-
-        :return: Entry found in search
-
-        """
-        self.clear()
-        if entry_dn:
-            old_base = self.base
-            self.base = entry_dn
-            self._execute_query(BASE, attributes)
-            self.base = old_base
-        else:
-            self._execute_query(BASE, attributes)
-
-        return self.entries[0] if len(self.entries) > 0 else None
 
     def search_size_limit(self, size_limit, attributes=None):
         """Perform the LDAP search with limit of entries found
@@ -519,35 +551,28 @@ class Cursor(object):
             yield self._get_entry(response)
 
 
-class Reader(Cursor):
-    """Reader object to perform searches:
-
-    :param connection: the LDAP connection object to use
-    :type connection: LDAPConnection
-    :param object_def: the ObjectDef of the LDAP object returned
-    :type object_def: ObjectDef
-    :param query: the simplified query (will be transformed in an LDAP filter)
-    :type query: str
-    :param base: starting base of the search
-    :type base: str
-    :param components_in_and: specify if assertions in the query mus be all satisfied or not (AND/OR)
-    :type components_in_and: bool
-    :param sub_tree: specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
-    :type sub_tree: bool
-    :param get_operational_attributes: specify if operational attributes are returned or not
-    :type get_operational_attributes: bool
-    :param controls: controls to be used in search
-    :type controls: tuple
-
-    """
-    entry_class = Entry  # entries are read_only
-    attribute_class = Attribute  # attributes are read_only
-    cursor_exception = LDAPReaderError  # exception to raise from Cursor
-
 class Writer(Cursor):
     entry_class = WritableEntry
     attribute_class = WritableAttribute
     cursor_exception = LDAPWriterError  # exception to raise from Cursor
+
+    def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
+        Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
+        self.dereference_aliases = DEREF_NEVER
+
+    def __repr__(self):
+        r = 'CONN   : ' + str(self.connection) + linesep
+        r += 'DEFS   : ' + repr(self._definition._object_class) + ' ['
+        for attr_def in sorted(self._definition):
+            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
+        if r[-2] == ',':
+            r = r[:-2]
+        r += ']' + linesep
+        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
+        if self.execution_time:
+            r += 'ENTRIES: ' + str(len(self.entries))
+            r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
+        return r
 
     def commit(self, controls):
         for entry in self.entries:
@@ -556,3 +581,34 @@ class Writer(Cursor):
     def discard(self):
         for entry in self.entries:
             entry.entry_discard()
+
+    def search_object(self, entry_dn, attributes=None):  # base must be a single dn
+        """Perform the LDAP search operation SINGLE_OBJECT scope
+
+        :return: Entry found in search
+
+        """
+        if not self.connection:
+            raise cursor_exception('no connection established')
+
+        with self.connection:
+            result = self.connection.search(search_base=entry_dn,
+                                            search_filter='(objectclass=*)',
+                                            search_scope=BASE,
+                                            dereference_aliases=DEREF_NEVER,
+                                            attributes=attributes if attributes else self.attributes,
+                                            get_operational_attributes=self.get_operational_attributes,
+                                            controls=self.controls)
+            if not self.connection.strategy.sync:
+                response, _ = self.connection.get_response(result)
+            else:
+                response = self.connection.response
+
+                self.entries = []
+                for r in response:
+                    entry = self._get_entry(r)
+                    self.entries.append(entry)
+
+                self.execution_time = datetime.now()
+
+        return self.entries[0] if len(self.entries) == 1 else None

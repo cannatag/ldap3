@@ -57,7 +57,7 @@ class EntryState(object):
         if self.dn is not None:
             r = 'DN: ' + to_stdout_encoding(self.dn) + linesep
             r += 'attributes: ' + ', '.join(sorted(self.attributes.keys())) + linesep
-            r += 'object def: ' + ', '.join(sorted(self.definition._object_class)) + linesep
+            r += 'object def: ' + (', '.join(sorted(self.definition._object_class)) if self.definition._object_class else '<None>') + linesep
             r += 'attr defs: ' + ', '.join(sorted(self.definition._attributes.keys())) + linesep
             r += 'response: ' + ('present' if self.response else 'None') + linesep
             r += 'cursor: ' + (self.cursor.__class__.__name__ if self.cursor else 'None')
@@ -85,6 +85,8 @@ class EntryBase(object):
     """
 
     def __init__(self, dn, cursor):
+        print('entrybase init', dn)
+
         self.__dict__['_state'] = EntryState(dn, cursor)
 
     def __repr__(self):
@@ -113,6 +115,7 @@ class EntryBase(object):
             return False
 
     def __getattr__(self, item):
+        print('entry getattr', item, type(item))
         if isinstance(item, STRING_TYPES):
             if item == '_state':
                 return self.__dict__['_state']
@@ -215,9 +218,10 @@ class EntryBase(object):
         """
         if self.entry_get_cursor().connection:
             temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn())
-            self._state.attributes = temp_entry._state.attributes
-            self._state.raw_attributes = temp_entry._state.raw_attributes
-            del temp_entry
+            self._state = temp_entry._state
+            for attr in self:  # returns the whole attribute object
+                attr_name = attr.key
+                entry.__dict__[attr_name] = attr
 
     def entry_refresh_from_reader(self):  # for compatability before 1.4.1
         self.entry_refresh()
@@ -299,13 +303,18 @@ class Entry(EntryBase):
 
 class WritableEntry(EntryBase):
     def __setattr__(self, item, value):
-        if item in self._state.cursor.definition._attributes:
-            if item not in self._state.attributes:  # setting value to an attribute still without values
-                new_attribute = WritableAttribute(self._state.cursor.definition._attributes[item], self, cursor=self._state.cursor)
-                self._state.attributes[str(item)] = new_attribute  # force item to a string for key in attributes dict
-            self._state.attributes[item].set_value(value)  # try to add to new_values
-        else:
-            raise LDAPEntryError('attribute \'%s\' not allowed' % item)
+        if item == '_state' and isinstance(value, EntryState):
+            self.__dict__['_state'] = value
+            return
+
+        if value is not Ellipsis:  # hack for using implicit operatos in writable attributes
+            if item in self._state.cursor.definition._attributes:
+                if item not in self._state.attributes:  # setting value to an attribute still without values
+                    new_attribute = WritableAttribute(self._state.cursor.definition._attributes[item], self, cursor=self._state.cursor)
+                    self._state.attributes[str(item)] = new_attribute  # force item to a string for key in attributes dict
+                self._state.attributes[item].set_value(value)  # try to add to new_values
+            else:
+                raise LDAPEntryError('attribute \'%s\' not allowed' % item)
 
     def __getattr__(self, item):
         if isinstance(item, STRING_TYPES):

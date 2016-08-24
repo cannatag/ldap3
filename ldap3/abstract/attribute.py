@@ -128,22 +128,24 @@ class WritableAttribute(Attribute):
     #     raise LDAPAttributeError('attribute \'%s\' is read only, use add_value(), set_value() or delete_value()' % item)
 
     def __init__(self, attr_def, entry, cursor):
+        print('writable attribute init', attr_def.name, entry)
         Attribute.__init__(self, attr_def, entry, cursor)
         self.changes  = []
 
     def __iadd__(self, other):
         self.add_value(other)
-        return self
+        return Ellipsis  # hack to avoid calling set_value in entry __setattr__
 
     def __isub__(self, other):
         self.delete_value(other)
-        return self
+        return Ellipsis  # hack to avoid calling set_value in entry __setattr__
 
     def add_value(self, value):
         # new value for attribute to commit with a MODIFY_ADD
         if value is None:
             raise LDAPAttributeError('added value cannot be None')
-
+        # if self.values and self.definition.single_value:
+        #    raise LDAPAttributeError("can't add to a single value attributewith already a value, use set_value")
         if value is not None and not self.definition.validate(self.definition.name, value):
             raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (value, self.key))
         self.changes.append((MODIFY_ADD, value if isinstance(value, SEQUENCE_TYPES) else [value]))

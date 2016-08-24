@@ -42,6 +42,12 @@ class ObjectDef(object):
 
     """
     def __init__(self, object_class=None, schema=None, custom_validator=None):
+        if object_class is None:
+            object_class = []
+
+        if not isinstance(object_class, SEQUENCE_TYPES):
+            object_class = [object_class]
+
         self.__dict__['_object_class'] = object_class
         self.__dict__['_attributes'] = CaseInsensitiveDict()
         self.__dict__['_custom_validator'] = custom_validator
@@ -61,9 +67,6 @@ class ObjectDef(object):
         self.__dict__['_schema'] = schema
 
         if self._schema:
-            if not isinstance(object_class, SEQUENCE_TYPES):
-                object_class = [object_class]
-
             for object_name in object_class:
                 if object_name:
                     self._populate_attr_defs(object_name)

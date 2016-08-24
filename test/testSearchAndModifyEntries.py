@@ -92,7 +92,10 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(entries), 1)
         writable_entry = entries[0].make_writable('inetorgperson')
-        writable_entry.givenname += 'implicit-added-givenname-1)'
+        writable_entry.givenname += 'implicit-added-givenname-1'
         result = writable_entry.entry_commit()
         self.assertTrue(result)
-        self.assertEqual(writable_entry.givenName, '123')
+
+        self.assertTrue('givenname-1' in writable_entry.givenName)
+        self.assertTrue('implicit-added-givenname-1' in writable_entry.givenName)
+

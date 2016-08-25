@@ -141,7 +141,7 @@ class Cursor(object):
 
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
-                attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name, entry)
+                attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name, entry, self)
                 attribute.raw_values = response['raw_attributes'][attribute_name]
                 attribute.values = response['attributes'][attribute_name]
                 if (get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name) not in attributes:
@@ -157,9 +157,9 @@ class Cursor(object):
         entry._state.attributes = self._get_attributes(response, self._definition, entry)
         entry._state.raw_attributes = response['raw_attributes']
         entry._state.response = response
+        entry._state.read_time = datetime.now()
         for attr in entry:  # returns the whole attribute object
-            attr_name = attr.key
-            entry.__dict__[attr_name] = attr
+            entry.__dict__[attr.key] = attr
 
         return entry
 
@@ -604,11 +604,11 @@ class Writer(Cursor):
             else:
                 response = self.connection.response
 
-                self.entries = []
-                for r in response:
-                    entry = self._get_entry(r)
-                    self.entries.append(entry)
+            self.entries = []
+            for r in response:
+                entry = self._get_entry(r)
+                self.entries.append(entry)
+            self.execution_time = datetime.now()
 
-                self.execution_time = datetime.now()
 
         return self.entries[0] if len(self.entries) == 1 else None

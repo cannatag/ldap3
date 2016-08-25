@@ -141,8 +141,8 @@ class WritableAttribute(Attribute):
                 r += linesep + filler + to_stdout_encoding(value)
         else:
             r = self.key + ': ' + to_stdout_encoding('<None>')
-
-        r += linesep + filler + 'CHANGES: ' + (str(self.changes) if self.changes else ' <None>')
+        if self.changes:
+            r += linesep + filler + 'CHANGES: ' + str(self.changes)
         return r
 
     def __iadd__(self, other):

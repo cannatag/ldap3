@@ -28,6 +28,7 @@ from os import linesep
 
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, get_config_parameter
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
+from .attrDef import AttrDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPReaderError, LDAPWriterError
 from ..utils.ciDict import CaseInsensitiveDict
@@ -141,7 +142,7 @@ class Cursor(object):
 
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
-                attribute = OperationalAttribute(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name, entry, self)
+                attribute = OperationalAttribute(AttrDef(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name), entry, self)
                 attribute.raw_values = response['raw_attributes'][attribute_name]
                 attribute.values = response['attributes'][attribute_name]
                 if (get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name) not in attributes:

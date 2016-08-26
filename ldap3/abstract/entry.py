@@ -335,9 +335,9 @@ class WritableEntry(EntryBase):
                 if item == attr.lower():
                     return self._state.attributes[attr]
             if item in self._state.definition._attributes:  # item is a new attribute to commit, creates the AttrDef and add to the attributes to retrive
-                self._state.attributes[attr] = WritableAttribute(self._state.definition._attributes[item], self, self.entry_get_cursor())
+                self._state.attributes[item] = WritableAttribute(self._state.definition._attributes[item], self, self.entry_get_cursor())
                 self.entry_get_cursor().attributes.add(item)
-                return self._state.attributes[attr]
+                return self._state.attributes[item]
             raise LDAPAttributeError('attribute \'%s\' not present' % item)
         else:
             raise LDAPAttributeError('attribute must be a string')
@@ -362,7 +362,7 @@ class WritableEntry(EntryBase):
                             origin.__dict__[attr.key] = attr
                 return True
             else:
-                raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'])
+                raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'] + ' - ' + self.entry_get_cursor().connection.result['message'])
         return False
 
     def entry_get_changes(self):

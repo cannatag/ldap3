@@ -64,25 +64,46 @@ class Test(unittest.TestCase):
 
     def compare_entries(self, entry1, entry2):
         for attr in entry1:
+            self.assertFalse(entry1[attr.key] is entry2[attr.key])
             self.assertEqual(entry1[attr.key], entry2[attr.key])
 
         for attr in entry2:
+            self.assertFalse(entry2[attr.key] is entry1[attr.key])
             self.assertEqual(entry2[attr.key], entry1[attr.key])
 
         for attr in entry1._state.attributes.keys():
+            self.assertFalse(entry1._state.attributes[attr] is entry2._state.attributes[attr])
             self.assertEqual(entry1._state.attributes[attr], entry2._state.attributes[attr])
 
         for attr in entry2._state.attributes.keys():
+            self.assertFalse(entry2._state.attributes[attr] is entry1._state.attributes[attr])
             self.assertEqual(entry2._state.attributes[attr], entry1._state.attributes[attr])
 
+        for attr in entry1._state.raw_attributes.keys():
+            self.assertFalse(entry1._state.raw_attributes[attr] is entry2._state.raw_attributes[attr])
+            self.assertEqual(entry1._state.raw_attributes[attr], entry2._state.raw_attributes[attr])
+
+        for attr in entry2._state.raw_attributes.keys():
+            self.assertFalse(entry2._state.raw_attributes[attr] is entry1._state.raw_attributes[attr])
+            self.assertEqual(entry2._state.raw_attributes[attr], entry1._state.raw_attributes[attr])
+
+        self.assertEqual(entry1._state.dn, entry2._state.dn)
         self.assertEqual(entry1._state.response, entry2._state.response)
         self.assertEqual(entry1._state.read_time, entry2._state.read_time)
 
-        assertFalse(entry1 is entry2)
-        assertFalse(entry1._state is entry2._state)
-        assertFalse(entry1._state.attributes is entry2._state.attributes)
-        assertFalse(entry1._state.response is entry2._state.response)
-        assertFalse(entry1._state.read_time is entry2._state.read_time)
+        self.assertFalse(entry1 is entry2)
+        self.assertFalse(entry1._state is entry2._state)
+        self.assertFalse(entry1._state.attributes is entry2._state.attributes)
+        self.assertFalse(entry1._state.raw_attributes is entry2._state.raw_attributes)
+        if entry1._state.response is not None:
+            self.assertFalse(entry1._state.response is entry2._state.response)
+        if entry1._state.read_time is not None:
+            self.assertFalse(entry1._state.read_time is entry2._state.read_time)
+
+    def test_duplicate_entry(self):
+        entry1 = self.get_entry('search-and-modify-1')
+        entry2 = entry1.entry_duplicate()
+        self.compare_entries(entry1, entry2)
 
     def test_search_and_delete_entry(self):
         read_only_entry = self.get_entry('search-and-modify-1')

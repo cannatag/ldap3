@@ -17,6 +17,7 @@
     - Added LDAPCursorError exception
     - Added LDAPWriterError exception, inherits from LDAPCursorError
     - LDAPReaderError exception now inherits from LDAPCursorError
+    - auto_range parameter in Connection defaults to True (thanks Ashley)
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

@@ -108,13 +108,16 @@ class ObjectDef(object):
 
     def __getattr__(self, item):
         item = ''.join(item.split()).lower()
-        for attr in self._attributes:
-            if item == attr.lower():
-                break
-        else:
-            raise LDAPKeyError('key \'%s\' not present' % item)
+        if '_attributes' in self.__dict__:
+            for attr in self.__dict__['_attributes']:
+                if item == attr.lower():
+                    break
+            else:
+                raise LDAPKeyError('key \'%s\' not present' % item)
 
-        return self._attributes[attr]
+            return self._attributes[attr]
+
+        raise LDAPKeyError('_attributes not defined')
 
     def __setattr__(self, key, value):
         raise LDAPObjectError('object \'%s\' is read only' % key)

@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
+from copy import deepcopy
 from datetime import datetime
 from os import linesep
 
@@ -156,7 +156,7 @@ class Cursor(object):
 
         entry = self.entry_class(response['dn'], self)  # define an Entry (writable or readonly), as specified in the cursor definition
         entry._state.attributes = self._get_attributes(response, self._definition, entry)
-        entry._state.raw_attributes = response['raw_attributes']
+        entry._state.raw_attributes = deepcopy(response['raw_attributes'])
         entry._state.response = response
         entry._state.read_time = datetime.now()
         for attr in entry:  # returns the whole attribute object

@@ -25,6 +25,7 @@
 
 from datetime import datetime
 from os import linesep
+from copy import copy, deepcopy
 import json
 
 from .. import STRING_TYPES
@@ -281,6 +282,15 @@ class EntryBase(object):
             stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
         return ldif_output
 
+    def entry_duplicate(self):
+        temp_entry = self.entry_get_cursor()._get_entry(deepcopy(self.entry_get_response()))
+        # origin.__dict__.clear()
+        # origin.__dict__['_state'] = temp_entry._state
+        # for attr in self:  # returns the whole attribute object
+        #     origin.__dict__[attr.key] = attr
+        temp_entry._state.read_time = copy(self._state.read_time)
+        return temp_entry
+
 
 class Entry(EntryBase):
     """The Entry object contains a single LDAP entry.
@@ -355,11 +365,15 @@ class WritableEntry(EntryBase):
                     self.entry_refresh()
                     origin = self._state.origin
                     if origin:  # updates original read-only entry if present
-                        temp_entry = origin.entry_get_cursor()._get_entry(self.entry_get_response())
+                        for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
+                            if attr.key in self._state.definition._attributes and attr.key not in origin._state.definition._attributes:
+                                origin.entry_get_cursor().definition.add(self.entry_get_cursor().definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
+                        temp_entry = origin.entry_get_cursor()._get_entry(self.entry_get_response().copy())
                         origin.__dict__.clear()
                         origin.__dict__['_state'] = temp_entry._state
                         for attr in self:  # returns the whole attribute object
                             origin.__dict__[attr.key] = attr
+                        origin._state.read_time = copy(self._state.read_time)
                 return True
             else:
                 raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'] + ' - ' + self.entry_get_cursor().connection.result['message'])
@@ -378,15 +392,18 @@ class WritableEntry(EntryBase):
             self._state.attributes[key].discard_changes()
 
     def entry_delete(self, controls=None):
+        origin = None
         if self.entry_get_cursor().connection.delete(self.entry_get_dn(), controls):
             dn = self.entry_get_dn()
             if self._state.origin:  # deletes original read-only entry if present
                 cursor = self._state.origin.entry_get_cursor()
                 self._state.origin.__dict__.clear()
                 self._state.origin.__dict__['_state'] = EntryState(dn, cursor)
+                origin = self._state.origin
             cursor = self.entry_get_cursor()
             self.__dict__.clear()
             self._state = EntryState(dn, cursor)
+            self._state.origin = origin
             return True
         else:
             raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])

@@ -161,7 +161,7 @@ class Connection(object):
                  authentication=None,
                  client_strategy=SYNC,
                  auto_referrals=True,
-                 auto_range=False,
+                 auto_range=True,
                  sasl_mechanism=None,
                  sasl_credentials=None,
                  check_names=True,

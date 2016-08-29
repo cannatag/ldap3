@@ -325,11 +325,11 @@ class Entry(EntryBase):
 
         writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names() + list(attributes))
         writable_entry = writable_cursor._get_entry(deepcopy(self.entry_get_response()))
+        writable_entry._state.read_time = self.entry_get_read_time()
         if writable_entry.entry_get_cursor().attributes != self.entry_get_cursor().attributes:
             writable_entry.entry_refresh()
 
         writable_entry._state.origin = self  # reference to the original read-only entry
-        writable_entry._state.read_time = self.entry_get_read_time()
         return writable_entry
 
 

@@ -26,9 +26,8 @@
 from datetime import datetime
 from os import linesep
 from copy import copy, deepcopy
-import json
 
-from .. import STRING_TYPES
+from .. import STRING_TYPES, SEQUENCE_TYPES
 
 from .attribute import WritableAttribute
 from .objectDef import ObjectDef
@@ -226,12 +225,12 @@ class EntryBase(object):
         Read the entry from the LDAP Server
         """
         if self.entry_get_cursor().connection:
-            temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn())
+            temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn(), self.entry_get_attribute_names())  # if any attributes is added adds only to the entry not to the definition
             temp_entry._state.origin = self._state.origin
             self.__dict__.clear()
             self._state = temp_entry._state
-            for attr in self:  # returns the whole attribute object
-                self.__dict__[attr.key] = attr
+            for attr in self._state.attributes:  # returns the attribute key
+                self.__dict__[attr] = self._state.attributes[attr]
 
     def entry_refresh_from_reader(self):  # for compatability before 1.4.1
         self.entry_refresh()
@@ -305,7 +304,7 @@ class Entry(EntryBase):
       get_raw_attribute() methods
 
     """
-    def make_writable(self, object_class, custom_validator=None):
+    def make_writable(self, object_class, attributes=None, custom_validator=None):
         if not self.entry_get_cursor().schema:
             raise LDAPReaderError('The schema must be available to make an entry writable')
         from .cursor import Writer  # local import to avoid circular referecence in import at startup
@@ -314,8 +313,21 @@ class Entry(EntryBase):
         for attribute in self.entry_get_attribute_names():
             if attribute not in object_def._attributes:
                 raise LDAPWriterError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
-        writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names())
-        writable_entry = writable_cursor._get_entry(self.entry_get_response())
+
+        if attributes:
+            if isinstance(attributes, STRING_TYPES):
+                attributes = [attributes]
+
+            if isinstance(attributes, SEQUENCE_TYPES):
+                for attribute in attributes:
+                    if attribute not in object_def._attributes:
+                        raise LDAPWriterError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
+
+        writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names() + list(attributes))
+        writable_entry = writable_cursor._get_entry(deepcopy(self.entry_get_response()))
+        if writable_entry.entry_get_cursor().attributes != self.entry_get_cursor().attributes:
+            writable_entry.entry_refresh()
+
         writable_entry._state.origin = self  # reference to the original read-only entry
         writable_entry._state.read_time = self.entry_get_read_time()
         return writable_entry
@@ -327,7 +339,7 @@ class WritableEntry(EntryBase):
             self.__dict__['_state'] = value
             return
 
-        if value is not Ellipsis:  # hack for using implicit operatos in writable attributes
+        if value is not Ellipsis:  # hack for using implicit operators in writable attributes
             if item in self.entry_get_cursor().definition._attributes:
                 if item not in self._state.attributes:  # setting value to an attribute still without values
                     new_attribute = WritableAttribute(self.entry_get_cursor().definition._attributes[item], self, cursor=self.entry_get_cursor())
@@ -368,7 +380,7 @@ class WritableEntry(EntryBase):
                         for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
                             if attr.key in self._state.definition._attributes and attr.key not in origin._state.definition._attributes:
                                 origin.entry_get_cursor().definition.add(self.entry_get_cursor().definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
-                        temp_entry = origin.entry_get_cursor()._get_entry(self.entry_get_response().copy())
+                        temp_entry = origin.entry_get_cursor()._get_entry(deepcopy(self.entry_get_response()))
                         origin.__dict__.clear()
                         origin.__dict__['_state'] = temp_entry._state
                         for attr in self:  # returns the whole attribute object

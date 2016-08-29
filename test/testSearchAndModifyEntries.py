@@ -213,6 +213,31 @@ class Test(unittest.TestCase):
         self.assertEqual(len(writable_entry.givenname), 3)
         self.compare_entries(read_only_entry, writable_entry)
 
+    def test_search_and_add_values_from_sequence_to_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.givenname.add_value(['added-givenname-1', 'added-givenname-2'])
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('givenname-1' in writable_entry.givenName)
+        self.assertTrue('added-givenname-1' in writable_entry.givenName)
+        self.assertTrue('added-givenname-2' in writable_entry.givenName)
+        self.assertEqual(len(writable_entry.givenname), 3)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_add_values_from_sequence_to_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.givenname += ['implicit-added-givenname-1', 'implicit-added-givenname-2']
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('givenname-1' in writable_entry.givenName)
+        self.assertTrue('implicit-added-givenname-1' in writable_entry.givenName)
+        self.assertTrue('implicit-added-givenname-2' in writable_entry.givenName)
+        self.assertEqual(len(writable_entry.givenname), 3)
+        self.compare_entries(read_only_entry, writable_entry)
+
+
     def test_search_and_add_value_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
         writable_entry = read_only_entry.make_writable('inetorgperson')
@@ -256,3 +281,163 @@ class Test(unittest.TestCase):
         self.assertTrue('postalAddress-2' in writable_entry.postalAddress)
         self.assertEqual(len(writable_entry.postalAddress), 2)
         self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_add_values_from_sequence_to_non_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.postalAddress.add_value(['postalAddress-1', 'postalAddress-2'])
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('postalAddress-1' in writable_entry.postalAddress)
+        self.assertTrue('postalAddress-2' in writable_entry.postalAddress)
+        self.assertEqual(len(writable_entry.postalAddress), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_add_values_from_sequence_to_non_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.postalAddress += ['postalAddress-1', 'postalAddress-2']
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('postalAddress-1' in writable_entry.postalAddress)
+        self.assertTrue('postalAddress-2' in writable_entry.postalAddress)
+        self.assertEqual(len(writable_entry.postalAddress), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_set_value_to_existing_single_value(self):
+        if test_server_type == 'EDIR':
+            read_only_entry = self.get_entry('search-and-modify-2')
+            writable_entry = read_only_entry.make_writable('inetorgperson')
+            writable_entry.preferredDeliveryMethod.set_value('telephone')
+            result = writable_entry.entry_commit()
+            self.assertTrue(result)
+            self.assertEqual(writable_entry.preferredDeliveryMethod, 'telephone')
+            self.assertEqual(len(writable_entry.preferredDeliveryMethod), 1)
+            self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_set_value_to_existing_single_value(self):
+        if test_server_type == 'EDIR':
+            read_only_entry = self.get_entry('search-and-modify-2')
+            writable_entry = read_only_entry.make_writable('inetorgperson')
+            writable_entry.preferredDeliveryMethod = 'telephone'
+            result = writable_entry.entry_commit()
+            self.assertTrue(result)
+            self.assertEqual(writable_entry.preferredDeliveryMethod, 'telephone')
+            self.assertEqual(len(writable_entry.preferredDeliveryMethod), 1)
+            self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_set_value_to_non_existing_single_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.preferredDeliveryMethod.set_value('any')  # single valued in organizationalPerson, defined in rfc4519
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertEqual(writable_entry.preferredDeliveryMethod, 'any')
+        self.assertEqual(len(writable_entry.preferredDeliveryMethod), 1)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_set_value_to_non_existing_single_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.preferreddeliverymethod = 'any'  # single valued in organizationalPerson, defined in rfc4519
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertEqual(writable_entry.preferredDeliveryMethod, 'any')
+        self.assertEqual(len(writable_entry.preferredDeliveryMethod), 1)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_set_value_to_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.givenname.set_value('set-givenname-1')
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('set-givenname-1' in writable_entry.givenName)
+        self.assertEqual(len(writable_entry.givenname), 1)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_set_value_to_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.givenname = 'implicit-set-givenname-1'
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('implicit-set-givenname-1' in writable_entry.givenName)
+        self.assertEqual(len(writable_entry.givenname), 1)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_set_values_from_sequence_to_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.givenname.set_value(['set-givenname-1', 'set-givenname-2'])
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('set-givenname-1' in writable_entry.givenName)
+        self.assertTrue('set-givenname-2' in writable_entry.givenName)
+        self.assertEqual(len(writable_entry.givenname), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_set_values_from_sequence_to_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.givenname = ['implicit-set-givenname-1', 'implicit-set-givenname-2']
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('implicit-set-givenname-1' in writable_entry.givenName)
+        self.assertTrue('implicit-set-givenname-2' in writable_entry.givenName)
+        self.assertEqual(len(writable_entry.givenname), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_set_value_to_non_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.postalAddress.set_value('postalAddress-1')
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('postalAddress-1' in writable_entry.postalAddress)
+        self.assertEqual(len(writable_entry.postalAddress), 1)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_set_value_to_non_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.postalAddress = 'postalAddress-1'
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('postalAddress-1' in writable_entry.postalAddress)
+        self.assertEqual(len(writable_entry.postalAddress), 1)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_set_values_from_sequence_to_non_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.postalAddress.set_value(['postalAddress-1', 'postalAddress-2'])
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('postalAddress-1' in writable_entry.postalAddress)
+        self.assertTrue('postalAddress-2' in writable_entry.postalAddress)
+        self.assertEqual(len(writable_entry.postalAddress), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_set_values_from_sequence_to_non_existing_multi_value(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.postalAddress = ['postalAddress-1', 'postalAddress-2']
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertTrue('postalAddress-1' in writable_entry.postalAddress)
+        self.assertTrue('postalAddress-2' in writable_entry.postalAddress)
+        self.assertEqual(len(writable_entry.postalAddress), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_delete_value_to_existing_single_value(self):
+        if test_server_type == 'EDIR':
+            read_only_entry = self.get_entry('search-and-modify-2')
+            writable_entry = read_only_entry.make_writable('inetorgperson', attributes='preferreddeliverymethod')
+            writable_entry.preferredDeliveryMethod.delete_value('any')
+            result = writable_entry.entry_commit()
+            self.assertTrue(result)
+            self.assertEqual(writable_entry.preferredDeliveryMethod, 'telephone')
+            self.assertEqual(len(writable_entry.preferredDeliveryMethod), 1)
+            self.compare_entries(read_only_entry, writable_entry)
+

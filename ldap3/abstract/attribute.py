@@ -78,9 +78,6 @@ class Attribute(object):
     def __getitem__(self, item):
         return self.values[item]
 
-    # def __setattr__(self, item, value):
-    #     raise LDAPAttributeError('attribute \'%s\' is read only' % item)
-
     def __eq__(self, other):
         try:
             if self.value == other:
@@ -124,9 +121,6 @@ class OperationalAttribute(Attribute):
 
 
 class WritableAttribute(Attribute):
-    # def __setattr__(self, item, value):
-    #     raise LDAPAttributeError('attribute \'%s\' is read only, use add_value(), set_value() or delete_value()' % item)
-
     def __init__(self, attr_def, entry, cursor):
         Attribute.__init__(self, attr_def, entry, cursor)
         self.changes  = []

@@ -9,7 +9,7 @@
     - Added update capability to abstraction layer
     - Fixed typo in docs (thanks Gerardwx)
     - Fixed Object and Attribute representation in schema (superior class not shown)
-    - ObjectDef automatically populates attributes from schema, following objectClass hierarchy
+    - ObjectDef automatically populates attributes from schema, following object_class hierarchy
     - Added attributes parameter to search* methods of Cursor, so that only needed attributes are read even if attr_defs defines more
     - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
     - Added 'set' to SEQUENCE_TYPES (thanks Christian)

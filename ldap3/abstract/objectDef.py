@@ -91,7 +91,7 @@ class ObjectDef(object):
         if self._object_class:
             r = 'OBJ: ' + str(self._object_class)
         else:
-            r = 'OBJ: <none>'
+            r = 'OBJ: <None>'
         for oid in self._oid_info:
             for line in oid.split(linesep):
                 r += linesep + '  ' + line

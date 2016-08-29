@@ -90,6 +90,9 @@ class Attribute(object):
         """
         :return: The single value or a list of values of the attribute.
         """
+        if not self.values:
+            return None
+
         return self.values[0] if len(self.values) == 1 else self.values
 
 
@@ -134,7 +137,7 @@ class WritableAttribute(Attribute):
             for value in self.values[1:]:
                 r += linesep + filler + to_stdout_encoding(value)
         else:
-            r = self.key + ': ' + to_stdout_encoding('<None>')
+            r = self.key + to_stdout_encoding(': <None>')
         if self.changes:
             r += linesep + filler + 'CHANGES: ' + str(self.changes)
         return r

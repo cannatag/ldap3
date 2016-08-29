@@ -396,7 +396,8 @@ class WritableEntry(EntryBase):
                         origin.__dict__.clear()
                         origin.__dict__['_state'] = temp_entry._state
                         for attr in self:  # returns the whole attribute object
-                            origin.__dict__[attr.key] = attr
+                            if not attr.virtual:
+                                origin.__dict__[attr.key] = origin._state.attributes[attr.key]
                         origin._state.read_time = copy(self._state.read_time)
                 return True
             else:

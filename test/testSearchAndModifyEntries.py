@@ -430,6 +430,17 @@ class Test(unittest.TestCase):
         self.assertEqual(len(writable_entry.postalAddress), 2)
         self.compare_entries(read_only_entry, writable_entry)
 
+
+    def test_search_and_remove_existing_attribute(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry.givenname.remove()
+        result = writable_entry.entry_commit()
+        self.assertTrue(result)
+        self.assertEqual(writable_entry.givenname.values, [])
+        self.assertEqual(writable_entry.givenname.virtual, True)
+
+
     def test_search_and_delete_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')

@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import linesep
+
 from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
@@ -110,17 +111,17 @@ class OperationalAttribute(Attribute):
     """
 
     def __repr__(self):
-       if len(self.values) == 1:
-           r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
-       elif len(self.values) > 1:
-           r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
-           filler = ' ' * (len(self.key) + 6)
-           for value in sorted(self.values[1:]):
-               r += linesep + filler + to_stdout_encoding(value)
-       else:
-           r = ''
+        if len(self.values) == 1:
+            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+        elif len(self.values) > 1:
+            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+            filler = ' ' * (len(self.key) + 6)
+            for value in sorted(self.values[1:]):
+                r += linesep + filler + to_stdout_encoding(value)
+        else:
+            r = ''
 
-       return r
+        return r
 
 
 class WritableAttribute(Attribute):
@@ -137,7 +138,7 @@ class WritableAttribute(Attribute):
             for value in self.values[1:]:
                 r += linesep + filler + to_stdout_encoding(value)
         else:
-            r = self.key + to_stdout_encoding(': <None>')
+            r = self.key + to_stdout_encoding(': <Virtual>')
         if self.changes:
             r += linesep + filler + 'CHANGES: ' + str(self.changes)
         return r
@@ -180,7 +181,13 @@ class WritableAttribute(Attribute):
             raise LDAPAttributeError('value \'%s\' not present in \'%s\'' % (value, self.values))
         self.changes.append((MODIFY_DELETE, value if isinstance(value, SEQUENCE_TYPES) else [value]))
 
+    def remove(self):
+        self.changes.append((MODIFY_REPLACE, []))
+
     def discard_changes(self):
         self.changes = []
 
+    @property
+    def virtual(self):
+        return False if len(self.values) else True
 #

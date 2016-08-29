@@ -54,7 +54,7 @@ class AsyncStreamStrategy(AsyncStrategy):
         self._header_added = False
         self.persistent_search_message_id = None
         self.streaming = False
-        self.callback=None
+        self.callback = None
         self.events = Queue()
 
     def _start_listen(self):

@@ -167,7 +167,7 @@ class Cursor(object):
     def _execute_query(self, query_scope, attributes):
         if not self.connection:
             raise cursor_exception('no connection established')
-        old_query_filter=None
+        old_query_filter = None
         if query_scope == BASE:  # requesting a single object so an always-valid filter is set
             if hasattr(self, 'query_filter'):  # only Reader has a query filter
                 old_query_filter = self.query_filter
@@ -476,6 +476,7 @@ class Reader(Cursor):
     def search_size_limit(self, size_limit, attributes=None):
         """Perform the LDAP search with limit of entries found
 
+        :param attributes: optional attriibutes to search
         :param size_limit: maximum number of entries returned
         :return: Entries found in search
 
@@ -491,6 +492,7 @@ class Reader(Cursor):
     def search_time_limit(self, time_limit, attributes=None):
         """Perform the LDAP search with limit of time spent in searching by the server
 
+        :param attributes: optional attributes to search
         :param time_limit: maximum number of seconds to wait for a search
         :return: Entries found in search
 
@@ -518,6 +520,7 @@ class Reader(Cursor):
     def search_paged(self, paged_size, paged_criticality=True, generator=True, attributes=None):
         """Perform a paged search, can be called as an Iterator
 
+        :param attributes: optional attributes to search
         :param paged_size: number of entries returned in each search
         :type paged_size: int
         :param paged_criticality: specify if server must not execute the search if it is not capable of paging searches
@@ -610,6 +613,5 @@ class Writer(Cursor):
                 entry = self._get_entry(r)
                 self.entries.append(entry)
             self.execution_time = datetime.now()
-
 
         return self.entries[0] if len(self.entries) == 1 else None

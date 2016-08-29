@@ -43,7 +43,7 @@ from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
+from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences

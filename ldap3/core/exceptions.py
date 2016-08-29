@@ -392,6 +392,7 @@ class LDAPReaderError(LDAPCursorError):
 class LDAPWriterError(LDAPCursorError):
     pass
 
+
 # security exceptions
 class LDAPSSLNotSupportedError(LDAPExceptionError, ImportError):
     pass

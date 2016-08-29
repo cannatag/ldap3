@@ -31,7 +31,7 @@ except ImportError:  # Python 2
 
 from ...core.exceptions import LDAPExtensionError
 from ...protocol.persistentSearch import persistent_search_control
-from ... import SUBTREE, DEREF_ALWAYS, SEQUENCE_TYPES
+from ... import SEQUENCE_TYPES
 
 
 class PersistentSearch(object):
@@ -61,7 +61,7 @@ class PersistentSearch(object):
         self.base = search_base
         self.filter = search_filter
         self.scope = search_scope
-        self.dereference_aliases=dereference_aliases
+        self.dereference_aliases = dereference_aliases
         self.attributes = attributes
         self.size_limit = size_limit
         self.time_limit = time_limit
@@ -80,7 +80,7 @@ class PersistentSearch(object):
         self.start()
 
     def start(self):
-        if self.message_id: # persistent search already started
+        if self.message_id:  # persistent search already started
             return
 
         if not self.connection.bound:

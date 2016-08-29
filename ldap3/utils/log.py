@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from logging import getLogger, getLevelName, DEBUG
+from logging import getLogger, DEBUG
 from os import linesep
 from copy import deepcopy
 from pprint import pformat

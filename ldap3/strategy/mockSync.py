@@ -34,7 +34,7 @@ from ..operation.modifyDn import modify_dn_response_to_dict
 from ..operation.modify import modify_response_to_dict
 from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
+from ..utils.log import log, log_enabled, ERROR, PROTOCOL
 
 # LDAPResult ::= SEQUENCE {
 #     resultCode         ENUMERATED {

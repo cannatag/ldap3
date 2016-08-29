@@ -439,5 +439,4 @@ class Test(unittest.TestCase):
             self.assertTrue(result)
             self.assertEqual(writable_entry.preferredDeliveryMethod.value, None)
             self.assertEqual(len(writable_entry.preferredDeliveryMethod), 0)
-            self.compare_entries(read_only_entry, writable_entry)
 

@@ -23,7 +23,9 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+
+import json
+
 from os import linesep
 from copy import copy, deepcopy
 
@@ -225,12 +227,18 @@ class EntryBase(object):
         Read the entry from the LDAP Server
         """
         if self.entry_get_cursor().connection:
-            temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn(), self.entry_get_attribute_names())  # if any attributes is added adds only to the entry not to the definition
+            entry_attributes = self.entry_get_attribute_names()
+            temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn(), entry_attributes)  # if any attributes is added adds only to the entry not to the definition
             temp_entry._state.origin = self._state.origin
             self.__dict__.clear()
             self._state = temp_entry._state
             for attr in self._state.attributes:  # returns the attribute key
                 self.__dict__[attr] = self._state.attributes[attr]
+
+            for attr in entry_attributes:  # if any attribute of the class was deleted make it virtual
+                if attr not in self._state.attributes and attr in self._state.definition._attributes:
+                    self._state.attributes[attr] = WritableAttribute(self._state.definition[attr], self, self.entry_get_cursor())
+                    self.__dict__[attr] = self._state.attributes[attr]
 
     def entry_refresh_from_reader(self):  # for compatability before 1.4.1
         self.entry_refresh()
@@ -362,7 +370,9 @@ class WritableEntry(EntryBase):
                 self._state.attributes[item] = WritableAttribute(self._state.definition._attributes[item], self, self.entry_get_cursor())
                 self.entry_get_cursor().attributes.add(item)
                 return self._state.attributes[item]
-            raise LDAPAttributeError('attribute \'%s\' not present' % item)
+            # if item in self._state.definition._attributes:
+            #     raise LDAPAttributeError('attribute must have a value')
+            raise LDAPAttributeError('attribute \'%s\' is not defined' % item)
         else:
             raise LDAPAttributeError('attribute must be a string')
 

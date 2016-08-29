@@ -26,7 +26,7 @@
 
 from os import linesep
 
-from ..core.exceptions import LDAPKeyError, LDAPObjectError
+from ..core.exceptions import LDAPKeyError
 
 
 class AttrDef(object):
@@ -68,7 +68,7 @@ class AttrDef(object):
     def __repr__(self):
         r = 'ATTR: ' + self.key
         r += '' if self.name == self.key else ' [' + self.name + ']'
-        r += '' if self.default is NotImplemented else ' - default: ' + str(default)
+        r += '' if self.default is NotImplemented else ' - default: ' + str(self.default)
         r += '' if self.mandatory is None else ' - mandatory: ' + str(self.mandatory)
         r += '' if self.single_value is None else ' - single_value: ' + str(self.single_value)
         r += '' if not self.dereference_dn else ' - dereference_dn: ' + str(self.dereference_dn)

@@ -340,16 +340,17 @@ class Connection(object):
         r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.sasl_mechanism!r}'.format(self)
         r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
         r += '' if self.check_names is None else ', check_names={0.check_names!r}'.format(self)
-        r += '' if self.usage is None else (', collect_usage=' + 'True' if self.usage else 'False')
+        r += '' if self.usage is None else (', collect_usage=' + ('True' if self.usage else 'False'))
         r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
         r += '' if (self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
-        r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
-        r += '' if self.receive_timeout is None else (', receive_timeout=' + 'True' if self.receive_timeout else 'False')
-        r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
+        r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))
+        r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
+        r += '' if self.receive_timeout is None else (', receive_timeout=' + ('True' if self.receive_timeout else 'False'))
+        r += '' if self.empty_attributes is None else (', return_empty_attributes=' + ('True' if self.empty_attributes else 'False'))
         r += ')'
 
         return r

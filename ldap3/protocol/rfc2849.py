@@ -254,10 +254,11 @@ def decode_persistent_search_control(change):
 
     return None
 
+
 def persistent_search_response_to_ldif(change):
     ldif_lines = ['# ' + datetime.now().isoformat()]
     control = decode_persistent_search_control(change)
-    if control :
+    if control:
         if control['changeNumber']:
             ldif_lines.append('# change number: ' + str(control['changeNumber']))
         ldif_lines.append(control['changeType'])

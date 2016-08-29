@@ -26,101 +26,102 @@
 from ... import SEQUENCE_TYPES
 from .formatters import format_ad_timestamp, format_binary, format_boolean, format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
 from .validators import validate_integer, validate_bytes, always_valid, validate_generic_single_value
+
 # for each syntax can be specified a format function and a input validation function
 
 standard_formatter = {
-    '1.2.840.113556.1.4.903': (format_binary, None),# Object (DN-binary) - Microsoft
-    '1.2.840.113556.1.4.904': (format_unicode, None), # Object (DN-string) - Microsoft
-    '1.2.840.113556.1.4.905': (format_unicode, None), # String (Teletex) - Microsoft
-    '1.2.840.113556.1.4.906': (format_integer, None), # Large integer - Microsoft
-    '1.2.840.113556.1.4.907': (format_binary,  None),# String (NT-sec-desc) - Microsoft
-    '1.2.840.113556.1.4.1221': (format_binary, None), # Object (OR-name) - Microsoft
-    '1.2.840.113556.1.4.1362': (format_unicode, None), # String (Case) - Microsoft
-    '1.3.6.1.4.1.1466.115.121.1.1': (format_binary, None), # ACI item [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.2': (format_binary, None), # Access point [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.3': (format_unicode, None), # Attribute type description
-    '1.3.6.1.4.1.1466.115.121.1.4': (format_binary,  None),# Audio [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.5': (format_binary,  None),# Binary [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.6': (format_unicode, None), # Bit String
-    '1.3.6.1.4.1.1466.115.121.1.7': (format_boolean, None), # Boolean
-    '1.3.6.1.4.1.1466.115.121.1.8': (format_binary, None), # Certificate [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.9': (format_binary, None), # Certificate List [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.10': (format_binary, None), # Certificate Pair [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.11': (format_unicode, None), # Country String
-    '1.3.6.1.4.1.1466.115.121.1.12': (format_unicode, None), # Distinguished name (DN)
-    '1.3.6.1.4.1.1466.115.121.1.13': (format_binary,  None), # Data Quality Syntax [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.14': (format_unicode, None), # Delivery method
-    '1.3.6.1.4.1.1466.115.121.1.15': (format_unicode, None), # Directory string
-    '1.3.6.1.4.1.1466.115.121.1.16': (format_unicode, None), # DIT Content Rule Description
-    '1.3.6.1.4.1.1466.115.121.1.17': (format_unicode, None), # DIT Structure Rule Description
-    '1.3.6.1.4.1.1466.115.121.1.18': (format_binary, None), # DL Submit Permission [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.19': (format_binary, None), # DSA Quality Syntax [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.20': (format_binary, None), # DSE Type [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.21': (format_binary, None), # Enhanced Guide
-    '1.3.6.1.4.1.1466.115.121.1.22': (format_unicode, None), # Facsimile Telephone Number
-    '1.3.6.1.4.1.1466.115.121.1.23': (format_binary, None), # Fax
-    '1.3.6.1.4.1.1466.115.121.1.24': (format_time, None), # Generalized time
-    '1.3.6.1.4.1.1466.115.121.1.25': (format_binary, None), # Guide [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.26': (format_unicode, None), # IA5 string
-    '1.3.6.1.4.1.1466.115.121.1.27': (format_integer, validate_integer), # Integer
-    '1.3.6.1.4.1.1466.115.121.1.28': (format_binary, None), # JPEG
-    '1.3.6.1.4.1.1466.115.121.1.29': (format_binary, None), # Master and Shadow Access Points [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.30': (format_unicode, None), # Matching rule description
-    '1.3.6.1.4.1.1466.115.121.1.31': (format_unicode, None), # Matching rule use description
-    '1.3.6.1.4.1.1466.115.121.1.32': (format_unicode, None), # Mail Preference [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.33': (format_unicode, None), # MHS OR Address [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.34': (format_unicode, None), # Name and optional UID
-    '1.3.6.1.4.1.1466.115.121.1.35': (format_unicode, None), # Name form description
-    '1.3.6.1.4.1.1466.115.121.1.36': (format_unicode, None), # Numeric string
-    '1.3.6.1.4.1.1466.115.121.1.37': (format_unicode, None), # Object class description
-    '1.3.6.1.4.1.1466.115.121.1.38': (format_unicode, None), # OID
-    '1.3.6.1.4.1.1466.115.121.1.39': (format_unicode, None), # Other mailbox
-    '1.3.6.1.4.1.1466.115.121.1.40': (format_binary,  None),# Octet string
-    '1.3.6.1.4.1.1466.115.121.1.41': (format_unicode, None), # Postal address
-    '1.3.6.1.4.1.1466.115.121.1.42': (format_binary, None), # Protocol Information [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.43': (format_binary, None), # Presentation Address [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.44': (format_unicode, None), # Printable string
-    '1.3.6.1.4.1.1466.115.121.1.45': (format_binary, None), # Subtree specification [OBSOLETE
-    '1.3.6.1.4.1.1466.115.121.1.46': (format_binary, None), # Supplier Information [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.47': (format_binary, None), # Supplier Or Consumer [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.48': (format_binary, None), # Supplier And Consumer [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.49': (format_binary, None), # Supported Algorithm [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.50': (format_unicode, None), # Telephone number
-    '1.3.6.1.4.1.1466.115.121.1.51': (format_unicode, None), # Teletex terminal identifier
-    '1.3.6.1.4.1.1466.115.121.1.52': (format_unicode, None), # Teletex number
-    '1.3.6.1.4.1.1466.115.121.1.53': (format_time, None), # Utc time  (deprecated)
-    '1.3.6.1.4.1.1466.115.121.1.54': (format_unicode, None), # LDAP syntax description
-    '1.3.6.1.4.1.1466.115.121.1.55': (format_binary, None), # Modify rights [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.56': (format_binary, None), # LDAP Schema Definition [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.57': (format_unicode, None), # LDAP Schema Description [OBSOLETE]
-    '1.3.6.1.4.1.1466.115.121.1.58': (format_unicode, None), # Substring assertion
-    '1.3.6.1.1.16.1': (format_uuid, None), # UUID
-    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, None), # GUID (Novell)
-    '2.16.840.1.113719.1.1.5.1.0': (format_binary, None), # Unknown (Novell)
-    '2.16.840.1.113719.1.1.5.1.6': (format_unicode, None), # Case Ignore List (Novell)
-    '2.16.840.1.113719.1.1.5.1.12': (format_binary, None), # Tagged Data (Novell)
-    '2.16.840.1.113719.1.1.5.1.13': (format_binary, None), # Octet List (Novell)
-    '2.16.840.1.113719.1.1.5.1.14': (format_unicode, None), # Tagged String (Novell)
-    '2.16.840.1.113719.1.1.5.1.15': (format_unicode, None), # Tagged Name And String (Novell)
-    '2.16.840.1.113719.1.1.5.1.16': (format_binary, None), # NDS Replica Pointer (Novell)
-    '2.16.840.1.113719.1.1.5.1.17': (format_unicode, None), # NDS ACL (Novell)
-    '2.16.840.1.113719.1.1.5.1.19': (format_time, None), # NDS Timestamp (Novell)
-    '2.16.840.1.113719.1.1.5.1.22': (format_integer, None), # Counter (Novell)
-    '2.16.840.1.113719.1.1.5.1.23': (format_unicode, None), # Tagged Name (Novell)
-    '2.16.840.1.113719.1.1.5.1.25': (format_unicode, None), # Typed Name (Novell)
-    'supportedldapversion': (format_integer, None), # supportedLdapVersion (Microsoft)
-    'octetstring': (format_binary, None), # octect string (Microsoft)
-    '1.2.840.113556.1.4.2': (format_uuid_le, None), # object guid (Microsoft)
-    '1.2.840.113556.1.4.13': (format_ad_timestamp, None), # builtinCreationTime (Microsoft)
-    '1.2.840.113556.1.4.26': (format_ad_timestamp, None), # creationTime (Microsoft)
-    '1.2.840.113556.1.4.49': (format_ad_timestamp, None), # badPasswordTime (Microsoft)
-    '1.2.840.113556.1.4.51': (format_ad_timestamp, None), # lastLogoff (Microsoft)
-    '1.2.840.113556.1.4.52': (format_ad_timestamp, None), # lastLogon (Microsoft)
-    '1.2.840.113556.1.4.96': (format_ad_timestamp, None), # pwdLastSet (Microsoft)
-    '1.2.840.113556.1.4.146': (format_sid, None), # objectSid (Microsoft)
-    '1.2.840.113556.1.4.159': (format_ad_timestamp, None), # accountExpires (Microsoft)
-    '1.2.840.113556.1.4.662': (format_ad_timestamp, None), # lockoutTime (Microsoft)
-    '1.2.840.113556.1.4.1696': (format_ad_timestamp, None) # lastLogonTimestamp (Microsoft)
+    '1.2.840.113556.1.4.903': (format_binary, None),  # Object (DN-binary) - Microsoft
+    '1.2.840.113556.1.4.904': (format_unicode, None),  # Object (DN-string) - Microsoft
+    '1.2.840.113556.1.4.905': (format_unicode, None),  # String (Teletex) - Microsoft
+    '1.2.840.113556.1.4.906': (format_integer, None),  # Large integer - Microsoft
+    '1.2.840.113556.1.4.907': (format_binary, None),  # String (NT-sec-desc) - Microsoft
+    '1.2.840.113556.1.4.1221': (format_binary, None),  # Object (OR-name) - Microsoft
+    '1.2.840.113556.1.4.1362': (format_unicode, None),  # String (Case) - Microsoft
+    '1.3.6.1.4.1.1466.115.121.1.1': (format_binary, None),  # ACI item [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.2': (format_binary, None),  # Access point [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.3': (format_unicode, None),  # Attribute type description
+    '1.3.6.1.4.1.1466.115.121.1.4': (format_binary, None),  # Audio [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.5': (format_binary, None),  # Binary [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.6': (format_unicode, None),  # Bit String
+    '1.3.6.1.4.1.1466.115.121.1.7': (format_boolean, None),  # Boolean
+    '1.3.6.1.4.1.1466.115.121.1.8': (format_binary, None),  # Certificate [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.9': (format_binary, None),  # Certificate List [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.10': (format_binary, None),  # Certificate Pair [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.11': (format_unicode, None),  # Country String
+    '1.3.6.1.4.1.1466.115.121.1.12': (format_unicode, None),  # Distinguished name (DN)
+    '1.3.6.1.4.1.1466.115.121.1.13': (format_binary, None),  # Data Quality Syntax [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.14': (format_unicode, None),  # Delivery method
+    '1.3.6.1.4.1.1466.115.121.1.15': (format_unicode, None),  # Directory string
+    '1.3.6.1.4.1.1466.115.121.1.16': (format_unicode, None),  # DIT Content Rule Description
+    '1.3.6.1.4.1.1466.115.121.1.17': (format_unicode, None),  # DIT Structure Rule Description
+    '1.3.6.1.4.1.1466.115.121.1.18': (format_binary, None),  # DL Submit Permission [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.19': (format_binary, None),  # DSA Quality Syntax [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.20': (format_binary, None),  # DSE Type [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.21': (format_binary, None),  # Enhanced Guide
+    '1.3.6.1.4.1.1466.115.121.1.22': (format_unicode, None),  # Facsimile Telephone Number
+    '1.3.6.1.4.1.1466.115.121.1.23': (format_binary, None),  # Fax
+    '1.3.6.1.4.1.1466.115.121.1.24': (format_time, None),  # Generalized time
+    '1.3.6.1.4.1.1466.115.121.1.25': (format_binary, None),  # Guide [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.26': (format_unicode, None),  # IA5 string
+    '1.3.6.1.4.1.1466.115.121.1.27': (format_integer, validate_integer),  # Integer
+    '1.3.6.1.4.1.1466.115.121.1.28': (format_binary, None),  # JPEG
+    '1.3.6.1.4.1.1466.115.121.1.29': (format_binary, None),  # Master and Shadow Access Points [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.30': (format_unicode, None),  # Matching rule description
+    '1.3.6.1.4.1.1466.115.121.1.31': (format_unicode, None),  # Matching rule use description
+    '1.3.6.1.4.1.1466.115.121.1.32': (format_unicode, None),  # Mail Preference [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.33': (format_unicode, None),  # MHS OR Address [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.34': (format_unicode, None),  # Name and optional UID
+    '1.3.6.1.4.1.1466.115.121.1.35': (format_unicode, None),  # Name form description
+    '1.3.6.1.4.1.1466.115.121.1.36': (format_unicode, None),  # Numeric string
+    '1.3.6.1.4.1.1466.115.121.1.37': (format_unicode, None),  # Object class description
+    '1.3.6.1.4.1.1466.115.121.1.38': (format_unicode, None),  # OID
+    '1.3.6.1.4.1.1466.115.121.1.39': (format_unicode, None),  # Other mailbox
+    '1.3.6.1.4.1.1466.115.121.1.40': (format_binary, None),  # Octet string
+    '1.3.6.1.4.1.1466.115.121.1.41': (format_unicode, None),  # Postal address
+    '1.3.6.1.4.1.1466.115.121.1.42': (format_binary, None),  # Protocol Information [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.43': (format_binary, None),  # Presentation Address [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.44': (format_unicode, None),  # Printable string
+    '1.3.6.1.4.1.1466.115.121.1.45': (format_binary, None),  # Subtree specification [OBSOLETE
+    '1.3.6.1.4.1.1466.115.121.1.46': (format_binary, None),  # Supplier Information [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.47': (format_binary, None),  # Supplier Or Consumer [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.48': (format_binary, None),  # Supplier And Consumer [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.49': (format_binary, None),  # Supported Algorithm [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.50': (format_unicode, None),  # Telephone number
+    '1.3.6.1.4.1.1466.115.121.1.51': (format_unicode, None),  # Teletex terminal identifier
+    '1.3.6.1.4.1.1466.115.121.1.52': (format_unicode, None),  # Teletex number
+    '1.3.6.1.4.1.1466.115.121.1.53': (format_time, None),  # Utc time  (deprecated)
+    '1.3.6.1.4.1.1466.115.121.1.54': (format_unicode, None),  # LDAP syntax description
+    '1.3.6.1.4.1.1466.115.121.1.55': (format_binary, None),  # Modify rights [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.56': (format_binary, None),  # LDAP Schema Definition [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.57': (format_unicode, None),  # LDAP Schema Description [OBSOLETE]
+    '1.3.6.1.4.1.1466.115.121.1.58': (format_unicode, None),  # Substring assertion
+    '1.3.6.1.1.16.1': (format_uuid, None),  # UUID
+    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, None),  # GUID (Novell)
+    '2.16.840.1.113719.1.1.5.1.0': (format_binary, None),  # Unknown (Novell)
+    '2.16.840.1.113719.1.1.5.1.6': (format_unicode, None),  # Case Ignore List (Novell)
+    '2.16.840.1.113719.1.1.5.1.12': (format_binary, None),  # Tagged Data (Novell)
+    '2.16.840.1.113719.1.1.5.1.13': (format_binary, None),  # Octet List (Novell)
+    '2.16.840.1.113719.1.1.5.1.14': (format_unicode, None),  # Tagged String (Novell)
+    '2.16.840.1.113719.1.1.5.1.15': (format_unicode, None),  # Tagged Name And String (Novell)
+    '2.16.840.1.113719.1.1.5.1.16': (format_binary, None),  # NDS Replica Pointer (Novell)
+    '2.16.840.1.113719.1.1.5.1.17': (format_unicode, None),  # NDS ACL (Novell)
+    '2.16.840.1.113719.1.1.5.1.19': (format_time, None),  # NDS Timestamp (Novell)
+    '2.16.840.1.113719.1.1.5.1.22': (format_integer, None),  # Counter (Novell)
+    '2.16.840.1.113719.1.1.5.1.23': (format_unicode, None),  # Tagged Name (Novell)
+    '2.16.840.1.113719.1.1.5.1.25': (format_unicode, None),  # Typed Name (Novell)
+    'supportedldapversion': (format_integer, None),  # supportedLdapVersion (Microsoft)
+    'octetstring': (format_binary, None),  # octect string (Microsoft)
+    '1.2.840.113556.1.4.2': (format_uuid_le, None),  # object guid (Microsoft)
+    '1.2.840.113556.1.4.13': (format_ad_timestamp, None),  # builtinCreationTime (Microsoft)
+    '1.2.840.113556.1.4.26': (format_ad_timestamp, None),  # creationTime (Microsoft)
+    '1.2.840.113556.1.4.49': (format_ad_timestamp, None),  # badPasswordTime (Microsoft)
+    '1.2.840.113556.1.4.51': (format_ad_timestamp, None),  # lastLogoff (Microsoft)
+    '1.2.840.113556.1.4.52': (format_ad_timestamp, None),  # lastLogon (Microsoft)
+    '1.2.840.113556.1.4.96': (format_ad_timestamp, None),  # pwdLastSet (Microsoft)
+    '1.2.840.113556.1.4.146': (format_sid, None),  # objectSid (Microsoft)
+    '1.2.840.113556.1.4.159': (format_ad_timestamp, None),  # accountExpires (Microsoft)
+    '1.2.840.113556.1.4.662': (format_ad_timestamp, None),  # lockoutTime (Microsoft)
+    '1.2.840.113556.1.4.1696': (format_ad_timestamp, None)  # lastLogonTimestamp (Microsoft)
 }
 
 

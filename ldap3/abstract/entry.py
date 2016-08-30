@@ -354,7 +354,7 @@ class WritableEntry(EntryBase):
                 if item not in self._state.attributes:  # setting value to an attribute still without values
                     new_attribute = WritableAttribute(self.entry_get_cursor().definition._attributes[item], self, cursor=self.entry_get_cursor())
                     self._state.attributes[str(item)] = new_attribute  # force item to a string for key in attributes dict
-                self._state.attributes[item].set_value(value)  # try to add to new_values
+                self._state.attributes[item].set(value)  # try to add to new_values
             else:
                 raise LDAPEntryError('attribute \'%s\' not defined' % item)
 

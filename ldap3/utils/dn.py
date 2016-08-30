@@ -258,7 +258,7 @@ def escape_attribute_value(attribute_value):
     elif state == STATE_ESCAPE_HEX:
         escaped += '\\\\' + tmp_buffer
 
-    if escaped[0] == ' ':  # leading  SPACE must be escaped
+    if escaped[0] == ' ':  # leading SPACE must be escaped
         escaped = '\\' + escaped
 
     if escaped[-1] == ' ' and len(escaped) > 1 and escaped[-2] != '\\':  # trailing SPACE must be escaped
@@ -297,7 +297,7 @@ def parse_dn(dn, escape=False, strip=True):
 
 def safe_dn(dn, decompose=False, reverse=False):
     """
-    normalize and escape a dn, if dn is a sequence is joined.
+    normalize and escape a dn, if dn is a sequence it is joined.
     the reverse parameter change the join direction of the sequence
     """
     if isinstance(dn, SEQUENCE_TYPES):

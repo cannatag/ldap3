@@ -32,6 +32,7 @@ from .attrDef import AttrDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPReaderError, LDAPWriterError
 from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.dn import safe_dn
 
 
 def _ret_search_value(value):
@@ -615,3 +616,14 @@ class Writer(Cursor):
             self.execution_time = datetime.now()
 
         return self.entries[0] if len(self.entries) == 1 else None
+
+    def new_entry(self, dn):
+        dn = safe_dn(dn)
+        entry = self.entry_class(dn, self)  # define a new empty Entry
+        for attribute in entry._state.definition._attributes:  # defines all mandatory attributes as virtual
+            if entry._state.definition._attributes[attribute].mandatory:
+                self._state.attributes[attr] = WritableAttribute(self._state.definition[attr], self, self.entry_get_cursor())
+                self.__dict__[attr] = self._state.attributes[attr]
+                entry.__dict__[attribute] = WritableAttribute(entry._state.definition._attributes[attribute], entry, self)
+        self.entries.append(entry)
+        return entry

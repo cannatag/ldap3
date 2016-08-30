@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES
+from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES, STRING_TYPES
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
 
@@ -144,42 +144,42 @@ class WritableAttribute(Attribute):
         return r
 
     def __iadd__(self, other):
-        self.add_value(other)
-        return Ellipsis  # hack to avoid calling set_value in entry __setattr__
+        self.add(other)
+        return Ellipsis  # hack to avoid calling set() in entry __setattr__
 
     def __isub__(self, other):
-        self.delete_value(other)
+        self.delete(other)
         return Ellipsis  # hack to avoid calling set_value in entry __setattr__
 
-    def add_value(self, value):
+    def add(self, values):
         # new value for attribute to commit with a MODIFY_ADD
-        if value is None:
+        if values is None:
             raise LDAPAttributeError('added value cannot be None')
         # if self.values and self.definition.single_value:
         #    raise LDAPAttributeError("can't add to a single value attributewith already a value, use set_value")
-        if value is not None and not self.definition.validate(self.definition.name, value):
-            raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (value, self.key))
-        self.changes.append((MODIFY_ADD, value if isinstance(value, SEQUENCE_TYPES) else [value]))
+        if values is not None and not self.definition.validate(self.definition.name, values):
+            raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+        self.changes.append((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
-    def set_value(self, value):
+    def set(self, values):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
-        if value is None:
+        if values is None:
             raise LDAPAttributeError('new value cannot be None')
-        if not self.definition.validate(self.definition.name, value):
-            raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (value, self.key))
-        self.changes.append((MODIFY_REPLACE, value if isinstance(value, SEQUENCE_TYPES) else [value]))
+        if not self.definition.validate(self.definition.name, values):
+            raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+        self.changes.append((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
-    def delete_value(self, value):
+    def delete(self, values):
         # value for attribute to delete in commit with a MODIFY_DELETE
-        if value is None:
+        if values is None:
             raise LDAPAttributeError('value to delete cannot be None')
-
-        if value in self.values:
-            if not self.definition.validate(self.definition.name, value):
-                raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (value, self.key))
-        else:
-            raise LDAPAttributeError('value \'%s\' not present in \'%s\'' % (value, self.values))
-        self.changes.append((MODIFY_DELETE, value if isinstance(value, SEQUENCE_TYPES) else [value]))
+        if isinstance(values, STRING_TYPES):
+            values = [values]
+        if isinstance(values, SEQUENCE_TYPES):
+            for single_value in values:
+                if single_value not in self.values:
+                    raise LDAPAttributeError('value \'%s\' not present in \'%s\'' % (values, self.values))
+            self.changes.append((MODIFY_DELETE, values))
 
     def remove(self):
         self.changes.append((MODIFY_REPLACE, []))

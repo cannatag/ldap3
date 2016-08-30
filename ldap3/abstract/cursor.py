@@ -22,13 +22,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+
 from copy import deepcopy
 from datetime import datetime
 from os import linesep
 
-from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, get_config_parameter
+from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
+from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPReaderError, LDAPWriterError
 from ..utils.ciDict import CaseInsensitiveDict
@@ -63,6 +65,9 @@ class Cursor(object):
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
+        if isinstance(object_def, STRING_TYPES):
+            object_def = ObjectDef(object_def, connection.server.schema)
+
         self._definition = object_def
         self.attributes = set(attributes) if attributes else set([attr.name for attr in self._definition])
         self.get_operational_attributes = get_operational_attributes
@@ -622,8 +627,8 @@ class Writer(Cursor):
         entry = self.entry_class(dn, self)  # define a new empty Entry
         for attribute in entry._state.definition._attributes:  # defines all mandatory attributes as virtual
             if entry._state.definition._attributes[attribute].mandatory:
-                self._state.attributes[attr] = WritableAttribute(self._state.definition[attr], self, self.entry_get_cursor())
+                self._state.attributes[attr] = attribute_class(self._state.definition[attr], self, self.entry_get_cursor())
                 self.__dict__[attr] = self._state.attributes[attr]
-                entry.__dict__[attribute] = WritableAttribute(entry._state.definition._attributes[attribute], entry, self)
+                entry.__dict__[attribute] = entry._state.definition._attributes[attribute]
         self.entries.append(entry)
         return entry

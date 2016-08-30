@@ -312,10 +312,9 @@ class Entry(EntryBase):
       get_raw_attribute() methods
 
     """
-    def make_writable(self, object_class, attributes=None, custom_validator=None):
+    def make_writable(self, object_class, writer_cursor=None, attributes=None, custom_validator=None):
         if not self.entry_get_cursor().schema:
             raise LDAPReaderError('The schema must be available to make an entry writable')
-        from .cursor import Writer  # local import to avoid circular referecence in import at startup
         # returns a newly created WritableEntry and its relevant Writer
         object_def = ObjectDef(object_class, self.entry_get_cursor().schema, custom_validator)
         for attribute in self.entry_get_attribute_names():
@@ -333,11 +332,17 @@ class Entry(EntryBase):
         else:
             attributes = []
 
-        writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names())
+        if not writer_cursor:
+            from .cursor import Writer  # local import to avoid circular referecence in import at startup
+            writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names())
+        else:
+            writable_cursor = writer_cursor
+
         if attributes:  # force reading of attributes
             writable_entry = writable_cursor.search_object(self.entry_get_dn(), list(attributes) + self.entry_get_attribute_names())
         else:
             writable_entry = writable_cursor._get_entry(deepcopy(self.entry_get_response()))
+            writable_cursor.entries.append(writable_entry)
             writable_entry._state.read_time = self.entry_get_read_time()
         writable_entry._state.origin = self  # reference to the original read-only entry
         return writable_entry

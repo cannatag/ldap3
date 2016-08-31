@@ -23,8 +23,24 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .attribute import Attribute, OperationalAttribute, WritableAttribute
-from .attrDef import AttrDef
-from .objectDef import ObjectDef
-from .entry import Entry, WritableEntry
-from .cursor import Reader, Writer
+STATUS_INIT = 'Initialized'  # The entry object is initialized
+STATUS_NEW = 'New'  # The entry is a new writable entry, still empty
+STATUS_MISSING = 'Missing mandatory attributes'  # The entry has some mandatory attributes missing
+STATUS_READ = 'Read' # The entry has been read
+STATUS_WRITABLE = 'Writable' # The entry has been made writable, still no changes
+STATUS_PENDING_CHANGES = 'Pending changes'  # The entry has some changes to commit, mandatory attributes are present
+STATUS_COMMITTED = 'Committed'  # The entry changes has been committed
+STATUS_READY_FOR_DELETION = 'Ready for deletion'  # The entry is set for deletion
+STATUS_DELETED = 'Deleted'  # The entry has been deleted
+
+STATUSES = [STATUS_INIT,
+            STATUS_NEW,
+            STATUS_MISSING,
+            STATUS_READ,
+            STATUS_WRITABLE,
+            STATUS_PENDING_CHANGES,
+            STATUS_COMMITTED,
+            STATUS_READY_FOR_DELETION,
+            STATUS_DELETED]
+
+INITIAL_STATUSES = [STATUS_READ, STATUS_WRITABLE, STATUS_NEW]

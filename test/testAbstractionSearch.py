@@ -24,7 +24,7 @@
 
 import unittest
 
-from ldap3.abstract import ObjectDef, AttrDef, Reader
+from ldap3 import ObjectDef, AttrDef, Reader
 from test import test_base, add_user, add_group, get_connection, drop_connection, random_id
 
 testcase_id = random_id()

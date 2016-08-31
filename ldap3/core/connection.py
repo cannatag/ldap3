@@ -1276,7 +1276,7 @@ class Connection(object):
 
     def _get_entries(self, search_response):
         with self.lock:
-            from ..abstract import ObjectDef, Reader
+            from .. import ObjectDef, Reader
 
             # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset
             attr_sets = []

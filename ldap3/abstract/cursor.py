@@ -35,7 +35,7 @@ from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPCursorError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import safe_dn
-
+from . import STATUS_NEW, STATUS_READ, STATUS_WRITABLE
 
 def _ret_search_value(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -58,8 +58,10 @@ def _create_query_dict(query_text):
 
 class Cursor(object):
     # entry_class and attribute_class define the type of entry and attribute used by the cursor
+    # entry_status defines the initial status of a entry
     # entry_class = Entry, must be defined in subclasses
     # attribute_class = Attribute, must be defined in subclasses
+    # entry_status = STATUS, must be defined in subclasses
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
@@ -172,6 +174,7 @@ class Cursor(object):
 
         entry._state.response = response
         entry._state.read_time = datetime.now()
+        entry._state.set_status(self.entry_status)
         for attr in entry:  # returns the whole attribute object
             entry.__dict__[attr.key] = attr
 
@@ -238,6 +241,7 @@ class Reader(Cursor):
     """
     entry_class = Entry  # entries are read_only
     attribute_class = Attribute  # attributes are read_only
+    entry_status = STATUS_READ
 
     def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
@@ -570,6 +574,7 @@ class Reader(Cursor):
 class Writer(Cursor):
     entry_class = WritableEntry
     attribute_class = WritableAttribute
+    entry_status = STATUS_WRITABLE
 
     @staticmethod
     def from_reader(reader, connection, object_class, custom_validator=None):
@@ -600,7 +605,7 @@ class Writer(Cursor):
         for entry in self.entries:
             entry.entry_commit(controls)
 
-    def discard(self):
+    def discard_changes(self):
         for entry in self.entries:
             entry.entry_discard()
 
@@ -642,5 +647,6 @@ class Writer(Cursor):
                 self._state.attributes[attr] = attribute_class(self._state.definition[attr], self, self.entry_get_cursor())
                 self.__dict__[attr] = self._state.attributes[attr]
                 entry.__dict__[attribute] = entry._state.definition._attributes[attribute]
+        entry._state.set_status(STATUS_NEW)
         self.entries.append(entry)
         return entry

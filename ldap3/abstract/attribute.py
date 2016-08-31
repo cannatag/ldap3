@@ -28,7 +28,7 @@ from os import linesep
 from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES, STRING_TYPES
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
-
+from . import STATUS_PENDING_CHANGES
 
 # noinspection PyUnresolvedReferences
 class Attribute(object):
@@ -160,6 +160,7 @@ class WritableAttribute(Attribute):
         if values is not None and not self.definition.validate(self.definition.name, values):
             raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
         self.changes.append((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))
+        self.entry._state.set_status(STATUS_PENDING_CHANGES)
 
     def set(self, values):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
@@ -168,6 +169,7 @@ class WritableAttribute(Attribute):
         if not self.definition.validate(self.definition.name, values):
             raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
         self.changes.append((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
+        self.entry._state.set_status(STATUS_PENDING_CHANGES)
 
     def delete(self, values):
         # value for attribute to delete in commit with a MODIFY_DELETE
@@ -175,14 +177,15 @@ class WritableAttribute(Attribute):
             raise LDAPAttributeError('value to delete cannot be None')
         if isinstance(values, STRING_TYPES):
             values = [values]
-        if isinstance(values, SEQUENCE_TYPES):
-            for single_value in values:
-                if single_value not in self.values:
-                    raise LDAPAttributeError('value \'%s\' not present in \'%s\'' % (values, self.values))
-            self.changes.append((MODIFY_DELETE, values))
+        for single_value in values:
+            if single_value not in self.values:
+                raise LDAPAttributeError('value \'%s\' not present in \'%s\'' % (values, self.values))
+        self.changes.append((MODIFY_DELETE, values))
+        self.entry._state.set_status(STATUS_PENDING_CHANGES)
 
     def remove(self):
         self.changes.append((MODIFY_REPLACE, []))
+        self.entry._state.set_status(STATUS_PENDING_CHANGES)
 
     def discard_changes(self):
         self.changes = []

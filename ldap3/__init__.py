@@ -149,5 +149,9 @@ from .core.server import Server
 from .core.connection import Connection
 from .core.tls import Tls
 from .core.pooling import ServerPool
-from .abstract import ObjectDef, AttrDef, Attribute, Entry, Reader, OperationalAttribute, Writer
+from .abstract.objectDef import ObjectDef
+from .abstract.attrDef import AttrDef
+from .abstract.attribute import Attribute, WritableAttribute, OperationalAttribute
+from .abstract.entry import Entry, WritableEntry
+from .abstract.cursor import Reader, Writer
 from .protocol.rfc4512 import DsaInfo, SchemaInfo

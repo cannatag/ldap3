@@ -100,15 +100,11 @@ class Test(unittest.TestCase):
         if entry1._state.read_time is not None:
             self.assertFalse(entry1._state.read_time is entry2._state.read_time)
 
-    def test_duplicate_entry(self):
-        entry1 = self.get_entry('search-and-modify-1')
-        entry2 = entry1.entry_duplicate()
-        self.compare_entries(entry1, entry2)
-
     def test_search_and_delete_entry(self):
         read_only_entry = self.get_entry('search-and-modify-1')
         writable_entry = read_only_entry.make_writable('inetorgperson')
-        result = writable_entry.entry_delete()
+        writable_entry.entry_delete()
+        result = writable_entry.entry_commit()
         self.assertTrue(result)
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-and-modify-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:

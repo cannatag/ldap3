@@ -38,7 +38,7 @@ from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveDict
-
+from . import STATUS_WRITABLE, STATUS_NEW, STATUS_READ, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_MISSING, STATUS_READY_FOR_DELETION, STATUSES,INITIAL_STATUSES
 
 class EntryState(object):
     """Contains data on the status of the entry. Does not pollute the Entry __dict__.
@@ -47,6 +47,8 @@ class EntryState(object):
 
     def __init__(self, dn, cursor):
         self.dn = dn
+        self._initial_status = None
+        self.status = STATUS_INIT
         self.attributes = CaseInsensitiveDict()
         self.raw_attributes = CaseInsensitiveDict()
         self.response = None
@@ -61,6 +63,7 @@ class EntryState(object):
     def __repr__(self):
         if self.dn is not None:
             r = 'DN: ' + to_stdout_encoding(self.dn) + linesep
+            r += 'STATE: ' + self.status + linesep
             r += 'attributes: ' + ', '.join(sorted(self.attributes.keys())) + linesep
             r += 'object def: ' + (', '.join(sorted(self.definition._object_class)) if self.definition._object_class else '<None>') + linesep
             r += 'attr defs: ' + ', '.join(sorted(self.definition._attributes.keys())) + linesep
@@ -74,6 +77,14 @@ class EntryState(object):
 
     def __str__(self):
         return self.__repr__()
+
+    def set_status(self, status):
+        if status not in STATUSES:
+            raise LDAPEntryError('invalid entry status ' + str(status))
+
+        if status in INITIAL_STATUSES:
+            self._initial_status = self.status
+        self.status = status
 
 
 class EntryBase(object):
@@ -96,6 +107,7 @@ class EntryBase(object):
     def __repr__(self):
         if self.entry_get_dn() is not None:
             r = 'DN: ' + to_stdout_encoding(self.entry_get_dn()) + linesep
+            r += 'STATE:' + self._state.status
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
                     r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
@@ -239,9 +251,7 @@ class EntryBase(object):
                 if attr not in self._state.attributes and attr in self._state.definition._attributes:
                     self._state.attributes[attr] = WritableAttribute(self._state.definition[attr], self, self.entry_get_cursor())
                     self.__dict__[attr] = self._state.attributes[attr]
-
-    def entry_refresh_from_reader(self):  # for compatability before 1.4.1
-        self.entry_refresh()
+            self._state.set_status(STATUS_READ)
 
     def entry_to_json(self,
                       raw=False,
@@ -288,17 +298,6 @@ class EntryBase(object):
                 stream.write(prepare_for_stream(header + line_separator + line_separator))
             stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
         return ldif_output
-
-    def entry_duplicate(self):
-        temp_entry = self.entry_get_cursor()._get_entry(deepcopy(self.entry_get_response()))
-        temp_entry.__dict__['origin'] = self
-        # origin.__dict__.clear()
-        # origin.__dict__['_state'] = temp_entry._state
-        # for attr in self:  # returns the whole attribute object
-        #     origin.__dict__[attr.key] = attr
-        temp_entry._state.read_time = copy(self._state.read_time)
-        return temp_entry
-
 
 class Entry(EntryBase):
     """The Entry object contains a single LDAP entry.
@@ -384,58 +383,67 @@ class WritableEntry(EntryBase):
             raise LDAPAttributeError('attribute must be a string')
 
     def entry_commit(self, refresh=True, controls=None):
-        changes = dict()
-        for key in self._state.attributes:
-            attribute = self._state.attributes[key]
-            if attribute.changes:
-                changes[attribute.definition.name] = attribute.changes
-
-        if changes:
-            if self.entry_get_cursor().connection.modify(self.entry_get_dn(), changes, controls):
-                if refresh:
-                    self.entry_refresh()
+        if self._state.status == STATUS_READY_FOR_DELETION:
+            origin = None
+            if self.entry_get_cursor().connection.delete(self.entry_get_dn(), controls):
+                dn = self.entry_get_dn()
+                if self._state.origin:  # deletes original read-only entry if present
+                    cursor = self._state.origin.entry_get_cursor()
+                    self._state.origin.__dict__.clear()
+                    self._state.origin.__dict__['_state'] = EntryState(dn, cursor)
                     origin = self._state.origin
-                    if origin:  # updates original read-only entry if present
-                        for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
-                            if attr.key in self._state.definition._attributes and attr.key not in origin._state.definition._attributes:
-                                origin.entry_get_cursor().definition.add(self.entry_get_cursor().definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
-                        temp_entry = origin.entry_get_cursor()._get_entry(deepcopy(self.entry_get_response()))
-                        origin.__dict__.clear()
-                        origin.__dict__['_state'] = temp_entry._state
-                        for attr in self:  # returns the whole attribute object
-                            if not attr.virtual:
-                                origin.__dict__[attr.key] = origin._state.attributes[attr.key]
-                        origin._state.read_time = copy(self._state.read_time)
+                cursor = self.entry_get_cursor()
+                self.__dict__.clear()
+                self._state = EntryState(dn, cursor)
+                self._state.origin = origin
+                self._state.set_status(STATUS_DELETED)
                 return True
             else:
-                raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'] + ' - ' + self.entry_get_cursor().connection.result['message'])
+                raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
+        elif self._state.status == STATUS_PENDING_CHANGES:
+            changes = dict()
+            for key in self._state.attributes:
+                attribute = self._state.attributes[key]
+                if attribute.changes:
+                    changes[attribute.definition.name] = attribute.changes
+
+            if changes:
+                if self.entry_get_cursor().connection.modify(self.entry_get_dn(), changes, controls):
+                    if refresh:
+                        self.entry_refresh()
+                        origin = self._state.origin
+                        if origin:  # updates original read-only entry if present
+                            for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
+                                if attr.key in self._state.definition._attributes and attr.key not in origin._state.definition._attributes:
+                                    origin.entry_get_cursor().definition.add(self.entry_get_cursor().definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
+                            temp_entry = origin.entry_get_cursor()._get_entry(deepcopy(self.entry_get_response()))
+                            origin.__dict__.clear()
+                            origin.__dict__['_state'] = temp_entry._state
+                            for attr in self:  # returns the whole attribute object
+                                if not attr.virtual:
+                                    origin.__dict__[attr.key] = origin._state.attributes[attr.key]
+                            origin._state.read_time = copy(self._state.read_time)
+                    self._state.set_status(STATUS_COMMITTED)
+                    return True
+                else:
+                    raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'] + ' - ' + self.entry_get_cursor().connection.result['message'])
+
         return False
 
     def entry_get_changes(self):
-        changes = dict()
-        for key in self._state.attributes:
-            attribute = self._state.attributes[key]
-            if attribute.changes:
-                changes[attribute.definition.name] = attribute.changes
-        return changes
+        if self._state.status == STATUS_PENDING_CHANGES:
+            changes = dict()
+            for key in self._state.attributes:
+                attribute = self._state.attributes[key]
+                if attribute.changes:
+                    changes[attribute.definition.name] = attribute.changes
+            return changes
+        return None
 
-    def entry_discard(self):
+    def entry_discard_changes(self):
         for key in self._state.attributes:
             self._state.attributes[key].discard_changes()
+        self._state.set_status(self._state._initial_status)
 
     def entry_delete(self, controls=None):
-        origin = None
-        if self.entry_get_cursor().connection.delete(self.entry_get_dn(), controls):
-            dn = self.entry_get_dn()
-            if self._state.origin:  # deletes original read-only entry if present
-                cursor = self._state.origin.entry_get_cursor()
-                self._state.origin.__dict__.clear()
-                self._state.origin.__dict__['_state'] = EntryState(dn, cursor)
-                origin = self._state.origin
-            cursor = self.entry_get_cursor()
-            self.__dict__.clear()
-            self._state = EntryState(dn, cursor)
-            self._state.origin = origin
-            return True
-        else:
-            raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
+        self._state.set_status(STATUS_READY_FOR_DELETION)

@@ -291,6 +291,7 @@ class EntryBase(object):
 
     def entry_duplicate(self):
         temp_entry = self.entry_get_cursor()._get_entry(deepcopy(self.entry_get_response()))
+        temp_entry.__dict__['origin'] = self
         # origin.__dict__.clear()
         # origin.__dict__['_state'] = temp_entry._state
         # for attr in self:  # returns the whole attribute object
@@ -312,14 +313,15 @@ class Entry(EntryBase):
       get_raw_attribute() methods
 
     """
-    def make_writable(self, object_class, writer_cursor=None, attributes=None, custom_validator=None):
+    def make_writable(self, object_def, writer_cursor=None, attributes=None, custom_validator=None):
         if not self.entry_get_cursor().schema:
             raise LDAPCursorError('The schema must be available to make an entry writable')
         # returns a newly created WritableEntry and its relevant Writer
-        object_def = ObjectDef(object_class, self.entry_get_cursor().schema, custom_validator)
-        for attribute in self.entry_get_attribute_names():
-            if attribute not in object_def._attributes:
-                raise LDAPCursorError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
+        if not isinstance(object_def, ObjectDef):
+                object_def = ObjectDef(object_def, self.entry_get_cursor().schema, custom_validator)
+        # for attribute in self.entry_get_attribute_names():
+        #     if attribute not in object_def._attributes:
+        #         raise LDAPCursorError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_def))
 
         if attributes:
             if isinstance(attributes, STRING_TYPES):
@@ -343,7 +345,7 @@ class Entry(EntryBase):
         else:
             writable_entry = writable_cursor._get_entry(deepcopy(self.entry_get_response()))
             writable_cursor.entries.append(writable_entry)
-            writable_entry._state.read_time = self.entry_get_read_time()
+            writable_entry._state.read_time = copy(self._state.read_time)
         writable_entry._state.origin = self  # reference to the original read-only entry
         return writable_entry
 

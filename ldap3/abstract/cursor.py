@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from copy import deepcopy
+from copy import deepcopy, copy
 from datetime import datetime
 from os import linesep
 
@@ -169,6 +169,7 @@ class Cursor(object):
         entry = self.entry_class(response['dn'], self)  # define an Entry (writable or readonly), as specified in the cursor definition
         entry._state.attributes = self._get_attributes(response, self._definition, entry)
         entry._state.raw_attributes = deepcopy(response['raw_attributes'])
+
         entry._state.response = response
         entry._state.read_time = datetime.now()
         for attr in entry:  # returns the whole attribute object
@@ -285,7 +286,7 @@ class Reader(Cursor):
         if self._query:
             r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
         if self.validated_query:
-            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
+            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
         r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
         r += 'FILTER : ' + repr(self.query_filter) + linesep
         if self.execution_time:
@@ -571,8 +572,10 @@ class Writer(Cursor):
     attribute_class = WritableAttribute
 
     @staticmethod
-    def from_reader(reader):
-        writer = Writer(reader.connection, ObjectDef(reader.definition), attributes=reader.attributes)
+    def from_reader(reader, connection, object_class, custom_validator=None):
+        writer = Writer(connection, object_class, attributes=reader.attributes)
+        for entry in reader.entries:
+            entry.make_writable(object_class, writer, custom_validator=custom_validator)
         return writer
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):

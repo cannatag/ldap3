@@ -25,14 +25,12 @@
 
 from os import linesep
 from threading import RLock
-import json
 from functools import reduce
+import json
 
-from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, \
-    DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
-    ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, ASYNC_STREAM, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
+from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
+
+from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE
 from .exceptions import LDAPSocketReceiveError
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
@@ -71,6 +69,19 @@ try:
 except ImportError:
     MockAsyncStrategy = NotImplemented
 
+
+SASL_AVAILABLE_MECHANISMS = [EXTERNAL,
+                             DIGEST_MD5,
+                             GSSAPI]
+
+CLIENT_STRATEGIES = [SYNC,
+                     ASYNC,
+                     LDIF,
+                     RESTARTABLE,
+                     REUSABLE,
+                     MOCK_SYNC,
+                     # MOCK_ASYNC,  # not yet defined
+                     ASYNC_STREAM]
 
 def _format_socket_endpoint(endpoint):
     if endpoint and len(endpoint) == 2:  # IPv4
@@ -1296,7 +1307,7 @@ class Connection(object):
                 if response['type'] == 'searchResEntry':
                     resp_attr_set = set(response['attributes'].keys())
                     for object_def in object_defs:
-                        if resp_attr_set <= object_def[0]:  # finds the objectdef for the attribute set of this entry
+                        if resp_attr_set <= object_def[0]:  # finds the ObjectDef for the attribute set of this entry
                             entry = object_def[2]._get_entry(response)
                             entries.append(entry)
                             break

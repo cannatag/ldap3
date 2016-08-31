@@ -26,12 +26,14 @@
 from base64 import b64encode
 from datetime import datetime
 
-from .. import LDIF_LINE_LENGTH, STRING_TYPES
+from .. import STRING_TYPES
 from ..core.exceptions import LDAPLDIFError, LDAPExtensionError
 from ..protocol.persistentSearch import EntryChangeNotificationControl
 from ..utils.asn1 import decoder
 
 # LDIF converter RFC 2849 compliant
+
+LDIF_LINE_LENGTH = 78
 
 
 def safe_ldif_string(bytes_value):

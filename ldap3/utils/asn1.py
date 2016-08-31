@@ -27,8 +27,9 @@
 from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder
 from pyasn1.type.univ import Boolean
 from pyasn1.compat.octets import ints2octs
+from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
 
-from .. import RESULT_CODES
+from ..core.results import RESULT_CODES
 
 from ..protocol.convert import referrals_to_list
 
@@ -45,7 +46,7 @@ class BooleanCEREncoder(BooleanEncoder):
 
 tagMap[Boolean.tagSet] = BooleanCEREncoder()
 
-from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
+
 
 # a fast BER decoder for LDAP responses only
 

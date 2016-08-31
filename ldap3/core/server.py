@@ -27,12 +27,10 @@ import socket
 from threading import Lock
 from datetime import datetime, MINYEAR
 
-from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT, get_config_parameter, \
-    OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
-    SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, \
-    ADDRESS_INFO_REFRESH_TIME, STRING_TYPES
+from .. import NONE, DSA, SCHEMA, ALL, BASE, get_config_parameter, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, STRING_TYPES
 from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError, LDAPSocketOpenError
 from ..protocol.formatters.standard import format_attribute_values
+from ..protocol.rfc4511 import LDAP_MAX_INT
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
@@ -229,7 +227,7 @@ class Server(object):
 
     @property
     def address_info(self):
-        if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > ADDRESS_INFO_REFRESH_TIME:
+        if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > get_config_parameter('ADDRESS_INFO_REFRESH_TIME'):
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
             addresses = None
             try:

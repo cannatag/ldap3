@@ -24,9 +24,9 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 
-from ... import MODIFY_REPLACE, RESULT_SUCCESS, MODIFY_DELETE, MODIFY_ADD
+from ... import MODIFY_REPLACE, MODIFY_DELETE, MODIFY_ADD
 from ...utils.log import log, log_enabled, PROTOCOL
-
+from ...core.results import RESULT_SUCCESS
 
 def modify_ad_password(connection, user_dn, old_password, new_password, controls=None):
     # old password must be None to reset password with sufficient privileges
@@ -53,7 +53,7 @@ def modify_ad_password(connection, user_dn, old_password, new_password, controls
 
     # change was not successful, raises exception if raise_exception = True in connection or returns the operation result, error code is in result['result']
     if connection.raise_exceptions:
-        from ... import LDAPOperationResult
+        from ...core.exceptions import LDAPOperationResult
         if log_enabled(PROTOCOL):
             log(PROTOCOL, 'operation result <%s> for <%s>', result, connection)
         raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])

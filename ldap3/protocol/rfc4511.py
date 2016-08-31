@@ -44,12 +44,11 @@ from pyasn1.type.constraint import ValueRangeConstraint, SingleValueConstraint, 
 from pyasn1.type.namedval import NamedValues
 from pyasn1.type.tag import tagClassApplication, tagFormatConstructed, Tag, tagClassContext, tagFormatSimple
 
-from .. import LDAP_MAX_INT
 
 
 # constants
 # maxInt INTEGER ::= 2147483647 -- (2^^31 - 1) --
-
+LDAP_MAX_INT = 2147483647
 MAXINT = Integer(LDAP_MAX_INT)
 
 # constraints

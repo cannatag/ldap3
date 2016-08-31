@@ -31,8 +31,8 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from .. import SESSION_TERMINATED_BY_SERVER, SYNC, ANONYMOUS, get_config_parameter, DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE, \
-    TRANSACTION_ERROR
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE
+from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError, LDAPTransactionError
@@ -58,6 +58,9 @@ from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
 
+SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
+TRANSACTION_ERROR = 'TRANSACTION_ERROR'
+RESPONSE_COMPLETE = 'RESPONSE_FROM_SERVER_COMPLETE'
 
 # noinspection PyProtectedMember
 class BaseStrategy(object):

@@ -26,7 +26,7 @@
 from pyasn1.type.univ import OctetString
 from pyasn1.type.base import Asn1Item
 
-from .. import RESULT_CODES
+from ..core.results import RESULT_CODES
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
 from ..protocol.convert import decode_referrals, referrals_to_list
 from ..utils.asn1 import encoder

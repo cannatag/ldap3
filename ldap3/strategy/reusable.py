@@ -28,11 +28,12 @@ from os import linesep
 from threading import Thread, Lock
 from time import sleep
 
-from .. import RESTARTABLE, LDAP_MAX_INT, get_config_parameter
+from .. import RESTARTABLE, get_config_parameter
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
 from ..utils.log import log, log_enabled, ERROR, BASIC
+from ..protocol.rfc4511 import LDAP_MAX_INT
 
 TERMINATE_REUSABLE = 'TERMINATE_REUSABLE_CONNECTION'
 

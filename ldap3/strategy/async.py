@@ -26,9 +26,9 @@
 from threading import Thread, Lock
 import socket
 
-from .. import RESPONSE_COMPLETE, get_config_parameter
+from .. import get_config_parameter
 from ..core.exceptions import LDAPSSLConfigurationError, LDAPStartTLSError, LDAPOperationResult
-from ..strategy.base import BaseStrategy
+from ..strategy.base import BaseStrategy, RESPONSE_COMPLETE
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, format_ldap_message, ERROR, NETWORK, EXTENDED
 from ..utils.asn1 import decoder, decode_message_fast

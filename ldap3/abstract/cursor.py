@@ -32,7 +32,7 @@ from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
 from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
-from ..core.exceptions import LDAPReaderError, LDAPWriterError
+from ..core.exceptions import LDAPCursorError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import safe_dn
 
@@ -58,17 +58,23 @@ def _create_query_dict(query_text):
 
 class Cursor(object):
     # entry_class and attribute_class define the type of entry and attribute used by the cursor
-    # cursor_exception defines the exception to raise when there is a Cursor error
     # entry_class = Entry, must be defined in subclasses
     # attribute_class = Attribute, must be defined in subclasses
-    # cursor_exception = LDAPReaderError, must be defined in subclasses
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
         if isinstance(object_def, STRING_TYPES):
             object_def = ObjectDef(object_def, connection.server.schema)
-
         self._definition = object_def
+        if attributes:  # checks if requested attributes are defined in ObjectDef
+            not_defined_attributes = []
+            for attribute in attributes:
+                if attribute not in self.definition._attributes:
+                    not_defined_attributes += attribute
+
+            if not_defined_attributes:
+                raise LDAPCursorError('Attributes \'%s\' non in definition' % str(not_defined_attributes))
+
         self.attributes = set(attributes) if attributes else set([attr.name for attr in self._definition])
         self.get_operational_attributes = get_operational_attributes
         self.controls = controls
@@ -172,7 +178,7 @@ class Cursor(object):
 
     def _execute_query(self, query_scope, attributes):
         if not self.connection:
-            raise cursor_exception('no connection established')
+            raise LDAPCursorError('no connection established')
         old_query_filter = None
         if query_scope == BASE:  # requesting a single object so an always-valid filter is set
             if hasattr(self, 'query_filter'):  # only Reader has a query filter
@@ -231,7 +237,6 @@ class Reader(Cursor):
     """
     entry_class = Entry  # entries are read_only
     attribute_class = Attribute  # attributes are read_only
-    cursor_exception = LDAPReaderError  # exception to raise from Cursor
 
     def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
@@ -278,7 +283,7 @@ class Reader(Cursor):
             r = r[:-2]
         r += ']' + linesep
         if self._query:
-            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
+            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
         if self.validated_query:
             r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else ('[AND]' if self.components_in_and else ' [OR]')) + linesep
         r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
@@ -351,7 +356,7 @@ class Reader(Cursor):
 
                     if self._definition[attr].validate:
                         if not self._definition[attr].validate(self._definition[attr].key, value):
-                            raise cursor_exception('validation failed for attribute %s and value %s' % (d, val))
+                            raise LDAPCursorError('validation failed for attribute %s and value %s' % (d, val))
 
                     if val_not:
                         query += '!' + val_search_operator + value
@@ -361,7 +366,7 @@ class Reader(Cursor):
                     query += ';'
                 query = query[:-1] + ', '
             else:
-                raise cursor_exception('attribute \'%s\' not in definition' % attr)
+                raise LDAPCursorError('attribute \'%s\' not in definition' % attr)
         self.validated_query = query[:-2]
         self._validated_query_dict = _create_query_dict(self.validated_query)
 
@@ -383,7 +388,7 @@ class Reader(Cursor):
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
-                raise cursor_exception('object_class must be a string or a list')
+                raise LDAPCursorError('object_class must be a string or a list')
 
         if not self.components_in_and:
             self.query_filter += '(|'
@@ -538,7 +543,7 @@ class Reader(Cursor):
 
         """
         if not self.connection:
-            raise cursor_exception('no connection established')
+            raise LDAPCursorError('no connection established')
 
         self.clear()
         self._create_query_filter()
@@ -564,7 +569,11 @@ class Reader(Cursor):
 class Writer(Cursor):
     entry_class = WritableEntry
     attribute_class = WritableAttribute
-    cursor_exception = LDAPWriterError  # exception to raise from Cursor
+
+    @staticmethod
+    def from_reader(reader):
+        writer = Writer(reader.connection, ObjectDef(reader.definition), attributes=reader.attributes)
+        return writer
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
@@ -599,7 +608,7 @@ class Writer(Cursor):
 
         """
         if not self.connection:
-            raise cursor_exception('no connection established')
+            raise LDAPCursorError('no connection established')
 
         with self.connection:
             result = self.connection.search(search_base=entry_dn,

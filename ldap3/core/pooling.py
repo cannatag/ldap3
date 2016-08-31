@@ -28,10 +28,12 @@ from os import linesep
 from random import randint
 from time import sleep
 
-from .. import FIRST, ROUND_ROBIN, RANDOM, POOLING_STRATEGIES, SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
+from .. import FIRST, ROUND_ROBIN, RANDOM, SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from .exceptions import LDAPUnknownStrategyError, LDAPServerPoolError, LDAPServerPoolExhaustedError
 from .server import Server
 from ..utils.log import log, log_enabled, ERROR, BASIC, NETWORK
+
+POOLING_STRATEGIES = [FIRST, ROUND_ROBIN, RANDOM]
 
 
 class ServerPoolState(object):

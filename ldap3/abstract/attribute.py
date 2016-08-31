@@ -83,7 +83,7 @@ class Attribute(object):
         try:
             if self.value == other:
                 return True
-        except:
+        except Exception:
             return False
 
     @property
@@ -127,7 +127,7 @@ class OperationalAttribute(Attribute):
 class WritableAttribute(Attribute):
     def __init__(self, attr_def, entry, cursor):
         Attribute.__init__(self, attr_def, entry, cursor)
-        self.changes  = []
+        self.changes = []
 
     def __repr__(self):
         filler = ' ' * (len(self.key) + 6)

@@ -33,7 +33,7 @@ from .. import STRING_TYPES, SEQUENCE_TYPES
 
 from .attribute import WritableAttribute
 from .objectDef import ObjectDef
-from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError, LDAPReaderError, LDAPWriterError
+from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError, LDAPCursorError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
@@ -314,12 +314,12 @@ class Entry(EntryBase):
     """
     def make_writable(self, object_class, writer_cursor=None, attributes=None, custom_validator=None):
         if not self.entry_get_cursor().schema:
-            raise LDAPReaderError('The schema must be available to make an entry writable')
+            raise LDAPCursorError('The schema must be available to make an entry writable')
         # returns a newly created WritableEntry and its relevant Writer
         object_def = ObjectDef(object_class, self.entry_get_cursor().schema, custom_validator)
         for attribute in self.entry_get_attribute_names():
             if attribute not in object_def._attributes:
-                raise LDAPWriterError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
+                raise LDAPCursorError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
 
         if attributes:
             if isinstance(attributes, STRING_TYPES):
@@ -328,12 +328,12 @@ class Entry(EntryBase):
             if isinstance(attributes, SEQUENCE_TYPES):
                 for attribute in attributes:
                     if attribute not in object_def._attributes:
-                        raise LDAPWriterError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
+                        raise LDAPCursorError('attribute \'%s\' not in schema for \'%s\'' % (attribute, object_class))
         else:
             attributes = []
 
         if not writer_cursor:
-            from .cursor import Writer  # local import to avoid circular referecence in import at startup
+            from .cursor import Writer  # local import to avoid circular reference in import at startup
             writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names())
         else:
             writable_cursor = writer_cursor

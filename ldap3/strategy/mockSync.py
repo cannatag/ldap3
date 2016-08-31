@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import DO_NOT_RAISE_EXCEPTIONS
+from ..core.results import DO_NOT_RAISE_EXCEPTIONS
 from .mockBase import MockBaseStrategy
 from .sync import SyncStrategy
 from ..operation.bind import bind_response_to_dict

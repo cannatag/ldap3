@@ -36,7 +36,6 @@ from os import urandom
 
 try:
     from locale import getpreferredencoding
-
     oem_encoding = getpreferredencoding()
 except Exception:
     oem_encoding = 'utf-8'

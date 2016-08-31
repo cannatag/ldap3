@@ -28,7 +28,8 @@ from unicodedata import ucd_3_2_0 as unicode32
 from os import urandom
 from binascii import hexlify
 
-from ... import SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED
+from ... import SASL
+from ...core.results import RESULT_AUTH_METHOD_NOT_SUPPORTED
 from ...core.exceptions import LDAPSASLPrepError, LDAPPasswordIsMandatoryError
 
 

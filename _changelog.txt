@@ -1,4 +1,10 @@
-- 1.5.0 2016.08.15
+- 2.0.0 2016.08.31
+    - ldap3 namespace decluttered
+    - RESULT_CODES moved to ldap3.core.results
+    - compatability constants removed
+    - exceptions removed from ldap3 namespace, defined in ldap3.core.exceptions only
+    - ADDRESS_INFO_REFRESH_TIME is now configurable via set_config_parameter
+    - Operational attribute prefix set to 'OA_'
     - Allows cert and key file in the same file (thanks Jan-Philip)
     - Removed logging info when logging is disabled (thanks Dan)
     - Updated copyright notice

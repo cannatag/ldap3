@@ -25,7 +25,10 @@
 
 
 import json
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ..utils.ordDict import OrderedDict  # for Python 2.6
 
 from os import linesep
 from copy import copy, deepcopy

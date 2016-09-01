@@ -135,8 +135,8 @@ class WritableAttribute(Attribute):
                 r += linesep + filler + to_stdout_encoding(value)
         else:
             r = self.key + to_stdout_encoding(': <Virtual>')
-        if self.changes:
-            r += linesep + filler + 'CHANGES: ' + str(self.changes)
+        if self.key in self.entry.entry_get_changes():
+            r += linesep + filler + 'CHANGES: ' + str(self.entry.entry_get_changes()[self.key])
         return r
 
     def __iadd__(self, other):

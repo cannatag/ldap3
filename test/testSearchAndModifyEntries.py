@@ -26,8 +26,9 @@
 import unittest
 
 from ldap3.core.exceptions import LDAPEntryError
-from test import test_base, test_name_attr, random_id, get_connection, \
-    add_user, drop_connection, test_server_type, test_int_attr
+from ldap3.abstract import STATUS_WRITABLE, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_MANDATORY_MISSING, STATUS_NEW, STATUS_PENDING_CHANGES, STATUS_READ, STATUS_READY_FOR_DELETION
+from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_int_attr
+
 
 testcase_id = random_id()
 
@@ -102,9 +103,13 @@ class Test(unittest.TestCase):
 
     def test_search_and_delete_entry(self):
         read_only_entry = self.get_entry('search-and-modify-1')
+        self.assertEqual(read_only_entry.entry_get_status(), STATUS_READ)
         writable_entry = read_only_entry.make_writable('inetorgperson')
+        self.assertEqual(writable_entry.entry_get_status(), STATUS_WRITABLE)
         writable_entry.entry_delete()
+        self.assertEqual(writable_entry.entry_get_status(), STATUS_READY_FOR_DELETION)
         result = writable_entry.entry_commit()
+        self.assertEqual(writable_entry.entry_get_status(), STATUS_DELETED)
         self.assertTrue(result)
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-and-modify-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
@@ -116,6 +121,12 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(entries), 0)
         self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_refresh(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        self.assertEqual(read_only_entry.entry_get_status(), STATUS_READ)
+        read_only_entry.entry_refresh()
+        self.assertEqual(read_only_entry.entry_get_status(), STATUS_DELETED)
 
     def test_search_and_add_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':

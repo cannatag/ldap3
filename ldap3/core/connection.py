@@ -1209,7 +1209,7 @@ class Connection(object):
 
             if isinstance(search_result, SEQUENCE_TYPES):
                 json_dict = dict()
-                json_dict['entries'] = list()
+                json_dict['entries'] = []
 
                 for response in search_result:
                     if response['type'] == 'searchResEntry':

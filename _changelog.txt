@@ -25,6 +25,7 @@
     - LDAPReaderError exception now inherits from LDAPCursorError
     - auto_range parameter in Connection defaults to True (thanks Ashley)
     - get_info defaults to SCHEMA while defining Server object
+    - included ordereddict 1.1 (# Copyright (c) 2009 Raymond Hettinger) in ldap3.utils.ordDict for backporting OrderedDict in Python 2.6
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

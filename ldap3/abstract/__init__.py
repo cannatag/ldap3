@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 STATUS_INIT = 'Initialized'  # The entry object is initialized
-STATUS_NEW = 'New'  # The entry is a new writable entry, still empty
+STATUS_NEW = 'New entry'  # The entry is a new writable entry, still empty
 STATUS_MANDATORY_MISSING = 'Missing mandatory attributes'  # The entry has some mandatory attributes missing
 STATUS_READ = 'Read' # The entry has been read
 STATUS_WRITABLE = 'Writable' # The entry has been made writable, still no changes

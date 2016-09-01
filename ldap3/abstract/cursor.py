@@ -642,11 +642,10 @@ class Writer(Cursor):
     def new_entry(self, dn):
         dn = safe_dn(dn)
         entry = self.entry_class(dn, self)  # define a new empty Entry
-        for attribute in entry._state.definition._attributes:  # defines all mandatory attributes as virtual
-            if entry._state.definition._attributes[attribute].mandatory:
-                self._state.attributes[attr] = attribute_class(self._state.definition[attr], self, self.entry_get_cursor())
-                self.__dict__[attr] = self._state.attributes[attr]
-                entry.__dict__[attribute] = entry._state.definition._attributes[attribute]
+        for attr in entry._state.definition._attributes:  # defines all mandatory attributes as virtual
+            if entry._state.definition._attributes[attr].mandatory:
+                entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
+                entry.__dict__[attr] = entry._state.attributes[attr]
         entry._state.set_status(STATUS_NEW)
         self.entries.append(entry)
         return entry

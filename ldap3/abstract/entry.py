@@ -42,7 +42,8 @@ from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveDict
-from . import STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_READY_FOR_DELETION, STATUSES,INITIAL_STATUSES
+from . import STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
+
 
 class EntryState(object):
     """Contains data on the status of the entry. Does not pollute the Entry __dict__.
@@ -67,15 +68,12 @@ class EntryState(object):
 
     def __repr__(self):
         if self.__dict__ and self.dn is not None:
-            r = 'DN: ' + to_stdout_encoding(self.dn) + linesep
-            r += 'Status: ' + self.status + linesep
+            r = 'DN: ' + to_stdout_encoding(self.dn) + ' - STATUS: ' + self.status + ' - READ TIME: ' + (self.read_time.isoformat() if self.read_time else '<never>') + linesep
             r += 'attributes: ' + ', '.join(sorted(self.attributes.keys())) + linesep
             r += 'object def: ' + (', '.join(sorted(self.definition._object_class)) if self.definition._object_class else '<None>') + linesep
             r += 'attr defs: ' + ', '.join(sorted(self.definition._attributes.keys())) + linesep
             r += 'response: ' + ('present' if self.response else '<None>') + linesep
             r += 'cursor: ' + (self.cursor.__class__.__name__ if self.cursor else '<None>') + linesep
-            r += 'read time: ' + (self.read_time.isoformat() if self.read_time else '<None>') + linesep
-
             return r
         else:
             return object.__repr__(self)
@@ -91,9 +89,11 @@ class EntryState(object):
             self._initial_status = status
         self.status = status
         if self.status == STATUS_PENDING_CHANGES:  # checks if all mandatory attributes are present (real or still to commit)
-            for attr_def in self.definition._attributes:
-                if attr_def.mandatory:
-                    if self.attributes[attr_def.key] or attr_def.key in self.changes:
+            for attr in self.definition._attributes:
+                if self.definition._attributes[attr].mandatory:
+                    if not (self.attributes[attr] or attr in self.changes):
+                        self.status = STATUS_MANDATORY_MISSING
+                        break
 
 class EntryBase(object):
     """The Entry object contains a single LDAP entry.
@@ -346,7 +346,7 @@ class Entry(EntryBase):
 
         if not writer_cursor:
             from .cursor import Writer  # local import to avoid circular reference in import at startup
-            writable_cursor = Writer(self.entry_get_cursor().connection, object_def, attributes=self.entry_get_attribute_names())
+            writable_cursor = Writer(self.entry_get_cursor().connection, object_def)
         else:
             writable_cursor = writer_cursor
 

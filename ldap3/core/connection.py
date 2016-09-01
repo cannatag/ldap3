@@ -28,7 +28,10 @@ from threading import RLock
 from functools import reduce
 import json
 
-from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
+from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
+    SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, \
+    STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI, NONE
 
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE
 from .exceptions import LDAPSocketReceiveError
@@ -314,7 +317,9 @@ class Connection(object):
                         if log_enabled(ERROR):
                             log(ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPBindError(self.last_error)
-
+            else:  # for strategies with a fake server set get_info to NONE if server hasn't a schema
+                if self.server and not self.server.schema:
+                    self.server.get_info = NONE
             if log_enabled(BASIC):
                 if get_library_log_hide_sensitive_data():
                     log(BASIC, 'instantiated Connection: <%s>', self.repr_with_sensitive_data_stripped())

@@ -27,7 +27,7 @@
 import unittest
 
 from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_EDIR_8_8_8,\
-    BASE, LEVEL, SUBTREE, AUTO_BIND_NO_TLS
+    BASE, LEVEL, SUBTREE, AUTO_BIND_NO_TLS, NONE
 from ldap3.core.exceptions import LDAPInvalidCredentialsResult, LDAPNoSuchObjectResult
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_dsa_info, edir_8_8_8_schema

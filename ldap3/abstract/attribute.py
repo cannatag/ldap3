@@ -125,10 +125,6 @@ class OperationalAttribute(Attribute):
 
 
 class WritableAttribute(Attribute):
-    def __init__(self, attr_def, entry, cursor):
-        Attribute.__init__(self, attr_def, entry, cursor)
-        self.changes = []
-
     def __repr__(self):
         filler = ' ' * (len(self.key) + 6)
         if len(self.values) == 1:
@@ -151,6 +147,13 @@ class WritableAttribute(Attribute):
         self.delete(other)
         return Ellipsis  # hack to avoid calling set_value in entry __setattr__
 
+    def _update_changes(self, changes):
+        entry_changes = self.entry.entry_get_changes()
+        if self.key not in entry_changes:
+            entry_changes[self.key] = []
+        entry_changes[self.key].append(changes)
+        self.entry._state.set_status(STATUS_PENDING_CHANGES)
+
     def add(self, values):
         # new value for attribute to commit with a MODIFY_ADD
         if values is None:
@@ -159,8 +162,7 @@ class WritableAttribute(Attribute):
         #    raise LDAPAttributeError("can't add to a single value attributewith already a value, use set_value")
         if values is not None and not self.definition.validate(self.definition.name, values):
             raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
-        self.changes.append((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))
-        self.entry._state.set_status(STATUS_PENDING_CHANGES)
+        self._update_changes((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
     def set(self, values):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
@@ -168,8 +170,7 @@ class WritableAttribute(Attribute):
             raise LDAPAttributeError('new value cannot be None')
         if not self.definition.validate(self.definition.name, values):
             raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
-        self.changes.append((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
-        self.entry._state.set_status(STATUS_PENDING_CHANGES)
+        self._update_changes((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
     def delete(self, values):
         # value for attribute to delete in commit with a MODIFY_DELETE
@@ -180,17 +181,16 @@ class WritableAttribute(Attribute):
         for single_value in values:
             if single_value not in self.values:
                 raise LDAPAttributeError('value \'%s\' not present in \'%s\'' % (values, self.values))
-        self.changes.append((MODIFY_DELETE, values))
-        self.entry._state.set_status(STATUS_PENDING_CHANGES)
+        self._update_changes((MODIFY_DELETE, values))
 
     def remove(self):
-        self.changes.append((MODIFY_REPLACE, []))
-        self.entry._state.set_status(STATUS_PENDING_CHANGES)
+        self._update_changes((MODIFY_REPLACE, []))
 
     def discard_changes(self):
-        self.changes = []
+        del self.entry.entry_get_changes()[self.key]
+        if not self.entry.entry_get_changes():
+            self.entry._state.set_status(self.entry._state._initial_status)
 
     @property
     def virtual(self):
         return False if len(self.values) else True
-#

@@ -73,7 +73,7 @@ class Server(object):
                  port=None,
                  use_ssl=False,
                  allowed_referral_hosts=None,
-                 get_info=NONE,
+                 get_info=SCHEMA,
                  tls=None,
                  formatter=None,
                  connect_timeout=None,

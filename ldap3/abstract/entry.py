@@ -25,6 +25,7 @@
 
 
 import json
+from collections import OrderedDict
 
 from os import linesep
 from copy import copy, deepcopy
@@ -55,6 +56,7 @@ class EntryState(object):
         self.cursor = cursor
         self.origin = None  # reference to the original read-only entry (set when made writable). Needed to update attributes in read-only when modified
         self.read_time = None
+        self.changes = OrderedDict()  # includes changes to commit in a writable entry
         if cursor.definition:
             self.definition = cursor.definition
         else:
@@ -63,7 +65,7 @@ class EntryState(object):
     def __repr__(self):
         if self.dn is not None:
             r = 'DN: ' + to_stdout_encoding(self.dn) + linesep
-            r += 'STATE: ' + self.status + linesep
+            r += 'Status: ' + self.status + linesep
             r += 'attributes: ' + ', '.join(sorted(self.attributes.keys())) + linesep
             r += 'object def: ' + (', '.join(sorted(self.definition._object_class)) if self.definition._object_class else '<None>') + linesep
             r += 'attr defs: ' + ', '.join(sorted(self.definition._attributes.keys())) + linesep
@@ -107,7 +109,7 @@ class EntryBase(object):
     def __repr__(self):
         if self.entry_get_dn() is not None:
             r = 'DN: ' + to_stdout_encoding(self.entry_get_dn()) + linesep
-            r += 'STATE:' + self._state.status
+            r += 'Status:' + self._state.status  + linesep
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
                     r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
@@ -401,14 +403,8 @@ class WritableEntry(EntryBase):
             else:
                 raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
         elif self._state.status == STATUS_PENDING_CHANGES:
-            changes = dict()
-            for key in self._state.attributes:
-                attribute = self._state.attributes[key]
-                if attribute.changes:
-                    changes[attribute.definition.name] = attribute.changes
-
-            if changes:
-                if self.entry_get_cursor().connection.modify(self.entry_get_dn(), changes, controls):
+            if self.entry_get_changes():
+                if self.entry_get_cursor().connection.modify(self.entry_get_dn(), self.entry_get_changes(), controls):
                     if refresh:
                         self.entry_refresh()
                         origin = self._state.origin
@@ -431,18 +427,10 @@ class WritableEntry(EntryBase):
         return False
 
     def entry_get_changes(self):
-        if self._state.status == STATUS_PENDING_CHANGES:
-            changes = dict()
-            for key in self._state.attributes:
-                attribute = self._state.attributes[key]
-                if attribute.changes:
-                    changes[attribute.definition.name] = attribute.changes
-            return changes
-        return None
+        return self._state.changes
 
     def entry_discard_changes(self):
-        for key in self._state.attributes:
-            self._state.attributes[key].discard_changes()
+        self.entry_get_changes().clear()
         self._state.set_status(self._state._initial_status)
 
     def entry_delete(self, controls=None):

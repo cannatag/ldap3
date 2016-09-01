@@ -59,6 +59,7 @@ class MockBaseStrategy(object):
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
         self.bound = None
+        self.add_entry('cn=schema', [])  # add default entry for schema
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
 
@@ -426,7 +427,7 @@ class MockBaseStrategy(object):
         filter_root = parse_filter(request['filter'], self.connection.server.schema)
         candidates = []
         if scope == 0:  # base object
-            if base in self.connection.server.dit:
+            if base in self.connection.server.dit or base.lower() == 'cn=schema':
                 candidates.append(base)
         elif scope == 1:  # single level
             for entry in self.connection.server.dit:

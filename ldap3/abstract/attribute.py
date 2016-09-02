@@ -147,10 +147,13 @@ class WritableAttribute(Attribute):
         self.delete(other)
         return Ellipsis  # hack to avoid calling set_value in entry __setattr__
 
-    def _update_changes(self, changes):
+    def _update_changes(self, changes, remove_old=False):
         entry_changes = self.entry.entry_get_changes()
         if self.key not in entry_changes:
             entry_changes[self.key] = []
+        elif remove_old:
+            entry_changes[self.key] = []  # remove old changes (for removing attribute)
+
         entry_changes[self.key].append(changes)
         self.entry._state.set_status(STATUS_PENDING_CHANGES)
 
@@ -184,7 +187,7 @@ class WritableAttribute(Attribute):
         self._update_changes((MODIFY_DELETE, values))
 
     def remove(self):
-        self._update_changes((MODIFY_REPLACE, []))
+        self._update_changes((MODIFY_REPLACE, []), True)
 
     def discard_changes(self):
         del self.entry.entry_get_changes()[self.key]

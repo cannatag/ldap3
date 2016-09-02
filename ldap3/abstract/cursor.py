@@ -646,6 +646,7 @@ class Writer(Cursor):
             if entry._state.definition._attributes[attr].mandatory:
                 entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
                 entry.__dict__[attr] = entry._state.attributes[attr]
+        entry.objectclass.set(self.definition._object_class)
         entry._state.set_status(STATUS_NEW)
         self.entries.append(entry)
         return entry

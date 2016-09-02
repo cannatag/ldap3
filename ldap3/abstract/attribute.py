@@ -159,7 +159,7 @@ class WritableAttribute(Attribute):
         if values is None:
             raise LDAPAttributeError('added value cannot be None')
         # if self.values and self.definition.single_value:
-        #    raise LDAPAttributeError("can't add to a single value attributewith already a value, use set_value")
+        #     raise LDAPAttributeError("can't add to an already valued single-value attribute")
         if values is not None and not self.definition.validate(self.definition.name, values):
             raise LDAPAttributeError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
         self._update_changes((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))

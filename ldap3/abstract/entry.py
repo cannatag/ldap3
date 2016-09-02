@@ -91,7 +91,7 @@ class EntryState(object):
         if self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_NEW:  # checks if all mandatory attributes are present in new entries
             for attr in self.definition._attributes:
                 if self.definition._attributes[attr].mandatory:
-                    if not (attr in self.attributes or attr in self.changes):
+                    if (attr not in self.attributes or self.attributes[attr].virtual) and attr not in self.changes:
                         self.status = STATUS_MANDATORY_MISSING
                         break
 
@@ -433,7 +433,14 @@ class WritableEntry(EntryBase):
                     return True
                 else:
                     raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'] + ' - ' + self.entry_get_cursor().connection.result['message'])
-
+        elif self._state.status in [STATUS_NEW, STATUS_MANDATORY_MISSING]:
+            # missing_attributes = [attr for attr in self._state.definition._attributes if self._state.definition._attributes[attr].mandatory and attr not in self._state.attributes]
+            missing_attributes = []
+            for attr in self._state.definition._attributes:
+                if self._state.definition._attributes[attr].mandatory:
+                    if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._state.changes:
+                        missing_attributes.append('\'' + attr + '\'')
+            raise LDAPEntryError('mandatory attributes %s missing' %  ', '.join(missing_attributes))
         return False
 
     def entry_get_changes(self):

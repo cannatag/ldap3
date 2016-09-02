@@ -125,8 +125,10 @@ class Test(unittest.TestCase):
     def test_search_and_refresh(self):
         read_only_entry = self.get_entry('search-and-modify-1')
         self.assertEqual(read_only_entry.entry_get_status(), STATUS_READ)
+        read_time = read_only_entry.entry_get_read_time()
         read_only_entry.entry_refresh()
-        self.assertEqual(read_only_entry.entry_get_status(), STATUS_DELETED)
+        self.assertEqual(read_only_entry.entry_get_status(), STATUS_READ)
+        self.assertNotEqual(read_time, read_only_entry.entry_get_read_time())
 
     def test_search_and_add_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':

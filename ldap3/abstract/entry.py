@@ -42,7 +42,7 @@ from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveDict
-from . import STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
+from . import STATUS_NEW, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
 
 
 class EntryState(object):
@@ -88,10 +88,10 @@ class EntryState(object):
         if status in INITIAL_STATUSES:
             self._initial_status = status
         self.status = status
-        if self.status == STATUS_PENDING_CHANGES:  # checks if all mandatory attributes are present (real or still to commit)
+        if self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_NEW:  # checks if all mandatory attributes are present in new entries
             for attr in self.definition._attributes:
                 if self.definition._attributes[attr].mandatory:
-                    if not (self.attributes[attr] or attr in self.changes):
+                    if not (attr in self.attributes or attr in self.changes):
                         self.status = STATUS_MANDATORY_MISSING
                         break
 

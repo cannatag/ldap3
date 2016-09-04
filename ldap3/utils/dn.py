@@ -153,7 +153,8 @@ def split_ava(ava, escape=False, strip=True):
 
 def validate_attribute_type(attribute_type):
     if not attribute_type:
-        return False
+        raise LDAPInvalidDnError('attribute type not present')
+
     for c in attribute_type:
         if not (c in ascii_letters or c in digits or c == '-'):  # allowed uppercase and lowercase letters, digits and hyphen as per RFC 4512
             raise LDAPInvalidDnError('character ' + c + ' not allowed in attribute type')

@@ -26,7 +26,6 @@
 from ...protocol.novell import Identity
 from ...extend.operation import ExtendedOperation
 
-
 class GetBindDn(ExtendedOperation):
     def config(self):
         self.request_name = '2.16.840.1.113719.1.27.100.31'

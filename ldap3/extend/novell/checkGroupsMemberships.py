@@ -25,7 +25,7 @@
 from .addMembersToGroups import add_members_to_groups
 from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, BASE, DEREF_NEVER
-
+from ...utils.dn import safe_dn
 
 def _check_members_have_memberships(connection,
                                     members_dn,
@@ -44,6 +44,7 @@ def _check_members_have_memberships(connection,
 
     if not isinstance(groups_dn, SEQUENCE_TYPES):
         groups_dn = [groups_dn]
+
     partial = False  # True when a member has groupMembership but doesn't have securityEquals
     for member in members_dn:
         result = connection.search(member, '(objectclass=*)', BASE, dereference_aliases=DEREF_NEVER, attributes=['groupMembership', 'securityEquals'])
@@ -117,8 +118,8 @@ def check_groups_memberships(connection,
                              transaction):
     """
     :param connection: a bound Connection object
-    :param members_dn: the list of members to add to groups
-    :param groups_dn: the list of groups where members are to be added
+    :param members_dn: the list of members to check
+    :param groups_dn: the list of groups to check
     :param fix: checks for inconsistences in the users-groups relation and fixes them
     :param transaction: activates an LDAP transaction when fixing
     :return: a boolean where True means that the operation was successful and False means an error has happened
@@ -131,6 +132,17 @@ def check_groups_memberships(connection,
 
     if not isinstance(members_dn, SEQUENCE_TYPES):
         members_dn = [members_dn]
+
+    if connection.check_names:  # builds new lists with sanitized dn
+        safe_members_dn = []
+        safe_groups_dn = []
+        for member_dn in members_dn:
+            safe_members_dn.append(safe_dn(member_dn))
+        for group_dn in groups_dn:
+            safe_groups_dn.append(safe_dn(group_dn))
+
+        members_dn = safe_members_dn
+        groups_dn = safe_groups_dn
 
     try:
         members_have_memberships, partial_member_security = _check_members_have_memberships(connection, members_dn, groups_dn)

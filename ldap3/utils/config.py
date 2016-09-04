@@ -38,6 +38,7 @@ RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asy
 RESPONSE_WAITING_TIMEOUT = 20  # waiting timeout for receiving a response in asynchronous strategies
 SOCKET_SIZE = 4096  # socket byte size
 CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
+RESET_AVAILABILITY_TIMEOUT = 5  # default timeout for resetting the availability status when checking candidate addresses
 
 # restartable strategy
 RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
@@ -49,6 +50,8 @@ REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 
 ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
+
+
 
 
 def get_config_parameter(parameter):
@@ -80,6 +83,8 @@ def get_config_parameter(parameter):
         return DEFAULT_THREADED_POOL_NAME
     elif parameter == 'ADDRESS_INFO_REFRESH_TIME':
         return ADDRESS_INFO_REFRESH_TIME
+    elif parameter == 'RESET_AVAILABILITY_TIMEOUT':
+        return RESET_AVAILABILITY_TIMEOUT
 
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
@@ -127,5 +132,8 @@ def set_config_parameter(parameter, value):
     elif parameter == 'ADDRESS_INFO_REFRESH_TIME':
         global ADDRESS_INFO_REFRESH_TIME
         ADDRESS_INFO_REFRESH_TIME = value
+    elif parameter == 'RESET_AVAILABILITY_TIMEOUT':
+        global RESET_AVAILABILITY_TIMEOUT
+        RESET_AVAILABILITY_TIMEOUT = value
     else:
         raise LDAPConfigurationParameterError('unable to set configuration parameter %s' % parameter)

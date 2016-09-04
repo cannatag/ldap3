@@ -513,6 +513,12 @@ class Server(object):
             if log_enabled(BASIC):
                 log(BASIC, 'candidate address for <%s>: <%s> with mode UNIX_SOCKET', self, self.name)
         else:
+            # checks reset availability timeout
+            for address in self.address_info:
+                if address[6] and ((datetime.now() - address[6]).seconds > get_config_parameter('RESET_AVAILABILITY_TIMEOUT')):
+                    address[5] = None
+                    address[6] = None
+
             # selects server address based on server mode and availability (in address[5])
             addresses = self.address_info[:]  # copy to avoid refreshing while searching candidates
             candidates = []

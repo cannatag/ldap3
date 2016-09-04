@@ -31,7 +31,7 @@ from ...core.exceptions import LDAPExtensionError
 from ...protocol.novell import LDAPDN, ReplicaInfoRequestValue
 from ..operation import ExtendedOperation
 from ...utils.asn1 import decoder
-
+from ...utils.dn import safe_dn
 
 class ReplicaInfo(ExtendedOperation):
     def config(self):
@@ -42,6 +42,12 @@ class ReplicaInfo(ExtendedOperation):
         self.response_attribute = 'partition_dn'
 
     def __init__(self, connection, server_dn, partition_dn, controls=None):
+        if connection.check_names:
+            if server_dn:
+                server_dn = safe_dn(server_dn)
+            if partition_dn:
+                partition_dn = safe_dn(partition_dn)
+
         ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
         self.request_value['server_dn'] = server_dn
         self.request_value['partition_dn'] = partition_dn

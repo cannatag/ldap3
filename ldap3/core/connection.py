@@ -65,7 +65,8 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
+from ..utils.dn import safe_dn
 
 try:
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
@@ -269,6 +270,11 @@ class Connection(object):
                 self.server_pool = None
                 self.server = server
 
+            if self.authentication == SIMPLE and self.user and self.check_names:
+                self.user = safe_dn(self.user)
+                if log_enabled(EXTENDED):
+                    log(EXTENDED, 'user name sanitized to <%s> for simple authentication via <%s>', self.user, self)
+
             if self.strategy_type == SYNC:
                 self.strategy = SyncStrategy(self)
             elif self.strategy_type == ASYNC:
@@ -292,7 +298,7 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPUnknownStrategyError(self.last_error)
 
-            # map strategy functions to connection functions
+            # maps strategy functions to connection functions
             self.send = self.strategy.send
             self.open = self.strategy.open
             self.get_response = self.strategy.get_response
@@ -608,6 +614,11 @@ class Connection(object):
             if sasl_credentials:
                 self.sasl_credentials = sasl_credentials
 
+            if self.authentication == SIMPLE and self.user and self.check_names:
+                self.user = safe_dn(self.user)
+                if log_enabled(EXTENDED):
+                    log(EXTENDED, 'user name sanitized to <%s> for rebind via <%s>', self.user, self)
+
             if not self.strategy.pooled:
                 try:
                     return self.bind(read_server_info, controls)
@@ -677,6 +688,11 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start SEARCH operation via <%s>', self)
 
+        if self.check_names and search_base:
+            search_base = safe_dn(search_base)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'search base sanitized to <%s> for SEARCH operation via <%s>', search_base, self)
+
         with self.lock:
             self._fire_deferred()
             if not attributes:
@@ -733,6 +749,11 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start COMPARE operation via <%s>', self)
 
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for COMPARE operation via <%s>', dn, self)
+
         with self.lock:
             self._fire_deferred()
             request = compare_operation(dn, attribute, value, self.server.schema if self.server else None)
@@ -768,6 +789,11 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
+
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for ADD operation via <%s>', dn, self)
 
         with self.lock:
             self._fire_deferred()
@@ -826,6 +852,11 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start DELETE operation via <%s>', self)
 
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for DELETE operation via <%s>', dn, self)
+
         with self.lock:
             self._fire_deferred()
             if self.read_only:
@@ -868,6 +899,11 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY operation via <%s>', self)
+
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for MODIFY operation via <%s>', dn, self)
 
         with self.lock:
             self._fire_deferred()
@@ -939,6 +975,14 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY DN operation via <%s>', self)
+
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for MODIFY DN operation via <%s>', dn, self)
+            relative_dn = safe_dn(relative_dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'relative dn sanitized to <%s> for MODIFY DN operation via <%s>', relative_dn, self)
 
         with self.lock:
             self._fire_deferred()

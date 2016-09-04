@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, MODIFY_ADD, BASE, DEREF_NEVER
-
+from ...utils.dn import safe_dn
 
 def add_members_to_groups(connection,
                           members_dn,
@@ -50,6 +50,17 @@ def add_members_to_groups(connection,
 
     transaction_control = None
     error = False
+
+    if connection.check_names:  # builds new lists with sanitized dn
+        safe_members_dn = []
+        safe_groups_dn = []
+        for member_dn in members_dn:
+            safe_members_dn.append(safe_dn(member_dn))
+        for group_dn in groups_dn:
+            safe_groups_dn.append(safe_dn(group_dn))
+
+        members_dn = safe_members_dn
+        groups_dn = safe_groups_dn
 
     if transaction:
         transaction_control = connection.extend.novell.start_transaction()

@@ -32,7 +32,7 @@ except ImportError:  # Python 2
 from ...core.exceptions import LDAPExtensionError
 from ...protocol.persistentSearch import persistent_search_control
 from ... import SEQUENCE_TYPES
-
+from ...utils.dn import safe_dn
 
 class PersistentSearch(object):
     def __init__(self,
@@ -53,6 +53,9 @@ class PersistentSearch(object):
                  ):
         if connection.strategy.sync:
             raise LDAPExtensionError('Persistent Search needs an asynchronous streaming connection')
+
+        if connection.check_names and search_base:
+            search_base = safe_dn(search_base)
 
         self.connection = connection
         self.changes_only = changes_only

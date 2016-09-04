@@ -88,7 +88,7 @@ class EntryState(object):
         if status in INITIAL_STATUSES:
             self._initial_status = status
         self.status = status
-        if self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_NEW:  # checks if all mandatory attributes are present in new entries
+        if self.status == STATUS_NEW or (self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_NEW):  # checks if all mandatory attributes are present in new entries
             for attr in self.definition._attributes:
                 if self.definition._attributes[attr].mandatory:
                     if (attr not in self.attributes or self.attributes[attr].virtual) and attr not in self.changes:

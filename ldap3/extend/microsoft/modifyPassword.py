@@ -27,9 +27,12 @@
 from ... import MODIFY_REPLACE, MODIFY_DELETE, MODIFY_ADD
 from ...utils.log import log, log_enabled, PROTOCOL
 from ...core.results import RESULT_SUCCESS
+from ...utils.dn import safe_dn
 
 def modify_ad_password(connection, user_dn, old_password, new_password, controls=None):
     # old password must be None to reset password with sufficient privileges
+    if connection.check_names:
+        user_dn = safe_dn(user_dn)
     encoded_new_password = ('"%s"' % new_password).encode('utf-16-le')
     if old_password:  # normal users must specify old and new password
         encoded_old_password = ('"%s"' % old_password).encode('utf-16-le')

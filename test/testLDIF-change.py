@@ -141,7 +141,7 @@ class Test(unittest.TestCase):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=Paula Jensen, ou=Product Development, dc=airius, dc=com' in response)
+        self.assertTrue('dn: cn=Paula Jensen,ou=Product Development,dc=airius,dc=com' in response)
         self.assertTrue('changetype: modify' in response)
         self.assertTrue('delete: facsimiletelephonenumber' in response)
         self.assertTrue('facsimiletelephonenumber: +1 408 555 9876' in response)

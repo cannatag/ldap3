@@ -234,6 +234,9 @@ class EntryBase(object):
         """
         return self._state.raw_attributes[name] if name in self._state.raw_attributes else None
 
+    def entry_get_mandatory_attribute_names(self):
+        return [attribute for attribute in self._state.definition._attributes if self._state.definition._attributes[attribute].mandatory]
+
     def entry_get_attribute_names(self):
         return list(self._state.attributes.keys())
 
@@ -412,9 +415,22 @@ class WritableEntry(EntryBase):
                 return True
             else:
                 raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
+        elif self._state.status in [STATUS_NEW, STATUS_MANDATORY_MISSING]:
+            missing_attributes = []
+            for attr in self.entry_get_mandatory_attribute_names():
+                if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._state.changes:
+                    missing_attributes.append('\'' + attr + '\'')
+            raise LDAPEntryError('mandatory attributes %s missing' %  ', '.join(missing_attributes))
         elif self._state.status == STATUS_PENDING_CHANGES:
             if self.entry_get_changes():
-                if self.entry_get_cursor().connection.modify(self.entry_get_dn(), self.entry_get_changes(), controls):
+                if self._state._initial_status == STATUS_NEW:
+                    new_attributes = dict()
+                    for attr in self.entry_get_changes():
+                        new_attributes[attr] = self.entry_get_changes()[attr][0][1]
+                    result = self.entry_get_cursor().connection.add(self.entry_get_dn(), None, new_attributes, controls)
+                else:
+                    result = self.entry_get_cursor().connection.modify(self.entry_get_dn(), self.entry_get_changes(), controls)
+                if result:
                     if refresh:
                         self.entry_refresh()
                         origin = self._state.origin
@@ -433,14 +449,6 @@ class WritableEntry(EntryBase):
                     return True
                 else:
                     raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'] + ' - ' + self.entry_get_cursor().connection.result['message'])
-        elif self._state.status in [STATUS_NEW, STATUS_MANDATORY_MISSING]:
-            # missing_attributes = [attr for attr in self._state.definition._attributes if self._state.definition._attributes[attr].mandatory and attr not in self._state.attributes]
-            missing_attributes = []
-            for attr in self._state.definition._attributes:
-                if self._state.definition._attributes[attr].mandatory:
-                    if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._state.changes:
-                        missing_attributes.append('\'' + attr + '\'')
-            raise LDAPEntryError('mandatory attributes %s missing' %  ', '.join(missing_attributes))
         return False
 
     def entry_get_changes(self):

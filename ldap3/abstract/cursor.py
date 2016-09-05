@@ -34,7 +34,7 @@ from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPCursorError
 from ..utils.ciDict import CaseInsensitiveDict
-from ..utils.dn import safe_dn
+from ..utils.dn import safe_dn, safe_rdn
 from . import STATUS_NEW, STATUS_READ, STATUS_WRITABLE
 
 def _ret_search_value(value):
@@ -641,12 +641,18 @@ class Writer(Cursor):
 
     def new_entry(self, dn):
         dn = safe_dn(dn)
+        rdns = safe_rdn(dn, decompose=True)
         entry = self.entry_class(dn, self)  # define a new empty Entry
         for attr in entry._state.definition._attributes:  # defines all mandatory attributes as virtual
             if entry._state.definition._attributes[attr].mandatory:
                 entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
                 entry.__dict__[attr] = entry._state.attributes[attr]
         entry.objectclass.set(self.definition._object_class)
+        for rdn in rdns:  # adds virtual attributes from rdns in entry name (should be more than one with + syntax)
+            if rdn[0] in entry._state.definition._attributes:
+                entry.__dict__[rdn[0]].set(rdn[1])
+            else:
+                raise LDAPCursorError('rdn not in objectclass definition')
         entry._state.set_status(STATUS_NEW)
         self.entries.append(entry)
         return entry

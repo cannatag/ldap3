@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from time import sleep
 
 from ldap3.core.exceptions import LDAPEntryError
 from ldap3.abstract import STATUS_WRITABLE, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_MANDATORY_MISSING, STATUS_NEW, STATUS_PENDING_CHANGES, STATUS_READ, STATUS_READY_FOR_DELETION
@@ -126,6 +127,7 @@ class Test(unittest.TestCase):
         read_only_entry = self.get_entry('search-and-modify-1')
         self.assertEqual(read_only_entry.entry_get_status(), STATUS_READ)
         read_time = read_only_entry.entry_get_read_time()
+        sleep(0.1)
         read_only_entry.entry_refresh()
         self.assertEqual(read_only_entry.entry_get_status(), STATUS_READ)
         self.assertNotEqual(read_time, read_only_entry.entry_get_read_time())

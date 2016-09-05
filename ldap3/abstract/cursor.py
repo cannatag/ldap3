@@ -601,7 +601,7 @@ class Writer(Cursor):
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
         return r
 
-    def commit(self, controls):
+    def commit(self, controls=None):
         for entry in self.entries:
             entry.entry_commit(controls)
 
@@ -643,13 +643,15 @@ class Writer(Cursor):
         dn = safe_dn(dn)
         rdns = safe_rdn(dn, decompose=True)
         entry = self.entry_class(dn, self)  # define a new empty Entry
-        for attr in entry._state.definition._attributes:  # defines all mandatory attributes as virtual
-            if entry._state.definition._attributes[attr].mandatory:
+        for attr in entry.entry_get_mandatory_attribute_names():  # defines all mandatory attributes as virtual
                 entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
                 entry.__dict__[attr] = entry._state.attributes[attr]
         entry.objectclass.set(self.definition._object_class)
         for rdn in rdns:  # adds virtual attributes from rdns in entry name (should be more than one with + syntax)
             if rdn[0] in entry._state.definition._attributes:
+                if rdn[0] not in entry._state.attributes:
+                    entry._state.attributes[rdn[0]] = self.attribute_class(entry._state.definition[rdn[0]], entry, self)
+                    entry.__dict__[rdn[0]] = entry._state.attributes[rdn[0]]
                 entry.__dict__[rdn[0]].set(rdn[1])
             else:
                 raise LDAPCursorError('rdn not in objectclass definition')

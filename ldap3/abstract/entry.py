@@ -258,17 +258,20 @@ class EntryBase(object):
         if self.entry_get_cursor().connection:
             entry_attributes = self.entry_get_attribute_names()
             temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn(), entry_attributes)  # if any attributes is added adds only to the entry not to the definition
-            temp_entry._state.origin = self._state.origin
-            self.__dict__.clear()
-            self.__dict__['_state'] = temp_entry._state
-            for attr in self._state.attributes:  # returns the attribute key
-                self.__dict__[attr] = self._state.attributes[attr]
-
-            for attr in entry_attributes:  # if any attribute of the class was deleted make it virtual
-                if attr not in self._state.attributes and attr in self._state.definition._attributes:
-                    self._state.attributes[attr] = WritableAttribute(self._state.definition[attr], self, self.entry_get_cursor())
+            if temp_entry:
+                temp_entry._state.origin = self._state.origin
+                self.__dict__.clear()
+                self.__dict__['_state'] = temp_entry._state
+                for attr in self._state.attributes:  # returns the attribute key
                     self.__dict__[attr] = self._state.attributes[attr]
+
+                for attr in entry_attributes:  # if any attribute of the class was deleted make it virtual
+                    if attr not in self._state.attributes and attr in self._state.definition._attributes:
+                        self._state.attributes[attr] = WritableAttribute(self._state.definition[attr], self, self.entry_get_cursor())
+                        self.__dict__[attr] = self._state.attributes[attr]
             self._state.set_status(self._state._initial_status)
+            return True
+        return False
 
     def entry_to_json(self,
                       raw=False,
@@ -420,7 +423,7 @@ class WritableEntry(EntryBase):
             for attr in self.entry_get_mandatory_attribute_names():
                 if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._state.changes:
                     missing_attributes.append('\'' + attr + '\'')
-            raise LDAPEntryError('mandatory attributes %s missing' %  ', '.join(missing_attributes))
+            raise LDAPEntryError('mandatory attributes %s missing in entry %s' %  (', '.join(missing_attributes), self.entry_get_dn()))
         elif self._state.status == STATUS_PENDING_CHANGES:
             if self.entry_get_changes():
                 if self._state._initial_status == STATUS_NEW:

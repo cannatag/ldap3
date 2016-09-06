@@ -136,8 +136,8 @@ class WritableAttribute(Attribute):
                 r += linesep + filler + to_stdout_encoding(value)
         else:
             r = self.key + to_stdout_encoding(': <Virtual>')
-        if self.key in self.entry.entry_get_changes():
-            r += linesep + filler + 'CHANGES: ' + str(self.entry.entry_get_changes()[self.key])
+        if self.key in self.entry._changes:
+            r += linesep + filler + 'CHANGES: ' + str(self.entry._changes[self.key])
         return r
 
     def __iadd__(self, other):
@@ -149,13 +149,12 @@ class WritableAttribute(Attribute):
         return Ellipsis  # hack to avoid calling set_value in entry __setattr__
 
     def _update_changes(self, changes, remove_old=False):
-        entry_changes = self.entry.entry_get_changes()
-        if self.key not in entry_changes:
-            entry_changes[self.key] = []
+        if self.key not in self.entry._changes:
+            self.entry._changes[self.key] = []
         elif remove_old:
-            entry_changes[self.key] = []  # remove old changes (for removing attribute)
+            self.entry._changes[self.key] = []  # remove old changes (for removing attribute)
 
-        entry_changes[self.key].append(changes)
+        self.entry._changes[self.key].append(changes)
         self.entry._state.set_status(STATUS_PENDING_CHANGES)
 
     def add(self, values):
@@ -198,9 +197,9 @@ class WritableAttribute(Attribute):
 
         self._update_changes((MODIFY_REPLACE, []), True)
 
-    def discard_changes(self):
-        del self.entry.entry_get_changes()[self.key]
-        if not self.entry._entry_get_changes():
+    def discard(self):
+        del self.entry._changes[self.key]
+        if not self.entry._changes:
             self.entry._state.set_status(self.entry._state._initial_status)
 
     @property
@@ -209,6 +208,6 @@ class WritableAttribute(Attribute):
 
     @property
     def changes(self):
-        if self.key in self.entry.entry_get_changes():
-            return self.entry.entry_get_changes()[self.key]
+        if self.key in self.entry._changes:
+            return self.entry._changes[self.key]
         return None

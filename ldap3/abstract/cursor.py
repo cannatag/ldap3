@@ -84,10 +84,6 @@ class Cursor(object):
         self.entries = []
         self.schema = self.connection.server.schema
 
-    @property
-    def definition(self):
-        return self._definition
-
     def __str__(self):
         return self.__repr__()
 
@@ -106,6 +102,10 @@ class Cursor(object):
     else:  # python 2
         def __nonzero__(self):
             return True
+
+    @property
+    def definition(self):
+        return self._definition
 
     def _get_attributes(self, response, attr_defs, entry):
         """Assign the result of the LDAP query to the Entry object dictionary.
@@ -312,6 +312,7 @@ class Reader(Cursor):
 
     def reset(self):
         """Clear all the Reader parameters
+
         """
         self.clear()
         self.validated_query = None
@@ -580,7 +581,7 @@ class Writer(Cursor):
     def from_reader(reader, connection, object_class, custom_validator=None):
         writer = Writer(connection, object_class, attributes=reader.attributes)
         for entry in reader.entries:
-            entry.make_writable(object_class, writer, custom_validator=custom_validator)
+            entry._writable(object_class, writer, custom_validator=custom_validator)
         return writer
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
@@ -601,15 +602,15 @@ class Writer(Cursor):
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
         return r
 
-    def commit(self, controls=None):
+    def commit(self):
         for entry in self.entries:
-            entry.entry_commit(controls)
+            entry.entry_commit(self.controls)
 
-    def discard_changes(self):
+    def discard(self):
         for entry in self.entries:
             entry.entry_discard()
 
-    def search_object(self, entry_dn, attributes=None):  # base must be a single dn
+    def search_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
         """Perform the LDAP search operation SINGLE_OBJECT scope
 
         :return: Entry found in search
@@ -625,7 +626,7 @@ class Writer(Cursor):
                                             dereference_aliases=DEREF_NEVER,
                                             attributes=attributes if attributes else self.attributes,
                                             get_operational_attributes=self.get_operational_attributes,
-                                            controls=self.controls)
+                                            controls=controls)
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
             else:
@@ -639,11 +640,11 @@ class Writer(Cursor):
 
         return self.entries[0] if len(self.entries) == 1 else None
 
-    def new_entry(self, dn):
+    def new(self, dn):
         dn = safe_dn(dn)
         rdns = safe_rdn(dn, decompose=True)
         entry = self.entry_class(dn, self)  # define a new empty Entry
-        for attr in entry.entry_get_mandatory_attribute_names():  # defines all mandatory attributes as virtual
+        for attr in entry._mandatory:  # defines all mandatory attributes as virtual
                 entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
                 entry.__dict__[attr] = entry._state.attributes[attr]
         entry.objectclass.set(self.definition._object_class)

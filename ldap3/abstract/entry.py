@@ -102,19 +102,17 @@ class EntryBase(object):
 
     The Entry object is read only
 
-    - The DN is retrieved by get_entry_dn()
-    - The cursor reference is in get_entry_cursor()
-    - Raw attributes values are retrieved by the get_raw_attributes() and
-      get_raw_attribute() methods
-
+    - The DN is retrieved by _dn
+    - The cursor reference is in _cursor
+    - Raw attributes values are retrieved with _raw_attributes and the _raw_attribute() methods
     """
 
     def __init__(self, dn, cursor):
         self.__dict__['_state'] = EntryState(dn, cursor)
 
     def __repr__(self):
-        if self.__dict__ and self.entry_get_dn() is not None:
-            r = 'DN: ' + to_stdout_encoding(self.entry_get_dn()) + ' - STATUS: ' + self._state.status + ' - READ TIME: ' + (self._state.read_time.isoformat() if self._state.read_time else '<never>') + linesep
+        if self.__dict__ and self._dn is not None:
+            r = 'DN: ' + to_stdout_encoding(self._dn) + ' - STATUS: ' + self._status + ' - READ TIME: ' + (self._read_time.isoformat() if self._read_time else '<never>') + linesep
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
                     r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
@@ -171,62 +169,37 @@ class EntryBase(object):
 
     def __eq__(self, other):
         if isinstance(other, EntryBase):
-            return self.entry_get_dn() == other.entry_get_dn()
+            return self._dn == other._dn
 
         return False
 
     def __lt__(self, other):
         if isinstance(other, EntryBase):
-            return self.entry_get_dn() <= other.entry_get_dn()
+            return self._dn <= other._dn
 
         return False
 
-    def entry_get_dn(self):
-        """
-
-        :return: The distinguished name of the Entry
-        """
+    @property
+    def _dn(self):
         return self._state.dn
 
-    def entry_get_response(self):
-        """
-
-        :return: The origininal search response for the Entry
-        """
-        return self._state.response
-
-    def entry_get_cursor(self):
-        """
-
-        :return: the cursor object of the Entry
-        """
+    @property
+    def _cursor(self):
         return self._state.cursor
 
-    def entry_get_status(self):
-        """
-
-        :return: the status of the Entry
-        """
+    @property
+    def _status(self):
         return self._state.status
 
-    def entry_get_definition(self):
-        """
-
-        :return: the definition  of the Entry
-        """
+    @property
+    def _definition(self):
         return self._state.definition
 
-    def entry_get_reader(self):  # for compatability with versions < 1.4.1
-        return self.entry_get_cursor()
-
-    def entry_get_raw_attributes(self):
-        """
-
-        :return: The raw (unencoded) attributes of the Entry as bytes
-        """
+    @property
+    def _raw_attributes(self):
         return self._state.raw_attributes
 
-    def entry_get_raw_attribute(self, name):
+    def _get_raw_attribute(self, name):
         """
 
         :param name: name of the attribute
@@ -234,30 +207,33 @@ class EntryBase(object):
         """
         return self._state.raw_attributes[name] if name in self._state.raw_attributes else None
 
-    def entry_get_mandatory_attribute_names(self):
-        return [attribute for attribute in self._state.definition._attributes if self._state.definition._attributes[attribute].mandatory]
+    @property
+    def _mandatory(self):
+        return [attribute for attribute in self._definition._attributes if self._definition._attributes[attribute].mandatory]
 
-    def entry_get_attribute_names(self):
+    @property
+    def _attributes(self):
         return list(self._state.attributes.keys())
 
-    def entry_get_attributes_dict(self):
+    @property
+    def _attributes_as_dict(self):
         return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._state.attributes.items())
 
-    def entry_get_read_time(self):
-        """
-
-        :return: the time of the last read event for this entry
-        """
+    @property
+    def _read_time(self):
         return self._state.read_time
 
-    def entry_refresh(self):
+    @property
+    def _changes(self):
+        return self._state.changes
+
+    def _refresh(self):
         """
 
         Read the entry from the LDAP Server
         """
-        if self.entry_get_cursor().connection:
-            entry_attributes = self.entry_get_attribute_names()
-            temp_entry = self.entry_get_cursor().search_object(self.entry_get_dn(), entry_attributes)  # if any attributes is added adds only to the entry not to the definition
+        if self._cursor.connection:
+            temp_entry = self._cursor.search_object(self._dn, self._attributes)  # if any attributes is added adds only to the entry not to the definition
             if temp_entry:
                 temp_entry._state.origin = self._state.origin
                 self.__dict__.clear()
@@ -265,26 +241,26 @@ class EntryBase(object):
                 for attr in self._state.attributes:  # returns the attribute key
                     self.__dict__[attr] = self._state.attributes[attr]
 
-                for attr in entry_attributes:  # if any attribute of the class was deleted make it virtual
-                    if attr not in self._state.attributes and attr in self._state.definition._attributes:
-                        self._state.attributes[attr] = WritableAttribute(self._state.definition[attr], self, self.entry_get_cursor())
+                for attr in self._attributes:  # if any attribute of the class was deleted make it virtual
+                    if attr not in self._state.attributes and attr in self._definition._attributes:
+                        self._state.attributes[attr] = WritableAttribute(self._definition[attr], self, self._cursor)
                         self.__dict__[attr] = self._state.attributes[attr]
             self._state.set_status(self._state._initial_status)
             return True
         return False
 
-    def entry_to_json(self,
+    def _to_json(self,
                       raw=False,
                       indent=4,
                       sort=True,
                       stream=None,
                       checked_attributes=True):
         json_entry = dict()
-        json_entry['dn'] = self.entry_get_dn()
+        json_entry['dn'] = self._dn
         if checked_attributes:
-            json_entry['attributes'] = self.entry_get_attributes_dict()
+            json_entry['attributes'] = self._attributes_as_dict
         if raw:
-            json_entry['raw'] = dict(self.entry_get_raw_attributes())
+            json_entry['raw'] = dict(self._raw_attributes)
 
         if str == bytes:
             check_json_dict(json_entry)
@@ -302,7 +278,15 @@ class EntryBase(object):
 
         return json_output
 
-    def entry_to_ldif(self,
+    def entry_to_json(self,  # compatibility for version < 2.0.0 outside of the abstract namespae
+                      raw=False,
+                      indent=4,
+                      sort=True,
+                      stream=None,
+                      checked_attributes=True):
+        return self._to_json(raw, indent, sort, stream, checked_attributes)
+
+    def _to_ldif(self,
                       all_base64=False,
                       line_separator=None,
                       sort_order=None,
@@ -319,6 +303,13 @@ class EntryBase(object):
             stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
         return ldif_output
 
+    def entry_to_ldif(self,
+                 all_base64=False,
+                 line_separator=None,
+                 sort_order=None,
+                 stream=None):
+        return self._to_ldif(all_base64, line_separator, sort_order, stream)
+
 class Entry(EntryBase):
     """The Entry object contains a single LDAP entry.
     Attributes can be accessed either by sequence, by assignment
@@ -332,12 +323,12 @@ class Entry(EntryBase):
       get_raw_attribute() methods
 
     """
-    def make_writable(self, object_def, writer_cursor=None, attributes=None, custom_validator=None):
-        if not self.entry_get_cursor().schema:
+    def _writable(self, object_def, writer_cursor=None, attributes=None, custom_validator=None):
+        if not self._cursor.schema:
             raise LDAPCursorError('The schema must be available to make an entry writable')
         # returns a newly created WritableEntry and its relevant Writer
         if not isinstance(object_def, ObjectDef):
-                object_def = ObjectDef(object_def, self.entry_get_cursor().schema, custom_validator)
+                object_def = ObjectDef(object_def, self._cursor.schema, custom_validator)
 
         if attributes:
             if isinstance(attributes, STRING_TYPES):
@@ -352,16 +343,16 @@ class Entry(EntryBase):
 
         if not writer_cursor:
             from .cursor import Writer  # local import to avoid circular reference in import at startup
-            writable_cursor = Writer(self.entry_get_cursor().connection, object_def)
+            writable_cursor = Writer(self._cursor.connection, object_def)
         else:
             writable_cursor = writer_cursor
 
         if attributes:  # force reading of attributes
-            writable_entry = writable_cursor.search_object(self.entry_get_dn(), list(attributes) + self.entry_get_attribute_names())
+            writable_entry = writable_cursor.search_object(self._dn, list(attributes) + self._attributes)
         else:
-            writable_entry = writable_cursor._get_entry(deepcopy(self.entry_get_response()))
+            writable_entry = writable_cursor._get_entry(deepcopy(self._state.response))
             writable_cursor.entries.append(writable_entry)
-            writable_entry._state.read_time = copy(self._state.read_time)
+            writable_entry._state.read_time = copy(self._read_time)
         writable_entry._state.origin = self  # reference to the original read-only entry
         writable_entry._state.set_status(STATUS_WRITABLE)
         return writable_entry
@@ -374,9 +365,9 @@ class WritableEntry(EntryBase):
             return
 
         if value is not Ellipsis:  # hack for using implicit operators in writable attributes
-            if item in self.entry_get_cursor().definition._attributes:
+            if item in self._cursor.definition._attributes:
                 if item not in self._state.attributes:  # setting value to an attribute still without values
-                    new_attribute = WritableAttribute(self.entry_get_cursor().definition._attributes[item], self, cursor=self.entry_get_cursor())
+                    new_attribute = WritableAttribute(self._cursor.definition._attributes[item], self, cursor=self._cursor)
                     self._state.attributes[str(item)] = new_attribute  # force item to a string for key in attributes dict
                 self._state.attributes[item].set(value)  # try to add to new_values
             else:
@@ -390,27 +381,27 @@ class WritableEntry(EntryBase):
             for attr in self._state.attributes.keys():
                 if item == attr.lower():
                     return self._state.attributes[attr]
-            if item in self._state.definition._attributes:  # item is a new attribute to commit, creates the AttrDef and add to the attributes to retrive
-                self._state.attributes[item] = WritableAttribute(self._state.definition._attributes[item], self, self.entry_get_cursor())
-                self.entry_get_cursor().attributes.add(item)
+            if item in self._definition._attributes:  # item is a new attribute to commit, creates the AttrDef and add to the attributes to retrive
+                self._state.attributes[item] = WritableAttribute(self._definition._attributes[item], self, self._cursor)
+                self._cursor.attributes.add(item)
                 return self._state.attributes[item]
-            # if item in self._state.definition._attributes:
+            # if item in self._definition._attributes:
             #     raise LDAPAttributeError('attribute must have a value')
             raise LDAPAttributeError('attribute \'%s\' is not defined' % item)
         else:
             raise LDAPAttributeError('attribute must be a string')
 
-    def entry_commit(self, refresh=True, controls=None):
-        if self._state.status == STATUS_READY_FOR_DELETION:
+    def _commit(self, refresh=True, controls=None):
+        if self._status == STATUS_READY_FOR_DELETION:
             origin = None
-            if self.entry_get_cursor().connection.delete(self.entry_get_dn(), controls):
-                dn = self.entry_get_dn()
+            if self._cursor.connection.delete(self._dn, controls):
+                dn = self._dn
                 if self._state.origin:  # deletes original read-only entry if present
-                    cursor = self._state.origin.entry_get_cursor()
+                    cursor = self._state.origin._cursor
                     self._state.origin.__dict__.clear()
                     self._state.origin.__dict__['_state'] = EntryState(dn, cursor)
                     origin = self._state.origin
-                cursor = self.entry_get_cursor()
+                cursor = self._cursor
                 self.__dict__.clear()
                 self._state = EntryState(dn, cursor)
                 self._state.origin = origin
@@ -418,48 +409,45 @@ class WritableEntry(EntryBase):
                 return True
             else:
                 raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
-        elif self._state.status in [STATUS_NEW, STATUS_MANDATORY_MISSING]:
+        elif self._status in [STATUS_NEW, STATUS_MANDATORY_MISSING]:
             missing_attributes = []
-            for attr in self.entry_get_mandatory_attribute_names():
-                if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._state.changes:
+            for attr in self._mandatory:
+                if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._changes:
                     missing_attributes.append('\'' + attr + '\'')
-            raise LDAPEntryError('mandatory attributes %s missing in entry %s' %  (', '.join(missing_attributes), self.entry_get_dn()))
-        elif self._state.status == STATUS_PENDING_CHANGES:
-            if self.entry_get_changes():
+            raise LDAPEntryError('mandatory attributes %s missing in entry %s' %  (', '.join(missing_attributes), self._dn))
+        elif self._status == STATUS_PENDING_CHANGES:
+            if self._changes:
                 if self._state._initial_status == STATUS_NEW:
                     new_attributes = dict()
-                    for attr in self.entry_get_changes():
-                        new_attributes[attr] = self.entry_get_changes()[attr][0][1]
-                    result = self.entry_get_cursor().connection.add(self.entry_get_dn(), None, new_attributes, controls)
+                    for attr in self._changes:
+                        new_attributes[attr] = self._changes[attr][0][1]
+                    result = self.cursor.connection.add(self._dn, None, new_attributes, controls)
                 else:
-                    result = self.entry_get_cursor().connection.modify(self.entry_get_dn(), self.entry_get_changes(), controls)
+                    result = self._cursor.connection.modify(self._dn, self._changes, controls)
                 if result:
                     if refresh:
-                        self.entry_refresh()
+                        self._refresh()
                         origin = self._state.origin
                         if origin:  # updates original read-only entry if present
                             for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
-                                if attr.key in self._state.definition._attributes and attr.key not in origin._state.definition._attributes:
-                                    origin.entry_get_cursor().definition.add(self.entry_get_cursor().definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
-                            temp_entry = origin.entry_get_cursor()._get_entry(deepcopy(self.entry_get_response()))
+                                if attr.key in self._definition._attributes and attr.key not in origin._definition._attributes:
+                                    origin._cursor.definition.add(self._cursor.definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
+                            temp_entry = origin._cursor._get_entry(deepcopy(self._state.response))
                             origin.__dict__.clear()
                             origin.__dict__['_state'] = temp_entry._state
                             for attr in self:  # returns the whole attribute object
                                 if not attr.virtual:
                                     origin.__dict__[attr.key] = origin._state.attributes[attr.key]
-                            origin._state.read_time = copy(self._state.read_time)
+                            origin._state.read_time = copy(self._read_time)
                     self._state.set_status(STATUS_COMMITTED)
                     return True
                 else:
-                    raise LDAPEntryError('unable to commit entry, ' + self.entry_get_cursor().connection.result['description'] + ' - ' + self.entry_get_cursor().connection.result['message'])
+                    raise LDAPEntryError('unable to commit entry, ' + self._cursor.connection.result['description'] + ' - ' + self._cursor.connection.result['message'])
         return False
 
-    def entry_get_changes(self):
-        return self._state.changes
-
-    def entry_discard_changes(self):
-        self.entry_get_changes().clear()
+    def _discard(self):
+        self._changes.clear()
         self._state.set_status(self._state._initial_status)
 
-    def entry_delete(self, controls=None):
+    def _delete(self, controls=None):
         self._state.set_status(STATUS_READY_FOR_DELETION)

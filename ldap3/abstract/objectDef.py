@@ -171,7 +171,6 @@ class ObjectDef(object):
         :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add. Can be a list of both
 
         """
-
         if isinstance(definition, STRING_TYPES):
             self.add_from_schema(definition)
         elif isinstance(definition, AttrDef):

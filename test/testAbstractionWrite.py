@@ -42,9 +42,9 @@ class Test(unittest.TestCase):
 
     def test_create_new_entry(self):
         w = Writer(self.connection, 'inetorgperson')
-        n = w.new_entry('cn=abstraction-create,' + test_base)
+        n = w.new('cn=abstraction-create,' + test_base)
         try:
-            n.entry_commit()
+            n._commit()
         except LDAPEntryError:
             pass
 

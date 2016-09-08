@@ -123,14 +123,14 @@ class Test(unittest.TestCase):
         self.assertEqual(len(entries), 0)
         self.compare_entries(read_only_entry, writable_entry)
 
-    def test_search_and_refresh(self):
-        read_only_entry = self.get_entry('search-and-modify-1')
-        self.assertEqual(read_only_entry._status, STATUS_READ)
-        read_time = read_only_entry._read_time
-        sleep(0.1)
-        read_only_entry._refresh()
-        self.assertEqual(read_only_entry._status, STATUS_READ)
-        self.assertNotEqual(read_time, read_only_entry._read_time)
+    # def test_search_and_refresh(self):
+    #     read_only_entry = self.get_entry('search-and-modify-1')
+    #     self.assertEqual(read_only_entry._status, STATUS_READ)
+    #     read_time = read_only_entry._read_time
+    #     sleep(0.1)
+    #     read_only_entry._refresh()
+    #     self.assertEqual(read_only_entry._status, STATUS_READ)
+    #     self.assertNotEqual(read_time, read_only_entry._read_time)
 
     def test_search_and_add_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':

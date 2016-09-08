@@ -83,7 +83,7 @@ class Cursor(object):
         self.execution_time = None
         self.entries = []
         self.schema = self.connection.server.schema
-
+        self._do_not_reset=False  # used for refreshing entry in _refresh() without removing all entries from the Cursor
     def __str__(self):
         return self.__repr__()
 
@@ -206,13 +206,16 @@ class Cursor(object):
             else:
                 response = self.connection.response
 
-            self.entries = []
-            for r in response:
-                entry = self._get_entry(r)
-                self.entries.append(entry)
+        if self._do_not_reset:  # trick to not remove entries when using _refresh()
+            return self._get_entry(response[0])
 
-            self.last_sub_tree = self.sub_tree
-            self.execution_time = datetime.now()
+        self.entries = []
+        for r in response:
+            entry = self._get_entry(r)
+            self.entries.append(entry)
+
+        self.last_sub_tree = self.sub_tree
+        self.execution_time = datetime.now()
 
         if old_query_filter:  # requesting a single object so an always-valid filter is set
             self.query_filter = old_query_filter
@@ -578,7 +581,11 @@ class Writer(Cursor):
     entry_initial_status = STATUS_WRITABLE
 
     @staticmethod
-    def from_reader(reader, connection, object_class, custom_validator=None):
+    def from_reader(reader, connection=None, object_class=None, custom_validator=None):
+        if connection is None:
+            connection=reader.connection
+        if object_class is None:
+            object_class=reader.definition
         writer = Writer(connection, object_class, attributes=reader.attributes)
         for entry in reader.entries:
             entry._writable(object_class, writer, custom_validator=custom_validator)
@@ -610,7 +617,7 @@ class Writer(Cursor):
         for entry in self.entries:
             entry._discard()
 
-    def search_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
+    def _refresh_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
         """Perform the LDAP search operation SINGLE_OBJECT scope
 
         :return: Entry found in search
@@ -632,13 +639,12 @@ class Writer(Cursor):
             else:
                 response = self.connection.response
 
-            self.entries = []
-            for r in response:
-                entry = self._get_entry(r)
-                self.entries.append(entry)
-            self.execution_time = datetime.now()
+        if len(response) == 1:
+            return self._get_entry(response[0])
+        elif len(response) == 0:
+            return None
 
-        return self.entries[0] if len(self.entries) == 1 else None
+        raise LDAPCursorError('Too many entries returned for a single object search')
 
     def new(self, dn):
         dn = safe_dn(dn)
@@ -659,3 +665,22 @@ class Writer(Cursor):
         entry._state.set_status(STATUS_NEW)
         self.entries.append(entry)
         return entry
+
+    def refresh_entry(self, entry):
+        self._do_not_reset = True
+        temp_entry = self._refresh_object(entry._dn, entry._attributes)  # if any attributes is added adds only to the entry not to the definition
+        self._do_not_reset = False
+        if temp_entry:
+            temp_entry._state.origin = entry._state.origin
+            entry.__dict__.clear()
+            entry.__dict__['_state'] = temp_entry._state
+            for attr in entry._state.attributes:  # returns the attribute key
+                entry.__dict__[attr] = entry._state.attributes[attr]
+
+            for attr in entry._attributes:  # if any attribute of the class was deleted make it virtual
+                if attr not in entry._state.attributes and attr in entry._definition._attributes:
+                    entry._state.attributes[attr] = WritableAttribute(entry._definition[attr], entry, self)
+                    entry.__dict__[attr] = entry._state.attributes[attr]
+            entry._state.set_status(entry._state._initial_status)
+            return True
+        return False

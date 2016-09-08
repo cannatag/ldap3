@@ -227,28 +227,6 @@ class EntryBase(object):
     def _changes(self):
         return self._state.changes
 
-    def _refresh(self):
-        """
-
-        Read the entry from the LDAP Server
-        """
-        if self._cursor.connection:
-            temp_entry = self._cursor.search_object(self._dn, self._attributes)  # if any attributes is added adds only to the entry not to the definition
-            if temp_entry:
-                temp_entry._state.origin = self._state.origin
-                self.__dict__.clear()
-                self.__dict__['_state'] = temp_entry._state
-                for attr in self._state.attributes:  # returns the attribute key
-                    self.__dict__[attr] = self._state.attributes[attr]
-
-                for attr in self._attributes:  # if any attribute of the class was deleted make it virtual
-                    if attr not in self._state.attributes and attr in self._definition._attributes:
-                        self._state.attributes[attr] = WritableAttribute(self._definition[attr], self, self._cursor)
-                        self.__dict__[attr] = self._state.attributes[attr]
-            self._state.set_status(self._state._initial_status)
-            return True
-        return False
-
     def _to_json(self,
                       raw=False,
                       indent=4,
@@ -348,7 +326,7 @@ class Entry(EntryBase):
             writable_cursor = writer_cursor
 
         if attributes:  # force reading of attributes
-            writable_entry = writable_cursor.search_object(self._dn, list(attributes) + self._attributes)
+            writable_entry = writable_cursor._refresh_object(self._dn, list(attributes) + self._attributes)
         else:
             writable_entry = writable_cursor._get_entry(deepcopy(self._state.response))
             writable_cursor.entries.append(writable_entry)
@@ -451,3 +429,13 @@ class WritableEntry(EntryBase):
 
     def _delete(self, controls=None):
         self._state.set_status(STATUS_READY_FOR_DELETION)
+
+    def _refresh(self):
+        """
+
+        Read the entry from the LDAP Server
+        """
+        if self._cursor.connection:
+            self._cursor.refresh_entry(self)
+            return True
+        return False

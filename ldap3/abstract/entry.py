@@ -317,10 +317,10 @@ class Entry(EntryBase):
 
     The Entry object is read only
 
-    - The DN is retrieved by get_entry_dn()
-    - The Reader reference is in get_entry_reader()
-    - Raw attributes values are retrieved by the get_raw_attributes() and
-      get_raw_attribute() methods
+    - The DN is retrieved by _dn()
+    - The Reader reference is in _cursor()
+    - Raw attributes values are retrieved by the _ra_attributes and
+      _raw_attribute() methods
 
     """
     def _writable(self, object_def, writer_cursor=None, attributes=None, custom_validator=None):
@@ -421,7 +421,7 @@ class WritableEntry(EntryBase):
                     new_attributes = dict()
                     for attr in self._changes:
                         new_attributes[attr] = self._changes[attr][0][1]
-                    result = self.cursor.connection.add(self._dn, None, new_attributes, controls)
+                    result = self._cursor.connection.add(self._dn, None, new_attributes, controls)
                 else:
                     result = self._cursor.connection.modify(self._dn, self._changes, controls)
                 if result:

@@ -58,10 +58,10 @@ def _create_query_dict(query_text):
 
 class Cursor(object):
     # entry_class and attribute_class define the type of entry and attribute used by the cursor
-    # entry_status defines the initial status of a entry
+    # entry_initial_status defines the initial status of a entry
     # entry_class = Entry, must be defined in subclasses
     # attribute_class = Attribute, must be defined in subclasses
-    # entry_status = STATUS, must be defined in subclasses
+    # entry_initial_status = STATUS, must be defined in subclasses
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
@@ -174,7 +174,7 @@ class Cursor(object):
 
         entry._state.response = response
         entry._state.read_time = datetime.now()
-        entry._state.set_status(self.entry_status)
+        entry._state.set_status(self.entry_initial_status)
         for attr in entry:  # returns the whole attribute object
             entry.__dict__[attr.key] = attr
 
@@ -241,7 +241,7 @@ class Reader(Cursor):
     """
     entry_class = Entry  # entries are read_only
     attribute_class = Attribute  # attributes are read_only
-    entry_status = STATUS_READ
+    entry_initial_status = STATUS_READ
 
     def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
@@ -575,7 +575,7 @@ class Reader(Cursor):
 class Writer(Cursor):
     entry_class = WritableEntry
     attribute_class = WritableAttribute
-    entry_status = STATUS_WRITABLE
+    entry_initial_status = STATUS_WRITABLE
 
     @staticmethod
     def from_reader(reader, connection, object_class, custom_validator=None):
@@ -604,11 +604,11 @@ class Writer(Cursor):
 
     def commit(self):
         for entry in self.entries:
-            entry.entry_commit(self.controls)
+            entry._commit(self.controls)
 
     def discard(self):
         for entry in self.entries:
-            entry.entry_discard()
+            entry._discard()
 
     def search_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
         """Perform the LDAP search operation SINGLE_OBJECT scope

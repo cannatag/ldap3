@@ -1,19 +1,38 @@
 # changes file for ldap3
-# generated on 2016-08-17 17:28:24.378973
-# version 1.5.0
+# generated on 2016-09-10 04:52:49.594177
+# version 2.0.0
 
-- 1.5.0 2016.08.15
+- 2.0.0 2016.08.31
+    - ldap3 namespace decluttered
+    - RESULT_CODES moved to ldap3.core.results
+    - compatability constants removed
+    - exceptions removed from ldap3 namespace, defined in ldap3.core.exceptions only
+    - ADDRESS_INFO_REFRESH_TIME is now configurable via set_config_parameter
+    - Operational attribute prefix set to 'OA_'
     - Allows cert and key file in the same file (thanks Jan-Philip)
     - Removed logging info when logging is disabled (thanks Dan)
     - Updated copyright notice
     - Refactored abstraction layer
     - Added WritableEntry and WritableAttribute to abstraction layer
+    . Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
     - Added custom validators for attribute values
     - Added update capability to abstraction layer
     - Fixed typo in docs (thanks Gerardwx)
     - Fixed Object and Attribute representation in schema (superior class not shown)
-    - ObjectDef automatically populates attributes from schema, following objectClass hierarchy
+    - ObjectDef automatically populates attributes from schema, following object_class hierarchy
     - Added attributes parameter to search* methods of Cursor, so that only needed attributes are read even if attr_defs defines more
+    - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
+    - Added 'set' to SEQUENCE_TYPES (thanks Christian)
+    - Entries returned by search can be writable via the abstraction layer
+    - Added LDAPCursorError exception
+    - Added LDAPWriterError exception, inherits from LDAPCursorError
+    - LDAPReaderError exception now inherits from LDAPCursorError
+    - auto_range parameter in Connection defaults to True (thanks Ashley)
+    - get_info defaults to SCHEMA while defining Server object
+    - Included ordereddict 1.1 (# Copyright (c) 2009 Raymond Hettinger) in ldap3.utils.ordDict for backporting OrderedDict in Python 2.6
+    - Added config parameter RESET_AVAILABILITY_TIMEOUT to reinsert invalid address in candidate_addresses while checking connection, defaults to 5 seconds
+    - Fixed inability to connect to a server if the connection starts when the server is unavailable and then it becomes available again
+    - All DNs are sanitized if connection.check_names is True
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

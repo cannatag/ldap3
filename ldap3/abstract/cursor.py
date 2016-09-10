@@ -35,7 +35,7 @@ from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPCursorError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import safe_dn, safe_rdn
-from . import STATUS_NEW, STATUS_READ, STATUS_WRITABLE
+from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
 
 def _ret_search_value(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -220,6 +220,8 @@ class Cursor(object):
         if old_query_filter:  # requesting a single object so an always-valid filter is set
             self.query_filter = old_query_filter
 
+    def remove(self, entry):
+        self.entries.remove(entry)
 
 class Reader(Cursor):
     """Reader object to perform searches:
@@ -611,7 +613,7 @@ class Writer(Cursor):
 
     def commit(self):
         for entry in self.entries:
-            entry._commit(self.controls)
+            entry._commit(controls=self.controls)
 
     def discard(self):
         for entry in self.entries:
@@ -648,8 +650,11 @@ class Writer(Cursor):
 
     def new(self, dn):
         dn = safe_dn(dn)
+        for entry in self.entries:  # checks if dn is already used in an cursor entry
+            if entry._dn == dn:
+                raise LDAPCursorError('dn already present in cursor')
         rdns = safe_rdn(dn, decompose=True)
-        entry = self.entry_class(dn, self)  # define a new empty Entry
+        entry = self.entry_class(dn, self)  # defines a new empty Entry
         for attr in entry._mandatory:  # defines all mandatory attributes as virtual
                 entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
                 entry.__dict__[attr] = entry._state.attributes[attr]
@@ -662,7 +667,7 @@ class Writer(Cursor):
                 entry.__dict__[rdn[0]].set(rdn[1])
             else:
                 raise LDAPCursorError('rdn not in objectclass definition')
-        entry._state.set_status(STATUS_NEW)
+        entry._state.set_status(STATUS_VIRTUAL)
         self.entries.append(entry)
         return entry
 

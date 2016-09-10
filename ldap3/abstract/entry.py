@@ -42,7 +42,7 @@ from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveDict
-from . import STATUS_NEW, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
+from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
 
 
 class EntryState(object):
@@ -68,7 +68,7 @@ class EntryState(object):
 
     def __repr__(self):
         if self.__dict__ and self.dn is not None:
-            r = 'DN: ' + to_stdout_encoding(self.dn) + ' - STATUS: ' + self.status + ' - READ TIME: ' + (self.read_time.isoformat() if self.read_time else '<never>') + linesep
+            r = 'DN: ' + to_stdout_encoding(self.dn) + ' - STATUS: ' + self._initial_status + ', ' + self.status + ' - READ TIME: ' + (self.read_time.isoformat() if self.read_time else '<never>') + linesep
             r += 'attributes: ' + ', '.join(sorted(self.attributes.keys())) + linesep
             r += 'object def: ' + (', '.join(sorted(self.definition._object_class)) if self.definition._object_class else '<None>') + linesep
             r += 'attr defs: ' + ', '.join(sorted(self.definition._attributes.keys())) + linesep
@@ -88,7 +88,11 @@ class EntryState(object):
         if status in INITIAL_STATUSES:
             self._initial_status = status
         self.status = status
-        if self.status == STATUS_NEW or (self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_NEW):  # checks if all mandatory attributes are present in new entries
+        if status == STATUS_DELETED:
+            self._initial_status = STATUS_VIRTUAL
+        if status == STATUS_COMMITTED:
+            self._initial_status = STATUS_WRITABLE
+        if self.status == STATUS_VIRTUAL or (self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_VIRTUAL):  # checks if all mandatory attributes are present in new entries
             for attr in self.definition._attributes:
                 if self.definition._attributes[attr].mandatory:
                     if (attr not in self.attributes or self.attributes[attr].virtual) and attr not in self.changes:
@@ -112,7 +116,7 @@ class EntryBase(object):
 
     def __repr__(self):
         if self.__dict__ and self._dn is not None:
-            r = 'DN: ' + to_stdout_encoding(self._dn) + ' - STATUS: ' + self._status + ' - READ TIME: ' + (self._read_time.isoformat() if self._read_time else '<never>') + linesep
+            r = 'DN: ' + to_stdout_encoding(self._dn) + ' - STATUS: ' + self._state._initial_status + ', ' + self._status + ' - READ TIME: ' + (self._read_time.isoformat() if self._read_time else '<never>') + linesep
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
                     r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
@@ -387,7 +391,7 @@ class WritableEntry(EntryBase):
                 return True
             else:
                 raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
-        elif self._status in [STATUS_NEW, STATUS_MANDATORY_MISSING]:
+        elif self._status in [STATUS_VIRTUAL, STATUS_MANDATORY_MISSING]:
             missing_attributes = []
             for attr in self._mandatory:
                 if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._changes:
@@ -395,7 +399,7 @@ class WritableEntry(EntryBase):
             raise LDAPEntryError('mandatory attributes %s missing in entry %s' %  (', '.join(missing_attributes), self._dn))
         elif self._status == STATUS_PENDING_CHANGES:
             if self._changes:
-                if self._state._initial_status == STATUS_NEW:
+                if self._state._initial_status == STATUS_VIRTUAL:
                     new_attributes = dict()
                     for attr in self._changes:
                         new_attributes[attr] = self._changes[attr][0][1]
@@ -428,6 +432,9 @@ class WritableEntry(EntryBase):
         self._state.set_status(self._state._initial_status)
 
     def _delete(self, controls=None):
+        if self._status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_DELETION]:
+            raise LDAPEntryError('unable to delete entry, invalid status: ' + self._status)
+
         self._state.set_status(STATUS_READY_FOR_DELETION)
 
     def _refresh(self):
@@ -439,3 +446,9 @@ class WritableEntry(EntryBase):
             self._cursor.refresh_entry(self)
             return True
         return False
+
+    def _move(self, destination_dn):
+        raise NotImplementedError
+
+    def _rename(self):
+        raise NotImplementedError

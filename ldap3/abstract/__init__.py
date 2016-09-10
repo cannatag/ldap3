@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 STATUS_INIT = 'Initialized'  # The entry object is initialized
-STATUS_NEW = 'New entry'  # The entry is a new writable entry, still empty
+STATUS_VIRTUAL = 'Virtual'  # The entry is a new writable entry, still empty
 STATUS_MANDATORY_MISSING = 'Missing mandatory attributes'  # The entry has some mandatory attributes missing
 STATUS_READ = 'Read' # The entry has been read
 STATUS_WRITABLE = 'Writable' # The entry has been made writable, still no changes
@@ -34,7 +34,7 @@ STATUS_READY_FOR_DELETION = 'Ready for deletion'  # The entry is set for deletio
 STATUS_DELETED = 'Deleted'  # The entry has been deleted
 
 STATUSES = [STATUS_INIT,
-            STATUS_NEW,
+            STATUS_VIRTUAL,
             STATUS_MANDATORY_MISSING,
             STATUS_READ,
             STATUS_WRITABLE,
@@ -43,4 +43,4 @@ STATUSES = [STATUS_INIT,
             STATUS_READY_FOR_DELETION,
             STATUS_DELETED]
 
-INITIAL_STATUSES = [STATUS_READ, STATUS_WRITABLE, STATUS_NEW, STATUS_COMMITTED]
+INITIAL_STATUSES = [STATUS_READ, STATUS_WRITABLE, STATUS_VIRTUAL]

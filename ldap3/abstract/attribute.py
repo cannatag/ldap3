@@ -29,7 +29,7 @@ from ldap3.core.exceptions import LDAPEntryError
 from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES, STRING_TYPES
 from ..core.exceptions import LDAPAttributeError
 from ..utils.repr import to_stdout_encoding
-from . import STATUS_PENDING_CHANGES, STATUS_NEW
+from . import STATUS_PENDING_CHANGES, STATUS_VIRTUAL, STATUS_READY_FOR_DELETION
 
 # noinspection PyUnresolvedReferences
 class Attribute(object):
@@ -159,8 +159,10 @@ class WritableAttribute(Attribute):
 
     def add(self, values):
         # new value for attribute to commit with a MODIFY_ADD
-        if self.entry._state._initial_status == STATUS_NEW:
+        if self.entry._state._initial_status == STATUS_VIRTUAL:
             raise LDAPEntryError('cannot add an attribute value in a new entry')
+        if self.entry._status == STATUS_READY_FOR_DELETION:
+            raise LDAPEntryError('entry is ready for deletion, cannot add attributes')
 
         if values is None:
             raise LDAPAttributeError('added value cannot be None')
@@ -172,6 +174,8 @@ class WritableAttribute(Attribute):
 
     def set(self, values):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
+        if self.entry._status == STATUS_READY_FOR_DELETION:
+            raise LDAPEntryError('entry is ready for deletion, cannot add attributes')
         if values is None:
             raise LDAPAttributeError('new value cannot be None')
         if not self.definition.validate(self.definition.name, values):
@@ -180,8 +184,10 @@ class WritableAttribute(Attribute):
 
     def delete(self, values):
         # value for attribute to delete in commit with a MODIFY_DELETE
-        if self.entry._state._initial_status == STATUS_NEW:
+        if self.entry._state._initial_status == STATUS_VIRTUAL:
             raise LDAPEntryError('cannot delete an attribute value in a new entry')
+        if self.entry._status == STATUS_READY_FOR_DELETION:
+            raise LDAPEntryError('entry is ready for deletion, cannot add attributes')
         if values is None:
             raise LDAPAttributeError('value to delete cannot be None')
         if isinstance(values, STRING_TYPES):
@@ -192,9 +198,10 @@ class WritableAttribute(Attribute):
         self._update_changes((MODIFY_DELETE, values))
 
     def remove(self):
-        if self.entry._state._initial_status == STATUS_NEW:
+        if self.entry._state._initial_status == STATUS_VIRTUAL:
             raise LDAPEntryError('cannot remove an attribute in a new entry')
-
+        if self.entry._status == STATUS_READY_FOR_DELETION:
+            raise LDAPEntryError('entry is ready for deletion, cannot add attributes')
         self._update_changes((MODIFY_REPLACE, []), True)
 
     def discard(self):

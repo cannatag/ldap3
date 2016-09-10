@@ -68,7 +68,7 @@ class EntryState(object):
 
     def __repr__(self):
         if self.__dict__ and self.dn is not None:
-            r = 'DN: ' + to_stdout_encoding(self.dn) + ' - STATUS: ' + self._initial_status + ', ' + self.status + ' - READ TIME: ' + (self.read_time.isoformat() if self.read_time else '<never>') + linesep
+            r = 'DN: ' + to_stdout_encoding(self.dn) + ' - STATUS: ' + ((self._initial_status + ', ') if self._initial_status != self.status else '') + self.status + ' - READ TIME: ' + (self.read_time.isoformat() if self.read_time else '<never>') + linesep
             r += 'attributes: ' + ', '.join(sorted(self.attributes.keys())) + linesep
             r += 'object def: ' + (', '.join(sorted(self.definition._object_class)) if self.definition._object_class else '<None>') + linesep
             r += 'attr defs: ' + ', '.join(sorted(self.definition._attributes.keys())) + linesep
@@ -116,7 +116,7 @@ class EntryBase(object):
 
     def __repr__(self):
         if self.__dict__ and self._dn is not None:
-            r = 'DN: ' + to_stdout_encoding(self._dn) + ' - STATUS: ' + self._state._initial_status + ', ' + self._status + ' - READ TIME: ' + (self._read_time.isoformat() if self._read_time else '<never>') + linesep
+            r = 'DN: ' + to_stdout_encoding(self._dn) + ' - STATUS: ' + ((self._state._initial_status + ', ') if self._state._initial_status != self._status else '') + self._status + ' - READ TIME: ' + (self._read_time.isoformat() if self._read_time else '<never>') + linesep
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
                     r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
@@ -305,10 +305,13 @@ class Entry(EntryBase):
       _raw_attribute() methods
 
     """
-    def _writable(self, object_def, writer_cursor=None, attributes=None, custom_validator=None):
+    def _writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None):
         if not self._cursor.schema:
             raise LDAPCursorError('The schema must be available to make an entry writable')
         # returns a newly created WritableEntry and its relevant Writer
+        if object_def is None:
+            object_def=self._cursor.definition
+
         if not isinstance(object_def, ObjectDef):
                 object_def = ObjectDef(object_def, self._cursor.schema, custom_validator)
 

@@ -70,12 +70,15 @@ class Cursor(object):
         self._definition = object_def
         if attributes:  # checks if requested attributes are defined in ObjectDef
             not_defined_attributes = []
+            if isinstance(attributes, STRING_TYPES):
+                attributes = [attributes]
+
             for attribute in attributes:
                 if attribute not in self.definition._attributes:
-                    not_defined_attributes += attribute
+                    not_defined_attributes.append(attribute)
 
             if not_defined_attributes:
-                raise LDAPCursorError('Attributes \'%s\' non in definition' % str(not_defined_attributes))
+                raise LDAPCursorError('Attributes \'%s\' non in definition' % ', '.join(not_defined_attributes))
 
         self.attributes = set(attributes) if attributes else set([attr.name for attr in self._definition])
         self.get_operational_attributes = get_operational_attributes
@@ -383,10 +386,6 @@ class Reader(Cursor):
 
     def _create_query_filter(self):
         """Converts the query dictionary to the filter text"""
-        if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
-            self.query_filter = self._query
-            return
-
         self.query_filter = ''
 
         if self._definition._object_class:
@@ -400,6 +399,13 @@ class Reader(Cursor):
                 self.query_filter += ')'
             else:
                 raise LDAPCursorError('object_class must be a string or a list')
+
+        if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
+            if 'objectclass' not in self._query.lower():
+                self.query_filter += self._query + ')'  # if objectclass not in filter adds from definition
+            else:
+                self.query_filter = self._query
+            return
 
         if not self.components_in_and:
             self.query_filter += '(|'
@@ -583,14 +589,14 @@ class Writer(Cursor):
     entry_initial_status = STATUS_WRITABLE
 
     @staticmethod
-    def from_reader(reader, connection=None, object_class=None, custom_validator=None):
+    def from_reader(reader, connection=None, object_def=None, custom_validator=None):
         if connection is None:
             connection=reader.connection
-        if object_class is None:
-            object_class=reader.definition
-        writer = Writer(connection, object_class, attributes=reader.attributes)
+        if object_def is None:
+            object_def=reader.definition
+        writer = Writer(connection, object_def, attributes=reader.attributes)
         for entry in reader.entries:
-            entry._writable(object_class, writer, custom_validator=custom_validator)
+            entry._writable(object_def, writer, custom_validator=custom_validator)
         return writer
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):

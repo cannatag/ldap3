@@ -315,6 +315,9 @@ class Entry(EntryBase):
             elif 'objectclass' in self:
                 object_def = self.objectclass.values
 
+        if not object_def:
+            raise LDAPEntryError('object class must be specified to make an entry writable')
+
         if not isinstance(object_def, ObjectDef):
                 object_def = ObjectDef(object_def, self._cursor.schema, custom_validator)
 

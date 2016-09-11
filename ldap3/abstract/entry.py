@@ -310,7 +310,10 @@ class Entry(EntryBase):
             raise LDAPCursorError('The schema must be available to make an entry writable')
         # returns a newly created WritableEntry and its relevant Writer
         if object_def is None:
-            object_def=self._cursor.definition
+            if self._cursor.definition._object_class:
+                object_def = self._cursor.definition._object_class
+            elif 'objectclass' in self:
+                object_def = self.objectclass.values
 
         if not isinstance(object_def, ObjectDef):
                 object_def = ObjectDef(object_def, self._cursor.schema, custom_validator)

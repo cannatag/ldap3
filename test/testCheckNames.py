@@ -26,7 +26,7 @@
 import unittest
 
 from ldap3 import ALL
-from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
+from ldap3.core.exceptions import LDAPTypeError, LDAPObjectClassError
 from test import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
 
 testcase_id = random_id()
@@ -43,11 +43,11 @@ class Test(unittest.TestCase):
 
     def test_wrong_assertion(self):
         if not self.connection.strategy.pooled:
-            self.assertRaises(LDAPAttributeError, self.connection.search, search_base=test_base, search_filter='(xxx=yyy)', attributes=[test_name_attr])
+            self.assertRaises(LDAPTypeError, self.connection.search, search_base=test_base, search_filter='(xxx=yyy)', attributes=[test_name_attr])
 
     def test_wrong_attribute(self):
         if not self.connection.strategy.pooled:
-            self.assertRaises(LDAPAttributeError, self.connection.search, search_base=test_base, search_filter='(cn=yyy)', attributes=[test_name_attr, 'xxx'])
+            self.assertRaises(LDAPTypeError, self.connection.search, search_base=test_base, search_filter='(cn=yyy)', attributes=[test_name_attr, 'xxx'])
 
     def test_wrong_object_class_add(self):
         if not self.connection.strategy.pooled:

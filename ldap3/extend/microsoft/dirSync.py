@@ -28,6 +28,7 @@ from ...protocol.microsoft import dir_sync_control, extended_dn_control, show_de
 from ... import SUBTREE, DEREF_NEVER
 from ...utils.dn import safe_dn
 
+
 class DirSync(object):
     def __init__(self,
                  connection,

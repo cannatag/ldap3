@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from copy import deepcopy, copy
+from copy import deepcopy
 from datetime import datetime
 from os import linesep
 
@@ -36,6 +36,7 @@ from ..core.exceptions import LDAPCursorError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import safe_dn, safe_rdn
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
+
 
 def _ret_search_value(value):
     return value[0] + '=' + value[1:] if value[0] in '<>~' and value[1] != '=' else value
@@ -86,7 +87,8 @@ class Cursor(object):
         self.execution_time = None
         self.entries = []
         self.schema = self.connection.server.schema
-        self._do_not_reset=False  # used for refreshing entry in _refresh() without removing all entries from the Cursor
+        self._do_not_reset = False  # used for refreshing entry in _refresh() without removing all entries from the Cursor
+
     def __str__(self):
         return self.__repr__()
 
@@ -141,16 +143,13 @@ class Cursor(object):
                 if not isinstance(attribute.values, list):  # force attribute values to list (if attribute is single-valued)
                     attribute.values = [attribute.values]
                 if attr_def.dereference_dn:  # try to get object referenced in value
-                    # noinspection PyUnresolvedReferences
                     if attribute.values:
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, query='', base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []
-                        # noinspection PyUnresolvedReferences
                         for element in attribute.values:
                             temp_values.append(temp_reader.search_object(element))
                         del temp_reader  # remove the temporary Reader
                         attribute.values = temp_values
-                # noinspection PyUnresolvedReferences
                 attributes[attribute.key] = attribute
                 used_attribute_names.add(attribute_name)
 
@@ -159,6 +158,8 @@ class Cursor(object):
 
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
+                if attribute_name not in attr_defs:
+                    raise LDAPCursorError('attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry._definition._object_class), entry._dn))
                 attribute = OperationalAttribute(AttrDef(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name), entry, self)
                 attribute.raw_values = response['raw_attributes'][attribute_name]
                 attribute.values = response['attributes'][attribute_name]
@@ -167,7 +168,7 @@ class Cursor(object):
 
         return attributes
 
-    def _get_entry(self, response):
+    def _create_entry(self, response):
         if not response['type'] == 'searchResEntry':
             return None
 
@@ -210,11 +211,11 @@ class Cursor(object):
                 response = self.connection.response
 
         if self._do_not_reset:  # trick to not remove entries when using _refresh()
-            return self._get_entry(response[0])
+            return self._create_entry(response[0])
 
         self.entries = []
         for r in response:
-            entry = self._get_entry(r)
+            entry = self._create_entry(r)
             self.entries.append(entry)
 
         self.last_sub_tree = self.sub_tree
@@ -225,6 +226,7 @@ class Cursor(object):
 
     def remove(self, entry):
         self.entries.remove(entry)
+
 
 class Reader(Cursor):
     """Reader object to perform searches:
@@ -580,7 +582,7 @@ class Reader(Cursor):
                                                                      paged_size=paged_size,
                                                                      paged_criticality=paged_criticality,
                                                                      generator=generator):
-            yield self._get_entry(response)
+            yield self._create_entry(response)
 
 
 class Writer(Cursor):
@@ -591,14 +593,33 @@ class Writer(Cursor):
     @staticmethod
     def from_reader(reader, connection=None, object_def=None, custom_validator=None):
         if connection is None:
-            connection=reader.connection
+            connection = reader.connection
         if object_def is None:
-            object_def=reader.definition
+            object_def = reader.definition
         writer = Writer(connection, object_def, attributes=reader.attributes)
         for entry in reader.entries:
             entry._writable(object_def, writer, custom_validator=custom_validator)
         return writer
 
+    @staticmethod
+    def from_response(connection, object_def, response=None, custom_validator=None):
+        if response is None:
+            if not connection.strategy.sync:
+                raise LDAPCursorError(' with async strategies response must be specified')
+            elif connection.response:
+                response = connection.response
+            else:
+                raise LDAPCursorError('response not present')
+        writer = Writer(connection, object_def, None, custom_validator)
+        # for entry in connection._get_entries(response):
+        #     entry._writable(object_def, writer, custom_validator=custom_validator)
+        # return writer
+
+        for resp in response:
+            if resp['type'] == 'searchResEntry':
+                entry = writer._create_entry(resp)
+                writer.entries.append(entry)
+        return writer
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
         self.dereference_aliases = DEREF_NEVER
@@ -648,7 +669,7 @@ class Writer(Cursor):
                 response = self.connection.response
 
         if len(response) == 1:
-            return self._get_entry(response[0])
+            return self._create_entry(response[0])
         elif len(response) == 0:
             return None
 

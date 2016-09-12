@@ -25,7 +25,7 @@
 import unittest
 
 from ldap3 import Writer
-from ldap3.core.exceptions import LDAPEntryError
+from ldap3.core.exceptions import LDAPCursorError
 from test import test_base, get_connection, drop_connection, random_id
 
 testcase_id = random_id()
@@ -45,6 +45,6 @@ class Test(unittest.TestCase):
         n = w.new('cn=abstraction-create,' + test_base)
         try:
             n._commit()
-        except LDAPEntryError:
+        except LDAPCursorError:
             pass
 

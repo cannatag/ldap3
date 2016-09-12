@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import SEQUENCE_TYPES
-from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
+from ..core.exceptions import LDAPControlError, LDAPTypeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
 
 
@@ -101,7 +101,7 @@ def build_controls_list(controls):
         return None
 
     if not isinstance(controls, SEQUENCE_TYPES):
-        raise LDAPControlsError('controls must be a sequence')
+        raise LDAPControlError('controls must be a sequence')
 
     built_controls = Controls()
     for idx, control in enumerate(controls):
@@ -115,7 +115,7 @@ def build_controls_list(controls):
                 built_control['controlValue'] = control[2]
             built_controls.setComponentByPosition(idx, built_control)
         else:
-            raise LDAPControlsError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue (None if not provided)')
+            raise LDAPControlError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue (None if not provided)')
 
     return built_controls
 
@@ -123,7 +123,7 @@ def build_controls_list(controls):
 def validate_assertion_value(schema, name, value):
     if schema and schema.attribute_types is not None:
         if name not in schema.attribute_types:
-            raise LDAPAttributeError('invalid attribute type in assertion: ' + name)
+            raise LDAPTypeError('invalid attribute type in assertion: ' + name)
     if '\\' not in value:
         return value.encode('utf-8')
 
@@ -148,7 +148,7 @@ def validate_assertion_value(schema, name, value):
 def validate_attribute_value(schema, name, value):
     if schema:
         if schema.attribute_types is not None and name not in schema.attribute_types:
-            raise LDAPAttributeError('invalid attribute type in attribute')
+            raise LDAPTypeError('invalid attribute type in attribute')
         if schema.object_classes is not None and name == 'objectClass':
             if value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)

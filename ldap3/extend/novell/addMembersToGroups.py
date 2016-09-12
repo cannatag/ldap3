@@ -26,6 +26,7 @@ from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, MODIFY_ADD, BASE, DEREF_NEVER
 from ...utils.dn import safe_dn
 
+
 def add_members_to_groups(connection,
                           members_dn,
                           groups_dn,

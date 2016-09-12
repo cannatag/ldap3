@@ -27,6 +27,7 @@ from ...extend.operation import ExtendedOperation
 from ...protocol.novell import NmasGetUniversalPasswordRequestValue, NmasGetUniversalPasswordResponseValue, NMAS_LDAP_EXT_VERSION
 from ...utils.dn import safe_dn
 
+
 class NmasGetUniversalPassword(ExtendedOperation):
     def config(self):
         self.request_name = '2.16.840.1.113719.1.39.42.100.13'

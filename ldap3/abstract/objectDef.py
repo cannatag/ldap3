@@ -48,7 +48,6 @@ class ObjectDef(object):
         if not isinstance(object_class, SEQUENCE_TYPES):
             object_class = [object_class]
 
-        self.__dict__['_object_class'] = object_class
         self.__dict__['_attributes'] = CaseInsensitiveDict()
         self.__dict__['_custom_validator'] = custom_validator
         self.__dict__['_oid_info'] = []
@@ -67,14 +66,17 @@ class ObjectDef(object):
         self.__dict__['_schema'] = schema
 
         if self._schema:
+            object_class = [schema.object_classes[name].name[0] for name in object_class]  # uses object class names capitalized as in schema
             for object_name in object_class:
                 if object_name:
                     self._populate_attr_defs(object_name)
 
+        self.__dict__['_object_class'] = object_class
+
     def _populate_attr_defs(self, object_name):
         if object_name in self._schema.object_classes:
             object_schema = self._schema.object_classes[object_name]
-            self.__dict__['_oid_info'].append(object_name + ' OID: ' + str(object_schema))
+            self.__dict__['_oid_info'].append(object_name + ' OID: ' + str(object_schema.oid))
 
             if object_schema.superior:
                 for sup in object_schema.superior:
@@ -89,15 +91,17 @@ class ObjectDef(object):
 
     def __repr__(self):
         if self._object_class:
-            r = 'OBJ: ' + str(self._object_class)
+            r = 'OBJ: ' + ', '.join(self._object_class)
         else:
             r = 'OBJ: <None>'
-        for oid in self._oid_info:
-            for line in oid.split(linesep):
-                r += linesep + '  ' + line
-        for attr in sorted(self._attributes):
-            for line in str(self._attributes[attr]).split(linesep):
-                r += linesep + '  ' + line
+        r += ' [' + ', '.join([oid for oid in self._oid_info]) + ']' +linesep
+        # for oid in self._oid_info:
+        #     for line in oid.split(linesep):
+        #         r += linesep + '  ' + line
+        r += 'ATTRS: ' + ', '.join(sorted(self._attributes)) + linesep
+        # for attr in sorted(self._attributes):
+            # for line in str(self._attributes[attr]).split(linesep):
+            #     r += linesep + '  ' + line
         return r
 
     def __str__(self):
@@ -203,8 +207,7 @@ class ObjectDef(object):
             else:
                 raise LDAPKeyError('key \'%s\' not present' % key)
         else:
-            raise LDAPTypeError('key must be str or AttrDef not '
-                                + str(type(key)))
+            raise LDAPTypeError('key must be str or AttrDef not ' + str(type(key)))
 
     def clear(self):
         """Empty the ObjectDef attribute list

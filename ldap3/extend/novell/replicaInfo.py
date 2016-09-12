@@ -33,6 +33,7 @@ from ..operation import ExtendedOperation
 from ...utils.asn1 import decoder
 from ...utils.dn import safe_dn
 
+
 class ReplicaInfo(ExtendedOperation):
     def config(self):
         self.request_name = '2.16.840.1.113719.1.27.100.17'

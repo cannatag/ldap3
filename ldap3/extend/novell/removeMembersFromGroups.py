@@ -26,6 +26,7 @@ from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, MODIFY_DELETE, BASE, DEREF_NEVER
 from ...utils.dn import safe_dn
 
+
 def remove_members_from_groups(connection,
                                members_dn,
                                groups_dn,

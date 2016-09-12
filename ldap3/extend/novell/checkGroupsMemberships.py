@@ -27,6 +27,7 @@ from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, BASE, DEREF_NEVER
 from ...utils.dn import safe_dn
 
+
 def _check_members_have_memberships(connection,
                                     members_dn,
                                     groups_dn):

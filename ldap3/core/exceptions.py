@@ -365,14 +365,6 @@ class LDAPKeyError(LDAPExceptionError, KeyError, AttributeError):
     pass
 
 
-class LDAPAttributeError(LDAPExceptionError, AttributeError):
-    pass
-
-
-class LDAPEntryError(LDAPExceptionError):
-    pass
-
-
 class LDAPObjectError(LDAPExceptionError, ValueError):
     pass
 
@@ -415,7 +407,7 @@ class LDAPConnectionIsReadOnlyError(LDAPExceptionError):
     pass
 
 
-class LDAPChangesError(LDAPExceptionError, ValueError):
+class LDAPChangeError(LDAPExceptionError, ValueError):
     pass
 
 
@@ -463,7 +455,7 @@ class LDAPInvalidDereferenceAliasesError(LDAPExceptionError, ValueError):
     pass
 
 
-class LDAPControlsError(LDAPExceptionError, ValueError):
+class LDAPControlError(LDAPExceptionError, ValueError):
     pass
 
 

@@ -20,15 +20,15 @@
     - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
     - Added 'set' to SEQUENCE_TYPES (thanks Christian)
     - Entries returned by search can be writable via the abstraction layer
-    - Added LDAPCursorError exception
-    - Added LDAPWriterError exception, inherits from LDAPCursorError
-    - LDAPReaderError exception now inherits from LDAPCursorError
+    - LDAPReaderError exception renamed to LDAPCursorError
     - auto_range parameter in Connection defaults to True (thanks Ashley)
     - get_info defaults to SCHEMA while defining Server object
     - Included ordereddict 1.1 (# Copyright (c) 2009 Raymond Hettinger) in ldap3.utils.ordDict for backporting OrderedDict in Python 2.6
     - Added config parameter RESET_AVAILABILITY_TIMEOUT to reinsert invalid address in candidate_addresses while checking connection, defaults to 5 seconds
     - Fixed inability to connect to a server if the connection starts when the server is unavailable and then it becomes available again
     - All DNs are sanitized if connection.check_names is True
+    - LDAPControlsError exception renamed to LDAPControlError
+    - LDAPChangesError exception renamed to LDAPChangeError
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

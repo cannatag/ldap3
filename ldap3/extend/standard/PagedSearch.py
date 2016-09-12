@@ -26,6 +26,7 @@
 from ... import SUBTREE, DEREF_ALWAYS
 from ...utils.dn import safe_dn
 
+
 def paged_search_generator(connection,
                            search_base,
                            search_filter,

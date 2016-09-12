@@ -34,6 +34,7 @@ from ...protocol.persistentSearch import persistent_search_control
 from ... import SEQUENCE_TYPES
 from ...utils.dn import safe_dn
 
+
 class PersistentSearch(object):
     def __init__(self,
                  connection,

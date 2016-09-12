@@ -26,7 +26,7 @@
 import unittest
 from time import sleep
 
-from ldap3.core.exceptions import LDAPEntryError
+from ldap3.core.exceptions import LDAPCursorError
 from ldap3.abstract import STATUS_WRITABLE, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_MANDATORY_MISSING, STATUS_VIRTUAL, STATUS_PENDING_CHANGES, STATUS_READ, STATUS_READY_FOR_DELETION
 from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_int_attr
 
@@ -139,7 +139,7 @@ class Test(unittest.TestCase):
             writable_entry.preferredDeliveryMethod.add('telephone')
             try:
                 writable_entry._commit()
-            except LDAPEntryError as e:
+            except LDAPCursorError as e:
                 self.assertEqual(self.connection.result['description'], 'constraintViolation')
                 return
             self.fail('error assigning to existing single value')
@@ -151,7 +151,7 @@ class Test(unittest.TestCase):
             writable_entry.preferredDeliveryMethod += 'telephone'
             try:
                 writable_entry._commit()
-            except LDAPEntryError as e:
+            except LDAPCursorError as e:
                 self.assertEqual(self.connection.result['description'], 'constraintViolation')
                 return
             self.fail('error assigning to existing single value')

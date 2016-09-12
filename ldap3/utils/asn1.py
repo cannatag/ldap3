@@ -47,10 +47,7 @@ class BooleanCEREncoder(BooleanEncoder):
 tagMap[Boolean.tagSet] = BooleanCEREncoder()
 
 
-
 # a fast BER decoder for LDAP responses only
-
-
 def compute_ber_size(data):
     """
     Compute size according to BER definite length rules

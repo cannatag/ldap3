@@ -52,8 +52,6 @@ DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
 
 
-
-
 def get_config_parameter(parameter):
     if parameter == 'CASE_INSENSITIVE_ATTRIBUTE_NAMES':
         return CASE_INSENSITIVE_ATTRIBUTE_NAMES

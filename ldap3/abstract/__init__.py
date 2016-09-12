@@ -26,8 +26,8 @@
 STATUS_INIT = 'Initialized'  # The entry object is initialized
 STATUS_VIRTUAL = 'Virtual'  # The entry is a new writable entry, still empty
 STATUS_MANDATORY_MISSING = 'Missing mandatory attributes'  # The entry has some mandatory attributes missing
-STATUS_READ = 'Read' # The entry has been read
-STATUS_WRITABLE = 'Writable' # The entry has been made writable, still no changes
+STATUS_READ = 'Read'  # The entry has been read
+STATUS_WRITABLE = 'Writable'  # The entry has been made writable, still no changes
 STATUS_PENDING_CHANGES = 'Pending changes'  # The entry has some changes to commit, mandatory attributes are present
 STATUS_COMMITTED = 'Committed'  # The entry changes has been committed
 STATUS_READY_FOR_DELETION = 'Ready for deletion'  # The entry is set for deletion

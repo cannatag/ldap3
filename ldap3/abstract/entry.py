@@ -37,7 +37,7 @@ from .. import STRING_TYPES, SEQUENCE_TYPES
 
 from .attribute import WritableAttribute
 from .objectDef import ObjectDef
-from ..core.exceptions import LDAPKeyError, LDAPAttributeError, LDAPEntryError, LDAPCursorError
+from ..core.exceptions import LDAPKeyError, LDAPCursorError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.repr import to_stdout_encoding
@@ -83,7 +83,7 @@ class EntryState(object):
 
     def set_status(self, status):
         if status not in STATUSES:
-            raise LDAPEntryError('invalid entry status ' + str(status))
+            raise LDAPCursorError('invalid entry status ' + str(status))
 
         if status in INITIAL_STATUSES:
             self._initial_status = status
@@ -98,6 +98,7 @@ class EntryState(object):
                     if (attr not in self.attributes or self.attributes[attr].virtual) and attr not in self.changes:
                         self.status = STATUS_MANDATORY_MISSING
                         break
+
 
 class EntryBase(object):
     """The Entry object contains a single LDAP entry.
@@ -148,16 +149,16 @@ class EntryBase(object):
                 if item == attr.lower():
                     break
             else:
-                raise LDAPAttributeError('attribute \'%s\' not found' % item)
+                raise LDAPCursorError('attribute \'%s\' not found' % item)
             return self._state.attributes[attr]
 
-        raise LDAPAttributeError('attribute name must be a string')
+        raise LDAPCursorError('attribute name must be a string')
 
     def __setattr__(self, item, value):
         if item in self._state.attributes:
-            raise LDAPAttributeError('attribute \'%s\' is read only' % item)
+            raise LDAPCursorError('attribute \'%s\' is read only' % item)
         else:
-            raise LDAPEntryError('entry \'%s\' is read only' % item)
+            raise LDAPCursorError('entry \'%s\' is read only' % item)
 
     def __getitem__(self, item):
         if isinstance(item, STRING_TYPES):
@@ -231,12 +232,7 @@ class EntryBase(object):
     def _changes(self):
         return self._state.changes
 
-    def _to_json(self,
-                      raw=False,
-                      indent=4,
-                      sort=True,
-                      stream=None,
-                      checked_attributes=True):
+    def _to_json(self, raw=False, indent=4, sort=True, stream=None, checked_attributes=True):
         json_entry = dict()
         json_entry['dn'] = self._dn
         if checked_attributes:
@@ -268,12 +264,7 @@ class EntryBase(object):
                       checked_attributes=True):
         return self._to_json(raw, indent, sort, stream, checked_attributes)
 
-    def _to_ldif(self,
-                      all_base64=False,
-                      line_separator=None,
-                      sort_order=None,
-                      stream=None):
-
+    def _to_ldif(self, all_base64=False, line_separator=None, sort_order=None, stream=None):
         ldif_lines = operation_to_ldif('searchResponse', [self._response], all_base64, sort_order=sort_order)
         ldif_lines = add_ldif_header(ldif_lines)
         line_separator = line_separator or linesep
@@ -285,12 +276,9 @@ class EntryBase(object):
             stream.write(prepare_for_stream(ldif_output + line_separator + line_separator))
         return ldif_output
 
-    def entry_to_ldif(self,
-                 all_base64=False,
-                 line_separator=None,
-                 sort_order=None,
-                 stream=None):
+    def entry_to_ldif(self, all_base64=False, line_separator=None, sort_order=None, stream=None):
         return self._to_ldif(all_base64, line_separator, sort_order, stream)
+
 
 class Entry(EntryBase):
     """The Entry object contains a single LDAP entry.
@@ -316,7 +304,7 @@ class Entry(EntryBase):
                 object_def = self.objectclass.values
 
         if not object_def:
-            raise LDAPEntryError('object class must be specified to make an entry writable')
+            raise LDAPCursorError('object class must be specified to make an entry writable')
 
         if not isinstance(object_def, ObjectDef):
                 object_def = ObjectDef(object_def, self._cursor.schema, custom_validator)
@@ -341,7 +329,7 @@ class Entry(EntryBase):
         if attributes:  # force reading of attributes
             writable_entry = writable_cursor._refresh_object(self._dn, list(attributes) + self._attributes)
         else:
-            writable_entry = writable_cursor._get_entry(deepcopy(self._state.response))
+            writable_entry = writable_cursor._create_entry(deepcopy(self._state.response))
             writable_cursor.entries.append(writable_entry)
             writable_entry._state.read_time = copy(self._read_time)
         writable_entry._state.origin = self  # reference to the original read-only entry
@@ -362,7 +350,7 @@ class WritableEntry(EntryBase):
                     self._state.attributes[str(item)] = new_attribute  # force item to a string for key in attributes dict
                 self._state.attributes[item].set(value)  # try to add to new_values
             else:
-                raise LDAPEntryError('attribute \'%s\' not defined' % item)
+                raise LDAPCursorError('attribute \'%s\' not defined' % item)
 
     def __getattr__(self, item):
         if isinstance(item, STRING_TYPES):
@@ -377,10 +365,10 @@ class WritableEntry(EntryBase):
                 self._cursor.attributes.add(item)
                 return self._state.attributes[item]
             # if item in self._definition._attributes:
-            #     raise LDAPAttributeError('attribute must have a value')
-            raise LDAPAttributeError('attribute \'%s\' is not defined' % item)
+            #     raise LDAPCursorError('attribute must have a value')
+            raise LDAPCursorError('attribute \'%s\' is not defined' % item)
         else:
-            raise LDAPAttributeError('attribute must be a string')
+            raise LDAPCursorError('attribute must be a string')
 
     def _commit(self, refresh=True, controls=None):
         if self._status == STATUS_READY_FOR_DELETION:
@@ -399,13 +387,13 @@ class WritableEntry(EntryBase):
                 self._state.set_status(STATUS_DELETED)
                 return True
             else:
-                raise LDAPEntryError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
+                raise LDAPCursorError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
         elif self._status in [STATUS_VIRTUAL, STATUS_MANDATORY_MISSING]:
             missing_attributes = []
             for attr in self._mandatory:
                 if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._changes:
                     missing_attributes.append('\'' + attr + '\'')
-            raise LDAPEntryError('mandatory attributes %s missing in entry %s' %  (', '.join(missing_attributes), self._dn))
+            raise LDAPCursorError('mandatory attributes %s missing in entry %s' % (', '.join(missing_attributes), self._dn))
         elif self._status == STATUS_PENDING_CHANGES:
             if self._changes:
                 if self._state._initial_status == STATUS_VIRTUAL:
@@ -423,7 +411,7 @@ class WritableEntry(EntryBase):
                             for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
                                 if attr.key in self._definition._attributes and attr.key not in origin._definition._attributes:
                                     origin._cursor.definition.add(self._cursor.definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
-                            temp_entry = origin._cursor._get_entry(deepcopy(self._state.response))
+                            temp_entry = origin._cursor._create_entry(deepcopy(self._state.response))
                             origin.__dict__.clear()
                             origin.__dict__['_state'] = temp_entry._state
                             for attr in self:  # returns the whole attribute object
@@ -433,16 +421,16 @@ class WritableEntry(EntryBase):
                     self._state.set_status(STATUS_COMMITTED)
                     return True
                 else:
-                    raise LDAPEntryError('unable to commit entry, ' + self._cursor.connection.result['description'] + ' - ' + self._cursor.connection.result['message'])
+                    raise LDAPCursorError('unable to commit entry, ' + self._cursor.connection.result['description'] + ' - ' + self._cursor.connection.result['message'])
         return False
 
     def _discard(self):
         self._changes.clear()
         self._state.set_status(self._state._initial_status)
 
-    def _delete(self, controls=None):
+    def _delete(self):
         if self._status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_DELETION]:
-            raise LDAPEntryError('unable to delete entry, invalid status: ' + self._status)
+            raise LDAPCursorError('unable to delete entry, invalid status: ' + self._status)
 
         self._state.set_status(STATUS_READY_FOR_DELETION)
 

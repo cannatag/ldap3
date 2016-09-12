@@ -35,7 +35,7 @@ from .. import SYNC, ANONYMOUS, get_config_parameter, BASE
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError, LDAPTransactionError
+    LDAPSocketSendError, LDAPExceptionError, LDAPControlError, LDAPResponseTimeoutError, LDAPTransactionError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
@@ -61,6 +61,7 @@ from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequ
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 TRANSACTION_ERROR = 'TRANSACTION_ERROR'
 RESPONSE_COMPLETE = 'RESPONSE_FROM_SERVER_COMPLETE'
+
 
 # noinspection PyProtectedMember
 class BaseStrategy(object):
@@ -549,7 +550,7 @@ class BaseStrategy(object):
         if unprocessed:
                 if log_enabled(ERROR):
                     log(ERROR, 'unprocessed control response in substrate')
-                raise LDAPControlsError('unprocessed control response in substrate')
+                raise LDAPControlError('unprocessed control response in substrate')
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod

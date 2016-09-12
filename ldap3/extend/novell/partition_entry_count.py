@@ -31,6 +31,7 @@ from ...protocol.rfc4511 import LDAPDN
 from ...utils.asn1 import decoder
 from ...utils.dn import safe_dn
 
+
 class PartitionEntryCount(ExtendedOperation):
     def config(self):
         self.request_name = '2.16.840.1.113719.1.27.100.13'

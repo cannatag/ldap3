@@ -62,7 +62,7 @@ from ..protocol.rfc2696 import paged_search_control
 from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
-    LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
+    LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
     LDAPObjectError
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
@@ -86,6 +86,7 @@ CLIENT_STRATEGIES = [SYNC,
                      MOCK_SYNC,
                      # MOCK_ASYNC,  # not yet defined
                      ASYNC_STREAM]
+
 
 def _format_socket_endpoint(endpoint):
     if endpoint and len(endpoint) == 2:  # IPv4
@@ -917,13 +918,13 @@ class Connection(object):
                 self.last_error = 'changes must be a dictionary'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangesError(self.last_error)
+                raise LDAPChangeError(self.last_error)
 
             if not changes:
                 self.last_error = 'no changes in modify request'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangesError(self.last_error)
+                raise LDAPChangeError(self.last_error)
 
             for attribute_name in changes:
                 change = changes[attribute_name]
@@ -932,7 +933,7 @@ class Connection(object):
                         self.last_error = 'malformed change'
                         if log_enabled(ERROR):
                             log(ERROR, '%s for <%s>', self.last_error, self)
-                        raise LDAPChangesError(self.last_error)
+                        raise LDAPChangeError(self.last_error)
 
                     changes[attribute_name] = [change]  # insert change in a tuple
                 else:
@@ -941,7 +942,7 @@ class Connection(object):
                             self.last_error = 'invalid change list'
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
-                            raise LDAPChangesError(self.last_error)
+                            raise LDAPChangeError(self.last_error)
 
             request = modify_operation(dn, changes, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
@@ -996,7 +997,7 @@ class Connection(object):
                 self.last_error = 'DN cannot change while performing moving'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangesError(self.last_error)
+                raise LDAPChangeError(self.last_error)
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
             if log_enabled(PROTOCOL):
@@ -1357,7 +1358,7 @@ class Connection(object):
                     resp_attr_set = set(response['attributes'].keys())
                     for object_def in object_defs:
                         if resp_attr_set <= object_def[0]:  # finds the ObjectDef for the attribute set of this entry
-                            entry = object_def[2]._get_entry(response)
+                            entry = object_def[2]._create_entry(response)
                             entries.append(entry)
                             break
                     else:

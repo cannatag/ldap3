@@ -41,8 +41,8 @@ class Test(unittest.TestCase):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
-    def test_writer_from_reader(self):
+    def test_writer_from_cursor(self):
         o = ObjectDef('inetorgperson', self.connection)
         r = Reader(self.connection, o, 'cn:=*', 'o=test')
         r.search()
-        w = Writer.from_reader(r, self.connection, o)
+        w = Writer.from_cursor(r, self.connection, o)

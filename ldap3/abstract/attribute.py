@@ -25,7 +25,7 @@
 
 from os import linesep
 
-from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES, STRING_TYPES
+from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPCursorError
 from ..utils.repr import to_stdout_encoding
 from . import STATUS_PENDING_CHANGES, STATUS_VIRTUAL, STATUS_READY_FOR_DELETION
@@ -190,11 +190,11 @@ class WritableAttribute(Attribute):
             raise LDAPCursorError('entry is ready for deletion, cannot add attributes')
         if values is None:
             raise LDAPCursorError('value to delete cannot be None')
-        if isinstance(values, STRING_TYPES):
+        if not isinstance(values, SEQUENCE_TYPES):
             values = [values]
         for single_value in values:
             if single_value not in self.values:
-                raise LDAPCursorError('value \'%s\' not present in \'%s\'' % (values, self.values))
+                raise LDAPCursorError('value \'%s\' not present in \'%s\'' % (single_value, ', '.join(self.values)))
         self._update_changes((MODIFY_DELETE, values))
 
     def remove(self):

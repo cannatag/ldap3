@@ -418,6 +418,8 @@ class WritableEntry(EntryBase):
                                 if not attr.virtual:
                                     origin.__dict__[attr.key] = origin._state.attributes[attr.key]
                             origin._state.read_time = copy(self._read_time)
+                    else:
+                        self._discard()  # if not refreshed remove committed changes
                     self._state.set_status(STATUS_COMMITTED)
                     return True
                 else:

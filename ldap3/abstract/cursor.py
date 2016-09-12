@@ -591,14 +591,19 @@ class Writer(Cursor):
     entry_initial_status = STATUS_WRITABLE
 
     @staticmethod
-    def from_reader(reader, connection=None, object_def=None, custom_validator=None):
+    def from_cursor(cursor, connection=None, object_def=None, custom_validator=None):
         if connection is None:
-            connection = reader.connection
+            connection = cursor.connection
         if object_def is None:
-            object_def = reader.definition
-        writer = Writer(connection, object_def, attributes=reader.attributes)
-        for entry in reader.entries:
-            entry._writable(object_def, writer, custom_validator=custom_validator)
+            object_def = cursor.definition
+        writer = Writer(connection, object_def, attributes=cursor.attributes)
+        for entry in cursor.entries:
+            if isinstance(cursor, Reader):
+                entry._writable(object_def, writer, custom_validator=custom_validator)
+            elif isinstance(cursor, Writer):
+                pass
+            else:
+                raise LDAPCursorError('unknown cursor type %s' % str(type(cursor)))
         return writer
 
     @staticmethod
@@ -639,9 +644,9 @@ class Writer(Cursor):
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
         return r
 
-    def commit(self):
+    def commit(self, refresh=True):
         for entry in self.entries:
-            entry._commit(controls=self.controls)
+            entry._commit(refresh=refresh, controls=self.controls)
 
     def discard(self):
         for entry in self.entries:

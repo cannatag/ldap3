@@ -701,6 +701,9 @@ class Connection(object):
             elif attributes == ALL_ATTRIBUTES:
                 attributes = [ALL_ATTRIBUTES]
 
+            if isinstance(attributes, STRING_TYPES):
+                attributes = [attributes]
+
             if get_operational_attributes and isinstance(attributes, list):
                 attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
             elif get_operational_attributes and isinstance(attributes, tuple):

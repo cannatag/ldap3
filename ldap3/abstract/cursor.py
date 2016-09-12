@@ -620,6 +620,7 @@ class Writer(Cursor):
                 entry = writer._create_entry(resp)
                 writer.entries.append(entry)
         return writer
+
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
         self.dereference_aliases = DEREF_NEVER

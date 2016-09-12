@@ -94,7 +94,7 @@ class ObjectDef(object):
             r = 'OBJ: ' + ', '.join(self._object_class)
         else:
             r = 'OBJ: <None>'
-        r += ' [' + ', '.join([oid for oid in self._oid_info]) + ']' +linesep
+        r += ' [' + ', '.join([oid for oid in self._oid_info]) + ']' + linesep
         # for oid in self._oid_info:
         #     for line in oid.split(linesep):
         #         r += linesep + '  ' + line

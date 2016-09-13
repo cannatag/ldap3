@@ -29,6 +29,7 @@
     - All DNs are sanitized if connection.check_names is True
     - LDAPControlsError exception renamed to LDAPControlError
     - LDAPChangesError exception renamed to LDAPChangeError
+    - connection.return_empty_attributes defaults to True
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

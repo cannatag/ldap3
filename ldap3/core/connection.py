@@ -190,7 +190,7 @@ class Connection(object):
                  pool_lifetime=None,
                  fast_decoder=True,
                  receive_timeout=None,
-                 return_empty_attributes=False):
+                 return_empty_attributes=True):
 
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:

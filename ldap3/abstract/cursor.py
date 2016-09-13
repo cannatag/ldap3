@@ -136,10 +136,13 @@ class Cursor(object):
                 attribute = self.attribute_class(attr_def, entry, self)
                 attribute.response = response
                 attribute.raw_values = response['raw_attributes'][attribute_name] if attribute_name else None
-                if attr_def.post_query and attr_def.name in response['attributes']:
+                if attr_def.post_query and attr_def.name in response['attributes'] and response['raw_attributes'] != list():
                     attribute.values = attr_def.post_query(attr_def.key, response['attributes'][attribute_name])
                 else:
-                    attribute.values = response['attributes'][attribute_name] if attribute_name else (attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default])
+                    if attr_def.default is NotImplemented or (attribute_name and response['raw_attributes'][attribute_name] != list()):
+                        attribute.values = response['attributes'][attribute_name]
+                    else:
+                        attribute.values = attr_def.default if isinstance(attr_def.default, SEQUENCE_TYPES) else [attr_def.default]
                 if not isinstance(attribute.values, list):  # force attribute values to list (if attribute is single-valued)
                     attribute.values = [attribute.values]
                 if attr_def.dereference_dn:  # try to get object referenced in value

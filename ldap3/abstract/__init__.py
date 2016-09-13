@@ -30,7 +30,9 @@ STATUS_READ = 'Read'  # The entry has been read
 STATUS_WRITABLE = 'Writable'  # The entry has been made writable, still no changes
 STATUS_PENDING_CHANGES = 'Pending changes'  # The entry has some changes to commit, mandatory attributes are present
 STATUS_COMMITTED = 'Committed'  # The entry changes has been committed
-STATUS_READY_FOR_DELETION = 'Ready for deletion'  # The entry is set for deletion
+STATUS_READY_FOR_DELETION = 'Ready for deletion'  # The entry is set to be deleted
+STATUS_READY_FOR_MOVING = 'Ready for moving'  # The entry is set to be moved in the DIT
+STATUS_READY_FOR_RENAMING = 'Ready for renaming'  # The entry is set to be renamed
 STATUS_DELETED = 'Deleted'  # The entry has been deleted
 
 STATUSES = [STATUS_INIT,
@@ -41,6 +43,8 @@ STATUSES = [STATUS_INIT,
             STATUS_PENDING_CHANGES,
             STATUS_COMMITTED,
             STATUS_READY_FOR_DELETION,
+            STATUS_READY_FOR_MOVING,
+            STATUS_READY_FOR_RENAMING,
             STATUS_DELETED]
 
 INITIAL_STATUSES = [STATUS_READ, STATUS_WRITABLE, STATUS_VIRTUAL]

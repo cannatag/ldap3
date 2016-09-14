@@ -1,3 +1,6 @@
+- 2.0.1 2016.09.13
+    - connection.return_empty_attributes defaults to True
+
 - 2.0.0 2016.08.31
     - ldap3 namespace decluttered
     - RESULT_CODES moved to ldap3.core.results
@@ -29,7 +32,6 @@
     - All DNs are sanitized if connection.check_names is True
     - LDAPControlsError exception renamed to LDAPControlError
     - LDAPChangesError exception renamed to LDAPChangeError
-    - connection.return_empty_attributes defaults to True
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

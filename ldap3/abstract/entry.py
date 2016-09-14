@@ -40,9 +40,11 @@ from .objectDef import ObjectDef
 from ..core.exceptions import LDAPKeyError, LDAPCursorError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
+from ..utils.dn import safe_dn
 from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveDict
-from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
+from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED,\
+    STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
 
 
 class EntryState(object):
@@ -53,6 +55,7 @@ class EntryState(object):
     def __init__(self, dn, cursor):
         self.dn = dn
         self._initial_status = None
+        self._to = None  # used for move and rename
         self.status = STATUS_INIT
         self.attributes = CaseInsensitiveDict()
         self.raw_attributes = CaseInsensitiveDict()
@@ -388,6 +391,10 @@ class WritableEntry(EntryBase):
                 return True
             else:
                 raise LDAPCursorError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
+        elif self._status == STATUS_READY_FOR_MOVING:
+            pass
+        elif self._status == STATUS_READY_FOR_RENAMING:
+            pass
         elif self._status in [STATUS_VIRTUAL, STATUS_MANDATORY_MISSING]:
             missing_attributes = []
             for attr in self._mandatory:
@@ -433,7 +440,6 @@ class WritableEntry(EntryBase):
     def _delete(self):
         if self._status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_DELETION]:
             raise LDAPCursorError('unable to delete entry, invalid status: ' + self._status)
-
         self._state.set_status(STATUS_READY_FOR_DELETION)
 
     def _refresh(self):
@@ -447,7 +453,13 @@ class WritableEntry(EntryBase):
         return False
 
     def _move(self, destination_dn):
-        raise NotImplementedError
+        if self._status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_MOVING]:
+            raise LDAPCursorError('unable to delete entry, invalid status: ' + self._status)
+        self._to = safe_dn(destination_dn)
+        self._state.set_status(STATUS_READY_FOR_MOVING)
 
-    def _rename(self):
-        raise NotImplementedError
+    def _rename(self, new_name):
+        if self._status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_RENAMING]:
+            raise LDAPCursorError('unable to delete entry, invalid status: ' + self._status)
+        self._to = safe_dn(new_name)
+        self._state.set_status(STATUS_READY_FOR_RENAMING)

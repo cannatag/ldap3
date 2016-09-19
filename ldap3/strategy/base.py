@@ -31,7 +31,7 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from .. import SYNC, ANONYMOUS, get_config_parameter, BASE
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
@@ -393,7 +393,7 @@ class BaseStrategy(object):
                 for entry in response:
                     if entry['type'] == 'searchResEntry':
                         for attribute_type in self._outstanding[message_id]['attributes']:
-                            if attribute_type not in entry['raw_attributes']:
+                            if attribute_type not in entry['raw_attributes'] and attribute_type not in (ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES):
                                 entry['raw_attributes'][attribute_type] = list()
                                 entry['attributes'][attribute_type] = list()
                                 if log_enabled(PROTOCOL):

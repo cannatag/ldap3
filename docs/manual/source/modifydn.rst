@@ -5,7 +5,7 @@ The MODIFY-DN operation
 The **ModifyDN** operation allows a client to change the Relative Distinguished Name (RDN) of an entry
 or to move an entry in the LDAP directory.
 
-ModifyDN is really a two-flavours operation: you rename the last part of the dn *or* you move the entry
+ModifyDN is really a two-flavours operation: you rename the last part of the dn **or** you move the entry
 in another container but you cannot perform both operations at the same time.
 
 To perform a ModifyDN operation you must specify the dn of the entry and the new relative dn requested.

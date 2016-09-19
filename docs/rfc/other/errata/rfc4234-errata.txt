@@ -81,7 +81,7 @@ It should say:
 
 Notes:
 
-This change should make it clear (as in RFC 2234) that the phrase,
+This change should make it _clear (as in RFC 2234) that the phrase,
 "with the high (8th) bit set to zero" is an intrinsic part of the
 full definition of "network virtual ASCII", and not the specification
 of an exception -- or an additional manipulation for the purpose of

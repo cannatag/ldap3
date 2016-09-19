@@ -6,7 +6,7 @@ You can use SSL basic authentication with the use_ssl parameter of the Server ob
 
     s = Server('servername', port = 636, use_ssl = True)  # define a secure LDAP server
 
-To start a TLS connection on an already created clear connection::
+To start a TLS connection on an already created _clear connection::
 
     c.start_tls()
 

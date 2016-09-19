@@ -640,7 +640,7 @@ class Connection(object):
             log(BASIC, 'start UNBIND operation via <%s>', self)
 
         with self.lock:
-            if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # clear deferred status
+            if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # _clear deferred status
                 self.strategy.close()
                 self._deferred_open = False
                 self._deferred_bind = False

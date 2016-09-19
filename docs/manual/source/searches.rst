@@ -158,7 +158,7 @@ Search scope and aliases
 
 The scope of the search specifies how broad the search context will be. The LDAP database is a hierarchical structure
 (similar to a traditional file system) with a root and with container and leaf objects. a container can be stored in other
-containers, but not in a leaf object. It must be clear that containers and leafs structure has nothing to do with the group
+containers, but not in a leaf object. It must be _clear that containers and leafs structure has nothing to do with the group
 and group membership objects. A group (groupOfNames) object is a leaf object with a member attribute that contains references
 to other objects.
 

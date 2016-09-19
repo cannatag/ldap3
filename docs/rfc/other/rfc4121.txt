@@ -654,7 +654,7 @@ RFC 4121               Kerberos Version 5 GSS-API              July 2005
          2        Flags      Attributes field, as described in section
                              4.2.2.
          3..7     Filler     Contains five octets of hex value FF.
-         8..15    SND_SEQ    Sequence number field in clear text,
+         8..15    SND_SEQ    Sequence number field in _clear text,
                              expressed in big-endian order.
          16..last SGN_CKSUM  Checksum of the "to-be-signed" data and
                              octet 0..15, as described in section 4.2.4.
@@ -698,7 +698,7 @@ RFC 4121               Kerberos Version 5 GSS-API              July 2005
           6..7     RRC       Contains the "right rotation count" in big-
                              endian order, as described in section
                              4.2.5.
-          8..15    SND_SEQ   Sequence number field in clear text,
+          8..15    SND_SEQ   Sequence number field in _clear text,
                              expressed in big-endian order.
           16..last Data      Encrypted data for Wrap tokens with
                              confidentiality, or plaintext data followed

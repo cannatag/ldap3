@@ -150,7 +150,7 @@ class MockBaseStrategy(object):
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPDefinitionError(self.connection.last_error)
-        # checks userPassword for password. userPassword must be a clear text string or a list of clear text strings
+        # checks userPassword for password. userPassword must be a _clear text string or a list of _clear text strings
         if identity in self.connection.server.dit:
             if 'userPassword' in self.connection.server.dit[identity]:
                 if self.connection.server.dit[identity]['userPassword'] == password or password in self.connection.server.dit[identity]['userPassword']:

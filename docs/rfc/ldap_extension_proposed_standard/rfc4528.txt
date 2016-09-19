@@ -31,7 +31,7 @@ Abstract
    (LDAP) Assertion Control, which allows a client to specify that a
    directory operation should only be processed if an assertion applied
    to the target entry of the operation is true.  It can be used to
-   construct "test and set", "test and clear", and other conditional
+   construct "test and set", "test and _clear", and other conditional
    operations.
 
 Table of Contents
@@ -67,7 +67,7 @@ RFC 4528                 LDAP Assertion Control                June 2006
    client to specify a condition that must be true for the operation to
    be processed normally.  Otherwise, the operation is not performed.
    For instance, the control can be used with the Modify operation
-   [RFC4511] to perform atomic "test and set" and "test and clear"
+   [RFC4511] to perform atomic "test and set" and "test and _clear"
    operations.
 
    The control may be attached to any update operation to support

@@ -179,7 +179,7 @@ RFC 3876          Returning Matched Values with LDAPv3    September 2004
    amended in the latest version [9].  Close examination of the
    matchedValuesOnly boolean by the LDAP Extensions (LDAPEXT) Working
    Group revealed ambiguities and complexities in the MVO boolean that
-   could not easily be resolved.  For example, it was not clear if the
+   could not easily be resolved.  For example, it was not _clear if the
    MVO boolean governed only those attribute values that contributed to
    the overall truth of the filter, or all of the attribute values, even
    if the filter item containing the attribute was evaluated as false.

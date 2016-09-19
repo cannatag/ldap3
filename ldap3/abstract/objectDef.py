@@ -82,10 +82,10 @@ class ObjectDef(object):
                 for sup in object_schema.superior:
                     self._populate_attr_defs(sup)
             for attribute_name in object_schema.must_contain:
-                self.add_from_schema(attribute_name, True)
+                self._add_from_schema(attribute_name, True)
             for attribute_name in object_schema.may_contain:
                 if attribute_name not in self._attributes:  # the attribute could already be definied as "mandatory" in a superclass
-                    self.add_from_schema(attribute_name, False)
+                    self._add_from_schema(attribute_name, False)
         else:
             raise LDAPObjectError('object class \'%s\' not defined in schema' % object_name)
 
@@ -127,14 +127,14 @@ class ObjectDef(object):
         raise LDAPObjectError('object \'%s\' is read only' % key)
 
     def __iadd__(self, other):
-        self.add(other)
+        self._add(other)
         return self
 
     def __isub__(self, other):
         if isinstance(other, AttrDef):
-            self.remove(other.key)
+            self._remove(other.key)
         elif isinstance(other, STRING_TYPES):
-            self.remove(other)
+            self._remove(other)
 
         return self
 
@@ -160,7 +160,7 @@ class ObjectDef(object):
 
         return True
 
-    def add_from_schema(self, attribute_name, mandatory=False):
+    def _add_from_schema(self, attribute_name, mandatory=False):
         attr_def = AttrDef(attribute_name)
         attr_def.validate = find_attribute_validator(self._schema, attribute_name, self._custom_validator)
         attr_def.mandatory = mandatory  # in schema mandatory is specified in the object class, not in the attribute class
@@ -168,15 +168,15 @@ class ObjectDef(object):
             if attribute_name in self._schema.attribute_types:
                 attr_def.single_value = self._schema.attribute_types[attribute_name].single_value
                 attr_def.oid_info = self._schema.attribute_types[attribute_name]
-        self.add(attr_def)
+        self._add(attr_def)
 
-    def add(self, definition=None):
+    def _add(self, definition=None):
         """Add an AttrDef to the ObjectDef. Can be called with the += operator.
         :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add. Can be a list of both
 
         """
         if isinstance(definition, STRING_TYPES):
-            self.add_from_schema(definition)
+            self._add_from_schema(definition)
         elif isinstance(definition, AttrDef):
             self._attributes[definition.key] = definition
             if not definition.validate:
@@ -184,11 +184,11 @@ class ObjectDef(object):
                 self._attributes[definition.key].validate = validator
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
-                self.add(element)
+                self._add(element)
         else:
             raise LDAPObjectError('unable to add element to object definition')
 
-    def remove(self, item):
+    def _remove(self, item):
         """Remove an AttrDef from the ObjectDef. Can be called with the -= operator.
         :param item: the AttrDef to remove, can also be a string containing the name of attribute to remove
 
@@ -209,7 +209,7 @@ class ObjectDef(object):
         else:
             raise LDAPTypeError('key must be str or AttrDef not ' + str(type(key)))
 
-    def clear(self):
+    def _clear(self):
         """Empty the ObjectDef attribute list
 
         """

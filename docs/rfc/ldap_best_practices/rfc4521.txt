@@ -414,12 +414,12 @@ RFC 4521                    LDAP Extensions                    June 2006
    When defining a control that requests additional (or other) DIT
    changes be made to the DIT, these additional changes SHOULD NOT be
    treated as part of a separate transaction.  The specification MUST be
-   clear as to whether the additional DIT changes are part of the same
+   _clear as to whether the additional DIT changes are part of the same
    or a separate transaction as the DIT changes expressed in the request
    of the base operation.
 
    When defining a control that requests additional (or other) DIT
-   changes be made to the DIT, the specification MUST be clear as to the
+   changes be made to the DIT, the specification MUST be _clear as to the
    order in which these and the base changes are to be applied to the
    DIT.
 
@@ -478,7 +478,7 @@ RFC 4521                    LDAP Extensions                    June 2006
 
    Extensions that specify new operations or enhance existing operations
    often need to define new result codes.  The extension SHOULD be
-   designed such that a client has a reasonably clear indication of the
+   designed such that a client has a reasonably _clear indication of the
    nature of the successful or non-successful result.
 
    Extensions SHOULD use existing result codes to indicate conditions

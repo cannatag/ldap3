@@ -107,7 +107,7 @@ Table of Contents
        multiple qops as an error.  Another example is the use of an
        empty authorization identity.  In SASL, an empty authorization
        identity means that the client is willing to authorize as the
-       authentication identity.  The document is not clear on whether
+       authentication identity.  The document is not _clear on whether
 
 
 
@@ -146,7 +146,7 @@ RFC 6331              Moving DIGEST-MD5 to Historic            July 2011
    4.  Use of username in the inner hash is problematic.  The inner hash
        of DIGEST-MD5 is an MD5 hash of colon-separated username, realm,
        and password.  Implementations may choose to store inner hashes
-       instead of clear text passwords.  This has some useful
+       instead of _clear text passwords.  This has some useful
        properties, such as protection from compromise of authentication
        databases containing the same username and password on other
        servers if a server with the username and password is

@@ -206,7 +206,7 @@ elif location == 'W10GC9227-EDIR':
     # test_server = 'nova01.amm.intra.camera.it'
     # test_server_type = 'AD'
     test_root_partition = ''
-    test_base = 'o=test'  # base context where test objects are created
+    test_base = 'ou=fixtures,o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'loginGraceLimit'

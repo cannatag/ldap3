@@ -212,16 +212,16 @@ elif location == 'W10GC9227-EDIR':
     test_int_attr = 'loginGraceLimit'
     test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=services'  # the user that performs the tests
-    test_password = 'camera'  # user password
-    test_secondary_user = 'cn=admin,o=services'  # the user that performs the tests
-    test_secondary_password = 'camera'  # user password
-    test_sasl_user = 'testSASL.services'
-    test_sasl_password = 'password'
-    test_sasl_user_dn = 'cn=testLAB,o=services'
-    test_sasl_secondary_user = 'testSASL.services'
-    test_sasl_secondary_password = 'password'
-    test_sasl_secondary_user_dn = 'cn=testSASL,o=services'
+    test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
+    test_password = 'password'  # user password
+    test_secondary_user = 'cn=test_user,ou=bind,o=test'  # the user that performs the tests
+    test_secondary_password = 'password2'  # user password
+    test_sasl_user = 'test_sasl_user.bind.test'
+    test_sasl_password = 'password3'
+    test_sasl_user_dn = 'cn=test_sasl_user,ou=bind,o=test'
+    test_sasl_secondary_user = 'test_sasl2_user.services'
+    test_sasl_secondary_password = 'password4'
+    test_sasl_secondary_user_dn = 'cn=test_sasl2_user,ou=bind,o=test'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
     test_user_cert_file = 'local-edir-admin-cert.pem'

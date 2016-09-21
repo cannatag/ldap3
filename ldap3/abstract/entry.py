@@ -427,7 +427,7 @@ class WritableEntry(EntryBase):
                     new_attributes = dict()
                     for attr in self._changes:
                         new_attributes[attr] = self._changes[attr][0][1]
-                    result = self._cursor.connection._add(self._dn, None, new_attributes, controls)
+                    result = self._cursor.connection.add_(self._dn, None, new_attributes, controls)
                 else:
                     result = self._cursor.connection.modify(self._dn, self._changes, controls)
                 if result:
@@ -437,7 +437,7 @@ class WritableEntry(EntryBase):
                             if origin:  # updates original read-only entry if present
                                 for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
                                     if attr.key in self._definition._attributes and attr.key not in origin._definition._attributes:
-                                        origin._cursor.definition._add(self._cursor.definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
+                                        origin._cursor.definition.add_(self._cursor.definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
                                 temp_entry = origin._cursor._create_entry(self._state.response)
                                 origin.__dict__.clear()
                                 origin.__dict__['_state'] = temp_entry._state
@@ -454,7 +454,7 @@ class WritableEntry(EntryBase):
         return False
 
     def _discard(self):
-        self._changes._clear()
+        self._changes.clear_()
         self._state.set_status(self._state._initial_status)
 
     def _delete(self):

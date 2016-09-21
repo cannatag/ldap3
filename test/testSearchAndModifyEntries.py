@@ -97,10 +97,10 @@ class Test(unittest.TestCase):
         self.assertFalse(entry1._state is entry2._state)
         self.assertFalse(entry1._state.attributes is entry2._state.attributes)
         self.assertFalse(entry1._state.raw_attributes is entry2._state.raw_attributes)
-        if entry1._state.response is not None:
-            self.assertFalse(entry1._state.response is entry2._state.response)
-        if entry1._state.read_time is not None:
-            self.assertFalse(entry1._state.read_time is entry2._state.read_time)
+        # if entry1._state.response is not None:
+        #     self.assertFalse(entry1._state.response is entry2._state.response)
+        # if entry1._state.read_time is not None:
+        #     self.assertFalse(entry1._state.read_time is entry2._state.read_time)
 
     def test_search_and_delete_entry(self):
         read_only_entry = self.get_entry('search-and-modify-1')

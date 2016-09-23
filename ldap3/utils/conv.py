@@ -31,10 +31,17 @@ from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
 
-def to_unicode(obj):
-    """Tries to convert object to unicode. Raises an exception if unsuccessful"""
-    return unicode_escape_decode(obj)[0]
+def to_unicode(obj, encoding='utf-8'):
+    """Tries to convert bytes (and str in python2) to unicode. Return object unmodified if string, else raise an exception
+    """
 
+    if isinstance(obj, bytes):
+        return obj.decode(encoding)
+
+    if isinstance(obj, str):
+        return obj
+
+    raise UnicodeError("Unable to convert to unicode %r" % obj)
 
 def to_raw(obj):
     """Tries to convert to raw bytes"""

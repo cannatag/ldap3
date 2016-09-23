@@ -172,7 +172,7 @@ class MockBaseStrategy(object):
             message = 'missing object'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
+                'matchedDN': '',
                 'diagnosticMessage': to_unicode(message),
                 'referral': None,
                 'serverSaslCreds': None
@@ -196,7 +196,7 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
+                'matchedDN': '',
                 'diagnosticMessage': to_unicode(message),
                 'referral': None
                 }
@@ -227,7 +227,7 @@ class MockBaseStrategy(object):
             message = 'entry already exist'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
+                'matchedDN': '',
                 'diagnosticMessage': to_unicode(message),
                 'referral': None
                 }
@@ -261,7 +261,7 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
+                'matchedDN': '',
                 'diagnosticMessage': to_unicode(message),
                 'referral': None
                 }
@@ -303,7 +303,7 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
+                'matchedDN': '',
                 'diagnosticMessage': to_unicode(message),
                 'referral': None
                 }
@@ -382,7 +382,7 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
+                'matchedDN': '',
                 'diagnosticMessage': to_unicode(message),
                 'referral': None
                 }
@@ -456,7 +456,7 @@ class MockBaseStrategy(object):
             message = ''
 
         result = {'resultCode': result_code,
-                  'matchedDN': to_unicode(''),
+                  'matchedDN': '',
                   'diagnosticMessage': to_unicode(message),
                   'referral': None
                   }

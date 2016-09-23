@@ -58,7 +58,7 @@ def escape_filter_chars(text):
     output = output.replace(r')', r'\29')
     output = output.replace('\x00', r'\00')
     # escape all octets greater than 0x7F that are not part of a valid UTF-8
-    output = ''.join(c if c <= '\x7f' else r'\x%x' % ord(c) for c in output)
+    output = ''.join(c if c <= '\x7f' else r'\x%x' % to_unicode(c) for c in output)
     return output
 
 

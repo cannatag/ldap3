@@ -25,26 +25,30 @@
 
 from base64 import b64encode, b64decode
 import datetime
-from codecs import unicode_escape_decode
+
 from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.config import get_config_parameter
 from ..core.exceptions import LDAPDefinitionError
 
 
-def to_unicode(obj, encoding='utf-8'):
-    """Tries to convert bytes (and str in python2) to unicode. Return object unmodified if string, else raise an exception
+def to_unicode(obj, encoding=None):
+    """Tries to convert bytes (and str in python2) to unicode. Return object unmodified if python3 string, else raise an exception
     """
+    if encoding is None:
+        encoding = get_config_parameter('DEFAULT_ENCODING')
 
-    if isinstance(obj, bytes):
+    if isinstance(obj, (bytes, bytearray)):
         return obj.decode(encoding)
 
-    if isinstance(obj, str):
+    if isinstance(obj, str):  # python3 only
         return obj
 
     raise UnicodeError("Unable to convert to unicode %r" % obj)
 
-def to_raw(obj):
-    """Tries to convert to raw bytes"""
+
+def to_raw(obj, encoding='utf-8'):
+    """Tries to convert to raw bytes from unicode"""
     if isinstance(obj, NUMERIC_TYPES):
         obj = str(obj)
 
@@ -52,20 +56,24 @@ def to_raw(obj):
         if isinstance(obj, SEQUENCE_TYPES):
             return [to_raw(element) for element in obj]
         elif isinstance(obj, STRING_TYPES):
-            return obj.encode('utf-8')
+            return obj.encode(encoding)
 
     return obj
 
 
-def escape_filter_chars(text):
+def escape_filter_chars(text, encoding=None):
     """ Escape chars mentioned in RFC4515. """
-    output = text.replace('\\', r'\5c')
-    output = output.replace(r'*', r'\2a')
-    output = output.replace(r'(', r'\28')
-    output = output.replace(r')', r'\29')
-    output = output.replace('\x00', r'\00')
+    if encoding is None:
+        encoding = get_config_parameter('DEFAULT_ENCODING')
+
+    text = to_unicode(text, encoding)
+    output = text.replace('\\', '\\5c')
+    output = output.replace('*', '\\2a')
+    output = output.replace('(', '\\28')
+    output = output.replace(')', '\\29')
+    output = output.replace('\x00', '\\00')
     # escape all octets greater than 0x7F that are not part of a valid UTF-8
-    output = ''.join(c if c <= '\x7f' else r'\x%x' % to_unicode(c) for c in output)
+    output = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in output)
     return output
 
 

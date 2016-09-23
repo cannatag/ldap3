@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-
+from sys import stdin
 from ..core.exceptions import LDAPConfigurationParameterError
 
 CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
@@ -50,6 +50,7 @@ REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 
 ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
+DEFAULT_ENCODING = stdin.encoding
 
 
 def get_config_parameter(parameter):
@@ -83,6 +84,8 @@ def get_config_parameter(parameter):
         return ADDRESS_INFO_REFRESH_TIME
     elif parameter == 'RESET_AVAILABILITY_TIMEOUT':
         return RESET_AVAILABILITY_TIMEOUT
+    elif parameter == 'DEFAULT_ENCODING':
+        return DEFAULT_ENCODING
 
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
@@ -133,5 +136,8 @@ def set_config_parameter(parameter, value):
     elif parameter == 'RESET_AVAILABILITY_TIMEOUT':
         global RESET_AVAILABILITY_TIMEOUT
         RESET_AVAILABILITY_TIMEOUT = value
+    elif parameter == 'DEFAULT_ENCODING':
+        global DEFAULT_ENCODING
+        DEFAULT_ENCODING = value
     else:
         raise LDAPConfigurationParameterError('unable to set configuration parameter %s' % parameter)

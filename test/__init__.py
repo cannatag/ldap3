@@ -118,7 +118,7 @@ elif location == 'ELITE10GC-EDIR':
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
-    test_password = 'password'  # user password
+    test_password = 'password1'  # user password
     test_secondary_user = 'cn=test_bind_user,ou=bind,o=test'
     test_secondary_password = 'password2'
     test_sasl_user = 'test_bind_sasl_user.bind.test'
@@ -129,8 +129,8 @@ elif location == 'ELITE10GC-EDIR':
     test_sasl_secondary_user_dn = 'cn=test_bind_sasl2_user,ou=bind,o=test'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
-    test_user_cert_file = 'local-edir-admin-cert.pem'
-    test_user_key_file = 'local-edir-admin-key.pem'
+    test_user_cert_file = 'local-edir-test_admin-cert.pem'
+    test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
@@ -224,8 +224,8 @@ elif location == 'W10GC9227-EDIR':
     test_sasl_secondary_user_dn = 'cn=test_sasl2_user,ou=bind,o=test'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
-    test_user_cert_file = 'local-edir-admin-cert.pem'
-    test_user_key_file = 'local-edir-admin-key.pem'
+    test_user_cert_file = 'local-edir-test_admin-cert.pem'
+    test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
     test_logging_filename = join(gettempdir(), 'ldap3.log')

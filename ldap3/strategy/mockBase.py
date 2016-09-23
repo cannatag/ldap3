@@ -173,7 +173,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message),
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None,
                 'serverSaslCreds': None
                 }
@@ -197,7 +197,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message),
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -228,7 +228,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message),
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -262,7 +262,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message),
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -304,7 +304,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message),
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -383,7 +383,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message),
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -457,7 +457,7 @@ class MockBaseStrategy(object):
 
         result = {'resultCode': result_code,
                   'matchedDN': '',
-                  'diagnosticMessage': to_unicode(message),
+                  'diagnosticMessage': to_unicode(message, 'utf-8'),
                   'referral': None
                   }
 
@@ -505,7 +505,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value).lower() >= to_unicode(attr_value).lower():  # case insentive string comparison
+                            if to_unicode(value, 'utf-8').lower() >= to_unicode(attr_value, 'utf-8').lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -521,7 +521,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value).lower() <= to_unicode(attr_value).lower():  # case insentive string comparison
+                            if to_unicode(value, 'utf-8').lower() <= to_unicode(attr_value, 'utf-8').lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -538,16 +538,16 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             # rebuild the original substring filter
             if node.assertion['initial']:
-                substring_filter = re.escape(to_unicode(node.assertion['initial']))
+                substring_filter = re.escape(to_unicode(node.assertion['initial'], 'utf-8'))
             else:
                 substring_filter = ''
 
             if node.assertion['any']:
                 for middle in node.assertion['any']:
-                    substring_filter += '.*' + re.escape(to_unicode(middle))
+                    substring_filter += '.*' + re.escape(to_unicode(middle, 'utf-8'))
 
             if node.assertion['final']:
-                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final']))
+                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], 'utf-8'))
 
             if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # onyly initial, adds .*
                 substring_filter += '.*'
@@ -556,7 +556,7 @@ class MockBaseStrategy(object):
             for candidate in candidates:
                 if attr_name in self.connection.server.dit[candidate]:
                     for value in self.connection.server.dit[candidate][attr_name]:
-                        if regex_filter.match(to_unicode(value)):
+                        if regex_filter.match(to_unicode(value, 'utf-8')):
                             node.matched.add(candidate)
                         else:
                             node.unmatched.add(candidate)

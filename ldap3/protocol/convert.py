@@ -148,7 +148,7 @@ def validate_assertion_value(schema, name, value):
 def validate_attribute_value(schema, name, value):
     if schema:
         if schema.attribute_types is not None and name not in schema.attribute_types:
-            raise LDAPAttributeError('invalid attribute type in attribute')
+            raise LDAPAttributeError('invalid attribute type in attribute: ' + name)
         if schema.object_classes is not None and name == 'objectClass':
             if value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)

@@ -126,7 +126,8 @@ def validate_assertion_value(schema, name, value):
         validated_value = bytearray()
         pos = 0
         while pos < len(value):
-            if value[pos] == '\\':
+            # if value[pos] == b'\\':
+            if value[pos] == 92:  # asc for \
                 byte = value[pos + 1: pos + 3]
                 if len(byte) == 2:
                     try:

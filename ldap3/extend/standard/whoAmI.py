@@ -27,7 +27,6 @@
 
 from ...extend.operation import ExtendedOperation
 
-
 class WhoAmI(ExtendedOperation):
     def config(self):
         self.request_name = '1.3.6.1.4.1.4203.1.11.3'

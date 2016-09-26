@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from sys import stdin
+from sys import stdin, getdefaultencoding
 from ..core.exceptions import LDAPConfigurationParameterError
 
 CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
@@ -50,7 +50,12 @@ REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 
 ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
-DEFAULT_ENCODING = stdin.encoding
+if stdin.encoding:
+    DEFAULT_ENCODING = stdin.encoding
+elif getdefaultencoding():
+    DEFAULT_ENCODING = getdefaultencoding()
+else:
+    DEFAULT_ENCODING = 'utf-8'
 
 
 def get_config_parameter(parameter):

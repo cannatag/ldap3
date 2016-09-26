@@ -35,7 +35,7 @@ from ..core.exceptions import LDAPDefinitionError
 def to_unicode(obj, encoding=None):
     """Tries to convert bytes (and str in python2) to unicode. Return object unmodified if python3 string, else raise an exception
     """
-    if isinstance(obj, int):
+    if isinstance(obj, NUMERIC_TYPES):
         obj = str(obj)
 
     if isinstance(obj, (bytes, bytearray)):

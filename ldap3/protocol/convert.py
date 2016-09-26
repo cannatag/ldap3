@@ -26,7 +26,7 @@
 from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPControlError, LDAPTypeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
-from ..utils.conv import escape_filter_chars
+from ..utils.conv import to_raw
 
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
@@ -122,7 +122,7 @@ def build_controls_list(controls):
 
 def validate_assertion_value(schema, name, value):
     value = validate_attribute_value(schema, name, value)
-    if '\\' in value:
+    if b'\\' in value:
         validated_value = bytearray()
         pos = 0
         while pos < len(value):
@@ -152,4 +152,4 @@ def validate_attribute_value(schema, name, value):
             if value not in schema.object_classes and value.lower() != 'subschema':
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
     # validated_value =  escape_filter_chars(value)
-    return value
+    return to_raw(value)

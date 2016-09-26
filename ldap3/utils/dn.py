@@ -91,7 +91,7 @@ def _find_first_unescaped(dn, char, pos):
         pos = dn.find(char, pos)
         if pos == -1:
             break  # no char found
-        if pos > 0 and dn[pos - 1] != '\\':  # unescaped comma
+        if pos > 0 and dn[pos - 1] != '\\':  # unescaped char
             break
 
         pos += 1

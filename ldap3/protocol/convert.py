@@ -26,7 +26,7 @@
 from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPControlError, LDAPTypeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
-
+from ..utils.conv import escape_filter_chars
 
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
@@ -121,28 +121,27 @@ def build_controls_list(controls):
 
 
 def validate_assertion_value(schema, name, value):
-    if schema and schema.attribute_types is not None:
-        if name not in schema.attribute_types:
-            raise LDAPTypeError('invalid attribute type in assertion: ' + name)
-    if '\\' not in value:
-        return value.encode('utf-8')
+    value = validate_attribute_value(schema, name, value)
+    if '\\' in value:
+        validated_value = bytearray()
+        pos = 0
+        while pos < len(value):
+            if value[pos] == '\\':
+                byte = value[pos + 1: pos + 3]
+                if len(byte) == 2:
+                    try:
+                        validated_value.append(int(value[pos + 1: pos + 3], 16))
+                        pos += 3
+                        continue
+                    except ValueError:
+                        pass
+            validated_value += value[pos].encode('utf-8')
+            pos += 1
+        validated_value = bytes(validated_value)
+    else:
+        validated_value = value
 
-    validated_value = bytearray()
-    pos = 0
-    while pos < len(value):
-        if value[pos] == '\\':
-            byte = value[pos + 1: pos + 3]
-            if len(byte) == 2:
-                try:
-                    validated_value.append(int(value[pos + 1: pos + 3], 16))
-                    pos += 3
-                    continue
-                except ValueError:
-                    pass
-        validated_value += value[pos].encode('utf-8')
-        pos += 1
-
-    return bytes(validated_value)
+    return validated_value
 
 
 def validate_attribute_value(schema, name, value):
@@ -150,7 +149,7 @@ def validate_attribute_value(schema, name, value):
         if schema.attribute_types is not None and name not in schema.attribute_types:
             raise LDAPTypeError('invalid attribute type in attribute')
         if schema.object_classes is not None and name == 'objectClass':
-            if value not in schema.object_classes:
-                raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
-
+            if value not in schema.object_classes and value.lower() != 'subschema':
+                raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
+    # validated_value =  escape_filter_chars(value)
     return value

@@ -1,5 +1,8 @@
-- 2.0.1 2016.09.13
+- 2.0.1 2016.09.24
     - connection.return_empty_attributes defaults to True
+    - escaped filter by default
+    - fixed escaping of filter
+    - add move and rename to abstraction layer entry
 
 - 2.0.0 2016.08.31
     - ldap3 namespace decluttered

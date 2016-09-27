@@ -136,7 +136,7 @@ def validate_assertion_value(schema, name, value):
                         continue
                     except ValueError:
                         pass
-            validated_value += value[pos].encode('utf-8')
+            validated_value += chr(value[pos]).encode('utf-8')
             pos += 1
         validated_value = bytes(validated_value)
     else:

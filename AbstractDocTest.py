@@ -4,7 +4,7 @@ from ldap3.abstract import ObjectDef, AttrDef, Reader
 person = ObjectDef('inetOrgPerson')
 engineer = ObjectDef(['inetOrgPerson', 'auxEngineer'])
 cnAttribute = AttrDef('cn')
-person.add_(cnAttribute)
+person.add_attribute(cnAttribute)
 # person += AttrDef('cn')  # same as above
 # person += 'cn'  # same as above
 

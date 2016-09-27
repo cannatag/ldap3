@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
         w = Writer(self.connection, 'inetorgperson')
         n = w.new('cn=abstraction-create,' + test_base)
         try:
-            n._commit()
+            n.commit_entry_changes()
         except LDAPCursorError:
             pass
 

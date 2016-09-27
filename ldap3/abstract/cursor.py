@@ -68,7 +68,7 @@ class Cursor(object):
         self.connection = connection
         if isinstance(object_def, STRING_TYPES):
             object_def = ObjectDef(object_def, connection.server.schema)
-        self._definition = object_def
+        self.definition = object_def
         if attributes:  # checks if requested attributes are defined in ObjectDef
             not_defined_attributes = []
             if isinstance(attributes, STRING_TYPES):
@@ -81,13 +81,13 @@ class Cursor(object):
             if not_defined_attributes:
                 raise LDAPCursorError('Attributes \'%s\' non in definition' % ', '.join(not_defined_attributes))
 
-        self.attributes = set(attributes) if attributes else set([attr.name for attr in self._definition])
+        self.attributes = set(attributes) if attributes else set([attr.name for attr in self.definition])
         self.get_operational_attributes = get_operational_attributes
         self.controls = controls
         self.execution_time = None
         self.entries = []
         self.schema = self.connection.server.schema
-        self._do_not_reset = False  # used for refreshing entry in _refresh() without removing all entries from the Cursor
+        self._do_not_reset = False  # used for refreshing entry in refresh_entry() without removing all entries from the Cursor
 
     def __str__(self):
         return self.__repr__()
@@ -107,10 +107,6 @@ class Cursor(object):
     else:  # python 2
         def __nonzero__(self):
             return True
-
-    @property
-    def definition(self):
-        return self._definition
 
     def _get_attributes(self, response, attr_defs, entry):
         """Assign the result of the LDAP query to the Entry object dictionary.
@@ -162,7 +158,7 @@ class Cursor(object):
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
                 if attribute_name not in attr_defs:
-                    raise LDAPCursorError('attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry._definition._object_class), entry._dn))
+                    raise LDAPCursorError('attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry.entry_definition._object_class), entry.entry_dn))
                 attribute = OperationalAttribute(AttrDef(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name), entry, self)
                 attribute.raw_values = response['raw_attributes'][attribute_name]
                 attribute.values = response['attributes'][attribute_name]
@@ -176,7 +172,7 @@ class Cursor(object):
             return None
 
         entry = self.entry_class(response['dn'], self)  # define an Entry (writable or readonly), as specified in the cursor definition
-        entry._state.attributes = self._get_attributes(response, self._definition, entry)
+        entry._state.attributes = self._get_attributes(response, self.definition, entry)
         entry._state.raw_attributes = deepcopy(response['raw_attributes'])
 
         entry._state.response = response
@@ -294,8 +290,8 @@ class Reader(Cursor):
     def __repr__(self):
         r = 'CONN   : ' + str(self.connection) + linesep
         r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
-        r += 'DEFS   : ' + repr(self._definition._object_class) + ' ['
-        for attr_def in sorted(self._definition):
+        r += 'DEFS   : ' + repr(self.definition._object_class) + ' ['
+        for attr_def in sorted(self.definition):
             r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
@@ -348,11 +344,11 @@ class Reader(Cursor):
         query = ''
         for d in sorted(self._query_dict):
             attr = d[1:] if d[0] in '&|' else d
-            for attr_def in self._definition:
+            for attr_def in self.definition:
                 if ''.join(attr.split()).lower() == attr_def.key.lower():
                     attr = attr_def.key
                     break
-            if attr in self._definition:
+            if attr in self.definition:
                 vals = sorted(self._query_dict[d].split(';'))
 
                 query += (d[0] + attr if d[0] in '&|' else attr) + ': '
@@ -373,8 +369,8 @@ class Reader(Cursor):
                             val_search_operator = val[0]
                             value = val[1:].lstrip()
 
-                    if self._definition[attr].validate:
-                        if not self._definition[attr].validate(self._definition[attr].key, value):
+                    if self.definition[attr].validate:
+                        if not self.definition[attr].validate(self.definition[attr].key, value):
                             raise LDAPCursorError('validation failed for attribute %s and value %s' % (d, val))
 
                     if val_not:
@@ -393,13 +389,13 @@ class Reader(Cursor):
         """Converts the query dictionary to the filter text"""
         self.query_filter = ''
 
-        if self._definition._object_class:
+        if self.definition._object_class:
             self.query_filter += '(&'
-            if isinstance(self._definition._object_class, SEQUENCE_TYPES) and len(self._definition._object_class) == 1:
-                self.query_filter += '(objectClass=' + self._definition._object_class[0] + ')'
-            elif isinstance(self._definition._object_class, SEQUENCE_TYPES):
+            if isinstance(self.definition._object_class, SEQUENCE_TYPES) and len(self.definition._object_class) == 1:
+                self.query_filter += '(objectClass=' + self.definition._object_class[0] + ')'
+            elif isinstance(self.definition._object_class, SEQUENCE_TYPES):
                 self.query_filter += '(&'
-                for object_class in self._definition._object_class:
+                for object_class in self.definition._object_class:
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
@@ -414,7 +410,7 @@ class Reader(Cursor):
 
         if not self.components_in_and:
             self.query_filter += '(|'
-        elif not self._definition._object_class:
+        elif not self.definition._object_class:
             self.query_filter += '(&'
 
         self._validate_query()
@@ -424,7 +420,7 @@ class Reader(Cursor):
             attr_counter += 1
             multi = True if ';' in self._validated_query_dict[attr] else False
             vals = sorted(self._validated_query_dict[attr].split(';'))
-            attr_def = self._definition[attr[1:]] if attr[0] in '&|' else self._definition[attr]
+            attr_def = self.definition[attr[1:]] if attr[0] in '&|' else self.definition[attr]
             if attr_def.pre_query:
                 modvals = []
                 for val in vals:
@@ -449,7 +445,7 @@ class Reader(Cursor):
         else:
             self.query_filter += ')'
 
-        if not self._definition._object_class and attr_counter == 1:  # remove unneeded starting filter
+        if not self.definition._object_class and attr_counter == 1:  # remove unneeded starting filter
             self.query_filter = self.query_filter[2: -1]
 
         if self.query_filter == '(|)' or self.query_filter == '(&)':  # remove empty filter
@@ -602,7 +598,7 @@ class Writer(Cursor):
         writer = Writer(connection, object_def, attributes=cursor.attributes)
         for entry in cursor.entries:
             if isinstance(cursor, Reader):
-                entry._writable(object_def, writer, custom_validator=custom_validator)
+                entry.make_writable(object_def, writer, custom_validator=custom_validator)
             elif isinstance(cursor, Writer):
                 pass
             else:
@@ -620,7 +616,7 @@ class Writer(Cursor):
                 raise LDAPCursorError('response not present')
         writer = Writer(connection, object_def, None, custom_validator)
         # for entry in connection._get_entries(response):
-        #     entry._writable(object_def, writer, custom_validator=custom_validator)
+        #     entry.make_writable(object_def, writer, custom_validator=custom_validator)
         # return writer
 
         for resp in response:
@@ -635,8 +631,8 @@ class Writer(Cursor):
 
     def __repr__(self):
         r = 'CONN   : ' + str(self.connection) + linesep
-        r += 'DEFS   : ' + repr(self._definition._object_class) + ' ['
-        for attr_def in sorted(self._definition):
+        r += 'DEFS   : ' + repr(self.definition._object_class) + ' ['
+        for attr_def in sorted(self.definition):
             r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
@@ -649,11 +645,11 @@ class Writer(Cursor):
 
     def commit(self, refresh=True):
         for entry in self.entries:
-            entry._commit(refresh=refresh, controls=self.controls)
+            entry.commit_entry_changes(refresh=refresh, controls=self.controls)
 
     def discard(self):
         for entry in self.entries:
-            entry._discard()
+            entry.discard_entry_changes()
 
     def _refresh_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
         """Perform the LDAP search operation SINGLE_OBJECT scope
@@ -687,11 +683,11 @@ class Writer(Cursor):
     def new(self, dn):
         dn = safe_dn(dn)
         for entry in self.entries:  # checks if dn is already used in an cursor entry
-            if entry._dn == dn:
+            if entry.entry_dn == dn:
                 raise LDAPCursorError('dn already present in cursor')
         rdns = safe_rdn(dn, decompose=True)
         entry = self.entry_class(dn, self)  # defines a new empty Entry
-        for attr in entry._mandatory:  # defines all mandatory attributes as virtual
+        for attr in entry.mandatory_attributes:  # defines all mandatory attributes as virtual
                 entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
                 entry.__dict__[attr] = entry._state.attributes[attr]
         entry.objectclass.set(self.definition._object_class)
@@ -709,7 +705,7 @@ class Writer(Cursor):
 
     def refresh_entry(self, entry):
         self._do_not_reset = True
-        temp_entry = self._refresh_object(entry._dn, entry._attributes)  # if any attributes is added adds only to the entry not to the definition
+        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes)  # if any attributes is added adds only to the entry not to the definition
         self._do_not_reset = False
         if temp_entry:
             temp_entry._state.origin = entry._state.origin
@@ -718,9 +714,9 @@ class Writer(Cursor):
             for attr in entry._state.attributes:  # returns the attribute key
                 entry.__dict__[attr] = entry._state.attributes[attr]
 
-            for attr in entry._attributes:  # if any attribute of the class was deleted make it virtual
-                if attr not in entry._state.attributes and attr in entry._definition._attributes:
-                    entry._state.attributes[attr] = WritableAttribute(entry._definition[attr], entry, self)
+            for attr in entry.entry_attributes:  # if any attribute of the class was deleted make it virtual
+                if attr not in entry._state.attributes and attr in entry.entry_definition._attributes:
+                    entry._state.attributes[attr] = WritableAttribute(entry.entry_definition[attr], entry, self)
                     entry.__dict__[attr] = entry._state.attributes[attr]
             entry._state.set_status(entry._state._initial_status)
             return True

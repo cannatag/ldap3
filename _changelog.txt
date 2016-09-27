@@ -1,3 +1,7 @@
+- 2.0.2 2016.09.27
+    - relaxed dn checking for Active Directory UserPrincipalName
+    - relaxed dn checking for Active Directory SamAccountName
+
 - 2.0.1 2016.09.24
     - connection.return_empty_attributes defaults to True
     - escaped filter by default

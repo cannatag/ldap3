@@ -87,7 +87,7 @@ class Cursor(object):
         self.execution_time = None
         self.entries = []
         self.schema = self.connection.server.schema
-        self._do_not_reset = False  # used for refreshing entry in refresh_entry() without removing all entries from the Cursor
+        self._do_not_reset = False  # used for refreshing entry in entry_refresh() without removing all entries from the Cursor
 
     def __str__(self):
         return self.__repr__()
@@ -173,10 +173,10 @@ class Cursor(object):
 
         entry = self.entry_class(response['dn'], self)  # define an Entry (writable or readonly), as specified in the cursor definition
         entry._state.attributes = self._get_attributes(response, self.definition, entry)
-        entry._state.raw_attributes = deepcopy(response['raw_attributes'])
+        entry._state.entry_raw_attributes = deepcopy(response['raw_attributes'])
 
         entry._state.response = response
-        entry._state.read_time = datetime.now()
+        entry._state.entry_read_time = datetime.now()
         entry._state.set_status(self.entry_initial_status)
         for attr in entry:  # returns the whole attribute object
             entry.__dict__[attr.key] = attr
@@ -687,7 +687,7 @@ class Writer(Cursor):
                 raise LDAPCursorError('dn already present in cursor')
         rdns = safe_rdn(dn, decompose=True)
         entry = self.entry_class(dn, self)  # defines a new empty Entry
-        for attr in entry.mandatory_attributes:  # defines all mandatory attributes as virtual
+        for attr in entry.entry_mandatory_attributes:  # defines all mandatory attributes as virtual
                 entry._state.attributes[attr] = self.attribute_class(entry._state.definition[attr], entry, self)
                 entry.__dict__[attr] = entry._state.attributes[attr]
         entry.objectclass.set(self.definition._object_class)

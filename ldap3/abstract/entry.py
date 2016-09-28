@@ -119,7 +119,7 @@ class EntryBase(object):
 
     def __repr__(self):
         if self.__dict__ and self.entry_dn is not None:
-            r = 'DN: ' + to_stdout_encoding(self.entry_dn) + ' - STATUS: ' + ((self._state._initial_status + ', ') if self._state._initial_status != self.entry_status else '') + self.entry_status + ' - READ TIME: ' + (self.read_time.isoformat() if self.read_time else '<never>') + linesep
+            r = 'DN: ' + to_stdout_encoding(self.entry_dn) + ' - STATUS: ' + ((self._state._initial_status + ', ') if self._state._initial_status != self.entry_status else '') + self.entry_status + ' - READ TIME: ' + (self.entry_read_time.isoformat() if self.entry_read_time else '<never>') + linesep
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
                     r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
@@ -203,8 +203,8 @@ class EntryBase(object):
         return self._state.definition
 
     @property
-    def raw_attributes(self):
-        return self._state.raw_attributes
+    def entry_raw_attributes(self):
+        return self._state.entry_raw_attributes
 
     def get_raw_attribute(self, name):
         """
@@ -212,10 +212,10 @@ class EntryBase(object):
         :param name: name of the attribute
         :return: raw (unencoded) value of the attribute, None if attribute is not found
         """
-        return self._state.raw_attributes[name] if name in self._state.raw_attributes else None
+        return self._state.entry_raw_attributes[name] if name in self._state.entry_raw_attributes else None
 
     @property
-    def mandatory_attributes(self):
+    def entry_mandatory_attributes(self):
         return [attribute for attribute in self.entry_definition._attributes if self.entry_definition._attributes[attribute].mandatory]
 
     @property
@@ -223,12 +223,12 @@ class EntryBase(object):
         return list(self._state.attributes.keys())
 
     @property
-    def attributes_as_dict(self):
+    def entry_attributes_as_dict(self):
         return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._state.attributes.items())
 
     @property
-    def read_time(self):
-        return self._state.read_time
+    def entry_read_time(self):
+        return self._state.entry_read_time
 
     @property
     def _changes(self):
@@ -238,9 +238,9 @@ class EntryBase(object):
         json_entry = dict()
         json_entry['dn'] = self.entry_dn
         if checked_attributes:
-            json_entry['attributes'] = self.attributes_as_dict
+            json_entry['attributes'] = self.entry_attributes_as_dict
         if raw:
-            json_entry['raw'] = dict(self.raw_attributes)
+            json_entry['raw'] = dict(self.entry_raw_attributes)
 
         if str == bytes:
             check_json_dict(json_entry)
@@ -288,7 +288,7 @@ class Entry(EntryBase):
     def make_writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None):
         if not self.entry_cursor.schema:
             raise LDAPCursorError('The schema must be available to make an entry writable')
-        # returns a newly created WritableEntry and its relevant Writer
+        # returns a new WritableEntry and its Writer cursor
         if object_def is None:
             if self.entry_cursor.definition._object_class:
                 object_def = self.entry_cursor.definition._object_class
@@ -323,7 +323,7 @@ class Entry(EntryBase):
         else:
             writable_entry = writable_cursor._create_entry(self._state.response)
             writable_cursor.entries.append(writable_entry)
-            writable_entry._state.read_time = self.read_time
+            writable_entry._state.entry_read_time = self.entry_read_time
         writable_entry._state.origin = self  # reference to the original read-only entry
         writable_entry._state.set_status(STATUS_WRITABLE)
         return writable_entry
@@ -362,7 +362,7 @@ class WritableEntry(EntryBase):
         else:
             raise LDAPCursorError('attribute must be a string')
 
-    def commit_entry_changes(self, refresh=True, controls=None):
+    def entry_commit_changes(self, refresh=True, controls=None):
         if self.entry_status == STATUS_READY_FOR_DELETION:
             if self.entry_cursor.connection.delete(self.entry_dn, controls):
                 origin = None
@@ -384,7 +384,7 @@ class WritableEntry(EntryBase):
             if self.entry_cursor.connection.modify_dn(self.entry_dn, '+'.join(safe_rdn(self.entry_dn)), new_superior=self._state._to):
                 self._state.dn = safe_dn('+'.join(safe_rdn(self.entry_dn)) + ',' + self._state._to)
                 if refresh:
-                    if self.refresh_entry():
+                    if self.entry_refresh():
                         if self._state.origin:  # refresh dn of origin
                             self._state.origin._state.dn = self.entry_dn
                 self._state.set_status(STATUS_COMMITTED)
@@ -397,7 +397,7 @@ class WritableEntry(EntryBase):
             if self.entry_cursor.connection.modify_dn(self.entry_dn, rdn):
                 self._state.dn = rdn + ',' + ','.join(to_dn(self.entry_dn)[1:])
                 if refresh:
-                    if self.refresh_entry():
+                    if self.entry_refresh():
                         if self._state.origin:  # refresh dn of origin
                             self._state.origin._state.dn = self.entry_dn
                 self._state.set_status(STATUS_COMMITTED)
@@ -407,7 +407,7 @@ class WritableEntry(EntryBase):
                 raise LDAPCursorError('unable to move entry, ' + self._state.cursor.connection.result['description'])
         elif self.entry_status in [STATUS_VIRTUAL, STATUS_MANDATORY_MISSING]:
             missing_attributes = []
-            for attr in self.mandatory_attributes:
+            for attr in self.entry_mandatory_attributes:
                 if (attr not in self._state.attributes or self._state.attributes[attr].virtual) and attr not in self._changes:
                     missing_attributes.append('\'' + attr + '\'')
             raise LDAPCursorError('mandatory attributes %s missing in entry %s' % (', '.join(missing_attributes), self.entry_dn))
@@ -422,7 +422,7 @@ class WritableEntry(EntryBase):
                     result = self.entry_cursor.connection.modify(self.entry_dn, self._changes, controls)
                 if result:
                     if refresh:
-                        if self.refresh_entry():
+                        if self.entry_refresh():
                             origin = self._state.origin
                             if origin:  # updates original read-only entry if present
                                 for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
@@ -434,25 +434,25 @@ class WritableEntry(EntryBase):
                                 for attr in self:  # returns the whole attribute object
                                     if not attr.virtual:
                                         origin.__dict__[attr.key] = origin._state.attributes[attr.key]
-                                origin._state.read_time = self.read_time
+                                origin._state.entry_read_time = self.entry_read_time
                     else:
-                        self.discard_entry_changes()  # if not refreshed remove committed changes
+                        self.entry_discard_changes()  # if not refreshed remove committed changes
                     self._state.set_status(STATUS_COMMITTED)
                     return True
                 else:
                     raise LDAPCursorError('unable to commit entry, ' + self.entry_cursor.connection.result['description'] + ' - ' + self.entry_cursor.connection.result['message'])
         return False
 
-    def discard_entry_changes(self):
+    def entry_discard_changes(self):
         self._changes.clear_attributes()
         self._state.set_status(self._state._initial_status)
 
-    def delete_entry(self):
+    def entry_delete(self):
         if self.entry_status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_DELETION]:
             raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
         self._state.set_status(STATUS_READY_FOR_DELETION)
 
-    def refresh_entry(self, tries=4, seconds=2):
+    def entry_refresh(self, tries=4, seconds=2):
         """
 
         Read the entry from the LDAP Server
@@ -465,13 +465,13 @@ class WritableEntry(EntryBase):
                 sleep(seconds)
         return False
 
-    def move_entry(self, destination_dn):
+    def entry_move(self, destination_dn):
         if self.entry_status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_MOVING]:
             raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
         self._state._to = safe_dn(destination_dn)
         self._state.set_status(STATUS_READY_FOR_MOVING)
 
-    def rename_entry(self, new_name):
+    def entry_rename(self, new_name):
         if self.entry_status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_RENAMING]:
             raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
         self._state._to = new_name

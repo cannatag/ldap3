@@ -18,27 +18,28 @@ ldap3 Tutorial
 What LDAP is not
 ================
 
-If you're reading this tutorial I assume that you already know what LDAP is, or at least have a rough idea of it. If you really
-don't know anything about LDAP after reading this tutorial you should be able to access an LDAP compliant server and use it without bothering with
+If you're reading this tutorial I assume that you already know what LDAP is, or at least have a rough idea of it. Even if you really
+don't know anything about LDAP, after reading this tutorial you should be able to access an LDAP compliant server and use it without bothering with
 the many glitches of the LDAP protocol.
 
 I'd rather want to be sure that you are aware of what LDAP **is not**:
 
-- is not a server
-- is not a database
-- is not a network service
-- is not an authentication procedure
-- is not a user/password repository
-- is not an open source neither a closed source product
+- LDAP is not a server
+- LDAP is not a database
+- LDAP is not a network service
+- LDAP is not an authentication procedure
+- LDAP is not a user/password repository
+- LDAP is not an open source neither a closed source product
 
 It's important to know what LDAP is not because people usually call "LDAP" a peculiar part of what they use of the
 *Lightweight Directory Access Protocol*. LDAP is a *protocol* and as other 'trailing-P' words in the Internet
-ecosystem (HTTP, FTP, TCP, IP, ...) it is a set of rules you must use to communicate with an external
+ecosystem (HTTP, FTP, TCP, IP, ...) it is a set of rules you must follow to communicate with an external
 server/database/service/procedure/repository/product (all the things in the above list). Data managed via LDAP are
 key/value(s) pairs grouped in a hierarchical structure. This hierarchical structure is called the *DIT* (Directory
 Information Tree). LDAP doesn't specify how the data is actually stored on the server neither how the user is authorized to
 read and modify them. There are only a few data types that every LDAP server must recognize (the standard *schema*
-we'll meet later).
+we'll meet later). Each LDAP server vendor has its own implementation of a product that follow this rules. LDAP version 3 is also an
+extensible protocol, this means that a vendor can add features not in the LDAP specifications (using Controls and Extensions).
 
 That's all, all the (sometime too complex) LDAP machinery you will interact with has this only purpose.
 
@@ -50,13 +51,13 @@ released in June 2006.
 A very brief history of LDAP
 ============================
 
-You may wonder why the "L" in LDAP? Its ancestor, called DAP (Directory Access Protocol), was developed in the 1980s
+You may wonder why the "L" in LDAP. Its ancestor, called DAP (Directory Access Protocol), was developed in the 1980s
 by the CCITT (now ITU-T), the *International Committee for Telephone and Telegraphy* (the venerable entity that gave us, among
 others, the fax and the modem protocols we used in the pre-Internet era). DAP was a very heavy and hard to implement protocol
 (either for the client and the server components) and was not accessible via TCP/IP. In 1993 a lighter access protocol
-was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards followed server products that
+was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards vendors developed server products that
 could understand LDAP directly and the gateway to DAP was soon cut off. LDAP v3 was first documented in 1997 and its
-specifications was revised in 2006. THis specifications are strictly followed by the ldap3 library.
+specifications was revised in 2006. This specifications are strictly followed by the ldap3 library.
 
 
 The ldap3 package
@@ -66,10 +67,8 @@ ldap3 is a fully compliant LDAP v3 client library and follows the latest standar
 compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can access the network via the Python
 standard library.
 
-Chances are that you find the ldap3 package already installed (or installable with the local package manager) on your machine, just try
-to **import ldap3** from your Python console.
-
-If you get an ImportError you need to install the package from PyPI via pip::
+Chances are that you find the ldap3 package already installed (or installable with your local package manager) on your machine, just try
+to **import ldap3** from your Python console. If you get an ImportError you need to install the package from PyPI via pip in the standard way::
 
     pip install ldap3
 
@@ -84,37 +83,39 @@ or you can download the source from https://github.com/cannatag/ldap3 and instal
 
     python setup.py install
 
-ldap3 installs the **pyasn1** package (if not already present). This package is used to communicate with the server over the network.
+ldap3 needs the **pyasn1** package (and will install it if not already present). This package is used to communicate with the server over the network.
 
-ldap3 usage is straightforward: you define a Server object, a Connection object tied to the Server and then you issue commands to it.
+ldap3 usage is straightforward: you just define a Server object and a Connection object. Then you issue commands to the connection.
 A server can have more than one connection and there are different *communication strategies* to choose from. All the imports
 are available in the ldap3 namespace. At least you need to import the Server and the Connection object, and any additional constant you
-will use in your LDAP conversation (constants are defined in upper case)::
+will use in your LDAP conversation (constants are all defined in upper case)::
 
     >>> from ldap3 import Server, Connection, ALL
+
+ldap3 specific exceptions are defined in the ``ldap3.core.exceptions○`` package.
 
 Accessing an LDAP server
 ========================
 
 In the LDAP protocol the login operation is called **bind**. A bind can be performed in 3 different ways: anonymous bind,
-simple password bind, and SASL (*Simple Authentication and Security Layer*, allowing multiple authentication methods)
-bind. You can think of the anonymous bind as a of *public* access to the LDAP server where you don't provide any credentials
+simple password bind, and SASL (*Simple Authentication and Security Layer*, allowing a larger set of authentication methods)
+bind. You can think of the anonymous bind as of a *public* access to the LDAP server where no credentials are provided
 and the server applies some *default* access rules. With the simple password bind and the SASL bind you provide credentials
-that the LDAP server uses to determine your authorizazion level. Again, keep in mind that the LDAP v3 standard doesn't define
-any specific access rules and that the authorization mechanism is not specified at all. So each LDAP server type can have a
+that the LDAP server uses to determine your authorizazion level. Again, keep in mind that the LDAP standard doesn't define
+specific access rules and that the authorization mechanism is not specified at all. So each LDAP server vendor can have a
 different method for authorizing the user to access data stored in the DIT.
 
 ldap3 let you choose the strategy that the client will use to connect to the server with the ``client_strategy`` parameter of the
 Connection object. There are 5 strategies that can be used for establishing a connection: SYNC, ASYNC, LDIF, RESTARTABLE and REUSABLE.
+The MOCK_SYNC strategy can be used to simulate a fake LDAP server while testing your application.
 
-With synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
-if they fail.
-
-With asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return an
-integer, the *message_id* of the request. You can send multiple requests without waiting for responses and then get each
+As a general rule synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
+if they fail. In asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return an
+integer, the *message_id* of the request. You can send multiple requests without waiting for responses and you can get each
 response with the ``get_response(message_id)`` method of the Connection object as you need it. You will get an exception if
 the response has not yet arrived after a specified time. In the get_response method this timeout value can be set
 with the ``timeout`` attribute to the number of seconds to wait for the response to appear (defaults is 10 seconds).
+Usually you will use synchronous strategies only.
 
 The **LDIF** strategy is used to create a stream of LDIF-CHANGEs.
 

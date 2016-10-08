@@ -534,13 +534,13 @@ where all assertions (*and* group, specified with ``&``) or just one assertion (
 assertion can be negated (*not* group, specified with ``!``). Each group must be bracketed, allowing for recursive filters.
 Operators allowed in an assertion are ``=`` (*equal*), ``<=`` (*less than or equal*), ``>=`` (*greater than or equal*), ``=*`` (*present*), ``~=``
 (*aproximate*) and ``:=`` (*extensible*). Surprisingly the *less than* and the *greater than* operators don't exist in the filter syntax.
-The *aproximate* and the *extensible* are someway obscure and seldom used. In an equality filter you can use the ``*`` (asterisk) as a wildcard in the usual way.
+The *aproximate* and the *extensible* are someway obscure and seldom used. In an equality filter you can use the ``*`` (asterisk) as a wildcard.
 
 For example, to search for all users named John with an email ending with '@example.org' the filter will be ``(&(givenName=John)(mail=*@example.org))``,
 to search for all users named John or Fred with an email ending in '@example.org' the filter will be
 ``(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))``, while to search for all users that have a givenName different from Smith the filter
 will be ``(&(givenName=*)(!(givenName=Smith)))`` (The first assertion in the *and* set is needed to ensure the presence of the value). Longer
-search filters can easily become hard to understand so it may be useful to divide them on multple lines while writing/reading them::
+search filters can easily become hard to understand so it may be useful to divide them on multiple lines while writing/reading them::
 
     (&
         (|
@@ -551,7 +551,7 @@ search filters can easily become hard to understand so it may be useful to divid
     )
 
 
-Let's try to search all the users in the FreeIPA demo LDAP server::
+Try now to search all users in the FreeIPA demo LDAP server::
 
     >>> from ldap3 import Server, Connection, ALL
     >>> server = Server('ipa.demo1.freeipa.org', get_info=ALL)
@@ -565,8 +565,8 @@ Let's try to search all the users in the FreeIPA demo LDAP server::
     , DN: uid=helpdesk,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
     ]
 
-Here we are requesting all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
-We have not requested any attribute, so in the response we get only the Distinguished Name of the entries found.
+Here you request all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
+You have not requested any attribute, so in the response we get only the Distinguished Name of the entries found.
 
 Now let's try to request some attributes for the admin user::
 
@@ -590,10 +590,10 @@ Now let's try to request some attributes for the admin user::
 .. note::
     When using attributes in a search filter it's a good habit to always request for the class of the entries you expect to retrieve. You cannot be sure that the
     attribute you're serching for is not used is some other object classes, and even if you were sure that no other object class uses the attribute this could always change
-    in the future when someone creates in the schema a new object class that uses that same attribute and your program suddenly breaks with no apparent reason.
+    in the future when someone creates in the schema a new object class that uses that same attribute. Then your program suddenly breaks with no apparent reason.
 
 
-As you can see the ``entries`` attribute of the Connection object is specially crafted to be used in interactive mode. It gives a visual
+The ``entries`` attribute of the Connection object is specially crafted to be used in interactive mode at the >>> prompt. It gives a visual
 representation of the entry data structure where each value is, according to the schema, properly formatted (the date value in krbLastPwdChange is
 actually stored as ``b'20150930040659Z'``). Attributes can be queried as if the entry were a class object or a dict, with some
 additional features as case-insensitivity and blank-insensitivity. You can get the formatted value and the raw value (the value actually
@@ -615,14 +615,13 @@ returned by the server) in the ``values`` and ``raw_values`` attribute::
     [b'20150930040659Z']
 
 
-In the previous search operations we specified ``dc=demo1, dc=freeipa, dc=org`` as the base of our search, but the entries we got back were in the ``cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org``
+In the previous search operations you specified ``dc=demo1, dc=freeipa, dc=org`` as the base of our search, but the entries we got back were in the ``cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org``
 context of the DIT. So the server has, for some unapparent reason, walked down in every context under the base and applied the filter to each of the entries in the sub-contexts.
 It actually performed a *whole subtree* search. Other possible kinds of search are the *single level* (that searches only in the level specified in the base) and the *base object*
-(that search only in the attributes of the entry specified in the base). What changes in this different kinds of search is the breath of the portion of
-the LDAP database that is searched. This is called the **scope** of the search and can be specified with the ``search_scope`` attribute of the search
-operation. It can assume three different values ``BASE``, ``LEVEL`` and ``SUBTREE``. The latter value is the default for the search opertion, so this clarifies why we
-got back all the entries in the sub-contexts of the base in our previous searches.
-
+(that search only in the attributes of the entry specified in the base). What changes in this different kinds of search is the 'breath' of the portion of
+the DIT that is searched. This breath is called the **scope** of the search and can be specified with the ``search_scope`` attribute of the search
+operation. It can assume three different values ``BASE``, ``LEVEL`` and ``SUBTREE``. The latter value is the default for the search opertion, so this
+clarifies why you got back all the entries in the sub-contexts of the base in previous searches.
 
 You can have a LDIF representation of the response of a search with::
 
@@ -644,7 +643,7 @@ You can have a LDIF representation of the response of a search with::
 
 .. sidebar:: LDIF
     LDIF stands for LDAP Data Interchange Format and is a textual standard used to describe two different aspects of LDAP: the content of an entry (**LDIF-CONTENT**)
-    or the changes performed to an entry with an LDAP operation (**LDIF-CHANGE**). LDIF-CONTENT is used to describe LDAP entries in an ASCII stream (i.e. a file),
+    or the changes performed on an entry with an LDAP operation (**LDIF-CHANGE**). LDIF-CONTENT is used to describe LDAP entries in an ASCII stream (i.e. a file),
     while LDIF-CHANGE is used to describe the Add, Delete, Modify and ModifyDn operations.
 
     *These two formats have different purposes and cannot be mixed in the same stream.*
@@ -689,7 +688,7 @@ search_filter will contain ``'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca
 Connection context manager
 ==========================
 
-Connections respond to the context manager protocol, so you can have automatic open, bind and unbind with the following syntax::
+The Connection object responds to the context manager protocol, so you can have automatic open, bind and unbind with the following syntax::
 
     >>> with Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123') as conn:
             conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])

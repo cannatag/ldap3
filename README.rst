@@ -13,9 +13,19 @@ LDAP3
     :target: https://pypi.python.org/pypi/ldap3/
     :alt: License
 
+
 ldap3 is a strictly RFC 4510 conforming LDAP V3 pure Python **client** library. The same codebase works with Python 2, Python 3, PyPy, PyPy3 and Nuikta.
 
 [This project was previously named **python3-ldap**]
+
+.. warning::
+In version 2.x some default values (auto_range in Connection object, get_info in Server object) are changed and the the ldap3 namespace has been decluttered, removing redundant constants. The result code constants are moved to
+ldap3.core.results and the ldap3 custom exceptions are stored in ldap3.core.exceptions. If you experience errors in your existing code you should rearrange the import
+statements or explicitly set the defaults to their former values).
+
+.. note::
+**Starting from version 2 a brand new Abstraction Layer with full CRUD capabilities is available. You can now perform all CRUD (Create, Read, Update, Delete) operation
+in a much simpler way, with no need of using any LDAP operation.**
 
 Home Page
 ---------

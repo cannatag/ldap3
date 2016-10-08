@@ -40,15 +40,15 @@ class Test(unittest.TestCase):
         if test_server_type == 'EDIR':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-3-\uc3a0', attributes={'givenName': 'givenname-3', test_int_attr: 0}))  # LATIN SMALL LETTER A WITH GRAVE
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3', test_int_attr: 0}))  # LATIN SMALL LETTER A WITH GRAVE
         elif test_server_type == 'AD':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-3-\uc3a0', attributes={'givenName': 'givenname-3'}))  # LATIN SMALL LETTER A WITH GRAVE
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3'}))  # LATIN SMALL LETTER A WITH GRAVE
         else:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-3-\uc3a0', attributes={'givenName': 'givenname-3'}))  # LATIN SMALL LETTER A WITH GRAVE
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3'}))  # LATIN SMALL LETTER A WITH GRAVE
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
@@ -206,7 +206,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(response) >= 1)
 
     def test_search_exact_match_with_unicode_in_filter(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-3-\uc3a0)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'search-3-\u2122)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:

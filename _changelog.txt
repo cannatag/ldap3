@@ -1,4 +1,4 @@
-- 2.0.2 2016.09.27
+- 2.0.2 2016.10.07
     - relaxed dn checking for Active Directory UserPrincipalName
     - relaxed dn checking for Active Directory SamAccountName
 
@@ -18,7 +18,7 @@
     - Allows cert and key file in the same file (thanks Jan-Philip)
     - Removed logging info when logging is disabled (thanks Dan)
     - Updated copyright notice
-    - Refactored abstraction layer
+    - Refactored abstraction layer with full support for CRUD (Create, Read, Update, Delete) abstract operations
     - Added WritableEntry and WritableAttribute to abstraction layer
     . Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
     - Added custom validators for attribute values
@@ -29,7 +29,7 @@
     - Added attributes parameter to search* methods of Cursor, so that only needed attributes are read even if attr_defs defines more
     - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
     - Added 'set' to SEQUENCE_TYPES (thanks Christian)
-    - Entries returned by search can be writable via the abstraction layer
+    - Entries returned by search are now writable via the abstraction layer
     - LDAPReaderError exception renamed to LDAPCursorError
     - auto_range parameter in Connection defaults to True (thanks Ashley)
     - get_info defaults to SCHEMA while defining Server object

@@ -150,7 +150,7 @@ def validate_attribute_value(schema, name, value):
         if schema.attribute_types is not None and name not in schema.attribute_types:
             raise LDAPTypeError('invalid attribute type in attribute')
         if schema.object_classes is not None and name == 'objectClass':
-            if value not in schema.object_classes and value.lower() != 'subschema':
+            if value not in schema.object_classes and value.lower() not in ['subschema', 'subschemaSubentry']:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
     # validated_value =  escape_filter_chars(value)
     return to_raw(value)

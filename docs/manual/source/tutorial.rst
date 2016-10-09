@@ -570,22 +570,22 @@ You have not requested any attribute, so in the response we get only the Disting
 
 Now let's try to request some attributes for the admin user::
 
-    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
+    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn', 'krbLastPwdChange', 'objectclass'])
     True
     >>> conn.entries[0]
-    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
-        krbLastPwdChange: 2015-09-30 04:06:59+00:00
-        objectclass: top
-                     person
-                     posixaccount
-                     krbprincipalaux
-                     krbticketpolicyaux
-                     inetuser
-                     ipaobject
-                     ipasshuser
-                     ipaSshGroupOfPubKeys
-        sn: Administrator
-
+    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-09T20:39:32.711000
+    krbLastPwdChange: 2016-10-09 10:01:18+00:00
+    objectclass: top
+                 person
+                 posixaccount
+                 krbprincipalaux
+                 krbticketpolicyaux
+                 inetuser
+                 ipaobject
+                 ipasshuser
+                 ipaSshGroupOfPubKeys
+                 ipaNTUserAttrs
+    sn: Administrator
 
 .. note::
     When using attributes in a search filter it's a good habit to always request for the class of the entries you expect to retrieve. You cannot be sure that the
@@ -595,24 +595,24 @@ Now let's try to request some attributes for the admin user::
 
 The ``entries`` attribute of the Connection object is specially crafted to be used in interactive mode at the >>> prompt. It gives a visual
 representation of the entry data structure where each value is, according to the schema, properly formatted (the date value in krbLastPwdChange is
-actually stored as ``b'20150930040659Z'``). Attributes can be queried as if the entry were a class object or a dict, with some
+actually stored as ``b'20161009010118Z'``). Attributes can be queried as if the entry were a class object or a dict, with some
 additional features as case-insensitivity and blank-insensitivity. You can get the formatted value and the raw value (the value actually
 returned by the server) in the ``values`` and ``raw_values`` attribute::
 
     >>> entry = entries[0]
     >>> entry.krbLastPwdChange
-    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    krbLastPwdChange: 2016-10-09 10:01:18+00:00
     >>> entry.KRBLastPwdCHANGE
-    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    krbLastPwdChange: 2016-10-09 10:01:18+00:00
     >>> entry['krbLastPwdChange']
-    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    krbLastPwdChange: 2016-10-09 10:01:18+00:00
     >>> entry['KRB LAST PWD CHANGE']
-    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    krbLastPwdChange 2016-10-09 10:01:18+00:00
 
     >>> entry.krbLastPwdChange.values
-    [datetime.datetime(2015, 9, 30, 4, 6, 59, tzinfo=OffsetTzInfo(offset=0, name='UTC'))]
+    [datetime.datetime(2016, 10, 9, 10, 1, 18, tzinfo=OffsetTzInfo(offset=0, name='UTC'))]
     >>> entry.krbLastPwdChange.raw_values
-    [b'20150930040659Z']
+    [b'20161009010118Z']
 
 
 In the previous search operations you specified ``dc=demo1, dc=freeipa, dc=org`` as the base of our search, but the entries we got back were in the ``cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org``
@@ -637,7 +637,7 @@ You can have a LDIF representation of the response of a search with::
     objectclass: ipaobject
     objectclass: ipasshuser
     objectclass: ipaSshGroupOfPubKeys
-    krbLastPwdChange: 20150930040659Z
+    krbLastPwdChange: 20161009010118Z
     sn: Administrator
     # total number of entries: 1
 
@@ -654,7 +654,7 @@ or you can save the response to a JSON string::
     {
         "attributes": {
             "krbLastPwdChange": [
-                "2015-09-30 04:06:59+00:00"
+                "2016-10-09 10:01:18+00:00"
             ],
             "objectclass": [
                 "top",
@@ -698,7 +698,7 @@ The Connection object responds to the context manager protocol, so you can have 
     False
     >>> entry
     DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
-    krbLastPwdChange: 2015-09-30 04:06:59+00:00
+    krbLastPwdChange: 2016-10-09 10:01:18+00:00
     objectclass: top
                  person
                  posixaccount
@@ -723,13 +723,78 @@ Let's try to add some data to the LDAP server::
     >>> conn.add('ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
     >>> True
     >>> # Add some users
-    >>> conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber':'DEV', 'telephoneNumber': 1111})
+    >>> conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})
     >>> True
-    >>> conn.add('cn=j.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'John', 'sn': 'Smith', 'departmentNumber':'DEV',  'telephoneNumber': 2222})
+    >>> conn.add('cn=j.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'John', 'sn': 'Smith', 'departmentNumber': 'DEV',  'telephoneNumber': 2222})
     >>> True
-    >>> conn.add('cn=m.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'Marianne', 'sn': 'Smith', 'departmentNumber':'QA',  'telephoneNumber': 3333})
+    >>> conn.add('cn=m.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Marianne', 'sn': 'Smith', 'departmentNumber': 'QA',  'telephoneNumber': 3333})
     >>> True
-    >>> conn.add('cn=quentin.cat,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetorgperson', {'givenName': 'Quentin', 'sn': 'Cat', 'departmentNumber':'CC',  'telephoneNumber': 4444})
+    >>> conn.add('cn=quentin.cat,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Quentin', 'sn': 'Cat', 'departmentNumber': 'CC',  'telephoneNumber': 4444})
 
-As you can see we have added some users
+As you can see we have added some users. You passed the full DN as the first parameter, the objectClass (or objectClasses) as second parameter and a dictonary of attributes as the third parameter.
+Some attributes are mandatory when adding a new object. You can check which are the mandatories one in the schema.
+
+If we look at the schema for the *inetOrgPerson* object class::
+
+    >>> server.schema.object_classes['inetorgperson']
+    Object class: 2.16.840.1.113730.3.2.2
+      Short name: inetOrgPerson
+      Superior: organizationalPerson
+      May contain attributes: audio, businessCategory, carLicense, departmentNumber, displayName, employeeNumber, employeeType, givenName, homePhone, homePostalAddress, initials, jpegPhoto, labeledURI, mail, manager, mobile, o, pager, photo, roomNumber, secretary, uid, userCertificate, x500UniqueIdentifier, preferredLanguage, userSMIMECertificate, userPKCS12
+      Extensions:
+        X-ORIGIN: RFC 2798
+
+We can see that it has no mandatory attributes and that is a subclass of the *organizationalPerson* object::
+
+    Object class: 2.5.6.7
+      Short name: organizationalPerson
+      Superior: person
+      May contain attributes: title, x121Address, registeredAddress, destinationIndicator, preferredDeliveryMethod, telexNumber, teletexTerminalIdentifier, internationalISDNNumber, facsimileTelephoneNumber, street, postOfficeBox, postalCode, postalAddress, physicalDeliveryOfficeName, ou, st, l
+      Extensions:
+        X-ORIGIN: RFC 4519
+      OidInfo: ('2.5.6.7', 'OBJECT_CLASS', 'organizationalPerson', 'RFC4519')
+
+The *organizationalPerson* object class has no mandatory attribute and is a subclass of the *person* object::
+
+    Object class: 2.5.6.6
+      Short name: person
+      Superior: top
+      Must contain attributes: sn, cn
+      May contain attributes: userPassword, telephoneNumber, seeAlso, description
+      Extensions:
+        X-ORIGIN: RFC 4519
+      OidInfo: ('2.5.6.6', 'OBJECT_CLASS', 'person', 'RFC4519')
+
+We have found two mandatory attributes: *sn* and *cn*. Also the *person* object class is a subclass of the *top* object. Let's walk up the hineritance chain::
+
+    Object class: 2.5.6.0
+      Short name: top
+      Must contain attributes: objectClass
+      Extensions:
+        X-ORIGIN: RFC 4512
+      OidInfo: ('2.5.6.0', 'OBJECT_CLASS', 'top', 'RFC4512')
+
+*top* is the root of all LDAP classes and defines a single mandatory attributes, objectClass. So every object class defined in the LDAP schema must have its own objectclass.
+Let's read the objectClass of the first user we created::
+
+    >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=*)', attributes=['objectclass'])
+    >>> print(conn.entries[0])
+    DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-09T17:36:44.100248
+    objectclass: inetOrgPerson
+                 organizationalPerson
+                 person
+                 top
+
+You can see that the objectclass is composed of all the hierarchical tree from top to inetOrgPerson. This means that you can add any of the optional
+attribute defined in each class of the hierarchy.
+
+The Modify operation
+====================
+
+To change attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
+**Add** is used to add values listed to the modification attribute, creating the attribute if necessary. **Delet** deletes values listed from the modification
+attribute. If no values are listed, or if all current values of the attribute are listed, the entire attribute is removed. **Replace** replaces all existing
+values of the modification attribute with the new values listed, creating the attribute if it did not already exist.  A replace with no value will delete the entire
+attribute if it exists, and it is ignored if the attribute does not exist.
+
 ... work in progress ...

@@ -313,6 +313,7 @@ def safe_dn(dn, decompose=False, reverse=False):
         escaped_dn = []
     else:
         escaped_dn = ''
+
     if '@' not in dn:  # active directory UPN (User Principal Name) consist of an account, the at sign (@) and a domain
         for component in parse_dn(dn, escape=True):
             if decompose:

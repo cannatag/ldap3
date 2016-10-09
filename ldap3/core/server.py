@@ -373,13 +373,16 @@ class Server(object):
         else:
             result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
-                schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
+                if result:
+                    schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
             else:  # async request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
-                if len(results) == 1 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
-                    schema_entry = results[0]['attributes']['subschemaSubentry'][0]
+                if len(results) == 1 and 'raw_attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
+                    schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
+            if isinstance(schema_entry, bytes) and bytes != str:
+                schema_entry = schema_entry.decode('utf-8')
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=BASE,

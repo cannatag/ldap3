@@ -797,6 +797,11 @@ the sn, cn and objectClass attributes at creation time. Let's read the objectCla
 You can see that *objectclass* is composed of all the hierarchical structure from *inetOrgPerson* to *top*. This means that you can add any of the optional
 attribute defined in each class of the hierarchy.
 
+Rename an entry
+===============
+
+Renaming an entry in LDAP means to change its RDN (*Relative Distinguished Name) without changing the its container and is performed with the ModifyDN operation.
+
 Move entries
 ============
 

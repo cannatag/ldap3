@@ -528,22 +528,21 @@ Performing searches
 The **Search** operation in ldap3 has a number of parameters, but only two of them are mandatory:
 
 * ``search_base``: the location in the DIT where the search will start
-* ``search_filter``: a string that describes what are you searching
+* ``search_filter``: a string that describes what you are searching
 
 Search filters are based on assertions and look odd when you're unfamiliar with their syntax. One *assertion* is a bracketed expression
 that affirms something about an attribute and its value, as ``(givenName=John)`` or ``(maxRetries>=10)``. Each assertion resolves
 to True, False or Undefined (that is treated as False) for one or more entries in the DIT. Assertions can be grouped in boolean groups
-where all assertions (**and** group, specified with ``&``) or just one assertion (**or** group, specified with ``|``) must be True. A single
+where all assertions (**and** group, specified with ``&``) or at least one assertion (**or** group, specified with ``|``) must be True. A single
 assertion can be negated (**not** group, specified with ``!``). Each group must be bracketed, allowing for recursive filters.
 Operators allowed in an assertion are ``=`` (**equal**), ``<=`` (**less than or equal**), ``>=`` (**greater than or equal**), ``=*`` (**present**), ``~=``
-(**aproximate**) and ``:=`` (**extensible**). Surprisingly the *less than* and the *greater than* operators don't exist in the filter syntax.
+(**aproximate**) and ``:=`` (**extensible**). Surprisingly the *less than* and the *greater than* operators don't exist in the LDAP filter syntax.
 The *aproximate* and the *extensible* are someway obscure and seldom used. In an equality filter you can use the ``*`` character as a wildcard.
 
 For example, to search for all users named John with an email ending with '@example.org' the filter will be ``(&(givenName=John)(mail=*@example.org))``,
 to search for all users named John or Fred with an email ending in '@example.org' the filter will be
 ``(&(|(givenName=Fred)(givenName=John))(mail=*@example.org))``, while to search for all users that have a givenName different from Smith the filter
-will be ``(!(givenName=Smith))`` Long search filters can easily become hard to understand so it may be useful to divide the text on multiple lines while
-writing/reading them::
+will be ``(!(givenName=Smith))`` Long search filters can easily become hard to understand so it may be useful to divide the text on multiple indented lines::
 
     (&
         (|
@@ -554,7 +553,7 @@ writing/reading them::
     )
 
 
-Try now to search all users in the FreeIPA demo LDAP server::
+Let's search all users in the FreeIPA demo LDAP server::
 
     >>> from ldap3 import Server, Connection, ALL
     >>> server = Server('ipa.demo1.freeipa.org', get_info=ALL)
@@ -569,9 +568,9 @@ Try now to search all users in the FreeIPA demo LDAP server::
     ]
 
 Here you request all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
-You have not requested any attribute, so in the response we get only the Distinguished Name of the entries found.
+You have not requested any attribute, so in the response we get only the Distinguished Name of the found entries.
 
-Now let's try to request some attributes for the admin user::
+Now let's try to request some attributes from the admin user::
 
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn', 'krbLastPwdChange', 'objectclass'])
     True
@@ -591,13 +590,13 @@ Now let's try to request some attributes for the admin user::
     sn: Administrator
 
 .. note::
-    When using attributes in a search filter it's a good habit to always request for the structuraL class of the entries you expect to retrieve.
-    You cannot be sure that the attribute you're serching for is not used is some other object classes, and even if you were sure that no other
-    object class uses the attribute this could always change in the future when someone creates in the schema a new object class that uses that
-    same attribute. Then your program suddenly breaks with no apparent reason.
+    When using attributes in a search filter it's a good habit to always request for the *structural class* of the objects you expect to retrieve.
+    You cannot be sure that the attribute you're serching for is not used is some other object classes, and even if you are sure that no other
+    object class uses it this could always change in the future when someone extends the schema with an object class that uses that very
+    same attribute, and your program suddenly breaks with no apparent reason.
 
 
-The ``entries`` attribute of the Connection object is derived from the Abstraction Layer and it's specially crafted to be used in interactive mode
+Note that the ``entries`` attribute of the Connection object is derived from the Abstraction Layer and it's specially crafted to be used in interactive mode
 at the ``>>>`` prompt. It gives a visual representation of the entry data structure where each value is, according to the schema, properly formatted
 (the date value in krbLastPwdChange is actually stored as ``b'20161009010118Z'``). Attributes can be queried as if the entry were a class object or
 a dict, with some additional features as case-insensitivity and blank-insensitivity. You can get the formatted value and the raw value (the value
@@ -619,16 +618,16 @@ actually returned by the server) in the ``values`` and ``raw_values`` attribute:
     [b'20161009010118Z']
 
 
-Note that the entry status is "Read". This is not relevant in this example but the entry can be converted to a "writable" entry and used in the Abstraction
-Layer to change or delete its content.
+Note that the entry status is *Read*. This is not relevant if you only need to retrive the entries from the DIT but it's vital if you want to make
+them *Writable* and change or delete their content with the Abstraction Layer.
 
 In the previous search operations you specified ``dc=demo1, dc=freeipa, dc=org`` as the base of our search, but the entries we got back were in the ``cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org``
-context of the DIT. So the server has, for some unapparent reason, walked down in every context under the base and applied the filter to each of the entries in the sub-contexts.
-It actually performed a *whole subtree* search. Other possible kinds of search are the *single level* (that searches only in the level specified in the base) and the *base object*
-(that search only in the attributes of the entry specified in the base). What changes in this different kinds of search is the 'breath' of the portion of
-the DIT that is searched. This breath is called the **scope** of the search and can be specified with the ``search_scope`` attribute of the search
+context of the DIT. So the server has, with no apparent reason, walked down every context under the base and has applied the filter to each of the entries in the sub-containers.
+The server actually performed a *whole subtree* search. Other possible kinds of search are the *single level* search (that searches only in the level specified in the base)
+and the *base object* search (that searches only in the attributes of the entry specified in the base). What changes in this different kinds of search is the 'breath'
+of the portion of the DIT that is searched. This breath is called the **scope** of the search and can be specified with the ``search_scope`` parameter of the search
 operation. It can assume three different values ``BASE``, ``LEVEL`` and ``SUBTREE``. The latter value is the default for the search opertion, so this
-clarifies why you got back all the entries in the sub-contexts of the base in previous searches.
+clarifies why you got back all the entries in the sub-containers of the base in previous searches.
 
 You can have a LDIF representation of the response of a search with::
 
@@ -682,20 +681,20 @@ or you can save the response to a JSON string::
 
 Searching for binary values
 ===========================
-To search for a binary value you must use the RFC4515 escape ASCII sequence for each byte in the search assertion. You
-can use the function *escape_bytes()* in ldap3.utils.conv for properly escape a byte sequence::
+To search for a binary value you must use the RFC4515 escape ASCII sequence for each byte in the search assertion. ldap3 provides the helper function
+*escape_bytes()* in ldap3.utils.conv to properly escape a byte sequence::
 
     >>> from ldap3.utils.conv import escape_bytes
     >>> unique_id = b'\xca@\xf2k\x1d\x86\xcaL\xb7\xa2\xca@\xf2k\x1d\x86'
     >>> search_filter = '(nsUniqueID=' + escape_bytes(unique_id) + ')'
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', search_filter, attributes=['nsUniqueId'])
 
-search_filter will contain ``'(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)'``.
+search_filter will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``.
 
 Connection context manager
 ==========================
 
-The Connection object responds to the context manager protocol, so you can have automatic open, bind and unbind with the following syntax::
+The Connection object responds to the context manager protocol, so you can perform LDAP operations with automatic open, bind and unbind as in the following example::
 
     >>> with Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123') as conn:
             conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
@@ -717,12 +716,12 @@ The Connection object responds to the context manager protocol, so you can have 
                  ipaSshGroupOfPubKeys
     sn: Administrator
 
-When using context managers the Connection object retains its previous state after exiting the context. The connection is open and bound while in context.
+When the Connection object exits the context manager it retains the state it had before entering the context. The connection is always open and bound while in context.
 If the connection was not bound to the server when entering the context the Unbind operation will be tried when you leave the context even if the operations
 in the context raise an exception.
 
-The Add operation
-=================
+Entries creation
+================
 
 Let's try to add some data to the LDAP server::
 
@@ -738,12 +737,13 @@ Let's try to add some data to the LDAP server::
     >>> True
     >>> conn.add('cn=quentin.cat,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Quentin', 'sn': 'Cat', 'departmentNumber': 'CC',  'telephoneNumber': 4444})
 
-As you can see we have added some users. You passed the full DN as the first parameter, the objectClass (or objectClasses) as second parameter and a dictonary of attributes as the third parameter.
-Some attributes are mandatory when adding a new object. You can check which are the mandatories one in the schema.
+As you can see we have created a container object and added some users in it. You passed the full DN as the first parameter, the objectClass (or objectClasses)
+as second parameter and a dictonary of attributes as the third parameter. Some attributes are mandatory when adding a new object. You can check the schema to know which are
+the mandatory attributes you need to provide for successfully create a new object.
 
-If we look at the schema for the *inetOrgPerson* object class::
+If we look at the schema for the *inetOrgPerson* object class we find that there are no mandatory attributes::
 
-    >>> server.schema.object_classes['inetorgperson']
+    >>> server.schema.object_classes['inetOrgPerson']
     Object class: 2.16.840.1.113730.3.2.2
       Short name: inetOrgPerson
       Superior: organizationalPerson
@@ -751,8 +751,9 @@ If we look at the schema for the *inetOrgPerson* object class::
       Extensions:
         X-ORIGIN: RFC 2798
 
-We can see that it has no mandatory attributes and that is a subclass of the *organizationalPerson* object::
+The *inetOrgPerson* object class is a subclass of the *organizationalPerson* object that again doesn't include any mandatory attributes::
 
+    >>> server.schema.object_classes['organizationalPerson']
     Object class: 2.5.6.7
       Short name: organizationalPerson
       Superior: person
@@ -761,8 +762,9 @@ We can see that it has no mandatory attributes and that is a subclass of the *or
         X-ORIGIN: RFC 4519
       OidInfo: ('2.5.6.7', 'OBJECT_CLASS', 'organizationalPerson', 'RFC4519')
 
-The *organizationalPerson* object class has no mandatory attribute and is a subclass of the *person* object::
+The *organizationalPerson* object class is a subclass of the *person* object where we finally find two mandatory attributes::
 
+    >>> server.schema.object_classes['person']
     Object class: 2.5.6.6
       Short name: person
       Superior: top
@@ -772,7 +774,7 @@ The *organizationalPerson* object class has no mandatory attribute and is a subc
         X-ORIGIN: RFC 4519
       OidInfo: ('2.5.6.6', 'OBJECT_CLASS', 'person', 'RFC4519')
 
-We have found two mandatory attributes: *sn* and *cn*. Also the *person* object class is a subclass of the *top* object. Let's walk up the hineritance chain::
+The *person* object class is a subclass of the *top* object. Let's walk up the hineritance chain::
 
     Object class: 2.5.6.0
       Short name: top
@@ -781,8 +783,8 @@ We have found two mandatory attributes: *sn* and *cn*. Also the *person* object 
         X-ORIGIN: RFC 4512
       OidInfo: ('2.5.6.0', 'OBJECT_CLASS', 'top', 'RFC4512')
 
-*top* is the root of all LDAP classes and defines a single mandatory attributes, objectClass. So every object class defined in the LDAP schema must have its own objectclass.
-Let's read the objectClass of the first user we created::
+*top* is the root of all LDAP classes and defines a single mandatory attributes, objectClass. Now we know that to successfully create an *inetOrgPerson* we need to provide
+the sn, cn and objectClass attributes at creation time. Let's read the objectClass of the first user we created::
 
     >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=*)', attributes=['objectclass'])
     >>> print(conn.entries[0])
@@ -792,16 +794,20 @@ Let's read the objectClass of the first user we created::
                  person
                  top
 
-You can see that the objectclass is composed of all the hierarchical tree from top to inetOrgPerson. This means that you can add any of the optional
+You can see that *objectclass* is composed of all the hierarchical structure from *inetOrgPerson* to *top*. This means that you can add any of the optional
 attribute defined in each class of the hierarchy.
 
-The Modify operation
-====================
+Move entries
+============
 
-To change attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
-**Add** is used to add values listed to the modification attribute, creating the attribute if necessary. **Delet** deletes values listed from the modification
-attribute. If no values are listed, or if all current values of the attribute are listed, the entire attribute is removed. **Replace** replaces all existing
-values of the modification attribute with the new values listed, creating the attribute if it did not already exist.  A replace with no value will delete the entire
-attribute if it exists, and it is ignored if the attribute does not exist.
+To move an entry from one container to another container in the DIT you can use the ModifyDN operation.
+
+Update entries
+==============
+
+To change the attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
+**Add** is used to add values to an attribute, and creates the attribute if it doesn't exist. **Delete** deletes values from an attribute and if no values are listed, or if all
+current values of the attribute are listed, the entire attribute is removed. **Replace** replaces all existing values of an attribute with some new values, creating the attribute if it
+did not already exist.  A replace with no value will delete the entire attribute if it exists, and it is ignored if the attribute does not exist.
 
 ... work in progress ...

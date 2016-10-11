@@ -800,10 +800,33 @@ attribute defined in each class of the hierarchy.
 Rename an entry
 ===============
 
-Renaming an entry in LDAP means to change its RDN (*Relative Distinguished Name) without changing the its container and is performed with the ModifyDN operation.
+Renaming an entry in LDAP means to change its RDN (*Relative Distinguished Name) without changing the container where the entry is stored.
+is performed with the ModifyDN operation::
+
+    >>> conn.modify_dn('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith')
+    True
+
+You have changed the RDN of the entry from b.young to b.smith::
+
+    >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['objectclass', 'sn', 'cn', 'givenname'])
+    True
+    >>> print(entries[0])
+    DN: cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-11T23:51:28.731000
+    cn: b.smith
+    givenname: Beatrix
+    objectclass: inetOrgPerson
+                 organizationalPerson
+                 person
+                 top
+    sn: Young
+
+The new cn value has been stored in the cn attribute. To be consistent in our example we should change the *sn* (surname) from Young to Smith. To achieve that we must wait until
+we introduce the Modify Ldap operation, the weirdest of the LDAP operations.
 
 Move entries
 ============
+ModifyDn is really a two-face operation. You can use it to rename an entry (as in the previous example) or to move an entry to another container. But you cannot perform
+this two ooeration together.
 
 To move an entry from one container to another container in the DIT you can use the ModifyDN operation.
 

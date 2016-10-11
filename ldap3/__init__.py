@@ -65,6 +65,8 @@ NO_ATTRIBUTES = '1.1'  # as per RFC 4511
 ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
 
 # checks
+CLASSES_EXCLUDED_FROM_CHECK = ['subschema']
+
 ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
                                   ALL_OPERATIONAL_ATTRIBUTES,
                                   NO_ATTRIBUTES,

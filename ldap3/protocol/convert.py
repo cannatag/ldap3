@@ -23,8 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SEQUENCE_TYPES
-from ..core.exceptions import LDAPControlError, LDAPTypeError, LDAPObjectClassError
+from .. import SEQUENCE_TYPES, CLASSES_EXCLUDED_FROM_CHECK, ATTRIBUTES_EXCLUDED_FROM_CHECK
+from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
 from ..utils.conv import to_raw
 
@@ -147,10 +147,11 @@ def validate_assertion_value(schema, name, value):
 
 def validate_attribute_value(schema, name, value):
     if schema:
-        if schema.attribute_types is not None and name not in schema.attribute_types:
-            raise LDAPTypeError('invalid attribute type in attribute')
+        if schema.attribute_types is not None and name not in schema.attribute_types and name not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
+            raise LDAPAttributeError('invalid attribute ' + name)
         if schema.object_classes is not None and name == 'objectClass':
-            if value not in schema.object_classes and value.lower() not in ['subschema', 'subschemaSubentry']:
+            #if value not in schema.object_classes and value.lower() not in ['subschema', 'subschemaSubentry']:
+            if value not in CLASSES_EXCLUDED_FROM_CHECK and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
     # validated_value =  escape_filter_chars(value)
     return to_raw(value)

@@ -368,8 +368,7 @@ class LDAPKeyError(LDAPExceptionError, KeyError, AttributeError):
 class LDAPObjectError(LDAPExceptionError, ValueError):
     pass
 
-
-class LDAPTypeError(LDAPExceptionError, TypeError):
+class LDAPAttributeError(LDAPExceptionError, ValueError, TypeError):
     pass
 
 

@@ -1,6 +1,9 @@
-- 2.0.2 2016.10.07
+- 2.0.2 2016.10.11
     - relaxed dn checking for Active Directory UserPrincipalName
     - relaxed dn checking for Active Directory SamAccountName
+    - added checking of attribute name in add, compare and search operations
+    - added checking of class name in add operation
+    - renamed exception LDAPTypeError to LDAPAttributeError
 
 - 2.0.1 2016.09.24
     - connection.return_empty_attributes defaults to True

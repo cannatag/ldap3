@@ -26,7 +26,7 @@
 from os import linesep
 
 from .attrDef import AttrDef
-from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPTypeError, LDAPSchemaError
+from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError, LDAPSchemaError
 from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo
 from ..protocol.formatters.standard import find_attribute_validator
@@ -207,7 +207,7 @@ class ObjectDef(object):
             else:
                 raise LDAPKeyError('key \'%s\' not present' % key)
         else:
-            raise LDAPTypeError('key must be str or AttrDef not ' + str(type(key)))
+            raise LDAPAttributeError('key must be str or AttrDef not ' + str(type(key)))
 
     def clear_attributes(self):
         """Empty the ObjectDef attribute list

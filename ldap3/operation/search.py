@@ -29,7 +29,7 @@ from os import linesep
 from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, \
     SEQUENCE_TYPES, get_config_parameter
 
-from ..core.exceptions import LDAPInvalidFilterError, LDAPTypeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
+from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..protocol.formatters.formatters import format_unicode
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
@@ -293,10 +293,10 @@ def build_attribute_selection(attribute_list, schema):
         if schema and schema.attribute_types is not None:
             if ';' in attribute:  # exclude tags from validation
                 if not attribute[0:attribute.index(';')] in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
-                    raise LDAPTypeError('invalid attribute type in attribute list: ' + attribute)
+                    raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
             else:
                 if attribute not in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
-                    raise LDAPTypeError('invalid attribute type in attribute list: ' + attribute)
+                    raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
         attribute_selection[index] = Selector(attribute)
 
     return attribute_selection

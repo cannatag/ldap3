@@ -833,7 +833,7 @@ But you cannot perform this two operations together::
     >>> # Create a container for moved entries
     >>> conn.add('ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
     True
-    >>> conn.modify_dn('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith', new_superior='ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org')
+    >>> conn.modify_dn('cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith', new_superior='ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org')
     True
 
 Quite surprisingly you must provide the very same RDN even if this cannot be changed while moving the object. This could be a problem when moving entries
@@ -842,13 +842,13 @@ programmatically because you have do break up the dn to its RDNs (remember that 
 ldap3 provides the ``safe_rdn()`` helper function to return the RDN of a DN::
 
     >>> from ldap3.utils.dn import safe_rdn
-    >>> safe_rdn('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
-    [cn=b.young]
+    >>> safe_rdn('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+    [cn=b.smith]
 
     Keep in mind that LDAP support a quite obscure "multi-rdn" naming option where each part of the RDN is separated with the + character::
 
-    >>> safe_rdn('cn=b.young+sn=young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
-    ['cn=b.young', 'sn=young']
+    >>> safe_rdn('cn=b.smith+sn=young,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+    ['cn=b.smith', 'sn=young']
 
 
 Update entries
@@ -856,7 +856,10 @@ Update entries
 
 To change the attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
 **Add** is used to add values to an attribute, and creates the attribute if it doesn't exist. **Delete** deletes values from an attribute and if no values are listed, or if all
-current values of the attribute are listed, the entire attribute is removed. **Replace** replaces all existing values of an attribute with some new values, creating the attribute if it
-did not already exist.  A replace with no value will delete the entire attribute if it exists, and it is ignored if the attribute does not exist.
+current values are listed, the entire attribute is removed. **Replace** replaces all existing values of an attribute with some new values, creating the attribute if it
+don't already exist.  A replace with no value will delete the entire attribute if it exists, and it is ignored if the attribute doesn't exist.
+
+The hard part in the Modify operation is that you can mix in a single operation the three kinds of modification for an entry with one or more attributes with one or more values! So the
+Modify Operation syntax is quite complex, you must provide a DN, a dictionary of attributes and for each attribute a list of modification
 
 ... work in progress ...

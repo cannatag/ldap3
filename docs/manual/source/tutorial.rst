@@ -725,17 +725,18 @@ Entries creation
 
 Let's try to add some data to the LDAP server::
 
-    >>> # Create a container for our new entries
+    >>> # Create a container for new entries
     >>> conn.add('ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
-    >>> True
+    True
     >>> # Add some users
     >>> conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})
-    >>> True
+    True
     >>> conn.add('cn=j.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'John', 'sn': 'Smith', 'departmentNumber': 'DEV',  'telephoneNumber': 2222})
-    >>> True
+    True
     >>> conn.add('cn=m.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Marianne', 'sn': 'Smith', 'departmentNumber': 'QA',  'telephoneNumber': 3333})
-    >>> True
+    True
     >>> conn.add('cn=quentin.cat,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Quentin', 'sn': 'Cat', 'departmentNumber': 'CC',  'telephoneNumber': 4444})
+    True
 
 As you can see we have created a container object and added some users in it. You passed the full DN as the first parameter, the objectClass (or objectClasses)
 as second parameter and a dictonary of attributes as the third parameter. Some attributes are mandatory when adding a new object. You can check the schema to know which are
@@ -800,13 +801,14 @@ attribute defined in each class of the hierarchy.
 Rename an entry
 ===============
 
-Renaming an entry in LDAP means to change its RDN (*Relative Distinguished Name) without changing the container where the entry is stored.
-is performed with the ModifyDN operation::
+Renaming an entry in LDAP means changing its RDN (*Relative Distinguished Name*) without changing the container where the entry is stored.
+It is performed with the ModifyDN operation::
 
     >>> conn.modify_dn('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith')
     True
 
-You have changed the RDN of the entry from b.young to b.smith::
+You have changed the RDN (that in this case uses the *cn* as naming attribute) of the entry from "b.young" to "b.smith". Let's check if the new value
+is properly stored in the DIT::
 
     >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['objectclass', 'sn', 'cn', 'givenname'])
     True
@@ -820,13 +822,25 @@ You have changed the RDN of the entry from b.young to b.smith::
                  top
     sn: Young
 
-The new cn value has been stored in the cn attribute. To be consistent in our example we should change the *sn* (surname) from Young to Smith. To achieve that we must wait until
-we introduce the Modify Ldap operation, the weirdest of the LDAP operations.
+As you can see the new *cn* value has been stored in the *cn* attribute. To be consistent in our example we should change the *sn* (surname) from Young to Smith.
+To achieve this we must wait until we introduce the Modify LDAP operation, the most difficult to use of all the LDAP operations, to update this entry.
 
 Move entries
 ============
-ModifyDn is really a two-face operation. You can use it to rename an entry (as in the previous example) or to move an entry to another container. But you cannot perform
-this two ooeration together.
+ModifyDn is really a two-face operation. You can use it to rename an entry (as in the previous example) or to move an entry to another container.
+But you cannot perform this two ooeration together::
+
+    >>> # Create a container for moved entries
+    >>> conn.add('ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
+    True
+    >>> conn.modify_dn('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith', new_superior='ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org')
+    True
+
+Quite surprisingly you must provide the very same RDN even if this cannot be changed while moving the object. This could be a problem when moving entries
+programmatically because you have do decompose the dn to its RDNs (remember that each "step" in the DN is really an independent entry with its own
+
+
+
 
 To move an entry from one container to another container in the DIT you can use the ModifyDN operation.
 

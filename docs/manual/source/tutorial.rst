@@ -828,7 +828,7 @@ To achieve this we must wait until we introduce the Modify LDAP operation, the m
 Move entries
 ============
 ModifyDn is really a two-face operation. You can use it to rename an entry (as in the previous example) or to move an entry to another container.
-But you cannot perform this two ooeration together::
+But you cannot perform this two operations together::
 
     >>> # Create a container for moved entries
     >>> conn.add('ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
@@ -837,12 +837,19 @@ But you cannot perform this two ooeration together::
     True
 
 Quite surprisingly you must provide the very same RDN even if this cannot be changed while moving the object. This could be a problem when moving entries
-programmatically because you have do decompose the dn to its RDNs (remember that each "step" in the DN is really an independent entry with its own
+programmatically because you have do break up the dn to its RDNs (remember that each "step" in the DN is really an independent entry with its own RDN.
 
+ldap3 provides the ``safe_rdn()`` helper function to return the RDN of a DN::
 
+    >>> from ldap3.utils.dn import safe_rdn
+    >>> safe_rdn('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+    [cn=b.young]
 
+    Keep in mind that LDAP support a quite obscure "multi-rdn" naming option where each part of the RDN is separated with the + character::
 
-To move an entry from one container to another container in the DIT you can use the ModifyDN operation.
+    >>> safe_rdn('cn=b.young+sn=young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+    ['cn=b.young', 'sn=young']
+
 
 Update entries
 ==============

@@ -619,7 +619,7 @@ actually returned by the server) in the ``values`` and ``raw_values`` attribute:
 
 
 Note that the entry status is *Read*. This is not relevant if you only need to retrive the entries from the DIT but it's vital if you want to make
-them *Writable* and change or delete their content with the Abstraction Layer.
+them *Writable* and change or delete their content with the Abstraction Layer. The Abstraction Layer also records the time of the last data refresh for the entry.
 
 In the previous search operations you specified ``dc=demo1, dc=freeipa, dc=org`` as the base of our search, but the entries we got back were in the ``cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org``
 context of the DIT. So the server has, with no apparent reason, walked down every context under the base and has applied the filter to each of the entries in the sub-containers.
@@ -860,6 +860,25 @@ current values are listed, the entire attribute is removed. **Replace** replaces
 don't already exist.  A replace with no value will delete the entire attribute if it exists, and it is ignored if the attribute doesn't exist.
 
 The hard part in the Modify operation is that you can mix in a single operation the three kinds of modification for an entry with one or more attributes with one or more values! So the
-Modify Operation syntax is quite complex, you must provide a DN, a dictionary of attributes and for each attribute a list of modification
+Modify Operation syntax is quite complex, you must provide a DN, a dictionary of attributes and for each attribute a list of modifications::
+
+    >>> # add an additional surname to the entry:
+    >>> print(conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smith'])]}))
+    True
+    >>> # check if the surname is stored as a multi-valued attribute
+    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['objectclass', 'sn', 'cn', 'givenname'])
+    >>> print(entries[0])
+    DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-14T11:14:02.219664
+        cn: b.smith
+        givenname: Beatrix
+        objectclass: inetOrgPerson
+                     organizationalPerson
+                     person
+                     top
+        sn: Young
+            Smith
+
+
+
 
 ... work in progress ...

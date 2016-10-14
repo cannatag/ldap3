@@ -34,7 +34,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI, NONE, CLASSES_EXCLUDED_FROM_CHECK, \
     ATTRIBUTES_EXCLUDED_FROM_CHECK
 
-from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE
+from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -735,6 +735,8 @@ class Connection(object):
                     log(PROTOCOL, 'async SEARCH response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'searchResDone' and len(response) > 0 else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                    self.last_error = self.result['description']
 
                 if log_enabled(PROTOCOL):
                     for entry in response:
@@ -781,6 +783,9 @@ class Connection(object):
                     log(PROTOCOL, 'async COMPARE response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
+                if not return_value and self.result['result'] not in [RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE]:
+                    self.last_error = self.result['description']
+
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'COMPARE response <%s> received via <%s>', response, self)
 
@@ -860,6 +865,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'ADD response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done ADD operation, result <%s>', return_value)
@@ -902,6 +909,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'DELETE response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done DELETE operation, result <%s>', return_value)
@@ -983,6 +992,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'MODIFY response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done MODIFY operation, result <%s>', return_value)
@@ -1038,6 +1049,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'MODIFY DN response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done MODIFY DN operation, result <%s>', return_value)
@@ -1103,6 +1116,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'EXTENDED response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done EXTENDED operation, result <%s>', return_value)

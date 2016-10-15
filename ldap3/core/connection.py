@@ -482,7 +482,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._deferred_bind = True
@@ -572,7 +572,7 @@ class Connection(object):
                     self.bound = False
                 else:
                     self.bound = True if result['result'] == RESULT_SUCCESS else False
-                    if not self.bound and result and result['description']:
+                    if not self.bound and result and result['description'] and not self.last_error:
                         self.last_error = result['description']
 
                 if read_server_info and self.bound:
@@ -596,7 +596,7 @@ class Connection(object):
 
         if log_enabled(BASIC):
             log(BASIC, 'start (RE)BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             if user:
                 self.user = user
@@ -639,7 +639,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start UNBIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # _clear deferred status
                 self.strategy.close()
@@ -735,7 +735,7 @@ class Connection(object):
                     log(PROTOCOL, 'async SEARCH response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'searchResDone' and len(response) > 0 else False
-                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
                     self.last_error = self.result['description']
 
                 if log_enabled(PROTOCOL):
@@ -760,7 +760,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start COMPARE operation via <%s>', self)
-
+        self.last_error = None
         if self.check_names:
             dn = safe_dn(dn)
             if log_enabled(EXTENDED):
@@ -783,7 +783,7 @@ class Connection(object):
                     log(PROTOCOL, 'async COMPARE response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
-                if not return_value and self.result['result'] not in [RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE]:
+                if not return_value and self.result['result'] not in [RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE] and not self.last_error:
                     self.last_error = self.result['description']
 
                 if log_enabled(PROTOCOL):
@@ -808,7 +808,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
-
+        self.last_error = None
         if self.check_names:
             dn = safe_dn(dn)
             if log_enabled(EXTENDED):
@@ -865,7 +865,7 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'ADD response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
-                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
                     self.last_error = self.result['description']
 
             if log_enabled(BASIC):
@@ -881,7 +881,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start DELETE operation via <%s>', self)
-
+        self.last_error = None
         if self.check_names:
             dn = safe_dn(dn)
             if log_enabled(EXTENDED):
@@ -909,7 +909,7 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'DELETE response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
-                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
                     self.last_error = self.result['description']
 
             if log_enabled(BASIC):
@@ -931,7 +931,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY operation via <%s>', self)
-
+        self.last_error = None
         if self.check_names:
             dn = safe_dn(dn)
             if log_enabled(EXTENDED):
@@ -992,7 +992,7 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'MODIFY response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
-                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
                     self.last_error = self.result['description']
 
             if log_enabled(BASIC):
@@ -1012,7 +1012,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY DN operation via <%s>', self)
-
+        self.last_error = None
         if self.check_names:
             dn = safe_dn(dn)
             if log_enabled(EXTENDED):
@@ -1049,7 +1049,7 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'MODIFY DN response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
-                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
                     self.last_error = self.result['description']
 
             if log_enabled(BASIC):
@@ -1065,7 +1065,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start ABANDON operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             self._fire_deferred()
             return_value = False
@@ -1100,7 +1100,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start EXTENDED operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             self._fire_deferred()
             request = extended_operation(request_name, request_value, no_encode=no_encode)
@@ -1116,7 +1116,7 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'EXTENDED response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
-                if not return_value and self.result['result'] not in [RESULT_SUCCESS]:
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
                     self.last_error = self.result['description']
 
             if log_enabled(BASIC):
@@ -1158,7 +1158,7 @@ class Connection(object):
                      controls):
         if log_enabled(BASIC):
             log(BASIC, 'start SASL BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             result = None
             if not self.sasl_in_progress:
@@ -1182,7 +1182,7 @@ class Connection(object):
                      controls):
         if log_enabled(BASIC):
             log(BASIC, 'start NTLM BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             result = None
             if not self.sasl_in_progress:

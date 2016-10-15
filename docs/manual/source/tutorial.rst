@@ -178,6 +178,11 @@ This is helpful when experimenting in the interactive console and works for most
    Server(host='ipa.demo1.freeipa.org', port=389, use_ssl=False, get_info='NO_INFO')
 
 
+.. note::
+    The tutorial is intended to be used from the *REPL* (Read, Evaluate, Print, Loop), the interactive Python command line where you can directly type
+    Python statements at the **>>>** prompt. The REPL implicitly use the ``repl()`` representation for showing the output of a statement. If you instead
+    want the ``str()`` representation you must explicitly use the ``print()`` statement.
+
 Getting information from the server
 ===================================
 
@@ -631,7 +636,7 @@ clarifies why you got back all the entries in the sub-containers of the base in 
 
 You can have a LDIF representation of the response of a search with::
 
-    >>> print(conn.entries[0].entry_to_ldif())
+    >>> conn.entries[0].entry_to_ldif()
     version: 1
     dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
     objectclass: top
@@ -656,7 +661,7 @@ You can have a LDIF representation of the response of a search with::
 
 or you can save the response to a JSON string::
 
-    >>> print(entry.entry_to_json())
+    >>> entry.entry_to_json()
     {
         "attributes": {
             "krbLastPwdChange": [
@@ -731,12 +736,6 @@ Let's try to add some data to the LDAP server::
     >>> # Add some users
     >>> conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})
     True
-    >>> conn.add('cn=j.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'John', 'sn': 'Smith', 'departmentNumber': 'DEV',  'telephoneNumber': 2222})
-    True
-    >>> conn.add('cn=m.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Marianne', 'sn': 'Smith', 'departmentNumber': 'QA',  'telephoneNumber': 3333})
-    True
-    >>> conn.add('cn=quentin.cat,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Quentin', 'sn': 'Cat', 'departmentNumber': 'CC',  'telephoneNumber': 4444})
-    True
 
 As you can see we have created a container object and added some users in it. You passed the full DN as the first parameter, the objectClass (or objectClasses)
 as second parameter and a dictonary of attributes as the third parameter. Some attributes are mandatory when adding a new object. You can check the schema to know which are
@@ -788,7 +787,8 @@ The *person* object class is a subclass of the *top* object. Let's walk up the h
 the sn, cn and objectClass attributes at creation time. Let's read the objectClass of the first user we created::
 
     >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=*)', attributes=['objectclass'])
-    >>> print(conn.entries[0])
+    True
+    >>> conn.entries[0]
     DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-09T17:36:44.100248
     objectclass: inetOrgPerson
                  organizationalPerson
@@ -812,7 +812,7 @@ is properly stored in the DIT::
 
     >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['objectclass', 'sn', 'cn', 'givenname'])
     True
-    >>> print(entries[0])
+    >>> entries[0]
     DN: cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-11T23:51:28.731000
     cn: b.smith
     givenname: Beatrix
@@ -845,7 +845,7 @@ ldap3 provides the ``safe_rdn()`` helper function to return the RDN of a DN::
     >>> safe_rdn('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     [cn=b.smith]
 
-    Keep in mind that LDAP support a quite obscure "multi-rdn" naming option where each part of the RDN is separated with the + character::
+Keep in mind that LDAP support a (quite obscure) "multi-rdn" naming option where each part of the RDN is separated with the + character::
 
     >>> safe_rdn('cn=b.smith+sn=young,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     ['cn=b.smith', 'sn=young']
@@ -860,25 +860,56 @@ current values are listed, the entire attribute is removed. **Replace** replaces
 don't already exist.  A replace with no value will delete the entire attribute if it exists, and it is ignored if the attribute doesn't exist.
 
 The hard part in the Modify operation is that you can mix in a single operation the three kinds of modification for an entry with one or more attributes with one or more values! So the
-Modify Operation syntax is quite complex, you must provide a DN, a dictionary of attributes and for each attribute a list of modifications::
+Modify Operation syntax is quite complex, you must provide a DN, a dictionary of attributes and for each attribute a list of modifications where each modification is a tuple
+with the modification type and the list of values. Let's add a new value to the sn attribute::
 
-    >>> # add an additional surname to the entry:
-    >>> print(conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smith'])]}))
+    >>> from ldap3 import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
+    >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smyth']), (MODIFY_DELETE, ['Young'])]})
     True
-    >>> # check if the surname is stored as a multi-valued attribute
-    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['objectclass', 'sn', 'cn', 'givenname'])
-    >>> print(entries[0])
-    DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-14T11:14:02.219664
+    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
+    True
+    >>> entries[0]
+    DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:35:39.691000
         cn: b.smith
-        givenname: Beatrix
-        objectclass: inetOrgPerson
-                     organizationalPerson
-                     person
-                     top
         sn: Young
-            Smith
+            Smyth
 
+Now remove the old value::
 
+    >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_DELETE, ['Young'])]})
+    True
+    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
+    True
+    >>> entries[0]
+    DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:35:40.331000
+        cn: b.smith
+        sn: Smyth
 
+We made a typo in the previous modify operation (Smyth instead of Smith), let's fix it, replacing values with the right one::
+
+    >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_REPLACE, ['Smith'])]})
+    True
+    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
+    True
+    >>> entries[0]
+    DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:35:40.972000
+        cn: b.smith
+        sn: Smith
+
+Modifications in a modify operation can be combined and become soon complex::
+
+    >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Young', 'Johnson']), (MODIFY_DELETE, ['Smith'])], 'givenname': [(MODIFY_REPLACE, ['Mary', 'Jane'])]})
+    True
+    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
+    True
+    >>> entries[0]
+    DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:55:47.585000
+        cn: b.smith
+        givenname: Mary
+                   Jane
+        sn: Young
+            Johnson
+
+.. warning:: The ldap3 Abstraction Layer allows you to use a much more simple and pythonic syntax to achieve the same results.
 
 ... work in progress ...

@@ -98,6 +98,7 @@ ldap3 specific exceptions are defined in the ``ldap3.core.exceptions○`` packag
     should be done on the client to not cluttering and hogging the server with unneeded elaborations. ldap3 includes a full-functional **Abstraction
     Layer** that let you interact with the DIT in a modern and pythonic way. With the Abstraction Layer you shouldn't need to issue any
     LDAP operation at all.
+
 Accessing an LDAP server
 ========================
 

@@ -60,6 +60,11 @@ was invented at the University of Michigan to act as a gateway to the DAP world.
 could understand LDAP directly and the gateway to DAP was soon forgotten. LDAP v3 was first documented in 1997 and its
 specifications was revised in 2006. These later specifications are strictly followed by the ldap3 library.
 
+Unicode everywhere
+==================
+The LDAP protocol specifies that attributes name and values must be stored in Unicode with the UTF-8 representation. There are some limitation in
+the attribute name that can use only ASCII letter (uppercase and lowercase), number and the hypen (but not as a leading character).
+
 The ldap3 package
 =================
 

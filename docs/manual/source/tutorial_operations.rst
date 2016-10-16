@@ -4,7 +4,7 @@ Tutorial: Database operations
 
 .. warning:: **A more pythonic LDAP**: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
     should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
-    Layer** that let you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
+    Layer** that lets you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
 
 In the previous chaphter of this tutorial we have tried to access some data in the LDAP database. As any system that stores data, LDAP lets you perform
@@ -170,8 +170,8 @@ Keep in mind that LDAP support a (quite obscure) "multi-rdn" naming option where
     ['cn=b.smith', 'sn=young']
 
 
-Update entries
-==============
+Update an entry
+===============
 
 To change the attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
 **Add** is used to add values to an attribute, and creates the attribute if it doesn't exist. **Delete** deletes values from an attribute and if no values are listed, or if all
@@ -219,22 +219,43 @@ Modifications in a modify operation can be combined and become soon complex::
 
     >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Young', 'Johnson']), (MODIFY_DELETE, ['Smith'])], 'givenname': [(MODIFY_REPLACE, ['Mary', 'Jane'])]})
     True
-    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
+    >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn', 'givenName'])
     True
     >>> entries[0]
     DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:55:47.585000
         cn: b.smith
-        givenname: Mary
+        givenName: Mary
                    Jane
         sn: Young
             Johnson
 
 Here you've addad 2 values to the sn then removed the 'Smith' value and replaced the givenName with other 2 values, removing all older values.
 
-.. note:: MODIFY_REPLACE is a little misleading. One could expect you replace a value with another, but you don't provide the value to replace, only the new
-    value is provided in the Modify opearation. What the MODIFY_REPLACE really does is to remove **all** values and add the values provided in the operation.
+.. note:: the MODIFY_REPLACE modification has a misleading name. One could expect it replaces a value with another, but only the new value is provided
+    in the Modify opearation. What the MODIFY_REPLACE really does is to remove **all** values and add the new values provided in the operation.
     THere is no replace at all.
 
 .. warning:: The ldap3 Abstraction Layer allows you to use a much more simple and pythonic syntax to achieve the same results.
 
-... work in progress ...
+Checking attribute values
+=========================
+
+Very specific to LDAP, and usually not found in other kind of databases, is the **Compare** operation. With this operation you can check if an attribute
+has a certain value even if you're not able to read it. LDAP doesn't provide a standard authorization access mechanism, so the use of this operation
+is related to how the vendor has implemented the authorizazion mechanism in the LDAP server you're connecting to.
+
+Let's assume that you don't have the right to read the departmentNumber attribute, and you would like to check if the 'b.smith' user is in the 'DEV' department::
+
+    >>> conn.compare('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'departmentNumber', 'DEV')
+    True
+    >>> conn.compare('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'departmentNumber', 'QA')
+    False
+
+The Compare operation is quite primitive: you can only provide a single attribute and a single value to test against. The operation returns ``True`` only if one
+of the values of the attribute is equal to the value provided. Only a single value can be used and no wildcard is allowed.
+
+.. note:: The only practical use of the Compare operation is when you, as an user with administrative role, want to check the password of another user without
+actually bind with that user's credentials. In this case you can test the value againts the ``userPassword`` attribute. Keep in mind the that this
+only works with the Simple Password authentication method, because for other methods the password may be stored in a different attribute, even outside
+the DIT. Also the password can be stored with some encryption mechanism. You must read the documentation of your LDAP server to see if the password can
+be successfully checked with the Compare operation.

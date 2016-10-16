@@ -57,6 +57,10 @@ Let's search all users in the FreeIPA demo LDAP server::
 Here you request all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
 You have not requested any attribute, so in the response we get only the Distinguished Name of the found entries.
 
+.. sidebar:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
+    Search operations store the entries found in the ``response`` attribute of the Connection object. For async strategies you must use the ``get_response(id)`` method
+    that returns a tuple in the form of (response, result).
+
 Now let's try to request some attributes from the admin user::
 
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn', 'krbLastPwdChange', 'objectclass'])
@@ -171,11 +175,11 @@ or you can save the response to a JSON string::
 Searching for binary values
 ===========================
 To search for a binary value you must use the RFC4515 ASCII escape sequence for each unicode point in the search assertion. ldap3 provides the helper function
-*escape_bytes()* in ldap3.utils.conv to properly escape a byte sequence::
+*escape_bytes(byte_value)* in ldap3.utils.conv to properly escape a byte sequence::
 
     >>> from ldap3.utils.conv import escape_bytes
     >>> unique_id = b'\xca@\xf2k\x1d\x86\xcaL\xb7\xa2\xca@\xf2k\x1d\x86'
     >>> search_filter = '(nsUniqueID=' + escape_bytes(unique_id) + ')'
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', search_filter, attributes=['nsUniqueId'])
 
-search_filter will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``.
+``search_filter`` will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \xx escaping format is specific to the LDAP protocol.

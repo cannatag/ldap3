@@ -63,7 +63,10 @@ specifications was revised in 2006. These later specifications are strictly foll
 Unicode everywhere
 ==================
 The LDAP protocol specifies that attributes name and values must be stored in Unicode with the UTF-8 representation. There are some limitation in
-the attribute name that can use only ASCII letter (uppercase and lowercase), number and the hypen (but not as a leading character).
+the attribute name that can use only ASCII letter (upper and lowercase), number and the hypen (but not as a leading character). WHen you
+want to use a value in any ldap operation you must convert it to UTF-8. The ldap3 library will try to convert from your default encoding
+to UTF-8 for you, but you may set another input encoding with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')`` function in the ldap3 namespace.
+Values returned by the LDAP search operation are always encoded in UTF-8.
 
 The ldap3 package
 =================

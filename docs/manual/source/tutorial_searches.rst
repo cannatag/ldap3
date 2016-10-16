@@ -2,15 +2,15 @@
 Tutorial: searching LDAP entries
 ################################
 
-.. warning:: ldap3 Abstraction Layer: the LDAP operation are clumsy and hard-to-use because reflect the old-age idea that most expensive operations
-    should be done on the client to not cluttering and hogging the server with unneeded elaborations. ldap3 includes a full-functional **Abstraction
-    Layer** that let you interact with the DIT in a modern and pythonic way. With the Abstraction Layer you shouldn't need to issue any
+.. warning:: **A more pythonic LDAP**: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
+    should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
+    Layer** that let you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
 
-Performing searches
-===================
+Finding entries
+===============
 
-The **Search** operation in ldap3 has a number of parameters, but only two of them are mandatory:
+To find entries in the DIT you must use the **Search** operation. This operation has a number of parameters, but only two of them are mandatory:
 
 * ``search_base``: the location in the DIT where the search will start
 * ``search_filter``: a string that describes what you are searching
@@ -175,6 +175,3 @@ To search for a binary value you must use the RFC4515 escape ASCII sequence for 
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', search_filter, attributes=['nsUniqueId'])
 
 search_filter will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``.
-
-
-... work in progress ...

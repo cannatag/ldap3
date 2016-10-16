@@ -18,14 +18,15 @@ ldap3 is a strictly RFC 4510 conforming LDAP V3 pure Python **client** library. 
 
 [This project was previously named **python3-ldap**]
 
-.. warning::
-In version 2.x some default values (auto_range in Connection object, get_info in Server object) are changed and the the ldap3 namespace has been decluttered, removing redundant constants. The result code constants are moved to
-ldap3.core.results and the ldap3 custom exceptions are stored in ldap3.core.exceptions. If you experience errors in your existing code you should rearrange the import
-statements or explicitly set the defaults to their former values).
+.. warning:: In version 2.x some default values (auto_range in Connection object, get_info in Server object) are changed and the the ldap3 namespace
+    has been decluttered, removing redundant constants. The result code constants are moved to ldap3.core.results and the ldap3 custom exceptions
+    are stored in ldap3.core.exceptions. If you experience errors in your existing code you should rearrange the import statements or explicitly
+    set the defaults to their former values).
 
-.. note::
-**Starting from version 2 a brand new Abstraction Layer with full CRUD capabilities is available. You can now perform all CRUD (Create, Read, Update, Delete) operation
-in a much simpler way, with no need of using any LDAP operation.**
+.. note:: **A more pythonic LDAP: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
+    should be done on the client to not clutter and hog the server with unneeded elaboration. Starting from version 2.0.2 ldap3 includes
+    brand-new fully functional **Abstraction Layer** that let you interact with the DIT in a modern and *pythonic* way. With the Abstraction
+    Layer you can perform all CRUD (Create, Read, Update, Delete) operations in a simple way, with no need of using any LDAP specific operation.**
 
 Home Page
 ---------

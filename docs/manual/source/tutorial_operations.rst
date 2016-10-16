@@ -2,9 +2,9 @@
 Tutorial: Database operations
 #############################
 
-.. warning:: ldap3 Abstraction Layer: the LDAP operation are clumsy and hard-to-use because reflect the old-age idea that most expensive operations
-    should be done on the client to not cluttering and hogging the server with unneeded elaborations. ldap3 includes a full-functional **Abstraction
-    Layer** that let you interact with the DIT in a modern and pythonic way. With the Abstraction Layer you shouldn't need to issue any
+.. warning:: **A more pythonic LDAP**: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
+    should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
+    Layer** that let you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
 
 In the previous chaphter of this tutorial we have tried to access some data in the LDAP database. As any system that stores data, LDAP lets you perform
@@ -228,6 +228,12 @@ Modifications in a modify operation can be combined and become soon complex::
                    Jane
         sn: Young
             Johnson
+
+Here you've addad 2 values to the sn then removed the 'Smith' value and replaced the givenName with other 2 values, removing all older values.
+
+.. note:: MODIFY_REPLACE is a little misleading. One could expect you replace a value with another, but you don't provide the value to replace, only the new
+    value is provided in the Modify opearation. What the MODIFY_REPLACE really does is to remove **all** values and add the values provided in the operation.
+    THere is no replace at all.
 
 .. warning:: The ldap3 Abstraction Layer allows you to use a much more simple and pythonic syntax to achieve the same results.
 

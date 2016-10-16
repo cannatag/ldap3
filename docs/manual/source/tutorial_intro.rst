@@ -94,9 +94,9 @@ will use in your LDAP conversation (constants are defined in upper case)::
 
 ldap3 specific exceptions are defined in the ``ldap3.core.exceptions○`` package.
 
-.. warning:: ldap3 Abstraction Layer: the LDAP operation are clumsy and hard-to-use because reflect the old-age idea that most expensive operations
-    should be done on the client to not cluttering and hogging the server with unneeded elaborations. ldap3 includes a full-functional **Abstraction
-    Layer** that let you interact with the DIT in a modern and pythonic way. With the Abstraction Layer you shouldn't need to issue any
+.. warning:: **A more pythonic LDAP**: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
+    should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
+    Layer** that let you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
 
 Accessing an LDAP server

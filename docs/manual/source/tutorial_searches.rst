@@ -2,7 +2,7 @@
 Tutorial: searching LDAP entries
 ################################
 
-.. warning:: **A more pythonic LDAP**: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
+.. warning:: **A more pythonic LDAP**: LDAP operations look clumsy and hard-to-use because they reflect the old-age idea that time-consuming operations
     should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
     Layer** that lets you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
@@ -16,7 +16,7 @@ To find entries in the DIT you must use the **Search** operation. This operation
 * ``search_filter``: a string that describes what you are searching
 
 Search filters are based on assertions and look odd when you're unfamiliar with their syntax. One *assertion* is a bracketed expression
-that affirms something about an attribute and its values, as ``(givenName=John)`` or ``(maxRetries>=10)``. Each assertion resolves
+that affirms something about an attribute and its values, as ``(givenName=John)`` or ``(maxRetries>=10)``. On the server each assertion resolves
 to True, False or Undefined (that is treated as False) for one or more entries in the DIT. Assertions can be grouped in boolean groups
 where all assertions (**and** group, specified with ``&``) or at least one assertion (**or** group, specified with ``|``) must be True. A single
 assertion can be negated (**not** group, specified with ``!``). Each group must be bracketed, allowing for recursive filters.
@@ -58,7 +58,7 @@ Here you request all the entries of class *person*, starting from the *dc=demo1,
 You have not requested any attribute, so in the response we get only the Distinguished Name of the found entries.
 
 .. note:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
-    Search operations store the entries found in the ``response`` attribute of the Connection object. For async strategies you must use the ``get_response(id)`` method
+    Search operations store the found entries in the ``response`` attribute of the Connection object. For async strategies you must use the ``get_response(id)`` method
     that returns a tuple in the form of (response, result).
 
 Now let's try to request some attributes from the admin user::
@@ -80,7 +80,7 @@ Now let's try to request some attributes from the admin user::
                  ipaNTUserAttrs
     sn: Administrator
 
-.. note::
+.. warning::
     When using attributes in a search filter it's a good habit to always request for the *structural class* of the objects you expect to retrieve.
     You cannot be sure that the attribute you're serching for is not used is some other object class, and even if you are sure that no other
     object class uses it this could always change in the future when someone extends the schema with an object class that uses that very
@@ -90,7 +90,7 @@ Now let's try to request some attributes from the admin user::
 Note that the ``entries`` attribute of the Connection object is derived from the ldap3 *Abstraction Layer* and it's specially crafted to be used in interactive mode
 at the ``>>>`` prompt. It gives a visual representation of the entry data structure where each value is, according to the schema, properly formatted
 (the date value in krbLastPwdChange is actually stored as ``b'20161009010118Z'``, but it's shown as a Python date object). Attributes can be queried
-either as a class or a dict, with some additional features as case-insensitivity and blank-insensitivity. You can get the formatted
+either as a class or as a dict, with some additional features as case-insensitivity and blank-insensitivity. You can get the formatted
 value and the raw value (the value actually returned by the server) in the ``values`` and ``raw_values`` attributes::
 
     >>> entry = entries[0]
@@ -140,10 +140,10 @@ You can have a LDIF representation of the response of a search with::
     sn: Administrator
     # total number of entries: 1
 
-.. note:: LDIF
-    LDIF stands for LDAP Data Interchange Format and is a textual standard used to describe two different aspects of LDAP: the content of an entry (**LDIF-CONTENT**)
-    or the changes performed on an entry with an LDAP operation (**LDIF-CHANGE**). LDIF-CONTENT is used to describe LDAP entries in an stream (i.e. a file or a socket),
-    while LDIF-CHANGE is used to describe the Add, Delete, Modify and ModifyDn operations.
+.. note::
+    LDIF stands for *LDAP Data Interchange Format* and is a textual standard used to describe two different aspects of LDAP: the content of an
+    entry (**LDIF-CONTENT**) and the changes performed on an entry with an LDAP operation (**LDIF-CHANGE**). LDIF-CONTENT is used to describe
+    LDAP entries in an stream (i.e. a file or a socket), while LDIF-CHANGE is used to describe the Add, Delete, Modify and ModifyDn operations.
 
     *These two formats have different purposes and cannot be mixed in the same stream.*
 
@@ -182,4 +182,4 @@ To search for a binary value you must use the RFC4515 ASCII escape sequence for 
     >>> search_filter = '(nsUniqueID=' + escape_bytes(unique_id) + ')'
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', search_filter, attributes=['nsUniqueId'])
 
-``search_filter`` will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \xx escaping format is specific to the LDAP protocol.
+``search_filter`` will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \\xx escaping format is specific to the LDAP protocol.

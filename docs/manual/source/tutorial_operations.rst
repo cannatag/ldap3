@@ -2,12 +2,12 @@
 Tutorial: Database operations
 #############################
 
-.. warning:: **A more pythonic LDAP**: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
+.. warning:: **A more pythonic LDAP**: LDAP operations look clumsy and hard-to-use because they reflect the old-age idea that time-consuming operations
     should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
     Layer** that lets you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
 
-In the previous chaphter of this tutorial we have tried to access some data in the LDAP database. As any system that stores data, LDAP lets you perform
+In the previous chapter of this tutorial we have tried to access some data in the LDAP database. As any system that stores data, LDAP lets you perform
 the standard CRUD (Create, Read, Update, Delete) operations, but their usage is someway rudimentary.
 Again, if you think of the intended use of the original DAP protocol (storing key-values pairs related to an entry in a phone directory)
 this makes sense: an entry is written once, seldom modified, and eventually deleted, so the create (**Add** in LDAP), update (**Modify** or **ModifyDn**)
@@ -44,21 +44,21 @@ After any synchronous operation, you'll find the following attributes populated 
 * ``closed``: True if the socket is not open
 
 
-Entries creation
+Create an Entry
 ================
 
-Let's try to add some data to the LDAP server::
+Let's try to add some data to the LDAP DIT::
 
     >>> # Create a container for new entries
     >>> conn.add('ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
     True
-    >>> # Add some users
+    >>> # Add a new user
     >>> conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})
     True
 
-As you can see we have created a container object and added some users in it. You passed the full DN as the first parameter, the objectClass (or objectClasses)
+As you can see we have created a container object and stored a new user in it. You passed the full DN as the first parameter, the objectClass (or objectClasses)
 as second parameter and a dictonary of attributes as the third parameter. Some attributes are mandatory when adding a new object. You can check the schema to know which are
-the mandatory attributes you need to provide for successfully create a new object.
+the mandatory attributes you need to provide to successfully create a new object.
 
 If we look at the schema for the *inetOrgPerson* object class we find that there are no mandatory attributes::
 
@@ -93,7 +93,7 @@ The *organizationalPerson* object class is a subclass of the *person* object whe
         X-ORIGIN: RFC 4519
       OidInfo: ('2.5.6.6', 'OBJECT_CLASS', 'person', 'RFC4519')
 
-The *person* object class is a subclass of the *top* object. Let's walk up the hineritance chain::
+The *person* object class is a subclass of the *top* object. Let's walk up the hierarchy chain::
 
     Object class: 2.5.6.0
       Short name: top
@@ -102,20 +102,20 @@ The *person* object class is a subclass of the *top* object. Let's walk up the h
         X-ORIGIN: RFC 4512
       OidInfo: ('2.5.6.0', 'OBJECT_CLASS', 'top', 'RFC4512')
 
-*top* is the root of all LDAP classes and defines a single mandatory attributes, objectClass. Now we know that to successfully create an *inetOrgPerson* we need to provide
-the sn, cn and objectClass attributes at creation time. Let's read the objectClass of the first user we created::
+*top* is the root of all LDAP classes and defines a single mandatory attributes *objectClass*. Now we know that to successfully create an *inetOrgPerson* we need to provide
+the *sn*, the *cn* and the *objectClass* attributes at creation time. Let's read the objectClass attribute of the user we created::
 
-    >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=*)', attributes=['objectclass'])
+    >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=*)', attributes=['objectClass'])
     True
     >>> conn.entries[0]
     DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-09T17:36:44.100248
-    objectclass: inetOrgPerson
+    objectClass: inetOrgPerson
                  organizationalPerson
                  person
                  top
 
-You can see that *objectclass* is composed of all the hierarchical structure from *inetOrgPerson* to *top*. This means that you can add any of the optional
-attribute defined in each class of the hierarchy.
+You can see that *objectClass* is composed of all the hierarchical structure from *inetOrgPerson* to *top*. This means that you can add any of the optional
+attribute defined in each class of the hierarchy. If you had some *auxiliary* class to the entry you must be sure to satisfy its mandatory attributes.
 
 Rename an entry
 ===============
@@ -156,7 +156,7 @@ But you cannot perform this two operations together::
     True
 
 Quite surprisingly you must provide the very same RDN even if this cannot be changed while moving the object. This could be a problem when moving entries
-programmatically because you have do break up the dn to its RDNs (remember that each "step" in the DN is really an independent entry with its own RDN.
+programmatically because you have do break up the DN to its RDNs (remember that each "step" in the DN is really an independent entry with its own RDN.
 
 ldap3 provides the ``safe_rdn()`` helper function to return the RDN of a DN::
 
@@ -175,12 +175,12 @@ Update an entry
 
 To change the attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
 **Add** is used to add values to an attribute, and creates the attribute if it doesn't exist. **Delete** deletes values from an attribute and if no values are listed, or if all
-current values are listed, the entire attribute is removed. **Replace** replaces all existing values of an attribute with some new values, creating the attribute if it
+current values are listed, remove the entire attribute. **Replace** replaces all existing values of an attribute with some new values, creating the attribute if it
 don't already exist.  A replace with no value will delete the entire attribute if it exists, and it is ignored if the attribute doesn't exist.
 
-The hard part in the Modify operation is that you can mix in a single operation the three kinds of modification for an entry with one or more attributes with one or more values! So the
-Modify Operation syntax is quite complex, you must provide a DN, a dictionary of attributes and for each attribute a list of modifications where each modification is a tuple
-with the modification type and the list of values. Let's add a new value to the sn attribute::
+The hard part in the Modify operation is that you can mix in a single operation the three kinds of modification for a single entry with one or more attributes
+each with one or more values! So the Modify operation syntax is quite complex: you must provide a DN, a dictionary of attributes and for each
+attribute a list of modifications where each modification is a tuple with the modification type and the list of values. Let's add a new value to the sn attribute::
 
     >>> from ldap3 import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
     >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smyth']), (MODIFY_DELETE, ['Young'])]})
@@ -215,7 +215,7 @@ We made a typo in the previous modify operation (Smyth instead of Smith), let's 
         cn: b.smith
         sn: Smith
 
-Modifications in a modify operation can be combined and become soon complex::
+Modifications in a modify operation can be combined and the syntax of the operation soon becomes complex::
 
     >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Young', 'Johnson']), (MODIFY_DELETE, ['Smith'])], 'givenname': [(MODIFY_REPLACE, ['Mary', 'Jane'])]})
     True
@@ -229,13 +229,13 @@ Modifications in a modify operation can be combined and become soon complex::
         sn: Young
             Johnson
 
-Here you've addad 2 values to the sn then removed the 'Smith' value and replaced the givenName with other 2 values, removing all older values.
+Here you've addad 2 values to the *sn* then removed the 'Smith' value from it and replaced the *givenName* with other 2 values, removing all older values.
 
-.. note:: the MODIFY_REPLACE modification has a misleading name. One could expect it replaces a value with another, but only the new value is provided
-    in the Modify opearation. What the MODIFY_REPLACE really does is to remove **all** values and add the new values provided in the operation.
+.. warning:: the MODIFY_REPLACE modification has a misleading name. One could expect it replaces a value with another, but new values only are provided
+    in the Modify operation. What the MODIFY_REPLACE really does is to remove **all** values and add the new values provided.
     THere is no replace at all.
 
-.. warning:: The ldap3 Abstraction Layer allows you to use a much more simple and pythonic syntax to achieve the same results.
+.. note:: The ldap3 Abstraction Layer allows you to use a much more simple and pythonic syntax to achieve the same results.
 
 Checking attribute values
 =========================
@@ -244,7 +244,8 @@ Very specific to LDAP, and usually not found in other kind of databases, is the 
 has a certain value even if you're not able to read it. LDAP doesn't provide a standard authorization access mechanism, so the use of this operation
 is related to how the vendor has implemented the authorizazion mechanism in the LDAP server you're connecting to.
 
-Let's assume that you don't have the right to read the departmentNumber attribute, and you would like to check if the 'b.smith' user is in the 'DEV' department::
+Let's assume that you don't have the right to read the *departmentNumber* attribute, and you would like to check if the 'b.smith'
+user is in the 'DEV' department::
 
     >>> conn.compare('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'departmentNumber', 'DEV')
     True
@@ -254,8 +255,8 @@ Let's assume that you don't have the right to read the departmentNumber attribut
 The Compare operation is quite primitive: you can only provide a single attribute and a single value to test against. The operation returns ``True`` only if one
 of the values of the attribute is equal to the value provided. Only a single value can be used and no wildcard is allowed.
 
-.. note:: The only practical use of the Compare operation is when you, as an user with administrative role, want to check the password of another user without
+The only practical use of the Compare operation is when you, as an user with administrative role, want to check the password of another user without
 actually bind with that user's credentials. In this case you can test the value againts the ``userPassword`` attribute. Keep in mind the that this
-only works with the Simple Password authentication method, because for other methods the password may be stored in a different attribute, even outside
-the DIT. Also the password can be stored with some encryption mechanism. You must read the documentation of your LDAP server to see if the password can
+only works with the Simple Password authentication method, because for other methods passwords may be stored in a different attribute, or externally to
+the DIT. Also passwords can (and should) be stored with some encryption mechanism. You must read the documentation of your LDAP server to see if passwords can
 be successfully checked with the Compare operation.

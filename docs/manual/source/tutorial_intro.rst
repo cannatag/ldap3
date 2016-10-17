@@ -57,20 +57,21 @@ A very brief history of LDAP
 You may wonder why the "lightweight" in LDAP. Its ancestor, called **DAP** (*Directory Access Protocol*), was developed in the 1980s
 by the CCITT (now ITU-T), the *International Committee for Telephone and Telegraphy* (the venerable entity that gave us, among
 others, faxes and modem protocols we used in the pre-Internet era). DAP was a very heavy and hard-to-implement protocol
-(either for client and server components) and was not accessible via TCP/IP. In 1993 a simpler access protocol
-was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards vendors developed server products that
-could understand LDAP directly and the gateway to DAP was soon forgotten. LDAP v3 was first documented in 1997 and its
+(either for client and server components) and was not accessible via TCP/IP and its intended use was to standardize access to directory services
+(i.e. phone directories). In 1993 a simpler access protocol was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards vendors
+developed server products that could understand LDAP directly and the gateway to DAP was soon removed. LDAP v3 was first documented in 1997 and its
 specifications was revised in 2006. These later specifications are strictly followed by the ldap3 library.
 
 Unicode everywhere
 ==================
-The LDAP protocol specifies that attributes name and values must be stored in Unicode with the UTF-8 byte representation. There are some limitation in
-the attribute name that can use only ASCII letter (upper and lowercase), number and the hypen (but not as a leading character).
-Unicode is a standard to describe every possibile character in the World but what goes over the wire is only old plain bytes (ranging from 0 to 255), so the UTF-8
-encoding is needed when talking to an LDAP server. For this reason when you want to use a value in any LDAP operation you must convert it to
-UTF-8 encoding. Your environment could have (and probably has) a different default encoding so the ldap3 library will try to convert from your
-default encoding to UTF-8 for you, but you may set a different input encoding with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')``
-function in the ldap3 namespace. Values returned by the LDAP search operation are always encoded in UTF-8.
+The LDAP protocol specifies that attribute names and their values must be stored in Unicode version 3.2 with the UTF-8 byte encoding. There are some
+limitations in the attribute names that can use only ASCII letter (upper and lowercase), number and the hypen (but not as a leading character).
+Unicode is a standard to describe thousands of printed (even if not visible) characters but what goes over the wire when you
+interact with an LDAP server is only old plain bytes (with values ranging from 0 to 255 as usual), so the UTF-8 encoding is needed when talking to an LDAP server
+to convert the Unicode character to a valid byte (or multi-byte) representation. For this reason when you want to use a value in any LDAP operation you must
+convert it to UTF-8 encoding. Your environment could have (and probably has) a different default encoding so the ldap3 library will try to convert from your
+default encoding to UTF-8 for you, but you may set a different input encoding with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')`` function
+in the ldap3 namespace. Values returned by the LDAP search operation are always encoded in UTF-8.
 
 The ldap3 package
 =================
@@ -80,7 +81,7 @@ compatible with Python 2 and Python 3 and can be used on any machine where the P
 standard library.
 
 Chances are that you find the ldap3 package already installed (or installable with your local package manager) on your machine, just try
-to **import ldap3** from your Python console. If you get an ImportError you need to install the package from PyPI via pip in the standard way::
+to **import ldap3** from your Python console. If you get an ``ImportError`` you need to install the package from PyPI via pip in the standard way::
 
     pip install ldap3
 
@@ -104,16 +105,16 @@ Accessing an LDAP server
 ========================
 
 ldap3 usage is straightforward: you define a Server object and a Connection object. Then you issue commands to the connection.
-A server can have any number of active connections each with a different *communication strategy* to choose from.
+A server can have any number of active connections with the same or a different *communication strategy*.
 
 All the importable objects are available in the ldap3 namespace. At least you need to import the Server and the Connection object,
 and any additional constant you will use in your LDAP conversation (constants are defined in upper case)::
 
     >>> from ldap3 import Server, Connection, ALL
 
-ldap3 specific exceptions are defined in the ``ldap3.core.exceptions○`` package.
+ldap3 specific exceptions are defined in the ``ldap3.core.exceptions`` package.
 
-.. warning:: **A more pythonic LDAP**: LDAP operations are clumsy and hard-to-use because reflect the old-age idea that most time-consuming operations
+.. warning:: **A more pythonic LDAP**: LDAP operations look clumsy and hard-to-use because they reflect the old-age idea that time-consuming operations
     should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
     Layer** that lets you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
@@ -128,22 +129,22 @@ different method for authorizing the user to access data stored in the DIT.
 
 ldap3 let you choose the method that the client will use to connect to the server with the ``client_strategy`` parameter of the
 Connection object. There are four strategies that can be used for establishing a connection: SYNC, ASYNC, RESTARTABLE and REUSABLE.
-As a general rule in synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
-if they fail. In asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return a
-number, the *message_id* of the request. With asynchronous strategies you can send multiple requests without waiting for responses and you get each
+As a general rule, in synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
+if they fail; in asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return a
+number, the *message_id* of the request. With asynchronous strategies you can send multiple requests without waiting for responses and then you get each
 response with the ``get_response(message_id)`` method of the Connection object as you need it. ldap3 will raise an exception if
 the response has not yet arrived after a specified time. In the ``get_response()`` method this timeout value can be set
 with the ``timeout`` parameter to the number of seconds to wait for the response to appear (default is 10 seconds).
-Asynchronous strategies are useful with slow servers or when you have many requests with the same Connection object in multiple threads.
+Asynchronous strategies are thread-safe and are useful with slow servers or when you have many requests with the same Connection object in multiple threads.
 Usually you will use synchronous strategies only.
 
 The **LDIF** strategy is used to create a stream of LDIF-CHANGEs. The MOCK_SYNC strategy can be used to emulate a fake LDAP
-server and can be used for testing your application without the need of a real server.
+server to test your application without the need of a real LDAP server.
 
 
 .. note::
     In this tutorial you will use the default SYNC communication strategy. If you keep loosing connection to the server you can use the RESTARTABLE
-    communication strategy that try to reconnect and resend the operation when the link to the server fails.
+    communication strategy that tries to reconnect and resend the operation when the link to the server fails.
 
 Let's start accessing the server with an anonymous bind::
 
@@ -183,8 +184,8 @@ internal decoder                                        which BER decoder the co
 .. note::
     Object representation: the ldap3 library uses the following object representation rule: when you use ``str()`` you get back information
     about the status of the object in a human readable format, when you use ``repr()`` you get back a string you can use in the
-    Python console to recreate the object. ``print`` always return the str representation. Typing a variable at the ``>>>`` prompt always
-    return the repr representation.
+    Python console to recreate the object. ``print`` always return the ``str()`` representation. Typing at the ``>>>`` prompt always
+    return the ``repr`` representation.
 
 If you ask for the ``repr()`` representation of the conn object you can get a string to recreate the object::
 
@@ -295,7 +296,7 @@ This server (like most LDAP servers) lets an anonymous user to know a lot about 
 
 ========================= ======================= =============================================================
 Supported LDAP Versions   2, 3                    Server supports LDAP 2 and 3
-Naming contexts           <...>                   Server stores information for 3 different DIT portions
+Naming contexts           <...>                   Server stores information for 3 different DIT partitions
 Alternative servers       None                    This is the only replica of the database
 Supported Controls        <...>                   Optional controls that can be sent in a request operation
 Supported Extentions      <...>                   Additional extended operations understood by the server
@@ -315,9 +316,9 @@ Supported Extensions.
     *Extension* is a custom request that can be sent to the LDAP server in an **Extended Operation** Request.
     A Control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
     kind of operation that each vendor decides to include in its LDAP server implementation.
-    An LDAP server declares which controls and which extendend operations it understand. The ldap3 library decodes the
+    An LDAP server declares which controls and which extendend operations it understands. The ldap3 library decodes the
     known supported controls and extended operation and includes a brief description and a reference to the relevant
-    RFC in the ``.info`` attribute when known. Not all controls or extensions are intended to be used by clients. Sometimes controls and
+    RFC in the ``.info`` attribute (when known). Not all controls or extensions are intended to be used by clients. Some controls and
     extensions are used by servers that hold a replica or a data partition. Unfortunately in the LDAP specifications
     there is no way to specify if such extensions are reserved for a server (**DSA**, *Directory Server Agent* in LDAP
     parlance) to server communication (for example in replicas or partitions management) or can be used
@@ -405,12 +406,13 @@ SASL provides additional methods to identify the user, as an external certificat
     **Distinguished Name** (DN) of an entry and is constructed with key-value pairs, separated by a comma, of all the entries that form
     the path from the leaf up to the top of the Tree. The DN of an entry is unique throughout the DIT and changes only if you move the
     entry to another container within the DIT. The parts of the DN are called **Relative Distinguished Name** (RDN) because are unique only
-    in the context where they are defined. So, for example, if you have a *inetOrgperson* entry with RDN ``cn=Fred`` that is stored in an *organizational
-    unit* with RDN ``ou=users`` that is stored in an *organization* with RDN ``o=company`` the DN of the *inetOrgperson* entry will
+    in the context where they are defined. So, for example, if you have a *inetOrgPerson* entry with RDN ``cn=Fred`` that is stored in an *organizational
+    unit* with RDN ``ou=users`` that is stored in an *organization* with RDN ``o=company`` the DN of the *inetOrgPerson* entry will
     be ``cn=Fred, ou=users, o=company``. The RDN value must be unique in the context where the entry is stored, but there is no specification
-    in the LDAP schema on which attribute to use as RDN for a specific class.
+    in the LDAP schema on which attribute to use as RDN for a specific class. LDAP also support a (quite obscure) "multi-rdn" naming option where each
+    part of the RDN is separated with the + character, as in ``cn=Fred+sn=Smith``.
 
-.. note:: Accessing Active Directory: with ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
+.. warning:: Accessing Active Directory: with ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
 
         >>> from ldap3 import Server, Connection, ALL, NTLM
         >>> server = Server('servername', get_info=ALL)
@@ -423,19 +425,21 @@ Now try to ask to the server who you are::
 
     >>> conn.extend.standard.who_am_i()
 
-We get an empty response. This means you have no authentication status on the server, so you are an **anonymous** user. This doesn't mean
-that you are unknown to the server, actually you have a session open with the server and you can send additional operation requests. Even
-if you don't send the anonymous bind operation the server will accept any operation requests as an anonymous user.
+We have used and Extended Operation, conveniently packaged in a function of the ``ldap3.extend.standard`` package, and get an empty response.
+This means you have no authentication status on the server, so you are an **anonymous** user. This doesn't mean
+that you are unknown to the server, actually you have a session open with it, so you can send additional operation requests. Even
+if you don't send the anonymous bind operation the server will accept any operation requests as an anonymous user, establishing a new session
+if needed.
 
 .. note:: The ``extend`` namespace. The connection object has a special namespace called "extend" where more complex operations are defined
     This namespace include a ``standard`` section and a number of specific vendor sections. In these sections you can find methods to perform
-    tricky or hard-to-implement operation. For example in the ``microsoft`` section you can find a method to easily change the user password, and
-    in the ``novell`` section a method to apply transaction to groups of LDAP operations. In the ``standard`` section you can also find a very
+    tricky or hard-to-implement operations. For example in the ``microsoft`` section you can find a method to easily change the user password, and
+    in the ``novell`` section a method to apply transaction to groups of LDAP operations. In the ``standard`` section you can also find an
     easy way to perform a paged search via generators.
 
 
-.. note:: Opening vs Binding: the LDAP protocol provides a Bind and an Unbind operation but, for historical reasons, they are not symmetric.
-    As any TCP connection the socket must be *open* before binding to the server . This is implicitly done by the ldap3 package when you
+.. warning:: Opening vs Binding: the LDAP protocol provides a Bind and an Unbind operation but, for historical reasons, they are not symmetric.
+    As any TCP connection the communication socket must be *open* before binding to the server . This is implicitly done by the ldap3 package when you
     issue a ``bind()`` or another operation or can be esplicity done with the ``open()`` method of the Connection object. The Unbind operation
     is actually used to *terminate* the connection, both ending the session and closing the socket. After the ``unbind()`` operation the connection
     cannot be used anymore. If you want to access as another user or change the current session to an anonymous one, you must issue ``bind()`` again.
@@ -458,14 +462,15 @@ If you check the connection info you can see that the Connection is using a clea
     >>> print(conn)
     ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
 
-Credentials pass unencrypted over the wire, so they can be easily captured by a network eavesdropper. The LDAP protocol provides two ways
+This means that credentials pass unencrypted over the wire, so they can be easily captured by network eavesdroppers. The LDAP protocol provides two ways
 to secure a connection: **LDAP over TLS** (or over SSL) and the **StartTLS** extended operation. Both methods establish a secure TLS
 connection: the former secure with TLS the communication channel as soon as the connection is open, while the latter can be used at any time on
 an already open unsecure connection to secure it issuing the StartTLS operation.
 
-.. note:: LDAP URL scheme: a cleartext connection to a server can be expressed in the URL with the **ldap://** scheme, while LDAP over TLS can be
+.. warning:: LDAP URL scheme: a cleartext connection to a server can be expressed in the URL with the **ldap://** scheme, while LDAP over TLS can be
     indicated with **ldaps://** even if this is not specified in any of the LDAP RFCs. If a scheme is included in the server name while creating
-    the Server object, the ldap3 library opens the proper port, unencrypted or with the specified TLS options (or default options if none is specified).
+    the Server object, the ldap3 library opens the proper port, unencrypted or with the specified TLS options (or the default TLS options
+    if none is specified).
 
 .. note:: Default port numbers: the default port for cleartext (unsecure) communication is **389**, while the default for LDAP over TLS (secure)
     communication is **636**. Note that because you can start a session on the 389 port and then raise the security level with the StartTLS operation,

@@ -68,12 +68,15 @@ ldap3 Features
 
     * SYNC, ASYNC, LDIF, RESTARTABLE (fault-tolerant), REUSABLE (fault-tolerant and pooled), are currently defined.
 
+    * MOCK_SYNC strategy to emulate an LDAP server without connecting to a real server. Useful for testing your application
+
 6. Simplified query construction language:
 
-    * The library includes an  optional **abstraction layer** for performing LDAP queries.
+    * The library includes an optional fully functin **Abstraction Layer** for performing LDAP operations.
+      With the Abstraction Layer you don't need to directly issue any LDAP operation at all.
 
 7. Clear or secured access
 
     * ldap3 allows plaintext (**ldap:**), secure (**ldaps:**) and UNIX socket (**ldapi:**) access to the LDAP server.
 
-    * The NTLM access method is available to connect to Active Directory servers
+    * The NTLM access method is available to connect to Active Directory servers using NTLM v2 authentication.

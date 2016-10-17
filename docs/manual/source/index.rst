@@ -21,7 +21,6 @@ Contents
    tutorial
    features
    installation
-   quicktour
    servers
    connections
    ssltls

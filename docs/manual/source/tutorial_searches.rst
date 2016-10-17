@@ -183,3 +183,86 @@ To search for a binary value you must use the RFC4515 ASCII escape sequence for 
     >>> conn.search('dc=demo1, dc=freeipa, dc=org', search_filter, attributes=['nsUniqueId'])
 
 ``search_filter`` will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \\xx escaping format is specific to the LDAP protocol.
+
+
+Entries Retrieval
+=================
+
+Raw values for the attributes retrieved in an entry are stored in the ``raw_attributes`` dictonary in the ``response``
+attribute.
+
+ldap3 provides some **standard formatters** used to format the values retrieved in a Search operation as
+specified by the RFCs according to the current schema syntaxes. If the schema
+is known (with ``get_info=SCHEMA`` or ``get_info=ALL`` in the Server object) and the ``check_names``
+parameter of the Connection object is set to True, the ``attributes`` attribute is populated with the formatted values
+If the attribute is defined in the schema as *multi valued* then the attribute value is returned as a list (even if only
+a single value is present) else it's returned as a single value.
+
+**Custom formatters** can be added to specify how attribute values must be returned A formatter must be a callable that receives
+a bytes value and returns an object.
+
+Additional parameters
+=====================
+
+The Search operation is enhanced with a few parameters:
+
+* ``get_operational_attributes``: when True retrieves the operational (system generated) attributes for each of the result
+  entries.
+* ``paged_size``: if greater than 0 the server returns a simple paged search response with the number of entries specified
+  (LDAP server must conform to RFC2696).
+* ``paged_cookie``: used for subsequent retrieval of additional entries in a simple paged search.
+* ``paged_criticality``: if True the search should fail if simple paged search is not available on the server else a full
+  search is performed.
+
+Simple Paged search
+-------------------
+
+The Search operation can perform a *simple paged search* as specified in RFC 2696. The RFC states that the you can ask the server
+to return a specific number of entries in each response set. With every search the server sends back a cookie that you have to
+provide in each subsequent search. all this information must be passed in a Control attached to the request and the server responds
+with similar information in a Control attached to the response.
+ldap3 hides all this machinery in the ``paged_search()`` function of the **extend.standard** namespace::
+
+    # whole result list
+    >>> entries = c.extend.standard.paged_search('o=test', '(objectClass=inetOrgPerson)', attributes=['cn', 'givenName'], paged_size=5)
+    >>> for entry in entries:
+    >>>     print(entry)
+
+Entries are returned in a generator, that is better when cyou have very long list of entries or have memory limitation.
+Remember that a generator canmbe consumed only one time, so you must elaborate the results in a sequential way.
+If you don't want the entries returned in a generator you can pass the ``generator=False`` parameter to get all the entries in a list.
+
+If you want to directly use the Search operation to perform a Paged search your code should be similar to the following::
+
+    from ldap3 import Server, Connection, SUBTREE
+    total_entries = 0
+    server = Server('test-server')
+    c = Connection(server, user='username', password='password')
+    c.search(search_base = 'o=test',
+             search_filter = '(objectClass=inetOrgPerson)',
+             search_scope = SUBTREE,
+             attributes = ['cn', 'givenName'],
+             paged_size = 5)
+    total_entries += len(c.response)
+    for entry in c.response:
+        print(entry['dn'], entry['attributes])
+    cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    while cookie:
+        c.search(search_base = 'o=test',
+                 search_filter = '(object_class=inetOrgPerson)',
+                 search_scope = SUBTREE,
+                 attributes = ['cn', 'givenName'],
+                 paged_size = 5,
+                 paged_cookie = cookie)
+        total_entries += len(c.response)
+        cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        for entry in c.response:
+            print(entry['dn'], entry['attributes])
+    print('Total entries retrieved:', total_entries)
+
+Even in this case the ldap3 library hides the specific Control machinery. The code would be much longer if you would
+manage directly manage the Simple Search Control.
+
+.. note::
+
+   For more comprehensive information about searching, see the :doc:`SEARCH <searches>` documentation.

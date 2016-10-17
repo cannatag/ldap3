@@ -15,12 +15,14 @@ Tutorial: Introduction to ldap3
     If you receive an ``LDAPSocketReceiveError: error receiving data`` exception the server could have
     closed the connection abruptly. You can easily reopen it with the ``conn.bind()`` method.
 
-What LDAP is not
-================
 
-If you're reading this tutorial I assume that you already know what LDAP is, or at least have a rough idea of it. Even if you really
+I assume that you already know what LDAP is, or at least have a rough idea of it. Even if you really
 don't know anything about LDAP, after reading this tutorial you should be able to access an LDAP compliant server and use it without bothering with
 the many glitches of the LDAP protocol.
+
+
+What LDAP is not
+================
 
 I'd rather want to be sure that you are aware of what LDAP **is not**:
 
@@ -29,7 +31,7 @@ I'd rather want to be sure that you are aware of what LDAP **is not**:
 - LDAP is not a network service
 - LDAP is not an authentication procedure
 - LDAP is not a user/password repository
-- LDAP is not an open source neither a closed source product
+- LDAP is not a specific open source neither a closed source product
 
 It's important to know what LDAP is not because people usually call "LDAP" a peculiar part of what they use of the
 **Lightweight Directory Access Protocol**. LDAP is a *protocol* and as other 'trailing-P' words in the Internet
@@ -37,17 +39,17 @@ ecosystem (HTTP, FTP, TCP, IP, ...) it is a set of rules you must follow to talk
 server/database/service/procedure/repository/product (all the things in the above list). Data managed via LDAP are
 key/value(s) pairs grouped in a hierarchical structure. This structure is called the **DIT** (*Directory
 Information Tree*). LDAP doesn't specify how data is actually stored in the DIT neither how the user is authorized to
-access it. There are only a few data types that every LDAP server must recognize (some of them are very old and are not used anymore).
+access it. There are only a few data types that every LDAP server must recognize (some of them being very old and not used anymore).
 LDAP version 3 is also an extensible protocol, this means that a vendor can add features not in the LDAP specifications (using Controls and Extensions).
-The LDAP server relies on a **schema** to know which data types, attributes and object it understand. A portion of the schema is standard
-(defined in the protocol itself), but each vendor can add attributes and object for specific purpose. Also the schema can be extended by the user.
-Keep in mind that "extending the schema" is something that is not defined in the LDAP protocol, so each vendor has developed different methods.
+Any LDAP server relies on a **schema** to know which data types, attributes and object it understand. A portion of the schema is standard
+(defined in the protocol itself), but each vendor can add attributes and object for specific purposes. The schema can also be extended (with
+administrative role) by the system administrator, the developer and the end user of the LDAP server.
+Keep in mind that "extending the schema" is something that is not defined in the LDAP protocol, so each vendor has developed different methods to add
+objects and attributes.
 
-All the (sometime too complex) LDAP machinery you will interact with has this only purpose.
-
-Being a protocol, LDAP is not related to any specific product and it is described in a set of **RFC** (*Request for
-comments*, the official rules of the Internet ecosystem). Its latest version of this rules is **version 3** documented
-in the RFC4510 and subsequents RFCs released in June 2006.
+Being a protocol, LDAP is not related to any specific product and it is described in a set of **RFCs** (*Request for
+comments*, the official rules of the Internet ecosystem). Latest version of this rules is **version 3** documented
+in the RFC4510 (and subsequents RFCs) released in June 2006.
 
 A very brief history of LDAP
 ============================
@@ -55,23 +57,25 @@ A very brief history of LDAP
 You may wonder why the "lightweight" in LDAP. Its ancestor, called **DAP** (*Directory Access Protocol*), was developed in the 1980s
 by the CCITT (now ITU-T), the *International Committee for Telephone and Telegraphy* (the venerable entity that gave us, among
 others, faxes and modem protocols we used in the pre-Internet era). DAP was a very heavy and hard-to-implement protocol
-(either for the client and the server components) and was not accessible via TCP/IP. In 1993 a simpler access protocol
+(either for client and server components) and was not accessible via TCP/IP. In 1993 a simpler access protocol
 was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards vendors developed server products that
 could understand LDAP directly and the gateway to DAP was soon forgotten. LDAP v3 was first documented in 1997 and its
 specifications was revised in 2006. These later specifications are strictly followed by the ldap3 library.
 
 Unicode everywhere
 ==================
-The LDAP protocol specifies that attributes name and values must be stored in Unicode with the UTF-8 representation. There are some limitation in
-the attribute name that can use only ASCII letter (upper and lowercase), number and the hypen (but not as a leading character). WHen you
-want to use a value in any ldap operation you must convert it to UTF-8. The ldap3 library will try to convert from your default encoding
-to UTF-8 for you, but you may set another input encoding with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')`` function in the ldap3 namespace.
-Values returned by the LDAP search operation are always encoded in UTF-8.
+The LDAP protocol specifies that attributes name and values must be stored in Unicode with the UTF-8 byte representation. There are some limitation in
+the attribute name that can use only ASCII letter (upper and lowercase), number and the hypen (but not as a leading character).
+Unicode is a standard to describe every possibile character in the World but what goes over the wire is only old plain bytes (ranging from 0 to 255), so the UTF-8
+encoding is needed when talking to an LDAP server. For this reason when you want to use a value in any LDAP operation you must convert it to
+UTF-8 encoding. Your environment could have (and probably has) a different default encoding so the ldap3 library will try to convert from your
+default encoding to UTF-8 for you, but you may set a different input encoding with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')``
+function in the ldap3 namespace. Values returned by the LDAP search operation are always encoded in UTF-8.
 
 The ldap3 package
 =================
 
-ldap3 is a fully compliant LDAP v3 client library and follows the latest standard RFCs released in June 2006. It's written from scratch to be
+ldap3 is a fully compliant LDAP v3 client library following the official RFCs released in June 2006. It's written from scratch to be
 compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can gain access to the network via the Python
 standard library.
 
@@ -91,12 +95,19 @@ You can also download the source code from https://github.com/cannatag/ldap3 and
 
     python setup.py install
 
-ldap3 needs the **pyasn1** package (and will install it if not already present). This package is used to communicate with the server over the network.
+ldap3 needs the **pyasn1** package (and will install it if not already present). This package is used to communicate with the server over the network. By default
+ldap3 uses the pyasn1 package only when sending data to the server. Data received from the server are decoded with an internal decoder, much faster (10x ) than the
+pyasn1 decoder.
 
-ldap3 usage is straightforward: you just define a Server object and a Connection object. Then you issue commands to the connection.
-A server can have more than one connection and there are different *communication strategies* to choose from. All the importable objects
-are available in the ldap3 namespace. At least you need to import the Server and the Connection object, and any additional constant you
-will use in your LDAP conversation (constants are defined in upper case)::
+
+Accessing an LDAP server
+========================
+
+ldap3 usage is straightforward: you define a Server object and a Connection object. Then you issue commands to the connection.
+A server can have any number of active connections each with a different *communication strategy* to choose from.
+
+All the importable objects are available in the ldap3 namespace. At least you need to import the Server and the Connection object,
+and any additional constant you will use in your LDAP conversation (constants are defined in upper case)::
 
     >>> from ldap3 import Server, Connection, ALL
 
@@ -107,9 +118,6 @@ ldap3 specific exceptions are defined in the ``ldap3.core.exceptions○`` packag
     Layer** that lets you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
     LDAP operation at all.
 
-Accessing an LDAP server
-========================
-
 In the LDAP protocol the login operation is called **Bind**. A bind can be performed in 3 different ways: Anonymous Bind,
 Simple Password Bind, and SASL (*Simple Authentication and Security Layer*, allowing a larger set of authentication methods)
 Bind. You can think of the Anonymous Bind as of a *public* access to the LDAP server where no credentials are provided
@@ -119,22 +127,23 @@ specific access rules and that the authorization mechanism is not specified at a
 different method for authorizing the user to access data stored in the DIT.
 
 ldap3 let you choose the method that the client will use to connect to the server with the ``client_strategy`` parameter of the
-Connection object. There are 5 strategies that can be used for establishing a connection: SYNC, ASYNC, LDIF, RESTARTABLE and REUSABLE.
-The MOCK_SYNC strategy can be used to emulate a fake LDAP server and it's useful while testing your application without the need of a real server.
-
+Connection object. There are four strategies that can be used for establishing a connection: SYNC, ASYNC, RESTARTABLE and REUSABLE.
 As a general rule in synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
 if they fail. In asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return a
-number, the *message_id* of the request. With asynchronous strategies you can send multiple requests without waiting for responses, you get each
+number, the *message_id* of the request. With asynchronous strategies you can send multiple requests without waiting for responses and you get each
 response with the ``get_response(message_id)`` method of the Connection object as you need it. ldap3 will raise an exception if
 the response has not yet arrived after a specified time. In the ``get_response()`` method this timeout value can be set
 with the ``timeout`` parameter to the number of seconds to wait for the response to appear (default is 10 seconds).
-Asynchronous strategies are useful with slow servers or when you have many requests with the same connection object in multiple threads.
+Asynchronous strategies are useful with slow servers or when you have many requests with the same Connection object in multiple threads.
 Usually you will use synchronous strategies only.
 
-The **LDIF** strategy is used to create a stream of LDIF-CHANGEs.
+The **LDIF** strategy is used to create a stream of LDIF-CHANGEs. The MOCK_SYNC strategy can be used to emulate a fake LDAP
+server and can be used for testing your application without the need of a real server.
+
 
 .. note::
-    In this tutorial you will use the default SYNC communication strategy.
+    In this tutorial you will use the default SYNC communication strategy. If you keep loosing connection to the server you can use the RESTARTABLE
+    communication strategy that try to reconnect and resend the operation when the link to the server fails.
 
 Let's start accessing the server with an anonymous bind::
 
@@ -148,14 +157,14 @@ or shorter::
     >>> conn = Connection('ipa.demo1.freeipa.org', auto_bind=True)
     True
 
-Hardly it could be simpler than that. The ``auto_bind=True`` parameter forces the bind operation while creating the Connection object.
+Hardly it could be simpler than that. The ``auto_bind=True`` parameter forces the Bind operation while creating the Connection object.
 You have now a full working anonymous session open and bound to the server with a *synchronous* communication strategy::
 
     >>> print(conn)
     ldap://ipa.demo1.freeipa.org:389 - cleartext - user: None - bound - open - <local: 192.168.1.101:49813 - remote: 209.132.178.99:389> -
     tls not started - listening - SyncStrategy - internal decoder
 
-With ``print(conn)`` you ask to the connection its status and get back a lot of information:
+With ``print(conn)`` you ask the connection for its status and get back a lot of information:
 
 ======================================================= =================================================================================
 ldap://ipa.demo1.freeipa.org:389                        the server URL (scheme, name and port we are connected to)
@@ -171,7 +180,7 @@ internal decoder                                        which BER decoder the co
 ======================================================= =================================================================================
 
 
-.. sidebar::
+.. note::
     Object representation: the ldap3 library uses the following object representation rule: when you use ``str()`` you get back information
     about the status of the object in a human readable format, when you use ``repr()`` you get back a string you can use in the
     Python console to recreate the object. ``print`` always return the str representation. Typing a variable at the ``>>>`` prompt always
@@ -302,7 +311,7 @@ that supports various SASL access mechanisms and that is based on the 389 Direct
 Supported Controls we can see it supports "paged searches", and the "who am i" and "StartTLS" extended operations in
 Supported Extensions.
 
-.. sidebar:: Controls vs Extensions: in LDAP a *Control* is some additional information that can be attached to any LDAP request or response, while an
+.. note:: Controls vs Extensions: in LDAP a *Control* is some additional information that can be attached to any LDAP request or response, while an
     *Extension* is a custom request that can be sent to the LDAP server in an **Extended Operation** Request.
     A Control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
     kind of operation that each vendor decides to include in its LDAP server implementation.
@@ -368,7 +377,7 @@ The schema defines also the *syntaxes* and the *matching rules* of the different
     class is a "parent" of any attribute. Classes and attributes are linked in the schema with the ``MAY`` and ``MUST`` options
     of the object class definition that specify what attributes an entry can contain and which of them are mandatory.
 
-.. sidebar::
+.. note::
     There are 3 different types of object classes: **ABSTRACT** (used only when defining the class hiearchy), **STRUCTURAL** (used to
     create concrete entries) and **AUXILIARY** (used to add additional attributes to an entry). Only one structural class can be used
     in an entry, while many auxiliary classes can be added to the same entry. Adding an object class to an entry simply means
@@ -391,7 +400,7 @@ If you want to establish an authenticated session you have two options: Simple P
 a **DN** (*Distinguished Name*) and a password. The server checks if your credentials are valid and permits or denies access to the elements of the DIT.
 SASL provides additional methods to identify the user, as an external certificate or a Kerberos ticket.
 
-.. sidebar:: Distinguished Names: the DIT is a hierarchical structure, as a filesystem. To identify an entry you must specify its *path*
+.. note:: Distinguished Names: the DIT is a hierarchical structure, as a filesystem. To identify an entry you must specify its *path*
     in the DIT starting from the top of the Tree down to the last leaf that actually represents the entry. This path is called the
     **Distinguished Name** (DN) of an entry and is constructed with key-value pairs, separated by a comma, of all the entries that form
     the path from the leaf up to the top of the Tree. The DN of an entry is unique throughout the DIT and changes only if you move the
@@ -458,7 +467,7 @@ an already open unsecure connection to secure it issuing the StartTLS operation.
     indicated with **ldaps://** even if this is not specified in any of the LDAP RFCs. If a scheme is included in the server name while creating
     the Server object, the ldap3 library opens the proper port, unencrypted or with the specified TLS options (or default options if none is specified).
 
-.. sidebar:: Default port numbers: the default port for cleartext (unsecure) communication is **389**, while the default for LDAP over TLS (secure)
+.. note:: Default port numbers: the default port for cleartext (unsecure) communication is **389**, while the default for LDAP over TLS (secure)
     communication is **636**. Note that because you can start a session on the 389 port and then raise the security level with the StartTLS operation,
     you can have a secure communication even on the 389 port (usually considered unsecure). Obviously the server can listen on additional or different
     ports. When defining the Server object you can specify which port to use with the ``port`` parameter. Keep this in mind if you need to connect to

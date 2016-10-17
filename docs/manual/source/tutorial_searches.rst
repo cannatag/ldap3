@@ -57,7 +57,7 @@ Let's search all users in the FreeIPA demo LDAP server::
 Here you request all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
 You have not requested any attribute, so in the response we get only the Distinguished Name of the found entries.
 
-.. sidebar:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
+.. note:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
     Search operations store the entries found in the ``response`` attribute of the Connection object. For async strategies you must use the ``get_response(id)`` method
     that returns a tuple in the form of (response, result).
 
@@ -140,7 +140,7 @@ You can have a LDIF representation of the response of a search with::
     sn: Administrator
     # total number of entries: 1
 
-.. sidebar:: LDIF
+.. note:: LDIF
     LDIF stands for LDAP Data Interchange Format and is a textual standard used to describe two different aspects of LDAP: the content of an entry (**LDIF-CONTENT**)
     or the changes performed on an entry with an LDAP operation (**LDIF-CHANGE**). LDIF-CONTENT is used to describe LDAP entries in an stream (i.e. a file or a socket),
     while LDIF-CHANGE is used to describe the Add, Delete, Modify and ModifyDn operations.

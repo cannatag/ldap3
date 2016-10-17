@@ -2,38 +2,41 @@
 The BIND operation
 ##################
 
-As specified in RFC4511 the **Bind** operation must be tought as the "authenticate" operation. It's name (and that of its
-Unbind counterpart) is for historical reason.
+As specified in RFC4511 the **Bind** operation is the "authenticate" operation. It (and the Unbind operation as well) has
+this name for historical reason.
 
 When you open a connection to an LDAP server you're in an **anonymous** connection state. What this exactly means
-is defined by the server implementation, not by the protocol. Think of this as of a default access to the server public
-data (even if what public data means is still a server local matter). In ldap3 you establish the connection to the server
-with the open() method of the connection object. The bind() method implies the open() method.
+is defined by the server implementation, not by the protocol. Think of this as a public access to the server data
+(even if what public data mean is still a server matter). In ldap3 you establish the connection to the server
+with the ``open()`` method of the Connection object. The ``bind()`` method will open the connection if not already open.
 
-The Bind operation allows authentication information to be exchanged between the client and server to establish a new
+The Bind operation allows creadentials to be exchanged between the client and server to establish a new
 authorization state.
 
 The Bind request typically specifies the desired authentication identity. Some Bind mechanisms also allow the client
 to specify the authorization identity. If the authorization identity is not specified, the server derives it from the
 authentication identity in an implementation-specific manner.
 
-If you want to provide authentication information you must use the Bind operation to specify an identity to be used to
+If you want to provide authentication information you must use the Bind operation to specify an identity to use to
 access the data. Keep in mind that either the authentication details than the authorization details
 are a local server matter. The LDAP protocol doesn't specify how the identity must be stored on the server nor how the
 authorization ACLs are specified.
 
-The Bind operation specify 4 different methods to authenticate to the server:
+The Bind operation specify 4 different methods to authenticate to the server, as specified in RFC4513:
 
-* Simple bind: you provide user credentials by the means of a username (in a dn form) and a password.
+* Simple Bind: you provide user credentials by the means of a username (in a dn form) and a password.
 
-* Anonymous simple Bind: the user and password are passed as empty strings.
+* Anonymous Bind: the user and password are passed as empty strings.
 
-* Unauthenticated simple Bind: you pass a username without a password. This method, even if specified in the protocol, should not be used because is higly insecure and should be forbidden by the server. It was used for tracing purpose.
+* Unauthenticated simple Bind: you pass a username without a password. This method, even if specified in the protocol,
+should not be used because is higly insecure and should be forbidden by the server. It was used in the past for tracing purpose.
 
-* Sasl (Simple Authentication and Security Layer): this define multiple mechanisms that each server can provide to allow access to the server. Before trying a mechanism you should check that the server supports it. The LDAP server publish its allowed SASL mechanism in the DSE information that can be read anonymously.
+* SASL (Simple Authentication and Security Layer): this defines multiple mechanisms that each server can provide to allow access to the server.
+Before trying a mechanism you should check that the server supports it. The LDAP server publish its allowed SASL mechanism in the DSE information
+that can be read anonymously with the ``get_info=ALL`` parameter of the Server object.
 
 The Bind method returns True if the bind is successful, False if something goes wrong while binding. In this case you
-can inspect the result attribute of the connection object to get the error description.
+can inspect the ``result`` attribute of the Connection object to get the error description.
 
 Simple Bind
 -----------
@@ -54,20 +57,20 @@ You perform a Simple Bind operation as in the following example (using the defau
         print('error in bind', c.result)
 
 
-The server and connection are create with the default parameters::
+The server and the connection are created with the default parameters::
 
     s = Server(host='servername', port=389, use_ssl=False, get_info='ALL')
     c = Connection(s, user='user_dn', password='user_password', auto_bind='NONE', version=3, authentication='SIMPLE', \
     client_strategy='SYNC', auto_referrals=True, check_names=True, read_only=False, lazy=False, raise_exceptions=False)
 
 
-Refer to the Server and Connections docs for info about the default parameters.
+Refer to the Server and Connection docs for info about the default parameters.
 
 
 Anonymous Bind
 --------------
 
-Anonymous bind performs a simple bind with the username and the user password set to empty strings. The ldap3 library has
+Anonymous bind performs a simple bind with the user name and the user password set to empty strings. The ldap3 library has
 a specific authentication option to do that::
 
     # import class and constants
@@ -84,14 +87,11 @@ a specific authentication option to do that::
         print('error in bind', c.result)
 
 
-The server and connection are create with the default parameters::
+The server and the connection are created with the default parameters::
 
     s = Server(host='servername', port=389, use_ssl=False, get_info='ALL')
     c = Connection(s, auto_bind='NONE', version=3, authentication='ANONYMOUS', client_strategy='SYNC', auto_referrals=True, \
     check_names=True, read_only=False, lazy=False, raise_exceptions=False)
-
-
-To use SSL secure connection in the previous examples modify the server object:
 
 To use SSL basic authentication change the server definition to::
 
@@ -101,8 +101,8 @@ To use SSL basic authentication change the server definition to::
 StartTLS
 --------
 
-If you want to raise the transport layer security to an encrypted state you can perform the StartTLS operation. With this
-mechanism you can wrap the plain socket in an ssl encrypted socket::
+If you want to raise the transport layer security to an encrypted state you can perform the *StartTLS* extended operation. With this
+mechanism you can wrap the plain socket in an SSL encrypted socket::
 
     c.start_tls()
 
@@ -121,8 +121,9 @@ Please refer to the SSLTLS section for more information.
 SASL
 ----
 
-Three SASL mechanisms are currently implemented in the ldap3 library: EXTERNAL, DIGEST-MD5 and GSSAPI (Kerberos, via the gssapi package). Even if DIGEST-MD5 is **deprecated** and moved to historic (RFC6331, July 2011)
-because it is **"insecure and unsuitable for use in protocols"** (as stated by the RFC).
+Three SASL mechanisms are currently implemented in the ldap3 library: EXTERNAL, DIGEST-MD5 and GSSAPI (Kerberos, via the gssapi package). DIGEST-MD5 is
+implemented even if it is **deprecated** and moved to historic (RFC6331, July 2011) because it is **"insecure and unsuitable for use in protocols"**
+(as stated by the RFC).
 
 To query the SASL mechanism available on the server you must read the information published by the server. The ldap3 library
 has a convenient way to do that::
@@ -141,7 +142,7 @@ Print out a list of the SASL mechanism supported by the server::
 External
 ^^^^^^^^
 
-You can use the EXTERNAL mechanism when you're on a secure (TLS) channel. You can provide an authorization identity string in sasl_credentials or let the
+You can use the EXTERNAL mechanism when you're on a secure (TLS) channel. You can provide an authorization identity string in ``sasl_credentials`` or let the
 server trust the credential provided when establishing the secure channel::
 
      tls = Tls(local_private_key_file = 'key.pem', local_certificate_file = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1,
@@ -153,7 +154,8 @@ server trust the credential provided when establishing the secure channel::
 Digest-MD5
 ^^^^^^^^^^
 
-To use the DIGEST-MD5 you must pass a 4-value tuple as sasl_credentials: (realm, user, password, authz_id). You can pass None for 'realm' and 'authz_id' if not used. Quality of Protection is always 'auth'::
+To use the DIGEST-MD5 you must pass a 4-value tuple as sasl_credentials: (realm, user, password, authz_id). You can pass None
+for 'realm' and 'authz_id' if not used. Quality of Protection is always 'auth'::
 
      server = Server(host = test_server, port = test_port)
      connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
@@ -182,13 +184,16 @@ Kerberos authentication uses the ``gssapi`` package. You must install it and con
     connection.bind()
     print(connection.extend.standard.who_am_i())
 
-You can specify which Kerberos client principal should be used with the ``user`` parameter when declaring the ``Connection``::
+You can specify which Kerberos client principal should be used with the ``user`` parameter when declaring the ``connection``::
 
     connection = ldap3.Connection(
         server, user='ldap-client/client.example.com',
         authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
 
-By default the library attempts to bind against the service principal for the domain you attempted to connect to. If your target LDAP service uses a round-robin DNS, it's likely that the hostname you connect to won't match. In this case, you can either specify a hostname explicitly as the first element of the ``sasl_credentials`` connection parameter, or pass ``True`` as the first element to do a reverse DNS lookup::
+By default the library attempts to bind against the service principal for the domain you attempted to connect to.
+If your target LDAP service uses a round-robin DNS, it's likely that the hostname you connect to won't match. In this case,
+you can either specify a hostname explicitly as the first element of the ``sasl_credentials`` connection parameter,
+or pass ``True`` as the first element to do a reverse DNS lookup::
 
     # Override server hostname for authentication
     connection = ldap3.Connection(
@@ -199,8 +204,6 @@ By default the library attempts to bind against the service principal for the do
     connection = ldap3.Connection(
         server, sasl_credentials=(True,),
         authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
-
-
 
 NTLM
 ----
@@ -227,7 +230,7 @@ When binding via NTLM, it is also possible to authenticate with an LM:NTLM hash 
 LDAPI (LDAP over IPC)
 ---------------------
 
-If your LDAP server provides a UNIX socket connection (*Interprocess Communication*) you can use the **ldapi:** schema to access it from the
+If your LDAP server provides a UNIX socket connection you can use the **ldapi:** (*Interprocess Communication*) scheme to access it from the
 same machine::
 
     >>> # accessing OpenLDAP server in a root user session
@@ -268,8 +271,8 @@ that let you change the user and the authentication method while the connection 
     except LDAPBindError:
        print('error in rebind', c.result)
 
-In case the credential are invalid or if the server doesn't allow you to rebind the server *could* abruptley close the connection.
-This condition is checked by the rebind() method and it raises an LDAPBindError.
+In case the credentials are invalid or if the server doesn't allow you to rebind the server *could* abruptly close the connection.
+This condition is checked by the ``rebind()`` method and an LDAPBindError exception will be raised if caught.
 
 Extended logging
 ----------------
@@ -404,6 +407,5 @@ These are the usage metrics of this session::
        Failed restarts:     0
        Successful restarts: 0
 
-As you can see there have been two operation, 1 for the bind and 1 for the startTLS (an extendend operation). 1 socket
-has been open and has been wrapped in ssl. All the communication stream took 96 bytes in 4 LDAP messages.
-
+As you can see there have been two operation, one for the bind and one for the startTLS (an extendend operation). One socket
+has been open and has been wrapped in SSL. All the communication stream took 96 bytes in 4 LDAP messages.

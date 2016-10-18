@@ -58,3 +58,20 @@ print(conn.entries)
 
 print(conn.compare('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'departmentNumber', 'DEV'))
 print(conn.compare('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'departmentNumber', 'QA'))
+
+entries = conn.extend.standard.paged_search('dc=demo1, dc=freeipa, dc=org', '(objectClass=person)', attributes=['cn', 'givenName'], paged_size=5)
+
+for entry in entries:
+    print(entry)
+
+
+total_entries = 0
+cookie = "new_cookie"
+while cookie:
+   conn.search('dc=demo1, dc=freeipa, dc=org', '(objectClass=Person)', attributes=['cn', 'givenName'], paged_size=5, paged_cookie=cookie)
+   total_entries += len(conn.response)
+   cookie = conn.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+   print (cookie)
+   for entry in conn.response:
+       print(entry['dn'], entry['attributes'])
+print('Total entries retrieved:', total_entries)

@@ -201,18 +201,13 @@ a single value is present) else it's returned as a single value.
 **Custom formatters** can be added to specify how attribute values must be returned A formatter must be a callable that receives
 a bytes value and returns an object.
 
-Additional parameters
-=====================
+What about empty attributes?
+============================
+In LDAP an attribute must always have a value. An attribute with no value is immediately removed by the LDAP server. This makes
+harder to access the entry in your code because you must always check if an attribute key is present before accessing its value.
+ldap3 helps you to write simpler code because it by default returns an empty attribute even if it is not present in the LDAP.
+You can change this behaviour setting to False the ``return_empty_attributes`` parameter in the Connection object.
 
-The Search operation is enhanced with a few parameters:
-
-* ``get_operational_attributes``: when True retrieves the operational (system generated) attributes for each of the result
-  entries.
-* ``paged_size``: if greater than 0 the server returns a simple paged search response with the number of entries specified
-  (LDAP server must conform to RFC2696).
-* ``paged_cookie``: used for subsequent retrieval of additional entries in a simple paged search.
-* ``paged_criticality``: if True the search should fail if simple paged search is not available on the server else a full
-  search is performed.
 
 Simple Paged search
 -------------------
@@ -223,45 +218,27 @@ provide in each subsequent search. all this information must be passed in a Cont
 with similar information in a Control attached to the response.
 ldap3 hides all this machinery in the ``paged_search()`` function of the **extend.standard** namespace::
 
-    # whole result list
-    >>> entries = c.extend.standard.paged_search('o=test', '(objectClass=inetOrgPerson)', attributes=['cn', 'givenName'], paged_size=5)
+    >>> entries = conn.extend.standard.paged_search('dc=demo1, dc=freeipa, dc=org', '(objectClass=person)', attributes=['cn', 'givenName'], paged_size=5)
     >>> for entry in entries:
     >>>     print(entry)
 
-Entries are returned in a generator, that is better when cyou have very long list of entries or have memory limitation.
-Remember that a generator canmbe consumed only one time, so you must elaborate the results in a sequential way.
-If you don't want the entries returned in a generator you can pass the ``generator=False`` parameter to get all the entries in a list.
+Entries are returned in a generator, that is better when cyou have very long list of entries or have memory limitation. Also it sends
+the requests to the LDAP server only when entries are consumed in the generator. Remember that a generator can be used only one time,
+so you must elaborate the results in a sequential way. If you don't want the entries returned in a generator you can pass the
+``generator=False`` parameter to get all the entries in a list. In this case all the paged searches are performed by the ``paged_search()``
+function and the set of entries found are queued in a list that is returned.
 
 If you want to directly use the Search operation to perform a Paged search your code should be similar to the following::
 
-    from ldap3 import Server, Connection, SUBTREE
-    total_entries = 0
-    server = Server('test-server')
-    c = Connection(server, user='username', password='password')
-    c.search(search_base = 'o=test',
-             search_filter = '(objectClass=inetOrgPerson)',
-             search_scope = SUBTREE,
-             attributes = ['cn', 'givenName'],
-             paged_size = 5)
-    total_entries += len(c.response)
-    for entry in c.response:
-        print(entry['dn'], entry['attributes])
-    cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-    while cookie:
-        c.search(search_base = 'o=test',
-                 search_filter = '(object_class=inetOrgPerson)',
-                 search_scope = SUBTREE,
-                 attributes = ['cn', 'givenName'],
-                 paged_size = 5,
-                 paged_cookie = cookie)
-        total_entries += len(c.response)
-        cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-        for entry in c.response:
-            print(entry['dn'], entry['attributes])
-    print('Total entries retrieved:', total_entries)
+    >>> cookie = "new_cookie"
+    >>> while cookie:
+    >>>     conn.search('dc=demo1, dc=freeipa, dc=org', '(objectClass=Person)', attributes=['cn', 'givenName'], paged_size=5, paged_cookie=cookie)
+    >>>     cookie = conn.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    >>>     for entry in conn.entries:
+    >>>         print(entry)
 
-Even in this case the ldap3 library hides the specific Control machinery. The code would be much longer if you would
-manage directly manage the Simple Search Control.
+Even in this case the ldap3 library hides the Simple Paged Control machinery but you have to manage the cookie by yourself.
+The code would be much longer if you would manage directly manage the Simple Search Control. Also you loose the generator feature.
 
 .. note::
 

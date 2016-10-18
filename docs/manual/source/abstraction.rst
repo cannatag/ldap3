@@ -430,8 +430,26 @@ want a list)::
 
     my_department = person_entry.Department.value
 
+
+When an entry is Writable the Attribute has additional attributes and methods and operators used to apply changes to the attribute values:
+
+* virtual: True if the attribute is new and still not stored in the DIT
+
+* changes: the list of the pending changes for the attribute
+
+* add(value): adds one or more values to the attribute, same of **+=**
+
+* set(value): sets one or more values for the attribute, removing any previous stored value
+
+* delete(value): delete one or more values from the attribute, same of **-=**
+
+* remove(): sets the attribute for deletion
+
+* discard(): discards all pending changes in the Attribute
+
+
 OperationalAttribute
 --------------------
 
 The OperationalAttribute class is used to store Operational Attributes read with the 'get_operational_attributes' of the Reader object set to True. It's the same
-of the Attribute class except for the 'definition' property that is not present. Operational attributes key are prefixed with 'op_'.
+of the Attribute class except for the 'definition' property that is not present. Operational attributes key are prefixed with 'OA_'.

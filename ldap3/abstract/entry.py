@@ -206,7 +206,7 @@ class EntryBase(object):
     def entry_raw_attributes(self):
         return self._state.entry_raw_attributes
 
-    def get_raw_attribute(self, name):
+    def entry_raw_attribute(self, name):
         """
 
         :param name: name of the attribute
@@ -455,7 +455,7 @@ class WritableEntry(EntryBase):
     def entry_refresh(self, tries=4, seconds=2):
         """
 
-        Read the entry from the LDAP Server
+        Reads the entry from the LDAP Server
         """
         if self.entry_cursor.connection:
             counter = 0

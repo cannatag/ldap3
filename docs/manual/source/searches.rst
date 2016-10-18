@@ -265,7 +265,8 @@ There are a few of standard formatters defined in the library, most of them are 
   defined in RFC 4517
 
 You can even define your custom formatter for specific purposes. Just pass a dictionary in the format
-{'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte value and convert it the relevant object or class instance.
+{'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte
+value and convert it the relevant object or class instance.
 
 The resolution order of the format feature is the following:
 

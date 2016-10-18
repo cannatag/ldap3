@@ -238,7 +238,7 @@ class Reader(Cursor):
     :type query: str
     :param base: starting base of the search
     :type base: str
-    :param components_in_and: specify if assertions in the query mus be all satisfied or not (AND/OR)
+    :param components_in_and: specify if assertions in the query must all be satisfied or not (AND/OR)
     :type components_in_and: bool
     :param sub_tree: specify if the search must be performed ad Single Level (False) or Whole SubTree (True)
     :type sub_tree: bool

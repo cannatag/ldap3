@@ -2,8 +2,8 @@
 The ABANDON operation
 #####################
 
-The use of the **Abandon** operation is very limited. Its function is to allow a client to request that the server
-gives up an uncompleted operation. Since there is no response from the server the client cannot tell the difference
+The use of the **Abandon** operation is very limited. Its intended function is to allow a client to request a server
+to give up an uncompleted operation. Since there is no response from the server the client cannot tell the difference
 between a successfully abandoned operation and a completed operation. The Bind, Unbind and the Abandon operations
 cannot be abandoned.
 
@@ -57,3 +57,6 @@ You perform an Abandon operation as in the following example (using the asynchro
 
     # close the connection
     c.unbind()
+
+An alternative use of the Abandon operation is to send an Abandon(0) message, that can be used as a keep-alive mechanism, even if
+this is not indicated in the RFCs.

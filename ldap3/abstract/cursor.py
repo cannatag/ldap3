@@ -407,49 +407,51 @@ class Reader(Cursor):
             else:
                 self.query_filter = self._query
             return
+        elif self._query:  # if a simplified filter is present
+            if not self.components_in_and:
+                self.query_filter += '(|'
+            elif not self.definition._object_class:
+                self.query_filter += '(&'
 
-        if not self.components_in_and:
-            self.query_filter += '(|'
-        elif not self.definition._object_class:
-            self.query_filter += '(&'
+            self._validate_query()
 
-        self._validate_query()
+            attr_counter = 0
+            for attr in sorted(self._validated_query_dict):
+                attr_counter += 1
+                multi = True if ';' in self._validated_query_dict[attr] else False
+                vals = sorted(self._validated_query_dict[attr].split(';'))
+                attr_def = self.definition[attr[1:]] if attr[0] in '&|' else self.definition[attr]
+                if attr_def.pre_query:
+                    modvals = []
+                    for val in vals:
+                        modvals.append(val[0] + attr_def.pre_query(attr_def.key, val[1:]))
+                    vals = modvals
+                if multi:
+                    if attr[0] in '&|':
+                        self.query_filter += '(' + attr[0]
+                    else:
+                        self.query_filter += '(|'
 
-        attr_counter = 0
-        for attr in sorted(self._validated_query_dict):
-            attr_counter += 1
-            multi = True if ';' in self._validated_query_dict[attr] else False
-            vals = sorted(self._validated_query_dict[attr].split(';'))
-            attr_def = self.definition[attr[1:]] if attr[0] in '&|' else self.definition[attr]
-            if attr_def.pre_query:
-                modvals = []
                 for val in vals:
-                    modvals.append(val[0] + attr_def.pre_query(attr_def.key, val[1:]))
-                vals = modvals
-            if multi:
-                if attr[0] in '&|':
-                    self.query_filter += '(' + attr[0]
-                else:
-                    self.query_filter += '(|'
+                    if val[0] == '!':
+                        self.query_filter += '(!(' + attr_def.name + _ret_search_value(val[1:]) + '))'
+                    else:
+                        self.query_filter += '(' + attr_def.name + _ret_search_value(val) + ')'
+                if multi:
+                    self.query_filter += ')'
 
-            for val in vals:
-                if val[0] == '!':
-                    self.query_filter += '(!(' + attr_def.name + _ret_search_value(val[1:]) + '))'
-                else:
-                    self.query_filter += '(' + attr_def.name + _ret_search_value(val) + ')'
-            if multi:
+            if not self.components_in_and:
+                self.query_filter += '))'
+            else:
                 self.query_filter += ')'
 
-        if not self.components_in_and:
-            self.query_filter += '))'
-        else:
-            self.query_filter += ')'
+            if not self.definition._object_class and attr_counter == 1:  # remove unneeded starting filter
+                self.query_filter = self.query_filter[2: -1]
 
-        if not self.definition._object_class and attr_counter == 1:  # remove unneeded starting filter
-            self.query_filter = self.query_filter[2: -1]
-
-        if self.query_filter == '(|)' or self.query_filter == '(&)':  # remove empty filter
-            self.query_filter = ''
+            if self.query_filter == '(|)' or self.query_filter == '(&)':  # remove empty filter
+                self.query_filter = ''
+        else:  # no query, remove unneeded leading (&
+            self.query_filter = self.query_filter[2:]
 
     def search(self, attributes=None):
         """Perform the LDAP search

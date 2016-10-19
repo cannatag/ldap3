@@ -20,10 +20,8 @@ I assume that you already know what LDAP is, or at least have a rough idea of it
 don't know anything about LDAP, after reading this tutorial you should be able to access an LDAP compliant server and use it without bothering with
 the many glitches of the LDAP protocol.
 
-
 What LDAP is not
 ================
-
 I'd rather want to be sure that you are aware of what LDAP **is not**:
 
 - LDAP is not a server
@@ -53,7 +51,6 @@ in the RFC4510 (and subsequents RFCs) released in June 2006.
 
 A very brief history of LDAP
 ============================
-
 You may wonder why the "lightweight" in LDAP. Its ancestor, called **DAP** (*Directory Access Protocol*), was developed in the 1980s
 by the CCITT (now ITU-T), the *International Committee for Telephone and Telegraphy* (the venerable entity that gave us, among
 others, faxes and modem protocols we used in the pre-Internet era). DAP was a very heavy and hard-to-implement protocol
@@ -75,7 +72,6 @@ in the ldap3 namespace. Values returned by the LDAP search operation are always 
 
 The ldap3 package
 =================
-
 ldap3 is a fully compliant LDAP v3 client library following the official RFCs released in June 2006. It's written from scratch to be
 compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can gain access to the network via the Python
 standard library.
@@ -100,10 +96,8 @@ ldap3 needs the **pyasn1** package (and will install it if not already present).
 ldap3 uses the pyasn1 package only when sending data to the server. Data received from the server are decoded with an internal decoder, much faster (10x ) than the
 pyasn1 decoder.
 
-
 Accessing an LDAP server
 ========================
-
 ldap3 usage is straightforward: you define a Server object and a Connection object. Then you issue commands to the connection.
 A server can have any number of active connections with the same or a different *communication strategy*.
 
@@ -140,7 +134,6 @@ Usually you will use synchronous strategies only.
 
 The **LDIF** strategy is used to create a stream of LDIF-CHANGEs. The MOCK_SYNC strategy can be used to emulate a fake LDAP
 server to test your application without the need of a real LDAP server.
-
 
 .. note::
     In this tutorial you will use the default SYNC communication strategy. If you keep loosing connection to the server you can use the RESTARTABLE
@@ -180,7 +173,6 @@ SyncStrategy                                            the communication strate
 internal decoder                                        which BER decoder the connection is using (pyasn1 or the faster internal decoder)
 ======================================================= =================================================================================
 
-
 .. note::
     Object representation: the ldap3 library uses the following object representation rule: when you use ``str()`` you get back information
     about the status of the object in a human readable format, when you use ``repr()`` you get back a string you can use in the
@@ -200,7 +192,6 @@ This is helpful when experimenting in the interactive console and works for most
    >>> server
    Server(host='ipa.demo1.freeipa.org', port=389, use_ssl=False, get_info='NO_INFO')
 
-
 .. note::
     The tutorial is intended to be used from the *REPL* (Read, Evaluate, Print, Loop), the interactive Python command line where you can directly type
     Python statements at the **>>>** prompt. The REPL implicitly use the ``repl()`` representation for showing the output of a statement. If you instead
@@ -208,7 +199,6 @@ This is helpful when experimenting in the interactive console and works for most
 
 Getting information from the server
 ===================================
-
 The LDAP protocol specifies that an LDAP server must return some information about itself. You can request them with the ``get_info=ALL``
 parameter and access them with the ``.info`` attribute of the Server object::
 
@@ -391,7 +381,6 @@ the ``get_info`` parameter of the Server object and the ``check_names`` paramete
 
 Logging into the server
 =======================
-
 You haven't provided any credentials to the server yet, but you received a response anyway. This means that LDAP allow users to perform
 operations anonymously without declaring their identity. Obviously what the server returns to an anonymous connection is someway limited.
 This makes sense because originally the DAP protocol was intended for reading phone directories, as in a printed book, so its
@@ -408,7 +397,7 @@ SASL provides additional methods to identify the user, as an external certificat
     entry to another container within the DIT. The parts of the DN are called **Relative Distinguished Name** (RDN) because are unique only
     in the context where they are defined. So, for example, if you have a *inetOrgPerson* entry with RDN ``cn=Fred`` that is stored in an *organizational
     unit* with RDN ``ou=users`` that is stored in an *organization* with RDN ``o=company`` the DN of the *inetOrgPerson* entry will
-    be ``cn=Fred, ou=users, o=company``. The RDN value must be unique in the context where the entry is stored, but there is no specification
+    be ``cn=Fred,ou=users,o=company``. The RDN value must be unique in the context where the entry is stored, but there is no specification
     in the LDAP schema on which attribute to use as RDN for a specific class. LDAP also support a (quite obscure) "multi-rdn" naming option where each
     part of the RDN is separated with the + character, as in ``cn=Fred+sn=Smith``.
 
@@ -448,7 +437,7 @@ if needed.
 
 Try to specify a valid user::
 
-    >>> conn = Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
+    >>> conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=True)
     >>> conn.extend.standard.who_am_i()
     'dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
 
@@ -456,11 +445,10 @@ Now the server knows that you are a recognized user and the ``who_am_i()`` exten
 
 Establishing a secure connection
 ================================
-
 If you check the connection info you can see that the Connection is using a cleartext (insecure) channel::
 
     >>> print(conn)
-    ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
+    ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
 
 This means that credentials pass unencrypted over the wire, so they can be easily captured by network eavesdroppers. The LDAP protocol provides two ways
 to secure a connection: **LDAP over TLS** (or over SSL) and the **StartTLS** extended operation. Both methods establish a secure TLS
@@ -486,15 +474,15 @@ Now try to use the StartTLS extended operation::
 if you check the connection status you can see that the session is on a secure channel now, even if started on a cleartext connection::
 
     >>> print(conn)
-    ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:389> - tls started - listening - SyncStrategy - internal decoder
+    ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - bound - open - <local: 192.168.1.101:50910 - remote: 209.132.178.99:389> - tls started - listening - SyncStrategy - internal decoder
 
 
 To start the connection on a SSL socket::
 
     >>> server = Server('ipa.demo1.freeipa.org', use_ssl=True, get_info=ALL)
-    >>> conn = Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
+    >>> conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=True)
     >>> print(conn)
-    ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
+    ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
 
 Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no checking of
 certificate validity. You can customize the TLS behaviour providing a Tls object to the Server object using the security context configuration::
@@ -513,11 +501,10 @@ You can configure the Tls object with a number of options. Look at :ref:`the SSL
 
 Connection context manager
 ==========================
-
 The Connection object responds to the context manager protocol, so you can perform LDAP operations with automatic open, bind and unbind as in the following example::
 
-    >>> with Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123') as conn:
-            conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
+    >>> with Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123') as conn:
+            conn.search('dc=demo1,dc=freeipa,dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn','krbLastPwdChange', 'objectclass'])
             entry = conn.entries[0]
     True
     >>> conn.bound
@@ -539,4 +526,3 @@ The Connection object responds to the context manager protocol, so you can perfo
 When the Connection object exits the context manager it retains the state it had before entering the context. The connection is always open and bound while in context.
 If the connection was not bound to the server when entering the context the Unbind operation will be tried when you leave the context even if the operations
 in the context raise an exception.
-

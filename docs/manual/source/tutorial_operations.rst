@@ -43,14 +43,12 @@ After any synchronous operation, you'll find the following attributes populated 
 * ``listening``: True if the socket is listening to the server
 * ``closed``: True if the socket is not open
 
-
 Create an Entry
-================
-
+===============
 Let's try to add some data to the LDAP DIT::
 
     >>> # Create a container for new entries
-    >>> conn.add('ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
+    >>> conn.add('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'organizationalUnit')
     True
     >>> # Add a new user
     >>> conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})
@@ -119,7 +117,6 @@ attribute defined in each class of the hierarchy. If you had some *auxiliary* cl
 
 Rename an entry
 ===============
-
 Renaming an entry in LDAP means changing its RDN (*Relative Distinguished Name*) without changing the container where the entry is stored.
 It is performed with the ModifyDN operation::
 
@@ -150,9 +147,9 @@ ModifyDn is really a two-face operation. You can use it to rename an entry (as i
 But you cannot perform this two operations together::
 
     >>> # Create a container for moved entries
-    >>> conn.add('ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
+    >>> conn.add('ou=moved, ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'organizationalUnit')
     True
-    >>> conn.modify_dn('cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith', new_superior='ou=moved, ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org')
+    >>> conn.modify_dn('cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith', new_superior='ou=moved, ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     True
 
 Quite surprisingly you must provide the very same RDN even if this cannot be changed while moving the object. This could be a problem when moving entries
@@ -169,10 +166,8 @@ Keep in mind that LDAP support a (quite obscure) "multi-rdn" naming option where
     >>> safe_rdn('cn=b.smith+sn=young,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     ['cn=b.smith', 'sn=young']
 
-
 Update an entry
 ===============
-
 To change the attributes of an object you must use the Modify operation. There are three kinds of modifications in LDAP: add, delete and replace.
 **Add** is used to add values to an attribute, and creates the attribute if it doesn't exist. **Delete** deletes values from an attribute and if no values are listed, or if all
 current values are listed, remove the entire attribute. **Replace** replaces all existing values of an attribute with some new values, creating the attribute if it
@@ -239,7 +234,6 @@ Here you've addad 2 values to the *sn* then removed the 'Smith' value from it an
 
 Checking attribute values
 =========================
-
 Very specific to LDAP, and usually not found in other kind of databases, is the **Compare** operation. With this operation you can check if an attribute
 has a certain value even if you're not able to read it. LDAP doesn't provide a standard authorization access mechanism, so the use of this operation
 is related to how the vendor has implemented the authorizazion mechanism in the LDAP server you're connecting to.

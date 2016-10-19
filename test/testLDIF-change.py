@@ -132,7 +132,7 @@ class Test(unittest.TestCase):
 
     def test_multiple_modify_to_ldif(self):
         # from rfc 2849 example
-        result = self.connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
+        result = self.connection.modify('cn=Paula Jensen,ou=Product Development,dc=airius,dc=com',
                                         {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),
                                          'description': (MODIFY_DELETE, []),
                                          'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),

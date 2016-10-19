@@ -10,7 +10,7 @@ LDAP operation at all.
 Overview
 --------
 
-With the Abstraction Layer you describe LDAP objects using the ObjectDef and AttrDef classes and access the LDAP server  via a *Cursor* in read-only
+With the Abstraction Layer you describe LDAP objects using the ObjectDef and AttrDef classes and access the LDAP server via a *Cursor* in read-only
 or read-write mode. Optionally you can use a Simplified Query Language to read the Entries from the DIT.
 
 All classes can be imported from the ldap3 package::
@@ -31,13 +31,16 @@ To automatically create an ObjectDef just use the following code on an open conn
     >>> person = ObjectDef(['inetOrgPerson'], connection)
     >>> person
     OBJ: inetOrgPerson [inetOrgPerson OID: 2.16.840.1.113730.3.2.2, organizationalPerson OID: 2.5.6.7, person OID: 2.5.6.6, top OID: 2.5.6.0]
-    ATTRS: audio, businessCategory, carLicense, cn, departmentNumber, description, destinationIndicator, displayName, employeeNumber, employeeType,
-    facsimileTelephoneNumber, givenName, homePhone, homePostalAddress, initials, internationalISDNNumber, jpegPhoto, l, labeledURI, mail, manager,
-    mobile, o, objectClass, ou, pager, photo, physicalDeliveryOfficeName, postOfficeBox, postalAddress, postalCode, preferredDeliveryMethod,
-    preferredLanguage, registeredAddress, roomNumber, secretary, seeAlso, sn, st, street, telephoneNumber, teletexTerminalIdentifier, telexNumber,
-    title, uid, userCertificate, userPKCS12, userPassword, userSMIMECertificate, x121Address, x500UniqueIdentifier
+    MUST: cn, objectClass, sn
+    MAY: audio, businessCategory, carLicense, departmentNumber, description, destinationIndicator, displayName, employeeNumber, employeeType,
+         facsimileTelephoneNumber, givenName, homePhone, homePostalAddress, initials, internationalISDNNumber, jpegPhoto, l, labeledURI, mail,
+         manager, mobile, o, ou, pager, photo, physicalDeliveryOfficeName, postOfficeBox, postalAddress, postalCode, preferredDeliveryMethod,
+         preferredLanguage, registeredAddress, roomNumber, secretary, seeAlso, st, street, telephoneNumber, teletexTerminalIdentifier, telexNumber,
+         title, uid, userCertificate, userPKCS12, userPassword, userSMIMECertificate, x121Address, x500UniqueIdentifier
 
 As you can see the *person* object has been populated with all attributes from the hierarchy of classes starting from *inetOrgPerson* up to *top*.
+Mandatory attributes (MUST) are listed separately from optional (MAY) attributes.
+
 For each attribute you get additional information useful to interact with it::
 
     >>> person.sn
@@ -155,10 +158,10 @@ in the same Connection. The result of the second search is returned as value of 
 Cursor
 ------
 
-There are two kind of *Cursor* in the Abstraction Layer, **Reader** and **Writer**. This helps to avoid the risk of accidentally change a value when you're
-just reading them. The idea is that many application uses LDAP in a read-only mode, so having a read-only Cursor eliminates the risk of
-accidentally change or remove an entry. You can use a Writer cursor only when you need to modify the DIT. You can even get a Writer cursor
-from a Reader one, or get a temporary Writer cursor for a specific Entry returned by a Search operation.
+There are two kind of *Cursor* in the Abstraction Layer, **Reader** and **Writer**. This helps to avoid the risk of accidentally change
+values when you're just reading them. This is a safe-guard because many application uses LDAP only for reading information,
+so having a read-only Cursor eliminates the risk of accidentally change or remove an entry. A Writer Cursor cannot read data
+from the DIT as well, Writer cursors are only used for DIT modification.
 
 Reader
 ------
@@ -358,9 +361,6 @@ A Writable Entry has the following additional properties and methods:
 
 * entry_rename(new_name): set the entry for renaming (performed at commit time)
 
-
-
-
 An Entry can be converted to LDIF with the ``entry_to_ldif()`` method and to JSON with the ``entry_to_json()`` method.
 Entries can be easily printed at the interactive prompt::
 
@@ -445,7 +445,7 @@ Modifying an Entry
 
 With the Abstraction Layer you can "build" your Entry object and then commit it to the LDAP server in a simple pythonic way. First
 you must obtain a **Writable** Entry. Entry may become writable in four different way: as Entries from a Reader Cursor,
-as Entries form a Search response, as a single Entry from a Search response or as a new (virtual) Entry::
+as Entries form a Search response, as a single Entry from a Search response or as a new (Virtual) Entry::
 
     >>> # this example is at the >>> prompt. Create a connection and a Reader cursor for the inetOrgPerson object class
     >>> from ldap3 import Connection, Reader, Writer, ObjectDef

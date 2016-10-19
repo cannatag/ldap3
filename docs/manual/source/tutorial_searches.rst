@@ -9,7 +9,6 @@ Tutorial: searching LDAP entries
 
 Finding entries
 ===============
-
 To find entries in the DIT you must use the **Search** operation. This operation has a number of parameters, but only two of them are mandatory:
 
 * ``search_base``: the location in the DIT where the search will start
@@ -39,13 +38,12 @@ Long search filters can easily become hard to understand so it may be useful to 
         (mail=*@example.org)
     )
 
-
 Let's search all users in the FreeIPA demo LDAP server::
 
     >>> from ldap3 import Server, Connection, ALL
     >>> server = Server('ipa.demo1.freeipa.org', get_info=ALL)
-    >>> conn = Connection(server, 'uid=admin, cn=users, cn=accounts, dc=demo1, dc=freeipa, dc=org', 'Secret123', auto_bind=True)
-    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(objectclass=person)')
+    >>> conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=True)
+    >>> conn.search('dc=demo1,dc=freeipa,dc=org', '(objectclass=person)')
     True
     >>> conn.entries
     [DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
@@ -54,7 +52,7 @@ Let's search all users in the FreeIPA demo LDAP server::
     , DN: uid=helpdesk,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
     ]
 
-Here you request all the entries of class *person*, starting from the *dc=demo1, dc=freeipa, dc=org* context with the default subtree scope.
+Here you request all the entries of class *person*, starting from the *dc=demo1,dc=freeipa,dc=org* context with the default subtree scope.
 You have not requested any attribute, so in the response we get only the Distinguished Name of the found entries.
 
 .. note:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
@@ -63,7 +61,7 @@ You have not requested any attribute, so in the response we get only the Disting
 
 Now let's try to request some attributes from the admin user::
 
-    >>> conn.search('dc=demo1, dc=freeipa, dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn', 'krbLastPwdChange', 'objectclass'])
+    >>> conn.search('dc=demo1,dc=freeipa,dc=org', '(&(objectclass=person)(uid=admin))', attributes=['sn', 'krbLastPwdChange', 'objectclass'])
     True
     >>> conn.entries[0]
     DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-09T20:39:32.711000
@@ -86,7 +84,6 @@ Now let's try to request some attributes from the admin user::
     object class uses it this could always change in the future when someone extends the schema with an object class that uses that very
     same attribute, and your program suddenly breaks with no apparent reason.
 
-
 Note that the ``entries`` attribute of the Connection object is derived from the ldap3 *Abstraction Layer* and it's specially crafted to be used in interactive mode
 at the ``>>>`` prompt. It gives a visual representation of the entry data structure where each value is, according to the schema, properly formatted
 (the date value in krbLastPwdChange is actually stored as ``b'20161009010118Z'``, but it's shown as a Python date object). Attributes can be queried
@@ -108,12 +105,11 @@ value and the raw value (the value actually returned by the server) in the ``val
     >>> entry.krbLastPwdChange.raw_values
     [b'20161009010118Z']
 
-
 Note that the entry status is *Read*. This is not relevant if you only need to retrive the entries from the DIT but it's vital if you want to take advantage
 of the ldap3 Abstraction Layer making it *Writable* and change or delete its content via the Abstraction Layer. The Abstraction Layer also records the time
 of the last data read operation for the entry.
 
-In the previous search operations you specified ``dc=demo1, dc=freeipa, dc=org`` as the base of our search, but the entries we got back were in the
+In the previous search operations you specified ``dc=demo1,dc=freeipa,dc=org`` as the base of our search, but the entries we got back were in the
 ``cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org`` context of the DIT. So the server has, with no apparent reason, walked down every context under
 the base applying the filter to each of the entries in the sub-containers. The server actually performed a *whole subtree* search. Other possible kinds
 of searches are the *single level* search (that searches only in the level specified in the base) and the *base object* search (that searches only in the
@@ -180,14 +176,12 @@ To search for a binary value you must use the RFC4515 ASCII escape sequence for 
     >>> from ldap3.utils.conv import escape_bytes
     >>> unique_id = b'\xca@\xf2k\x1d\x86\xcaL\xb7\xa2\xca@\xf2k\x1d\x86'
     >>> search_filter = '(nsUniqueID=' + escape_bytes(unique_id) + ')'
-    >>> conn.search('dc=demo1, dc=freeipa, dc=org', search_filter, attributes=['nsUniqueId'])
+    >>> conn.search('dc=demo1,dc=freeipa,dc=org', search_filter, attributes=['nsUniqueId'])
 
 ``search_filter`` will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \\xx escaping format is specific to the LDAP protocol.
 
-
 Entries Retrieval
 =================
-
 Raw values for the attributes retrieved in an entry are stored in the ``raw_attributes`` dictonary in the ``response``
 attribute.
 
@@ -208,17 +202,15 @@ harder to access the entry in your code because you must always check if an attr
 ldap3 helps you to write simpler code because it by default returns an empty attribute even if it is not present in the LDAP.
 You can change this behaviour setting to False the ``return_empty_attributes`` parameter in the Connection object.
 
-
 Simple Paged search
--------------------
-
+===================
 The Search operation can perform a *simple paged search* as specified in RFC 2696. The RFC states that the you can ask the server
 to return a specific number of entries in each response set. With every search the server sends back a cookie that you have to
 provide in each subsequent search. all this information must be passed in a Control attached to the request and the server responds
 with similar information in a Control attached to the response.
 ldap3 hides all this machinery in the ``paged_search()`` function of the **extend.standard** namespace::
 
-    >>> entries = conn.extend.standard.paged_search('dc=demo1, dc=freeipa, dc=org', '(objectClass=person)', attributes=['cn', 'givenName'], paged_size=5)
+    >>> entries = conn.extend.standard.paged_search('dc=demo1,dc=freeipa,dc=org', '(objectClass=person)', attributes=['cn', 'givenName'], paged_size=5)
     >>> for entry in entries:
     >>>     print(entry)
 
@@ -232,7 +224,7 @@ If you want to directly use the Search operation to perform a Paged search your 
 
     >>> cookie = "new_cookie"
     >>> while cookie:
-    >>>     conn.search('dc=demo1, dc=freeipa, dc=org', '(objectClass=Person)', attributes=['cn', 'givenName'], paged_size=5, paged_cookie=cookie)
+    >>>     conn.search('dc=demo1,dc=freeipa,dc=org', '(objectClass=Person)', attributes=['cn', 'givenName'], paged_size=5, paged_cookie=cookie)
     >>>     cookie = conn.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     >>>     for entry in conn.entries:
     >>>         print(entry)

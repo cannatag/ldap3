@@ -122,7 +122,8 @@ class EntryBase(object):
             r = 'DN: ' + to_stdout_encoding(self.entry_dn) + ' - STATUS: ' + ((self._state._initial_status + ', ') if self._state._initial_status != self.entry_status else '') + self.entry_status + ' - READ TIME: ' + (self.entry_read_time.isoformat() if self.entry_read_time else '<never>') + linesep
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
-                    r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
+                    if self._state.attributes[attr] or (hasattr(self._state.attributes[attr], 'changes') and self._state.attributes[attr].changes):
+                        r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
             return r
         else:
             return object.__repr__(self)
@@ -228,7 +229,7 @@ class EntryBase(object):
 
     @property
     def entry_read_time(self):
-        return self._state.entry_read_time
+        return self._state.read_time
 
     @property
     def _changes(self):
@@ -285,7 +286,7 @@ class Entry(EntryBase):
       _raw_attribute() methods
 
     """
-    def make_writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None):
+    def entry_writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None):
         if not self.entry_cursor.schema:
             raise LDAPCursorError('The schema must be available to make an entry writable')
         # returns a new WritableEntry and its Writer cursor
@@ -361,6 +362,10 @@ class WritableEntry(EntryBase):
             raise LDAPCursorError('attribute \'%s\' is not defined' % item)
         else:
             raise LDAPCursorError('attribute must be a string')
+
+    @property
+    def entry_virtual_attributes(self):
+        return [attr for attr in self.entry_attributes if self[attr].virtual]
 
     def entry_commit_changes(self, refresh=True, controls=None):
         if self.entry_status == STATUS_READY_FOR_DELETION:
@@ -476,3 +481,4 @@ class WritableEntry(EntryBase):
             raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
         self._state._to = new_name
         self._state.set_status(STATUS_READY_FOR_RENAMING)
+

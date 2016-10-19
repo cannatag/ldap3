@@ -293,6 +293,7 @@ when using a Reader with the 'engineer' ObjectDef.
 
 Entry
 -----
+
 Cursors contains Entries that are the Python representation of entries stored in the LDAP DIT. There are two types of Entries,
 **Read** and **Writable**. Each Entry has a ``state`` attribute that keeps information on the current status of the Entry.
 
@@ -307,7 +308,8 @@ Attributes are stored in an internal dictionary with case insensitive access by 
 attribute with the ``entry_raw_attribute(attribute_name)`` to get an attribute raw value, or ``entry_raw_attributes()`` to get
 the whole raw attributes dictionary.
 
-An Entry as the following attributes and methods:
+Because Attribute names are used as Entry class attributes all the "operational" attributes and method of an entry starts with **entry_**. An
+Entry as the following attributes and methods:
 
 * entry_dn: the DN of the LDAP entry
 
@@ -318,7 +320,7 @@ An Entry as the following attributes and methods:
 
 * entry_definition: the ObjectDef (with relevant AttrDefs) of the Entry
 
-* raw_attributes: raw attribute values as read from the DIT
+* entry_raw_attributes: raw attribute values as read from the DIT
 
 * entry_mandatory_attributes: the list of attributes that are mandatory for this Entry
 
@@ -337,10 +339,12 @@ An Entry as the following attributes and methods:
 
 A Read Entry has the following additional method:
 
-* make_writable(object_def=None, writer_cursor=None, attributes=None, custom_validator=None): method to create a new Writable Entry *linked* to
+* entry_writable(object_def=None, writer_cursor=None, attributes=None, custom_validator=None): method to create a new Writable Entry *linked* to
   the original Entry. This means that every change to the Entry is reflected to the original one
 
-A Writable Entry has the following additional methods:
+A Writable Entry has the following additional properties and methods:
+
+* entry_virtual_attributes: list of the available attributes without a value
 
 * entry_commit_changes(refresh=True, controls=None): writes all pending changes to the DIT
 
@@ -355,6 +359,8 @@ A Writable Entry has the following additional methods:
 * entry_rename(new_name): set the entry for renaming (performed at commit time)
 
 
+
+
 An Entry can be converted to LDIF with the ``entry_to_ldif()`` method and to JSON with the ``entry_to_json()`` method.
 Entries can be easily printed at the interactive prompt::
 
@@ -366,12 +372,6 @@ Entries can be easily printed at the interactive prompt::
     objectClass: Person
     objectClass: ndsLoginProperties
     objectClass: Top
-    ACL: 2#subtree#cn=person1,o=test#[All Attributes Rights]
-    ACL: 6#entry#cn=person1,o=test#loginScript
-    ACL: 2#entry#[Public]#messageServer
-    ACL: 2#entry#[Root]#groupMembership
-    ACL: 6#entry#cn=person1,o=test#printJobConfiguration
-    ACL: 2#entry#[Root]#networkAddress
     sn: person1_surname
     cn: person1
     givenName: person1_givenname
@@ -381,14 +381,6 @@ Entries can be easily printed at the interactive prompt::
     >>> print(c.entries[0].entry_to_json())
     {
         "attributes": {
-            "ACL": [
-                "2#subtree#cn=person1,o=test#[All Attributes Rights]",
-                "6#entry#cn=person1,o=test#loginScript",
-                "2#entry#[Public]#messageServer",
-                "2#entry#[Root]#groupMembership",
-                "6#entry#cn=person1,o=test#printJobConfiguration",
-                "2#entry#[Root]#networkAddress"
-            ],
             "cn": [
                 "person1"
             ],
@@ -414,6 +406,7 @@ Entries can be easily printed at the interactive prompt::
 
 Attribute
 ---------
+
 Values found for each attribute are stored in the Attribute object. You can access the 'values' and the 'raw_values' lists. You can
 also get a reference to the relevant AttrDef in the 'definition' property, and to the relevant Entry in the 'entry' property.
 You can iterate over the Attribute to get each value::
@@ -447,6 +440,72 @@ When an entry is Writable the Attribute has additional attributes and methods an
 
 * discard(): discards all pending changes in the Attribute
 
+Modifying an Entry
+------------------
+
+With the Abstraction Layer you can "build" your Entry object and then commit it to the LDAP server in a simple pythonic way. First
+you must obtain a **Writable** Entry. Entry may become writable in four different way: as Entries from a Reader Cursor,
+as Entries form a Search response, as a single Entry from a Search response or as a new (virtual) Entry::
+
+    >>> # this example is at the >>> prompt. Create a connection and a Reader cursor for the inetOrgPerson object class
+    >>> from ldap3 import Connection, Reader, Writer, ObjectDef
+    >>> c = Connection('sl10', 'cn=my_user,o=my_org', 'my_password', auto_bind=True)
+    >>> o = ObjectDef('inetOrgPerson', c)  # automatic read of the inetOrgPerson structure from schema
+    >>> r = Reader(c, o, None, 'o=test')  # we don't need to provide a filter because of the objectDef implies '(objectclass=inetOrgPerson)'
+    >>> r.search()  # populate the reader with the Entries found in the Search
+
+    # make a Writable Cursor from the person_reader Reader Cursor
+    >>> w = Writer.from_cursor(r)
+    >>> e = w[0]  # A Cursor is indexed on the Entries collection
+
+    # make a Writable Cursor from an LDAP search response, you must specify the objectDef
+    >>> c.search('o=test', '(objectClass=inetOrgPerson), attributes=['cn', 'sn', 'givenName']
+    >>> w = Writer.from_response(c, c.response, 'inetOrgPerson')
+    >>> e = w[0]
+
+    # make a Writable Entry from the first entry of an LDAP search response, an implicit Writer Cursor is created
+    >>> e = c.entries[0].entry_writable()
+
+    # make a new Writable Entry. The Entry remains in "Virtual" state until committed to the DIT
+    >>> e = w.new('cn=new_entry, o=test')
+
+Now you can use the ``e`` Entry object as a Python class object with standard behaviour::
+
+    >>> e.sn += 'Young'  # add an additional value to an existing attribute
+    >>> e.givenname = 'John'  # create a new attribute and assign a value to it - attribute is flagged 'Virtual' until commit
+    >>> e
+    DN: cn=smith_j,o=test - STATUS: Writable, Pending changes - READ TIME: 2016-10-19T09:51:08.919905
+        cn: smith_j
+        givenName: <Virtual>
+                   CHANGES: [('MODIFY_REPLACE', ['John'])]
+        objectClass: inetOrgPerson
+                     organizationalPerson
+                     Person
+                     ndsLoginProperties
+                     Top
+        sn: Smith
+            CHANGES: [('MODIFY_ADD', ['Young'])]
+
+Now let's perform the commit of the Entry and check the refreshed data::
+
+    >>> e.entry_commit_changes()
+    True
+    >>> e
+    DN: cn=smith_j,o=test - STATUS: Writable, Committed - READ TIME: 2016-10-19T09:54:58.321715
+        cn: [05038763]modify-dn-2
+        givenName: John
+        objectClass: inetOrgPerson
+                     organizationalPerson
+                     Person
+                     ndsLoginProperties
+                     Top
+        sn: Smith
+            Young
+
+As you can see the status of the entry is "Writable, Committed" and the read time has been updated.
+
+You can discard the pending changes with ``e.entry_discard_changes()`` or delete the whole entry with ``e.delete()``. You can
+also move the Entry to another container in the DIT with ``e.entry_move()`` or renaming it with ``e.entry_rename)``.
 
 OperationalAttribute
 --------------------

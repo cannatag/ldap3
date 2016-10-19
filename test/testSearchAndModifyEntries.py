@@ -105,7 +105,7 @@ class Test(unittest.TestCase):
     def test_search_and_delete_entry(self):
         read_only_entry = self.get_entry('search-and-modify-1')
         self.assertEqual(read_only_entry.entry_status, STATUS_READ)
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         self.assertEqual(writable_entry.entry_status, STATUS_WRITABLE)
         writable_entry.entry_delete()
         self.assertEqual(writable_entry.entry_status, STATUS_READY_FOR_DELETION)
@@ -135,7 +135,7 @@ class Test(unittest.TestCase):
     def test_search_and_add_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')
-            writable_entry = read_only_entry.make_writable('inetorgperson')
+            writable_entry = read_only_entry.entry_writable('inetorgperson')
             writable_entry.preferredDeliveryMethod.add('telephone')
             try:
                 writable_entry.entry_commit_changes()
@@ -147,7 +147,7 @@ class Test(unittest.TestCase):
     def test_search_and_implicit_add_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')
-            writable_entry = read_only_entry.make_writable('inetorgperson')
+            writable_entry = read_only_entry.entry_writable('inetorgperson')
             writable_entry.preferredDeliveryMethod += 'telephone'
             try:
                 writable_entry.entry_commit_changes()
@@ -158,7 +158,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_add_value_to_non_existing_single_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.preferredDeliveryMethod.add('any')  # single valued in organizationalPerson, defined in rfc4519
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -168,7 +168,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_add_value_to_non_existing_single_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.preferreddeliverymethod += 'any'  # single valued in organizationalPerson, defined in rfc4519
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -178,7 +178,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_add_value_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.add('added-givenname-1')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -189,7 +189,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_add_value_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname += 'implicit-added-givenname-1'
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -200,7 +200,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_add_values_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.add('added-givenname-1')
         writable_entry.givenname.add('added-givenname-2')
         result = writable_entry.entry_commit_changes()
@@ -213,7 +213,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_add_values_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname += 'implicit-added-givenname-1'
         writable_entry.givenname += 'implicit-added-givenname-2'
         result = writable_entry.entry_commit_changes()
@@ -226,7 +226,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_add_values_from_sequence_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.add(['added-givenname-1', 'added-givenname-2'])
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -238,7 +238,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_add_values_from_sequence_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname += ['implicit-added-givenname-1', 'implicit-added-givenname-2']
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -251,7 +251,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_add_value_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress.add('postalAddress-1')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -261,7 +261,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_add_value_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress += 'postalAddress-1'
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -271,7 +271,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_add_values_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress.add('postalAddress-1')
         writable_entry.postalAddress.add('postalAddress-2')
         result = writable_entry.entry_commit_changes()
@@ -283,7 +283,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_add_values_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress += 'postalAddress-1'
         writable_entry.postalAddress += 'postalAddress-2'
         result = writable_entry.entry_commit_changes()
@@ -295,7 +295,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_add_values_from_sequence_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress.add(['postalAddress-1', 'postalAddress-2'])
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -306,7 +306,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_add_values_from_sequence_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress += ['postalAddress-1', 'postalAddress-2']
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -318,7 +318,7 @@ class Test(unittest.TestCase):
     def test_search_and_set_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')
-            writable_entry = read_only_entry.make_writable('inetorgperson')
+            writable_entry = read_only_entry.entry_writable('inetorgperson')
             writable_entry.preferredDeliveryMethod.set('telephone')
             result = writable_entry.entry_commit_changes()
             self.assertTrue(result)
@@ -329,7 +329,7 @@ class Test(unittest.TestCase):
     def test_search_and_implicit_set_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')
-            writable_entry = read_only_entry.make_writable('inetorgperson')
+            writable_entry = read_only_entry.entry_writable('inetorgperson')
             writable_entry.preferredDeliveryMethod = 'telephone'
             result = writable_entry.entry_commit_changes()
             self.assertTrue(result)
@@ -339,7 +339,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_set_value_to_non_existing_single_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.preferredDeliveryMethod.set('any')  # single valued in organizationalPerson, defined in rfc4519
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -349,7 +349,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_set_value_to_non_existing_single_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.preferreddeliverymethod = 'any'  # single valued in organizationalPerson, defined in rfc4519
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -359,7 +359,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_set_value_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.set('set-givenname-1')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -369,7 +369,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_set_value_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname = 'implicit-set-givenname-1'
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -379,7 +379,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_set_values_from_sequence_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.set(['set-givenname-1', 'set-givenname-2'])
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -390,7 +390,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_set_values_from_sequence_to_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname = ['implicit-set-givenname-1', 'implicit-set-givenname-2']
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -401,7 +401,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_set_value_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress.set('postalAddress-1')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -411,7 +411,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_set_value_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress = 'postalAddress-1'
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -421,7 +421,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_set_values_from_sequence_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress.set(['postalAddress-1', 'postalAddress-2'])
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -432,7 +432,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_set_values_from_sequence_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.postalAddress = ['postalAddress-1', 'postalAddress-2']
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -443,7 +443,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_remove_existing_attribute(self):
         read_only_entry = self.get_entry('search-and-modify-1')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.remove()
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -453,7 +453,7 @@ class Test(unittest.TestCase):
     def test_search_and_delete_value_from_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')
-            writable_entry = read_only_entry.make_writable('inetorgperson', attributes='preferreddeliverymethod')
+            writable_entry = read_only_entry.entry_writable('inetorgperson', attributes='preferreddeliverymethod')
             writable_entry.preferredDeliveryMethod.delete('any')
             result = writable_entry.entry_commit_changes()
             self.assertTrue(result)
@@ -463,7 +463,7 @@ class Test(unittest.TestCase):
     def test_search_and_implicit_delete_value_from_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')
-            writable_entry = read_only_entry.make_writable('inetorgperson', attributes='preferreddeliverymethod')
+            writable_entry = read_only_entry.entry_writable('inetorgperson', attributes='preferreddeliverymethod')
             writable_entry.preferredDeliveryMethod -= 'any'
             result = writable_entry.entry_commit_changes()
             self.assertTrue(result)
@@ -472,7 +472,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_delete_value_from_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-2')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.delete('givenname-2a')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -482,7 +482,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_delete_value_from_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-2')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname -= 'givenname-2a'
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -492,7 +492,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_delete_values_from_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-2')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.delete(['givenname-2a', 'givenname-2b'])
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -501,7 +501,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_delete_values_from_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-2')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname -= ['givenname-2a', 'givenname-2b']
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -510,7 +510,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_delete_all_values_from_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-2')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname.delete(['givenname-2a', 'givenname-2b', 'givenname-2c'])
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
@@ -519,7 +519,7 @@ class Test(unittest.TestCase):
 
     def test_search_and_implicit_delete_all_values_from_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-2')
-        writable_entry = read_only_entry.make_writable('inetorgperson')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
         writable_entry.givenname -= ['givenname-2a', 'givenname-2b', 'givenname-2c']
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)

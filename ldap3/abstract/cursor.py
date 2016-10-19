@@ -176,7 +176,7 @@ class Cursor(object):
         entry._state.entry_raw_attributes = deepcopy(response['raw_attributes'])
 
         entry._state.response = response
-        entry._state.entry_read_time = datetime.now()
+        entry._state.read_time = datetime.now()
         entry._state.set_status(self.entry_initial_status)
         for attr in entry:  # returns the whole attribute object
             entry.__dict__[attr.key] = attr
@@ -598,7 +598,7 @@ class Writer(Cursor):
         writer = Writer(connection, object_def, attributes=cursor.attributes)
         for entry in cursor.entries:
             if isinstance(cursor, Reader):
-                entry.make_writable(object_def, writer, custom_validator=custom_validator)
+                entry.entry_writable(object_def, writer, custom_validator=custom_validator)
             elif isinstance(cursor, Writer):
                 pass
             else:
@@ -616,7 +616,7 @@ class Writer(Cursor):
                 raise LDAPCursorError('response not present')
         writer = Writer(connection, object_def, None, custom_validator)
         # for entry in connection._get_entries(response):
-        #     entry.make_writable(object_def, writer, custom_validator=custom_validator)
+        #     entry.entry_writable(object_def, writer, custom_validator=custom_validator)
         # return writer
 
         for resp in response:

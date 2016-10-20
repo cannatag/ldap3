@@ -1286,7 +1286,8 @@ class Connection(object):
                          indent=4,
                          sort=True,
                          stream=None,
-                         checked_attributes=True):
+                         checked_attributes=True,
+                         include_empty=True):
 
         with self.lock:
             if search_result is None:
@@ -1302,9 +1303,17 @@ class Connection(object):
 
                         entry['dn'] = response['dn']
                         if checked_attributes:
-                            entry['attributes'] = dict(response['attributes'])
+                            if not include_empty:
+                                # needed for python 2.6 compatability
+                                entry['attributes'] = dict((key, response['attributes'][key]) for key in response['attributes'] if response['attributes'][key])
+                            else:
+                                entry['attributes'] = dict(response['attributes'])
                         if raw:
-                            entry['raw'] = dict(response['raw_attributes'])
+                            if not include_empty:
+                                # needed for python 2.6 compatability
+                                entry['raw_attributes'] = dict((key, response['raw_attributes'][key]) for key in response['raw_attributes'] if response['raw:attributes'][key])
+                            else:
+                                entry['raw'] = dict(response['raw_attributes'])
                         json_dict['entries'].append(entry)
 
                 if str == bytes:

@@ -235,13 +235,21 @@ class EntryBase(object):
     def _changes(self):
         return self._state.changes
 
-    def entry_to_json(self, raw=False, indent=4, sort=True, stream=None, checked_attributes=True):
+    def entry_to_json(self, raw=False, indent=4, sort=True, stream=None, checked_attributes=True, include_empty=True):
         json_entry = dict()
         json_entry['dn'] = self.entry_dn
         if checked_attributes:
-            json_entry['attributes'] = self.entry_attributes_as_dict
+            if not include_empty:
+                # needed for python 2.6 compatability
+                json_entry['attributes'] = dict((key, self.entry_attributes_as_dict[key]) for key in self.entry_attributes_as_dict if self.entry_attributes_as_dict[key])
+            else:
+                json_entry['attributes'] = self.entry_attributes_as_dict
         if raw:
-            json_entry['raw'] = dict(self.entry_raw_attributes)
+            if not include_empty:
+                # needed for python 2.6 compatability
+                json_entry['raw'] = dict((key, self.entry_raw_attributes[key]) for key in self.entry_raw_attributes if self.entry_raw_attributes[key])
+            else:
+                json_entry['raw'] = dict(self.entry_raw_attributes)
 
         if str == bytes:
             check_json_dict(json_entry)
@@ -261,7 +269,7 @@ class EntryBase(object):
 
 
     def entry_to_ldif(self, all_base64=False, line_separator=None, sort_order=None, stream=None):
-        ldif_lines = operation_to_ldif('searchResponse', [self._response], all_base64, sort_order=sort_order)
+        ldif_lines = operation_to_ldif('searchResponse', [self._state.response], all_base64, sort_order=sort_order)
         ldif_lines = add_ldif_header(ldif_lines)
         line_separator = line_separator or linesep
         ldif_output = line_separator.join(ldif_lines)

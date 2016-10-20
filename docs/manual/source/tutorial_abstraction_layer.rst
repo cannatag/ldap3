@@ -146,28 +146,19 @@ Let's explore some of them::
     >>> convert the Entry to LDIF
     >>> print(e[0].entry_to_ldif())
     version: 1
-    dn: uid=manager,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
     objectClass: top
     objectClass: person
-    objectClass: organizationalperson
-    objectClass: inetorgperson
-    objectClass: inetuser
     objectClass: posixaccount
     objectClass: krbprincipalaux
     objectClass: krbticketpolicyaux
+    objectClass: inetuser
     objectClass: ipaobject
     objectClass: ipasshuser
     objectClass: ipaSshGroupOfPubKeys
-    objectClass: mepOriginEntry
-    objectClass: ipantuserattrs
-    objectClass: ipauserauthtypeclass
-    mail: manager@demo1.freeipa.org
-    uid: manager
-    sn: Manager
-    displayName: Test Manager
-    cn: Test Manager
-    initials: TM
-    givenName: Test
+    objectClass: ipaNTUserAttrs
+    sn: Administrator
+    cn: Administrator
     # total number of entries: 1
     >>>
     >>> print(e[0].entry_to_json(include_empty=False))  # Use include_empty=True to include empty attributes
@@ -195,7 +186,7 @@ Let's explore some of them::
         "dn": "uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org"
     }
 
-You can see that this Entry has additional auxiliary object classes attached. This means that there can be other attributes stored in the entry. Let's try
+As you can see this Entry has additional auxiliary object classes attached. This means that there can be other attributes stored in the entry. Let's try
 to define an ObjectDef that also requests the 'krbprincipalaux'::
 
     >>> obj_person = ObjectDef(['person', 'krbprincipalaux'], conn)
@@ -205,16 +196,17 @@ to define an ObjectDef that also requests the 'krbprincipalaux'::
     krbLastSuccessfulAuth, krbLoginFailedCount, krbPasswordExpiration, krbPrincipalAliases, krbPrincipalAuthInd, krbPrincipalExpiration, krbPrincipalKey,
     krbPrincipalName, krbPrincipalType, krbPwdHistory, krbPwdPolicyReference, krbTicketPolicyReference, krbUPEnabled, seeAlso, telephoneNumber, userPassword
 
-As you can see the ObjectDef now includes all Attributes from both classes. To see the additional data try to refresh the Reader::
+As you can see the ObjectDef now includes all Attributes from both classes. Create a new Reader::
 
+    >>> r = Reader(conn, obj_person, None, 'dc=demo1,dc=freeipa,dc=org')
     >>> e = r.search()
     >>> e[0]
-    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-20T16:22:11.095592
+    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-20T20:40:50.735314
         cn: Administrator
         krbExtraData: b'\x00\x02t[\xffWroot/admin@DEMO1.FREEIPA.ORG\x00'
         krbLastFailedAuth: 2016-10-20 10:26:57+00:00
         krbLastPwdChange: 2016-10-13 10:01:24+00:00
-        krbLastSuccessfulAuth: 2016-10-20 14:06:29+00:00
+        krbLastSuccessfulAuth: 2016-10-20 18:33:16+00:00
         krbLoginFailedCount: 0
         krbPasswordExpiration: 2017-10-13 10:01:24+00:00
         krbPrincipalName: admin@DEMO1.FREEIPA.ORG
@@ -229,3 +221,25 @@ As you can see the ObjectDef now includes all Attributes from both classes. To s
                      ipaSshGroupOfPubKeys
                      ipaNTUserAttrs
         sn: Administrator
+
+You can see that Attribute values are properly formatted thanks to information read in the server schema. For example the krbLastPwdChange is stored as a date (Generalized
+Time, a standard LDAP data type)::
+
+    >>> obj_person.krblastpwdchange
+    ATTR: krbLastPwdChange - mandatory: False - single_value: True
+      Attribute type: 2.16.840.1.113719.1.301.4.45.1
+        Short name: krbLastPwdChange
+        Single value: True
+        Equality rule: generalizedTimeMatch
+        Syntax: 1.3.6.1.4.1.1466.115.121.1.24 [('1.3.6.1.4.1.1466.115.121.1.24', 'LDAP_SYNTAX', 'Generalized Time', 'RFC4517')]
+        Optional in: krbPrincipalAux
+
+So the ldap3 library returns it as a DateTime object::
+
+    >>> type(e[0].krblastpwdchange.value)
+    <class 'datetime.datetime'>
+
+If you look at the raw data read from the server, you get the valued actually stored in the DIT::
+
+    >>> e[0].krblastpwdchange.raw_values
+    [b'20161013100124Z']

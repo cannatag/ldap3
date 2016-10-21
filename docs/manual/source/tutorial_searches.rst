@@ -12,6 +12,7 @@ Finding entries
 To find entries in the DIT you must use the **Search** operation. This operation has a number of parameters, but only two of them are mandatory:
 
 * ``search_base``: the location in the DIT where the search will start
+
 * ``search_filter``: a string that describes what you are searching
 
 Search filters are based on assertions and look odd when you're unfamiliar with their syntax. One *assertion* is a bracketed expression
@@ -234,4 +235,7 @@ The code would be much longer if you would manage directly manage the Simple Sea
 
 .. note::
 
-   For more comprehensive information about searching, see the :doc:`SEARCH <searches>` documentation.
+   After performing a traditional LDAP Search operation with a SYNC strategy you get back a collection of Entries in the ``entries`` property
+   of the Connection object. This collection behaves as the Entries collection of a Reader cursor. For more comprehensive information about
+   the Search operation, see the :doc:`SEARCH <searches>` documentation. An Entry in the ``emtries`` collection can be modified converting it to
+   a Writable one and applying modifications to it as described in the next chapter.

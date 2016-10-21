@@ -50,6 +50,8 @@ WritableAttribute object as ``add()``, ``set()``, ``delete()`` and ``remove()``.
 When creating Entries or assigning new Attribute values new objects are flagged as **Virtual** until committed, to indicate that they
 are still not present in the DIT.
 
+Update operations can be applied to a single Entry or to the whole Entry collection of a Writer reader.
+
 Let's try the same operations we did in the previous chapters of this tutorial. First you must open the connection to the LDAP server as usual:
 
     >>> from ldap3 import Server, Connection, ObjectDef, AttrDef, Reader, Writer, ALL
@@ -94,33 +96,48 @@ were standard properties of the ``obj_person`` object.
 
 Entry status
 ------------
+An Entry acquires a number of different statuses in its lifetime and moves from one status to another only when specific events occour.
+The status of an Entry reflect it's internal state:
 
-An Entry can have a number of different states and moves from one state to another only when specific events occour:
+Entries created with a Reader cursor can have only one status:
 
-* Initial
-
-* Virtual
-
-* Missing mandatory attributes
-
-* Read
-
-* Writable
-
-* Pending changes
-
-* Committed
-
-* Ready for deletion
-
-* Ready for moving
-
-* Ready for renaming
-
-* Deleted
+* Read: entry has been read from the DIT and converted to an Entry in the Entries collection.
 
 
+A Writable Entry in a Writer cursor acquires the following statuses in its lifetime :
+
+* Writable: Entry has been created from a Read one, but no Attribute has been changed.
+
+* Pending changes: some Attributes have been changed, but still not sent to the LDAP server.
+
+* Missing mandatory attributes: Entry misses some mandatory Attribute values, it can't be committed.
 
 
+There are three global events (delete, move, rename) that locks a Writable Entry until committed (or discarded). In this case the
+status can be one of the following:
 
-s
+* Ready for deletion: Entry has been flagged for deletion.
+
+* Ready for moving: Entry has been flagged for moving.
+
+* Ready for renaming: Entry has been flagged for renaming.
+
+
+A new Entry, created in a Writer cursor can have the following status:
+
+* Virtual: the Entry is new and still not present in the DIT
+
+
+After a commit a Writable Entry can be in one of this two statuses:
+
+* Committed: changes have been written to the DIT.
+
+* Deleted: Entry has been deleted in the DIT.
+
+Note that in a Writable Entry pending changes can be discarded at any time. In this case the Entry status is set to Writable and the
+original Attribute values are retained.
+
+To get the status of an Entry use the ``get_status()`` method. You cannot directly change the status of an Entry, it's updated according
+to the operations performed.
+
+When an Entry is in Pending changes status, new Attributes are flagged as Virtual until committed (or discarded).

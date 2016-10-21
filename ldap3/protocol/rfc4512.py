@@ -45,7 +45,7 @@ def constant_to_class_kind(value):
     elif value == CLASS_AUXILIARY:
         return 'Auxiliary'
     else:
-        return 'unknown'
+        return '<unknown>'
 
 
 def constant_to_attribute_usage(value):
@@ -612,7 +612,7 @@ class ObjectClassInfo(BaseObjectInfo):
 
     def __repr__(self):
         r = ''
-        r += (linesep + '  Type: ' + constant_to_class_kind(self.kind)) if isinstance(self.kind, int) else ''
+        r += (linesep + '  Type: ' + constant_to_class_kind(self.kind)) if self.kind else ''
         r += (linesep + '  Superior: ' + list_to_string(self.superior)) if self.superior else ''
         r += (linesep + '  Must contain attributes: ' + list_to_string(self.must_contain)) if self.must_contain else ''
         r += (linesep + '  May contain attributes: ' + list_to_string(self.may_contain)) if self.may_contain else ''

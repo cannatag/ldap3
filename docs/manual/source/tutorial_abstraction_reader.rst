@@ -5,6 +5,7 @@ Tutorial: ldap3 Abstraction Layer
 Reading entries
 ---------------
 Let's now define a Reader cursor to get all the entries of class 'person' in the 'dc=demo1,dc=freeipa,dc=org' context::
+
     >>> r = Reader(conn, obj_person, None, 'dc=demo1,dc=freeipa,dc=org')
     >>> r
     CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:2770 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
@@ -49,10 +50,10 @@ Let's explore some of them::
     >>> # get the DN of an entry
     >>> e[0].entry_dn
     'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
-    >>>
+
     >>> # query the attributes in the Entry as a list of names
     >>> e[0].entry_attributes
-    >>>
+
     >>> # query the attributes in the Entry as a dict of key/value pairs
     >>> e[0].entry_attributes_as_dict
     {'cn': ['Administrator'], 'sn': ['Administrator'], 'userPassword': [], 'telephoneNumber': [], 'seeAlso': [], 'description': [], 'objectClass':
@@ -60,7 +61,7 @@ Let's explore some of them::
     >>> # let's check which attributes are mandatory
     >>> e[0].entry_mandatory_attributes
     ['cn', 'sn', 'objectClass']
-    >>>
+
     >>> convert the Entry to LDIF
     >>> print(e[0].entry_to_ldif())
     version: 1
@@ -78,7 +79,7 @@ Let's explore some of them::
     sn: Administrator
     cn: Administrator
     # total number of entries: 1
-    >>>
+
     >>> print(e[0].entry_to_json(include_empty=False))  # Use include_empty=True to include empty attributes
     {
         "attributes": {
@@ -108,13 +109,13 @@ As you can see this Entry has additional auxiliary object classes attached. This
 to define an ObjectDef that also requests the 'krbprincipalaux'::
 
     >>> obj_person = ObjectDef(['person', 'krbprincipalaux'], conn)
-    OBJ : person, krbPrincipalAux [person OID: 2.5.6.6, top OID: 2.5.6.0, krbPrincipalAux OID: 2.16.840.1.113719.1.301.6.8.1]
+    OBJ : person, krbPrincipalAux [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0, krbPrincipalAux (Auxiliary) 2.16.840.1.113719.1.301.6.8.1]
     MUST: cn, objectClass, sn
-    MAY : description, krbAllowedToDelegateTo, krbCanonicalName, krbExtraData, krbLastAdminUnlock, krbLastFailedAuth, krbLastPwdChange,
-    krbLastSuccessfulAuth, krbLoginFailedCount, krbPasswordExpiration, krbPrincipalAliases, krbPrincipalAuthInd, krbPrincipalExpiration, krbPrincipalKey,
-    krbPrincipalName, krbPrincipalType, krbPwdHistory, krbPwdPolicyReference, krbTicketPolicyReference, krbUPEnabled, seeAlso, telephoneNumber, userPassword
+    MAY : description, krbAllowedToDelegateTo, krbCanonicalName, krbExtraData, krbLastAdminUnlock, krbLastFailedAuth, krbLastPwdChange, krbLastSuccessfulAuth,
+    krbLoginFailedCount, krbPasswordExpiration, krbPrincipalAliases, krbPrincipalAuthInd, krbPrincipalExpiration, krbPrincipalKey, krbPrincipalName, krbPrincipalType,
+     krbPwdHistory, krbPwdPolicyReference, krbTicketPolicyReference, krbUPEnabled, seeAlso, telephoneNumber, userPassword
 
-As you can see the ObjectDef now includes all Attributes from both classes. Create a new Reader::
+As you can see the ObjectDef now includes all Attributes from the *person*, *top* and *krbPrincipalAux* classes. Now create a new Reader::
 
     >>> r = Reader(conn, obj_person, None, 'dc=demo1,dc=freeipa,dc=org')
     >>> e = r.search()
@@ -140,7 +141,7 @@ As you can see the ObjectDef now includes all Attributes from both classes. Crea
                      ipaNTUserAttrs
         sn: Administrator
 
-Attribute values are properly formatted thanks to information read in the server schema. For example the krbLastPwdChange is stored as a date (Generalized
+Note that Attribute are properly formatted thanks to information read in the server schema. For example the krbLastPwdChange is stored as a date (Generalized
 Time, a standard LDAP data type)::
 
     >>> obj_person.krblastpwdchange
@@ -152,23 +153,23 @@ Time, a standard LDAP data type)::
         Syntax: 1.3.6.1.4.1.1466.115.121.1.24 [('1.3.6.1.4.1.1466.115.121.1.24', 'LDAP_SYNTAX', 'Generalized Time', 'RFC4517')]
         Optional in: krbPrincipalAux
 
-So the ldap3 library returns it as a DateTime object::
+So the ldap3 library returns it as a DateTime object (with time zone info)::
 
     >>> type(e[0].krblastpwdchange.value)
     <class 'datetime.datetime'>
 
 .. note::
-    Attributes have tre properties for getting their value: the ``values`` property returns always a list containig values, even in a single-valued attribute;
-``value`` returns the same list in a multi-valued attribute and the actual value in a single-valued attribute. ``raw_attributes`` always returns a list of the
+    Attributes have tre properties for getting their value: the ``values`` property returns always a list containing all values, and it is a list even in a single-valued
+attribute; ``value`` returns the same list in a multi-valued attribute and the actual value in a single-valued attribute. ``raw_attributes`` always returns a list of the
 binary values received in the LDAP response. When the schema is available the ``values`` and ``value`` properties are properly formatted as standard Python types.
-You can add additional formatter with the ``formatter`` parameter of the Server object.
+You can add additional custom formatters with the ``formatter`` parameter of the Server object.
 
-If you look at the raw data read from the server, you get the valued actually stored in the DIT::
+If you look at the raw data read from the server, you get the values actually stored in the DIT::
 
     >>> e[0].krblastpwdchange.raw_values
     [b'20161013100124Z']
 
-Similar formatting is applyied to other well-known attribute types, for example GUID or SID in Active Directory. Also numbers are returned as int::
+Similar formatting is applyied to other well-known attribute types, for example GUID or SID in Active Directory. Numbers are returned as ``int``::
 
     >>> e[0].krbloginfailedcount.value
     krbLoginFailedCount: 0

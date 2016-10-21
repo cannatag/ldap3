@@ -69,9 +69,10 @@ The ``obj_person`` object now contains the definition of the LDAP *person* objec
 as a collection of AttrDef::
 
     >>> obj_person
-    OBJ : person [person OID: 2.5.6.6, top OID: 2.5.6.0]
+    OBJ : person [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0]
     MUST: cn, objectClass, sn
     MAY : description, seeAlso, telephoneNumber, userPassword
+
     >>> obj_person.sn
     ATTR: sn - mandatory: True - single_value: False
       Attribute type: 2.5.4.4
@@ -87,7 +88,6 @@ as a collection of AttrDef::
           X-DEPRECATED: surName
         OidInfo: ('2.5.4.4', 'ATTRIBUTE_TYPE', ['sn', 'surname'], 'RFC4519')
 
-As you can see *person* is a subclass of *top* in the LDAP schema hierarchy. Mandatory (MUST) Attributes are listed separately
-from optional (MAY) Attributes. You can also access the Attribute definitions as if they were standard properties of
-the ``obj_person`` object.
-
+As you can see *person* is a structural subclass of the abstract *top* class in the LDAP schema hierarchy. For convenience mandatory (MUST) Attributes are listed separately
+from optional (MAY) Attributes because are the attributes that must always be present in the entry. You can also access the Attribute definitions as if they
+were standard properties of the ``obj_person`` object.

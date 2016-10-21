@@ -44,7 +44,7 @@ MockBaseStrategy supports the Bind, Unbind, Add, Modify, ModifyDn, Compare, Dele
 extensible match). Abandon and Extended are not supported.
 
 .. note::
-    You can replicate the DIT of a real server (or just the portions of the Tree that you need in your tests) using the response_to_json() method
+    You can replicate the DIT of a real server (or just the portions of the Tree that you need in your tests) using the response_to_file() method
     of the Connection object with *raw* output. Just perform a SUBTREE search with ALL_ATTRIBUTES (or the attributes needed in your tests) with
     the needed base and a filter as ``(objectclass=*)`` that captures every object in the DIT::
 
@@ -52,7 +52,7 @@ extensible match). Abandon and Extended are not supported.
         server = Server('my_real_server')
         connection = Connection(server, 'cn=my_real_user,ou=test,o=lab', 'my_real_password', auto_bind=True)
         if connection.search('ou=test,o=lab', '(objectclass=*)', attributes=ALL_ATTRIBUTES):
-            connection.response_to_json('my_entries.json', raw=True, checked_attributes=False)
+            connection.response_to_file('my_entries.json', raw=True)
 
     The *my_entries.json* file can then be used in the ``entries_from_json()`` method of the MockBaseStrategy.
 
@@ -99,7 +99,7 @@ for simple binding::
 
     # Read entries from a portion of the DIT from real server and store them in a json file
     if connection.search('ou=test,o=lab', '(objectclass=*)', attributes=ALL_ATTRIBUTES):
-        connection.response_to_json('my_real_server_entries.json', raw=True, checked_attributes=False)
+        connection.response_to_file('my_real_server_entries.json', raw=True)
 
     # Close the connection to the real server
     connection.unbind()

@@ -159,9 +159,9 @@ So the ldap3 library returns it as a DateTime object (with time zone info)::
 
 .. note::
     Attributes have tre properties for getting their value: the ``values`` property returns always a list containing all values, and it is a list even in a single-valued
-attribute; ``value`` returns the same list in a multi-valued attribute and the actual value in a single-valued attribute. ``raw_attributes`` always returns a list of the
-binary values received in the LDAP response. When the schema is available the ``values`` and ``value`` properties are properly formatted as standard Python types.
-You can add additional custom formatters with the ``formatter`` parameter of the Server object.
+    attribute; ``value`` returns the same list in a multi-valued attribute and the actual value in a single-valued attribute. ``raw_attributes`` always returns a list of the
+    binary values received in the LDAP response. When the schema is available the ``values`` and ``value`` properties are properly formatted as standard Python types.
+    You can add additional custom formatters with the ``formatter`` parameter of the Server object.
 
 If you look at the raw data read from the server, you get the values actually stored in the DIT::
 

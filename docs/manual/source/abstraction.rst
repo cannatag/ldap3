@@ -319,7 +319,7 @@ Entry as the following attributes and methods:
 * entry_cursor: the cursor object the Entry belongs to
 
 * entry_status: a description of the current status of the Entry (can be any of 'Initial', 'Virtual', 'Missing mandatory attributes',
-  'Read', 'Writable', 'Pending changes', 'Committed', 'Ready for deletion', 'Ready for moving', 'Ready for renaming', 'Deleted'.
+  'Read', 'Writable', 'Pending changes', 'Committed', 'Ready for deletion', 'Ready for moving', 'Ready for renaming', 'Deleted').
 
 * entry_definition: the ObjectDef (with relevant AttrDefs) of the Entry
 

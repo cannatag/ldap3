@@ -4,37 +4,38 @@ Tutorial: ldap3 Abstraction Layer - Introduction
 A more pythonic LDAP
 ====================
 
-LDAP was developed in the late '70s when hosts were very expensive. Elaboration was slow and the LDAP protocol was developed
-with the idea of shifting the burden of computing on the client side. So LDAP operations are crude and rough, clients
+LDAP was developed in the late '70s when hosts were very expensive. Elaboration was slow and the protocol was developed
+with the intent of shifting the burden of computing on the client side. So LDAP operations are crude and rough and clients
 must perform a lot of pre-elaboration before sending the request to servers. This is quite different from what you would
 expect from any modern API where you send your request to the server (maybe using simple JSON) withouth knowing almost anything
 about how actually the work is internally done in the server.
 
 .. note:: An example of this approach is the Search operation: one would expect that the filter string is parsed on the
-server but, if you look at the ldap3 code for the Search operation you'll find a complete parser for the filter, that breaks
-it down to its elementary assertions and builds a recursive representation (similar to an AST) of the filter. It's this representation
-that is sent to the server in a quite complex binary format, not the simple text of the filter.
+   server but, if you look at the ldap3 code for the Search operation you'll find a complete parser for the filter, that breaks
+   it down to its elemental assertions and builds a recursive representation (similar to an AST) of the filter. It's this representation
+   that is sent to the server in a quite complex binary format, not the text of the filter.
 
-The ldap3 library includes an Abstraction Layer that lets you interact with the entries in the DIT in a pythonic way, with simple,
-consistent and easy-to-remember behaviour. With the Abstraction Layer you get an ORM (Object Relational Mapping) that links
+The ldap3 library includes an Abstraction Layer that lets you interact with the entries in the DIT in a *pythonic way*, with **simple,
+consistent and easy-to-remember** behaviour. The Abstraction Layer includes an ORM (Object Relational Mapping) that links
 standard Python objects to entries stored in the DIT. Each Entry object refers to an **ObjectDef** (object class definition) made up of
-one or more **AttrDef** (attribute type definition) that describes the relation between the Attributes stored in the Entry and the
-attributes values stored for that entry on the LDAP server. With the ORM you can perform all the usual CRUD (Create, Read, Update,
-Delete) operations and also you can move an entry or rename it. No coding of LDAP operation is actually required.
+one or more **AttrDef** (attribute type definition) that describes relations between the Attributes stored in the Entry and the
+attribute values stored for that entry on the LDAP server. With the ORM you can perform all the usual CRUD (Create, Read, Update,
+Delete) operations, move an entry or rename it. No coding of LDAP operation is actually required.
 
 .. note:: In this tutorial we refer to Python objects with an uppercase leading character (Entry, Entries, Attribute, Attributes)
-words, while refer to objects on the LDAP server with lowercase words (entry, entries, attribute, attributes). Attributes of a generic Python
-object are referred to as 'property'.
+   words, while refer to objects on the LDAP server with lowercase words (entry, entries, attribute, attributes). Attributes of a generic Python
+   object are referred to as 'property'.
 
-With the Abstraction Layer you describe LDAP entries and access the LDAP server via a standard Python object: the **Cursor** that
+With the Abstraction Layer you describe the structure of an LDAP entry and access the LDAP server via a standard Python object, the **Cursor**, that
 reads and writes Entries from/to the DIT. Optionally you can use a Simplified Query Language instead of the standard LDAP filter syntax.
 
-There are two kinds of Cursor in the Abstraction Layer, **Reader** and **Writer**. This mitigates the risk of accidentally changing
-data in applications that use LDAP only for reading. A Writer cursor cannot read data from the DIT as well, Writer cursors
-are only used for modifying the DIT. So reading and writing of data is kept strictly separated.
+There are two kinds of Cursor, **Reader** and **Writer**. This mitigates the risk of accidentally changing
+data in applications that access LDAP only for reading, isolating the writing component: A Reader cursor can't write any data to
+the DIT while a Writer cursor can't read data at all, Writer cursors are only used for modifying the DIT. So reading
+and writing of data is kept strictly isolated.
 
-Cursors contains Entries. An **Entry** is the Python representation of an entry stored in the LDAP DIT. There are two types of Entries,
-**Read** and **Writable**. Each Entry has a status that identify it's current state.
+Cursors contain Entries. An **Entry** is the Python representation of an entry stored in the LDAP DIT. There are two types of Entries,
+**Read** and **Writable**. Each Entry has a status that identifies it's current state.
 
 Entries are returned as the result of a LDAP Search operation or of a Reader search operation. Entries are made of Attributes.
 An **Attribute** is stored in an internal dictionary with case insensitive access with a friendly key defined in the Attribute definition.
@@ -90,3 +91,36 @@ as a collection of AttrDef::
 As you can see *person* is a structural subclass of the abstract *top* class in the LDAP schema hierarchy. For convenience mandatory (MUST) Attributes are listed separately
 from optional (MAY) Attributes because are the attributes that must always be present in the entry. You can also access the Attribute definitions as if they
 were standard properties of the ``obj_person`` object.
+
+Entry status
+------------
+
+An Entry can have a number of different states and moves from one state to another only when specific events occour:
+
+* Initial
+
+* Virtual
+
+* Missing mandatory attributes
+
+* Read
+
+* Writable
+
+* Pending changes
+
+* Committed
+
+* Ready for deletion
+
+* Ready for moving
+
+* Ready for renaming
+
+* Deleted
+
+
+
+
+
+s

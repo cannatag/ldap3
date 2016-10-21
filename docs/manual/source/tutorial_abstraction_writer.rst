@@ -1,6 +1,5 @@
-#################################
-Tutorial: ldap3 Abstraction Layer
-#################################
+Tutorial: ldap3 Abstraction Layer - Writing data
+################################################
 
 Writing entries
 ---------------

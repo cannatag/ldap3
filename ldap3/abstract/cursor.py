@@ -89,6 +89,28 @@ class Cursor(object):
         self.schema = self.connection.server.schema
         self._do_not_reset = False  # used for refreshing entry in entry_refresh() without removing all entries from the Cursor
 
+    def __repr__(self):
+        r = 'CONN   : ' + str(self.connection) + linesep
+        if hasattr(self, 'base'):
+            r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
+        r += 'DEFS   : ' + repr(self.definition._object_class) + ' ['
+        for attr_def in sorted(self.definition):
+            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
+        if r[-2] == ',':
+            r = r[:-2]
+        r += ']' + linesep
+        if hasattr(self, '_query') and self._query:
+            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
+        if hasattr(self, 'validated_query') and self.validated_query:
+            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
+        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
+        r += 'FILTER : ' + repr(self.query_filter) + linesep
+        if self.execution_time:
+            r += 'ENTRIES: ' + str(len(self.entries))
+            r += ' [SUB]' if self.last_sub_tree else ' [LEVEL]'
+            r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
+        return r
+
     def __str__(self):
         return self.__repr__()
 
@@ -199,9 +221,6 @@ class Cursor(object):
                                             search_scope=query_scope,
                                             dereference_aliases=self.dereference_aliases,
                                             attributes=attributes if attributes else self.attributes,
-                                            size_limit=self.size_limit,
-                                            time_limit=self.time_limit,
-                                            types_only=self.types_only,
                                             get_operational_attributes=self.get_operational_attributes,
                                             controls=self.controls)
             if not self.connection.strategy.sync:
@@ -259,9 +278,6 @@ class Reader(Cursor):
         self._query = query
         self.base = base
         self.dereference_aliases = DEREF_ALWAYS
-        self.size_limit = 0
-        self.time_limit = 0
-        self.types_only = False
         self.validated_query = None
         self._query_dict = dict()
         self._validated_query_dict = dict()
@@ -287,37 +303,11 @@ class Reader(Cursor):
         self._components_in_and = value
         self.reset()
 
-    def __repr__(self):
-        r = 'CONN   : ' + str(self.connection) + linesep
-        r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
-        r += 'DEFS   : ' + repr(self.definition._object_class) + ' ['
-        for attr_def in sorted(self.definition):
-            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
-        if r[-2] == ',':
-            r = r[:-2]
-        r += ']' + linesep
-        if self._query:
-            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
-        if self.validated_query:
-            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
-        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
-        r += 'FILTER : ' + repr(self.query_filter) + linesep
-        if self.execution_time:
-            r += 'ENTRIES: ' + str(len(self.entries))
-            r += ' [SUB]' if self.last_sub_tree else ' [LEVEL]'
-            r += ' [SIZE LIMIT: ' + str(self.size_limit) + ']' if self.size_limit else ''
-            r += ' [TIME LIMIT: ' + str(self.time_limit) + ']' if self.time_limit else ''
-            r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
-        return r
-
     def clear(self):
         """Clear the Reader search parameters
 
         """
         self.dereference_aliases = DEREF_ALWAYS
-        self.size_limit = 0
-        self.time_limit = 0
-        self.types_only = False
 
     def reset(self):
         """Clear all the Reader parameters
@@ -504,49 +494,49 @@ class Reader(Cursor):
 
         return self.entries
 
-    def search_size_limit(self, size_limit, attributes=None):
-        """Perform the LDAP search with limit of entries found
-
-        :param attributes: optional attriibutes to search
-        :param size_limit: maximum number of entries returned
-        :return: Entries found in search
-
-        """
-
-        self.clear()
-        self.size_limit = size_limit
-        query_scope = SUBTREE if self.sub_tree else LEVEL
-        self._execute_query(query_scope, attributes)
-
-        return self.entries
-
-    def search_time_limit(self, time_limit, attributes=None):
-        """Perform the LDAP search with limit of time spent in searching by the server
-
-        :param attributes: optional attributes to search
-        :param time_limit: maximum number of seconds to wait for a search
-        :return: Entries found in search
-
-        """
-        self.clear()
-        self.time_limit = time_limit
-        query_scope = SUBTREE if self.sub_tree else LEVEL
-        self._execute_query(query_scope, attributes)
-
-        return self.entries
-
-    def search_types_only(self, attributes=None):
-        """Perform the search returning attribute names only.
-
-        :return: Entries found in search
-
-        """
-        self.clear()
-        self.types_only = True
-        query_scope = SUBTREE if self.sub_tree else LEVEL
-        self._execute_query(query_scope, attributes)
-
-        return self.entries
+    # def search_size_limit(self, size_limit, attributes=None):
+    #     """Perform the LDAP search with limit of entries found
+    #
+    #     :param attributes: optional attriibutes to search
+    #     :param size_limit: maximum number of entries returned
+    #     :return: Entries found in search
+    #
+    #     """
+    #
+    #     self.clear()
+    #     self.size_limit = size_limit
+    #     query_scope = SUBTREE if self.sub_tree else LEVEL
+    #     self._execute_query(query_scope, attributes)
+    #
+    #     return self.entries
+    #
+    # def search_time_limit(self, time_limit, attributes=None):
+    #     """Perform the LDAP search with limit of time spent in searching by the server
+    #
+    #     :param attributes: optional attributes to search
+    #     :param time_limit: maximum number of seconds to wait for a search
+    #     :return: Entries found in search
+    #
+    #     """
+    #     self.clear()
+    #     self.time_limit = time_limit
+    #     query_scope = SUBTREE if self.sub_tree else LEVEL
+    #     self._execute_query(query_scope, attributes)
+    #
+    #     return self.entries
+    #
+    # def search_types_only(self, attributes=None):
+    #     """Perform the search returning attribute names only.
+    #
+    #     :return: Entries found in search
+    #
+    #     """
+    #     self.clear()
+    #     self.types_only = True
+    #     query_scope = SUBTREE if self.sub_tree else LEVEL
+    #     self._execute_query(query_scope, attributes)
+    #
+    #     return self.entries
 
     def search_paged(self, paged_size, paged_criticality=True, generator=True, attributes=None):
         """Perform a paged search, can be called as an Iterator
@@ -575,9 +565,6 @@ class Reader(Cursor):
                                                                      search_scope=SUBTREE if self.sub_tree else LEVEL,
                                                                      dereference_aliases=self.dereference_aliases,
                                                                      attributes=attributes if attributes else self.attributes,
-                                                                     size_limit=self.size_limit,
-                                                                     time_limit=self.time_limit,
-                                                                     types_only=self.types_only,
                                                                      get_operational_attributes=self.get_operational_attributes,
                                                                      controls=self.controls,
                                                                      paged_size=paged_size,
@@ -605,6 +592,7 @@ class Writer(Cursor):
                 pass
             else:
                 raise LDAPCursorError('unknown cursor type %s' % str(type(cursor)))
+        writer.execution_time = cursor.execution_time
         return writer
 
     @staticmethod
@@ -616,7 +604,7 @@ class Writer(Cursor):
                 response = connection.response
             else:
                 raise LDAPCursorError('response not present')
-        writer = Writer(connection, object_def, None, custom_validator)
+        writer = Writer(connection, object_def)
         # for entry in connection._get_entries(response):
         #     entry.entry_writable(object_def, writer, custom_validator=custom_validator)
         # return writer
@@ -630,20 +618,6 @@ class Writer(Cursor):
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
         self.dereference_aliases = DEREF_NEVER
-
-    def __repr__(self):
-        r = 'CONN   : ' + str(self.connection) + linesep
-        r += 'DEFS   : ' + repr(self.definition._object_class) + ' ['
-        for attr_def in sorted(self.definition):
-            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
-        if r[-2] == ',':
-            r = r[:-2]
-        r += ']' + linesep
-        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
-        if self.execution_time:
-            r += 'ENTRIES: ' + str(len(self.entries))
-            r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
-        return r
 
     def commit(self, refresh=True):
         for entry in self.entries:

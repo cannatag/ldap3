@@ -1161,17 +1161,19 @@ class Connection(object):
         self.last_error = None
         with self.lock:
             result = None
+
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True
-                if self.sasl_mechanism == EXTERNAL:
-                    result = sasl_external(self, controls)
-                elif self.sasl_mechanism == DIGEST_MD5:
-                    result = sasl_digest_md5(self, controls)
-                elif self.sasl_mechanism == GSSAPI:
-                    from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
-                    result = sasl_gssapi(self, controls)
-
-                self.sasl_in_progress = False
+                try:
+                    if self.sasl_mechanism == EXTERNAL:
+                        result = sasl_external(self, controls)
+                    elif self.sasl_mechanism == DIGEST_MD5:
+                        result = sasl_digest_md5(self, controls)
+                    elif self.sasl_mechanism == GSSAPI:
+                        from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
+                        result = sasl_gssapi(self, controls)
+                finally:
+                    self.sasl_in_progress = False
 
             if log_enabled(BASIC):
                 log(BASIC, 'done SASL BIND operation, result <%s>', result)

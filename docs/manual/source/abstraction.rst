@@ -238,28 +238,6 @@ summarize the Reader configuration and status::
     FILTER : '(&(objectClass=inetOrgPerson)(cn=test-add*)(sn=t*))'
     ENTRIES: 1 [SUB] [executed at: Sun Feb  9 20:43:47 2014]
 
-
-Writer Cursor
--------------
-
-By design a Writer Cursor has no Search capability because it can be only used to create new Entries or to modify the Entries in a Reader
-cursor or in an LDAP Search operation.
-
-Instead of the search_* methods the Writer has the following methods:
-
-- from_cursor: creates a Writer cursor from a Reader cursor, populated with a copy of the Entries in the Reader cursor
-
-- from_response: create a Writer cursor from a Search operation response, populated with a copy of the Entries in the Search response
-
-- commit: writes all the pending changes to the DIT
-
-- discard: discards all the pending changes
-
-- new: creates a new Entry
-
-- refresh_entry: re-reads the Entry from the DIT
-
-
 Simplified Query Language
 -------------------------
 
@@ -293,6 +271,26 @@ Object classes defined in the ObjectDef are always included in the filter, so fo
     (&(&(objectClass=inetOrgPerson)(objectClass=AuxEngineer))(cn=b*)(EmployeeType=E))
 
 when using a Reader with the 'engineer' ObjectDef.
+
+Writer Cursor
+-------------
+
+By design a Writer Cursor has no Search capability because it can be only used to create new Entries or to modify the Entries in a Reader
+cursor or in an LDAP Search operation.
+
+Instead of the search_* methods the Writer has the following methods:
+
+- from_cursor: creates a Writer cursor from a Reader cursor, populated with a copy of the Entries in the Reader cursor
+
+- from_response: create a Writer cursor from a Search operation response, populated with a copy of the Entries in the Search response
+
+- commit: writes all the pending changes to the DIT
+
+- discard: discards all the pending changes
+
+- new: creates a new Entry
+
+- refresh_entry: re-reads the Entry from the DIT
 
 Entry
 -----
@@ -432,7 +430,7 @@ When an entry is Writable the Attribute has additional attributes and methods an
 
 * add(value): adds one or more values to the attribute, same of **+=**
 
-* set(value): sets one or more values for the attribute, removing any previous stored value
+* set(value): sets one or more values for the attribute, removing any previous stored value, same of **=**
 
 * delete(value): delete one or more values from the attribute, same of **-=**
 

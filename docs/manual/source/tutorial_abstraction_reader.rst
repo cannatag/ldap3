@@ -177,3 +177,19 @@ Similar formatting is applyied to other well-known attribute types, for example 
     >>> e[0].krbloginfailedcount.raw_values
     [b'0']
 
+Search scope
+------------
+By default the Reader searche the whole sub tree of the requested base. If you want to search entries only in the base, you can pass the
+``sub_tree=False`` parameter in the Reader definition. You can also override the default scope with the ``search_level()``, ``search_object()`` and
+``search_subtree()`` methods of the Reader object::
+
+    >>> r.search_level()  # search only at the 'dc=demo1,dc=freeipa,dc=org' context
+    >>> print(len(r))
+    8
+    >>> r.search_subtree()  # search walking down from the 'dc=demo1,dc=freeipa,dc=org' context
+    >>> print(len(r))
+    20
+
+
+
+

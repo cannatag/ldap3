@@ -332,7 +332,7 @@ class Entry(EntryBase):
         else:
             writable_entry = writable_cursor._create_entry(self._state.response)
             writable_cursor.entries.append(writable_entry)
-            writable_entry._state.entry_read_time = self.entry_read_time
+            writable_entry._state.read_time = self.entry_read_time
         writable_entry._state.origin = self  # reference to the original read-only entry
         writable_entry._state.set_status(STATUS_WRITABLE)
         return writable_entry
@@ -447,7 +447,7 @@ class WritableEntry(EntryBase):
                                 for attr in self:  # returns the whole attribute object
                                     if not attr.virtual:
                                         origin.__dict__[attr.key] = origin._state.attributes[attr.key]
-                                origin._state.entry_read_time = self.entry_read_time
+                                origin._state.read_time = self.entry_read_time
                     else:
                         self.entry_discard_changes()  # if not refreshed remove committed changes
                     self._state.set_status(STATUS_COMMITTED)

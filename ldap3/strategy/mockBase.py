@@ -28,7 +28,7 @@ import re
 
 from threading import Lock
 
-from .. import SEQUENCE_TYPES
+from .. import SEQUENCE_TYPES, ALL_ATTRIBUTES
 from ..operation.bind import bind_request_to_dict
 from ..operation.delete import delete_request_to_dict
 from ..operation.add import add_request_to_dict
@@ -449,7 +449,7 @@ class MockBaseStrategy(object):
                     'attributes': [{'type': attribute,
                                     'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
                                    for attribute in self.connection.server.dit[match]
-                                   if attribute in attributes]
+                                   if attribute in attributes or ALL_ATTRIBUTES in attributes]
                 })
 
             result_code = 0

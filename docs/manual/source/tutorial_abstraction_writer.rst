@@ -14,13 +14,13 @@ an existing Entry, then commit the pending changes to the DIT via the Writer cur
   from the Search response.
 
 * from a single Entry in a Reader cursor, using the ``entry_writable()`` method of the Entry, that returns a new Writable
-Entry (with its Writer cursor).
+  Entry (with its Writer cursor).
 
 * from a single Entry in a Search response, using the ``entry_writable()`` method of the Entry, that returns a new Writable
-Entry (with its Writer cursor)
+  Entry (with its Writer cursor)
 
 * as a new instance of the ldap3.Writer class, using ``Writer()``. This creates a new Writer cursor with an empty ``entries``
-collection. With this cursor you can only create new Entries.
+  collection. With this cursor you can only create new Entries.
 
 Let's obtain a Writer cursor from the Reader we used in the previsous chapter::
 

@@ -1,6 +1,6 @@
 - 2.0.3 2016.10.22
     - updated tutorials for Abstraction Layer
-    - removed searc_size_limit(), search_time_limit() and search_types_only in the Reader cursor
+    - removed search_size_limit(), search_time_limit() and search_types_only in the Reader cursor
     - fixed SASL in progress error (thanks Styleex)
     - fixed ALL_ATTRIBUTES in MOCK_SYNC strategy (thanks Belgarion)
     - ncorrect attribute type error message now includes the name of the attribute (Thanks Andrej)

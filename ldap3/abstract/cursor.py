@@ -90,24 +90,26 @@ class Cursor(object):
         self._do_not_reset = False  # used for refreshing entry in entry_refresh() without removing all entries from the Cursor
 
     def __repr__(self):
-        r = 'CONN   : ' + str(self.connection) + linesep
-        if hasattr(self, 'base'):
-            r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
+        r = 'CURSOR : ' + self.__class__.__name__ + linesep
+        r += 'CONN   : ' + str(self.connection) + linesep
         r += 'DEFS   : ' + repr(self.definition._object_class) + ' ['
         for attr_def in sorted(self.definition):
             r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
         if r[-2] == ',':
             r = r[:-2]
         r += ']' + linesep
-        if hasattr(self, '_query') and self._query:
-            r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
-        if hasattr(self, 'validated_query') and self.validated_query:
-            r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
         r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
-        r += 'FILTER : ' + repr(self.query_filter) + linesep
+        if isinstance(self, Reader):
+            r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
+            if self._query:
+                r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
+            if self.validated_query:
+                r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
+            if self.query_filter:
+                r += 'FILTER : ' + repr(self.query_filter) + linesep
+
         if self.execution_time:
             r += 'ENTRIES: ' + str(len(self.entries))
-            r += ' [SUB]' if self.last_sub_tree else ' [LEVEL]'
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
         return r
 
@@ -236,7 +238,6 @@ class Cursor(object):
             entry = self._create_entry(r)
             self.entries.append(entry)
 
-        self.last_sub_tree = self.sub_tree
         self.execution_time = datetime.now()
 
         if old_query_filter:  # requesting a single object so an always-valid filter is set
@@ -282,7 +283,6 @@ class Reader(Cursor):
         self._query_dict = dict()
         self._validated_query_dict = dict()
         self.query_filter = None
-        self.last_sub_tree = None
         self.reset()
 
     @property
@@ -320,7 +320,6 @@ class Reader(Cursor):
         self.execution_time = None
         self.query_filter = None
         self.entries = []
-        self.last_sub_tree = None
         self._create_query_filter()
 
     def _validate_query(self):
@@ -558,7 +557,6 @@ class Reader(Cursor):
         self.clear()
         self._create_query_filter()
         self.entries = []
-        self.last_sub_tree = self.sub_tree
         self.execution_time = datetime.now()
         for response in self.connection.extend.standard.paged_search(search_base=self.base,
                                                                      search_filter=self.query_filter,

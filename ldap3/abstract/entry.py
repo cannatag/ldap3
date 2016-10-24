@@ -60,7 +60,7 @@ class EntryState(object):
         self.raw_attributes = CaseInsensitiveDict()
         self.response = None
         self.cursor = cursor
-        self.origin = None  # reference to the original read-only entry (set when made writable). Needed to update attributes in read-only when modified
+        self.origin = None  # reference to the original read-only entry (set when made writable). Needed to update attributes in read-only when modified (only if both refer the same server)
         self.read_time = None
         self.changes = OrderedDict()  # includes changes to commit in a writable entry
         if cursor.definition:
@@ -378,17 +378,15 @@ class WritableEntry(EntryBase):
     def entry_commit_changes(self, refresh=True, controls=None):
         if self.entry_status == STATUS_READY_FOR_DELETION:
             if self.entry_cursor.connection.delete(self.entry_dn, controls):
-                origin = None
                 dn = self.entry_dn
-                if self._state.origin:  # deletes original read-only entry if present
+                if self._state.origin and self.entry_cursor.connection.server == self._state.origin.entry_cursor.connection.server:  # deletes original read-only Entry
                     cursor = self._state.origin.entry_cursor
                     self._state.origin.__dict__.clear()
                     self._state.origin.__dict__['_state'] = EntryState(dn, cursor)
-                    origin = self._state.origin
+                    self._state.origin._state.set_status(STATUS_DELETED)
                 cursor = self.entry_cursor
                 self.__dict__.clear()
                 self._state = EntryState(dn, cursor)
-                self._state.origin = origin
                 self._state.set_status(STATUS_DELETED)
                 return True
             else:
@@ -398,7 +396,7 @@ class WritableEntry(EntryBase):
                 self._state.dn = safe_dn('+'.join(safe_rdn(self.entry_dn)) + ',' + self._state._to)
                 if refresh:
                     if self.entry_refresh():
-                        if self._state.origin:  # refresh dn of origin
+                        if self._state.origin and self.entry_cursor.connection.server == self._state.origin.entry_cursor.connection.server:  # refresh dn of origin
                             self._state.origin._state.dn = self.entry_dn
                 self._state.set_status(STATUS_COMMITTED)
                 self._state._to = None
@@ -411,7 +409,7 @@ class WritableEntry(EntryBase):
                 self._state.dn = rdn + ',' + ','.join(to_dn(self.entry_dn)[1:])
                 if refresh:
                     if self.entry_refresh():
-                        if self._state.origin:  # refresh dn of origin
+                        if self._state.origin and self.entry_cursor.connection.server == self._state.origin.entry_cursor.connection.server:  # refresh dn of origin
                             self._state.origin._state.dn = self.entry_dn
                 self._state.set_status(STATUS_COMMITTED)
                 self._state._to = None
@@ -436,18 +434,17 @@ class WritableEntry(EntryBase):
                 if result:
                     if refresh:
                         if self.entry_refresh():
-                            origin = self._state.origin
-                            if origin:  # updates original read-only entry if present
+                            if self._state.origin and self.entry_cursor.connection.server == self._state.origin.entry_cursor.connection.server:  # updates original read-only entry if present
                                 for attr in self:  # adds AttrDefs from writable entry to origin entry definition if some is missing
-                                    if attr.key in self.entry_definition._attributes and attr.key not in origin.entry_definition._attributes:
-                                        origin.entry_cursor.definition.add_attribute(self.entry_cursor.definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
-                                temp_entry = origin.entry_cursor._create_entry(self._state.response)
-                                origin.__dict__.clear()
-                                origin.__dict__['_state'] = temp_entry._state
+                                    if attr.key in self.entry_definition._attributes and attr.key not in self._state.origin.entry_definition._attributes:
+                                        self._state.origin.entry_cursor.definition.add_attribute(self.entry_cursor.definition._attributes[attr.key])  # adds AttrDef from writable entry to original entry if missing
+                                temp_entry = self._state.origin.entry_cursor._create_entry(self._state.response)
+                                self._state.origin.__dict__.clear()
+                                self._state.origin.__dict__['_state'] = temp_entry._state
                                 for attr in self:  # returns the whole attribute object
                                     if not attr.virtual:
-                                        origin.__dict__[attr.key] = origin._state.attributes[attr.key]
-                                origin._state.read_time = self.entry_read_time
+                                        self._state.origin.__dict__[attr.key] = self._state.origin._state.attributes[attr.key]
+                                self._state.origin._state.read_time = self.entry_read_time
                     else:
                         self.entry_discard_changes()  # if not refreshed remove committed changes
                     self._state.set_status(STATUS_COMMITTED)

@@ -34,4 +34,8 @@ Let's obtain a Writer cursor from the Reader we used in the previsous chapter::
 
 Entries in a Writer cursor are standard Python object, so you can modify them with standard Python code::
 
-    >>>
+    >>> e = w[0]
+    >>> e
+
+
+

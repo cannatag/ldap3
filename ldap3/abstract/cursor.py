@@ -678,6 +678,7 @@ class Writer(Cursor):
         return entry
 
     def refresh_entry(self, entry):
+
         self._do_not_reset = True
         temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes)  # if any attributes is added adds only to the entry not to the definition
         self._do_not_reset = False

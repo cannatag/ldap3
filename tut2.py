@@ -1,6 +1,9 @@
 from ldap3 import Server, Connection, ObjectDef, AttrDef, Reader, Writer, ALL, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
 server = Server('ipa.demo1.freeipa.org', get_info=ALL)
-conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=True)
+conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=False)
+conn.bind()
+print(1, conn.last_error)
+print(conn.result)
 conn.add('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'organizationalUnit')
 print(1, conn.last_error)
 conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})

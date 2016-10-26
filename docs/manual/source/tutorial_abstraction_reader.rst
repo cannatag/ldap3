@@ -14,25 +14,27 @@ Let's define a Reader cursor to get all the entries of class 'inetOrgPerson' in 
     ATTRS  : ['audio', 'businessCategory', 'carLicense', 'cn', 'departmentNumber', 'description', 'destinationIndicator', 'displayName', 'employeeNumber', 'employeeType', 'facsimileTelephoneNumber', 'givenName', 'homePhone', 'homePostalAddress', 'initials', 'internationalISDNNumber', 'jpegPhoto', 'l', 'labeledURI', 'mail', 'manager', 'mobile', 'o', 'objectClass', 'ou', 'pager', 'photo', 'physicalDeliveryOfficeName', 'postOfficeBox', 'postalAddress', 'postalCode', 'preferredDeliveryMethod', 'preferredLanguage', 'registeredAddress', 'roomNumber', 'secretary', 'seeAlso', 'sn', 'st', 'street', 'telephoneNumber', 'teletexTerminalIdentifier', 'telexNumber', 'title', 'uid', 'userCertificate', 'userPKCS12', 'userPassword', 'userSMIMECertificate', 'x121Address', 'x500UniqueIdentifier']
     BASE   : 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org' [SUB]
     FILTER : '(objectClass=inetOrgPerson)'
-    ENTRIES: 3 [executed at: 2016-10-26T09:26:41.698313]
 
-We didn't provide any filter, but the Reader automatically uses the ObjectDef class to only read entries of the requested objectclass.
+We didn't provide any filter, but the Reader automatically uses the ObjectDef class to read entries of the requested object class.
 Now you can ask the Reader to execute the search, fetching the results in its ``entries`` property::
 
-    >>> e = r.search()
+    >>> r.search()
     >>> r
-    CURSOR : Writer
+    CURSOR : Reader
     CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:17296 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
     DEFS   : ['inetOrgPerson'] [audio, businessCategory, carLicense, cn, departmentNumber, description, destinationIndicator, displayName, employeeNumber, employeeType, facsimileTelephoneNumber, givenName, homePhone, homePostalAddress, initials, internationalISDNNumber, jpegPhoto, l, labeledURI, mail, manager, mobile, o, objectClass, ou, pager, photo, physicalDeliveryOfficeName, postOfficeBox, postalAddress, postalCode, preferredDeliveryMethod, preferredLanguage, registeredAddress, roomNumber, secretary, seeAlso, sn, st, street, telephoneNumber, teletexTerminalIdentifier, telexNumber, title, uid, userCertificate, userPKCS12, userPassword, userSMIMECertificate, x121Address, x500UniqueIdentifier]
     ATTRS  : ['audio', 'businessCategory', 'carLicense', 'cn', 'departmentNumber', 'description', 'destinationIndicator', 'displayName', 'employeeNumber', 'employeeType', 'facsimileTelephoneNumber', 'givenName', 'homePhone', 'homePostalAddress', 'initials', 'internationalISDNNumber', 'jpegPhoto', 'l', 'labeledURI', 'mail', 'manager', 'mobile', 'o', 'objectClass', 'ou', 'pager', 'photo', 'physicalDeliveryOfficeName', 'postOfficeBox', 'postalAddress', 'postalCode', 'preferredDeliveryMethod', 'preferredLanguage', 'registeredAddress', 'roomNumber', 'secretary', 'seeAlso', 'sn', 'st', 'street', 'telephoneNumber', 'teletexTerminalIdentifier', 'telexNumber', 'title', 'uid', 'userCertificate', 'userPKCS12', 'userPassword', 'userSMIMECertificate', 'x121Address', 'x500UniqueIdentifier']
+    BASE   : 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org' [SUB]
+    FILTER : '(objectClass=inetOrgPerson)'
     ENTRIES: 3 [executed at: 2016-10-26T09:26:41.698313]
 
-There are now three Entries in the Reader. An Entry has some interesting features accessible from its properties
-and methods. Because Attribute names are used as Entry class properties all the "operational" properties and methods of an Entry start
-with the **entry_** prefix (the underscore is an invalid character in an attribute name). It's easy to get a useful representation of an Entry::
+There are now three Entries in the Reader. An Entry has some interesting features accessible from its properties and methods. Because
+Attribute names are used as Entry properties all the "operational" properties and methods of an Entry start with the **entry_** prefix
+(the underscore is an invalid character in an attribute name, so there can't be an attribute with that name). It's easy to get a useful
+representation of an Entry::
 
-    >>> e[0]
-    DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Writable - READ TIME: 2016-10-26T09:26:41.691314
+    >>> r[0]
+    DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-26T09:26:41.691314
         cn: b.young
         departmentNumber: DEV
         givenName: Beatrix
@@ -46,61 +48,50 @@ with the **entry_** prefix (the underscore is an invalid character in an attribu
 Let's explore some of them::
 
     >>> # get the DN of an entry
-    >>> e[0].entry_dn
+    >>> r[0].entry_dn
     'cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'
 
     >>> # query the attributes in the Entry as a list of names
-    >>> e[0].entry_attributes
+    >>> r[0].entry_attributes
 
     >>> # query the attributes in the Entry as a dict of key/value pairs
-    >>> e[0].entry_attributes_as_dict
+    >>> r[0].entry_attributes_as_dict
     {'cn': ['Administrator'], 'sn': ['Administrator'], 'userPassword': [], 'telephoneNumber': [], 'seeAlso': [], 'description': [], 'objectClass':
     ['top', 'person', 'posixaccount', 'krbprincipalaux', 'krbticketpolicyaux', 'inetuser', 'ipaobject', 'ipasshuser', 'ipaSshGroupOfPubKeys', 'ipaNTUserAttrs']}
+
     >>> # let's check which attributes are mandatory
-    >>> e[0].entry_mandatory_attributes
+    >>> r[0].entry_mandatory_attributes
     ['cn', 'sn', 'objectClass']
 
     >>> convert the Entry to LDIF
-    >>> print(e[0].entry_to_ldif())
+    >>> print(r[0].entry_to_ldif())
     version: 1
-    dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
+    dn: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org
     objectClass: top
     objectClass: person
-    objectClass: posixaccount
-    objectClass: krbprincipalaux
-    objectClass: krbticketpolicyaux
-    objectClass: inetuser
-    objectClass: ipaobject
-    objectClass: ipasshuser
-    objectClass: ipaSshGroupOfPubKeys
-    objectClass: ipaNTUserAttrs
-    sn: Administrator
-    cn: Administrator
+    objectClass: organizationalPerson
+    objectClass: inetOrgPerson
+    sn: Young
+    cn: b.young
     # total number of entries: 1
 
-    >>> print(e[0].entry_to_json(include_empty=False))  # Use include_empty=True to include empty attributes
+    >>> print(r[0].entry_to_json(include_empty=False))  # Use include_empty=True to include empty attributes
     {
         "attributes": {
             "cn": [
-                "Administrator"
+                "b.young"
             ],
             "objectClass": [
                 "top",
                 "person",
-                "posixaccount",
-                "krbprincipalaux",
-                "krbticketpolicyaux",
-                "inetuser",
-                "ipaobject",
-                "ipasshuser",
-                "ipaSshGroupOfPubKeys",
-                "ipaNTUserAttrs"
+                "organizationalPerson",
+                "inetOrgPerson"
             ],
             "sn": [
-                "Administrator"
+                "Young"
             ]
         },
-        "dn": "uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org"
+        "dn": "cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org"
     }
 
 As you can see this Entry has additional auxiliary object classes attached. This means that there can be other attributes stored in the entry. Let's try
@@ -139,8 +130,8 @@ As you can see the ObjectDef now includes all Attributes from the *person*, *top
                      ipaNTUserAttrs
         sn: Administrator
 
-Note that Attribute are properly formatted thanks to information read in the server schema. For example the krbLastPwdChange is stored as a date (Generalized
-Time, a standard LDAP data type)::
+Note that Attribute are properly formatted thanks to information read in the server schema. For example the krbLastPwdChange is stored as
+a date (Generalized Time, a standard LDAP data type)::
 
     >>> obj_person.krblastpwdchange
     ATTR: krbLastPwdChange - mandatory: False - single_value: True
@@ -157,17 +148,18 @@ So the ldap3 library returns it as a DateTime object (with time zone info)::
     <class 'datetime.datetime'>
 
 .. note::
-    Attributes have tre properties for getting their value: the ``values`` property returns always a list containing all values, and it is a list even in a single-valued
-    attribute; ``value`` returns the same list in a multi-valued attribute and the actual value in a single-valued attribute. ``raw_attributes`` always returns a list of the
-    binary values received in the LDAP response. When the schema is available the ``values`` and ``value`` properties are properly formatted as standard Python types.
-    You can add additional custom formatters with the ``formatter`` parameter of the Server object.
+    Attributes have three properties for getting their value: the ``values`` property returns always a list containing all values (even in
+    a single-valued attribute; ``value`` returns the same list in a multi-valued attribute and the value in a single-valued attribute.
+    ``raw_attributes`` always returns a list of the binary values received in the LDAP response. When the schema is available the ``values``
+    and ``value`` properties are properly formatted as standard Python types. You can add additional custom formatters with the ``formatter``
+    parameter of the Server object.
 
 If you look at the raw data read from the server, you get the values actually stored in the DIT::
 
     >>> e[0].krblastpwdchange.raw_values
     [b'20161013100124Z']
 
-Similar formatting is applyied to other well-known attribute types, for example GUID or SID in Active Directory. Numbers are returned as ``int``::
+Similar formatting is applied to other well-known attribute types, for example GUID or SID in Active Directory. Numbers are returned as ``int``::
 
     >>> e[0].krbloginfailedcount.value
     krbLoginFailedCount: 0
@@ -178,7 +170,7 @@ Similar formatting is applyied to other well-known attribute types, for example 
 
 Search scope
 ------------
-By default the Reader searche the whole sub tree of the requested base. If you want to search entries only in the base, you can pass the
+By default the Reader searchs the whole sub tree starting from the specified base. If you want to search entries only in the base, you can pass the
 ``sub_tree=False`` parameter in the Reader definition. You can also override the default scope with the ``search_level()``, ``search_object()`` and
 ``search_subtree()`` methods of the Reader object::
 
@@ -188,7 +180,5 @@ By default the Reader searche the whole sub tree of the requested base. If you w
     >>> r.search_subtree()  # search walking down from the 'dc=demo1,dc=freeipa,dc=org' context
     >>> print(len(r))
     20
-
-
 
 

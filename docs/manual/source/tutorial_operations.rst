@@ -58,7 +58,7 @@ As you can see we have created a container object and stored a new user in it. Y
 as second parameter and a dictonary of attributes as the third parameter. Some attributes are mandatory when adding a new object. You can check the schema to know which are
 the mandatory attributes you need to provide to successfully create a new object.
 
-If we look at the schema for the *inetOrgPerson* object class we find that there are no mandatory attributes::
+Looking at the schema for the *inetOrgPerson* object class we find that there are no mandatory attributes::
 
     >>> server.schema.object_classes['inetOrgPerson']
     Object class: 2.16.840.1.113730.3.2.2
@@ -178,7 +178,7 @@ each with one or more values! So the Modify operation syntax is quite complex: y
 attribute a list of modifications where each modification is a tuple with the modification type and the list of values. Let's add a new value to the sn attribute::
 
     >>> from ldap3 import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
-    >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smyth']), (MODIFY_DELETE, ['Young'])]})
+    >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smyth'])]})
     True
     >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
     True
@@ -199,7 +199,7 @@ Now remove the old value::
         cn: b.smith
         sn: Smyth
 
-We made a typo in the previous modify operation (Smyth instead of Smith), let's fix it, replacing values with the right one::
+There is a typo in the previous modify operation (Smyth instead of Smith), let's fix it, replacing values with the right one::
 
     >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_REPLACE, ['Smith'])]})
     True
@@ -254,3 +254,27 @@ actually bind with that user's credentials. In this case you can test the value 
 only works with the Simple Password authentication method, because for other methods passwords may be stored in a different attribute, or externally to
 the DIT. Also passwords can (and should) be stored with some encryption mechanism. You must read the documentation of your LDAP server to see if passwords can
 be successfully checked with the Compare operation.
+
+What's next
+-----------
+In the next chapter of this tutorial we will start using the **Abstraction Layer**, that hides all the LDAP machinery and
+let you use standard Python objects to perform the CRUD (Create, Read, Update, Delete) operation that you expect to find in a
+decent database interface. It uses an **ORM** (*Object Relational Mapper*) to link entries in the DIT with standard Python objects and
+let you operate on this object in a pythonic way.
+
+Let's move back the 'b.smith* entry to its original context and values and let's create a few more entries in that context::
+
+    >>> conn.modify_dn('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.smith', new_superior='ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+    True
+    >>> conn.modify('cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_DELETE, ['Johnson'])], 'givenname': [(MODIFY_REPLACE, ['Beatrix'])]})
+    True
+    >>> conn.modify_dn('cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'cn=b.young')
+    >>> conn.add('cn=m.johnson,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Mary Ann', 'sn': 'Johnson', 'departmentNumber': 'DEV', 'telephoneNumber': 2222})
+    True
+    >>> conn.add('cn=q.gray,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Quentin', 'sn': 'Gray', 'departmentNumber': 'QA', 'telephoneNumber': 3333})
+    True
+
+There should be now three entries in the 'ldap3-tutorial' context. We will use them in the next parts of this tutorial.
+
+
+

@@ -3,52 +3,51 @@ Tutorial: ldap3 Abstraction Layer - Reading data
 
 Reading entries
 ---------------
-Let's now define a Reader cursor to get all the entries of class 'person' in the 'dc=demo1,dc=freeipa,dc=org' context::
 
-    >>> r = Reader(conn, obj_person, None, 'dc=demo1,dc=freeipa,dc=org')
+Let's define a Reader cursor to get all the entries of class 'inetOrgPerson' in the 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org' context::
+
+    >>> r = Reader(conn, obj_person, None, 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     >>> r
-    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:2770 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
-    BASE   : 'dc=demo1,dc=freeipa,dc=org' [SUB]
-    DEFS   : ['person'] [cn, description, objectClass, seeAlso, sn, telephoneNumber, userPassword]
-    ATTRS  : ['cn', 'description', 'objectClass', 'seeAlso', 'sn', 'telephoneNumber', 'userPassword']
-    FILTER : '(objectClass=person)'
+    CURSOR : Reader
+    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:17296 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
+    DEFS   : ['inetOrgPerson'] [audio, businessCategory, carLicense, cn, departmentNumber, description, destinationIndicator, displayName, employeeNumber, employeeType, facsimileTelephoneNumber, givenName, homePhone, homePostalAddress, initials, internationalISDNNumber, jpegPhoto, l, labeledURI, mail, manager, mobile, o, objectClass, ou, pager, photo, physicalDeliveryOfficeName, postOfficeBox, postalAddress, postalCode, preferredDeliveryMethod, preferredLanguage, registeredAddress, roomNumber, secretary, seeAlso, sn, st, street, telephoneNumber, teletexTerminalIdentifier, telexNumber, title, uid, userCertificate, userPKCS12, userPassword, userSMIMECertificate, x121Address, x500UniqueIdentifier]
+    ATTRS  : ['audio', 'businessCategory', 'carLicense', 'cn', 'departmentNumber', 'description', 'destinationIndicator', 'displayName', 'employeeNumber', 'employeeType', 'facsimileTelephoneNumber', 'givenName', 'homePhone', 'homePostalAddress', 'initials', 'internationalISDNNumber', 'jpegPhoto', 'l', 'labeledURI', 'mail', 'manager', 'mobile', 'o', 'objectClass', 'ou', 'pager', 'photo', 'physicalDeliveryOfficeName', 'postOfficeBox', 'postalAddress', 'postalCode', 'preferredDeliveryMethod', 'preferredLanguage', 'registeredAddress', 'roomNumber', 'secretary', 'seeAlso', 'sn', 'st', 'street', 'telephoneNumber', 'teletexTerminalIdentifier', 'telexNumber', 'title', 'uid', 'userCertificate', 'userPKCS12', 'userPassword', 'userSMIMECertificate', 'x121Address', 'x500UniqueIdentifier']
+    BASE   : 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org' [SUB]
+    FILTER : '(objectClass=inetOrgPerson)'
+    ENTRIES: 3 [executed at: 2016-10-26T09:26:41.698313]
 
-We didn't provide any filter, but the Reader automatically uses the ObjectDef class to read only entries of the requested objectclass.
-Now you can ask the Reader to execute the search fetching the results in its ``entries`` property::
+We didn't provide any filter, but the Reader automatically uses the ObjectDef class to only read entries of the requested objectclass.
+Now you can ask the Reader to execute the search, fetching the results in its ``entries`` property::
 
     >>> e = r.search()
     >>> r
-    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:18059 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
-    BASE   : 'dc=demo1,dc=freeipa,dc=org' [SUB]
-    DEFS   : ['person'] [cn, description, objectClass, seeAlso, sn, telephoneNumber, userPassword]
-    ATTRS  : ['cn', 'description', 'objectClass', 'seeAlso', 'sn', 'telephoneNumber', 'userPassword']
-    FILTER : '(objectClass=person)'
-    ENTRIES: 17 [SUB] [executed at: 2016-10-20T08:51:31.574345]
+    CURSOR : Writer
+    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:17296 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
+    DEFS   : ['inetOrgPerson'] [audio, businessCategory, carLicense, cn, departmentNumber, description, destinationIndicator, displayName, employeeNumber, employeeType, facsimileTelephoneNumber, givenName, homePhone, homePostalAddress, initials, internationalISDNNumber, jpegPhoto, l, labeledURI, mail, manager, mobile, o, objectClass, ou, pager, photo, physicalDeliveryOfficeName, postOfficeBox, postalAddress, postalCode, preferredDeliveryMethod, preferredLanguage, registeredAddress, roomNumber, secretary, seeAlso, sn, st, street, telephoneNumber, teletexTerminalIdentifier, telexNumber, title, uid, userCertificate, userPKCS12, userPassword, userSMIMECertificate, x121Address, x500UniqueIdentifier]
+    ATTRS  : ['audio', 'businessCategory', 'carLicense', 'cn', 'departmentNumber', 'description', 'destinationIndicator', 'displayName', 'employeeNumber', 'employeeType', 'facsimileTelephoneNumber', 'givenName', 'homePhone', 'homePostalAddress', 'initials', 'internationalISDNNumber', 'jpegPhoto', 'l', 'labeledURI', 'mail', 'manager', 'mobile', 'o', 'objectClass', 'ou', 'pager', 'photo', 'physicalDeliveryOfficeName', 'postOfficeBox', 'postalAddress', 'postalCode', 'preferredDeliveryMethod', 'preferredLanguage', 'registeredAddress', 'roomNumber', 'secretary', 'seeAlso', 'sn', 'st', 'street', 'telephoneNumber', 'teletexTerminalIdentifier', 'telexNumber', 'title', 'uid', 'userCertificate', 'userPKCS12', 'userPassword', 'userSMIMECertificate', 'x121Address', 'x500UniqueIdentifier']
+    ENTRIES: 3 [executed at: 2016-10-26T09:26:41.698313]
 
-There are now a number of entries in the Reader. An Entry has some interesting features accessible from its properties
+There are now three Entries in the Reader. An Entry has some interesting features accessible from its properties
 and methods. Because Attribute names are used as Entry class properties all the "operational" properties and methods of an Entry start
 with the **entry_** prefix (the underscore is an invalid character in an attribute name). It's easy to get a useful representation of an Entry::
 
     >>> e[0]
-    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-20T08:51:31.574345
-        cn: Administrator
-        objectClass: top
+    DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Writable - READ TIME: 2016-10-26T09:26:41.691314
+        cn: b.young
+        departmentNumber: DEV
+        givenName: Beatrix
+        objectClass: inetOrgPerson
+                     organizationalPerson
                      person
-                     posixaccount
-                     krbprincipalaux
-                     krbticketpolicyaux
-                     inetuser
-                     ipaobject
-                     ipasshuser
-                     ipaSshGroupOfPubKeys
-                     ipaNTUserAttrs
-        sn: Administrator
+                     top
+        sn: Young
+        telephoneNumber: 1111
 
 Let's explore some of them::
 
     >>> # get the DN of an entry
     >>> e[0].entry_dn
-    'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+    'cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org'
 
     >>> # query the attributes in the Entry as a list of names
     >>> e[0].entry_attributes

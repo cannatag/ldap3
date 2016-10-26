@@ -77,6 +77,7 @@ class BaseStrategy(object):
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
         self.pooled = None  # Indicates a connection with a connection pool
         self.can_stream = None  # indicates if a strategy keeps a stream of responses (i.e. LdifProducer can accumulate responses with a single header). Stream must be initialized and closed in _start_listen() and _stop_listen()
+        self.referral_cache = {}
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
 
@@ -668,45 +669,52 @@ class BaseStrategy(object):
             preferred_referral_list = [referral for referral in valid_referral_list if referral['ssl'] == self.connection.server.ssl]
             selected_referral = choice(preferred_referral_list) if preferred_referral_list else choice(valid_referral_list)
 
-            referral_server = Server(host=selected_referral['host'],
-                                     port=selected_referral['port'] or self.connection.server.port,
-                                     use_ssl=selected_referral['ssl'],
-                                     get_info=self.connection.server.get_info,
-                                     formatter=self.connection.server.custom_formatter,
-                                     connect_timeout=self.connection.server.connect_timeout,
-                                     mode=self.connection.server.mode,
-                                     allowed_referral_hosts=self.connection.server.allowed_referral_hosts,
-                                     tls=Tls(local_private_key_file=self.connection.server.tls.private_key_file,
-                                             local_certificate_file=self.connection.server.tls.certificate_file,
-                                             validate=self.connection.server.tls.validate,
-                                             version=self.connection.server.tls.version,
-                                             ca_certs_file=self.connection.server.tls.ca_certs_file) if selected_referral['ssl'] else None)
+            cachekey = (selected_referral['host'], selected_referral['port'] or self.connection.server.port, selected_referral['ssl'])
+            if self.connection.use_referral_cache and cachekey in self.referral_cache:
+                referral_connection = self.referral_cache[cachekey]
+            else:
+                referral_server = Server(host=selected_referral['host'],
+                                         port=selected_referral['port'] or self.connection.server.port,
+                                         use_ssl=selected_referral['ssl'],
+                                         get_info=self.connection.server.get_info,
+                                         formatter=self.connection.server.custom_formatter,
+                                         connect_timeout=self.connection.server.connect_timeout,
+                                         mode=self.connection.server.mode,
+                                         allowed_referral_hosts=self.connection.server.allowed_referral_hosts,
+                                         tls=Tls(local_private_key_file=self.connection.server.tls.private_key_file,
+                                                 local_certificate_file=self.connection.server.tls.certificate_file,
+                                                 validate=self.connection.server.tls.validate,
+                                                 version=self.connection.server.tls.version,
+                                                 ca_certs_file=self.connection.server.tls.ca_certs_file) if selected_referral['ssl'] else None)
 
-            from ..core.connection import Connection
+                from ..core.connection import Connection
 
-            referral_connection = Connection(server=referral_server,
-                                             user=self.connection.user if not selected_referral['anonymousBindOnly'] else None,
-                                             password=self.connection.password if not selected_referral['anonymousBindOnly'] else None,
-                                             version=self.connection.version,
-                                             authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else ANONYMOUS,
-                                             client_strategy=SYNC,
-                                             auto_referrals=True,
-                                             read_only=self.connection.read_only,
-                                             check_names=self.connection.check_names,
-                                             raise_exceptions=self.connection.raise_exceptions,
-                                             fast_decoder=self.connection.fast_decoder,
-                                             receive_timeout=self.connection.receive_timeout)
+                referral_connection = Connection(server=referral_server,
+                                                 user=self.connection.user if not selected_referral['anonymousBindOnly'] else None,
+                                                 password=self.connection.password if not selected_referral['anonymousBindOnly'] else None,
+                                                 version=self.connection.version,
+                                                 authentication=self.connection.authentication if not selected_referral['anonymousBindOnly'] else ANONYMOUS,
+                                                 client_strategy=SYNC,
+                                                 auto_referrals=True,
+                                                 read_only=self.connection.read_only,
+                                                 check_names=self.connection.check_names,
+                                                 raise_exceptions=self.connection.raise_exceptions,
+                                                 fast_decoder=self.connection.fast_decoder,
+                                                 receive_timeout=self.connection.receive_timeout)
+
+                if self.connection.usage:
+                    self.connection._usage.referrals_connections += 1
+
+                referral_connection.open()
+                referral_connection.strategy._referrals = self._referrals
+                if self.connection.tls_started and not referral_server.ssl:  # if the original server was in start_tls mode and the referral server is not in ssl then start_tls on the referral connection
+                    referral_connection.start_tls()
+
+                if self.connection.bound:
+                    referral_connection.bind()
 
             if self.connection.usage:
                 self.connection._usage.referrals_followed += 1
-
-            referral_connection.open()
-            referral_connection.strategy._referrals = self._referrals
-            if self.connection.tls_started and not referral_server.ssl:  # if the original server was in start_tls mode and the referral server is not in ssl then start_tls on the referral connection
-                referral_connection.start_tls()
-
-            if self.connection.bound:
-                referral_connection.bind()
 
             if request['type'] == 'searchRequest':
                 referral_connection.search(selected_referral['base'] or request['base'],
@@ -755,7 +763,10 @@ class BaseStrategy(object):
 
             response = referral_connection.response
             result = referral_connection.result
-            referral_connection.unbind()
+            if self.connection.use_referral_cache:
+                self.referral_cache[cachekey] = referral_connection
+            else:
+                referral_connection.unbind()
         else:
             response = None
             result = None
@@ -811,3 +822,8 @@ class BaseStrategy(object):
 
     def set_stream(self, value):
         raise NotImplementedError
+
+    def unbind_referral_cache(self):
+        while len(self.referral_cache) > 0:
+            cachekey, referral_connection = self.referral_cache.popitem()
+            referral_connection.unbind()

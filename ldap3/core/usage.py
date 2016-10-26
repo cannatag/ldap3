@@ -56,6 +56,7 @@ class ConnectionUsage(object):
         self.unbind_operations = 0
         self.referrals_received = 0
         self.referrals_followed = 0
+        self.referrals_connections = 0
         self.restartable_failures = 0
         self.restartable_successes = 0
         self.servers_from_pool = 0
@@ -88,6 +89,7 @@ class ConnectionUsage(object):
         self.unbind_operations = 0
         self.referrals_received = 0
         self.referrals_followed = 0
+        self.referrals_connections = 0
         self.restartable_failures = 0
         self.restartable_successes = 0
         self.servers_from_pool = 0
@@ -128,6 +130,7 @@ class ConnectionUsage(object):
         r += '  Referrals:               ' + linesep
         r += '    Received:              ' + str(self.referrals_received) + linesep
         r += '    Followed:              ' + str(self.referrals_followed) + linesep
+        r += '    Connections:           ' + str(self.referrals_connections) + linesep
         r += '  Restartable tries:       ' + str(self.restartable_failures + self.restartable_successes) + linesep
         r += '    Failed restarts:       ' + str(self.restartable_failures) + linesep
         r += '    Successful restarts:   ' + str(self.restartable_successes) + linesep
@@ -160,6 +163,7 @@ class ConnectionUsage(object):
         self.unbind_operations += other.unbind_operations
         self.referrals_received += other.referrals_received
         self.referrals_followed += other.referrals_followed
+        self.referrals_connections += other.referrals_connections
         self.restartable_failures += other.restartable_failures
         self.restartable_successes += other.restartable_successes
         self.servers_from_pool += other.servers_from_pool

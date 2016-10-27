@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from os import sep
-from .. import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT_EXCEEDED, RESULT_SIZE_LIMIT_EXCEEDED, \
+from .results import RESULT_OPERATIONS_ERROR, RESULT_PROTOCOL_ERROR, RESULT_TIME_LIMIT_EXCEEDED, RESULT_SIZE_LIMIT_EXCEEDED, \
     RESULT_STRONGER_AUTH_REQUIRED, RESULT_REFERRAL, RESULT_ADMIN_LIMIT_EXCEEDED, RESULT_UNAVAILABLE_CRITICAL_EXTENSION, \
     RESULT_AUTH_METHOD_NOT_SUPPORTED, RESULT_UNDEFINED_ATTRIBUTE_TYPE, RESULT_NO_SUCH_ATTRIBUTE, \
     RESULT_SASL_BIND_IN_PROGRESS, RESULT_CONFIDENTIALITY_REQUIRED, RESULT_INAPPROPRIATE_MATCHING, \
@@ -365,23 +365,14 @@ class LDAPKeyError(LDAPExceptionError, KeyError, AttributeError):
     pass
 
 
-class LDAPAttributeError(LDAPExceptionError, AttributeError):
-    pass
-
-
-class LDAPEntryError(LDAPExceptionError):
-    pass
-
-
 class LDAPObjectError(LDAPExceptionError, ValueError):
     pass
 
-
-class LDAPTypeError(LDAPExceptionError, TypeError):
+class LDAPAttributeError(LDAPExceptionError, ValueError, TypeError):
     pass
 
 
-class LDAPReaderError(LDAPExceptionError):
+class LDAPCursorError(LDAPExceptionError):
     pass
 
 
@@ -415,7 +406,7 @@ class LDAPConnectionIsReadOnlyError(LDAPExceptionError):
     pass
 
 
-class LDAPChangesError(LDAPExceptionError, ValueError):
+class LDAPChangeError(LDAPExceptionError, ValueError):
     pass
 
 
@@ -463,7 +454,7 @@ class LDAPInvalidDereferenceAliasesError(LDAPExceptionError, ValueError):
     pass
 
 
-class LDAPControlsError(LDAPExceptionError, ValueError):
+class LDAPControlError(LDAPExceptionError, ValueError):
     pass
 
 

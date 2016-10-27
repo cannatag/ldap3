@@ -1,11 +1,11 @@
-"""
+u"""
 """
 
 # Created on 2013.06.02
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -39,6 +39,7 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 from ..protocol.formatters.standard import format_attribute_values
+from ..utils.conv import escape_filter_chars
 
 ROOT = 0
 AND = 1
@@ -230,7 +231,6 @@ def compile_filter(filter_node):
     elif filter_node.tag == NOT:
         boolean_filter = Not()
         boolean_filter['innerNotFilter'] = compile_filter(filter_node.elements[0])
-        # compiled_filter['notFilter'] = boolean_filter
         compiled_filter.setComponentByName('notFilter', boolean_filter, verifyConstraints=False)  # do not verify constraints because of hack for recursive filters in rfc4511
 
     elif filter_node.tag == MATCH_APPROX:
@@ -285,10 +285,6 @@ def compile_filter(filter_node):
         raise LDAPInvalidFilterError('unknown filter node tag')
 
     return compiled_filter
-
-
-def build_filter(search_filter, schema):
-    return compile_filter(parse_filter(search_filter, schema).elements[0])
 
 
 def build_attribute_selection(attribute_list, schema):
@@ -358,7 +354,7 @@ def search_operation(search_base,
     request['sizeLimit'] = Integer0ToMax(size_limit)
     request['timeLimit'] = Integer0ToMax(time_limit)
     request['typesOnly'] = TypesOnly(True) if types_only else TypesOnly(False)
-    request['filter'] = build_filter(search_filter, schema)  # parse the searchFilter string and compile it starting from the root node
+    request['filter'] = compile_filter(parse_filter(search_filter, schema).elements[0])  # parse the searchFilter string and compile it starting from the root node
     if not isinstance(attributes, SEQUENCE_TYPES):
         attributes = [NO_ATTRIBUTES]
 

@@ -5,7 +5,8 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
+
 #
 # This file is part of ldap3.
 #
@@ -22,6 +23,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+
+from os import linesep
 
 from ..core.exceptions import LDAPKeyError
 
@@ -44,11 +47,12 @@ class AttrDef(object):
     :param dereference_dn: reference to an ObjectDef instance. When the attribute value contains a dn it will be searched and substituted in the entry
     :type dereference_dn: ObjectDef
     :param description: custom attribute description
-    :type dereference_dn: string
-
+    :type description: string
+    :param mandatory: specify if attribute is defined as mandatory in LDAP schema
+    :type mandatory: boolean
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, mandatory=False, single_value=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
@@ -57,18 +61,21 @@ class AttrDef(object):
         self.default = default
         self.dereference_dn = dereference_dn
         self.description = description
+        self.mandatory = mandatory
+        self.single_value = single_value
+        self.oid_info = None
 
     def __repr__(self):
-        r = 'AttrDef(key={0.key!r}'.format(self)
-        r += ', name={0.name!r}'.format(self)
-        r += '' if self.validate is None else ', validate={0.validate!r}'.format(self)
-        r += '' if self.pre_query is None else ', pre_query={0.pre_query!r}'.format(self)
-        r += '' if self.post_query is None else ', post_query={0.post_query!r}'.format(self)
-        r += '' if self.default is None else ', default={0.default!r}'.format(self)
-        r += '' if self.dereference_dn is None else ', dereference_dn={0.dereference_dn!r}'.format(self)
-        r += '' if self.description is None else ', description={0.d!r}'.format(self)
-        r += ')'
-
+        r = 'ATTR: ' + self.key
+        r += '' if self.name == self.key else ' [' + self.name + ']'
+        r += '' if self.default is NotImplemented else ' - default: ' + str(self.default)
+        r += '' if self.mandatory is None else ' - mandatory: ' + str(self.mandatory)
+        r += '' if self.single_value is None else ' - single_value: ' + str(self.single_value)
+        r += '' if not self.dereference_dn else ' - dereference_dn: ' + str(self.dereference_dn)
+        r += '' if not self.description else ' - description: ' + str(self.description)
+        if self.oid_info:
+            for line in str(self.oid_info).split(linesep):
+                r += linesep + '  ' + line
         return r
 
     def __str__(self):

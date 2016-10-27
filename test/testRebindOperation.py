@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2013.06.06
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -22,7 +25,7 @@
 
 import unittest
 
-from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5
+from ldap3 import ANONYMOUS, SASL, NTLM, DIGEST_MD5
 from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, \
     test_server_type, test_ntlm_user, test_ntlm_password, test_secondary_user, test_secondary_password, \
     test_sasl_secondary_user, test_sasl_secondary_password, test_sasl_secondary_user_dn, test_sasl_user_dn

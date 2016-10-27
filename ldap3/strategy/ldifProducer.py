@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -27,10 +27,9 @@ from io import StringIO
 from os import linesep
 import random
 
-from .. import LDAP_MAX_INT
 from ..core.exceptions import LDAPLDIFError
 from ..utils.conv import prepare_for_stream
-from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp
+from ..protocol.rfc4511 import LDAPMessage, MessageID, ProtocolOp, LDAP_MAX_INT
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.convert import build_controls_list
 from .base import BaseStrategy

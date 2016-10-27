@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -91,7 +91,7 @@ def _find_first_unescaped(dn, char, pos):
         pos = dn.find(char, pos)
         if pos == -1:
             break  # no char found
-        if pos > 0 and dn[pos - 1] != '\\':  # unescaped comma
+        if pos > 0 and dn[pos - 1] != '\\':  # unescaped char
             break
 
         pos += 1
@@ -153,7 +153,8 @@ def split_ava(ava, escape=False, strip=True):
 
 def validate_attribute_type(attribute_type):
     if not attribute_type:
-        return False
+        raise LDAPInvalidDnError('attribute type not present')
+
     for c in attribute_type:
         if not (c in ascii_letters or c in digits or c == '-'):  # allowed uppercase and lowercase letters, digits and hyphen as per RFC 4512
             raise LDAPInvalidDnError('character ' + c + ' not allowed in attribute type')
@@ -258,7 +259,7 @@ def escape_attribute_value(attribute_value):
     elif state == STATE_ESCAPE_HEX:
         escaped += '\\\\' + tmp_buffer
 
-    if escaped[0] == ' ':  # leading  SPACE must be escaped
+    if escaped[0] == ' ':  # leading SPACE must be escaped
         escaped = '\\' + escaped
 
     if escaped[-1] == ' ' and len(escaped) > 1 and escaped[-2] != '\\':  # trailing SPACE must be escaped
@@ -272,6 +273,7 @@ def parse_dn(dn, escape=False, strip=True):
     avas = []
     while dn:
         ava, separator = get_next_ava(dn)  # if returned ava doesn't containg any unescaped equal it'a appended to last ava in avas
+
         dn = dn[len(ava) + 1:]
         if _find_first_unescaped(ava, '=', 0) > 0 or len(avas) == 0:
             avas.append((ava, separator))
@@ -280,6 +282,7 @@ def parse_dn(dn, escape=False, strip=True):
 
     for ava, separator in avas:
         attribute_type, attribute_value = split_ava(ava, escape, strip)
+
         if not validate_attribute_type(attribute_type):
             raise LDAPInvalidDnError('unable to validate attribute type in ' + ava)
 
@@ -297,7 +300,7 @@ def parse_dn(dn, escape=False, strip=True):
 
 def safe_dn(dn, decompose=False, reverse=False):
     """
-    normalize and escape a dn, if dn is a sequence is joined.
+    normalize and escape a dn, if dn is a sequence it is joined.
     the reverse parameter change the join direction of the sequence
     """
     if isinstance(dn, SEQUENCE_TYPES):
@@ -310,11 +313,17 @@ def safe_dn(dn, decompose=False, reverse=False):
         escaped_dn = []
     else:
         escaped_dn = ''
-    for component in parse_dn(dn, escape=True):
-        if decompose:
-            escaped_dn.append((component[0], component[1], component[2]))
-        else:
-            escaped_dn += component[0] + '=' + component[1] + component[2]
+
+    if '@' not in dn:  # active directory UPN (User Principal Name) consist of an account, the at sign (@) and a domain
+        for component in parse_dn(dn, escape=True):
+            if decompose:
+                escaped_dn.append((component[0], component[1], component[2]))
+            else:
+                escaped_dn += component[0] + '=' + component[1] + component[2]
+    elif len(dn.split('@')) != 2:
+        raise LDAPInvalidDnError('Active Directory UPN must consist of name@domain')
+    else:
+        escaped_dn = dn
 
     return escaped_dn
 

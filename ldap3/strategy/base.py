@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -17,7 +17,7 @@
 # ldap3 is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# GNU Lesser General Public License for more dectails.
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
@@ -31,11 +31,11 @@ from time import sleep
 from random import choice
 from datetime import datetime
 
-from .. import SESSION_TERMINATED_BY_SERVER, SYNC, ANONYMOUS, get_config_parameter, DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL, RESPONSE_COMPLETE, BASE, \
-    TRANSACTION_ERROR
+from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
+from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
-    LDAPSocketSendError, LDAPExceptionError, LDAPControlsError, LDAPResponseTimeoutError, LDAPTransactionError
+    LDAPSocketSendError, LDAPExceptionError, LDAPControlError, LDAPResponseTimeoutError, LDAPTransactionError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
@@ -57,6 +57,10 @@ from ..protocol.rfc2696 import RealSearchControlValue
 from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
+
+SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
+TRANSACTION_ERROR = 'TRANSACTION_ERROR'
+RESPONSE_COMPLETE = 'RESPONSE_FROM_SERVER_COMPLETE'
 
 
 # noinspection PyProtectedMember
@@ -214,8 +218,6 @@ class BaseStrategy(object):
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)
             self.connection.socket.connect(address[4])
-            if self.connection.server.connect_timeout:
-                self.connection.socket.settimeout(None)  # disable socket timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specifice in connection
         except socket.error as e:
             self.connection.last_error = 'socket connection error while opening: ' + str(e)
             exc = e
@@ -238,6 +240,9 @@ class BaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+
+        if self.connection.server.connect_timeout:
+            self.connection.socket.settimeout(None)  # disable socket connection timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specified in connection
 
         if self.connection.usage:
             self.connection._usage.open_sockets += 1
@@ -388,7 +393,7 @@ class BaseStrategy(object):
                 for entry in response:
                     if entry['type'] == 'searchResEntry':
                         for attribute_type in self._outstanding[message_id]['attributes']:
-                            if attribute_type not in entry['raw_attributes']:
+                            if attribute_type not in entry['raw_attributes'] and attribute_type not in (ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES):
                                 entry['raw_attributes'][attribute_type] = list()
                                 entry['attributes'][attribute_type] = list()
                                 if log_enabled(PROTOCOL):
@@ -545,7 +550,7 @@ class BaseStrategy(object):
         if unprocessed:
                 if log_enabled(ERROR):
                     log(ERROR, 'unprocessed control response in substrate')
-                raise LDAPControlsError('unprocessed control response in substrate')
+                raise LDAPControlError('unprocessed control response in substrate')
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod

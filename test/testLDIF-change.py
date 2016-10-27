@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2013.12.13
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -129,7 +132,7 @@ class Test(unittest.TestCase):
 
     def test_multiple_modify_to_ldif(self):
         # from rfc 2849 example
-        result = self.connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
+        result = self.connection.modify('cn=Paula Jensen,ou=Product Development,dc=airius,dc=com',
                                         {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),
                                          'description': (MODIFY_DELETE, []),
                                          'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),
@@ -138,7 +141,7 @@ class Test(unittest.TestCase):
             self.connection.get_response(result)
         response = self.connection.response
         self.assertTrue('version: 1' in response)
-        self.assertTrue('dn: cn=Paula Jensen, ou=Product Development, dc=airius, dc=com' in response)
+        self.assertTrue('dn: cn=Paula Jensen,ou=Product Development,dc=airius,dc=com' in response)
         self.assertTrue('changetype: modify' in response)
         self.assertTrue('delete: facsimiletelephonenumber' in response)
         self.assertTrue('facsimiletelephonenumber: +1 408 555 9876' in response)

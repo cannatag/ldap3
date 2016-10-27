@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2014.06.30
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -22,7 +25,7 @@
 
 import unittest
 
-from ldap3 import LDAPExtensionError
+from ldap3.core.exceptions import LDAPExtensionError
 from test import test_user, test_server_context, test_server_edir_name, random_id, get_connection, drop_connection, add_user, test_server_type, \
     test_name_attr, test_base, test_password
 
@@ -95,4 +98,4 @@ class Test(unittest.TestCase):
         if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             self.connection.start_tls()
             result = self.connection.extend.novell.get_universal_password(test_user)
-            self.assertTrue(result, test_password)
+            self.assertEqual(result, test_password)

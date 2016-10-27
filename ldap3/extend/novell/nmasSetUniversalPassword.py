@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -25,6 +25,7 @@
 
 from ...extend.operation import ExtendedOperation
 from ...protocol.novell import NmasSetUniversalPasswordRequestValue, NmasSetUniversalPasswordResponseValue, NMAS_LDAP_EXT_VERSION
+from ...utils.dn import safe_dn
 
 
 class NmasSetUniversalPassword(ExtendedOperation):
@@ -37,6 +38,9 @@ class NmasSetUniversalPassword(ExtendedOperation):
 
     def __init__(self, connection, user, new_password, controls=None):
         ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
+        if connection.check_names and user:
+            user = safe_dn(user)
+
         self.request_value['nmasver'] = NMAS_LDAP_EXT_VERSION
         if user:
             self.request_value['reqdn'] = user

@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -65,7 +65,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
     def __iter__(self):
         return self._store.__iter__()
 
-    def __len__(self):
+    def __len__(self):  # if len is 0 then the cidict appears as False in IF statement
         return len(self._store)
 
     def __repr__(self):

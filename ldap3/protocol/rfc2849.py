@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -26,12 +26,14 @@
 from base64 import b64encode
 from datetime import datetime
 
-from .. import LDIF_LINE_LENGTH, STRING_TYPES
+from .. import STRING_TYPES
 from ..core.exceptions import LDAPLDIFError, LDAPExtensionError
 from ..protocol.persistentSearch import EntryChangeNotificationControl
 from ..utils.asn1 import decoder
 
 # LDIF converter RFC 2849 compliant
+
+LDIF_LINE_LENGTH = 78
 
 
 def safe_ldif_string(bytes_value):
@@ -254,10 +256,11 @@ def decode_persistent_search_control(change):
 
     return None
 
+
 def persistent_search_response_to_ldif(change):
     ldif_lines = ['# ' + datetime.now().isoformat()]
     control = decode_persistent_search_control(change)
-    if control :
+    if control:
         if control['changeNumber']:
             ldif_lines.append('# change number: ' + str(control['changeNumber']))
         ldif_lines.append(control['changeType'])

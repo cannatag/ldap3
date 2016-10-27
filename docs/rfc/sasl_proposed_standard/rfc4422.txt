@@ -1059,7 +1059,7 @@ RFC 4422                          SASL                         June 2006
    the underlying transport connection.
 
    The client's initiation of the SASL exchange, including the selection
-   of a SASL mechanism, is done in the clear and may be modified by an
+   of a SASL mechanism, is done in the _clear and may be modified by an
 
 
 
@@ -1095,7 +1095,7 @@ RFC 4422                          SASL                         June 2006
    benefits the attacker.  Truncation attacks are fairly easy to defend
    against in connection-oriented application-level protocols.  A
    protocol can defend against these attacks by ensuring that each
-   information exchange has a clear final result and that each protocol
+   information exchange has a _clear final result and that each protocol
    session has a graceful closure mechanism, and that these are
    integrity protected.
 

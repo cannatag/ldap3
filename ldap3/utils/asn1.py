@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -27,8 +27,9 @@
 from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder
 from pyasn1.type.univ import Boolean
 from pyasn1.compat.octets import ints2octs
+from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
 
-from .. import RESULT_CODES
+from ..core.results import RESULT_CODES
 
 from ..protocol.convert import referrals_to_list
 
@@ -45,11 +46,8 @@ class BooleanCEREncoder(BooleanEncoder):
 
 tagMap[Boolean.tagSet] = BooleanCEREncoder()
 
-from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
 
 # a fast BER decoder for LDAP responses only
-
-
 def compute_ber_size(data):
     """
     Compute size according to BER definite length rules

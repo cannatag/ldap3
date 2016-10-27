@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -24,10 +24,9 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from pyasn1.type.namedtype import NamedTypes, NamedType, OptionalNamedType
-from pyasn1.type.tag import TagSet, Tag, tagClassContext, tagFormatConstructed, tagClassUniversal
 from pyasn1.type.namedval import NamedValues
-from pyasn1.type.univ import Sequence, OctetString, Integer, Boolean, Enumerated
-from .rfc4511 import ResultCode, LDAPString, LDAPDN
+from pyasn1.type.univ import Sequence, Integer, Boolean, Enumerated
+from .rfc4511 import LDAPDN
 from .controls import build_control
 
 

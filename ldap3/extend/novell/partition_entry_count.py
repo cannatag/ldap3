@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -29,6 +29,7 @@ from ...core.exceptions import LDAPExtensionError
 from ..operation import ExtendedOperation
 from ...protocol.rfc4511 import LDAPDN
 from ...utils.asn1 import decoder
+from ...utils.dn import safe_dn
 
 
 class PartitionEntryCount(ExtendedOperation):
@@ -40,6 +41,8 @@ class PartitionEntryCount(ExtendedOperation):
 
     def __init__(self, connection, partition_dn, controls=None):
         ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
+        if connection.check_names:
+            partition_dn = safe_dn(partition_dn)
         self.request_value = LDAPDN(partition_dn)
 
     def populate_result(self):

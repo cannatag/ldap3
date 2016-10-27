@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -26,6 +26,7 @@
 from ...core.exceptions import LDAPExtensionError
 from ...protocol.microsoft import dir_sync_control, extended_dn_control, show_deleted_control
 from ... import SUBTREE, DEREF_NEVER
+from ...utils.dn import safe_dn
 
 
 class DirSync(object):
@@ -43,7 +44,10 @@ class DirSync(object):
                  hex_guid
                  ):
         self.connection = connection
-        self.base = sync_base
+        if self.connection.check_names and sync_base:
+            self. base = safe_dn(sync_base)
+        else:
+            self.base = sync_base
         self.filter = sync_filter
         self.attributes = attributes
         self.cookie = cookie

@@ -4,8 +4,8 @@
     "status": "5 - Production/Stable",
     "package_name": "ldap3",
     "url": "https://github.com/cannatag/ldap3",
-    "description": "A strictly RFC 4510 conforming LDAP V3 pure Python client library. The same codebase works with Python 2, Python 3, PyPy, PyPy3 and Nuikta",
+    "description": "A strictly RFC 4510 conforming LDAP V3 pure Python client library. The same codebase works with Python 2, Python 3, PyPy and PyPy3",
     "author": "Giovanni Cannata",
-    "version": "1.4.0",
+    "version": "2.0.4",
     "license": "LGPL v3"
 }

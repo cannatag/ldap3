@@ -57,7 +57,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ldap3'
-copyright = '2015 ' + __author__
+copyright = '2016 ' + __author__
 author = __author__
 
 # The version info for the project you're documenting, acts as replacement for

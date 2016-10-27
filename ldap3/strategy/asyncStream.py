@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -54,7 +54,7 @@ class AsyncStreamStrategy(AsyncStrategy):
         self._header_added = False
         self.persistent_search_message_id = None
         self.streaming = False
-        self.callback=None
+        self.callback = None
         self.events = Queue()
 
     def _start_listen(self):

@@ -28,7 +28,7 @@ import re
 
 from threading import Lock
 
-from .. import SEQUENCE_TYPES
+from .. import SEQUENCE_TYPES, ALL_ATTRIBUTES
 from ..operation.bind import bind_request_to_dict
 from ..operation.delete import delete_request_to_dict
 from ..operation.add import add_request_to_dict
@@ -43,7 +43,7 @@ from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
+from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
@@ -59,6 +59,7 @@ class MockBaseStrategy(object):
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
         self.bound = None
+        self.add_entry('cn=schema', [])  # add default entry for schema
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
 
@@ -149,7 +150,7 @@ class MockBaseStrategy(object):
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPDefinitionError(self.connection.last_error)
-        # checks userPassword for password. userPassword must be a clear text string or a list of clear text strings
+        # checks userPassword for password. userPassword must be a _clear text string or a list of _clear text strings
         if identity in self.connection.server.dit:
             if 'userPassword' in self.connection.server.dit[identity]:
                 if self.connection.server.dit[identity]['userPassword'] == password or password in self.connection.server.dit[identity]['userPassword']:
@@ -171,8 +172,8 @@ class MockBaseStrategy(object):
             message = 'missing object'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
-                'diagnosticMessage': to_unicode(message),
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None,
                 'serverSaslCreds': None
                 }
@@ -195,8 +196,8 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
-                'diagnosticMessage': to_unicode(message),
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -226,8 +227,8 @@ class MockBaseStrategy(object):
             message = 'entry already exist'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
-                'diagnosticMessage': to_unicode(message),
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -260,8 +261,8 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
-                'diagnosticMessage': to_unicode(message),
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -302,8 +303,8 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
-                'diagnosticMessage': to_unicode(message),
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -381,8 +382,8 @@ class MockBaseStrategy(object):
             message = 'object not found'
 
         return {'resultCode': result_code,
-                'matchedDN': to_unicode(''),
-                'diagnosticMessage': to_unicode(message),
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
                 'referral': None
                 }
 
@@ -426,7 +427,7 @@ class MockBaseStrategy(object):
         filter_root = parse_filter(request['filter'], self.connection.server.schema)
         candidates = []
         if scope == 0:  # base object
-            if base in self.connection.server.dit:
+            if base in self.connection.server.dit or base.lower() == 'cn=schema':
                 candidates.append(base)
         elif scope == 1:  # single level
             for entry in self.connection.server.dit:
@@ -448,15 +449,15 @@ class MockBaseStrategy(object):
                     'attributes': [{'type': attribute,
                                     'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
                                    for attribute in self.connection.server.dit[match]
-                                   if attribute in attributes]
+                                   if attribute in attributes or ALL_ATTRIBUTES in attributes]
                 })
 
             result_code = 0
             message = ''
 
         result = {'resultCode': result_code,
-                  'matchedDN': to_unicode(''),
-                  'diagnosticMessage': to_unicode(message),
+                  'matchedDN': '',
+                  'diagnosticMessage': to_unicode(message, 'utf-8'),
                   'referral': None
                   }
 
@@ -504,7 +505,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value).lower() >= to_unicode(attr_value).lower():  # case insentive string comparison
+                            if to_unicode(value, 'utf-8').lower() >= to_unicode(attr_value, 'utf-8').lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -520,7 +521,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value).lower() <= to_unicode(attr_value).lower():  # case insentive string comparison
+                            if to_unicode(value, 'utf-8').lower() <= to_unicode(attr_value, 'utf-8').lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -537,16 +538,16 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             # rebuild the original substring filter
             if node.assertion['initial']:
-                substring_filter = re.escape(to_unicode(node.assertion['initial']))
+                substring_filter = re.escape(to_unicode(node.assertion['initial'], 'utf-8'))
             else:
                 substring_filter = ''
 
             if node.assertion['any']:
                 for middle in node.assertion['any']:
-                    substring_filter += '.*' + re.escape(to_unicode(middle))
+                    substring_filter += '.*' + re.escape(to_unicode(middle, 'utf-8'))
 
             if node.assertion['final']:
-                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final']))
+                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], 'utf-8'))
 
             if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # onyly initial, adds .*
                 substring_filter += '.*'
@@ -555,7 +556,7 @@ class MockBaseStrategy(object):
             for candidate in candidates:
                 if attr_name in self.connection.server.dit[candidate]:
                     for value in self.connection.server.dit[candidate][attr_name]:
-                        if regex_filter.match(to_unicode(value)):
+                        if regex_filter.match(to_unicode(value, 'utf-8')):
                             node.matched.add(candidate)
                         else:
                             node.unmatched.add(candidate)

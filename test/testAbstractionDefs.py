@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2014.01.12
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -22,12 +25,18 @@
 
 import unittest
 
-from ldap3.abstract import ObjectDef, AttrDef, Reader
-from ldap3.abstract.reader import _create_query_dict
-from test import test_base
+from ldap3 import ObjectDef, AttrDef, Reader
+from ldap3.abstract.cursor import _create_query_dict
+from test import test_base, get_connection, drop_connection
 
 
 class Test(unittest.TestCase):
+    def setUp(self):
+        self.connection = get_connection(check_names=True)
+
+    def tearDown(self):
+        drop_connection(self.connection)
+
     def test_create_query_dict(self):
         query_text = 'Common Name:=|john;Bob, Surname:=smith'
         query_dict = _create_query_dict(query_text)
@@ -42,7 +51,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._validate_query()
 
@@ -55,7 +64,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 
@@ -66,7 +75,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = 'Common Name:John'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 
@@ -77,7 +86,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = '|Common Name:=john;=Bob'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 
@@ -90,7 +99,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(None, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 

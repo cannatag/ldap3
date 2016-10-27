@@ -67,7 +67,7 @@ A server can be implicitly defined with default directly in the Connection defin
 Server Pool
 -----------
 
-.. sidebar:: Active strategies
+.. note:: Active strategies
 
    Active strategies check if the server is listening on the specified port. When the 'active' attribute is set to True the strategy tries to open and close a socket on the port. If your LDAP server has problems with the opening and closing of sockets you can set 'active' to False..
 

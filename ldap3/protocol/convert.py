@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -23,10 +23,10 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SEQUENCE_TYPES
-from ..core.exceptions import LDAPControlsError, LDAPAttributeError, LDAPObjectClassError
+from .. import SEQUENCE_TYPES, CLASSES_EXCLUDED_FROM_CHECK, ATTRIBUTES_EXCLUDED_FROM_CHECK
+from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
-
+from ..utils.conv import to_raw
 
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
@@ -101,7 +101,7 @@ def build_controls_list(controls):
         return None
 
     if not isinstance(controls, SEQUENCE_TYPES):
-        raise LDAPControlsError('controls must be a sequence')
+        raise LDAPControlError('controls must be a sequence')
 
     built_controls = Controls()
     for idx, control in enumerate(controls):
@@ -115,42 +115,43 @@ def build_controls_list(controls):
                 built_control['controlValue'] = control[2]
             built_controls.setComponentByPosition(idx, built_control)
         else:
-            raise LDAPControlsError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue (None if not provided)')
+            raise LDAPControlError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue (None if not provided)')
 
     return built_controls
 
 
 def validate_assertion_value(schema, name, value):
-    if schema and schema.attribute_types is not None:
-        if name not in schema.attribute_types:
-            raise LDAPAttributeError('invalid attribute type in assertion: ' + name)
-    if '\\' not in value:
-        return value.encode('utf-8')
+    value = validate_attribute_value(schema, name, value)
+    if b'\\' in value:
+        validated_value = bytearray()
+        pos = 0
+        while pos < len(value):
+            # if value[pos] == b'\\':
+            if value[pos] == 92 or value[pos] == b'\\':  # asc for \ in python 3
+                byte = value[pos + 1: pos + 3]
+                if len(byte) == 2:
+                    try:
+                        validated_value.append(int(value[pos + 1: pos + 3], 16))
+                        pos += 3
+                        continue
+                    except ValueError:
+                        pass
+            validated_value += chr(value[pos]).encode('utf-8')
+            pos += 1
+        validated_value = bytes(validated_value)
+    else:
+        validated_value = value
 
-    validated_value = bytearray()
-    pos = 0
-    while pos < len(value):
-        if value[pos] == '\\':
-            byte = value[pos + 1: pos + 3]
-            if len(byte) == 2:
-                try:
-                    validated_value.append(int(value[pos + 1: pos + 3], 16))
-                    pos += 3
-                    continue
-                except ValueError:
-                    pass
-        validated_value += value[pos].encode('utf-8')
-        pos += 1
-
-    return bytes(validated_value)
+    return validated_value
 
 
 def validate_attribute_value(schema, name, value):
     if schema:
-        if schema.attribute_types is not None and name not in schema.attribute_types:
-            raise LDAPAttributeError('invalid attribute type in attribute')
+        if schema.attribute_types is not None and name not in schema.attribute_types and name not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
+            raise LDAPAttributeError('invalid attribute ' + name)
         if schema.object_classes is not None and name == 'objectClass':
-            if value not in schema.object_classes:
-                raise LDAPObjectClassError('invalid class in ObjectClass attribute: ' + value)
-
-    return value
+            #if value not in schema.object_classes and value.lower() not in ['subschema', 'subschemaSubentry']:
+            if value not in CLASSES_EXCLUDED_FROM_CHECK and value not in schema.object_classes:
+                raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
+    # validated_value =  escape_filter_chars(value)
+    return to_raw(value)

@@ -1,8 +1,10 @@
+"""
+"""
 # Created on 2014.01.19
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -22,7 +24,7 @@
 
 import unittest
 
-from ldap3.abstract import ObjectDef, AttrDef, Reader
+from ldap3 import ObjectDef, AttrDef, Reader
 from test import test_base, add_user, add_group, get_connection, drop_connection, random_id
 
 testcase_id = random_id()
@@ -49,7 +51,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name', post_query=reverse)
 
         query_text = 'Common Name:=' + testcase_id + 'abs-*'
-        r = Reader(self.connection, o, query_text, test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         results = r.search()
         self.assertEqual(len(results), 3)
@@ -78,7 +80,7 @@ class Test(unittest.TestCase):
         ou += AttrDef('givenName', 'Given Name', post_query=raise_parentheses_rank)
         ou += AttrDef('ACL')
         qu = 'Common Name: ' + testcase_id + 'abstract-member-*'
-        ru = Reader(self.connection, ou, qu, test_base)
+        ru = Reader(self.connection, ou, test_base, qu)
         lu = ru.search()
         self.assertEqual(len(lu), 3)
 
@@ -86,7 +88,7 @@ class Test(unittest.TestCase):
         og += AttrDef('member', dereference_dn=ou)
         og += 'cn'
         qg = 'cn := ' + testcase_id + 'abstract-group'
-        rg = Reader(self.connection, og, qg, test_base)
+        rg = Reader(self.connection, og, test_base, qg)
         lg = rg.search()
         self.assertEqual(len(lg), 1)
 
@@ -110,7 +112,7 @@ class Test(unittest.TestCase):
         ou += AttrDef('givenName', 'Given Name')
         ou += AttrDef('ACL')
         qu = 'Common Name := bug'
-        ru = Reader(self.connection, ou, qu, test_base)
+        ru = Reader(self.connection, ou, test_base, qu)
         lu = ru.search()
         self.assertEqual(len(lu), 3)
 
@@ -121,7 +123,7 @@ class Test(unittest.TestCase):
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='not employed')
         qu = 'CommonName := ' + testcase_id + 'abstract-member-10'
-        ru = Reader(self.connection, ou, qu, test_base)
+        ru = Reader(self.connection, ou, test_base, qu)
         lu = ru.search()
         self.assertEqual(str(lu[0].employee), 'not employed')
 
@@ -132,7 +134,7 @@ class Test(unittest.TestCase):
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default='')
         qu = 'CommonName := ' + testcase_id + 'abstract-member-11'
-        ru = Reader(self.connection, ou, qu, test_base)
+        ru = Reader(self.connection, ou, test_base, qu)
         lu = ru.search()
         self.assertEqual(lu[0].employee.value, '')
 
@@ -143,6 +145,6 @@ class Test(unittest.TestCase):
         ou += AttrDef('cn', 'CommonName')
         ou += AttrDef('employeeType', key='Employee', default=None)
         qu = 'CommonName := ' + testcase_id + 'abstract-member-12'
-        ru = Reader(self.connection, ou, qu, test_base)
+        ru = Reader(self.connection, ou, test_base, qu)
         lu = ru.search()
         self.assertEqual(lu[0].employee.value, None)

@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2016 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import DO_NOT_RAISE_EXCEPTIONS
+from ..core.results import DO_NOT_RAISE_EXCEPTIONS
 from .mockBase import MockBaseStrategy
 from .sync import SyncStrategy
 from ..operation.bind import bind_response_to_dict
@@ -34,7 +34,7 @@ from ..operation.modifyDn import modify_dn_response_to_dict
 from ..operation.modify import modify_response_to_dict
 from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
+from ..utils.log import log, log_enabled, ERROR, PROTOCOL
 
 # LDAPResult ::= SEQUENCE {
 #     resultCode         ENUMERATED {

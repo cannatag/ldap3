@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2013.06.06
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -21,9 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from time import sleep
 
-from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control, dir_sync_control
 from ldap3.utils.conv import escape_bytes
 from test import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_int_attr
@@ -39,12 +40,15 @@ class Test(unittest.TestCase):
         if test_server_type == 'EDIR':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3', test_int_attr: 0}))  # LATIN SMALL LETTER A WITH GRAVE
         elif test_server_type == 'AD':
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3'}))  # LATIN SMALL LETTER A WITH GRAVE
         else:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3'}))  # LATIN SMALL LETTER A WITH GRAVE
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
@@ -66,7 +70,7 @@ class Test(unittest.TestCase):
 
     def test_search_extensible_match(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
-            result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
+            result = self.connection.search(search_base=test_base, search_filter='(&(ou:dn:=fixtures)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
             else:
@@ -93,7 +97,7 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(response), 3)
 
     def test_search_with_operational_attributes(self):
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
@@ -142,7 +146,7 @@ class Test(unittest.TestCase):
                 total_entries += len(response)
                 self.assertTrue(len(response) <= paged_size)
                 cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
-            self.assertEqual(total_entries, 9)
+            self.assertEqual(total_entries, 10)
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-10', attributes={'givenName': 'givenname-10'}))
@@ -167,7 +171,7 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(response), 3)
 
     def test_search_integer_less_than(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' <=1))', attributes=[test_name_attr, test_int_attr])
@@ -177,7 +181,7 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(response), 3)
 
     def test_search_integer_greater_than(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' >=-1))', attributes=[test_name_attr, test_int_attr])
@@ -187,7 +191,7 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(response), 3)
 
     def test_search_not_match(self):
         result = self.connection.search(search_base=test_base,
@@ -200,3 +204,17 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertTrue(len(response) >= 1)
+
+    def test_search_exact_match_with_unicode_in_filter(self):
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'search-3-\u2122)', attributes=[test_name_attr, 'givenName'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes']['givenName'], 'givenname-3')
+        else:
+            self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-3')

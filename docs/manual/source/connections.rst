@@ -14,7 +14,7 @@ The following strategies are available:
 
 * RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times or forever.
 
-.. sidebar:: Lazy connections
+.. note:: Lazy connections
 
    In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation is needed.
 
@@ -64,6 +64,13 @@ Connection parameters are:
 * receive_timeout: set the socket in non-blocking mode - raising an exception after the specified amount of seconds if nothing is received over the wire
 
 * return_empty_attributes: when a search is performed if an attribute is empty then sets its value to an empty list, default to False
+
+* auto_range: if a server returns a fixed amount of entries in searches using the *range* tag (RFCs 3866) setting this value to True let the ldap3 library automatically request all entries with additional searches. The entries are returned as if a single search is performed
+
+
+.. note::
+The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.
+So it can happens that your code works seamlessy until your data grow to exceed the 1000 entries limit and your code stops working properly without any apparent reason.
 
 With the connection object you can perform all the standard LDAP operations:
 

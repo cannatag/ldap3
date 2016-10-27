@@ -1271,15 +1271,15 @@ RFC 4513              LDAP Authentication Methods              June 2006
    entries are expected to have one and only one password,
    administrative controls should be provided to enforce this behavior.
 
-   The use of clear text passwords and other unprotected authentication
+   The use of _clear text passwords and other unprotected authentication
    credentials is strongly discouraged over open networks when the
    underlying transport service cannot guarantee confidentiality.  LDAP
    implementations SHOULD NOT by default support authentication methods
-   using clear text passwords and other unprotected authentication
+   using _clear text passwords and other unprotected authentication
    credentials unless the data on the session is protected using TLS or
    other data confidentiality and data integrity protection.
 
-   The transmission of passwords in the clear -- typically for
+   The transmission of passwords in the _clear -- typically for
    authentication or modification -- poses a significant security risk.
    This risk can be avoided by using SASL authentication [RFC4422]
 
@@ -1292,13 +1292,13 @@ Harrison                    Standards Track                    [Page 23]
 RFC 4513              LDAP Authentication Methods              June 2006
 
 
-   mechanisms that do not transmit passwords in the clear or by
+   mechanisms that do not transmit passwords in the _clear or by
    negotiating transport or session layer data confidentiality services
    before transmitting password values.
 
    To mitigate the security risks associated with the transfer of
    passwords, a server implementation that supports any password-based
-   authentication mechanism that transmits passwords in the clear MUST
+   authentication mechanism that transmits passwords in the _clear MUST
    support a policy mechanism that at the time of authentication or
    password modification, requires that:
 
@@ -1313,14 +1313,14 @@ RFC 4513              LDAP Authentication Methods              June 2006
 
          The server returns a resultCode of confidentialityRequired for
          the operation (i.e., name/password Bind with password value,
-         SASL Bind transmitting a password value in the clear, add or
+         SASL Bind transmitting a password value in the _clear, add or
          modify including a userPassword value, etc.), even if the
          password value is correct.
 
    Server implementations may also want to provide policy mechanisms to
    invalidate or otherwise protect accounts in situations where a server
    detects that a password for an account has been transmitted in the
-   clear.
+   _clear.
 
 6.3.4.  Hashed Password Security Considerations
 

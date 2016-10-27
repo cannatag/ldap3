@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -28,7 +28,8 @@ from unicodedata import ucd_3_2_0 as unicode32
 from os import urandom
 from binascii import hexlify
 
-from ... import SASL, RESULT_AUTH_METHOD_NOT_SUPPORTED
+from ... import SASL
+from ...core.results import RESULT_AUTH_METHOD_NOT_SUPPORTED
 from ...core.exceptions import LDAPSASLPrepError, LDAPPasswordIsMandatoryError
 
 

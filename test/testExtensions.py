@@ -1,9 +1,11 @@
-# """
+"""
+"""
+
 # Created on 2013.08.05
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -23,7 +25,7 @@
 
 import unittest
 
-from ldap3 import Tls, AUTO_BIND_NO_TLS
+from ldap3 import Tls
 from test import test_server_context, random_id, get_connection, drop_connection, \
     test_server_edir_name, test_server_type
 

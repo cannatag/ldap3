@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -27,12 +27,10 @@ import socket
 from threading import Lock
 from datetime import datetime, MINYEAR
 
-from .. import NONE, DSA, SCHEMA, ALL, BASE, LDAP_MAX_INT, get_config_parameter, \
-    OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, \
-    SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, \
-    ADDRESS_INFO_REFRESH_TIME, STRING_TYPES
+from .. import DSA, SCHEMA, ALL, BASE, get_config_parameter, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, STRING_TYPES
 from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError, LDAPSocketOpenError
 from ..protocol.formatters.standard import format_attribute_values
+from ..protocol.rfc4511 import LDAP_MAX_INT
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
@@ -75,7 +73,7 @@ class Server(object):
                  port=None,
                  use_ssl=False,
                  allowed_referral_hosts=None,
-                 get_info=NONE,
+                 get_info=SCHEMA,
                  tls=None,
                  formatter=None,
                  connect_timeout=None,
@@ -229,7 +227,7 @@ class Server(object):
 
     @property
     def address_info(self):
-        if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > ADDRESS_INFO_REFRESH_TIME:
+        if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > get_config_parameter('ADDRESS_INFO_REFRESH_TIME'):
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
             addresses = None
             try:
@@ -375,13 +373,16 @@ class Server(object):
         else:
             result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
-                schema_entry = connection.response[0]['attributes']['subschemaSubentry'][0] if result else None
+                if result:
+                    schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
             else:  # async request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
-                if len(results) == 1 and 'attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
-                    schema_entry = results[0]['attributes']['subschemaSubentry'][0]
+                if len(results) == 1 and 'raw_attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
+                    schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
+            if isinstance(schema_entry, bytes) and bytes != str:
+                schema_entry = schema_entry.decode('utf-8')
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=BASE,
@@ -515,6 +516,12 @@ class Server(object):
             if log_enabled(BASIC):
                 log(BASIC, 'candidate address for <%s>: <%s> with mode UNIX_SOCKET', self, self.name)
         else:
+            # checks reset availability timeout
+            for address in self.address_info:
+                if address[6] and ((datetime.now() - address[6]).seconds > get_config_parameter('RESET_AVAILABILITY_TIMEOUT')):
+                    address[5] = None
+                    address[6] = None
+
             # selects server address based on server mode and availability (in address[5])
             addresses = self.address_info[:]  # copy to avoid refreshing while searching candidates
             candidates = []

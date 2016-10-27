@@ -1,6 +1,63 @@
 # changes file for ldap3
-# generated on 2016-07-19 00:36:26.185614
-# version 1.4.0
+# generated on 2016-10-27 19:46:06.421351
+# version 2.0.4
+
+- 2.0.4 2016.10.22
+    - first release of ldap3 v2
+    - changed signature of ldap3.abstract.Reader object
+    - updated tutorials for Abstraction Layer
+
+- 2.0.3 2016.10.22
+    - removed search_size_limit(), search_time_limit() and search_types_only in the Reader cursor
+    - fixed SASL in progress error (thanks Styleex)
+    - fixed ALL_ATTRIBUTES in MOCK_SYNC strategy (thanks Belgarion)
+    - ncorrect attribute type error message now includes the name of the attribute (Thanks Andrej)
+
+- 2.0.2 2016.10.14
+    - relaxed dn checking for Active Directory UserPrincipalName
+    - relaxed dn checking for Active Directory SamAccountName
+    - added checking of attribute name in add, compare and search operations
+    - added checking of class name in add operation
+    - renamed exception LDAPTypeError to LDAPAttributeError
+    - in sync strategies LDAP operations populate the last_error attribute of the connection in case of not RESULT_SUCCESS
+
+- 2.0.1 2016.09.24
+    - connection.return_empty_attributes defaults to True
+    - escaped filter by default
+    - fixed escaping of filter
+    - add move and rename to abstraction layer entry
+
+- 2.0.0 2016.08.31
+    - ldap3 namespace decluttered
+    - RESULT_CODES moved to ldap3.core.results
+    - compatability constants removed
+    - exceptions removed from ldap3 namespace, defined in ldap3.core.exceptions only
+    - ADDRESS_INFO_REFRESH_TIME is now configurable via set_config_parameter
+    - Operational attribute prefix set to 'OA_'
+    - Allows cert and key file in the same file (thanks Jan-Philip)
+    - Removed logging info when logging is disabled (thanks Dan)
+    - Updated copyright notice
+    - Refactored abstraction layer with full support for CRUD (Create, Read, Update, Delete) abstract operations
+    - Added WritableEntry and WritableAttribute to abstraction layer
+    . Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
+    - Added custom validators for attribute values
+    - Added update capability to abstraction layer
+    - Fixed typo in docs (thanks Gerardwx)
+    - Fixed Object and Attribute representation in schema (superior class not shown)
+    - ObjectDef automatically populates attributes from schema, following object_class hierarchy
+    - Added attributes parameter to search* methods of Cursor, so that only needed attributes are read even if attr_defs defines more
+    - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
+    - Added 'set' to SEQUENCE_TYPES (thanks Christian)
+    - Entries returned by search are now writable via the abstraction layer
+    - LDAPReaderError exception renamed to LDAPCursorError
+    - auto_range parameter in Connection defaults to True (thanks Ashley)
+    - get_info defaults to SCHEMA while defining Server object
+    - Included ordereddict 1.1 (# Copyright (c) 2009 Raymond Hettinger) in ldap3.utils.ordDict for backporting OrderedDict in Python 2.6
+    - Added config parameter RESET_AVAILABILITY_TIMEOUT to reinsert invalid address in candidate_addresses while checking connection, defaults to 5 seconds
+    - Fixed inability to connect to a server if the connection starts when the server is unavailable and then it becomes available again
+    - All DNs are sanitized if connection.check_names is True
+    - LDAPControlsError exception renamed to LDAPControlError
+    - LDAPChangesError exception renamed to LDAPChangeError
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object
@@ -341,8 +398,8 @@
     - added parsing of hostname in scheme://hostname:hostport format. This has the precedence on the parameters (thanks Sorin)
     - added extra checks when the schema is read (with the get_info parameter) but nothing is returned by the server
     - updated setuptools to version 5.4.1
-    - when check_name is True and schema is read attributes are checked and formatted in "checked_attributes" as specified by RFCs and schema
-    - added formatter for generalizedTime syntax as specified in rfc 4517 (asn.1)
+    - when check_name is True and schema is read attributes are checked and formatted in "checked_attributes" as specified by RFCs following the server schema
+    - added formatter for generalizedTime syntax as specified in RFC4517 (ASN.1)
     - custom formatter can be added in Server definition
 
 * 0.9.4.2 2014.07.03
@@ -359,13 +416,13 @@
     - in python 3.4 or newer the system CA certificates configuration can be used (just leave ca_cert_file, ca_certs_path and ca_certs_data set to None)
     - removed TLSv1 as default for Tls connection
     - upgraded backported ssl function from python 3.4.1 when using with python 2
-    - when creating a connection server can now be a string, the name of the server to connect in cleartext on default port 389
+    - when creating a connection the server parameter can be a string: the name of the server to connect in cleartext on default port 389
     - fixed bug in ldap3.util.conv.escape_bytes()
     - attributes parameter in search can be a tuple
-    - check_names parameter in connection now defaults to True (so if schema info is available attribute and class name will be checked when performing LDAP operations)
-    - remove the connection.close() method - you must use connection.unbind()
-    - new exception LDAPExtensionError for signaling when the requestValue of extended operation is of unknown ASN1 type
-    - exiting connection manager doesn't raise exception if unbind is not successful (needed in long operations)
+    - check_names parameter in connection now defaults to True (so when schema info is available attribute and class name will be checked when performing LDAP operations)
+    - remove the connection.close() method - use connection.unbind()
+    - new exception LDAPExtensionError for signalling when the requestValue of extended operation is of an unknown ASN1 type
+    - exiting connection manager doesn't raise an exception if unbind is not successful (needed in long operations)
     - new extended operation: modify_password (RFC3062)
     - new extended operation: who_am_i (RFC4532)
     - new extended operation: get_bind_dn (Novell)
@@ -379,14 +436,14 @@
 * 0.9.3.4 2014.06.16
     - Exception can now be imported from ldap3 package
     - Escape_bytes return '' for empty string instead of None (thanks Brian)
-    - Added exception history to restartable connection (except than for infinite retries)
+    - Added exception history to restartable connection (not for infinite retries)
     - Fixed start_tls retrying in restartable connection (thanks Brian)
-    - New exception LDAPMaximumRetriesError for signaling when the SyncRestartable Strategy has reached the maximum number of retries while performing an operation
+    - New exception LDAPMaximumRetriesError for signalling when the SyncRestartable Strategy has reached the maximum number of retries while performing an operation
     - Inverted deleteoldrdn value in LDIF output (thanks Joseph)
 
 * 0.9.3.3 2014.06.01
     - Fixed a bug in LDIFProducer when using context manager for connection
-    - LDIF header in stream is added only whene there are actua data in the stream
+    - LDIF header in stream is added only whene there are actual data in the stream
     - Now LDIF stream can be added to an existing file - version header will not be written if stream is not empty
 
 * 0.9.3.2 2014.05.30
@@ -395,8 +452,8 @@
 
 * 0.9.3.1 2014.05.28
     - Added stream capability to LDIFProducer strategy
-    - Customizable line separator for ldif output
-    - Customizable sorting order in ldif output
+    - Customizable line separator for LDIF output
+    - Customizable sorting order for LDIF output
     - object_class parameter is now optional in connection.add()
     - Fixed objectClass attribute case sensitive dependency in add operation
     - Added stream capability to response_to_ldif() while searching
@@ -405,7 +462,7 @@
 * 0.9.3 2014.05.20
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
     - Now the key in server.schema.object_classes is the class name (was the oid)
-    - Added check_names to Connection definition to have the names of attributes and object class checked against the schema
+    - Added check_names to Connection definition to have name of attributes and of object class checked against the schema
     - Updated setuptools to 3.6
     - Added wheel installation format
     - Added raise_exceptions mode for connection
@@ -419,7 +476,7 @@
     - fixed a bug in 0.9.2 that allowed only string attributes in add, modify and compare operations (thank Mladen)
 
 * 0.9.2 2014.04.26
-    - changed return value in get_response from response to (response, result) - helpful for multi threaded connections
+    - changed return value in get_response from response to (response, result) - helpful for multi-threaded connections
     - added ReusableStrategy for pooling connections
     - refined docstrings (thanks Will)
     - result and response attributes don't overlap anymore. Operation result is only in result attribute.
@@ -460,7 +517,7 @@
     - Fixed documentation typos
 
 * 0.8.0 - 2014.02.08
-    - Added abstraction layer (for searching)
+    - Added abstraction layer (for searching, read only)
     - Added context manager to Connection class
     - Added readOnly parameter to Connection class
     - Fixed a bug in search with 'less than' parameter
@@ -474,7 +531,7 @@
     - Fixed a bug when parentheses are used in search filter as ASCII escaped sequences
 
 * 0.7.1 - 2013.12.21
-    - Completed support for LDFI as per RFC2849
+    - Completed support for LDIF as per RFC2849
     - Added new LDIF_PRODUCER strategy to generate LDIF-CHANGE stream
     - Fixed a bug in the autoReferral feature when controls where used in operation
 
@@ -544,7 +601,7 @@
     - Added SASL feature
     - Added SASL EXTERNAL mechanism
     - Fixed Unbind
-    - connection.close in now an alias for connection.unbind
+    - connection.close is now an alias for connection.unbind
 
 * 0.4.4 - 2013.08.01
     - Added 'Controls' to all LDAP Requests

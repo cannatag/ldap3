@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -25,15 +25,16 @@
 
 from os import linesep
 from threading import RLock
-import json
 from functools import reduce
+import json
 
-from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, \
-    DEREF_ALWAYS, SUBTREE, ASYNC, SYNC, CLIENT_STRATEGIES, RESULT_SUCCESS, RESULT_COMPARE_TRUE, NO_ATTRIBUTES, ALL_ATTRIBUTES, \
-    ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, SASL_AVAILABLE_MECHANISMS, ASYNC_STREAM, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, \
-    AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
-from .exceptions import LDAPSocketReceiveError
+from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
+    SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, \
+    STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI, NONE, CLASSES_EXCLUDED_FROM_CHECK, \
+    ATTRIBUTES_EXCLUDED_FROM_CHECK
+
+from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
 from .pooling import ServerPool
 from .server import Server
@@ -61,15 +62,31 @@ from ..protocol.rfc2696 import paged_search_control
 from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
-    LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangesError, LDAPExceptionError, \
-    LDAPObjectError
+    LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
+    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError
+
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
-from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, get_library_log_hide_sensitive_data
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
+from ..utils.dn import safe_dn
 
 try:
     from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
 except ImportError:
     MockAsyncStrategy = NotImplemented
+
+
+SASL_AVAILABLE_MECHANISMS = [EXTERNAL,
+                             DIGEST_MD5,
+                             GSSAPI]
+
+CLIENT_STRATEGIES = [SYNC,
+                     ASYNC,
+                     LDIF,
+                     RESTARTABLE,
+                     REUSABLE,
+                     MOCK_SYNC,
+                     # MOCK_ASYNC,  # not yet defined
+                     ASYNC_STREAM]
 
 
 def _format_socket_endpoint(endpoint):
@@ -161,7 +178,7 @@ class Connection(object):
                  authentication=None,
                  client_strategy=SYNC,
                  auto_referrals=True,
-                 auto_range=False,
+                 auto_range=True,
                  sasl_mechanism=None,
                  sasl_credentials=None,
                  check_names=True,
@@ -174,7 +191,7 @@ class Connection(object):
                  pool_lifetime=None,
                  fast_decoder=True,
                  receive_timeout=None,
-                 return_empty_attributes=False):
+                 return_empty_attributes=True):
 
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
@@ -255,6 +272,11 @@ class Connection(object):
                 self.server_pool = None
                 self.server = server
 
+            if self.authentication == SIMPLE and self.user and self.check_names:
+                self.user = safe_dn(self.user)
+                if log_enabled(EXTENDED):
+                    log(EXTENDED, 'user name sanitized to <%s> for simple authentication via <%s>', self.user, self)
+
             if self.strategy_type == SYNC:
                 self.strategy = SyncStrategy(self)
             elif self.strategy_type == ASYNC:
@@ -278,7 +300,7 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPUnknownStrategyError(self.last_error)
 
-            # map strategy functions to connection functions
+            # maps strategy functions to connection functions
             self.send = self.strategy.send
             self.open = self.strategy.open
             self.get_response = self.strategy.get_response
@@ -303,7 +325,9 @@ class Connection(object):
                         if log_enabled(ERROR):
                             log(ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPBindError(self.last_error)
-
+            else:  # for strategies with a fake server set get_info to NONE if server hasn't a schema
+                if self.server and not self.server.schema:
+                    self.server.get_info = NONE
             if log_enabled(BASIC):
                 if get_library_log_hide_sensitive_data():
                     log(BASIC, 'instantiated Connection: <%s>', self.repr_with_sensitive_data_stripped())
@@ -340,16 +364,17 @@ class Connection(object):
         r += '' if self.sasl_mechanism is None else ', sasl_mechanism={0.sasl_mechanism!r}'.format(self)
         r += '' if self.sasl_credentials is None else ', sasl_credentials={0.sasl_credentials!r}'.format(self)
         r += '' if self.check_names is None else ', check_names={0.check_names!r}'.format(self)
-        r += '' if self.usage is None else (', collect_usage=' + 'True' if self.usage else 'False')
+        r += '' if self.usage is None else (', collect_usage=' + ('True' if self.usage else 'False'))
         r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
         r += '' if (self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
-        r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
-        r += '' if self.receive_timeout is None else (', receive_timeout=' + 'True' if self.receive_timeout else 'False')
-        r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
+        r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))
+        r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
+        r += '' if self.receive_timeout is None else (', receive_timeout=' + ('True' if self.receive_timeout else 'False'))
+        r += '' if self.empty_attributes is None else (', return_empty_attributes=' + ('True' if self.empty_attributes else 'False'))
         r += ')'
 
         return r
@@ -457,7 +482,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._deferred_bind = True
@@ -504,7 +529,7 @@ class Connection(object):
                             log(ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPSASLMechanismNotSupportedError(self.last_error)
                 elif self.authentication == NTLM:
-                    if self.user and self.password:
+                    if self.user and self.password and len(self.user.split('\\')) == 2:
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'performing NTLM BIND for <%s>', self)
                         if not self.strategy.pooled:
@@ -547,7 +572,7 @@ class Connection(object):
                     self.bound = False
                 else:
                     self.bound = True if result['result'] == RESULT_SUCCESS else False
-                    if not self.bound and result and result['description']:
+                    if not self.bound and result and result['description'] and not self.last_error:
                         self.last_error = result['description']
 
                 if read_server_info and self.bound:
@@ -571,7 +596,7 @@ class Connection(object):
 
         if log_enabled(BASIC):
             log(BASIC, 'start (RE)BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             if user:
                 self.user = user
@@ -591,6 +616,11 @@ class Connection(object):
             if sasl_credentials:
                 self.sasl_credentials = sasl_credentials
 
+            if self.authentication == SIMPLE and self.user and self.check_names:
+                self.user = safe_dn(self.user)
+                if log_enabled(EXTENDED):
+                    log(EXTENDED, 'user name sanitized to <%s> for rebind via <%s>', self.user, self)
+
             if not self.strategy.pooled:
                 try:
                     return self.bind(read_server_info, controls)
@@ -609,9 +639,9 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start UNBIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
-            if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # clear deferred status
+            if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # _clear deferred status
                 self.strategy.close()
                 self._deferred_open = False
                 self._deferred_bind = False
@@ -660,12 +690,20 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start SEARCH operation via <%s>', self)
 
+        if self.check_names and search_base:
+            search_base = safe_dn(search_base)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'search base sanitized to <%s> for SEARCH operation via <%s>', search_base, self)
+
         with self.lock:
             self._fire_deferred()
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
             elif attributes == ALL_ATTRIBUTES:
                 attributes = [ALL_ATTRIBUTES]
+
+            if isinstance(attributes, STRING_TYPES):
+                attributes = [attributes]
 
             if get_operational_attributes and isinstance(attributes, list):
                 attributes.append(ALL_OPERATIONAL_ATTRIBUTES)
@@ -680,6 +718,11 @@ class Connection(object):
                     controls = []
                 controls.append(paged_search_control(paged_criticality, paged_size, paged_cookie))
 
+            if self.server and self.server.schema and self.check_names:
+                for attribute_name in attributes:
+                    if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
+                        raise LDAPAttributeError('invalid attribute type ' + attribute_name)
+
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
@@ -692,6 +735,8 @@ class Connection(object):
                     log(PROTOCOL, 'async SEARCH response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'searchResDone' and len(response) > 0 else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
+                    self.last_error = self.result['description']
 
                 if log_enabled(PROTOCOL):
                     for entry in response:
@@ -715,6 +760,15 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start COMPARE operation via <%s>', self)
+        self.last_error = None
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for COMPARE operation via <%s>', dn, self)
+
+        if self.server and self.server.schema and self.check_names:
+            if attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute not in self.server.schema.attribute_types:
+                raise LDAPAttributeError('invalid attribute type ' + attribute)
 
         with self.lock:
             self._fire_deferred()
@@ -729,6 +783,9 @@ class Connection(object):
                     log(PROTOCOL, 'async COMPARE response id <%s> received via <%s>', return_value, self)
             else:
                 return_value = True if self.result['type'] == 'compareResponse' and self.result['result'] == RESULT_COMPARE_TRUE else False
+                if not return_value and self.result['result'] not in [RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE] and not self.last_error:
+                    self.last_error = self.result['description']
+
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'COMPARE response <%s> received via <%s>', response, self)
 
@@ -751,6 +808,11 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
+        self.last_error = None
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for ADD operation via <%s>', dn, self)
 
         with self.lock:
             self._fire_deferred()
@@ -780,6 +842,15 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPObjectClassError(self.last_error)
 
+            if self.server and self.server.schema and self.check_names:
+                for object_class_name in attributes[object_class_attr_name]:
+                    if object_class_name not in CLASSES_EXCLUDED_FROM_CHECK and object_class_name not in self.server.schema.object_classes:
+                        raise LDAPObjectClassError('invalid object class ' + object_class_name)
+
+                for attribute_name in attributes:
+                    if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
+                        raise LDAPAttributeError('invalid attribute type ' + attribute_name)
+
             request = add_operation(dn, attributes, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
@@ -794,6 +865,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'ADD response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'addResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done ADD operation, result <%s>', return_value)
@@ -808,6 +881,11 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start DELETE operation via <%s>', self)
+        self.last_error = None
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for DELETE operation via <%s>', dn, self)
 
         with self.lock:
             self._fire_deferred()
@@ -831,6 +909,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'DELETE response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'delResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done DELETE operation, result <%s>', return_value)
@@ -851,6 +931,11 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY operation via <%s>', self)
+        self.last_error = None
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for MODIFY operation via <%s>', dn, self)
 
         with self.lock:
             self._fire_deferred()
@@ -864,22 +949,25 @@ class Connection(object):
                 self.last_error = 'changes must be a dictionary'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangesError(self.last_error)
+                raise LDAPChangeError(self.last_error)
 
             if not changes:
                 self.last_error = 'no changes in modify request'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangesError(self.last_error)
+                raise LDAPChangeError(self.last_error)
 
             for attribute_name in changes:
+                if self.server and self.server.schema and self.check_names:
+                    if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
+                        raise LDAPAttributeError('invalid attribute type ' + attribute_name)
                 change = changes[attribute_name]
                 if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
                     if len(change) != 2:
                         self.last_error = 'malformed change'
                         if log_enabled(ERROR):
                             log(ERROR, '%s for <%s>', self.last_error, self)
-                        raise LDAPChangesError(self.last_error)
+                        raise LDAPChangeError(self.last_error)
 
                     changes[attribute_name] = [change]  # insert change in a tuple
                 else:
@@ -888,7 +976,7 @@ class Connection(object):
                             self.last_error = 'invalid change list'
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
-                            raise LDAPChangesError(self.last_error)
+                            raise LDAPChangeError(self.last_error)
 
             request = modify_operation(dn, changes, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
@@ -904,6 +992,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'MODIFY response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modifyResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done MODIFY operation, result <%s>', return_value)
@@ -922,6 +1012,14 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY DN operation via <%s>', self)
+        self.last_error = None
+        if self.check_names:
+            dn = safe_dn(dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'dn sanitized to <%s> for MODIFY DN operation via <%s>', dn, self)
+            relative_dn = safe_dn(relative_dn)
+            if log_enabled(EXTENDED):
+                log(EXTENDED, 'relative dn sanitized to <%s> for MODIFY DN operation via <%s>', relative_dn, self)
 
         with self.lock:
             self._fire_deferred()
@@ -935,7 +1033,7 @@ class Connection(object):
                 self.last_error = 'DN cannot change while performing moving'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangesError(self.last_error)
+                raise LDAPChangeError(self.last_error)
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
             if log_enabled(PROTOCOL):
@@ -951,6 +1049,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'MODIFY DN response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'modDNResponse' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done MODIFY DN operation, result <%s>', return_value)
@@ -965,7 +1065,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start ABANDON operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             self._fire_deferred()
             return_value = False
@@ -1000,7 +1100,7 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start EXTENDED operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             self._fire_deferred()
             request = extended_operation(request_name, request_value, no_encode=no_encode)
@@ -1016,6 +1116,8 @@ class Connection(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'EXTENDED response <%s> received via <%s>', response, self)
                 return_value = True if self.result['type'] == 'extendedResp' and self.result['result'] == RESULT_SUCCESS else False
+                if not return_value and self.result['result'] not in [RESULT_SUCCESS] and not self.last_error:
+                    self.last_error = self.result['description']
 
             if log_enabled(BASIC):
                 log(BASIC, 'done EXTENDED operation, result <%s>', return_value)
@@ -1056,20 +1158,22 @@ class Connection(object):
                      controls):
         if log_enabled(BASIC):
             log(BASIC, 'start SASL BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             result = None
+
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True
-                if self.sasl_mechanism == EXTERNAL:
-                    result = sasl_external(self, controls)
-                elif self.sasl_mechanism == DIGEST_MD5:
-                    result = sasl_digest_md5(self, controls)
-                elif self.sasl_mechanism == GSSAPI:
-                    from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
-                    result = sasl_gssapi(self, controls)
-
-                self.sasl_in_progress = False
+                try:
+                    if self.sasl_mechanism == EXTERNAL:
+                        result = sasl_external(self, controls)
+                    elif self.sasl_mechanism == DIGEST_MD5:
+                        result = sasl_digest_md5(self, controls)
+                    elif self.sasl_mechanism == GSSAPI:
+                        from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
+                        result = sasl_gssapi(self, controls)
+                finally:
+                    self.sasl_in_progress = False
 
             if log_enabled(BASIC):
                 log(BASIC, 'done SASL BIND operation, result <%s>', result)
@@ -1080,7 +1184,7 @@ class Connection(object):
                      controls):
         if log_enabled(BASIC):
             log(BASIC, 'start NTLM BIND operation via <%s>', self)
-
+        self.last_error = None
         with self.lock:
             result = None
             if not self.sasl_in_progress:
@@ -1184,7 +1288,8 @@ class Connection(object):
                          indent=4,
                          sort=True,
                          stream=None,
-                         checked_attributes=True):
+                         checked_attributes=True,
+                         include_empty=True):
 
         with self.lock:
             if search_result is None:
@@ -1192,7 +1297,7 @@ class Connection(object):
 
             if isinstance(search_result, SEQUENCE_TYPES):
                 json_dict = dict()
-                json_dict['entries'] = list()
+                json_dict['entries'] = []
 
                 for response in search_result:
                     if response['type'] == 'searchResEntry':
@@ -1200,9 +1305,17 @@ class Connection(object):
 
                         entry['dn'] = response['dn']
                         if checked_attributes:
-                            entry['attributes'] = dict(response['attributes'])
+                            if not include_empty:
+                                # needed for python 2.6 compatability
+                                entry['attributes'] = dict((key, response['attributes'][key]) for key in response['attributes'] if response['attributes'][key])
+                            else:
+                                entry['attributes'] = dict(response['attributes'])
                         if raw:
-                            entry['raw'] = dict(response['raw_attributes'])
+                            if not include_empty:
+                                # needed for python 2.6 compatability
+                                entry['raw_attributes'] = dict((key, response['raw_attributes'][key]) for key in response['raw_attributes'] if response['raw:attributes'][key])
+                            else:
+                                entry['raw'] = dict(response['raw_attributes'])
                         json_dict['entries'].append(entry)
 
                 if str == bytes:
@@ -1264,7 +1377,7 @@ class Connection(object):
 
     def _get_entries(self, search_response):
         with self.lock:
-            from ..abstract import Entry, ObjectDef, Reader
+            from .. import ObjectDef, Reader
 
             # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset
             attr_sets = []
@@ -1283,27 +1396,20 @@ class Connection(object):
                     unique_attr_sets.append(attr_set)
             object_defs = []
             for attr_set in unique_attr_sets:
-                object_def = ObjectDef()
+                object_def = ObjectDef(schema=self.server.schema)
                 object_def += list(attr_set)  # converts the set in a list to be added to the object definition
-                object_defs.append((attr_set, object_def))  # objects_defs contains a tuple with the set and the ObjectDef
+                object_defs.append((attr_set,
+                                    object_def,
+                                    Reader(self, object_def, self.request['base'], self.request['filter'], attributes=attr_set))
+                                   )  # objects_defs contains a tuple with the set, the ObjectDef and a cursor
 
             entries = []
             for response in search_response:
                 if response['type'] == 'searchResEntry':
                     resp_attr_set = set(response['attributes'].keys())
                     for object_def in object_defs:
-                        if resp_attr_set <= object_def[0]:  # finds the objectset for the attribute set of this entry
-                            entry = Entry(response['dn'], self)
-                            try:
-                                entry.__dict__['_attributes'] = Reader._get_attributes(None, response, object_def[1], entry)
-                            except TypeError:  # patch for python 2 - unbound method
-                                entry.__dict__['_attributes'] = Reader._get_attributes.__func__(None, response, object_def[1], entry)
-                            entry.__dict__['_raw_attributes'] = response['raw_attributes']
-                            entry.__dict__['_response'] = response
-                            for attr in entry:  # returns the whole attribute object
-                                attr_name = attr.key
-                                entry.__dict__[attr_name] = attr
-                            entry.__dict__['_reader'] = None  # not used
+                        if resp_attr_set <= object_def[0]:  # finds the ObjectDef for the attribute set of this entry
+                            entry = object_def[2]._create_entry(response)
                             entries.append(entry)
                             break
                     else:

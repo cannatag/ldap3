@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -25,9 +25,9 @@
 
 import socket
 
-from .. import SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, SEQUENCE_TYPES, get_config_parameter, TRANSACTION_ERROR
+from .. import SEQUENCE_TYPES, get_config_parameter
 from ..core.exceptions import LDAPSocketReceiveError, communication_exception_factory, LDAPExceptionError, LDAPExtensionError, LDAPOperationResult
-from ..strategy.base import BaseStrategy
+from ..strategy.base import BaseStrategy, SESSION_TERMINATED_BY_SERVER, RESPONSE_COMPLETE, TRANSACTION_ERROR
 from ..protocol.rfc4511 import LDAPMessage
 from ..utils.log import log, log_enabled, ERROR, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import decoder, decode_message_fast

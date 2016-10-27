@@ -485,7 +485,7 @@ A.1.  Technical Changes
    production restricts filter strings to valid UTF-8 sequences.
 
    Added a statement about expected behavior in light of RFC 2254's lack
-   of a clear definition of "string representation."
+   of a _clear definition of "string representation."
 
 A.2.  Editorial Changes
 

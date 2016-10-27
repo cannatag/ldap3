@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2013.12.10
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -24,7 +27,6 @@ import unittest
 
 from test import test_base, test_name_attr, get_connection, random_id, add_user, \
     drop_connection
-
 
 testcase_id = random_id()
 

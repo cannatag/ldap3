@@ -86,4 +86,4 @@ This appears in note 4 of "Notes on LDIF Syntax".
 ---- Verifier notes ----
 Note 4 has double text, one of which allows more than the other. But the ABNF
 doesn't have that ambiguity. This is really something that can only be fixed by
-revising the spec. It's simply not clear what the intent was. 
+revising the spec. It's simply not _clear what the intent was.

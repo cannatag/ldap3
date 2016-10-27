@@ -33,7 +33,7 @@ You can download the latest source from https://github.com/cannatag/ldap3 then y
 Global configuration
 --------------------
 
-in the *ldap3/__init__.py*  (present in the *site-packages* ldap3 folder) there are some configurable settings:
+in the **ldap3.utils.config** package there are some configurable settings:
 
 * RESPONSE_SLEEPTIME = 0.02  # seconds to wait while waiting for a response in asynchronous strategies.
 * RESPONSE_WAITING_TIMEOUT = 1  # waiting timeout for receiving a response in asynchronous strategies (in seconds).
@@ -44,7 +44,7 @@ in the *ldap3/__init__.py*  (present in the *site-packages* ldap3 folder) there 
 
 This parameters are library-wide and usually you should keep the default values.
 
-You can use the ``get_config_parameter()`` and ``set_config_parameter`` functions in the ldap3 namespace to get and the the configurable parameters ar runtime.
+You can use the ``get_config_parameter()`` and ``set_config_parameter()`` functions in the ldap3 namespace to get and set the configurable parameters at runtime.
 
 
 Importing objects and constants
@@ -64,9 +64,9 @@ error description in the ```last_error``` attribute of the Connection object. In
 hierarchy starting from the ```LDAPExceptionError``` class is raised with a description of the error condition in the *args*
 attribute.
 
-If you prefer to deal always with Exceptions you can set the ```raise_exceptions``` attribute to ```True``` in the Connection
+If you prefer to deal always with Exceptions you can set the ``raise_exceptions`` attribute to ``True`` in the Connection
 object definition. From now on the Connection will raise exceptions for all operations that return result codes
-different from ```RESULT_SUCCESS```, ```RESULT_COMPARE_FALSE```, ```RESULT_COMPARE_TRUE```, ```RESULT_REFERRAL```.
+different from ``RESULT_SUCCESS``, ``RESULT_COMPARE_FALSE``, ``RESULT_COMPARE_TRUE``, ``RESULT_REFERRAL``.
 
 Communication exceptions have multiple inheritance either from ```LDAPCommunicationError``` and the specific socket exception.
 

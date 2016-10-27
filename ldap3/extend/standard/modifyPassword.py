@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -28,6 +28,7 @@ from ...extend.operation import ExtendedOperation
 from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseValue
 from ...utils.hashed import hashed
 from ...protocol.sasl.sasl import validate_simple_password
+from ...utils.dn import safe_dn
 
 # implements RFC3062
 
@@ -42,6 +43,8 @@ class ModifyPassword(ExtendedOperation):
     def __init__(self, connection, user=None, old_password=None, new_password=None, hash_algorithm=None, salt=None, controls=None):
         ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
         if user:
+            if connection.check_names:
+                user = safe_dn(user)
             self.request_value['userIdentity'] = user
         if old_password:
             if not isinstance(old_password, bytes):  # bytes are returned raw, as per RFC (4.2)

@@ -1,11 +1,11 @@
 """
 """
 
-# Created on 2014.01.06
+# Created on 2016.08.31
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -23,9 +23,28 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .attribute import Attribute
-from .operationalAttribute import OperationalAttribute
-from .attrDef import AttrDef
-from .objectDef import ObjectDef
-from .entry import Entry
-from .reader import Reader
+STATUS_INIT = 'Initialized'  # The entry object is initialized
+STATUS_VIRTUAL = 'Virtual'  # The entry is a new writable entry, still empty
+STATUS_MANDATORY_MISSING = 'Missing mandatory attributes'  # The entry has some mandatory attributes missing
+STATUS_READ = 'Read'  # The entry has been read
+STATUS_WRITABLE = 'Writable'  # The entry has been made writable, still no changes
+STATUS_PENDING_CHANGES = 'Pending changes'  # The entry has some changes to commit, mandatory attributes are present
+STATUS_COMMITTED = 'Committed'  # The entry changes has been committed
+STATUS_READY_FOR_DELETION = 'Ready for deletion'  # The entry is set to be deleted
+STATUS_READY_FOR_MOVING = 'Ready for moving'  # The entry is set to be moved in the DIT
+STATUS_READY_FOR_RENAMING = 'Ready for renaming'  # The entry is set to be renamed
+STATUS_DELETED = 'Deleted'  # The entry has been deleted
+
+STATUSES = [STATUS_INIT,
+            STATUS_VIRTUAL,
+            STATUS_MANDATORY_MISSING,
+            STATUS_READ,
+            STATUS_WRITABLE,
+            STATUS_PENDING_CHANGES,
+            STATUS_COMMITTED,
+            STATUS_READY_FOR_DELETION,
+            STATUS_READY_FOR_MOVING,
+            STATUS_READY_FOR_RENAMING,
+            STATUS_DELETED]
+
+INITIAL_STATUSES = [STATUS_READ, STATUS_WRITABLE, STATUS_VIRTUAL]

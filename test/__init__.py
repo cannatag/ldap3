@@ -44,7 +44,7 @@ test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
 
-test_fast_decoder = False
+test_fast_decoder = True  # True uses internal 10x faster than pyasn1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -58,7 +58,7 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
-test_server_type = 'EDIR'  # possible choices: # EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
+test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
 
@@ -104,38 +104,38 @@ if location.startswith('TRAVIS'):
     test_ntlm_password = 'zzz'
     test_logging_filename = 'ldap3.log'
     test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
-elif location == 'GCNBHPW10-EDIR':
+elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
     #               'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
-    test_base = 'o=test'  # base context where test objects are created
+    test_base = 'ou=fixtures,o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'loginGraceLimit'
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=resources'  # the user that performs the tests
-    test_password = 'password'  # user password
-    test_secondary_user = 'cn=testSASL2,o=resources'
+    test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
+    test_password = 'password1'  # user password
+    test_secondary_user = 'cn=test_bind_user,ou=bind,o=test'
     test_secondary_password = 'password2'
-    test_sasl_user = 'testSASL.resources'
-    test_sasl_password = 'password1'
-    test_sasl_user_dn = 'cn=testSASL,o=resources'
-    test_sasl_secondary_user = 'testSASL2.resources'
-    test_sasl_secondary_password = 'password2'
-    test_sasl_secondary_user_dn = 'cn=testSASL2,o=resources'
+    test_sasl_user = 'test_bind_sasl_user.bind.test'
+    test_sasl_password = 'password3'
+    test_sasl_user_dn = 'cn=test_bind_sasl_user,ou=bind,o=test'
+    test_sasl_secondary_user = 'test_bind_sasl2_user.bind.test'
+    test_sasl_secondary_password = 'password4'
+    test_sasl_secondary_user_dn = 'cn=test_bind_sasl2_user,ou=bind,o=test'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
-    test_user_cert_file = 'local-edir-admin-cert.pem'
-    test_user_key_file = 'local-edir-admin-key.pem'
+    test_user_cert_file = 'local-edir-test_admin-cert.pem'
+    test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102']
-elif location == 'GCNBHPW10-AD':
+elif location == 'ELITE10GC-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
     #                'win2']
@@ -167,7 +167,7 @@ elif location == 'GCNBHPW10-AD':
     test_ntlm_password = 'Rc6666pfop'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
-elif location == 'GCNBHPW10-SLAPD':
+elif location == 'ELITE10GC-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
     test_server = 'openldap.hyperv'
     test_server_type = 'SLAPD'
@@ -206,26 +206,26 @@ elif location == 'W10GC9227-EDIR':
     # test_server = 'nova01.amm.intra.camera.it'
     # test_server_type = 'AD'
     test_root_partition = ''
-    test_base = 'o=test'  # base context where test objects are created
+    test_base = 'ou=fixtures,o=test'  # base context where test objects are created
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'loginGraceLimit'
     test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=services'  # the user that performs the tests
-    test_password = 'camera'  # user password
-    test_secondary_user = 'cn=admin,o=services'  # the user that performs the tests
-    test_secondary_password = 'camera'  # user password
-    test_sasl_user = 'testSASL.services'
-    test_sasl_password = 'password'
-    test_sasl_user_dn = 'cn=testLAB,o=services'
-    test_sasl_secondary_user = 'testSASL.services'
-    test_sasl_secondary_password = 'password'
-    test_sasl_secondary_user_dn = 'cn=testSASL,o=services'
+    test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
+    test_password = 'password'  # user password
+    test_secondary_user = 'cn=test_user,ou=bind,o=test'  # the user that performs the tests
+    test_secondary_password = 'password2'  # user password
+    test_sasl_user = 'test_sasl_user.bind.test'
+    test_sasl_password = 'password3'
+    test_sasl_user_dn = 'cn=test_sasl_user,ou=bind,o=test'
+    test_sasl_secondary_user = 'test_sasl2_user.services'
+    test_sasl_secondary_password = 'password4'
+    test_sasl_secondary_user_dn = 'cn=test_sasl2_user,ou=bind,o=test'
     test_sasl_realm = None
     test_ca_cert_file = 'local-edir-ca-cert.pem'
-    test_user_cert_file = 'local-edir-admin-cert.pem'
-    test_user_key_file = 'local-edir-admin-key.pem'
+    test_user_cert_file = 'local-edir-test_admin-cert.pem'
+    test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
     test_logging_filename = join(gettempdir(), 'ldap3.log')

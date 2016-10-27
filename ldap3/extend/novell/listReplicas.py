@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -26,6 +26,7 @@
 from ...extend.operation import ExtendedOperation
 from ...protocol.novell import ReplicaList
 from ...protocol.rfc4511 import LDAPDN
+from ...utils.dn import safe_dn
 
 
 class ListReplicas(ExtendedOperation):
@@ -38,6 +39,8 @@ class ListReplicas(ExtendedOperation):
 
     def __init__(self, connection, server_dn, controls=None):
         ExtendedOperation.__init__(self, connection, controls)  # calls super __init__()
+        if connection.check_names:
+            server_dn = safe_dn(server_dn)
         self.request_value = LDAPDN(server_dn)
 
     def populate_result(self):

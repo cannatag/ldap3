@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from ... import SUBTREE, DEREF_ALWAYS
+from ...utils.dn import safe_dn
 
 
 def paged_search_generator(connection,
@@ -39,6 +40,9 @@ def paged_search_generator(connection,
                            controls=None,
                            paged_size=100,
                            paged_criticality=False):
+    if connection.check_names and search_base:
+        search_base = safe_dn(search_base)
+
     responses = []
     cookie = True  # performs search at least one time
     count = 0
@@ -88,6 +92,9 @@ def paged_search_accumulator(connection,
                              controls=None,
                              paged_size=100,
                              paged_criticality=False):
+    if connection.check_names and search_base:
+        search_base = safe_dn(search_base)
+
     responses = []
     for response in paged_search_generator(connection,
                                            search_base,

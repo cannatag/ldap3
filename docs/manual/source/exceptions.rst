@@ -41,13 +41,11 @@ LDAPException
 
 --LDAPExceptionError
 
-----LDAPAttributeError (inherits also from AttributeError)
-
 ----LDAPBindError
 
 ----LDAPCertificateError
 
-----LDAPChangesError (inherits also from ValueError)
+----LDAPChangeError (also inherits from ValueError)
 
 ----LDAPCommunicationError (all may inherit from socket.error)
 
@@ -83,23 +81,21 @@ LDAPException
 
 ----LDAPConnectionPoolNotStartedError
 
-----LDAPControlsError (inherits also from ValueError)
-
-----LDAPEntryError
+----LDAPControlError (also inherits from ValueError)
 
 ----LDAPExtensionError
 
-----LDAPInvalidDereferenceAliasesError (inherits also from ValueError)
+----LDAPInvalidDereferenceAliasesError (also inherits from ValueError)
 
 ----LDAPInvalidFilterError
 
 ----LDAPInvalidPort
 
-----LDAPInvalidScopeError (inherits also from ValueError)
+----LDAPInvalidScopeError (also inherits from ValueError)
 
 ----LDAPInvalidServerError
 
-----LDAPKeyError (inherits also from KeyError)
+----LDAPKeyError (also inherits from KeyError)
 
 ----LDAPLDIFError
 
@@ -107,13 +103,13 @@ LDAPException
 
 ----LDAPMetricsError
 
-----LDAPObjectClassError (inherits also from ValueError)
+----LDAPObjectClassError (also inherits from ValueError)
 
 ----LDAPObjectError
 
 ----LDAPPasswordIsMandatoryError
 
-----LDAPReaderError
+----LDAPCursorError
 
 ----LDAPMaximumRetriesError
 
@@ -129,7 +125,7 @@ LDAPException
 
 ----LDAPServerPoolExhaustedError
 
-----LDAPSSLNotSupportedError (inherits also from ImportError)
+----LDAPSSLNotSupportedError (also inherits from ImportError)
 
 ----LDAPStartTLSError
 

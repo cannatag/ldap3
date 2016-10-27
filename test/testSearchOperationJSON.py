@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2013.06.06
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -23,10 +26,9 @@
 import unittest
 import json
 
+from ldap3 import SUBTREE
 from ldap3.utils.conv import escape_bytes
 from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
-from ldap3 import SUBTREE
-
 
 testcase_id = random_id()
 
@@ -62,7 +64,7 @@ class Test(unittest.TestCase):
 
     def test_search_extensible_match(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
-            result = self.connection.search(search_base=test_base, search_filter='(&(o:dn:=test)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
+            result = self.connection.search(search_base=test_base, search_filter='(&(ou:dn:=fixtures)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
             if not self.connection.strategy.sync:
                 response, _ = self.connection.get_response(result)
                 json_response = self.connection.response_to_json(search_result=response)

@@ -2,7 +2,7 @@ The ldap3 project
 #################
 
 ldap3 is a strictly RFC 4510 conforming LDAP v3 pure Python client library. The whole ldap3 library has been **written from scratch**
-and the **same codebase works with Python 2, Python 3, PyPy, PyPy3 and Nuikta** on any system where it can gain access to
+and the **same codebase works with Python 2, Python 3, PyPy and PyPy3** on any system where it can gain access to
 the network via a Python interpreter and the Python Standard Library.
 
 

@@ -82,7 +82,7 @@ in connection.response you will find::
 A more complex modify operation (from the RFC2849 examples)::
 
     from ldap3 import MODIFY_ADD. MODIFY_DELETE, MODIFY_REPLACE
-    connection.modify('cn=Paula Jensen, ou=Product Development, dc=airius, dc=com',
+    connection.modify('cn=Paula Jensen,ou=Product Development,dc=airius,dc=com',
         {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),
          'description': (MODIFY_DELETE, []),
          'telephonenumber': (MODIFY_REPLACE, ['+1 408 555 1234', '+1 408 555 5678']),
@@ -92,7 +92,7 @@ A more complex modify operation (from the RFC2849 examples)::
     returns:
 
     version: 1
-    dn: cn=Paula Jensen, ou=Product Development, dc=airius, dc=com
+    dn: cn=Paula Jensen,ou=Product Development,dc=airius,dc=com
     changetype: modify
     add: postaladdress
     postaladdress: 123 Anystreet $ Sunnyvale, CA $ 94086

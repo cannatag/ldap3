@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -26,7 +26,6 @@
 # implements RFC4532
 
 from ...extend.operation import ExtendedOperation
-
 
 class WhoAmI(ExtendedOperation):
     def config(self):

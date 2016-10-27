@@ -158,7 +158,7 @@ Search scope and aliases
 
 The scope of the search specifies how broad the search context will be. The LDAP database is a hierarchical structure
 (similar to a traditional file system) with a root and with container and leaf objects. a container can be stored in other
-containers, but not in a leaf object. It must be clear that containers and leafs structure has nothing to do with the group
+containers, but not in a leaf object. It must be _clear that containers and leafs structure has nothing to do with the group
 and group membership objects. A group (groupOfNames) object is a leaf object with a member attribute that contains references
 to other objects.
 
@@ -229,7 +229,7 @@ request it explicitly.
 
 To request the operational attributes you can even set the get_operational_attributes parameter to True.
 
-The standard LDAP RFCs define that if an object doesn't have an attribute it must not be returned at all. This can cause your code
+The standard LDAP RFCs define that if an attribute doesn't have a value it must not be returned at all. This can cause your code
 to become clumsy because you have to check always for existence of an attribute in the *attribute* dictionary of the response.
 To let the library return an empty attribute even if it is not present in the LDAP object retrieved by the search you can set the
 *return_empty_attributes* parameter to True in the Connection object, in this case all the requested attributes not present in the objects
@@ -265,7 +265,8 @@ There are a few of standard formatters defined in the library, most of them are 
   defined in RFC 4517
 
 You can even define your custom formatter for specific purposes. Just pass a dictionary in the format
-{'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte value and convert it the relevant object or class instance.
+{'identifier': callable} in the 'formatter' parameter of the Server object. The callable must be able to receive a single byte
+value and convert it the relevant object or class instance.
 
 The resolution order of the format feature is the following:
 

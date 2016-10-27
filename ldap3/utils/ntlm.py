@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -36,7 +36,6 @@ from os import urandom
 
 try:
     from locale import getpreferredencoding
-
     oem_encoding = getpreferredencoding()
 except Exception:
     oem_encoding = 'utf-8'

@@ -1,8 +1,11 @@
+"""
+"""
+
 # Created on 2014.05.01
 #
-# @author: Giovanni Cannata
+# Author: Giovanni Cannata
 #
-# Copyright 2015 Giovanni Cannata
+# Copyright 2014, 2015, 2016 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -25,7 +28,6 @@ import unittest
 from ldap3 import ALL
 from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
 from test import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
-
 
 testcase_id = random_id()
 

@@ -1,7 +1,8 @@
-from ldap3 import Server, Connection, ObjectDef, AttrDef, Reader, Writer, ALL, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_SLAPD_2_4
+from ldap3 import Server, Connection, ObjectDef, AttrDef, Reader, Writer, ALL, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_SLAPD_2_4, MOCK_SYNC
 server = Server('my_fake_server', get_info=OFFLINE_SLAPD_2_4)
-conn = Connection(server, 'uid=helpdesk,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=False)
-conn.bind()
+conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', client_strategy=MOCK_SYNC)
+conn.strategy.add_entry('uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', {'userPassword': 'Secret123', 'sn': 'admin_sn', 'revision': 0})
+print(conn.bind())
 print(1, conn.last_error)
 print(conn.result)
 conn.add('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'organizationalUnit')

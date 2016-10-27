@@ -1,6 +1,6 @@
-from ldap3 import Server, Connection, ObjectDef, AttrDef, Reader, Writer, ALL, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
-server = Server('ipa.demo1.freeipa.org', get_info=ALL)
-conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=False)
+from ldap3 import Server, Connection, ObjectDef, AttrDef, Reader, Writer, ALL, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_SLAPD_2_4
+server = Server('my_fake_server', get_info=OFFLINE_SLAPD_2_4)
+conn = Connection(server, 'uid=helpdesk,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=False)
 conn.bind()
 print(1, conn.last_error)
 print(conn.result)
@@ -33,7 +33,7 @@ print(14, conn.last_error)
 conn.add('cn=q.gray,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Quentin', 'sn': 'Gray', 'departmentNumber': 'QA', 'telephoneNumber': 3333})
 print(15, conn.last_error)
 
-obj_person = ObjectDef('person', conn)
+obj_person = ObjectDef('inetOrgPerson', conn)
 r = Reader(conn, obj_person, '', 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
 r.search()
 print(r)

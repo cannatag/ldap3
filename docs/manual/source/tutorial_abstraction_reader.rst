@@ -3,10 +3,10 @@ Tutorial: ldap3 Abstraction Layer - Reading data
 
 Reading entries
 ---------------
-
 Let's define a Reader cursor to get all the entries of class 'inetOrgPerson' in the 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org' context::
 
-    >>> r = Reader(conn, obj_person, None, 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+    >>> obj_inetorgperson = ObjectDef('inetOrgPerson', conn)
+    >>> r = Reader(conn, obj_inetorgperson, None, 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     >>> r
     CURSOR : Reader
     CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:17296 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
@@ -67,11 +67,14 @@ Let's explore some of them::
     >>> print(r[0].entry_to_ldif())
     version: 1
     dn: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org
-    objectClass: top
-    objectClass: person
-    objectClass: organizationalPerson
     objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: person
+    objectClass: top
     sn: Young
+    telephoneNumber: 1111
+    departmentNumber: DEV
+    givenName: Beatrix
     cn: b.young
     # total number of entries: 1
 
@@ -81,21 +84,76 @@ Let's explore some of them::
             "cn": [
                 "b.young"
             ],
+            "departmentNumber": [
+                "DEV"
+            ],
+            "givenName": [
+                "Beatrix"
+            ],
             "objectClass": [
-                "top",
-                "person",
+                "inetOrgPerson",
                 "organizationalPerson",
-                "inetOrgPerson"
+                "person",
+                "top"
             ],
             "sn": [
                 "Young"
+            ],
+            "telephoneNumber": [
+                "1111"
             ]
         },
         "dn": "cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org"
     }
 
-As you can see this Entry has additional auxiliary object classes attached. This means that there can be other attributes stored in the entry. Let's try
-to define an ObjectDef that also requests the 'krbprincipalaux'::
+If you search for the uid=admin entry there are some auxiliary classes attached to it. The uid=admin entry is not an *inetOrgPerson* but a *person*,
+so you must use the ``obj_person`` we defined in the previous chapter of this tutorial::
+
+    >>> obj_person
+    OBJ : person [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0]
+    MUST: cn, objectClass, sn
+    MAY : description, seeAlso, telephoneNumber, userPassword
+
+This ObjectDef lacks the *uid* attributes, used for naming the admin entry, so we must add it to the Object definition:
+
+    >>> obj_person += 'uid'  # implicitly creates a new AttrDef
+    >>> obj_person
+    OBJ : person [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0]
+    MUST: cn, objectClass, sn
+    MAY : description, seeAlso, telephoneNumber, uid, userPassword
+
+Now let's build the Reader cursor, using the Simplified Query Language, note how the filter is converted::
+
+    >>> r = Reader(conn, obj_person, 'uid:=admin', 'cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org')
+    >>> r
+    CURSOR : Reader
+    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:13193 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
+    DEFS   : ['person'] [cn, description, objectClass, seeAlso, sn, telephoneNumber, uid, userPassword]
+    ATTRS  : ['cn', 'description', 'objectClass', 'seeAlso', 'sn', 'telephoneNumber', 'uid', 'userPassword']
+    BASE   : 'cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org' [SUB]
+    QUERY  : 'uid:=admin' [AND]
+    PARSED : 'uid: =admin' [AND]
+    FILTER : '(&(objectClass=person)(uid=admin))'
+
+And finally perform the search operation::
+    >>> r.search()
+    [DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-27T17:45:07.799394
+        cn: Administrator
+        objectClass: top
+                     person
+                     posixaccount
+                     krbprincipalaux
+                     krbticketpolicyaux
+                     inetuser
+                     ipaobject
+                     ipasshuser
+                     ipaSshGroupOfPubKeys
+                     ipaNTUserAttrs
+        sn: Administrator
+        uid: admin
+
+Only one entry is found. As you can see this Entry has additional auxiliary object classes attached. This means that there can be other
+attributes stored in the entry. Let's define an ObjectDef that also requests the 'krbprincipalaux'::
 
     >>> obj_person = ObjectDef(['person', 'krbprincipalaux'], conn)
     OBJ : person, krbPrincipalAux [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0, krbPrincipalAux (Auxiliary) 2.16.840.1.113719.1.301.6.8.1]
@@ -106,7 +164,7 @@ to define an ObjectDef that also requests the 'krbprincipalaux'::
 
 As you can see the ObjectDef now includes all Attributes from the *person*, *top* and *krbPrincipalAux* classes. Now create a new Reader::
 
-    >>> r = Reader(conn, obj_person, None, 'dc=demo1,dc=freeipa,dc=org')
+    >>> r = Reader(conn, obj_person, 'uid:=admin', 'dc=demo1,dc=freeipa,dc=org')
     >>> e = r.search()
     >>> e[0]
     DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-20T20:40:50.735314
@@ -147,9 +205,13 @@ So the ldap3 library returns it as a DateTime object (with time zone info)::
     >>> type(e[0].krblastpwdchange.value)
     <class 'datetime.datetime'>
 
+.. warning::
+   The ldap3 library returns dates with Time Zone info. These dates can be compared only with dates with Time Zone. You can't compare them
+   with a "naive" date object.
+
 .. note::
-    Attributes have three properties for getting their value: the ``values`` property returns always a list containing all values (even in
-    a single-valued attribute; ``value`` returns the same list in a multi-valued attribute and the value in a single-valued attribute.
+    Attributes have three properties for getting their values: the ``values`` property returns always a list containing all values (even in
+    a single-valued attribute; the ``value`` property returns the very same list in a multi-valued attribute or the value in a single-valued attribute.
     ``raw_attributes`` always returns a list of the binary values received in the LDAP response. When the schema is available the ``values``
     and ``value`` properties are properly formatted as standard Python types. You can add additional custom formatters with the ``formatter``
     parameter of the Server object.
@@ -180,5 +242,3 @@ By default the Reader searchs the whole sub tree starting from the specified bas
     >>> r.search_subtree()  # search walking down from the 'dc=demo1,dc=freeipa,dc=org' context
     >>> print(len(r))
     20
-
-

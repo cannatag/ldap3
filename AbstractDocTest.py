@@ -36,7 +36,7 @@ department += AttrDef('member', key='employeer', dereference_dn=person)  # value
 s = Server('edir1')
 c = Connection(s, user='cn=admin,o=resources', password='password')
 query = 'Department: Accounting'  # explained in next paragraph
-personReader = Reader(c, person, query, 'o=test')
+personReader = Reader(c, person, 'o=test', query)
 personReader.search()
 print(personReader)
 

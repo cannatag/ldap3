@@ -1,6 +1,31 @@
 # changes file for ldap3
-# generated on 2016-09-13 10:13:34.365282
-# version 2.0.1
+# generated on 2016-10-27 19:46:06.421351
+# version 2.0.4
+
+- 2.0.4 2016.10.22
+    - first release of ldap3 v2
+    - changed signature of ldap3.abstract.Reader object
+    - updated tutorials for Abstraction Layer
+
+- 2.0.3 2016.10.22
+    - removed search_size_limit(), search_time_limit() and search_types_only in the Reader cursor
+    - fixed SASL in progress error (thanks Styleex)
+    - fixed ALL_ATTRIBUTES in MOCK_SYNC strategy (thanks Belgarion)
+    - ncorrect attribute type error message now includes the name of the attribute (Thanks Andrej)
+
+- 2.0.2 2016.10.14
+    - relaxed dn checking for Active Directory UserPrincipalName
+    - relaxed dn checking for Active Directory SamAccountName
+    - added checking of attribute name in add, compare and search operations
+    - added checking of class name in add operation
+    - renamed exception LDAPTypeError to LDAPAttributeError
+    - in sync strategies LDAP operations populate the last_error attribute of the connection in case of not RESULT_SUCCESS
+
+- 2.0.1 2016.09.24
+    - connection.return_empty_attributes defaults to True
+    - escaped filter by default
+    - fixed escaping of filter
+    - add move and rename to abstraction layer entry
 
 - 2.0.0 2016.08.31
     - ldap3 namespace decluttered
@@ -12,7 +37,7 @@
     - Allows cert and key file in the same file (thanks Jan-Philip)
     - Removed logging info when logging is disabled (thanks Dan)
     - Updated copyright notice
-    - Refactored abstraction layer
+    - Refactored abstraction layer with full support for CRUD (Create, Read, Update, Delete) abstract operations
     - Added WritableEntry and WritableAttribute to abstraction layer
     . Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
     - Added custom validators for attribute values
@@ -23,7 +48,7 @@
     - Added attributes parameter to search* methods of Cursor, so that only needed attributes are read even if attr_defs defines more
     - Fixed connect_timeout not honored while wrapping socket in tls (thanks Kyle)
     - Added 'set' to SEQUENCE_TYPES (thanks Christian)
-    - Entries returned by search can be writable via the abstraction layer
+    - Entries returned by search are now writable via the abstraction layer
     - LDAPReaderError exception renamed to LDAPCursorError
     - auto_range parameter in Connection defaults to True (thanks Ashley)
     - get_info defaults to SCHEMA while defining Server object
@@ -33,7 +58,6 @@
     - All DNs are sanitized if connection.check_names is True
     - LDAPControlsError exception renamed to LDAPControlError
     - LDAPChangesError exception renamed to LDAPChangeError
-    - connection.return_empty_attributes defaults to True
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

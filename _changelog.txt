@@ -1,5 +1,9 @@
-- 2.0.3 2016.10.22
+- 2.0.4 2016.10.22
+    - first release of ldap3 v2
+    - changed signature of ldap3.abstract.Reader object
     - updated tutorials for Abstraction Layer
+
+- 2.0.3 2016.10.22
     - removed search_size_limit(), search_time_limit() and search_types_only in the Reader cursor
     - fixed SASL in progress error (thanks Styleex)
     - fixed ALL_ATTRIBUTES in MOCK_SYNC strategy (thanks Belgarion)

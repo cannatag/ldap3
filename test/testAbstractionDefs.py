@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(self.connection, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._validate_query()
 
@@ -64,7 +64,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;Bob, Surname:=smith'
-        r = Reader(self.connection, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 
@@ -75,7 +75,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = 'Common Name:John'
-        r = Reader(self.connection, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 
@@ -86,7 +86,7 @@ class Test(unittest.TestCase):
         o += AttrDef('cn', 'Common Name')
 
         query_text = '|Common Name:=john;=Bob'
-        r = Reader(self.connection, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 
@@ -99,7 +99,7 @@ class Test(unittest.TestCase):
         o += AttrDef('givenName', 'Given Name')
 
         query_text = '|Common Name:=john;=Bob, Surname:=smith'
-        r = Reader(self.connection, o, query_text, base=test_base)
+        r = Reader(self.connection, o, test_base, query_text)
 
         r._create_query_filter()
 

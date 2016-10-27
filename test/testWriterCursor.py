@@ -43,6 +43,6 @@ class Test(unittest.TestCase):
 
     def test_writer_from_cursor(self):
         o = ObjectDef('inetorgperson', self.connection)
-        r = Reader(self.connection, o, 'cn:=*', 'o=test')
+        r = Reader(self.connection, o, 'o=test', 'cn:=*')
         r.search()
         w = Writer.from_cursor(r, self.connection, o)

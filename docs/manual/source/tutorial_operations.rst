@@ -210,7 +210,7 @@ There is a typo in the previous modify operation (Smyth instead of Smith), let's
         cn: b.smith
         sn: Smith
 
-Modifications in a modify operation can be combined and the syntax of the operation soon becomes complex::
+Changes in a modify operation can be combined and the syntax of the operation soon becomes complex::
 
     >>> conn.modify('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Young', 'Johnson']), (MODIFY_DELETE, ['Smith'])], 'givenname': [(MODIFY_REPLACE, ['Mary', 'Jane'])]})
     True

@@ -167,7 +167,7 @@ class Cursor(object):
                     attribute.values = [attribute.values]
                 if attr_def.dereference_dn:  # try to get object referenced in value
                     if attribute.values:
-                        temp_reader = Reader(self.connection, attr_def.dereference_dn, query='', base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
+                        temp_reader = Reader(self.connection, attr_def.dereference_dn, base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []
                         for element in attribute.values:
                             temp_values.append(temp_reader.search_object(element))
@@ -272,7 +272,7 @@ class Reader(Cursor):
     attribute_class = Attribute  # attributes are read_only
     entry_initial_status = STATUS_READ
 
-    def __init__(self, connection, object_def, query, base, components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
+    def __init__(self, connection, object_def, base, query='', components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
         self._components_in_and = components_in_and
         self.sub_tree = sub_tree
@@ -619,11 +619,11 @@ class Writer(Cursor):
 
     def commit(self, refresh=True):
         for entry in self.entries:
-            entry.commit_entry_changes(refresh=refresh, controls=self.controls)
+            entry.entry_commit_changes(refresh=refresh, controls=self.controls)
 
     def discard(self):
         for entry in self.entries:
-            entry.discard_entry_changes()
+            entry.entry_discard_changes()
 
     def _refresh_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
         """Perform the LDAP search operation SINGLE_OBJECT scope

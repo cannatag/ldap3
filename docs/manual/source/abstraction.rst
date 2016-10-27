@@ -220,7 +220,7 @@ Example::
     s = Server('server')
     c = Connection(s, user = 'username', password = 'password')
     query = 'Department: Accounting'  # explained in next paragraph
-    person_reader = Reader(c, person, query, 'o=test')
+    person_reader = Reader(c, person, 'o=test', query)
     person_reader.search()
 
 The result of the search will be found in the ``entries`` property of the ``person_reader`` object.
@@ -449,7 +449,7 @@ as Entries form a Search response, as a single Entry from a Search response or a
     >>> from ldap3 import Connection, Reader, Writer, ObjectDef
     >>> c = Connection('sl10', 'cn=my_user,o=my_org', 'my_password', auto_bind=True)
     >>> o = ObjectDef('inetOrgPerson', c)  # automatic read of the inetOrgPerson structure from schema
-    >>> r = Reader(c, o, None, 'o=test')  # we don't need to provide a filter because of the objectDef implies '(objectclass=inetOrgPerson)'
+    >>> r = Reader(c, o, 'o=test')  # we don't need to provide a filter because of the objectDef implies '(objectclass=inetOrgPerson)'
     >>> r.search()  # populate the reader with the Entries found in the Search
 
     # make a Writable Cursor from the person_reader Reader Cursor

@@ -454,7 +454,7 @@ class WritableEntry(EntryBase):
         return False
 
     def entry_discard_changes(self):
-        self._changes.clear_attributes()
+        self._changes.clear()
         self._state.set_status(self._state._initial_status)
 
     def entry_delete(self):
@@ -487,3 +487,6 @@ class WritableEntry(EntryBase):
         self._state._to = new_name
         self._state.set_status(STATUS_READY_FOR_RENAMING)
 
+    @property
+    def entry_changes(self):
+        return self._changes

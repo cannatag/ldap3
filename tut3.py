@@ -34,7 +34,7 @@ conn.add('cn=q.gray,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerso
 print(15, conn.last_error)
 
 obj_person = ObjectDef('inetOrgPerson', conn)
-r = Reader(conn, obj_person, '', 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+r = Reader(conn, obj_person, 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
 r.search()
 print(r)
 w = Writer.from_cursor(r)

@@ -6,7 +6,7 @@ Reading entries
 Let's define a Reader cursor to get all the entries of class 'inetOrgPerson' in the 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org' context::
 
     >>> obj_inetorgperson = ObjectDef('inetOrgPerson', conn)
-    >>> r = Reader(conn, obj_inetorgperson, None, 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
+    >>> r = Reader(conn, obj_inetorgperson, 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
     >>> r
     CURSOR : Reader
     CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:17296 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
@@ -124,7 +124,7 @@ This ObjectDef lacks the *uid* attributes, used for naming the admin entry, so w
 
 Now let's build the Reader cursor, using the Simplified Query Language, note how the filter is converted::
 
-    >>> r = Reader(conn, obj_person, 'uid:=admin', 'cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org')
+    >>> r = Reader(conn, obj_person, 'cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'uid:=admin')
     >>> r
     CURSOR : Reader
     CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:13193 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
@@ -164,7 +164,7 @@ attributes stored in the entry. Let's define an ObjectDef that also requests the
 
 As you can see the ObjectDef now includes all Attributes from the *person*, *top* and *krbPrincipalAux* classes. Now create a new Reader::
 
-    >>> r = Reader(conn, obj_person, 'uid:=admin', 'dc=demo1,dc=freeipa,dc=org')
+    >>> r = Reader(conn, obj_person, 'dc=demo1,dc=freeipa,dc=org', 'uid:=admin')
     >>> e = r.search()
     >>> e[0]
     DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-20T20:40:50.735314

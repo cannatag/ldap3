@@ -33,7 +33,7 @@
     - Updated copyright notice
     - Refactored abstraction layer with full support for CRUD (Create, Read, Update, Delete) abstract operations
     - Added WritableEntry and WritableAttribute to abstraction layer
-    . Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
+    - Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
     - Added custom validators for attribute values
     - Added update capability to abstraction layer
     - Fixed typo in docs (thanks Gerardwx)

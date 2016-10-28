@@ -67,6 +67,8 @@ Connection parameters are:
 
 * auto_range: if a server returns a fixed amount of entries in searches using the *range* tag (RFCs 3866) setting this value to True let the ldap3 library automatically request all entries with additional searches. The entries are returned as if a single search is performed
 
+* use_referral_cache: when True referral connections are not immediately closed, and kept in a cache should another request need to contact the same server
+
 
 .. note::
 The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.

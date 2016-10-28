@@ -7,7 +7,7 @@ Installation is straightforward and can be done via a package manager or from th
 Installation with a package manager
 -----------------------------------
 
-You need the *setuptools* and *pip* packages (or any other package manager that can download and install from pyPI) to
+You need the **pip** package (or another package manager that can download and install from pyPI) to
 install ldap3. Then you can download and install the ldap3 library directly from pyPI::
 
     pip install ldap3

@@ -31,6 +31,7 @@ ConnectionUsage stores counters for each operation performed in the Connection, 
 * unbind_operations:
 * referrals_received:
 * referrals_followed:
+* referrals_connections:
 * restartable_failures:
 * restartable_successes:
 
@@ -75,6 +76,7 @@ and get the properly formatted metrics::
       Referrals:
         Received:            0
         Followed:            0
+        Connections:         0
       Restartable tries:     0
         Failed restarts:     0
         Successful restarts: 0

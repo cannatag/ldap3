@@ -166,6 +166,8 @@ class Connection(object):
     :type pool_size: int
     :param pool_lifetime: pool lifetime for pooled strategies
     :type pool_lifetime: int
+    :param use_referral_cache: keep referral connections open and reuse them
+    :type use_referral_cache: bool
 
     """
 
@@ -191,7 +193,8 @@ class Connection(object):
                  pool_lifetime=None,
                  fast_decoder=True,
                  receive_timeout=None,
-                 return_empty_attributes=True):
+                 return_empty_attributes=True,
+                 use_referral_cache=False):
 
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
@@ -258,6 +261,7 @@ class Connection(object):
             self.fast_decoder = fast_decoder
             self.receive_timeout = receive_timeout
             self.empty_attributes = return_empty_attributes
+            self.use_referral_cache = use_referral_cache
 
             if isinstance(server, STRING_TYPES):
                 server = Server(server)
@@ -639,6 +643,10 @@ class Connection(object):
         """
         if log_enabled(BASIC):
             log(BASIC, 'start UNBIND operation via <%s>', self)
+
+        if self.use_referral_cache:
+            self.strategy.unbind_referral_cache()
+
         self.last_error = None
         with self.lock:
             if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # _clear deferred status

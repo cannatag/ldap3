@@ -1,3 +1,6 @@
+- 2.0.8 2016.10.28
+    - included referral caching (thanks TWAC)
+
 - 2.0.7 2016.10.27
     - first release of ldap3 v2
     - changed signature of ldap3.abstract.Reader object

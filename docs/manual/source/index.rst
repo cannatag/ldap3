@@ -11,8 +11,16 @@ RFC4510 is the current LDAP specification (June 2006) from IETF and obsoletes th
 
 ldap3 can be used with any Python version starting from 2.6, including all Python 3 versions. It also works with PyPy and PyPy3.
 
-Contents
 
+.. warning::
+   Starting from **version 2.0.9** some default values have been changed and the ldap3 namespace has been decluttered, removing redundant
+   constants (look at the changelog for details). Also, the result code constants were moved to ldap3.core.results and the ldap3
+   custom exceptions were stored in ldap3.core.exceptions. If you experience errors in your existing code you should rearrange
+   the import statements or explicitly set the defaults to their former values.
+
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2

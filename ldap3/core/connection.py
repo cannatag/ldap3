@@ -276,10 +276,10 @@ class Connection(object):
                 self.server_pool = None
                 self.server = server
 
-            if self.authentication == SIMPLE and self.user and self.check_names:
-                self.user = safe_dn(self.user)
-                if log_enabled(EXTENDED):
-                    log(EXTENDED, 'user name sanitized to <%s> for simple authentication via <%s>', self.user, self)
+            # if self.authentication == SIMPLE and self.user and self.check_names:
+            #     self.user = safe_dn(self.user)
+            #     if log_enabled(EXTENDED):
+            #         log(EXTENDED, 'user name sanitized to <%s> for simple authentication via <%s>', self.user, self)
 
             if self.strategy_type == SYNC:
                 self.strategy = SyncStrategy(self)
@@ -620,10 +620,10 @@ class Connection(object):
             if sasl_credentials:
                 self.sasl_credentials = sasl_credentials
 
-            if self.authentication == SIMPLE and self.user and self.check_names:
-                self.user = safe_dn(self.user)
-                if log_enabled(EXTENDED):
-                    log(EXTENDED, 'user name sanitized to <%s> for rebind via <%s>', self.user, self)
+            # if self.authentication == SIMPLE and self.user and self.check_names:
+            #     self.user = safe_dn(self.user)
+            #     if log_enabled(EXTENDED):
+            #         log(EXTENDED, 'user name sanitized to <%s> for rebind via <%s>', self.user, self)
 
             if not self.strategy.pooled:
                 try:

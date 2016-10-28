@@ -1,8 +1,11 @@
+- 2.0.9 2016.10.28
+    - removed sanitation of DN in bind operation because some servers accept non standard DN for Simple Bind
+
 - 2.0.8 2016.10.28
     - included referral caching (thanks TWAC)
 
 - 2.0.7 2016.10.27
-    - first release of ldap3 v2
+    - FIRST RELEASE OF LDAP3 V2
     - changed signature of ldap3.abstract.Reader object
     - removed search_size_limit(), search_time_limit() and search_types_only in the Reader cursor
     - fixed SASL in progress error (thanks Styleex)
@@ -29,7 +32,7 @@
     - Updated copyright notice
     - Refactored abstraction layer with full support for CRUD (Create, Read, Update, Delete) abstract operations
     - Added WritableEntry and WritableAttribute to abstraction layer
-    . Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
+    - Added standard validators for attribute types and syntaxes defined in the standard LDAP schema
     - Added custom validators for attribute values
     - Added update capability to abstraction layer
     - Fixed typo in docs (thanks Gerardwx)
@@ -48,6 +51,31 @@
     - All DNs are sanitized if connection.check_names is True
     - LDAPControlsError exception renamed to LDAPControlError
     - LDAPChangesError exception renamed to LDAPChangeError
+    - The following older constants in ldap3 have been removed, please use the suggested ones:
+    - AUTH_ANONYMOUS = ANONYMOUS
+    - AUTH_SIMPLE = SIMPLE
+    - AUTH_SASL = SASL
+    - SEARCH_SCOPE_BASE_OBJECT = BASE
+    - SEARCH_SCOPE_SINGLE_LEVEL = LEVEL
+    - SEARCH_SCOPE_WHOLE_SUBTREE = SUBTREE
+    - SEARCH_NEVER_DEREFERENCE_ALIASES = DEREF_NEVER
+    - SEARCH_DEREFERENCE_IN_SEARCHING = DEREF_SEARCH
+    - SEARCH_DEREFERENCE_FINDING_BASE_OBJECT = DEREF_BASE
+    - SEARCH_DEREFERENCE_ALWAYS = DEREF_ALWAYS
+    - STRATEGY_SYNC = SYNC
+    - STRATEGY_ASYNC_THREADED = ASYNC
+    - STRATEGY_LDIF_PRODUCER = LDIF
+    - STRATEGY_SYNC_RESTARTABLE = RESTARTABLE
+    - STRATEGY_REUSABLE_THREADED = REUSABLE
+    - STRATEGY_MOCK_SYNC = MOCK_SYNC
+    - STRATEGY_MOCK_ASYNC = MOCK_SYNC
+    - POOLING_STRATEGY_FIRST = FIRST
+    - POOLING_STRATEGY_ROUND_ROBIN = ROUND_ROBIN
+    - POOLING_STRATEGY_RANDOM = RANDOM
+    - GET_NO_INFO = NONE
+    - GET_DSA_INFO = DSA
+    - GET_SCHEMA_INFO = SCHEMA
+    - GET_ALL_INFO = ALL
 
 - 1.4.0 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object

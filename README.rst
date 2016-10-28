@@ -17,7 +17,7 @@ Version 2 warning
 -----------------
 
 In version 2 of ldap3 some default values have been changed and the ldap3 namespace has been decluttered, removing redundant
-constants. Also, the result code constants were moved to ldap3.core.results and the ldap3 custom exceptions
+constants (look at the changelog for details). Also, the result code constants were moved to ldap3.core.results and the ldap3 custom exceptions
 were stored in ldap3.core.exceptions. If you experience errors in your existing code you should rearrange the import statements or explicitly
 set the defaults to their former values.
 

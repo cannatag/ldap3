@@ -141,8 +141,8 @@ if str != bytes:  # python 3
     STRING_TYPES = (str, )
     SEQUENCE_TYPES = (set, list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
 else:  # python 2
-    SEQUENCE_TYPES = (set, list, tuple, GeneratorType)
     STRING_TYPES = (str, unicode)
+    SEQUENCE_TYPES = (set, list, tuple, GeneratorType)
 
 # centralized imports  # must be at the end of the __init__.py file
 from .version import __author__, __version__, __email__, __description__, __status__, __license__, __url__

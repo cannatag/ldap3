@@ -40,7 +40,6 @@ def add_operation(dn,
     for pos, attribute in enumerate(attributes):
         attribute_list[pos] = Attribute()
         attribute_list[pos]['type'] = AttributeDescription(attribute)
-        # vals = ValsAtLeast1()
         vals = Vals()  # changed from ValsAtLeast1() for allowing empty member value in groups
         if isinstance(attributes[attribute], SEQUENCE_TYPES):
             for index, value in enumerate(attributes[attribute]):

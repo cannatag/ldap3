@@ -39,7 +39,7 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 from ..protocol.formatters.standard import format_attribute_values
-from ..utils.conv import escape_filter_chars
+
 
 ROOT = 0
 AND = 1

@@ -178,7 +178,7 @@ class Connection(object):
                  auto_bind=AUTO_BIND_NONE,
                  version=3,
                  authentication=None,
-                 client_strategy=SYNC,
+                 client_strategy=RESTARTABLE,
                  auto_referrals=True,
                  auto_range=True,
                  sasl_mechanism=None,

@@ -111,6 +111,7 @@ class Test(unittest.TestCase):
             response = self.connection.response
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
+        print(response)
         if self.connection.check_names:
             if test_server_type == 'AD':
                 self.assertEqual(response[0]['dn'].lower(), self.delete_at_teardown[0][0].lower())

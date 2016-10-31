@@ -121,8 +121,9 @@ def build_controls_list(controls):
     return built_controls
 
 
-def validate_assertion_value(schema, name, value):
-    value = validate_attribute_value(schema, name, value)
+def validate_assertion_value(schema, name, value, auto_escape):
+    value = validate_attribute_value(schema, name, value, auto_escape)
+
     if b'\\' in value:
         validated_value = bytearray()
         pos = 0
@@ -148,12 +149,13 @@ def validate_assertion_value(schema, name, value):
     return validated_value
 
 
-def validate_attribute_value(schema, name, value):
+def validate_attribute_value(schema, name, value, auto_escape):
     if schema:
         if schema.attribute_types is not None and name not in schema.attribute_types and name not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
             raise LDAPAttributeError('invalid attribute ' + name)
         if schema.object_classes is not None and name == 'objectClass':
             if value not in CLASSES_EXCLUDED_FROM_CHECK and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
-    validated_value = escape_filter_chars(value)  # tries to convert from local encoding
-    return to_raw(validated_value)
+    if auto_escape:
+        value = escape_filter_chars(value)  # tries to convert from local encoding
+    return to_raw(value)

@@ -32,13 +32,14 @@ from ..operation.bind import referrals_to_list
 def compare_operation(dn,
                       attribute,
                       value,
+                      auto_escape,
                       schema=None):
     # CompareRequest ::= [APPLICATION 14] SEQUENCE {
     #     entry           LDAPDN,
     #     ava             AttributeValueAssertion }
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
-    ava['assertionValue'] = AssertionValue(validate_attribute_value(schema, attribute, value))
+    ava['assertionValue'] = AssertionValue(validate_attribute_value(schema, attribute, value, auto_escape))
 
     request = CompareRequest()
     request['entry'] = LDAPDN(dn)

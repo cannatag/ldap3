@@ -1,6 +1,9 @@
 - 2.1.0 2016.10.31
-    - changed default Connection stratety from SYNC to RESTARTABLE
+    - changed default Connection strategy from SYNC to RESTARTABLE
     - enable automatic escaping of assertion values
+    - fixed decoding error with check_name=False
+    - added auto_escape parameter in connection, for trying automatic filter and attribute values escape
+
 
 - 2.0.9 2016.10.28
     - removed sanitization of DN in bind operation because some servers accept non standard DN for Simple Bind

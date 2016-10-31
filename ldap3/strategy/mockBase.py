@@ -424,7 +424,7 @@ class MockBaseStrategy(object):
         base = safe_dn(request['base'])
         scope = request['scope']
         attributes = request['attributes']
-        filter_root = parse_filter(request['filter'], self.connection.server.schema)
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=False)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':

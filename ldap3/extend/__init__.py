@@ -28,6 +28,7 @@ from os import linesep
 from .. import SUBTREE, DEREF_ALWAYS, ALL_ATTRIBUTES, DEREF_NEVER
 from .microsoft.dirSync import DirSync
 from .microsoft.modifyPassword import modify_ad_password
+from .microsoft.unlockAccount import unlock_ad_account
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
@@ -260,6 +261,10 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
                                   old_password,
                                   new_password,
                                   controls)
+
+    def unlock_account(self, user):
+        return unlock_ad_account(self._connection,
+                                 user)
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

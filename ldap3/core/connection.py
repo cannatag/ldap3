@@ -332,9 +332,9 @@ class Connection(object):
                         if log_enabled(ERROR):
                             log(ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPBindError(self.last_error)
-            else:  # for strategies with a fake server set get_info to NONE if server hasn't a schema
-                if self.server and not self.server.schema:
-                    self.server.get_info = NONE
+            # else:  # for strategies with a fake server set get_info to NONE if server hasn't a schema
+            #     if self.server and not self.server.schema:
+            #         self.server.get_info = NONE
             if log_enabled(BASIC):
                 if get_library_log_hide_sensitive_data():
                     log(BASIC, 'instantiated Connection: <%s>', self.repr_with_sensitive_data_stripped())
@@ -1250,6 +1250,9 @@ class Connection(object):
             return result
 
     def refresh_server_info(self):
+        # if self.strategy.no_real_dsa:  # do not refresh for mock strategies
+        #     return
+
         if not self.strategy.pooled:
             with self.lock:
                 if not self.closed:

@@ -5,6 +5,7 @@
     - added auto_escape parameter in connection, for trying automatic filter and attribute values escape
     - fixed checking of schema in MockBase
     - SASLBindInProgress doesn't raise an exception anymore with raise_exceptions=True
+    - standard formatters are applied in mocking strategies when serching for exact match
 
 - 2.0.9 2016.10.28
     - removed sanitization of DN in bind operation because some servers accept non standard DN for Simple Bind

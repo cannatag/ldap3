@@ -43,6 +43,7 @@ from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
+from ..protocol.formatters.formatters import format_sid
 from ..utils.log import log, log_enabled, ERROR, BASIC
 
 
@@ -463,6 +464,29 @@ class MockBaseStrategy(object):
 
         return responses[:request['sizeLimit']] if request['sizeLimit'] > 0 else responses, result
 
+    def get_attr_value_alts(self, attr_name, attr_value):
+        """ Based on the attribute name and value, return any potential alternate values you can search by
+        """
+        formatter = None
+        # Since objectSid can be searched for by the string version, run format_sid
+        if attr_name == 'objectSid':
+            formatter = format_sid
+
+        if formatter:
+            attr_value_type = type(attr_value)
+            # if the type is a list or tuple, loop through and apply the formatter
+            if attr_value_type is list or attr_value_type is tuple:
+                new_attr_value = []
+                for value in attr_value:
+                    new_attr_value.append(formatter(value))
+            # if the type is not a list or tuple, just format it directly
+            else:
+                new_attr_value = formatter(attr_value)
+
+            return new_attr_value
+
+        return None
+
     def evaluate_filter_node(self, node, candidates):
         """After evaluation each 2 sets are added to each MATCH node, one for the matched object and one for unmatched object.
         The unmatched object set is needed if a superior node is a NOT that reverts the evaluation. The BOOLEAN nodes mix the sets
@@ -566,9 +590,12 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
             for candidate in candidates:
-                if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
-                    node.matched.add(candidate)
-                else:
-                    node.unmatched.add(candidate)
+                if attr_name in self.connection.server.dit[candidate]:
+                    attr_value_alts = self.get_attr_value_alts(
+                        attr_name, self.connection.server.dit[candidate][attr_name])
+                    if attr_value_alts and attr_value in attr_value_alts:
+                        node.matched.add(candidate)
+                    elif attr_value in self.connection.server.dit[candidate][attr_name]:
+                        node.matched.add(candidate)
 
-
+                node.unmatched.add(candidate)

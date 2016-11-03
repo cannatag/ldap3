@@ -571,6 +571,8 @@ class MockBaseStrategy(object):
                     node.matched.add(candidate)
                 elif attr_name in self.connection.server.dit[candidate]:  # tries to apply formatters
                     formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
+                    if not isinstance(formatted_values, SEQUENCE_TYPES):
+                        formatted_values = [formatted_values]
                     if attr_value.decode('utf-8') in formatted_values:  # attributes values should be returned in utf-8
                         node.matched.add(candidate)
                     else:

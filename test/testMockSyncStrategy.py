@@ -1396,7 +1396,13 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
         mock_ldap_connection.search('DC=postmaster,DC=local', '(distinguishedName=CN=Test User,OU=PostMaster,DC=postmaster,DC=local)', attributes=['sAMAccountName', 'objectSid'])
         username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
+        self.assertEqual(len(mock_ldap_connection.response), 1)
         self.assertEqual(username, 'testUser')
         mock_ldap_connection.search('DC=postmaster,DC=local', '(objectSid=S-1-5-21-1270288957-3800934213-3019856503-1608)', attributes=['sAMAccountName'])
         username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
+        self.assertEqual(len(mock_ldap_connection.response), 1)
+        self.assertEqual(username, 'testUser')
+        mock_ldap_connection.search('DC=postmaster,DC=local', '(sAMAccountName=testUser)', attributes=['sAMAccountName'])
+        username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
+        self.assertEqual(len(mock_ldap_connection.response), 1)
         self.assertEqual(username, 'testUser')

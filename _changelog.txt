@@ -1,4 +1,4 @@
-- 2.1.0 2016.11.02
+- 2.1.0 2016.11.03
     - changed default Connection strategy from SYNC to RESTARTABLE
     - enable automatic escaping of assertion values
     - fixed decoding error with check_name=False

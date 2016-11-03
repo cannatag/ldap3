@@ -51,6 +51,7 @@ change_table = {MODIFY_ADD: 0,  # accepts actual values too
 
 def modify_operation(dn,
                      changes,
+                     auto_escape,
                      schema=None):
     # changes is a dictionary in the form {'attribute': [(operation, [val1, ...]), ...], ...}
     # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
@@ -65,9 +66,9 @@ def modify_operation(dn,
             partial_attribute['vals'] = Vals()
             if isinstance(change_operation[1], SEQUENCE_TYPES):
                 for index, value in enumerate(change_operation[1]):
-                    partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
+                    partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(schema, attribute, value, auto_escape))
             else:
-                partial_attribute['vals'].setComponentByPosition(0, validate_attribute_value(schema, attribute, change_operation[1]))
+                partial_attribute['vals'].setComponentByPosition(0, validate_attribute_value(schema, attribute, change_operation[1], auto_escape))
 
             change = Change()
             change['operation'] = Operation(change_table[change_operation[0]])

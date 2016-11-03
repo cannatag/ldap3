@@ -39,7 +39,7 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value
 from ..protocol.formatters.standard import format_attribute_values
-from ..utils.conv import escape_filter_chars
+
 
 ROOT = 0
 AND = 1
@@ -84,7 +84,7 @@ class FilterNode(object):
         return representation
 
 
-def evaluate_match(match, schema):
+def evaluate_match(match, schema, auto_escape):
     left_part, equal_sign, right_part = match.strip().partition('=')
     if not equal_sign:
         raise LDAPInvalidFilterError('invalid matching assertion')
@@ -92,17 +92,17 @@ def evaluate_match(match, schema):
         tag = MATCH_APPROX
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
-        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
+        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part, auto_escape)}
     elif left_part.endswith('>'):  # greater or equal match '>='
         tag = MATCH_GREATER_OR_EQUAL
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
-        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
+        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part, auto_escape)}
     elif left_part.endswith('<'):  # # less or equal match '<='
         tag = MATCH_LESS_OR_EQUAL
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
-        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
+        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part, auto_escape)}
     elif left_part.endswith(':'):  # extensible match ':='
         tag = MATCH_EXTENSIBLE
         left_part = left_part[:-1].strip()
@@ -139,7 +139,7 @@ def evaluate_match(match, schema):
             raise LDAPInvalidFilterError('invalid extensible filter')
         attribute_name = attribute_name.strip() if attribute_name else None
         matching_rule = matching_rule.strip() if matching_rule else None
-        assertion = {'attr': attribute_name, 'value': validate_assertion_value(schema, attribute_name, right_part), 'matchingRule': matching_rule, 'dnAttributes': dn_attributes}
+        assertion = {'attr': attribute_name, 'value': validate_assertion_value(schema, attribute_name, right_part, auto_escape), 'matchingRule': matching_rule, 'dnAttributes': dn_attributes}
     elif right_part == '*':  # # attribute present match '=*'
         tag = MATCH_PRESENT
         left_part = left_part.strip()
@@ -149,20 +149,20 @@ def evaluate_match(match, schema):
         left_part = left_part.strip()
         right_part = right_part.strip()
         substrings = right_part.split('*')
-        initial = validate_assertion_value(schema, left_part, substrings[0]) if substrings[0] else None
-        final = validate_assertion_value(schema, left_part, substrings[-1]) if substrings[-1] else None
-        any_string = [validate_assertion_value(schema, left_part, substring) for substring in substrings[1:-1] if substring]
+        initial = validate_assertion_value(schema, left_part, substrings[0], auto_escape) if substrings[0] else None
+        final = validate_assertion_value(schema, left_part, substrings[-1], auto_escape) if substrings[-1] else None
+        any_string = [validate_assertion_value(schema, left_part, substring, auto_escape) for substring in substrings[1:-1] if substring]
         assertion = {'attr': left_part, 'initial': initial, 'any': any_string, 'final': final}
     else:  # equality match '='
         tag = MATCH_EQUAL
         left_part = left_part.strip()
         right_part = right_part.strip()
-        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part)}
+        assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part, auto_escape)}
 
     return FilterNode(tag, assertion)
 
 
-def parse_filter(search_filter, schema):
+def parse_filter(search_filter, schema, auto_escape):
     search_filter = search_filter.strip()
     if search_filter and search_filter.count('(') == search_filter.count(')') and search_filter.startswith('(') and search_filter.endswith(')'):
         state = SEARCH_OPEN_OR_CLOSE
@@ -195,7 +195,7 @@ def parse_filter(search_filter, schema):
                     if start_pos:
                         if current_node.tag == NOT and len(current_node.elements) > 0:
                             raise LDAPInvalidFilterError('not clause in filter cannot be multiple')
-                        current_node.append(evaluate_match(search_filter[start_pos:end_pos], schema))
+                        current_node.append(evaluate_match(search_filter[start_pos:end_pos], schema, auto_escape))
                 start_pos = None
                 state = SEARCH_OPEN_OR_CLOSE
             elif (state == SEARCH_MATCH_OR_CLOSE or state == SEARCH_MATCH_OR_CONTROL) and c not in '()':
@@ -310,6 +310,7 @@ def search_operation(search_base,
                      size_limit,
                      time_limit,
                      types_only,
+                     auto_escape,
                      schema=None):
     # SearchRequest ::= [APPLICATION 3] SEQUENCE {
     # baseObject      LDAPDN,
@@ -354,7 +355,7 @@ def search_operation(search_base,
     request['sizeLimit'] = Integer0ToMax(size_limit)
     request['timeLimit'] = Integer0ToMax(time_limit)
     request['typesOnly'] = TypesOnly(True) if types_only else TypesOnly(False)
-    request['filter'] = compile_filter(parse_filter(search_filter, schema).elements[0])  # parse the searchFilter string and compile it starting from the root node
+    request['filter'] = compile_filter(parse_filter(search_filter, schema, auto_escape).elements[0])  # parse the searchFilter string and compile it starting from the root node
     if not isinstance(attributes, SEQUENCE_TYPES):
         attributes = [NO_ATTRIBUTES]
 
@@ -368,7 +369,10 @@ def decode_vals(vals):
 
 
 def decode_vals_fast(vals):
-    return [val[3].decode('utf-8') for val in vals if val] if vals else None
+    try:
+        return [val[3].decode('utf-8') for val in vals if val] if vals else None
+    except UnicodeDecodeError:
+        return [val[3] for val in vals if val] if vals else None
 
 
 def attributes_to_dict(attribute_list):

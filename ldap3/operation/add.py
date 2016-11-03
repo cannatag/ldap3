@@ -30,6 +30,7 @@ from ..protocol.convert import referrals_to_list, attributes_to_dict, validate_a
 
 def add_operation(dn,
                   attributes,
+                  auto_escape,
                   schema=None):
     # AddRequest ::= [APPLICATION 8] SEQUENCE {
     #     entry           LDAPDN,
@@ -40,13 +41,12 @@ def add_operation(dn,
     for pos, attribute in enumerate(attributes):
         attribute_list[pos] = Attribute()
         attribute_list[pos]['type'] = AttributeDescription(attribute)
-        # vals = ValsAtLeast1()
         vals = Vals()  # changed from ValsAtLeast1() for allowing empty member value in groups
         if isinstance(attributes[attribute], SEQUENCE_TYPES):
             for index, value in enumerate(attributes[attribute]):
-                vals.setComponentByPosition(index, validate_attribute_value(schema, attribute, value))
+                vals.setComponentByPosition(index, validate_attribute_value(schema, attribute, value, auto_escape))
         else:
-            vals.setComponentByPosition(0, validate_attribute_value(schema, attribute, attributes[attribute]))
+            vals.setComponentByPosition(0, validate_attribute_value(schema, attribute, attributes[attribute], auto_escape))
 
         attribute_list[pos]['vals'] = vals
 

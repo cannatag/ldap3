@@ -314,14 +314,16 @@ def safe_dn(dn, decompose=False, reverse=False):
     else:
         escaped_dn = ''
 
-    if '@' not in dn:  # active directory UPN (User Principal Name) consist of an account, the at sign (@) and a domain
+    if '@' not in dn and '\\' not in dn:  # active directory UPN (User Principal Name) consist of an account, the at sign (@) and a domain, or the domain level logn name domain\username
         for component in parse_dn(dn, escape=True):
             if decompose:
                 escaped_dn.append((component[0], component[1], component[2]))
             else:
                 escaped_dn += component[0] + '=' + component[1] + component[2]
-    elif len(dn.split('@')) != 2:
-        raise LDAPInvalidDnError('Active Directory UPN must consist of name@domain')
+    elif '@' in dn and len(dn.split('@')) != 2:
+        raise LDAPInvalidDnError('Active Directory User Principal Name must consist of name@domain')
+    elif '\\' in dn and len(dn.split('\\')) != 2:
+        raise LDAPInvalidDnError('Active Directory Domain Level Logon Name must consist of name\\domain')
     else:
         escaped_dn = dn
 
@@ -345,6 +347,6 @@ def safe_rdn(dn, decompose=False):
                 break
 
     if one_more:
-        raise LDAPInvalidDnError('bad dn')
+        raise LDAPInvalidDnError('bad dn ' + str(dn))
 
     return escaped_rdn

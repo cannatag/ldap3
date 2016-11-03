@@ -43,7 +43,7 @@ def to_unicode(obj, encoding=None):
             encoding = get_config_parameter('DEFAULT_ENCODING')
         return obj.decode(encoding)
 
-    if isinstance(obj, str):  # python3 strings and integer
+    if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 str and unicode
         return obj
 
     raise UnicodeError("Unable to convert to unicode %r" % obj)
@@ -54,7 +54,7 @@ def to_raw(obj, encoding='utf-8'):
     if isinstance(obj, NUMERIC_TYPES):
         obj = str(obj)
 
-    if not (isinstance(obj, bytes) or str == bytes):  # python2
+    if not (isinstance(obj, bytes)):
         if isinstance(obj, SEQUENCE_TYPES):
             return [to_raw(element) for element in obj]
         elif isinstance(obj, STRING_TYPES):
@@ -65,6 +65,14 @@ def to_raw(obj, encoding='utf-8'):
 
 def escape_filter_chars(text, encoding=None):
     """ Escape chars mentioned in RFC4515. """
+
+    if isinstance(text, STRING_TYPES):
+        if '\\' in text:  # could already be escaped
+            return text
+    elif isinstance(text, (bytes, bytearray)):
+        if b'\\' in text:  # could already be escaped
+            return text
+
     if encoding is None:
         encoding = get_config_parameter('DEFAULT_ENCODING')
 

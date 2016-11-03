@@ -44,6 +44,7 @@ from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
 from ..utils.log import log, log_enabled, ERROR, BASIC
+from ..protocol.formatters.standard import format_attribute_values
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
@@ -424,7 +425,7 @@ class MockBaseStrategy(object):
         base = safe_dn(request['base'])
         scope = request['scope']
         attributes = request['attributes']
-        filter_root = parse_filter(request['filter'], self.connection.server.schema)
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=False)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':
@@ -568,6 +569,14 @@ class MockBaseStrategy(object):
             for candidate in candidates:
                 if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
                     node.matched.add(candidate)
+                elif attr_name in self.connection.server.dit[candidate]:  # tries to apply formatters
+                    formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
+                    if not isinstance(formatted_values, SEQUENCE_TYPES):
+                        formatted_values = [formatted_values]
+                    if attr_value.decode('utf-8') in formatted_values:  # attributes values should be returned in utf-8
+                        node.matched.add(candidate)
+                    else:
+                        node.unmatched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
 

@@ -37,7 +37,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 test_server_mode = IP_V6_PREFERRED
 
-test_logging = True
+test_logging = False
 test_log_detail = EXTENDED
 
 test_pooling_strategy = ROUND_ROBIN
@@ -52,6 +52,7 @@ test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
 test_receive_timeout = None
+test_auto_escape = False
 
 try:
     location = environ['USERDOMAIN']
@@ -270,7 +271,8 @@ def get_connection(bind=None,
                    usage=None,
                    fast_decoder=None,
                    simple_credentials=(None, None),
-                   receive_timeout=None):
+                   receive_timeout=None,
+                   auto_escape=None):
     if bind is None:
         bind = True
     if check_names is None:
@@ -287,6 +289,9 @@ def get_connection(bind=None,
         fast_decoder = test_fast_decoder
     if receive_timeout is None:
         receive_timeout = test_receive_timeout
+    if auto_escape is None:
+        auto_escape = test_auto_escape
+
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
 
@@ -337,7 +342,8 @@ def get_connection(bind=None,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
-                                receive_timeout=receive_timeout)
+                                receive_timeout=receive_timeout,
+                                auto_escape=auto_escape)
     elif authentication == NTLM:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -351,7 +357,8 @@ def get_connection(bind=None,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
-                                receive_timeout=receive_timeout)
+                                receive_timeout=receive_timeout,
+                                auto_escape=auto_escape)
     elif authentication == ANONYMOUS:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -365,7 +372,8 @@ def get_connection(bind=None,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
-                                receive_timeout=receive_timeout)
+                                receive_timeout=receive_timeout,
+                                auto_escape=auto_escape)
     else:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -379,7 +387,8 @@ def get_connection(bind=None,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
-                                receive_timeout=receive_timeout)
+                                receive_timeout=receive_timeout,
+                                auto_escape=auto_escape)
 
     if test_strategy in [MOCK_SYNC, MOCK_ASYNC]:
         # create authentication identities for testing mock strategies
@@ -392,6 +401,7 @@ def get_connection(bind=None,
             connection.bind()
 
     return connection
+
 
 def drop_connection(connection, dn_to_delete=None):
     if dn_to_delete:

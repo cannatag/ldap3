@@ -1,5 +1,14 @@
+- 2.1.0 2016.11.03
+    - changed default Connection strategy from SYNC to RESTARTABLE
+    - enable automatic escaping of assertion values
+    - fixed decoding error with check_name=False
+    - added auto_escape parameter in connection, for trying automatic filter and attribute values escape
+    - fixed checking of schema in MockBase
+    - SASLBindInProgress doesn't raise an exception anymore with raise_exceptions=True
+    - standard formatters are applied in mocking strategies when serching for exact match
+
 - 2.0.9 2016.10.28
-    - removed sanitation of DN in bind operation because some servers accept non standard DN for Simple Bind
+    - removed sanitization of DN in bind operation because some servers accept non standard DN for Simple Bind
 
 - 2.0.8 2016.10.28
     - included referral caching (thanks TWAC)

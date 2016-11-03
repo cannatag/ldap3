@@ -329,6 +329,9 @@ class Server(object):
         """
         Retrieve DSE operational attribute as per RFC4512 (5.1).
         """
+        if connection.strategy.no_real_dsa:  # do not try for mock strategies
+            return
+
         if not connection.strategy.pooled:  # in pooled strategies get_dsa_info is performed by the worker threads
             result = connection.search(search_base='',
                                        search_filter='(objectClass=*)',
@@ -364,6 +367,9 @@ class Server(object):
         Retrieve schema from subschemaSubentry DSE attribute, per RFC
         4512 (4.4 and 5.1); entry = '' means DSE.
         """
+        if connection.strategy.no_real_dsa:  # do not try for mock strategies
+            return
+
         schema_entry = None
         if self._dsa_info and entry == '':  # subschemaSubentry already present in dsaInfo
             if isinstance(self._dsa_info.schema_entry, SEQUENCE_TYPES):
@@ -476,9 +482,9 @@ class Server(object):
         :return: Server object
         """
         if isinstance(host, SEQUENCE_TYPES):
-            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter)  # for ServerPool object
+            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter, get_info=ALL)  # for ServerPool object
         else:
-            dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter)
+            dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter, get_info=ALL)
         if isinstance(dsa_info, DsaInfo):
             dummy._dsa_info = dsa_info
         elif isinstance(dsa_info, STRING_TYPES):

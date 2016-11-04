@@ -20,13 +20,14 @@ RFCs Compliance
 
 The ldap3 library strictly follows the latest (as of 2015) RFCs describing the LDAP v3 protocol:
 
-* The **latest RFCs for LDAP v3** (dated 2006) obsolete the previous RFCs specified in RFC3377 (2251-2256, 2829, 2830, 3371) for LDAP v3 and amend and clarify the LDAP protocol.
+* The **latest RFCs for LDAP v3** (RFCs 4510-4518, dated 2006) obsolete the previous RFCs specified in RFC3377 (2251-2256, 2829, 2830,
+3371) for LDAP v3 and amend and clarify the LDAP protocol.
+
 * All the ASN1 definitions are written from scratch to be current with RFC 4511.
 
-To avoid unnecessary server and network load caused by poor formed searches The ldap3 library deliberately doesn't
+To avoid unnecessary server and network load caused by poorly formed searches The ldap3 library deliberately doesn't
 follow the specification in RFC4511 (4.5.1.8.1) that states that in a Search operation "an empty list with no attributes requests
-the return of all user attributes.". Instead you must explicitly request the attributes you need or use the ldap3.ALL_ATTRIBUTES
-value in the Search operation.
+the return of all user attributes.". Attributes must be explicitly requested or the ldap3.ALL_ATTRIBUTES must be used in the Search operation.
 
 The library allows to send an empty member list while creating a GroupOfNames object, even if this is not allowed in the
 official LDAP v3 schema.

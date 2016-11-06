@@ -267,7 +267,6 @@ class EntryBase(object):
 
         return json_output
 
-
     def entry_to_ldif(self, all_base64=False, line_separator=None, sort_order=None, stream=None):
         ldif_lines = operation_to_ldif('searchResponse', [self._state.response], all_base64, sort_order=sort_order)
         ldif_lines = add_ldif_header(ldif_lines)
@@ -428,7 +427,7 @@ class WritableEntry(EntryBase):
                     new_attributes = dict()
                     for attr in self._changes:
                         new_attributes[attr] = self._changes[attr][0][1]
-                    result = self.entry_cursor.connection.add_attribute(self.entry_dn, None, new_attributes, controls)
+                    result = self.entry_cursor.connection.add(self.entry_dn, None, new_attributes, controls)
                 else:
                     result = self.entry_cursor.connection.modify(self.entry_dn, self._changes, controls)
                 if result:

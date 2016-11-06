@@ -33,7 +33,7 @@ standard_formatter = {
     '1.2.840.113556.1.4.903': (format_binary, None),  # Object (DN-binary) - Microsoft
     '1.2.840.113556.1.4.904': (format_unicode, None),  # Object (DN-string) - Microsoft
     '1.2.840.113556.1.4.905': (format_unicode, None),  # String (Teletex) - Microsoft
-    '1.2.840.113556.1.4.906': (format_integer, None),  # Large integer - Microsoft
+    '1.2.840.113556.1.4.906': (format_integer, validate_integer),  # Large integer - Microsoft
     '1.2.840.113556.1.4.907': (format_binary, None),  # String (NT-sec-desc) - Microsoft
     '1.2.840.113556.1.4.1221': (format_binary, None),  # Object (OR-name) - Microsoft
     '1.2.840.113556.1.4.1362': (format_unicode, None),  # String (Case) - Microsoft
@@ -106,7 +106,7 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.16': (format_binary, None),  # NDS Replica Pointer (Novell)
     '2.16.840.1.113719.1.1.5.1.17': (format_unicode, None),  # NDS ACL (Novell)
     '2.16.840.1.113719.1.1.5.1.19': (format_time, None),  # NDS Timestamp (Novell)
-    '2.16.840.1.113719.1.1.5.1.22': (format_integer, None),  # Counter (Novell)
+    '2.16.840.1.113719.1.1.5.1.22': (format_integer, validate_integer),  # Counter (Novell)
     '2.16.840.1.113719.1.1.5.1.23': (format_unicode, None),  # Tagged Name (Novell)
     '2.16.840.1.113719.1.1.5.1.25': (format_unicode, None),  # Typed Name (Novell)
     'supportedldapversion': (format_integer, None),  # supportedLdapVersion (Microsoft)

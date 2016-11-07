@@ -248,7 +248,6 @@ class Test(unittest.TestCase):
         self.assertEqual(len(writable_entry.givenname), 3)
         self.compare_entries(read_only_entry, writable_entry)
 
-
     def test_search_and_add_value_to_non_existing_multi_value(self):
         read_only_entry = self.get_entry('search-and-modify-1')
         writable_entry = read_only_entry.entry_writable('inetorgperson')

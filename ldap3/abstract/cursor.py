@@ -626,7 +626,7 @@ class Writer(Cursor):
             entry.entry_discard_changes()
 
     def _refresh_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
-        """Perform the LDAP search operation SINGLE_OBJECT scope
+        """Performs the LDAP search operation SINGLE_OBJECT scope
 
         :return: Entry found in search
 

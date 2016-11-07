@@ -476,13 +476,13 @@ class WritableEntry(EntryBase):
 
     def entry_move(self, destination_dn):
         if self.entry_status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_MOVING]:
-            raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
+            raise LDAPCursorError('unable to move entry, invalid status: ' + self.entry_status)
         self._state._to = safe_dn(destination_dn)
         self._state.set_status(STATUS_READY_FOR_MOVING)
 
     def entry_rename(self, new_name):
         if self.entry_status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
+            raise LDAPCursorError('unable to rename entry, invalid status: ' + self.entry_status)
         self._state._to = new_name
         self._state.set_status(STATUS_READY_FOR_RENAMING)
 

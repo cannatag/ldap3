@@ -136,6 +136,7 @@ class Test(unittest.TestCase):
         n.entry_commit_changes()
         self.assertEqual(n.sn, 'sn-test-7')
         self.assertEqual(n.entry_status, STATUS_COMMITTED)
+        sleep(5)
         n.entry_move(test_moved)
         self.assertEqual(n.entry_status, STATUS_READY_FOR_MOVING)
         n.entry_commit_changes()

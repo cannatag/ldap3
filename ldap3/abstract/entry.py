@@ -389,7 +389,7 @@ class WritableEntry(EntryBase):
                 self._state.set_status(STATUS_DELETED)
                 return True
             else:
-                raise LDAPCursorError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
+                raise LDAPCursorError('unable to delete entry, ' + self._state.cursor.connection.result['description'] + ', ' + self._state.cursor.connection.result['message'])
         elif self.entry_status == STATUS_READY_FOR_MOVING:
             if self.entry_cursor.connection.modify_dn(self.entry_dn, '+'.join(safe_rdn(self.entry_dn)), new_superior=self._state._to):
                 self._state.dn = safe_dn('+'.join(safe_rdn(self.entry_dn)) + ',' + self._state._to)
@@ -467,11 +467,9 @@ class WritableEntry(EntryBase):
         Refreshes the entry from the LDAP Server
         """
         if self.entry_cursor.connection:
-            counter = 0
-            while counter <= (tries):
-                if self.entry_cursor.refresh_entry(self):
-                    return True
-                sleep(seconds)
+            if self.entry_cursor.refresh_entry(self, tries, seconds):
+                return True
+
         return False
 
     def entry_move(self, destination_dn):

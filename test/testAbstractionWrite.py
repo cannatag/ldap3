@@ -118,9 +118,9 @@ class Test(unittest.TestCase):
 
     def test_create_new_entry_valid_and_move_before_commit(self):
         w = Writer(self.connection, 'inetorgperson')
-        n = w.new('cn=' + testcase_id + 'abstraction-create-4,' + test_base)
+        n = w.new('cn=' + testcase_id + 'abstraction-create-6,' + test_base)
         self.assertEqual(n.entry_status, STATUS_MANDATORY_MISSING)
-        n.sn = 'sn-test-4'
+        n.sn = 'sn-test-6'
         self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
         try:
             n.entry_move(test_moved)
@@ -129,12 +129,12 @@ class Test(unittest.TestCase):
 
     def test_create_new_entry_valid_and_move_after_commit(self):
         w = Writer(self.connection, 'inetorgperson')
-        n = w.new('cn=' + testcase_id + 'abstraction-create-5,' + test_base)
+        n = w.new('cn=' + testcase_id + 'abstraction-create-7,' + test_base)
         self.assertEqual(n.entry_status, STATUS_MANDATORY_MISSING)
-        n.sn = 'sn-test-5'
+        n.sn = 'sn-test-7'
         self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
         n.entry_commit_changes()
-        self.assertEqual(n.sn, 'sn-test-5')
+        self.assertEqual(n.sn, 'sn-test-7')
         self.assertEqual(n.entry_status, STATUS_COMMITTED)
         n.entry_move(test_moved)
         self.assertEqual(n.entry_status, STATUS_READY_FOR_MOVING)

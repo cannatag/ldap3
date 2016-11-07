@@ -464,7 +464,7 @@ class WritableEntry(EntryBase):
     def entry_refresh(self, tries=4, seconds=2):
         """
 
-        Reads the entry from the LDAP Server
+        Refreshes the entry from the LDAP Server
         """
         if self.entry_cursor.connection:
             counter = 0

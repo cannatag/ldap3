@@ -1,7 +1,9 @@
--2.1.1 2016.11.06
+- 2.1.1 2016.11.09
     - Mock strategy uses case insensitive matching when appropriate
     - fixed error when adding a virtual attribute in the abstract Entry object
     - fixed error messages in Entry moving and renaming
+    - Reverted default connection strategy to SYNC (thanks Mauro)
+    - Fixed tutorials (thanks Mauro)
 
 - 2.1.0 2016.11.03
     - changed default Connection strategy from SYNC to RESTARTABLE

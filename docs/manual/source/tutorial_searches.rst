@@ -20,7 +20,7 @@ to True, False or Undefined (that is treated as False) for one or more entries i
 where all assertions (**and** group, specified with ``&``) or at least one assertion (**or** group, specified with ``|``) must be True. A single
 assertion can be negated (**not** group, specified with ``!``). Each group must be bracketed, allowing for recursive filters.
 Operators allowed in an assertion are ``=`` (**equal**), ``<=`` (**less than or equal**), ``>=`` (**greater than or equal**), ``=*`` (**present**), ``~=``
-(**aproximate**) and ``:=`` (**extensible**). Surprisingly the *less than* and the *greater than* operators don't exist in the LDAP filter syntax.
+(**approximate**) and ``:=`` (**extensible**). Surprisingly the *less than* and the *greater than* operators don't exist in the LDAP filter syntax.
 The *aproximate* and the *extensible* are someway obscure and seldom used. In an equality filter you can use the ``*`` character as a wildcard.
 
 For example, to search for all users named John with an email ending with '@example.org' the filter will be ``(&(givenName=John)(mail=*@example.org))``,
@@ -90,7 +90,7 @@ at the ``>>>`` prompt. It gives a visual representation of the entry data struct
 either as a class or as a dict, with some additional features as case-insensitivity and blank-insensitivity. You can get the formatted
 value and the raw value (the value actually returned by the server) in the ``values`` and ``raw_values`` attributes::
 
-    >>> entry = entries[0]
+    >>> entry = conn.entries[0]
     >>> entry.krbLastPwdChange
     krbLastPwdChange: 2016-10-09 10:01:18+00:00
     >>> entry.KRBLastPwdCHANGE
@@ -120,7 +120,7 @@ entries in the sub-containers of the base in previous searches.
 
 You can have a LDIF representation of the response of a search with::
 
-    >>> conn.entries[0].entry_to_ldif()
+    >>> print(conn.entries[0].entry_to_ldif())
     version: 1
     dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org
     objectclass: top
@@ -145,7 +145,7 @@ You can have a LDIF representation of the response of a search with::
 
 or you can save the response to a JSON string::
 
-    >>> entry.entry_to_json()
+    >>> print(entry.entry_to_json())
     {
         "attributes": {
             "krbLastPwdChange": [
@@ -206,7 +206,7 @@ Simple Paged search
 ===================
 The Search operation can perform a *simple paged search* as specified in RFC 2696. The RFC states that the you can ask the server
 to return a specific number of entries in each response set. With every search the server sends back a cookie that you have to
-provide in each subsequent search. all this information must be passed in a Control attached to the request and the server responds
+provide in each subsequent search. All this information must be passed in a Control attached to the request and the server responds
 with similar information in a Control attached to the response.
 ldap3 hides all this machinery in the ``paged_search()`` function of the **extend.standard** namespace::
 
@@ -214,7 +214,7 @@ ldap3 hides all this machinery in the ``paged_search()`` function of the **exten
     >>> for entry in entries:
     >>>     print(entry)
 
-Entries are returned in a generator, that is better when cyou have very long list of entries or have memory limitation. Also it sends
+Entries are returned in a generator, that is better when you have very long list of entries or have memory limitation. Also it sends
 the requests to the LDAP server only when entries are consumed in the generator. Remember that a generator can be used only one time,
 so you must elaborate the results in a sequential way. If you don't want the entries returned in a generator you can pass the
 ``generator=False`` parameter to get all the entries in a list. In this case all the paged searches are performed by the ``paged_search()``
@@ -236,5 +236,5 @@ The code would be much longer if you would manage directly manage the Simple Sea
 
    After performing a traditional LDAP Search operation with a SYNC strategy you get back a collection of Entries in the ``entries`` property
    of the Connection object. This collection behaves as the Entries collection of a Reader cursor. For more comprehensive information about
-   the Search operation, see the :doc:`SEARCH <searches>` documentation. An Entry in the ``emtries`` collection can be modified converting it to
+   the Search operation, see the :doc:`SEARCH <searches>` documentation. An Entry in the ``entries`` collection can be modified converting it to
    a Writable one and applying modifications to it as described in the next chapter.

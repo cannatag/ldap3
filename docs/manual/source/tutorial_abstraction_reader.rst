@@ -63,7 +63,7 @@ Let's explore some of them::
     >>> r[0].entry_mandatory_attributes
     ['cn', 'sn', 'objectClass']
 
-    >>> convert the Entry to LDIF
+    >>> # convert the Entry to LDIF
     >>> print(r[0].entry_to_ldif())
     version: 1
     dn: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org

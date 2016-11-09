@@ -33,15 +33,15 @@ reads and writes Entries from and to the DIT. Optionally you can use a Simplifie
 There are two kinds of Cursor, **Reader** and **Writer**. This mitigates the risk of accidentally changing
 data in applications that access LDAP only for reading, isolating the writing component: A Reader cursor can't write data to
 the DIT and a Writer cursor can't read data from it, Writer cursors are only used for modifying the DIT. So reading
-and writing of data is kept strictly isolated.
+and writing of data are kept strictly isolated.
 
 Cursors contain Entries. An **Entry** is the Python representation of an entry stored in the LDAP DIT. There are two types of Entries,
 **Read** and **Writable**. Each Entry has a status that identifies it's current state.
 
 Entries are returned as the result of a LDAP Search operation or of a Reader search operation. Entries are made of Attributes.
 An **Attribute** is stored in an internal dictionary with case insensitive access and a friendly key.
-You can access Entry Attributes either as a dictionary or as properties: ``entry['CommonName']`` is the same of ``entry.Common
-Name``,``entry.CommonName``, ``entry.commonName`` and of ``entry.commonname``. Only Attributes of a Writable Entry can be modified
+You can access Entry Attributes either as a dictionary or as properties: ``entry['CommonName']`` is the same of ``entry['Common
+Name]``,``entry.CommonName``, ``entry.commonName`` and of ``entry.commonname``. Only Attributes of a Writable Entry can be modified
 (they actually become WritableAttribute, with updating capability).
 
 Modifications to a Writable Entry are kept in memory until the Entry changes are committed to the DIT. Changes can be discarded
@@ -62,8 +62,8 @@ Let's try the same operations we did in the previous chapters of this tutorial. 
 Cursor and ObjectDef
 --------------------
 ldap3 must know the kind of entry (the LDAP object class) you want to work with to properly manage its attributes. You can take advantage
-of the schema information read by the Server object and ask the ldap3 library to automatically build an ObjectDef. We can tryfor the
-*person* object class, that rapresent a user in LDAP. The Abstraction Layer will walk up the schema up to the root class reading all
+of the schema information read by the Server object and ask the ldap3 library to automatically build an ObjectDef. We can try for the
+*person* object class, that represents a user in LDAP. The Abstraction Layer will walk up the schema up to the root class reading all
 the mandatory and optional attributes in its hierarchy, building the AttrDefs collection::
 
     >>> obj_person = ObjectDef('person', conn)

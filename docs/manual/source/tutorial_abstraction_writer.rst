@@ -82,7 +82,7 @@ We made a typo so discard the changes and let's insert the correct values:
 
 Entry status is set to *Writable, Pending changes*, this means that mandatory Attributes are set and the Entry can be written in the DIT::
 
-    >>> w[0].commit()  # commit all entries with pending changes
+    >>> w.commit()  # commit all entries with pending changes
     >>> w[0]
     DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Writable, Committed - READ TIME: 2016-10-27T19:16:00.872009
         cn: b.young

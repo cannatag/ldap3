@@ -21,12 +21,12 @@ Now you can ask the Reader to execute the search, fetching the results in its ``
     >>> r.search()
     >>> r
     CURSOR : Reader
-    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:17296 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
+    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:27370 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
     DEFS   : ['inetOrgPerson'] [audio, businessCategory, carLicense, cn, departmentNumber, description, destinationIndicator, displayName, employeeNumber, employeeType, facsimileTelephoneNumber, givenName, homePhone, homePostalAddress, initials, internationalISDNNumber, jpegPhoto, l, labeledURI, mail, manager, mobile, o, objectClass, ou, pager, photo, physicalDeliveryOfficeName, postOfficeBox, postalAddress, postalCode, preferredDeliveryMethod, preferredLanguage, registeredAddress, roomNumber, secretary, seeAlso, sn, st, street, telephoneNumber, teletexTerminalIdentifier, telexNumber, title, uid, userCertificate, userPKCS12, userPassword, userSMIMECertificate, x121Address, x500UniqueIdentifier]
     ATTRS  : ['audio', 'businessCategory', 'carLicense', 'cn', 'departmentNumber', 'description', 'destinationIndicator', 'displayName', 'employeeNumber', 'employeeType', 'facsimileTelephoneNumber', 'givenName', 'homePhone', 'homePostalAddress', 'initials', 'internationalISDNNumber', 'jpegPhoto', 'l', 'labeledURI', 'mail', 'manager', 'mobile', 'o', 'objectClass', 'ou', 'pager', 'photo', 'physicalDeliveryOfficeName', 'postOfficeBox', 'postalAddress', 'postalCode', 'preferredDeliveryMethod', 'preferredLanguage', 'registeredAddress', 'roomNumber', 'secretary', 'seeAlso', 'sn', 'st', 'street', 'telephoneNumber', 'teletexTerminalIdentifier', 'telexNumber', 'title', 'uid', 'userCertificate', 'userPKCS12', 'userPassword', 'userSMIMECertificate', 'x121Address', 'x500UniqueIdentifier']
     BASE   : 'ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org' [SUB]
     FILTER : '(objectClass=inetOrgPerson)'
-    ENTRIES: 3 [executed at: 2016-10-26T09:26:41.698313]
+    ENTRIES: 3 [executed at: 2016-11-09T09:33:00.342762]
 
 There are now three Entries in the Reader. An Entry has some interesting features accessible from its properties and methods. Because
 Attribute names are used as Entry properties all the "operational" properties and methods of an Entry start with the **entry_** prefix
@@ -34,7 +34,7 @@ Attribute names are used as Entry properties all the "operational" properties an
 representation of an Entry::
 
     >>> r[0]
-    DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-26T09:26:41.691314
+    DN: cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-11-09T09:35:02.739203
         cn: b.young
         departmentNumber: DEV
         givenName: Beatrix
@@ -53,15 +53,16 @@ Let's explore some of them::
 
     >>> # query the attributes in the Entry as a list of names
     >>> r[0].entry_attributes
+    ['destinationIndicator', 'x500UniqueIdentifier', 'audio', 'photo', 'uid', 'l', 'pager', 'carLicense', 'street', 'teletexTerminalIdentifier', 'o', 'st', 'homePostalAddress', 'preferredDeliveryMethod', 'roomNumber', 'sn', 'homePhone', 'x121Address', 'displayName', 'userSMIMECertificate', 'userPassword', 'title', 'physicalDeliveryOfficeName', 'mail', 'initials', 'ou', 'businessCategory', 'seeAlso', 'jpegPhoto', 'registeredAddress', 'facsimileTelephoneNumber', 'postalAddress', 'telephoneNumber', 'mobile', 'labeledURI', 'postalCode', 'objectClass', 'employeeNumber', 'secretary', 'employeeType', 'description', 'cn', 'userCertificate', 'userPKCS12', 'postOfficeBox', 'departmentNumber', 'givenName', 'internationalISDNNumber', 'preferredLanguage', 'telexNumber', 'manager']
 
     >>> # query the attributes in the Entry as a dict of key/value pairs
     >>> r[0].entry_attributes_as_dict
-    {'cn': ['Administrator'], 'sn': ['Administrator'], 'userPassword': [], 'telephoneNumber': [], 'seeAlso': [], 'description': [], 'objectClass':
-    ['top', 'person', 'posixaccount', 'krbprincipalaux', 'krbticketpolicyaux', 'inetuser', 'ipaobject', 'ipasshuser', 'ipaSshGroupOfPubKeys', 'ipaNTUserAttrs']}
+    {'destinationIndicator': [], 'x500UniqueIdentifier': [], 'audio': [], 'photo': [], 'uid': [], 'l': [], 'pager': [], 'carLicense': [], 'street': [], 'teletexTerminalIdentifier': [], 'o': [], 'homePostalAddress': [], 'preferredDeliveryMethod': [], 'roomNumber': [], 'st': [], 'homePhone': [], 'x121Address': [], 'displayName': [], 'userSMIMECertificate': [], 'userPassword': [], 'title': [], 'physicalDeliveryOfficeName': [], 'mail': [], 'preferredLanguage': [], 'initials': [], 'internationalISDNNumber': [], 'ou': [], 'businessCategory': [], 'seeAlso': [], 'jpegPhoto': [], 'registeredAddress': [], 'facsimileTelephoneNumber': [], 'postalAddress': [], 'telephoneNumber': ['1111'], 'mobile': [], 'labeledURI': [], 'postalCode': [], 'objectClass': ['inetOrgPerson', 'organizationalPerson', 'person', 'top'], 'employeeNumber': [], 'description': [], 'employeeType': [], 'secretary': [], 'cn': ['b.young'], 'userPKCS12': [], 'postOfficeBox': [], 'departmentNumber': ['DEV'], 'givenName': ['Beatrix'], 'sn': ['Young'], 'userCertificate': [], 'telexNumber': [], 'manager': []}
+
 
     >>> # let's check which attributes are mandatory
     >>> r[0].entry_mandatory_attributes
-    ['cn', 'sn', 'objectClass']
+    ['sn', 'objectClass', 'cn']
 
     >>> # convert the Entry to LDIF
     >>> print(r[0].entry_to_ldif())
@@ -73,9 +74,9 @@ Let's explore some of them::
     objectClass: top
     sn: Young
     telephoneNumber: 1111
+    cn: b.young
     departmentNumber: DEV
     givenName: Beatrix
-    cn: b.young
     # total number of entries: 1
 
     >>> print(r[0].entry_to_json(include_empty=False))  # Use include_empty=True to include empty attributes
@@ -127,7 +128,7 @@ Now let's build the Reader cursor, using the Simplified Query Language, note how
     >>> r = Reader(conn, obj_person, 'cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'uid:=admin')
     >>> r
     CURSOR : Reader
-    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:13193 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
+    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:27438 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
     DEFS   : ['person'] [cn, description, objectClass, seeAlso, sn, telephoneNumber, uid, userPassword]
     ATTRS  : ['cn', 'description', 'objectClass', 'seeAlso', 'sn', 'telephoneNumber', 'uid', 'userPassword']
     BASE   : 'cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org' [SUB]
@@ -137,8 +138,58 @@ Now let's build the Reader cursor, using the Simplified Query Language, note how
 
 And finally perform the search operation::
     >>> r.search()
-    [DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-27T17:45:07.799394
+    [DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-11-09T09:59:56.393112
         cn: Administrator
+        objectClass: top
+                     person
+                     posixaccount
+                     krbprincipalaux
+                     krbticketpolicyaux
+                     inetuser
+                     ipaobject
+                     ipasshuser
+                     ipaSshGroupOfPubKeys
+                     ipaNTUserAttrs
+        sn: Administrator
+        uid: admin]
+
+Only one entry is found. As you can see this Entry has additional auxiliary object classes attached. This means that there can be other
+attributes stored in the entry. Let's define an ObjectDef that also requests the 'posixAccount' and the 'krbprincipalaux' object classes::
+
+    >>> obj_person = ObjectDef(['person', 'posixAccount', 'krbprincipalaux'], conn)
+    OBJ : person, posixAccount, krbPrincipalAux [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0, posixAccount (Auxiliary) 1.3.6.1.1.1.2.0, top (Abstract) 2.5.6.0, krbPrincipalAux (Auxiliary) 2.16.840.1.113719.1.301.6.8.1]
+    MUST: cn, gidNumber, homeDirectory, objectClass, sn, uid, uidNumber
+    MAY : description, gecos, krbAllowedToDelegateTo, krbCanonicalName, krbExtraData, krbLastAdminUnlock, krbLastFailedAuth, krbLastPwdChange, krbLastSuccessfulAuth, krbLoginFailedCount, krbPasswordExpiration, krbPrincipalAliases, krbPrincipalAuthInd, krbPrincipalExpiration, krbPrincipalKey, krbPrincipalName, krbPrincipalType, krbPwdHistory, krbPwdPolicyReference, krbTicketPolicyReference, krbUPEnabled, loginShell, seeAlso, telephoneNumber, userPassword
+
+As you can see the ObjectDef now includes all Attributes from the *person*, *top*, *posixAccount* and *krbPrincipalAux* classes. Now create a new Reader, its
+filter will automatically includes all the requested object classes::
+
+    >>> r = Reader(conn, obj_person, 'dc=demo1,dc=freeipa,dc=org', 'uid:=admin')
+    >>> r
+    CURSOR : Reader
+    CONN   : ldap://ipa.demo1.freeipa.org:389 - cleartext - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - not lazy - bound - open - <local: 10.3.9.227:29283 - remote: 209.132.178.99:389> - tls not started - listening - SyncStrategy - internal decoder
+    DEFS   : ['person', 'posixAccount', 'krbPrincipalAux'] [cn, description, gecos, gidNumber, homeDirectory, krbAllowedToDelegateTo, krbCanonicalName, krbExtraData, krbLastAdminUnlock, krbLastFailedAuth, krbLastPwdChange, krbLastSuccessfulAuth, krbLoginFailedCount, krbPasswordExpiration, krbPrincipalAliases, krbPrincipalAuthInd, krbPrincipalExpiration, krbPrincipalKey, krbPrincipalName, krbPrincipalType, krbPwdHistory, krbPwdPolicyReference, krbTicketPolicyReference, krbUPEnabled, loginShell, objectClass, seeAlso, sn, telephoneNumber, uid, uidNumber, userPassword]
+    ATTRS  : ['cn', 'description', 'gecos', 'gidNumber', 'homeDirectory', 'krbAllowedToDelegateTo', 'krbCanonicalName', 'krbExtraData', 'krbLastAdminUnlock', 'krbLastFailedAuth', 'krbLastPwdChange', 'krbLastSuccessfulAuth', 'krbLoginFailedCount', 'krbPasswordExpiration', 'krbPrincipalAliases', 'krbPrincipalAuthInd', 'krbPrincipalExpiration', 'krbPrincipalKey', 'krbPrincipalName', 'krbPrincipalType', 'krbPwdHistory', 'krbPwdPolicyReference', 'krbTicketPolicyReference', 'krbUPEnabled', 'loginShell', 'objectClass', 'seeAlso', 'sn', 'telephoneNumber', 'uid', 'uidNumber', 'userPassword']
+    BASE   : 'dc=demo1,dc=freeipa,dc=org' [SUB]
+    QUERY  : 'uid:=admin' [AND]
+    PARSED : 'uid: =admin' [AND]
+    FILTER : '(&(&(objectClass=person)(objectClass=posixAccount)(objectClass=krbPrincipalAux))(uid=admin))'
+
+    >>> r.search()
+    >>> r[0]
+    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-11-09T10:03:47.741382
+        cn: Administrator
+        gecos: Administrator
+        gidNumber: 1120000000
+        homeDirectory: /home/admin
+        krbExtraData: b'\x00\x02\xd2\xad"Xroot/admin@DEMO1.FREEIPA.ORG\x00'
+        krbLastFailedAuth: 2016-11-09 06:22:15+00:00
+        krbLastPwdChange: 2016-11-09 05:02:10+00:00
+        krbLastSuccessfulAuth: 2016-11-09 09:03:49+00:00
+        krbLoginFailedCount: 0
+        krbPasswordExpiration: 2017-11-09 05:02:10+00:00
+        krbPrincipalName: admin@DEMO1.FREEIPA.ORG
+        loginShell: /bin/bash
         objectClass: top
                      person
                      posixaccount
@@ -151,42 +202,7 @@ And finally perform the search operation::
                      ipaNTUserAttrs
         sn: Administrator
         uid: admin
-
-Only one entry is found. As you can see this Entry has additional auxiliary object classes attached. This means that there can be other
-attributes stored in the entry. Let's define an ObjectDef that also requests the 'krbprincipalaux'::
-
-    >>> obj_person = ObjectDef(['person', 'krbprincipalaux'], conn)
-    OBJ : person, krbPrincipalAux [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0, krbPrincipalAux (Auxiliary) 2.16.840.1.113719.1.301.6.8.1]
-    MUST: cn, objectClass, sn
-    MAY : description, krbAllowedToDelegateTo, krbCanonicalName, krbExtraData, krbLastAdminUnlock, krbLastFailedAuth, krbLastPwdChange, krbLastSuccessfulAuth,
-    krbLoginFailedCount, krbPasswordExpiration, krbPrincipalAliases, krbPrincipalAuthInd, krbPrincipalExpiration, krbPrincipalKey, krbPrincipalName, krbPrincipalType,
-     krbPwdHistory, krbPwdPolicyReference, krbTicketPolicyReference, krbUPEnabled, seeAlso, telephoneNumber, userPassword
-
-As you can see the ObjectDef now includes all Attributes from the *person*, *top* and *krbPrincipalAux* classes. Now create a new Reader::
-
-    >>> r = Reader(conn, obj_person, 'dc=demo1,dc=freeipa,dc=org', 'uid:=admin')
-    >>> e = r.search()
-    >>> e[0]
-    DN: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-20T20:40:50.735314
-        cn: Administrator
-        krbExtraData: b'\x00\x02t[\xffWroot/admin@DEMO1.FREEIPA.ORG\x00'
-        krbLastFailedAuth: 2016-10-20 10:26:57+00:00
-        krbLastPwdChange: 2016-10-13 10:01:24+00:00
-        krbLastSuccessfulAuth: 2016-10-20 18:33:16+00:00
-        krbLoginFailedCount: 0
-        krbPasswordExpiration: 2017-10-13 10:01:24+00:00
-        krbPrincipalName: admin@DEMO1.FREEIPA.ORG
-        objectClass: top
-                     person
-                     posixaccount
-                     krbprincipalaux
-                     krbticketpolicyaux
-                     inetuser
-                     ipaobject
-                     ipasshuser
-                     ipaSshGroupOfPubKeys
-                     ipaNTUserAttrs
-        sn: Administrator
+        uidNumber: 1120000000
 
 Note that Attribute are properly formatted thanks to information read in the server schema. For example the krbLastPwdChange is stored as
 a date (Generalized Time, a standard LDAP data type)::
@@ -202,7 +218,7 @@ a date (Generalized Time, a standard LDAP data type)::
 
 So the ldap3 library returns it as a DateTime object (with time zone info)::
 
-    >>> type(e[0].krblastpwdchange.value)
+    >>> type(r[0].krblastpwdchange.value)
     <class 'datetime.datetime'>
 
 .. warning::
@@ -218,8 +234,8 @@ So the ldap3 library returns it as a DateTime object (with time zone info)::
 
 If you look at the raw data read from the server, you get the values actually stored in the DIT::
 
-    >>> e[0].krblastpwdchange.raw_values
-    [b'20161013100124Z']
+    >>> r[0].krblastpwdchange.raw_values
+    [b'20161109050210Z']
 
 Similar formatting is applied to other well-known attribute types, for example GUID or SID in Active Directory. Numbers are returned as ``int``::
 
@@ -232,13 +248,14 @@ Similar formatting is applied to other well-known attribute types, for example G
 
 Search scope
 ------------
-By default the Reader searchs the whole sub tree starting from the specified base. If you want to search entries only in the base, you can pass the
+By default the Reader searches the whole sub tree starting from the specified base. If you want to search entries only in the base, you can pass the
 ``sub_tree=False`` parameter in the Reader definition. You can also override the default scope with the ``search_level()``, ``search_object()`` and
 ``search_subtree()`` methods of the Reader object::
 
     >>> r.search_level()  # search only at the 'dc=demo1,dc=freeipa,dc=org' context
-    >>> print(len(r))
-    8
+    >>> print(len(r))  # the admin entry in in the cn=users,cn=account container, so no entry is found
+    0
     >>> r.search_subtree()  # search walking down from the 'dc=demo1,dc=freeipa,dc=org' context
     >>> print(len(r))
-    20
+    1
+

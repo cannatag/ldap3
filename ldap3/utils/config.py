@@ -50,7 +50,7 @@ REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 
 ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
-if stdin.encoding:
+if stdin and stdin.encoding:
     DEFAULT_ENCODING = stdin.encoding
 elif getdefaultencoding():
     DEFAULT_ENCODING = getdefaultencoding()

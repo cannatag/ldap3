@@ -428,7 +428,7 @@ class WritableEntry(EntryBase):
                     new_attributes = dict()
                     for attr in self._changes:
                         new_attributes[attr] = self._changes[attr][0][1]
-                    result = self.entry_cursor.connection.add_attribute(self.entry_dn, None, new_attributes, controls)
+                    result = self.entry_cursor.connection.add(self.entry_dn, None, new_attributes, controls)
                 else:
                     result = self.entry_cursor.connection.modify(self.entry_dn, self._changes, controls)
                 if result:

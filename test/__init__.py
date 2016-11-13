@@ -32,6 +32,7 @@ from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_inf
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
+from ldap3.utils.dn import safe_rdn
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
 
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
@@ -62,7 +63,7 @@ except KeyError:
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
+location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')
@@ -543,7 +544,9 @@ def add_group(connection, batch_id, groupname, members=None):
     if members is None:
         members = list()
     dn = generate_dn(test_base, batch_id, groupname)
-    operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
+    print(safe_rdn(dn, True)[0][1])
+    # operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
+    operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members], test_name_attr: safe_rdn(dn, True)[0][1]})
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
         raise Exception('unable to create group ' + groupname + ': ' + str(result))

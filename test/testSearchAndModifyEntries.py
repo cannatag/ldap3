@@ -140,7 +140,7 @@ class Test(unittest.TestCase):
             try:
                 writable_entry.entry_commit_changes()
             except LDAPCursorError as e:
-                self.assertEqual(self.connection.result['description'], 'constraintViolation')
+                self.assertTrue('constraintViolation' in e.args[0])
                 return
             self.fail('error assigning to existing single value')
 
@@ -152,7 +152,7 @@ class Test(unittest.TestCase):
             try:
                 writable_entry.entry_commit_changes()
             except LDAPCursorError as e:
-                self.assertEqual(self.connection.result['description'], 'constraintViolation')
+                self.assertTrue('constraintViolation' in e.args[0])
                 return
             self.fail('error assigning to existing single value')
 

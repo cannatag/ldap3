@@ -44,6 +44,7 @@ from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveDict
 from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED,\
     STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
+from ..core.results import RESULT_SUCCESS
 
 
 class EntryState(object):
@@ -430,7 +431,13 @@ class WritableEntry(EntryBase):
                     result = self.entry_cursor.connection.add(self.entry_dn, None, new_attributes, controls)
                 else:
                     result = self.entry_cursor.connection.modify(self.entry_dn, self._changes, controls)
-                if result:
+
+                if not self.entry_cursor.connection.strategy.sync:  # async request
+                    _, result = self.entry_cursor.connection.get_response(result)
+                else:
+                    result = self.entry_cursor.connection.result
+
+                if result['result'] == RESULT_SUCCESS:
                     if refresh:
                         if self.entry_refresh():
                             if self._state.origin and self.entry_cursor.connection.server == self._state.origin.entry_cursor.connection.server:  # updates original read-only entry if present
@@ -449,7 +456,7 @@ class WritableEntry(EntryBase):
                     self._state.set_status(STATUS_COMMITTED)
                     return True
                 else:
-                    raise LDAPCursorError('unable to commit entry, ' + self.entry_cursor.connection.result['description'] + ' - ' + self.entry_cursor.connection.result['message'])
+                    raise LDAPCursorError('unable to commit entry, ' + result['description'] + ' - ' + result['message'])
         return False
 
     def entry_discard_changes(self):

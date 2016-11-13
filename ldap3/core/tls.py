@@ -74,7 +74,8 @@ class Tls(object):
                  valid_names=None,
                  ca_certs_path=None,
                  ca_certs_data=None,
-                 local_private_key_password=None):
+                 local_private_key_password=None,
+                 ciphers=None):
 
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
@@ -126,6 +127,7 @@ class Tls(object):
         self.private_key_file = local_private_key_file
         self.certificate_file = local_certificate_file
         self.valid_names = valid_names
+        self.ciphers = ciphers
 
         if log_enabled(BASIC):
             log(BASIC, 'instantiated Tls: <%r>' % self)
@@ -140,7 +142,8 @@ class Tls(object):
             'CA certificates path: ' + ('present ' if self.ca_certs_path else 'not present'),
             'CA certificates data: ' + ('present ' if self.ca_certs_data else 'not present'),
             'verify mode: ' + str(self.validate),
-            'valid names: ' + str(self.valid_names)
+            'valid names: ' + str(self.valid_names),
+            'ciphers: ' + str(self.ciphers)
         ]
         return ' - '.join(s)
 
@@ -152,6 +155,7 @@ class Tls(object):
         r += '' if self.ca_certs_file is None else ', ca_certs_file={0.ca_certs_file!r}'.format(self)
         r += '' if self.ca_certs_path is None else ', ca_certs_path={0.ca_certs_path!r}'.format(self)
         r += '' if self.ca_certs_data is None else ', ca_certs_data={0.ca_certs_data!r}'.format(self)
+        r += '' if self.ciphers is None else ', ciphers={0.ciphers!r}'.format(self)
         r = 'Tls(' + r[2:] + ')'
         return r
 
@@ -159,7 +163,6 @@ class Tls(object):
         """
         Adds TLS to the connection socket
         """
-
         if use_ssl_context:
             if self.version is None:  # uses the default ssl context for reasonable security
                 ssl_context = create_default_context(purpose=Purpose.SERVER_AUTH,
@@ -178,20 +181,43 @@ class Tls(object):
             ssl_context.check_hostname = False
             ssl_context.verify_mode = self.validate
 
+            if self.ciphers:
+                try:
+                    ssl_context.set_ciphers(self.ciphers)
+                except ssl.SSLError:
+                    pass
+
             wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
             if log_enabled(NETWORK):
                 log(NETWORK, 'socket wrapped with SSL using SSLContext for <%s>', connection)
         else:
             if self.version is None and hasattr(ssl, 'PROTOCOL_SSLv23'):
                 self.version = ssl.PROTOCOL_SSLv23
-            wrapped_socket = ssl.wrap_socket(connection.socket,
-                                             keyfile=self.private_key_file,
-                                             certfile=self.certificate_file,
-                                             server_side=False,
-                                             cert_reqs=self.validate,
-                                             ssl_version=self.version,
-                                             ca_certs=self.ca_certs_file,
-                                             do_handshake_on_connect=do_handshake)
+            if self.ciphers:
+                try:
+                    wrapped_socket = ssl.wrap_socket(connection.socket,
+                                                     keyfile=self.private_key_file,
+                                                     certfile=self.certificate_file,
+                                                     server_side=False,
+                                                     cert_reqs=self.validate,
+                                                     ssl_version=self.version,
+                                                     ca_certs=self.ca_certs_file,
+                                                     do_handshake_on_connect=do_handshake,
+                                                     ciphers=self.ciphers)
+                except ssl.SSLError:
+                    raise
+                except TypeError:  # in python2.6 no ciphers argument is present, failback to self.ciphers=None
+                    self.ciphers = None
+
+            if not self.ciphers:
+                wrapped_socket = ssl.wrap_socket(connection.socket,
+                                                 keyfile=self.private_key_file,
+                                                 certfile=self.certificate_file,
+                                                 server_side=False,
+                                                 cert_reqs=self.validate,
+                                                 ssl_version=self.version,
+                                                 ca_certs=self.ca_certs_file,
+                                                 do_handshake_on_connect=do_handshake)
             if log_enabled(NETWORK):
                 log(NETWORK, 'socket wrapped with SSL for <%s>', connection)
 

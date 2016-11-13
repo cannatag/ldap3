@@ -1414,7 +1414,7 @@ class Connection(object):
                 object_def += list(attr_set)  # converts the set in a list to be added to the object definition
                 object_defs.append((attr_set,
                                     object_def,
-                                    Reader(self, object_def, self.request['base'], self.request['filter'], attributes=attr_set))
+                                    Reader(self, object_def, self.request['base'], self.request['filter'], attributes=attr_set) if self.strategy.sync else Reader(self, object_def, '', '', attributes=attr_set))
                                    )  # objects_defs contains a tuple with the set, the ObjectDef and a cursor
 
             entries = []

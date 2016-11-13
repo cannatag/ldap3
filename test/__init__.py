@@ -62,49 +62,103 @@ except KeyError:
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
+# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
+    test_server_type = 'SLAPD'  # temporary force SLAPD on TRAVIS
 
 location += '-' + test_server_type
 
-if location.startswith('TRAVIS'):
+if 'TRAVIS,' in location:
     # test in the cloud
     test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
     if test_server_type == 'EDIR':
         test_server = 'labldap02.cloudapp.net'
         test_server_edir_name = 'SLES1'
+        test_root_partition = ''
+        test_base = 'o=test'  # base context where test objects are created
+        test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+        test_name_attr = 'cn'  # naming attribute for test objects
+        test_int_attr = 'loginGraceLimit'
+        test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
+        test_password = 'Rc1234pfop'  # user password
+        test_secondary_user = 'cn=testLAB,o=resources'
+        test_secondary_password = 'Rc1234pfop'
+        test_sasl_user = 'testLAB.resources'
+        test_sasl_password = 'Rc1234pfop'
+        test_sasl_user_dn = 'cn=testLAB,o=resources'
+        test_sasl_realm = None
+        test_sasl_secondary_user = 'testLAB.resources'
+        test_sasl_secondary_password = 'Rc1234pfop'
+        test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
+        test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
+        test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
+        test_user_key_file = 'test/lab-edir-testlab-key.pem'
+        test_ntlm_user = 'xxx\\yyy'
+        test_ntlm_password = 'zzz'
+        test_logging_filename = 'ldap3.log'
+        test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
     elif test_server_type == 'AD':
         test_server = 'labldap01.cloudapp.net'
         test_server_edir_name = ''
+        test_root_partition = ''
+        test_base = 'o=test'  # base context where test objects are created
+        test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+        test_name_attr = 'cn'  # naming attribute for test objects
+        test_int_attr = 'loginGraceLimit'
+        test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
+        test_password = 'Rc1234pfop'  # user password
+        test_secondary_user = 'cn=testLAB,o=resources'
+        test_secondary_password = 'Rc1234pfop'
+        test_sasl_user = 'testLAB.resources'
+        test_sasl_password = 'Rc1234pfop'
+        test_sasl_user_dn = 'cn=testLAB,o=resources'
+        test_sasl_realm = None
+        test_sasl_secondary_user = 'testLAB.resources'
+        test_sasl_secondary_password = 'Rc1234pfop'
+        test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
+        test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
+        test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
+        test_user_key_file = 'test/lab-edir-testlab-key.pem'
+        test_ntlm_user = 'xxx\\yyy'
+        test_ntlm_password = 'zzz'
+        test_logging_filename = 'ldap3.log'
+        test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
+    elif test_server_type == 'SLAPD':
+        test_server = 'ipa.demo1.freeipa.org'
+        test_server_edir_name = ''
+        test_root_partition = ''
+        test_base = 'ou=ldap3-fixtures,dc=demo1,dc=freeipa,dc=org'  # base context where test objects are created
+        test_moved = 'ou=ldap3-moved,dc=demo1,dc=freeipa,dc=org'  # base context where objects are moved in ModifyDN operations
+        test_name_attr = 'cn'  # naming attribute for test objects
+        test_int_attr = 'gidNumber'
+        test_server_context = ''  # used in novell eDirectory extended operations
+        test_server_edir_name = ''  # used in novell eDirectory extended operations
+        test_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'  # the user that performs the tests
+        test_password = 'Secret123'  # user password
+        test_secondary_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'  # the user that performs the tests
+        test_secondary_password = 'Secret123'  # user password
+        test_sasl_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_password = 'Secret123'
+        test_sasl_user_dn = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_secondary_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_secondary_password = 'Secret123'
+        test_sasl_secondary_user_dn = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_realm = 'Realm'
+        test_ca_cert_file = ''
+        test_user_cert_file = ''
+        test_user_key_file = ''
+        test_ntlm_user = 'xxx\\yyy'
+        test_ntlm_password = 'zzz'
+        test_logging_filename = join(gettempdir(), 'ldap3.log')
+        test_valid_names = ['ipa.demo1.freeipa.org']
+
     else:
         raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
 
-    test_root_partition = ''
-    test_base = 'o=test'  # base context where test objects are created
-    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
-    test_name_attr = 'cn'  # naming attribute for test objects
-    test_int_attr = 'loginGraceLimit'
-    test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
-    test_password = 'Rc1234pfop'  # user password
-    test_secondary_user = 'cn=testLAB,o=resources'
-    test_secondary_password = 'Rc1234pfop'
-    test_sasl_user = 'testLAB.resources'
-    test_sasl_password = 'Rc1234pfop'
-    test_sasl_user_dn = 'cn=testLAB,o=resources'
-    test_sasl_realm = None
-    test_sasl_secondary_user = 'testLAB.resources'
-    test_sasl_secondary_password = 'Rc1234pfop'
-    test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
-    test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
-    test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
-    test_user_key_file = 'test/lab-edir-testlab-key.pem'
-    test_ntlm_user = 'xxx\\yyy'
-    test_ntlm_password = 'zzz'
-    test_logging_filename = 'ldap3.log'
-    test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
 elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
@@ -400,6 +454,14 @@ def get_connection(bind=None,
         if bind:
             connection.bind()
 
+    if 'TRAVIS,' in location and test_server_type == 'SLAPD' and not connection.closed:  # try to create the contexts for fixtures
+        result1 = connection.add(test_base, 'organizationalUnit')
+        result2 = connection.add(test_moved, 'organizationalUnit')
+
+        if not connection.strategy.sync:
+            connection.get_response(result1)
+            connection.get_response(result2)
+
     return connection
 
 
@@ -423,6 +485,15 @@ def drop_connection(connection, dn_to_delete=None):
                 else:
                     print('unable to delete object ' + dn[0] + ': ' + str(result))
                     break
+
+    if 'TRAVIS,' in location and test_server_type == 'SLAPD' and not connection.closed:  # try to create the contexts for fixtures
+        result1 = connection.delete(test_base)
+        result2 = connection.delete(test_moved)
+
+        if not connection.strategy.sync:
+            connection.get_response(result1)
+            connection.get_response(result2)
+
     connection.unbind()
     if connection.strategy.pooled:
         connection.strategy.terminate()

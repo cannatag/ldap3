@@ -68,6 +68,10 @@ class Cursor(object):
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
+
+        if connection._deferred_bind or connection._deferred_open:  # probably a lazy connection, tries to bind
+            connection._fire_deferred()
+
         if isinstance(object_def, STRING_TYPES):
             object_def = ObjectDef(object_def, connection.server.schema)
         self.definition = object_def

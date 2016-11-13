@@ -52,6 +52,9 @@ class ObjectDef(object):
         self.__dict__['_custom_validator'] = custom_validator
         self.__dict__['_oid_info'] = []
 
+        if isinstance(schema, Connection) and (schema._deferred_bind or schema._deferred_open):  # probably a lazy connection, tries to bind
+            schema._fire_deferred()
+
         if schema is not None:
             if isinstance(schema, Server):
                 schema = schema.schema

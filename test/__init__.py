@@ -528,7 +528,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
                            'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
-        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'inetUser', 'top'], 'sn': username, 'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)
@@ -544,9 +544,7 @@ def add_group(connection, batch_id, groupname, members=None):
     if members is None:
         members = list()
     dn = generate_dn(test_base, batch_id, groupname)
-    print(safe_rdn(dn, True)[0][1])
-    # operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
-    operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members], test_name_attr: safe_rdn(dn, True)[0][1]})
+    operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
         raise Exception('unable to create group ' + groupname + ': ' + str(result))

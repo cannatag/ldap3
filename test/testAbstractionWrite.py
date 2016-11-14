@@ -154,3 +154,18 @@ class Test(unittest.TestCase):
             except LDAPCursorError:
                 pass
         self.assertEqual(n.entry_status, STATUS_DELETED)
+
+
+    def test_create_new_entry_valid_mandatory_only_case_insensitive_attribute_names(self):
+        w = Writer(self.connection, 'inetorgperson')
+        n = w.new('CN=' + testcase_id + 'abstraction-create-8,' + test_base)
+        self.assertEqual(n.entry_status, STATUS_MANDATORY_MISSING)
+        n.sn = 'sn-test-8'
+        self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
+        n.entry_commit_changes()
+        self.assertEqual(n.sn, 'sn-test-8')
+        self.assertEqual(n.entry_status, STATUS_COMMITTED)
+        n.entry_delete()
+        self.assertEqual(n.entry_status, STATUS_READY_FOR_DELETION)
+        n.entry_commit_changes()
+        self.assertEqual(n.entry_status, STATUS_DELETED)

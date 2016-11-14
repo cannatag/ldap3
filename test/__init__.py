@@ -63,7 +63,7 @@ except KeyError:
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
-location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
+# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')

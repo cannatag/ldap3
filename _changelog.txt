@@ -10,6 +10,7 @@
     - fixed reading of entries in async strategies
     - added cipher argument to Tls (thanks Nicolas)
     - fixed bug when using the abstraction layer with lazy connections
+    - fixed case matching while adding new entry in Writer cursor (thanks t0neg)
 
 - 2.1.0 2016.11.03
     - changed default Connection strategy from SYNC to RESTARTABLE

@@ -626,6 +626,7 @@ class Writer(Cursor):
     def commit(self, refresh=True):
         for entry in self.entries:
             entry.entry_commit_changes(refresh=refresh, controls=self.controls)
+        self.execution_time = datetime.now()
 
     def discard(self):
         for entry in self.entries:
@@ -682,12 +683,13 @@ class Writer(Cursor):
         entry.objectclass.set(self.definition._object_class)
         for rdn in rdns:  # adds virtual attributes from rdns in entry name (should be more than one with + syntax)
             if rdn[0] in entry._state.definition._attributes:
-                if rdn[0] not in entry._state.attributes:
-                    entry._state.attributes[rdn[0]] = self.attribute_class(entry._state.definition[rdn[0]], entry, self)
-                    entry.__dict__[rdn[0]] = entry._state.attributes[rdn[0]]
-                entry.__dict__[rdn[0]].set(rdn[1])
+                rdn_name = entry._state.definition._attributes[rdn[0]].name  # normalize case folding
+                if rdn_name not in entry._state.attributes:
+                    entry._state.attributes[rdn_name] = self.attribute_class(entry._state.definition[rdn_name], entry, self)
+                    entry.__dict__[rdn_name] = entry._state.attributes[rdn_name]
+                entry.__dict__[rdn_name].set(rdn[1])
             else:
-                raise LDAPCursorError('rdn not in objectclass definition')
+                raise LDAPCursorError('rdn type \'%s\' not in objectclass definition' % rdn[0])
         entry._state.set_status(STATUS_VIRTUAL)
         self.entries.append(entry)
         return entry

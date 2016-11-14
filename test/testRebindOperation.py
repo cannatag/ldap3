@@ -43,7 +43,7 @@ class Test(unittest.TestCase):
         else:
             bound_dn = connection.extend.standard.who_am_i()
 
-        self.assertEqual(test_secondary_user, bound_dn)
+        self.assertTrue(test_secondary_user in bound_dn)
 
         drop_connection(connection)
         self.assertFalse(connection.bound)

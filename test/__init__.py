@@ -36,6 +36,8 @@ from ldap3.utils.dn import safe_rdn
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
 
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
+test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
+
 test_server_mode = IP_V6_PREFERRED
 
 test_logging = False
@@ -53,14 +55,12 @@ test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
 test_receive_timeout = None
-test_auto_escape = False
+test_auto_escape = True
 
 try:
     location = environ['USERDOMAIN']
 except KeyError:
     location = 'UNKNOWN'
-
-test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_lazy_connection = False
 # location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
@@ -286,6 +286,36 @@ elif location == 'W10GC9227-EDIR':
     test_ntlm_password = 'xxx'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['sl10.intra.camera.it']
+elif location == 'W10GC9227-AD':
+    # test notebook - Active Directory (AD)
+    test_server = '10.160.201.232'
+    test_server_type = 'AD'
+    test_domain_name = 'TESTAD.LAB'  # Active Directory Domain name
+    test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+    test_base = 'OU=test,' + test_root_partition  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'logonCount'
+    test_server_context = ''  # used in novell eDirectory extended operations
+    test_server_edir_name = ''  # used in novell eDirectory extended operations
+    test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
+    test_password = 'Rc99pfop'  # user password
+    test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_secondary_password = 'Rc88pfop'  # user password
+    test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_password = 'Rc88pfop'
+    test_sasl_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_secondary_password = 'Rc88pfop'
+    test_sasl_secondary_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_realm = None
+    test_ca_cert_file = 'local-forest-lab-ca.pem'
+    test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+    test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+    test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
+    test_ntlm_password = 'Rc99pfop'
+    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['10.160.201.232']
 else:
     raise Exception('testing location ' + location + ' is not valid')
 

@@ -988,7 +988,6 @@ class Connection(object):
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
                             raise LDAPChangeError(self.last_error)
-
             request = modify_operation(dn, changes, self.auto_escape, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)

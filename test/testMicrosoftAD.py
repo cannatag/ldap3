@@ -37,13 +37,14 @@ class Test(unittest.TestCase):
     def setUp(self):
         if test_server_type == 'AD':
             self.connection = get_connection(use_ssl=True)
-            self.delete_at_teardown = []
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            # self.delete_at_teardown = []
+            # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
+            # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):
         if test_server_type == 'AD':
-            drop_connection(self.connection, self.delete_at_teardown)
+            # drop_connection(self.connection, self.delete_at_teardown)
+            drop_connection(self.connection, False)
             self.assertFalse(self.connection.bound)
 
     def test_search_extended_dn_ad(self):
@@ -220,3 +221,20 @@ class Test(unittest.TestCase):
             test_connection.unbind()
 
             self.assertTrue('changed-password-2' in connected_user)
+
+
+    def test_modify_existing_password_as_administrator(self):
+        if test_server_type == 'AD':
+            # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
+            # dn = self.delete_at_teardown[-1][0]
+            dn = 'CN=Test Uno,CN=Users,DC=TESTAD,DC=LAB'
+            new_password = 'Rc5679efgh'
+            result = self.connection.extend.microsoft.modify_password(dn, new_password)
+            self.assertEqual(result, True)
+            # creates a second connection and tries to bind with the new password
+            test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, new_password))
+            test_connection.bind()
+            connected_user = test_connection.extend.standard.who_am_i()
+            test_connection.unbind()
+            print(connected_user)
+            self.assertTrue('testuno' in connected_user)

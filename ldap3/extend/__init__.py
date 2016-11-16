@@ -258,8 +258,8 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
     def modify_password(self, user, new_password, old_password=None, controls=None):
         return modify_ad_password(self._connection,
                                   user,
-                                  old_password,
                                   new_password,
+                                  old_password,
                                   controls)
 
     def unlock_account(self, user):

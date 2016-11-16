@@ -28,7 +28,6 @@ from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectCl
 from ..protocol.rfc4511 import Controls, Control
 from ..utils.conv import to_raw, escape_filter_chars
 
-
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
 

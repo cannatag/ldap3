@@ -38,7 +38,13 @@ class Test(unittest.TestCase):
         if test_server_type == 'AD':
             self.connection = get_connection(use_ssl=True)
             self.delete_at_teardown = []
-            # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
+            for i in range(2000):
+                try:
+                    add_user(self.connection, '', 'user-' + str(i).zfill(4), attributes={'givenName': 'givenname-' + str(i).zfill(4)})
+                    print(i)
+                except:
+                    pass
+
             # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):
@@ -238,3 +244,11 @@ class Test(unittest.TestCase):
             test_connection.unbind()
             print(connected_user)
             self.assertTrue('testuno' in connected_user)
+
+    def test_search_with_auto_range(self):
+        if test_server_type == 'AD':
+            print(self.connection.auto_range)
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=testgrp)', attributes=[test_name_attr, 'member'])
+            print(result)
+            print(self.connection.response[0])
+            print (len(self.connection.response[0]['attributes']['member']))

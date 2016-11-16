@@ -642,13 +642,17 @@ class BaseStrategy(object):
                                                 dereference_aliases=request['dereferenceAlias'],
                                                 attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
                 if isinstance(result, bool):
-                    current_response = self.connection.response[0]
+                    if result:
+                        current_response = self.connection.response[0]
+                    else:
+                        done = True
                 else:
                     current_response, _ = self.get_response(result)
                     current_response = current_response[0]
 
-                attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
-                continue
+                if not done:
+                    attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
+                    continue
 
             done = True
 

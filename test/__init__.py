@@ -32,17 +32,14 @@ from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_inf
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
-from ldap3.utils.dn import safe_rdn
-from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
+from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
-test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
-
-test_server_mode = IP_V6_PREFERRED
-
+test_server_type = 'AD'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 test_logging = False
-test_log_detail = EXTENDED
 
+test_log_detail = EXTENDED
+test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
@@ -154,9 +151,8 @@ if 'TRAVIS,' in location:
         test_user_key_file = ''
         test_ntlm_user = 'xxx\\yyy'
         test_ntlm_password = 'zzz'
-        test_logging_filename = join(gettempdir(), 'ldap3.log')
+        test_logging_filename = 'ldap3.log'
         test_valid_names = ['ipa.demo1.freeipa.org']
-
     else:
         raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
 
@@ -327,6 +323,7 @@ if test_logging:
 
     import logging
     logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)
+    set_library_log_activation_level(logging.DEBUG)
     set_library_log_detail_level(test_log_detail)
 
 print('Testing location:', location)

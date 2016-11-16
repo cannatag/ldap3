@@ -731,8 +731,12 @@ class Connection(object):
 
             if self.server and self.server.schema and self.check_names:
                 for attribute_name in attributes:
-                    if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name)
+                    if ';' in attribute_name:  # remove tags
+                        attribute_name_to_check = attribute_name.split(';')[0]
+                    else:
+                        attribute_name_to_check = attribute_name
+                    if attribute_name_to_check not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name_to_check not in self.server.schema.attribute_types:
+                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.auto_escape, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):

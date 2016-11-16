@@ -26,7 +26,7 @@
 from .. import SEQUENCE_TYPES, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
 from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode, AttributeValue
 from ..operation.bind import referrals_to_list
-from ..protocol.convert import changes_to_list, validate_attribute_value
+from ..protocol.convert import changes_to_list, validate_attribute_value, prepare_for_sending
 
 # ModifyRequest ::= [APPLICATION 6] SEQUENCE {
 #    object          LDAPDN,
@@ -65,9 +65,9 @@ def modify_operation(dn,
             partial_attribute['vals'] = Vals()
             if isinstance(change_operation[1], SEQUENCE_TYPES):
                 for index, value in enumerate(change_operation[1]):
-                    partial_attribute['vals'].setComponentByPosition(index, validate_attribute_value(schema, attribute, value, auto_escape))
+                    partial_attribute['vals'].setComponentByPosition(index, prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_escape)))
             else:
-                partial_attribute['vals'].setComponentByPosition(0, validate_attribute_value(schema, attribute, change_operation[1], auto_escape))
+                partial_attribute['vals'].setComponentByPosition(0, prepare_for_sending(validate_attribute_value(schema, attribute, change_operation[1], auto_escape)))
 
             change = Change()
             change['operation'] = Operation(change_table[change_operation[0]])

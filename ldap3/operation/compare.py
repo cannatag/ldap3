@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ..protocol.convert import validate_attribute_value
+from ..protocol.convert import validate_attribute_value, prepare_for_sending
 from ..protocol.rfc4511 import CompareRequest, AttributeValueAssertion, AttributeDescription, LDAPDN, AssertionValue, ResultCode
 from ..operation.search import ava_to_dict
 from ..operation.bind import referrals_to_list
@@ -39,7 +39,7 @@ def compare_operation(dn,
     #     ava             AttributeValueAssertion }
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
-    ava['assertionValue'] = AssertionValue(validate_attribute_value(schema, attribute, value, auto_escape))
+    ava['assertionValue'] = AssertionValue(prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_escape)))
 
     request = CompareRequest()
     request['entry'] = LDAPDN(dn)

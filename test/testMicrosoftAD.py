@@ -37,7 +37,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         if test_server_type == 'AD':
             self.connection = get_connection(use_ssl=True)
-            # self.delete_at_teardown = []
+            self.delete_at_teardown = []
             # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
 
@@ -228,7 +228,7 @@ class Test(unittest.TestCase):
             # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
             # dn = self.delete_at_teardown[-1][0]
             dn = 'CN=Test Uno,CN=Users,DC=TESTAD,DC=LAB'
-            new_password = 'Rc5679efgh'
+            new_password = 'Rc579efgh'
             result = self.connection.extend.microsoft.modify_password(dn, new_password)
             self.assertEqual(result, True)
             # creates a second connection and tries to bind with the new password

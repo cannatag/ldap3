@@ -201,5 +201,3 @@ def format_json(obj):
         pass
 
     raise LDAPDefinitionError('unable to serialize ' + str(obj))
-
-

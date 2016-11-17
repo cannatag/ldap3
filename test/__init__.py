@@ -252,7 +252,7 @@ elif location == 'W10GC9227-EDIR':
     # test camera
     # test_server = ['sl08',
     #               'sl09',
-    #               'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
+    #               'sl10']  # the ldap server where tests are executed, if is a list of servers a pool will be created
     test_server = 'sl10'
     test_server_type = 'EDIR'
     # test_server = 'nova01.amm.intra.camera.it'

@@ -55,6 +55,7 @@ class Test(unittest.TestCase):
         self.assertTrue(connection.bound)
         drop_connection(connection)
         self.assertFalse(connection.bound)
+        print(connection.server)
 
     def test_bind_sasl_digest_md5(self):
         if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:

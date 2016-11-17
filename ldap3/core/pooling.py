@@ -152,7 +152,7 @@ class ServerPoolState(object):
                     if (isinstance(self.server_pool.exhaust, bool) and self.server_pool.exhaust) or (datetime.now() - self.servers[offset][1]).seconds < self.server_pool.exhaust:  # keeps server offline
                         if log_enabled(NETWORK):
                             if isinstance(self.server_pool.exhaust, bool):
-                                log(NETWORK, 'server <%s> excluded from checking because is  offline', self.servers[offset][0])
+                                log(NETWORK, 'server <%s> excluded from checking because is offline', self.servers[offset][0])
                             else:
                                 log(NETWORK, 'server <%s> excluded from checking because is offline for %d seconds', self.servers[offset][0], (self.server_pool.exhaust - (datetime.now() - self.servers[offset][1]).seconds))
                         continue

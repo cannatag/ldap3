@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from logging import getLogger, DEBUG
-from os import linesep
 from copy import deepcopy
 from pprint import pformat
 from ..protocol.rfc4511 import LDAPMessage
@@ -37,8 +36,10 @@ PROTOCOL = 30
 NETWORK = 40
 EXTENDED = 50
 
-_sensitive_lines = ('simple', 'credentials', 'serversaslcreds')  # must be a tuple, not a list
+_sensitive_lines = ('simple', 'credentials', 'serversaslcreds')  # must be a tuple, not a list, lowercase
 _sensitive_args = ('simple', 'password', 'sasl_credentials', 'saslcreds', 'server_creds')
+_sensitive_attrs = ('userpassword', 'unicodepwd')
+
 _hide_sensitive_data = None
 
 DETAIL_LEVELS = [OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED]
@@ -70,7 +71,7 @@ def _strip_sensitive_data_from_dict(d):
 
     try:
         d = deepcopy(d)
-    except Exception:  # if deepcopy goes wrong gives up and return the dict unchanged
+    except Exception:  # if deepcopy goes wrong gives up and returns the dict unchanged
         return d
     for k in d.keys():
         if isinstance(d[k], dict):
@@ -182,21 +183,21 @@ def format_ldap_message(message, prefix):
     prefixed = ''
     for line in (message.prettyPrint().split('\n') if isinstance(message, LDAPMessage) else pformat(message).split('\n')):  # uses pyasn1 LDAP message prettyPrint() method
         if line:
-            if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):  # _sensitive_lines is a tuple. startswith() method check each tuple element
+            if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):  # _sensitive_lines is a tuple. startswith() method checks each tuple element
                 tag, _, data = line.partition('=')
                 if data.startswith("b'") and data.endswith("'") or data.startswith('b"') and data.endswith('"'):
-                    prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % (len(data) - 3, )
+                    prefixed += '\n' + prefix + tag + '=<stripped %d characters of sensitive data>' % (len(data) - 3, )
                 else:
-                    prefixed += linesep + prefix + tag + '=<stripped %d characters of sensitive data>' % len(data)
+                    prefixed += '\n' + prefix + tag + '=<stripped %d characters of sensitive data>' % len(data)
             else:
-                prefixed += linesep + prefix + line
+                prefixed += '\n' + prefix + line
     return prefixed
 
 # sets a logger for the library with NullHandler. It can be used by the application with its own logging configuration
 logger = getLogger('ldap3')
 logger.addHandler(NullHandler())
 
-# set defaults for the library logging
+# sets defaults for the library logging
 set_library_log_activation_level(DEBUG)
 set_library_log_detail_level(OFF)
 set_library_log_hide_sensitive_data(True)

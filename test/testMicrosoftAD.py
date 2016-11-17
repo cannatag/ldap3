@@ -38,13 +38,13 @@ class Test(unittest.TestCase):
         if test_server_type == 'AD':
             self.connection = get_connection(use_ssl=True)
             self.delete_at_teardown = []
-            for i in range(2000):
-                try:
-                    add_user(self.connection, '', 'user-' + str(i).zfill(4), attributes={'givenName': 'givenname-' + str(i).zfill(4)})
-                    print(i)
-                except:
-                    pass
-
+            # creates 2000 users for testing auto-range
+            # for i in range(2000):
+            #     try:
+            #         add_user(self.connection, '', 'user-' + str(i).zfill(4), attributes={'givenName': 'givenname-' + str(i).zfill(4)})
+            #         print(i)
+            #     except:
+            #         pass
             # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):

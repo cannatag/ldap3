@@ -36,7 +36,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'AD'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
-test_logging = False
+test_logging = True
 
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED

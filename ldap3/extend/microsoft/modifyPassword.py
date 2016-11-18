@@ -30,11 +30,17 @@ from ...core.results import RESULT_SUCCESS
 from ...utils.dn import safe_dn
 
 
-def modify_ad_password(connection, user_dn, old_password, new_password, controls=None):
+def modify_ad_password(connection, user_dn, new_password, old_password, controls=None):
     # old password must be None to reset password with sufficient privileges
     if connection.check_names:
         user_dn = safe_dn(user_dn)
+    if (bytes == str):  # python2, converts to unicode
+        new_password = unicode(new_password)
+        if old_password:
+            old_password = unicode(old_password)
+
     encoded_new_password = ('"%s"' % new_password).encode('utf-16-le')
+
     if old_password:  # normal users must specify old and new password
         encoded_old_password = ('"%s"' % old_password).encode('utf-16-le')
         result = connection.modify(user_dn,

@@ -106,6 +106,8 @@ class Test(unittest.TestCase):
         if self.connection.check_names:
             if test_server_type == 'AD':
                 self.assertEqual(json_entries[0]['dn'].lower(), self.delete_at_teardown[0][0].lower())
+            elif test_server_type == 'SLAPD':
+                self.assertEqual(json_entries[0]['attributes']['entrydn'], self.delete_at_teardown[0][0])
             else:
                 self.assertEqual(json_entries[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
 

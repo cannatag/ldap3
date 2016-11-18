@@ -128,7 +128,7 @@ is properly stored in the DIT::
 
     >>> conn.search('ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['objectclass', 'sn', 'cn', 'givenname'])
     True
-    >>> entries[0]
+    >>> conn.entries[0]
     DN: cn=b.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-11T23:51:28.731000
     cn: b.smith
     givenname: Beatrix
@@ -153,7 +153,7 @@ But you cannot perform this two operations together::
     True
 
 Quite surprisingly you must provide the very same RDN even if this cannot be changed while moving the object. This could be a problem when moving entries
-programmatically because you have do break up the DN to its RDNs (remember that each "step" in the DN is really an independent entry with its own RDN.
+programmatically because you have to break up the DN to its RDNs (remember that each "step" in the DN is really an independent entry with its own RDN.
 
 ldap3 provides the ``safe_rdn()`` helper function to return the RDN of a DN::
 
@@ -182,7 +182,7 @@ attribute a list of modifications where each modification is a tuple with the mo
     True
     >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
     True
-    >>> entries[0]
+    >>> conn.entries[0]
     DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:35:39.691000
         cn: b.smith
         sn: Young
@@ -194,7 +194,7 @@ Now remove the old value::
     True
     >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
     True
-    >>> entries[0]
+    >>> conn.entries[0]
     DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:35:40.331000
         cn: b.smith
         sn: Smyth
@@ -205,7 +205,7 @@ There is a typo in the previous modify operation (Smyth instead of Smith), let's
     True
     >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn'])
     True
-    >>> entries[0]
+    >>> conn.entries[0]
     DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:35:40.972000
         cn: b.smith
         sn: Smith
@@ -216,7 +216,7 @@ Changes in a modify operation can be combined and the syntax of the operation so
     True
     >>> conn.search('ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', '(cn=b.smith)', attributes=['cn', 'sn', 'givenName'])
     True
-    >>> entries[0]
+    >>> conn.entries[0]
     DN: cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org - STATUS: Read - READ TIME: 2016-10-15T08:55:47.585000
         cn: b.smith
         givenName: Mary
@@ -224,11 +224,11 @@ Changes in a modify operation can be combined and the syntax of the operation so
         sn: Young
             Johnson
 
-Here you've addad 2 values to the *sn* then removed the 'Smith' value from it and replaced the *givenName* with other 2 values, removing all older values.
+Here you've added 2 values to the *sn* then removed the 'Smith' value from it and replaced the *givenName* with other 2 values, removing all older values.
 
-.. warning:: the MODIFY_REPLACE modification has a misleading name. One could expect it replaces a value with another, but new values only are provided
+.. warning:: The MODIFY_REPLACE modification has a misleading name. One could expect it replaces a value with another, but new values only are provided
     in the Modify operation. What the MODIFY_REPLACE really does is to remove **all** values and add the new values provided.
-    THere is no replace at all.
+    There is no replace at all.
 
 .. note:: The ldap3 Abstraction Layer allows you to use a much more simple and pythonic syntax to achieve the same results.
 

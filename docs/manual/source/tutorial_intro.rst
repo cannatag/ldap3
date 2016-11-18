@@ -39,7 +39,7 @@ key/value(s) pairs grouped in a hierarchical structure. This structure is called
 Information Tree*). LDAP doesn't specify how data is actually stored in the DIT neither how the user is authorized to
 access it. There are only a few data types that every LDAP server must recognize (some of them being very old and not used anymore).
 LDAP version 3 is also an extensible protocol, this means that a vendor can add features not in the LDAP specifications (using Controls and Extensions).
-Any LDAP server relies on a **schema** to know which data types, attributes and object it understand. A portion of the schema is standard
+Any LDAP server relies on a **schema** to know which data types, attributes and object it understands. A portion of the schema is standard
 (defined in the protocol itself), but each vendor can add attributes and object for specific purposes. The schema can also be extended (with
 administrative role) by the system administrator, the developer and the end user of the LDAP server.
 Keep in mind that "extending the schema" is something that is not defined in the LDAP protocol, so each vendor has developed different methods to add
@@ -117,7 +117,7 @@ In the LDAP protocol the login operation is called **Bind**. A bind can be perfo
 Simple Password Bind, and SASL (*Simple Authentication and Security Layer*, allowing a larger set of authentication methods)
 Bind. You can think of the Anonymous Bind as of a *public* access to the LDAP server where no credentials are provided
 and the server applies some *default* access rules. With the Simple Password Bind and the SASL Bind you provide credentials
-that the LDAP server uses to determine your authorizazion level. Again, keep in mind that the LDAP standard doesn't define
+that the LDAP server uses to determine your authorization level. Again, keep in mind that the LDAP standard doesn't define
 specific access rules and that the authorization mechanism is not specified at all. So each LDAP server vendor can have a
 different method for authorizing the user to access data stored in the DIT.
 
@@ -149,7 +149,6 @@ Let's start accessing the server with an anonymous bind::
 or shorter::
 
     >>> conn = Connection('ipa.demo1.freeipa.org', auto_bind=True)
-    True
 
 Hardly it could be simpler than that. The ``auto_bind=True`` parameter forces the Bind operation while creating the Connection object.
 You have now a full working anonymous session open and bound to the server with a *synchronous* communication strategy::
@@ -381,7 +380,7 @@ the ``get_info`` parameter of the Server object and the ``check_names`` paramete
 
 Logging into the server
 =======================
-You haven't provided any credentials to the server yet, but you received a response anyway. This means that LDAP allow users to perform
+You haven't provided any credentials to the server yet, but you received a response anyway. This means that LDAP allows users to perform
 operations anonymously without declaring their identity. Obviously what the server returns to an anonymous connection is someway limited.
 This makes sense because originally the DAP protocol was intended for reading phone directories, as in a printed book, so its
 content could be read by anyone.
@@ -420,7 +419,7 @@ that you are unknown to the server, actually you have a session open with it, so
 if you don't send the anonymous bind operation the server will accept any operation requests as an anonymous user, establishing a new session
 if needed.
 
-.. note:: The ``extend`` namespace. The connection object has a special namespace called "extend" where more complex operations are defined
+.. note:: The ``extend`` namespace. The connection object has a special namespace called "extend" where more complex operations are defined.
     This namespace include a ``standard`` section and a number of specific vendor sections. In these sections you can find methods to perform
     tricky or hard-to-implement operations. For example in the ``microsoft`` section you can find a method to easily change the user password, and
     in the ``novell`` section a method to apply transaction to groups of LDAP operations. In the ``standard`` section you can also find an
@@ -498,6 +497,11 @@ certificate validity. You can customize the TLS behaviour providing a Tls object
 
 In this case, using the FreeIPA demo server we get a LDAPSocketOpenError exception because the certificate cannot be verified.
 You can configure the Tls object with a number of options. Look at :ref:`the SSL and TLS documentation <ssltls>` for more information.
+
+The FreeIPA server doesn't return a valid certificate so let's revert the certificate validation to CERT_NONE, so we can go on with the tutorial::
+
+    >>> tls_configuration.validate = ssl.CERT_NONE
+
 
 Connection context manager
 ==========================

@@ -26,6 +26,7 @@
 from copy import deepcopy
 from datetime import datetime
 from os import linesep
+from time import sleep
 
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
@@ -33,6 +34,7 @@ from .attrDef import AttrDef
 from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPCursorError
+from ..core.results import RESULT_SUCCESS
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import safe_dn, safe_rdn
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
@@ -66,6 +68,10 @@ class Cursor(object):
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         self.connection = connection
+
+        if connection._deferred_bind or connection._deferred_open:  # probably a lazy connection, tries to bind
+            connection._fire_deferred()
+
         if isinstance(object_def, STRING_TYPES):
             object_def = ObjectDef(object_def, connection.server.schema)
         self.definition = object_def
@@ -620,13 +626,14 @@ class Writer(Cursor):
     def commit(self, refresh=True):
         for entry in self.entries:
             entry.entry_commit_changes(refresh=refresh, controls=self.controls)
+        self.execution_time = datetime.now()
 
     def discard(self):
         for entry in self.entries:
             entry.entry_discard_changes()
 
-    def _refresh_object(self, entry_dn, attributes=None, controls=None):  # base must be a single dn
-        """Perform the LDAP search operation SINGLE_OBJECT scope
+    def _refresh_object(self, entry_dn, attributes=None, tries=4, seconds=2, controls=None):  # base must be a single dn
+        """Performs the LDAP search operation SINGLE_OBJECT scope
 
         :return: Entry found in search
 
@@ -634,18 +641,27 @@ class Writer(Cursor):
         if not self.connection:
             raise LDAPCursorError('no connection established')
 
+        response = []
         with self.connection:
-            result = self.connection.search(search_base=entry_dn,
-                                            search_filter='(objectclass=*)',
-                                            search_scope=BASE,
-                                            dereference_aliases=DEREF_NEVER,
-                                            attributes=attributes if attributes else self.attributes,
-                                            get_operational_attributes=self.get_operational_attributes,
-                                            controls=controls)
-            if not self.connection.strategy.sync:
-                response, _ = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            counter = 0
+            while counter < tries:
+                result = self.connection.search(search_base=entry_dn,
+                                                search_filter='(objectclass=*)',
+                                                search_scope=BASE,
+                                                dereference_aliases=DEREF_NEVER,
+                                                attributes=attributes if attributes else self.attributes,
+                                                get_operational_attributes=self.get_operational_attributes,
+                                                controls=controls)
+                if not self.connection.strategy.sync:
+                    response, result = self.connection.get_response(result)
+                else:
+                    response = self.connection.response
+                    result = self.connection.result
+
+                if result['result'] in [RESULT_SUCCESS]:
+                    break
+                sleep(seconds)
+                counter += 1
 
         if len(response) == 1:
             return self._create_entry(response[0])
@@ -667,20 +683,21 @@ class Writer(Cursor):
         entry.objectclass.set(self.definition._object_class)
         for rdn in rdns:  # adds virtual attributes from rdns in entry name (should be more than one with + syntax)
             if rdn[0] in entry._state.definition._attributes:
-                if rdn[0] not in entry._state.attributes:
-                    entry._state.attributes[rdn[0]] = self.attribute_class(entry._state.definition[rdn[0]], entry, self)
-                    entry.__dict__[rdn[0]] = entry._state.attributes[rdn[0]]
-                entry.__dict__[rdn[0]].set(rdn[1])
+                rdn_name = entry._state.definition._attributes[rdn[0]].name  # normalize case folding
+                if rdn_name not in entry._state.attributes:
+                    entry._state.attributes[rdn_name] = self.attribute_class(entry._state.definition[rdn_name], entry, self)
+                    entry.__dict__[rdn_name] = entry._state.attributes[rdn_name]
+                entry.__dict__[rdn_name].set(rdn[1])
             else:
-                raise LDAPCursorError('rdn not in objectclass definition')
+                raise LDAPCursorError('rdn type \'%s\' not in objectclass definition' % rdn[0])
         entry._state.set_status(STATUS_VIRTUAL)
         self.entries.append(entry)
         return entry
 
-    def refresh_entry(self, entry):
+    def refresh_entry(self, entry, tries=4, seconds=2):
 
         self._do_not_reset = True
-        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes)  # if any attributes is added adds only to the entry not to the definition
+        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes, tries, seconds=2)  # if any attributes is added adds only to the entry not to the definition
         self._do_not_reset = False
         if temp_entry:
             temp_entry._state.origin = entry._state.origin

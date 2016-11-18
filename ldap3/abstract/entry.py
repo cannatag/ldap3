@@ -44,6 +44,7 @@ from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveDict
 from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED,\
     STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
+from ..core.results import RESULT_SUCCESS
 
 
 class EntryState(object):
@@ -267,7 +268,6 @@ class EntryBase(object):
 
         return json_output
 
-
     def entry_to_ldif(self, all_base64=False, line_separator=None, sort_order=None, stream=None):
         ldif_lines = operation_to_ldif('searchResponse', [self._state.response], all_base64, sort_order=sort_order)
         ldif_lines = add_ldif_header(ldif_lines)
@@ -390,7 +390,7 @@ class WritableEntry(EntryBase):
                 self._state.set_status(STATUS_DELETED)
                 return True
             else:
-                raise LDAPCursorError('unable to delete entry, ' + self._state.cursor.connection.result['description'])
+                raise LDAPCursorError('unable to delete entry, ' + self._state.cursor.connection.result['description'] + ', ' + self._state.cursor.connection.result['message'])
         elif self.entry_status == STATUS_READY_FOR_MOVING:
             if self.entry_cursor.connection.modify_dn(self.entry_dn, '+'.join(safe_rdn(self.entry_dn)), new_superior=self._state._to):
                 self._state.dn = safe_dn('+'.join(safe_rdn(self.entry_dn)) + ',' + self._state._to)
@@ -428,10 +428,16 @@ class WritableEntry(EntryBase):
                     new_attributes = dict()
                     for attr in self._changes:
                         new_attributes[attr] = self._changes[attr][0][1]
-                    result = self.entry_cursor.connection.add_attribute(self.entry_dn, None, new_attributes, controls)
+                    result = self.entry_cursor.connection.add(self.entry_dn, None, new_attributes, controls)
                 else:
                     result = self.entry_cursor.connection.modify(self.entry_dn, self._changes, controls)
-                if result:
+
+                if not self.entry_cursor.connection.strategy.sync:  # async request
+                    _, result = self.entry_cursor.connection.get_response(result)
+                else:
+                    result = self.entry_cursor.connection.result
+
+                if result['result'] == RESULT_SUCCESS:
                     if refresh:
                         if self.entry_refresh():
                             if self._state.origin and self.entry_cursor.connection.server == self._state.origin.entry_cursor.connection.server:  # updates original read-only entry if present
@@ -450,7 +456,7 @@ class WritableEntry(EntryBase):
                     self._state.set_status(STATUS_COMMITTED)
                     return True
                 else:
-                    raise LDAPCursorError('unable to commit entry, ' + self.entry_cursor.connection.result['description'] + ' - ' + self.entry_cursor.connection.result['message'])
+                    raise LDAPCursorError('unable to commit entry, ' + result['description'] + ' - ' + result['message'])
         return False
 
     def entry_discard_changes(self):
@@ -465,25 +471,23 @@ class WritableEntry(EntryBase):
     def entry_refresh(self, tries=4, seconds=2):
         """
 
-        Reads the entry from the LDAP Server
+        Refreshes the entry from the LDAP Server
         """
         if self.entry_cursor.connection:
-            counter = 0
-            while counter <= (tries):
-                if self.entry_cursor.refresh_entry(self):
-                    return True
-                sleep(seconds)
+            if self.entry_cursor.refresh_entry(self, tries, seconds):
+                return True
+
         return False
 
     def entry_move(self, destination_dn):
         if self.entry_status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_MOVING]:
-            raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
+            raise LDAPCursorError('unable to move entry, invalid status: ' + self.entry_status)
         self._state._to = safe_dn(destination_dn)
         self._state.set_status(STATUS_READY_FOR_MOVING)
 
     def entry_rename(self, new_name):
         if self.entry_status not in [STATUS_WRITABLE, STATUS_COMMITTED, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError('unable to delete entry, invalid status: ' + self.entry_status)
+            raise LDAPCursorError('unable to rename entry, invalid status: ' + self.entry_status)
         self._state._to = new_name
         self._state.set_status(STATUS_READY_FOR_RENAMING)
 

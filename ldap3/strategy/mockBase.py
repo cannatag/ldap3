@@ -151,17 +151,18 @@ class MockBaseStrategy(object):
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPDefinitionError(self.connection.last_error)
-        # checks userPassword for password. userPassword must be a _clear text string or a list of _clear text strings
+        # checks userPassword for password. userPassword must be a text string or a list of text strings
         if identity in self.connection.server.dit:
             if 'userPassword' in self.connection.server.dit[identity]:
-                if self.connection.server.dit[identity]['userPassword'] == password or password in self.connection.server.dit[identity]['userPassword']:
+                # if self.connection.server.dit[identity]['userPassword'] == password or password in self.connection.server.dit[identity]['userPassword']:
+                if self.equal(identity, 'userPassword', password):
                     result_code = 0
                     message = ''
                     self.bound = identity
                 else:
                     result_code = 49
                     message = 'invalid credentials'
-            else:  # no user found,  waits for 2 seconds returns invalidCredentials
+            else:  # no user found, returns invalidCredentials
                 result_code = 49
                 message = 'missing userPassword attribute'
         elif identity == '<anonymous>':
@@ -248,7 +249,7 @@ class MockBaseStrategy(object):
         value = to_raw(request['value'])
         if dn in self.connection.server.dit:
             if attribute in self.connection.server.dit[dn]:
-                if value in self.connection.server.dit[dn][attribute]:
+                if self.equal(dn, attribute, value):
                     result_code = 6
                     message = ''
                 else:
@@ -357,7 +358,7 @@ class MockBaseStrategy(object):
                         else:
                             for element in elements:
                                 raw_element = to_raw(element)
-                                if raw_element in self.connection.server.dit[dn][attribute]:  # removes single element
+                                if self.equal(dn, attribute, raw_element):  # removes single element
                                     self.connection.server.dit[dn][attribute].remove(raw_element)
                                 else:
                                     result_code = 1
@@ -506,7 +507,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value, 'utf-8').lower() >= to_unicode(attr_value, 'utf-8').lower():  # case insentive string comparison
+                            if to_unicode(value, 'utf-8').lower() >= to_unicode(attr_value, 'utf-8').lower():  # case insensitive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -527,7 +528,10 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
         elif node.tag == MATCH_EXTENSIBLE:
-            pass
+            self.connection.last_error = 'Extensible match not allowed in Mock strategy'
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            raise LDAPDefinitionError(self.connection.last_error)
         elif node.tag == MATCH_PRESENT:
             attr_name = node.assertion['attr']
             for candidate in candidates:
@@ -550,10 +554,10 @@ class MockBaseStrategy(object):
             if node.assertion['final']:
                 substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], 'utf-8'))
 
-            if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # onyly initial, adds .*
+            if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # only initial, adds .*
                 substring_filter += '.*'
 
-            regex_filter = re.compile(substring_filter, flags=re.UNICODE)
+            regex_filter = re.compile(substring_filter, flags=re.UNICODE | re.IGNORECASE)  # unicode AND ignorecase
             for candidate in candidates:
                 if attr_name in self.connection.server.dit[candidate]:
                     for value in self.connection.server.dit[candidate][attr_name]:
@@ -567,17 +571,49 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
             for candidate in candidates:
-                if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
+                # if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
+                if attr_name in self.connection.server.dit[candidate] and self.equal(candidate, attr_name, attr_value):
                     node.matched.add(candidate)
-                elif attr_name in self.connection.server.dit[candidate]:  # tries to apply formatters
-                    formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
-                    if not isinstance(formatted_values, SEQUENCE_TYPES):
-                        formatted_values = [formatted_values]
-                    if attr_value.decode('utf-8') in formatted_values:  # attributes values should be returned in utf-8
-                        node.matched.add(candidate)
-                    else:
-                        node.unmatched.add(candidate)
+                # elif attr_name in self.connection.server.dit[candidate]:  # tries to apply formatters
+                #     formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
+                #     if not isinstance(formatted_values, SEQUENCE_TYPES):
+                #         formatted_values = [formatted_values]
+                #     # if attr_value.decode('utf-8') in formatted_values:  # attributes values should be returned in utf-8
+                #     if self.equal(attr_name, attr_value.decode('utf-8'), formatted_values):  # attributes values should be returned in utf-8
+                #         node.matched.add(candidate)
+                #     else:
+                #         node.unmatched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
 
+    def equal(self, dn, attribute, value):
+        # value is the value to match
+        attribute_values = self.connection.server.dit[dn][attribute]
+        if not isinstance(attribute_values, SEQUENCE_TYPES):
+            attribute_values = [attribute_values]
+        for attribute_value in attribute_values:
+            if self._check_equality(value, attribute_value):
+                return True
 
+        # if not found tries to apply formatters
+        formatted_values = format_attribute_values(self.connection.server.schema, attribute, attribute_values, None)
+        if not isinstance(formatted_values, SEQUENCE_TYPES):
+            formatted_values = [formatted_values]
+        for attribute_value in formatted_values:
+            if self._check_equality(value, attribute_value):
+                return True
+
+        return False
+
+    @staticmethod
+    def _check_equality(value1, value2):
+        if value1.isdigit() and value2.isdigit():
+            if int(value1) == int(value2):  # int comparison
+                return True
+        try:
+            if to_unicode(value1, 'utf-8').lower() == to_unicode(value2, 'utf-8').lower():  # case insensitive comparison
+                return True
+        except UnicodeDecodeError:
+            pass
+
+        return False

@@ -160,6 +160,27 @@ class Test(unittest.TestCase):
                 connection.strategy.terminate()
             self.assertFalse(connection.bound)
 
+    def test_start_tls_with_cipher(self):
+        # ciphers = None
+        # ciphers = '!aNULL:!eNULL:!LOW:!EXPORT:!SSLv2'
+        ciphers = 'HIGH:!aNULL:!RC4:!DSS'
+
+        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+            if isinstance(test_server, (list, tuple)):
+                server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+                for host in test_server:
+                    server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
+            else:
+                server = Server(host=test_server, port=test_port, tls=Tls(validate=ssl.CERT_NONE, ciphers=ciphers), get_info=test_get_info, mode=test_server_mode)
+            connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
+            connection.open()
+            connection.start_tls()
+            self.assertFalse(connection.closed)
+            # self.assertEqual(connection.socket.cipher(), ciphers)
+            connection.unbind()
+            if connection.strategy.pooled:
+                connection.strategy.terminate()
+
     # def test_hostname_doesnt_match(self):
     #     tls_config = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1)
     #     server = Server('edir1.hyperv', use_ssl=True, tls=tls_config)

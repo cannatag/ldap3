@@ -9,3 +9,4 @@ LDAP3 Utils
    hashed
    uri
    cidict
+   conv

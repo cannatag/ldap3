@@ -32,14 +32,14 @@ from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_inf
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
-from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name
+from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 
-test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
-test_server_mode = IP_V6_PREFERRED
+test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
+test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
+test_logging = True
 
-test_logging = False
 test_log_detail = EXTENDED
-
+test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
@@ -52,59 +52,110 @@ test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
 test_receive_timeout = None
-test_auto_escape = False
+test_auto_escape = True
 
 try:
     location = environ['USERDOMAIN']
 except KeyError:
     location = 'UNKNOWN'
 
-test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
-
 test_lazy_connection = False
+# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
+    test_server_type = 'SLAPD'  # temporary force SLAPD on TRAVIS
 
 location += '-' + test_server_type
 
-if location.startswith('TRAVIS'):
+if 'TRAVIS,' in location:
     # test in the cloud
     test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
     if test_server_type == 'EDIR':
         test_server = 'labldap02.cloudapp.net'
         test_server_edir_name = 'SLES1'
+        test_root_partition = ''
+        test_base = 'o=test'  # base context where test objects are created
+        test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+        test_name_attr = 'cn'  # naming attribute for test objects
+        test_int_attr = 'loginGraceLimit'
+        test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
+        test_password = 'Rc1234pfop'  # user password
+        test_secondary_user = 'cn=testLAB,o=resources'
+        test_secondary_password = 'Rc1234pfop'
+        test_sasl_user = 'testLAB.resources'
+        test_sasl_password = 'Rc1234pfop'
+        test_sasl_user_dn = 'cn=testLAB,o=resources'
+        test_sasl_realm = None
+        test_sasl_secondary_user = 'testLAB.resources'
+        test_sasl_secondary_password = 'Rc1234pfop'
+        test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
+        test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
+        test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
+        test_user_key_file = 'test/lab-edir-testlab-key.pem'
+        test_ntlm_user = 'xxx\\yyy'
+        test_ntlm_password = 'zzz'
+        test_logging_filename = 'ldap3.log'
+        test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
     elif test_server_type == 'AD':
         test_server = 'labldap01.cloudapp.net'
         test_server_edir_name = ''
+        test_root_partition = ''
+        test_base = 'o=test'  # base context where test objects are created
+        test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+        test_name_attr = 'cn'  # naming attribute for test objects
+        test_int_attr = 'loginGraceLimit'
+        test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
+        test_password = 'Rc1234pfop'  # user password
+        test_secondary_user = 'cn=testLAB,o=resources'
+        test_secondary_password = 'Rc1234pfop'
+        test_sasl_user = 'testLAB.resources'
+        test_sasl_password = 'Rc1234pfop'
+        test_sasl_user_dn = 'cn=testLAB,o=resources'
+        test_sasl_realm = None
+        test_sasl_secondary_user = 'testLAB.resources'
+        test_sasl_secondary_password = 'Rc1234pfop'
+        test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
+        test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
+        test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
+        test_user_key_file = 'test/lab-edir-testlab-key.pem'
+        test_ntlm_user = 'xxx\\yyy'
+        test_ntlm_password = 'zzz'
+        test_logging_filename = 'ldap3.log'
+        test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
+    elif test_server_type == 'SLAPD':
+        test_server = 'ipa.demo1.freeipa.org'
+        test_server_edir_name = ''
+        test_root_partition = ''
+        test_base = 'ou=ldap3-fixtures,dc=demo1,dc=freeipa,dc=org'  # base context where test objects are created
+        test_moved = 'ou=ldap3-moved,dc=demo1,dc=freeipa,dc=org'  # base context where objects are moved in ModifyDN operations
+        test_name_attr = 'cn'  # naming attribute for test objects
+        test_int_attr = 'gidNumber'
+        test_server_context = ''  # used in novell eDirectory extended operations
+        test_server_edir_name = ''  # used in novell eDirectory extended operations
+        test_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'  # the user that performs the tests
+        test_password = 'Secret123'  # user password
+        test_secondary_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'  # the user that performs the tests
+        test_secondary_password = 'Secret123'  # user password
+        test_sasl_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_password = 'Secret123'
+        test_sasl_user_dn = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_secondary_user = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_secondary_password = 'Secret123'
+        test_sasl_secondary_user_dn = 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
+        test_sasl_realm = 'Realm'
+        test_ca_cert_file = ''
+        test_user_cert_file = ''
+        test_user_key_file = ''
+        test_ntlm_user = 'xxx\\yyy'
+        test_ntlm_password = 'zzz'
+        test_logging_filename = 'ldap3.log'
+        test_valid_names = ['ipa.demo1.freeipa.org']
     else:
         raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
 
-    test_root_partition = ''
-    test_base = 'o=test'  # base context where test objects are created
-    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
-    test_name_attr = 'cn'  # naming attribute for test objects
-    test_int_attr = 'loginGraceLimit'
-    test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
-    test_password = 'Rc1234pfop'  # user password
-    test_secondary_user = 'cn=testLAB,o=resources'
-    test_secondary_password = 'Rc1234pfop'
-    test_sasl_user = 'testLAB.resources'
-    test_sasl_password = 'Rc1234pfop'
-    test_sasl_user_dn = 'cn=testLAB,o=resources'
-    test_sasl_realm = None
-    test_sasl_secondary_user = 'testLAB.resources'
-    test_sasl_secondary_password = 'Rc1234pfop'
-    test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
-    test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
-    test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
-    test_user_key_file = 'test/lab-edir-testlab-key.pem'
-    test_ntlm_user = 'xxx\\yyy'
-    test_ntlm_password = 'zzz'
-    test_logging_filename = 'ldap3.log'
-    test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
 elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
@@ -201,7 +252,7 @@ elif location == 'W10GC9227-EDIR':
     # test camera
     # test_server = ['sl08',
     #               'sl09',
-    #               'sl10']  # the ldap server where tests are executed, if a list is given a pool will be created
+    #               'sl10']  # the ldap server where tests are executed, if is a list of servers a pool will be created
     test_server = 'sl10'
     test_server_type = 'EDIR'
     # test_server = 'nova01.amm.intra.camera.it'
@@ -231,6 +282,36 @@ elif location == 'W10GC9227-EDIR':
     test_ntlm_password = 'xxx'
     test_logging_filename = join(gettempdir(), 'ldap3.log')
     test_valid_names = ['sl10.intra.camera.it']
+elif location == 'W10GC9227-AD':
+    # test notebook - Active Directory (AD)
+    test_server = '10.160.201.232'
+    test_server_type = 'AD'
+    test_domain_name = 'TESTAD.LAB'  # Active Directory Domain name
+    test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+    test_base = 'OU=test,' + test_root_partition  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'logonCount'
+    test_server_context = ''  # used in novell eDirectory extended operations
+    test_server_edir_name = ''  # used in novell eDirectory extended operations
+    test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
+    test_password = 'Rc99pfop'  # user password
+    test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_secondary_password = 'Rc88pfop'  # user password
+    test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_password = 'Rc88pfop'
+    test_sasl_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_secondary_password = 'Rc88pfop'
+    test_sasl_secondary_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
+    test_sasl_realm = None
+    test_ca_cert_file = 'local-forest-lab-ca.pem'
+    test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+    test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+    test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
+    test_ntlm_password = 'Rc99pfop'
+    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['10.160.201.232']
 else:
     raise Exception('testing location ' + location + ' is not valid')
 
@@ -242,6 +323,7 @@ if test_logging:
 
     import logging
     logging.basicConfig(filename=test_logging_filename, level=logging.DEBUG)
+    set_library_log_activation_level(logging.DEBUG)
     set_library_log_detail_level(test_log_detail)
 
 print('Testing location:', location)
@@ -400,6 +482,14 @@ def get_connection(bind=None,
         if bind:
             connection.bind()
 
+    if 'TRAVIS,' in location and test_server_type == 'SLAPD' and not connection.closed:  # try to create the contexts for fixtures
+        result1 = connection.add(test_base, 'organizationalUnit')
+        result2 = connection.add(test_moved, 'organizationalUnit')
+
+        if not connection.strategy.sync:
+            connection.get_response(result1)
+            connection.get_response(result2)
+
     return connection
 
 
@@ -423,6 +513,15 @@ def drop_connection(connection, dn_to_delete=None):
                 else:
                     print('unable to delete object ' + dn[0] + ': ' + str(result))
                     break
+
+    if 'TRAVIS,' in location and test_server_type == 'SLAPD' and not connection.closed:  # try to create the contexts for fixtures
+        result1 = connection.delete(test_base)
+        result2 = connection.delete(test_moved)
+
+        if not connection.strategy.sync:
+            connection.get_response(result1)
+            connection.get_response(result2)
+
     connection.unbind()
     if connection.strategy.pooled:
         connection.strategy.terminate()
@@ -456,7 +555,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
                            'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
-        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'inetUser', 'top'], 'sn': username, 'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)

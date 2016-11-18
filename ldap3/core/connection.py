@@ -179,7 +179,7 @@ class Connection(object):
                  auto_bind=AUTO_BIND_NONE,
                  version=3,
                  authentication=None,
-                 client_strategy=RESTARTABLE,
+                 client_strategy=SYNC,
                  auto_referrals=True,
                  auto_range=True,
                  sasl_mechanism=None,
@@ -731,8 +731,12 @@ class Connection(object):
 
             if self.server and self.server.schema and self.check_names:
                 for attribute_name in attributes:
-                    if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name)
+                    if ';' in attribute_name:  # remove tags
+                        attribute_name_to_check = attribute_name.split(';')[0]
+                    else:
+                        attribute_name_to_check = attribute_name
+                    if attribute_name_to_check not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name_to_check not in self.server.schema.attribute_types:
+                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
             request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.auto_escape, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
@@ -988,7 +992,6 @@ class Connection(object):
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
                             raise LDAPChangeError(self.last_error)
-
             request = modify_operation(dn, changes, self.auto_escape, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
@@ -1414,7 +1417,7 @@ class Connection(object):
                 object_def += list(attr_set)  # converts the set in a list to be added to the object definition
                 object_defs.append((attr_set,
                                     object_def,
-                                    Reader(self, object_def, self.request['base'], self.request['filter'], attributes=attr_set))
+                                    Reader(self, object_def, self.request['base'], self.request['filter'], attributes=attr_set) if self.strategy.sync else Reader(self, object_def, '', '', attributes=attr_set))
                                    )  # objects_defs contains a tuple with the set, the ObjectDef and a cursor
 
             entries = []

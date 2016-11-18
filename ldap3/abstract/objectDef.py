@@ -52,6 +52,9 @@ class ObjectDef(object):
         self.__dict__['_custom_validator'] = custom_validator
         self.__dict__['_oid_info'] = []
 
+        if isinstance(schema, Connection) and (schema._deferred_bind or schema._deferred_open):  # probably a lazy connection, tries to bind
+            schema._fire_deferred()
+
         if schema is not None:
             if isinstance(schema, Server):
                 schema = schema.schema
@@ -165,10 +168,9 @@ class ObjectDef(object):
         attr_def = AttrDef(attribute_name)
         attr_def.validate = find_attribute_validator(self._schema, attribute_name, self._custom_validator)
         attr_def.mandatory = mandatory  # in schema mandatory is specified in the object class, not in the attribute class
-        if self._schema:
-            if attribute_name in self._schema.attribute_types:
-                attr_def.single_value = self._schema.attribute_types[attribute_name].single_value
-                attr_def.oid_info = self._schema.attribute_types[attribute_name]
+        if self._schema and self._schema.attribute_types and attribute_name in self._schema.attribute_types:
+            attr_def.single_value = self._schema.attribute_types[attribute_name].single_value
+            attr_def.oid_info = self._schema.attribute_types[attribute_name]
         self.add_attribute(attr_def)
 
     def add_attribute(self, definition=None):

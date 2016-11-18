@@ -1,4 +1,3 @@
-#######
 Servers
 #######
 
@@ -20,7 +19,7 @@ The Server object specifies the DSA (Directory Server Agent) LDAP server that wi
 
     * allow_auth is a boolean to indicate if authentication to that server is allowed; if False only anonymous bind will be used.
 
-* get_info: specifies if the server schema and server specific info must be read (defaults to NO_INFO). Possible values are:
+* get_info: specifies if the server schema and server specific info must be read (defaults to SCHEMA). Possible values are:
 
     * NONE: no information is gathered from the server
 

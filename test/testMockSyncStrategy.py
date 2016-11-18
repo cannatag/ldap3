@@ -952,6 +952,39 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual('user3', response[0]['attributes']['cn'][0])
 
+    def test_search_exact_match_case_insensitive_single_attribute_1(self):
+        self.connection_1.bind()
+        result = self.connection_1.search('o=lab', '(cn=UsEr1)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_1.response
+        if not self.connection_1.strategy.sync:
+            response, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual('user1', response[0]['attributes']['cn'][0])
+
+    def test_search_exact_match_case_insensitive_single_attribute_2(self):
+        self.connection_2.bind()
+        result = self.connection_2.search('o=lab', '(cn=UsEr2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_2.response
+        if not self.connection_2.strategy.sync:
+            response, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual('user2', response[0]['attributes']['cn'][0])
+
+    def test_search_exact_match_case_insensitive_single_attribute_3(self):
+        self.connection_3.bind()
+        result = self.connection_3.search('o=lab', '(cn=UsEr3)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_3.response
+        if not self.connection_3.strategy.sync:
+            response, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual('user3', response[0]['attributes']['cn'][0])
+
     def test_search_presence_single_attribute_1(self):
         self.connection_1.bind()
         result = self.connection_1.search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
@@ -1348,6 +1381,39 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertTrue(response[0]['attributes']['cn'][0] in ['user2'])
 
+    def test_search_case_insensitive_substring_1(self):
+        self.connection_1.bind()
+        result = self.connection_1.search('o=lab', '(cn=*SeR*2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_1.response
+        if not self.connection_1.strategy.sync:
+            response, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(response[0]['attributes']['cn'][0] in ['user2'])
+
+    def test_search_case_insensitive_substring_2(self):
+        self.connection_2.bind()
+        result = self.connection_2.search('o=lab', '(cn=*SeR*2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_2.response
+        if not self.connection_2.strategy.sync:
+            response, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(response[0]['attributes']['cn'][0] in ['user2'])
+
+    def test_search_case_insensitive_substring_3(self):
+        self.connection_3.bind()
+        result = self.connection_3.search('o=lab', '(cn=*SeR*2)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+        response = self.connection_3.response
+        if not self.connection_3.strategy.sync:
+            response, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertEqual(result['description'], 'success')
+        self.assertTrue(response[0]['attributes']['cn'][0] in ['user2'])
+
     def test_search_presence_singlevalue_attribute_1(self):
         self.connection_1.bind()
         result = self.connection_1.search('o=lab', '(revision=*)', search_scope=SUBTREE, attributes=['cn', 'revision'])
@@ -1403,6 +1469,10 @@ class Test(unittest.TestCase):
         self.assertEqual(len(mock_ldap_connection.response), 1)
         self.assertEqual(username, 'testUser')
         mock_ldap_connection.search('DC=postmaster,DC=local', '(sAMAccountName=testUser)', attributes=['sAMAccountName'])
+        username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
+        self.assertEqual(len(mock_ldap_connection.response), 1)
+        self.assertEqual(username, 'testUser')
+        mock_ldap_connection.search('DC=postmaster,DC=local', '(sAMAccountName=TeStUsER)', attributes=['sAMAccountName'])
         username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
         self.assertEqual(len(mock_ldap_connection.response), 1)
         self.assertEqual(username, 'testUser')

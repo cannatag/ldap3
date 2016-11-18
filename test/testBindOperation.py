@@ -26,6 +26,7 @@
 import unittest
 
 from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5, MOCK_SYNC, MOCK_ASYNC
+from ldap3.core.exceptions import LDAPSocketOpenError
 from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type, \
     test_ntlm_user, test_ntlm_password, test_sasl_user_dn, test_strategy
 
@@ -83,16 +84,26 @@ class Test(unittest.TestCase):
 
     def test_ldapi(self):
         if test_server_type == 'SLAPD':
-            server = Server('ldapi:///var/run/slapd/ldapi')
-            connection = Connection(server, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials=('',))
-            connection.open()
-            connection.bind()
-            self.assertTrue(connection.bound)
+            try:
+                server = Server('ldapi:///var/run/slapd/ldapi')
+                connection = Connection(server, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials=('',))
+                connection.open()
+                connection.bind()
+                self.assertTrue(connection.bound)
+            except LDAPSocketOpenError:
+                return
+
+            self.assertTrue(False)
 
     def test_ldapi_encoded_url(self):
         if test_server_type == 'SLAPD':
-            server = Server('ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi')
-            connection = Connection(server, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials=('',))
-            connection.open()
-            connection.bind()
-            self.assertTrue(connection.bound)
+            try:
+                server = Server('ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi')
+                connection = Connection(server, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials=('',))
+                connection.open()
+                connection.bind()
+                self.assertTrue(connection.bound)
+            except LDAPSocketOpenError:
+                return
+
+            self.assertTrue(False)

@@ -10,8 +10,6 @@ To start a TLS connection on an already created _clear connection::
 
     c.start_tls()
 
-
-
 Some older versions (up to 2.7.9) of the Python interpreter lack the capability to check the server certificate against
 the DNS name of the server. This is a potential breach of security because a server could present a certificate issued
 for another host name. ldap3 includes a backport of this capability ported from the 3.4.3 version of the Python interpreter.
@@ -29,6 +27,7 @@ You can customize the server Tls object with references to keys, certificates an
 * validate: specifies if the server certificate must be validated, values can be: CERT_NONE (certificates are ignored), CERT_OPTIONAL (not required, but validated if provided) and CERT_REQUIRED (required and validated)
 * version: SSL or TLS version to use, can be one of the following: SSLv2, SSLv3, SSLv23, TLSv1 (as per Python 3.3. The version list can be different in other Python versions)
 * ca_certs_file: the file containing the certificates of the certification authorities
+* ciphers: a string that specify which chipers must be used. It works on recent Python interpreters that allow to change the cipher in the SSLContext or in the the wrap_socket() method, it's ignored on older versions.
 
 Tls object uses the ssl module of the Python standard library with additional checking functions that are missing from the Python 2 standard library.
 

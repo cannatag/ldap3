@@ -69,9 +69,10 @@ def escape_filter_chars(text, encoding=None):
     if isinstance(text, STRING_TYPES):
         if '\\' in text:  # could already be escaped
             return text
-    elif isinstance(text, (bytes, bytearray)):
-        if b'\\' in text:  # could already be escaped
-            return text
+    elif isinstance(text, (bytes, bytearray)):  # always returns bytes
+        # if b'\\' in text:  # could already be escaped
+        #     return text
+        return text
 
     if encoding is None:
         encoding = get_config_parameter('DEFAULT_ENCODING')
@@ -200,5 +201,3 @@ def format_json(obj):
         pass
 
     raise LDAPDefinitionError('unable to serialize ' + str(obj))
-
-

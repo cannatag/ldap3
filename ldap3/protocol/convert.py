@@ -28,7 +28,6 @@ from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectCl
 from ..protocol.rfc4511 import Controls, Control
 from ..utils.conv import to_raw, escape_filter_chars
 
-
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
 
@@ -159,3 +158,36 @@ def validate_attribute_value(schema, name, value, auto_escape):
     if auto_escape:
         value = escape_filter_chars(value)  # tries to convert from local encoding
     return to_raw(value)
+
+
+def prepare_for_sending(raw_string):
+    if isinstance(raw_string, (bytes, bytearray)) and bytes != str:  # bytes are untouched in python 3
+        return raw_string
+
+    if isinstance(raw_string, STRING_TYPES) and '\\' not in raw_string:  #
+        return to_raw(raw_string)
+
+    if isinstance(raw_string, (bytes, bytearray)) and b'\\' not in raw_string:  #in Python 2 string could need escaping
+        return raw_string
+
+    escaped = bytearray()
+    i = 0
+    while i < len(raw_string):
+        if raw_string[i] == '\\' and i < len(raw_string) - 2:
+            try:
+                if str != bytes:  # python 3
+                    value = int(raw_string[i + 1: i + 3], 16)
+                else:
+                    value = chr(int(raw_string[i + 1: i + 3], 16))
+                escaped += value
+                i += 2
+            except ValueError:
+                escaped += '\\\\'
+        else:
+            if str != bytes:  # python 3
+                escaped = int(raw_string[i])
+            else:  # python 2
+                escaped += raw_string[i]
+        i += 1
+
+    return escaped

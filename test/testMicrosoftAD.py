@@ -38,12 +38,19 @@ class Test(unittest.TestCase):
         if test_server_type == 'AD':
             self.connection = get_connection(use_ssl=True)
             self.delete_at_teardown = []
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            # creates 2000 users for testing auto-range
+            # for i in range(2000):
+            #     try:
+            #         add_user(self.connection, '', 'user-' + str(i).zfill(4), attributes={'givenName': 'givenname-' + str(i).zfill(4)})
+            #         print(i)
+            #     except:
+            #         pass
+            # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):
         if test_server_type == 'AD':
-            drop_connection(self.connection, self.delete_at_teardown)
+            # drop_connection(self.connection, self.delete_at_teardown)
+            drop_connection(self.connection, False)
             self.assertFalse(self.connection.bound)
 
     def test_search_extended_dn_ad(self):
@@ -220,3 +227,26 @@ class Test(unittest.TestCase):
             test_connection.unbind()
 
             self.assertTrue('changed-password-2' in connected_user)
+
+    def test_modify_existing_password_as_administrator(self):
+        if test_server_type == 'AD':
+            # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
+            # dn = self.delete_at_teardown[-1][0]
+            dn = 'CN=Test Uno,CN=Users,DC=TESTAD,DC=LAB'
+            new_password = 'Rc579efgh'
+            result = self.connection.extend.microsoft.modify_password(dn, new_password)
+            self.assertEqual(result, True)
+            # creates a second connection and tries to bind with the new password
+            test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, new_password))
+            test_connection.bind()
+            connected_user = test_connection.extend.standard.who_am_i()
+            test_connection.unbind()
+            self.assertTrue('testuno' in connected_user)
+
+    def test_search_with_auto_range(self):
+        if test_server_type == 'AD':
+            print(self.connection.auto_range)
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=testgrp)', attributes=[test_name_attr, 'member'])
+            print(result)
+            print(self.connection.response[0])
+            print (len(self.connection.response[0]['attributes']['member']))

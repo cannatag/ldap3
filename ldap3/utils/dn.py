@@ -155,12 +155,15 @@ def validate_attribute_type(attribute_type):
     if not attribute_type:
         raise LDAPInvalidDnError('attribute type not present')
 
+    if attribute_type == '<GUID':  # patch for AD DirSync
+        return True
+
     for c in attribute_type:
         if not (c in ascii_letters or c in digits or c == '-'):  # allowed uppercase and lowercase letters, digits and hyphen as per RFC 4512
-            raise LDAPInvalidDnError('character ' + c + ' not allowed in attribute type')
+            raise LDAPInvalidDnError('character \'' + c + '\' not allowed in attribute type')
 
     if attribute_type[0] in digits or attribute_type[0] == '-':  # digits and hyphen not allowed as first character
-        raise LDAPInvalidDnError('character ' + attribute_type[0] + ' not allowed as first character of attribute type')
+        raise LDAPInvalidDnError('character \'' + attribute_type[0] + '\' not allowed as first character of attribute type')
 
     return True
 

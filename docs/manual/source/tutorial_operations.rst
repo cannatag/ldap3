@@ -15,7 +15,7 @@ and delete (**Delete**) operations have a very basic usage while the Read (**Sea
 you would expect in a modern query language (as 1 to N relationship, joining views, or server data manipulation). Nonetheless almost everything you can do
 in a modern database can be equally done with LDAP. Furthermore consider that even if an LDAP server can be accessed by multiple clients simultaneously,
 the LDAP protocol itself has no notion of "transaction", so if you want to issue multiple Add or Modify operations in an atomic way (to keep data
-consistent), you must investigate the extended operations of the specific LDAP server you're connecting to to check if it provides transactions for
+consistent), you must investigate the extended operations of the specific LDAP server you're connecting to check if it provides transactions for
 multiple operations via Controls or Extended operations.
 
 .. note:: Synchronous vs Asynchronous: you can submit operations to the server in two different ways: **synchronous** mode and **asynchronous**

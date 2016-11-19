@@ -108,7 +108,7 @@ Let's explore some of them::
     }
 
 If you search for the uid=admin entry there are some auxiliary classes attached to it. The uid=admin entry is not an *inetOrgPerson* but a *person*,
-so you must use the ``obj_person`` we defined in the previous chapter of this tutorial::
+so you must use the ``obj_person`` defined in the previous chapter of this tutorial::
 
     >>> obj_person
     OBJ : person [person (Structural) 2.5.6.6, top (Abstract) 2.5.6.0]

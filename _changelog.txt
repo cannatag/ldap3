@@ -13,6 +13,7 @@
     - fixed case matching while adding new entry in Writer cursor (thanks t0neg)
     - disabled auto_escape for byte values
     - fixed auto_escape for python 2
+    - fixed tutorials (thanks Ivano)
 
 - 2.1.0 2016.11.03
     - changed default Connection strategy from SYNC to RESTARTABLE

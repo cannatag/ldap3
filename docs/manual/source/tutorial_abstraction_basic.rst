@@ -41,8 +41,9 @@ Cursors contain Entries. An **Entry** is the Python representation of an entry s
 Entries are returned as the result of a LDAP Search operation or of a Reader search operation. Entries are made of Attributes.
 An **Attribute** is stored in an internal dictionary with case insensitive access and a friendly key.
 You can access Entry Attributes either as a dictionary or as properties: ``entry['CommonName']`` is the same of ``entry['Common
-Name]``,``entry.CommonName``, ``entry.commonName`` and of ``entry.commonname``. Only Attributes of a Writable Entry can be modified
-(they actually become WritableAttribute, with updating capability).
+Name]``,``entry.CommonName``, ``entry.commonName`` and of ``entry.commonname`` (this feature is helpful when you work at the Python
+command line. The Abstracton Layer also provides auto-completion of attribute names with the TAB key). Only Attributes of a Writable
+Entry can be modified (they actually become WritableAttribute, with updating capability).
 
 Modifications to a Writable Entry are kept in memory until the Entry changes are committed to the DIT. Changes can be discarded
 before committed. Modifications are declared with the standard *augmented assignments* ``+=`` and ``-=`` or with explicit methods of the

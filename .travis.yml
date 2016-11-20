@@ -1,22 +1,22 @@
 language: python
 python:
-  #- "2.6"
-  #- "2.7"
+  - "2.6"
+  - "2.7"
   - "3.5"
-  # - "nightly"
+  - "nightly"
   #- "pypy"
   # - "pypy3"
 sudo: false
 env:
   # travis - strategy - lazy
   - USERDOMAIN=TRAVIS,SYNC,0
-  #- USERDOMAIN=TRAVIS,SYNC,1
-  #- USERDOMAIN=TRAVIS,ASYNC,0
-  #- USERDOMAIN=TRAVIS,ASYNC,1
-  #- USERDOMAIN=TRAVIS,RESTARTABLE,0
-  #- USERDOMAIN=TRAVIS,RESTARTABLE,1
-  #- USERDOMAIN=TRAVIS,REUSABLE,0
-  #- USERDOMAIN=TRAVIS,REUSABLE,1
+  - USERDOMAIN=TRAVIS,SYNC,1
+  - USERDOMAIN=TRAVIS,ASYNC,0
+  - USERDOMAIN=TRAVIS,ASYNC,1
+  - USERDOMAIN=TRAVIS,RESTARTABLE,0
+  - USERDOMAIN=TRAVIS,RESTARTABLE,1
+  - USERDOMAIN=TRAVIS,REUSABLE,0
+  - USERDOMAIN=TRAVIS,REUSABLE,1
 install:
   - "pip install ."
   - "pip list"

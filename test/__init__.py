@@ -36,7 +36,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 
 test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
-test_logging = True
+test_logging = False
 
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
@@ -60,13 +60,13 @@ except KeyError:
     location = 'UNKNOWN'
 
 test_lazy_connection = False
-# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
+location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
 
 if 'TRAVIS,' in location:
     _, strategy, lazy = location.split(',')
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
-    test_server_type = 'SLAPD'  # temporary force SLAPD on TRAVIS
+    # test_server_type = 'SLAPD'  # temporary force SLAPD on TRAVIS
 
 location += '-' + test_server_type
 
@@ -77,7 +77,7 @@ if 'TRAVIS,' in location:
         test_server = 'labldap02.cloudapp.net'
         test_server_edir_name = 'SLES1'
         test_root_partition = ''
-        test_base = 'o=test'  # base context where test objects are created
+        test_base = 'ou=fixtures,o=test'  # base context where test objects are created
         test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
         test_name_attr = 'cn'  # naming attribute for test objects
         test_int_attr = 'loginGraceLimit'

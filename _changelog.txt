@@ -1,4 +1,4 @@
-- 2.1.1 2016.11.13 (to be released)
+- 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate
     - fixed error when adding a virtual attribute in the abstract Entry object
     - fixed error messages in Entry moving and renaming
@@ -12,6 +12,8 @@
     - fixed bug when using the abstraction layer with lazy connections
     - fixed case matching while adding new entry in Writer cursor (thanks t0neg)
     - disabled auto_escape for byte values
+    - fixed auto_escape for python 2
+    - fixed tutorials (thanks Ivano)
 
 - 2.1.0 2016.11.03
     - changed default Connection strategy from SYNC to RESTARTABLE

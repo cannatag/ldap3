@@ -228,7 +228,6 @@ class Test(unittest.TestCase):
 
             self.assertTrue('changed-password-2' in connected_user)
 
-
     def test_modify_existing_password_as_administrator(self):
         if test_server_type == 'AD':
             # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
@@ -242,7 +241,6 @@ class Test(unittest.TestCase):
             test_connection.bind()
             connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
-            print(connected_user)
             self.assertTrue('testuno' in connected_user)
 
     def test_search_with_auto_range(self):

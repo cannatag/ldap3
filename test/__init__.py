@@ -60,13 +60,13 @@ except KeyError:
     location = 'UNKNOWN'
 
 test_lazy_connection = False
-location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
+# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
 
 if 'TRAVIS,' in location:
-    _, strategy, lazy = location.split(',')
+    _, strategy, lazy, server_type = location.split(',')
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
-    # test_server_type = 'SLAPD'  # temporary force SLAPD on TRAVIS
+    test_server_type = server_type
 
 location += '-' + test_server_type
 

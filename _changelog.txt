@@ -1,3 +1,9 @@
+- 2.1.2 (not yet released)
+    - updated docs regarding search response attributes (thanks James)
+    - fixed ldif representation for operation_to_ldif (thanks m7four)
+    - fixed rebind for pooled connection
+    - fixed custom sort order in ldif representation of entry
+
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate
     - fixed error when adding a virtual attribute in the abstract Entry object

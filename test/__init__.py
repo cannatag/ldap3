@@ -34,7 +34,7 @@ from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 
-test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
+test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 test_logging = False
 
@@ -60,15 +60,18 @@ except KeyError:
     location = 'UNKNOWN'
 
 test_lazy_connection = False
-# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
+
+# ******** test TRAVIS configuration
+# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis
+# ********
 
 if 'TRAVIS,' in location:
     _, strategy, lazy, server_type = location.split(',')
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
     test_server_type = server_type
-
-location += '-' + test_server_type
+else:
+    location += '-' + test_server_type
 
 if 'TRAVIS,' in location:
     # test in the cloud

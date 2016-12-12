@@ -115,7 +115,13 @@ def add_attributes(attributes, all_base64):
     return lines
 
 
-def search_response_to_ldif(entries, all_base64):
+def sort_ldif_lines(lines, sort_order):
+    # sort lines as per custom sort_order
+    # sort order is a list of descriptors, lines will be sorted following the same sequence
+    return sorted(lines, key=lambda x: ldif_sort(x, sort_order)) if sort_order else lines
+
+
+def search_response_to_ldif(entries, all_base64, sort_order=None):
     lines = []
     for entry in entries:
         if 'dn' in entry:
@@ -123,41 +129,47 @@ def search_response_to_ldif(entries, all_base64):
             lines.extend(add_attributes(entry['raw_attributes'], all_base64))
         else:
             raise LDAPLDIFError('unable to convert to LDIF-CONTENT - missing DN')
+        if sort_order:
+            lines = sort_ldif_lines(lines, sort_order)
         lines.append('')
 
     if lines:
-        lines.append('')
         lines.append('# total number of entries: ' + str(len(entries)))
 
     return lines
 
 
-def add_request_to_ldif(entry, all_base64):
+def add_request_to_ldif(entry, all_base64, sort_order=None):
     lines = []
     if 'entry' in entry:
         lines.append(_convert_to_ldif('dn', entry['entry'], all_base64))
         lines.extend(add_controls(entry['controls'], all_base64))
         lines.append('changetype: add')
         lines.extend(add_attributes(entry['attributes'], all_base64))
+        if sort_order:
+            lines = sort_ldif_lines(lines, sort_order)
+
     else:
         raise LDAPLDIFError('unable to convert to LDIF-CHANGE-ADD - missing DN ')
 
     return lines
 
 
-def delete_request_to_ldif(entry, all_base64):
+def delete_request_to_ldif(entry, all_base64, sort_order=None):
     lines = []
     if 'entry' in entry:
         lines.append(_convert_to_ldif('dn', entry['entry'], all_base64))
         lines.append(add_controls(entry['controls'], all_base64))
         lines.append('changetype: delete')
+        if sort_order:
+            lines = sort_ldif_lines(lines, sort_order)
     else:
         raise LDAPLDIFError('unable to convert to LDIF-CHANGE-DELETE - missing DN ')
 
     return lines
 
 
-def modify_request_to_ldif(entry, all_base64):
+def modify_request_to_ldif(entry, all_base64, sort_order=None):
     lines = []
     if 'entry' in entry:
         lines.append(_convert_to_ldif('dn', entry['entry'], all_base64))
@@ -169,11 +181,12 @@ def modify_request_to_ldif(entry, all_base64):
                 for value in change['attribute']['value']:
                     lines.append(_convert_to_ldif(change['attribute']['type'], value, all_base64))
                 lines.append('-')
-
+        if sort_order:
+            lines = sort_ldif_lines(lines, sort_order)
     return lines
 
 
-def modify_dn_request_to_ldif(entry, all_base64):
+def modify_dn_request_to_ldif(entry, all_base64, sort_order=None):
     lines = []
     if 'entry' in entry:
         lines.append(_convert_to_ldif('dn', entry['entry'], all_base64))
@@ -183,6 +196,8 @@ def modify_dn_request_to_ldif(entry, all_base64):
         lines.append('deleteoldrdn: ' + ('1' if entry['deleteOldRdn'] else '0'))
         if 'newSuperior' in entry and entry['newSuperior']:
             lines.append(_convert_to_ldif('newsuperior', entry['newSuperior'], all_base64))
+        if sort_order:
+            lines = sort_ldif_lines(lines, sort_order)
     else:
         raise LDAPLDIFError('unable to convert to LDIF-CHANGE-MODDN - missing DN ')
 
@@ -191,22 +206,17 @@ def modify_dn_request_to_ldif(entry, all_base64):
 
 def operation_to_ldif(operation_type, entries, all_base64=False, sort_order=None):
     if operation_type == 'searchResponse':
-        lines = search_response_to_ldif(entries, all_base64)
+        lines = search_response_to_ldif(entries, all_base64, sort_order)
     elif operation_type == 'addRequest':
-        lines = add_request_to_ldif(entries, all_base64)
+        lines = add_request_to_ldif(entries, all_base64, sort_order)
     elif operation_type == 'delRequest':
-        lines = delete_request_to_ldif(entries, all_base64)
+        lines = delete_request_to_ldif(entries, all_base64, sort_order)
     elif operation_type == 'modifyRequest':
-        lines = modify_request_to_ldif(entries, all_base64)
+        lines = modify_request_to_ldif(entries, all_base64, sort_order)
     elif operation_type == 'modDNRequest':
-        lines = modify_dn_request_to_ldif(entries, all_base64)
+        lines = modify_dn_request_to_ldif(entries, all_base64, sort_order)
     else:
         lines = []
-
-    # sort lines as per custom sort_order
-    # sort order is a list of descriptors, lines will be sorted following the same sequence
-    if sort_order:
-        lines = sorted(lines, key=lambda x: ldif_sort(x, sort_order))
 
     ldif_record = []
     # check max line length and split as per note 2 of RFC 2849
@@ -214,6 +224,8 @@ def operation_to_ldif(operation_type, entries, all_base64=False, sort_order=None
         if line:
             ldif_record.append(line[0:LDIF_LINE_LENGTH])
             ldif_record.extend([' ' + line[i: i + LDIF_LINE_LENGTH - 1] for i in range(LDIF_LINE_LENGTH, len(line), LDIF_LINE_LENGTH - 1)] if len(line) > LDIF_LINE_LENGTH else [])
+        else:
+            ldif_record.append('')
 
     return ldif_record
 

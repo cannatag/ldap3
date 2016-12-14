@@ -399,10 +399,10 @@ use the ldap3 library from the interpreter prompt.
 Each Entry object contains one object found in the search. You can access entry attributes either as a dictionary or as
 properties using the attribute name: entry['CommonName'] is the same of entry.CommonName and of entry.commonName or entry.commonname.
 
-Each Entry has a entry_get_dn() method that returns the distinguished name of the LDAP entry.
+Each Entry has an entry_dn property that returns the distinguished name of the LDAP entry.
 
 Attributes are stored in an internal dictionary with case insensitive access. You can even access the raw attribute with
-the get_raw_attribute(attribute_name) to get an attribute raw value, or get_raw_attributes() to get the whole
+the entry_raw_attribute(attribute_name) to get an attribute raw value, or property entry_raw_attributes to get the whole
 raw attributes dictionary.
 
 Entry is a read only object, you cannot modify or add any property to it. It's an iterable object that returns an attribute

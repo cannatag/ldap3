@@ -40,8 +40,9 @@ from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
-from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict,\
-    search_result_entry_response_to_dict, search_request_to_dict, search_result_entry_response_to_dict_fast, search_result_reference_response_to_dict_fast
+from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict, \
+    search_result_entry_response_to_dict, search_request_to_dict, search_result_entry_response_to_dict_fast, search_result_reference_response_to_dict_fast, \
+    attributes_to_dict, attributes_to_dict_fast
 from ..operation.bind import bind_response_to_dict, bind_request_to_dict, sicily_bind_response_to_dict, bind_response_to_dict_fast, \
     sicily_bind_response_to_dict_fast
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
@@ -548,6 +549,10 @@ class BaseStrategy(object):
             control_value = dict()
             control_value['more_results'] = bool(control_resp['MoreResults'])  # more_result if nonzero
             control_value['cookie'] = bytes(control_resp['CookieServer'])
+        elif control_type == '1.3.6.1.1.13.1' or control_type == '1.3.6.1.1.13.2':  # Read control, RFC4527
+            control_resp, unprocessed = decoder.decode(control_value, asn1Spec=SearchResultEntry())
+            control_value = dict()
+            control_value['result'] = attributes_to_dict(control_resp['attributes'])
         if unprocessed:
                 if log_enabled(ERROR):
                     log(ERROR, 'unprocessed control response in substrate')
@@ -578,6 +583,10 @@ class BaseStrategy(object):
             control_value = dict()
             control_value['more_results'] = True if control_resp[0][3][0][3] else False  # more_result if nonzero
             control_value['cookie'] = control_resp[0][3][2][3]
+        elif control_type == '1.3.6.1.1.13.1' or control_type == '1.3.6.1.1.13.2':  # Read control, RFC4527
+            control_resp = decode_sequence(control_value, 0, len(control_value))
+            control_value = dict()
+            control_value['result'] = attributes_to_dict_fast(control_resp['attributes'])
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod

@@ -3,6 +3,7 @@
     - fixed ldif representation for operation_to_ldif (thanks m7four)
     - fixed rebind for pooled connection
     - fixed custom sort order in ldif representation of entry
+    - added Active Directory GUID syntax for safe_dn() (thanks dinhngtu)
 
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate

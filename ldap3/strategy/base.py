@@ -586,7 +586,7 @@ class BaseStrategy(object):
         elif control_type == '1.3.6.1.1.13.1' or control_type == '1.3.6.1.1.13.2':  # Read control, RFC4527
             control_resp = decode_sequence(control_value, 0, len(control_value))
             control_value = dict()
-            control_value['result'] = attributes_to_dict_fast(control_resp['attributes'])
+            control_value['result'] = attributes_to_dict_fast(control_resp[1][3])
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod

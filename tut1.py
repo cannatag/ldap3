@@ -20,13 +20,13 @@ print(0, conn.extend.standard.who_am_i())
 conn.add('ou=ldap3-tutorial, dc=demo1, dc=freeipa, dc=org', 'organizationalUnit')
 
 # conn.delete('cn=b.smith,ou=moved,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org')
-from ldap3.protocol.rfc4527 import pre_read_control, post_read_control
-print(1, conn.last_error)
-conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})
-print(2, conn.modify('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smyth'])]}, controls=[pre_read_control('sn'), post_read_control('sn')]))
-print(3, conn.result['controls'])
-print(4, conn.modify('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_REPLACE, ['Smith'])]}))
-print(5, conn.result)
+# from ldap3.protocol.rfc4527 import pre_read_control, post_read_control
+# print(1, conn.last_error)
+# conn.add('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Beatrix', 'sn': 'Young', 'departmentNumber': 'DEV', 'telephoneNumber': 1111})
+# print(2, conn.modify('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_ADD, ['Smyth'])]}, controls=[pre_read_control('sn'), post_read_control('sn')]))
+# print(3, conn.result['controls'])
+# print(4, conn.modify('cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', {'sn': [(MODIFY_REPLACE, ['Smith'])]}))
+# print(5, conn.result)
 
 # conn.add('cn=j.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'John', 'sn': 'Smith', 'departmentNumber': 'DEV', 'telephoneNumber': 2222})
 # conn.add('cn=m.smith,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org', 'inetOrgPerson', {'givenName': 'Marianne', 'sn': 'Smith', 'departmentNumber': 'QA',  'telephoneNumber': 3333})

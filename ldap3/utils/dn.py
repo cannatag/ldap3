@@ -317,9 +317,8 @@ def safe_dn(dn, decompose=False, reverse=False):
     else:
         escaped_dn = ''
 
-    +
     if dn.startswith('<GUID=') and dn.endswith('>'):  # Active Directory allows looking up objects by putting its GUID in a specially-formatted DN (e.g. '<GUID=7b95f0d5-a3ed-486c-919c-077b8c9731f2>')
-        +        escaped_dn = dn
+        escaped_dn = dn
     elif '@' not in dn and '\\' not in dn:  # active directory UPN (User Principal Name) consist of an account, the at sign (@) and a domain, or the domain level logn name domain\username
         for component in parse_dn(dn, escape=True):
             if decompose:

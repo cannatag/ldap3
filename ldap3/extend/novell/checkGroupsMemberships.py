@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from .addMembersToGroups import add_members_to_groups
+from .addMembersToGroups import edir_add_members_to_groups
 from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, BASE, DEREF_NEVER
 from ...utils.dn import safe_dn

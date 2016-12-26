@@ -30,7 +30,7 @@ from ...core.results import RESULT_SUCCESS
 from ...utils.dn import safe_dn
 
 
-def unlock_ad_account(connection, user_dn, controls=None):
+def ad_unlock_account(connection, user_dn, controls=None):
     if connection.check_names:
         user_dn = safe_dn(user_dn)
     result = connection.modify(user_dn,

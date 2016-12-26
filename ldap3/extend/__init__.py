@@ -27,8 +27,10 @@ from os import linesep
 
 from .. import SUBTREE, DEREF_ALWAYS, ALL_ATTRIBUTES, DEREF_NEVER
 from .microsoft.dirSync import DirSync
-from .microsoft.modifyPassword import modify_ad_password
-from .microsoft.unlockAccount import unlock_ad_account
+from .microsoft.modifyPassword import ad_modify_password
+from .microsoft.unlockAccount import ad_unlock_account
+from .microsoft.addMembersToGroups import ad_add_members_to_groups
+from .microsoft.removeMembersFromGroups import ad_remove_members_from_groups
 from .novell.partition_entry_count import PartitionEntryCount
 from .novell.replicaInfo import ReplicaInfo
 from .novell.listReplicas import ListReplicas
@@ -37,9 +39,9 @@ from .novell.nmasGetUniversalPassword import NmasGetUniversalPassword
 from .novell.nmasSetUniversalPassword import NmasSetUniversalPassword
 from .novell.startTransaction import StartTransaction
 from .novell.endTransaction import EndTransaction
-from .novell.addMembersToGroups import add_members_to_groups
-from .novell.removeMembersFromGroups import remove_members_from_groups
-from .novell.checkGroupsMemberships import check_groups_memberships
+from .novell.addMembersToGroups import edir_add_members_to_groups
+from .novell.removeMembersFromGroups import edir_remove_members_from_groups
+from .novell.checkGroupsMemberships import edir_check_groups_memberships
 from .standard.whoAmI import WhoAmI
 from .standard.modifyPassword import ModifyPassword
 from .standard.PagedSearch import paged_search_generator, paged_search_accumulator
@@ -210,25 +212,25 @@ class NovellExtendedOperations(ExtendedOperationContainer):
                               controls).send()
 
     def add_members_to_groups(self, members, groups, fix=True, transaction=True):
-        return add_members_to_groups(self._connection,
-                                     members_dn=members,
-                                     groups_dn=groups,
-                                     fix=fix,
-                                     transaction=transaction)
-
-    def remove_members_from_groups(self, members, groups, fix=True, transaction=True):
-        return remove_members_from_groups(self._connection,
+        return edir_add_members_to_groups(self._connection,
                                           members_dn=members,
                                           groups_dn=groups,
                                           fix=fix,
                                           transaction=transaction)
 
+    def remove_members_from_groups(self, members, groups, fix=True, transaction=True):
+        return edir_remove_members_from_groups(self._connection,
+                                               members_dn=members,
+                                               groups_dn=groups,
+                                               fix=fix,
+                                               transaction=transaction)
+
     def check_groups_memberships(self, members, groups, fix=False, transaction=True):
-        return check_groups_memberships(self._connection,
-                                        members_dn=members,
-                                        groups_dn=groups,
-                                        fix=fix,
-                                        transaction=transaction)
+        return edir_check_groups_memberships(self._connection,
+                                             members_dn=members,
+                                             groups_dn=groups,
+                                             fix=fix,
+                                             transaction=transaction)
 
 
 class MicrosoftExtendedOperations(ExtendedOperationContainer):
@@ -256,15 +258,25 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
                        hex_guid=hex_guid)
 
     def modify_password(self, user, new_password, old_password=None, controls=None):
-        return modify_ad_password(self._connection,
+        return ad_modify_password(self._connection,
                                   user,
                                   new_password,
                                   old_password,
                                   controls)
 
     def unlock_account(self, user):
-        return unlock_ad_account(self._connection,
+        return ad_unlock_account(self._connection,
                                  user)
+
+    def add_members_to_groups(self, members, groups):
+        return ad_add_members_to_groups(self._connection,
+                                        members_dn=members,
+                                        groups_dn=groups)
+
+    def remove_members_from_groups(self, members, groups):
+        return ad_remove_members_from_groups(self._connection,
+                                             members_dn=members,
+                                             groups_dn=groups)
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

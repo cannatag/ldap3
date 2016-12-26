@@ -4,6 +4,10 @@
     - fixed rebind for pooled connection
     - fixed custom sort order in ldif representation of entry
     - added Active Directory GUID syntax for safe_dn() (thanks dinhngtu)
+    - added pre-post read control (thanks Elizabeth)
+    - added add_members_to_groups in microsoft.extend namespace for Active Directory
+    - added remove_members_to_groups in microsoft.extend namespace for Active Directory
+    - refactored internal extend.microsoft and extend.novell structures
 
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate

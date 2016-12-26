@@ -112,7 +112,7 @@ def _check_groups_contain_members(connection,
     return True, partial
 
 
-def check_groups_memberships(connection,
+def edir_check_groups_memberships(connection,
                              members_dn,
                              groups_dn,
                              fix,

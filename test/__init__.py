@@ -62,7 +62,7 @@ except KeyError:
 test_lazy_connection = False
 
 # ******** test TRAVIS configuration
-location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis
+# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis
 # ********
 
 if 'TRAVIS,' in location:
@@ -127,7 +127,7 @@ if 'TRAVIS,' in location:
         test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
         test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
         test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
-        test_ntlm_password = 'Rc123456pfop'
+        test_ntlm_password = '# '
         test_logging_filename = join(gettempdir(), 'ldap3.log')
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':

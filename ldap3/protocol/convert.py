@@ -26,7 +26,8 @@
 from .. import SEQUENCE_TYPES, CLASSES_EXCLUDED_FROM_CHECK, ATTRIBUTES_EXCLUDED_FROM_CHECK, STRING_TYPES
 from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
-from ..utils.conv import to_raw, escape_filter_chars
+from ..utils.conv import to_raw, escape_filter_chars, to_bytes
+
 
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
@@ -160,34 +161,35 @@ def validate_attribute_value(schema, name, value, auto_escape):
     return to_raw(value)
 
 
-def prepare_for_sending(raw_string):
-    if isinstance(raw_string, (bytes, bytearray)) and bytes != str:  # bytes are untouched in python 3
-        return raw_string
-
-    if isinstance(raw_string, STRING_TYPES) and '\\' not in raw_string:  #
+def prepare_for_sending(raw_string, auto_escape=True):
+    if isinstance(raw_string, STRING_TYPES) and '\\' not in raw_string:
         return to_raw(raw_string)
 
-    if isinstance(raw_string, (bytes, bytearray)) and b'\\' not in raw_string:  #in Python 2 string could need escaping
+    if isinstance(raw_string, (bytes, bytearray)) and b'\\' not in raw_string:  # in Python 2 string could need escaping
         return raw_string
 
-    escaped = bytearray()
-    i = 0
-    while i < len(raw_string):
-        if raw_string[i] == '\\' and i < len(raw_string) - 2:
-            try:
-                if str != bytes:  # python 3
-                    value = int(raw_string[i + 1: i + 3], 16)
+    # converts ldap encoding "\xx" to byte values
+    if auto_escape:
+        i = 0
+        ints = []
+        raw_string = to_raw(raw_string)
+        while i < len(raw_string):
+            if (raw_string[i] == 92 or raw_string[i] == '\\') and i < len(raw_string) - 2:  # 92 is backslash
+                try:
+                    ints.append(int(raw_string[i + 1: i + 3], 16))
+                    i += 2
+                except ValueError: # not an ldap escaped value, sends as is
+                    ints.append(92)  # adds backslash
+            else:
+                if str != bytes:  # Python 3
+                    ints.append(raw_string[i])
                 else:
-                    value = chr(int(raw_string[i + 1: i + 3], 16))
-                escaped += value
-                i += 2
-            except ValueError:
-                escaped += '\\\\'
-        else:
-            if str != bytes:  # python 3
-                escaped = int(raw_string[i])
-            else:  # python 2
-                escaped += raw_string[i]
-        i += 1
+                    ints.append(ord(raw_string[i]))
+            i += 1
 
-    return escaped
+        if str != bytes:  # Python 3
+            return bytes(ints)
+        else:
+            return ''.join(chr(x) for x in ints)
+
+    return raw_string

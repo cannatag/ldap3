@@ -39,7 +39,7 @@ def compare_operation(dn,
     #     ava             AttributeValueAssertion }
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
-    ava['assertionValue'] = AssertionValue(prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_escape)))
+    ava['assertionValue'] = AssertionValue(prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_escape), auto_escape))
 
     request = CompareRequest()
     request['entry'] = LDAPDN(dn)

@@ -268,15 +268,17 @@ class MicrosoftExtendedOperations(ExtendedOperationContainer):
         return ad_unlock_account(self._connection,
                                  user)
 
-    def add_members_to_groups(self, members, groups):
+    def add_members_to_groups(self, members, groups, fix=True):
         return ad_add_members_to_groups(self._connection,
                                         members_dn=members,
-                                        groups_dn=groups)
+                                        groups_dn=groups,
+                                        fix=fix)
 
-    def remove_members_from_groups(self, members, groups):
+    def remove_members_from_groups(self, members, groups, fix=True):
         return ad_remove_members_from_groups(self._connection,
                                              members_dn=members,
-                                             groups_dn=groups)
+                                             groups_dn=groups,
+                                             fix=fix)
 
 
 class ExtendedOperationsRoot(ExtendedOperationContainer):

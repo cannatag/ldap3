@@ -146,4 +146,4 @@ def edir_add_members_to_groups(connection,
         if result['description'] != 'success':
             error = True
 
-    return not error  # return True if no error is raised in the LDAP operations
+    return not error  # returns True if no error is raised in the LDAP operations

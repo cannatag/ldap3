@@ -29,11 +29,11 @@ The Bind operation specify 4 different methods to authenticate to the server, as
 * Anonymous Bind: the user and password are passed as empty strings.
 
 * Unauthenticated simple Bind: you pass a username without a password. This method, even if specified in the protocol,
-should not be used because is higly insecure and should be forbidden by the server. It was used in the past for tracing purpose.
+ should not be used because is higly insecure and should be forbidden by the server. It was used in the past for tracing purpose.
 
 * SASL (Simple Authentication and Security Layer): this defines multiple mechanisms that each server can provide to allow access to the server.
-Before trying a mechanism you should check that the server supports it. The LDAP server publish its allowed SASL mechanism in the DSE information
-that can be read anonymously with the ``get_info=ALL`` parameter of the Server object.
+ Before trying a mechanism you should check that the server supports it. The LDAP server publish its allowed SASL mechanism in the DSE information
+ that can be read anonymously with the ``get_info=ALL`` parameter of the Server object.
 
 The Bind method returns True if the bind is successful, False if something goes wrong while binding. In this case you
 can inspect the ``result`` attribute of the Connection object to get the error description.

@@ -365,9 +365,11 @@ class Reader(Cursor):
                             value = val[1:].lstrip()
 
                     if self.definition[attr].validate:
-                        if not self.definition[attr].validate(self.definition[attr].key, value):
+                        validated = self.definition[attr].validate(self.definition[attr].key, value)  # returns True, False or a value to substitute to the actual values
+                        if validated is False:
                             raise LDAPCursorError('validation failed for attribute %s and value %s' % (d, val))
-
+                        elif validated is not True:  # a valid LDAP value equivalent to the actual values
+                                value = validated
                     if val_not:
                         query += '!' + val_search_operator + value
                     else:

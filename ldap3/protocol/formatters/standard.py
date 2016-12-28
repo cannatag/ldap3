@@ -25,7 +25,7 @@
 
 from ... import SEQUENCE_TYPES
 from .formatters import format_ad_timestamp, format_binary, format_boolean, format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
-from .validators import validate_integer, validate_bytes, always_valid, validate_generic_single_value
+from .validators import validate_integer, validate_bytes, always_valid, validate_generic_single_value, validate_boolean
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -43,7 +43,7 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.4': (format_binary, None),  # Audio [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.5': (format_binary, None),  # Binary [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.6': (format_unicode, None),  # Bit String
-    '1.3.6.1.4.1.1466.115.121.1.7': (format_boolean, None),  # Boolean
+    '1.3.6.1.4.1.1466.115.121.1.7': (format_boolean, validate_boolean),  # Boolean
     '1.3.6.1.4.1.1466.115.121.1.8': (format_binary, None),  # Certificate [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.9': (format_binary, None),  # Certificate List [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.10': (format_binary, None),  # Certificate Pair [OBSOLETE]

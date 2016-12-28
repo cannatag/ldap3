@@ -167,8 +167,12 @@ class WritableAttribute(Attribute):
             raise LDAPCursorError('added value cannot be None')
         # if self.values and self.definition.single_value:
         #     raise LDAPCursorError("can't add to an already valued single-value attribute")
-        if values is not None and not self.definition.validate(self.definition.name, values):
-            raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+        if values is not None:
+            validated = self.definition.validate(self.definition.name, values)  # returns True, False or a value to substitute to the actual values
+            if validated is False:
+                raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+            elif validated is not True:  # a valid LDAP value equivalent to the actual values
+                values = validated
         self._update_changes((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
     def set(self, values):
@@ -177,8 +181,11 @@ class WritableAttribute(Attribute):
             raise LDAPCursorError(self.entry.entry_status + ' cannot set attributes')
         if values is None:
             raise LDAPCursorError('new value cannot be None')
-        if not self.definition.validate(self.definition.name, values):
+        validated = self.definition.validate(self.definition.name, values)  # returns True, False or a value to substitute to the actual values
+        if validated is False:
             raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+        elif validated is not True:  # a valid LDAP value equivalent to the actual values
+            values = validated
         self._update_changes((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
     def delete(self, values):

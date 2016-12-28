@@ -23,10 +23,12 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from ... import SEQUENCE_TYPES
+from ... import SEQUENCE_TYPES, STRING_TYPES
 
+# Validators return True if value is valid, False if value is not valid,
+# or a value different from True and False that is a valid value to substitute to the input value
 
-def check_standard_type(input_value, value_type):
+def check_type(input_value, value_type):
     if isinstance(input_value, value_type):
         return True
 
@@ -52,8 +54,27 @@ def validate_generic_single_value(name, input_value):
 
 
 def validate_integer(name, input_value):
-    return check_standard_type(input_value, int)
+    return check_type(input_value, int)
 
 
 def validate_bytes(name, input_value):
-    return check_standard_type(input_value, bytes)
+    return check_type(input_value, bytes)
+
+
+def validate_boolean(name, input_value):
+    # it could be a real bool or the string TRUE or FALSE, # only a single valued is allowed
+    if validate_generic_single_value(name, input_value):
+        if isinstance(input_value, SEQUENCE_TYPES):
+            input_value = input_value[0]
+        if isinstance(input_value, bool):
+            if input_value:
+                return 'TRUE'
+            else:
+                return 'FALSE'
+        if isinstance(input_value, STRING_TYPES):
+            if input_value.lower() == 'true':
+                return 'TRUE'
+            elif input_value.lower() == 'false':
+                return 'FALSE'
+
+    return False

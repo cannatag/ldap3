@@ -6,6 +6,6 @@
     "url": "https://github.com/cannatag/ldap3",
     "description": "A strictly RFC 4510 conforming LDAP V3 pure Python client library. The same codebase works with Python 2, Python 3, PyPy and PyPy3",
     "author": "Giovanni Cannata",
-    "version": "2.1.2",
+    "version": "2.2.0",
     "license": "LGPL v3"
 }

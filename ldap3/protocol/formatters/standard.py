@@ -25,7 +25,7 @@
 
 from ... import SEQUENCE_TYPES
 from .formatters import format_ad_timestamp, format_binary, format_boolean, format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
-from .validators import validate_integer, validate_bytes, always_valid, validate_generic_single_value, validate_boolean
+from .validators import validate_integer, validate_time, always_valid, validate_generic_single_value, validate_boolean
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -60,7 +60,7 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.21': (format_binary, None),  # Enhanced Guide
     '1.3.6.1.4.1.1466.115.121.1.22': (format_unicode, None),  # Facsimile Telephone Number
     '1.3.6.1.4.1.1466.115.121.1.23': (format_binary, None),  # Fax
-    '1.3.6.1.4.1.1466.115.121.1.24': (format_time, None),  # Generalized time
+    '1.3.6.1.4.1.1466.115.121.1.24': (format_time, validate_time),  # Generalized time
     '1.3.6.1.4.1.1466.115.121.1.25': (format_binary, None),  # Guide [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.26': (format_unicode, None),  # IA5 string
     '1.3.6.1.4.1.1466.115.121.1.27': (format_integer, validate_integer),  # Integer
@@ -89,7 +89,7 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.50': (format_unicode, None),  # Telephone number
     '1.3.6.1.4.1.1466.115.121.1.51': (format_unicode, None),  # Teletex terminal identifier
     '1.3.6.1.4.1.1466.115.121.1.52': (format_unicode, None),  # Teletex number
-    '1.3.6.1.4.1.1466.115.121.1.53': (format_time, None),  # Utc time  (deprecated)
+    '1.3.6.1.4.1.1466.115.121.1.53': (format_time, validate_time),  # Utc time  (deprecated)
     '1.3.6.1.4.1.1466.115.121.1.54': (format_unicode, None),  # LDAP syntax description
     '1.3.6.1.4.1.1466.115.121.1.55': (format_binary, None),  # Modify rights [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.56': (format_binary, None),  # LDAP Schema Definition [OBSOLETE]
@@ -105,7 +105,7 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.15': (format_unicode, None),  # Tagged Name And String (Novell)
     '2.16.840.1.113719.1.1.5.1.16': (format_binary, None),  # NDS Replica Pointer (Novell)
     '2.16.840.1.113719.1.1.5.1.17': (format_unicode, None),  # NDS ACL (Novell)
-    '2.16.840.1.113719.1.1.5.1.19': (format_time, None),  # NDS Timestamp (Novell)
+    '2.16.840.1.113719.1.1.5.1.19': (format_time, validate_time),  # NDS Timestamp (Novell)
     '2.16.840.1.113719.1.1.5.1.22': (format_integer, validate_integer),  # Counter (Novell)
     '2.16.840.1.113719.1.1.5.1.23': (format_unicode, None),  # Tagged Name (Novell)
     '2.16.840.1.113719.1.1.5.1.25': (format_unicode, None),  # Typed Name (Novell)

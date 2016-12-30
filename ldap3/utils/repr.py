@@ -22,6 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+from binascii import hexlify
 
 from .. import STRING_TYPES
 
@@ -39,6 +40,12 @@ def to_stdout_encoding(value):
         value = str(value)
 
     if str == bytes:  # python 2
-        return value.encode(repr_encoding, 'backslashreplace')
+        try:
+            return value.encode(repr_encoding, 'backslashreplace')
+        except UnicodeDecodeError:  # Python 2.6
+            return hexlify(value)
     else:
-        return value.encode(repr_encoding, errors='backslashreplace').decode(repr_encoding, errors='backslashreplace')
+        try:
+            return value.encode(repr_encoding, errors='backslashreplace').decode(repr_encoding, errors='backslashreplace')
+        except UnicodeDecodeError:
+            return hexlify(value)

@@ -10,6 +10,8 @@
     - refactored internal extend.microsoft and extend.novell structures
     - fixed auto_escape for extended characters (thanks asand3r)
     - validators now transform the Python value to a valid LDAP value when appropriate (thanks Sjd-Risca)
+    - added validator for boolean types
+    - fixed representation of binary data in Abstraction Layer for Python 2
 
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate

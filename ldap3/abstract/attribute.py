@@ -54,14 +54,14 @@ class Attribute(object):
 
     def __repr__(self):
         if len(self.values) == 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
             filler = ' ' * (len(self.key) + 6)
             for value in self.values[1:]:
                 r += linesep + filler + to_stdout_encoding(value)
         else:
-            r = self.key + ': ' + to_stdout_encoding('<no value>')
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding('<no value>')
 
         return r
 
@@ -113,9 +113,9 @@ class OperationalAttribute(Attribute):
 
     def __repr__(self):
         if len(self.values) == 1:
-            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
             filler = ' ' * (len(self.key) + 6)
             for value in sorted(self.values[1:]):
                 r += linesep + filler + to_stdout_encoding(value)
@@ -129,13 +129,13 @@ class WritableAttribute(Attribute):
     def __repr__(self):
         filler = ' ' * (len(self.key) + 6)
         if len(self.values) == 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
             for value in self.values[1:]:
                 r += linesep + filler + to_stdout_encoding(value)
         else:
-            r = self.key + to_stdout_encoding(': <Virtual>')
+            r = to_stdout_encoding(self.key) + to_stdout_encoding(': <Virtual>')
         if self.key in self.entry._changes:
             r += linesep + filler + 'CHANGES: ' + str(self.entry._changes[self.key])
         return r

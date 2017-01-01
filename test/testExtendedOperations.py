@@ -51,16 +51,17 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_who_am_i_extension(self):
-        if not test_server_type == 'EDIR' and not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
-            try:
-                if not self.connection.server.info:
-                    self.connection.refresh_server_info()
-                self.connection.extend.standard.who_am_i()
-                result = self.connection.result
-                self.assertEqual(result['description'], 'success')
-            except LDAPExtensionError as e:
-                if not e.args[0] == 'extension not in DSA list of supported extensions':
-                    raise
+        if not test_server_type == 'EDIR':
+            if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
+                try:
+                    if not self.connection.server.info:
+                        self.connection.refresh_server_info()
+                    self.connection.extend.standard.who_am_i()
+                    result = self.connection.result
+                    self.assertEqual(result['description'], 'success')
+                except LDAPExtensionError as e:
+                    if not e.args[0] == 'extension not in DSA list of supported extensions':
+                        raise
 
     def test_get_bind_dn_extension(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:

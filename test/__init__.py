@@ -62,7 +62,7 @@ except KeyError:
 test_lazy_connection = False
 
 # ******** test TRAVIS configuration
-# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis
+# location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis
 # ********
 
 if 'TRAVIS,' in location:
@@ -163,9 +163,9 @@ if 'TRAVIS,' in location:
 
 elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
-    # test_server = ['edir1.hyperv',
-    #               'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
-    test_server = 'edir1.hyperv'
+    test_server = ['edir1.hyperv',
+                   'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
+    # test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
     test_base = 'ou=fixtures,o=test'  # base context where test objects are created

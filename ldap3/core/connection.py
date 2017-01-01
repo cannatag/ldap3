@@ -492,6 +492,8 @@ class Connection(object):
         self.last_error = None
         with self.lock:
             if self.lazy and not self._executing_deferred:
+                if self.strategy.pooled:
+                    self.strategy.validate_bind(controls)
                 self._deferred_bind = True
                 self._bind_controls = controls
                 self.bound = True

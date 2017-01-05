@@ -19,6 +19,7 @@
     - added ldap3.conv.is_filter_safe() (thanks Robert)
     - added auto_escape parameter to connection.search() to override connection auto_escape behaviour
     - auto_escape is not applied to filter value if already escaped
+    - automatically encode output to stdout encoding for repr() and str() (for printing and logging attributes values). Binary data are converted to a hex values string
 
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate

@@ -69,6 +69,10 @@ Connection parameters are:
 
 * use_referral_cache: when True referral connections are not immediately closed, and kept in a cache should another request need to contact the same server
 
+* auto_escape: automatically applies LDAP encoding to filter values, default to True
+
+* auto_encode: automatically tries to convert from local encoding to UTF8 when sending data to the server, default to True
+
 
 .. note::
 The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.

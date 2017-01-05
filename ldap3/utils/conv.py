@@ -25,6 +25,7 @@
 
 from base64 import b64encode, b64decode
 import datetime
+import re
 
 from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
 from ..utils.ciDict import CaseInsensitiveDict
@@ -43,7 +44,7 @@ def to_unicode(obj, encoding=None):
             encoding = get_config_parameter('DEFAULT_ENCODING')
         return obj.decode(encoding)
 
-    if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 str and unicode
+    if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 unicode
         return obj
 
     raise UnicodeError("Unable to convert to unicode %r" % obj)
@@ -63,7 +64,7 @@ def to_raw(obj, encoding='utf-8'):
     return obj
 
 
-def escape_filter_chars(text, encoding=None):
+def escape_filter_chars_old(text, encoding=None):
     """ Escape chars mentioned in RFC4515. """
 
     if isinstance(text, STRING_TYPES):
@@ -88,7 +89,57 @@ def escape_filter_chars(text, encoding=None):
     return output
 
 
+def escape_filter_chars(text, encoding=None):
+    """ Escape chars mentioned in RFC4515. """
+
+    if encoding is None:
+        encoding = get_config_parameter('DEFAULT_ENCODING')
+
+    text = to_unicode(text, encoding)
+    escaped = text.replace('\\', '\\5c')
+    escaped = escaped.replace('*', '\\2a')
+    escaped = escaped.replace('(', '\\28')
+    escaped = escaped.replace(')', '\\29')
+    escaped = escaped.replace('\x00', '\\00')
+    # escape all octets greater than 0x7F that are not part of a valid UTF-8
+    # escaped = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in output)
+    return escaped
+
+
+def escape_filter_chars_new(text, encoding=None):
+    """ Escape chars mentioned in RFC4515. """
+
+    if encoding is None:
+        encoding = get_config_parameter('DEFAULT_ENCODING')
+
+    text = to_unicode(text, encoding)
+
+    pos = 0
+    escaped = ''
+    while pos < len(text):
+        curr_char = text[pos]
+        next_char = text[pos + 1] if pos + 1 < len(text) else None
+        if curr_char == '\\':
+            if next_char == '*':
+                escaped += '\\2a'
+            elif next_char == '(':
+                escaped += '\\28'
+            elif next_char == ')':
+                escaped += '\\29'
+            elif next_char == '\x00':
+                escaped += '\\00'
+            else:
+                escaped += '\\5c'
+        else:
+            escaped += curr_char
+        pos += 1
+    # escape all octets greater than 0x7F that are not part of a valid UTF-8
+    escaped = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in escaped)
+    return escaped
+
+
 def escape_bytes(bytes_value):
+    """ Convert a byte sequence to a properly escaped for LDAP (format BACKSLASH HEX HEX) string"""
     if bytes_value:
         if str != bytes:  # Python 3
             if isinstance(bytes_value, str):
@@ -226,3 +277,10 @@ def format_json(obj):
         pass
 
     raise LDAPDefinitionError('unable to serialize ' + str(obj))
+
+
+def is_filter_escaped(text):
+    if not type(text) == ((bytes != str) and str or unicode):  # requires str for Py3 or unicode for Py2
+        raise ValueError('unicode input expected')
+
+    return all(c not in text for c in '()*\0') and not re.search('\\\\([^0-9a-fA-F]|(.[^0-9a-fA-F]))', text)

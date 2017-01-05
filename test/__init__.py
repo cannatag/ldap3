@@ -53,6 +53,7 @@ test_get_info = ALL  # get info from DSA
 test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
+test_auto_encode = True
 
 try:
     location = environ['USERDOMAIN']
@@ -163,9 +164,9 @@ if 'TRAVIS,' in location:
 
 elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
-    test_server = ['edir1.hyperv',
-                   'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
-    # test_server = 'edir1.hyperv'
+    # test_server = ['edir1.hyperv',
+    #                'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
+    test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
     test_base = 'ou=fixtures,o=test'  # base context where test objects are created
@@ -359,7 +360,9 @@ def get_connection(bind=None,
                    fast_decoder=None,
                    simple_credentials=(None, None),
                    receive_timeout=None,
-                   auto_escape=None):
+                   auto_escape=None,
+                   auto_encode=None):
+
     if bind is None:
         bind = True
     if check_names is None:
@@ -378,6 +381,8 @@ def get_connection(bind=None,
         receive_timeout = test_receive_timeout
     if auto_escape is None:
         auto_escape = test_auto_escape
+    if auto_encode is None:
+        auto_encode = test_auto_encode
 
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
@@ -430,7 +435,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
     elif authentication == NTLM:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -445,7 +451,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
     elif authentication == ANONYMOUS:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -460,7 +467,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
     else:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -475,7 +483,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
 
     if test_strategy in [MOCK_SYNC, MOCK_ASYNC]:
         # create authentication identities for testing mock strategies

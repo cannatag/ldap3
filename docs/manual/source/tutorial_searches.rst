@@ -178,7 +178,7 @@ To search for a binary value you must use the RFC4515 ASCII escape sequence for 
     >>> search_filter = '(nsUniqueID=' + escape_bytes(unique_id) + ')'
     >>> conn.search('dc=demo1,dc=freeipa,dc=org', search_filter, attributes=['nsUniqueId'])
 
-``search_filter`` will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \\xx escaping format is specific to the LDAP protocol.
+``search_filter`` will contain ``(nsUniqueID=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \\xx escaping format is specific to the LDAP protocol.
 
 Entries Retrieval
 =================

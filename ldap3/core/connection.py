@@ -168,7 +168,8 @@ class Connection(object):
     :type pool_lifetime: int
     :param use_referral_cache: keep referral connections open and reuse them
     :type use_referral_cache: bool
-    :param auto_escape: automatic escaping of assertion values
+    :param auto_escape: automatic escaping of filter values
+    :param auto_encode: automatic encoding of attribute values
     :type use_referral_cache: bool
     """
 
@@ -196,7 +197,8 @@ class Connection(object):
                  receive_timeout=None,
                  return_empty_attributes=True,
                  use_referral_cache=False,
-                 auto_escape=True):
+                 auto_escape=True,
+                 auto_encode=True):
 
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
@@ -265,6 +267,7 @@ class Connection(object):
             self.empty_attributes = return_empty_attributes
             self.use_referral_cache = use_referral_cache
             self.auto_escape = auto_escape
+            self.auto_encode = auto_encode
 
             if isinstance(server, STRING_TYPES):
                 server = Server(server)
@@ -684,7 +687,8 @@ class Connection(object):
                controls=None,
                paged_size=None,
                paged_criticality=False,
-               paged_cookie=None):
+               paged_cookie=None,
+               auto_escape=None):
         """
         Perform an ldap search:
 
@@ -699,6 +703,7 @@ class Connection(object):
         - If lazy == True open and bind will be deferred until another
           LDAP operation is performed
         - If mssing_attributes == True then an attribute not returned by the server is set to None
+        - If auto_escape is set it overrides the Connection auto_escape
         """
         if log_enabled(BASIC):
             log(BASIC, 'start SEARCH operation via <%s>', self)
@@ -740,7 +745,17 @@ class Connection(object):
                     if attribute_name_to_check not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
-            request = search_operation(search_base, search_filter, search_scope, dereference_aliases, attributes, size_limit, time_limit, types_only, self.auto_escape, self.server.schema if self.server else None)
+            request = search_operation(search_base,
+                                       search_filter,
+                                       search_scope,
+                                       dereference_aliases,
+                                       attributes,
+                                       size_limit,
+                                       time_limit,
+                                       types_only,
+                                       self.auto_escape if auto_escape is None else auto_escape,
+                                       self.auto_encode,
+                                       self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
             response = self.post_send_search(self.send('searchRequest', request, controls))
@@ -789,7 +804,7 @@ class Connection(object):
 
         with self.lock:
             self._fire_deferred()
-            request = compare_operation(dn, attribute, value, self.auto_escape, self.server.schema if self.server else None)
+            request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
@@ -868,7 +883,7 @@ class Connection(object):
                     if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name)
 
-            request = add_operation(dn, attributes, self.auto_escape, self.server.schema if self.server else None)
+            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
@@ -994,7 +1009,7 @@ class Connection(object):
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
                             raise LDAPChangeError(self.last_error)
-            request = modify_operation(dn, changes, self.auto_escape, self.server.schema if self.server else None)
+            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))

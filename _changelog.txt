@@ -1,4 +1,5 @@
 - 2.2.0 (not yet released)
+    - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6
     - updated docs regarding search response attributes (thanks James)
     - fixed ldif representation for operation_to_ldif (thanks m7four)
     - fixed rebind for pooled connection
@@ -12,6 +13,12 @@
     - validators now transform the Python value to a valid LDAP value when appropriate (thanks Sjd-Risca)
     - added validator for boolean types
     - fixed representation of binary data in Abstraction Layer for Python 2
+    - added auto_encode parameter to Connection object
+    - limited auto_escape feature only to filter values
+    - escape_filter_chars doens't try to guess if the value is already escaped.
+    - added ldap3.conv.is_filter_safe() (thanks Robert)
+    - added auto_escape parameter to connection.search() to override connection auto_escape behaviour
+    - auto_escape is not applied to filter value if already escaped
 
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate

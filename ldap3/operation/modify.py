@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .. import SEQUENCE_TYPES, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT
-from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode, AttributeValue
+from ..protocol.rfc4511 import ModifyRequest, LDAPDN, Changes, Change, Operation, PartialAttribute, AttributeDescription, Vals, ResultCode
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import changes_to_list, validate_attribute_value, prepare_for_sending
 

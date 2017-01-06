@@ -28,10 +28,10 @@ from ...utils.dn import safe_dn
 
 
 def edir_add_members_to_groups(connection,
-                          members_dn,
-                          groups_dn,
-                          fix,
-                          transaction):
+                               members_dn,
+                               groups_dn,
+                               fix,
+                               transaction):
     """
     :param connection: a bound Connection object
     :param members_dn: the list of members to add to groups

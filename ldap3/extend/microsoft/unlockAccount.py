@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 
-from ... import MODIFY_REPLACE, MODIFY_DELETE, MODIFY_ADD
+from ... import MODIFY_REPLACE
 from ...utils.log import log, log_enabled, PROTOCOL
 from ...core.results import RESULT_SUCCESS
 from ...utils.dn import safe_dn
@@ -35,7 +35,7 @@ def ad_unlock_account(connection, user_dn, controls=None):
         user_dn = safe_dn(user_dn)
     result = connection.modify(user_dn,
                                {'lockoutTime': [(MODIFY_REPLACE, [0])]},
-                                controls)
+                               controls)
 
     if not connection.strategy.sync:
         _, result = connection.get_response(result)

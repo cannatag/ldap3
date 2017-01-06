@@ -237,17 +237,17 @@ def compile_filter(filter_node):
     elif filter_node.tag == MATCH_APPROX:
         matching_filter = ApproxMatch()
         matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
-        matching_filter['assertionValue'] = prepare_filter_for_sending(AssertionValue(filter_node.assertion['value']))
+        matching_filter['assertionValue'] = AssertionValue(prepare_filter_for_sending(filter_node.assertion['value']))
         compiled_filter['approxMatch'] = matching_filter
     elif filter_node.tag == MATCH_GREATER_OR_EQUAL:
         matching_filter = GreaterOrEqual()
         matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
-        matching_filter['assertionValue'] = prepare_filter_for_sending(AssertionValue(filter_node.assertion['value']))
+        matching_filter['assertionValue'] = AssertionValue(prepare_filter_for_sending(filter_node.assertion['value']))
         compiled_filter['greaterOrEqual'] = matching_filter
     elif filter_node.tag == MATCH_LESS_OR_EQUAL:
         matching_filter = LessOrEqual()
         matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
-        matching_filter['assertionValue'] = prepare_filter_for_sending(AssertionValue(filter_node.assertion['value']))
+        matching_filter['assertionValue'] = AssertionValue(prepare_filter_for_sending(filter_node.assertion['value']))
         compiled_filter['lessOrEqual'] = matching_filter
     elif filter_node.tag == MATCH_EXTENSIBLE:
         matching_filter = ExtensibleMatch()
@@ -280,7 +280,7 @@ def compile_filter(filter_node):
     elif filter_node.tag == MATCH_EQUAL:
         matching_filter = EqualityMatch()
         matching_filter['attributeDesc'] = AttributeDescription(filter_node.assertion['attr'])
-        matching_filter['assertionValue'] = prepare_filter_for_sending(AssertionValue(filter_node.assertion['value']))
+        matching_filter['assertionValue'] = AssertionValue(prepare_filter_for_sending(filter_node.assertion['value']))
         compiled_filter.setComponentByName('equalityMatch', matching_filter)
     else:
         raise LDAPInvalidFilterError('unknown filter node tag')

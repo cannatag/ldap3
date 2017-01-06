@@ -26,7 +26,7 @@
 
 import unittest
 
-from ldap3.utils.conv import escape_bytes
+from ldap3.utils.conv import escape_bytes, escape_filter_chars
 from test import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_int_attr
 from ldap3 import SUBTREE
@@ -152,8 +152,8 @@ class Test(unittest.TestCase):
                 cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
             self.assertEqual(total_entries, 11)
 
-    def test_search_exact_match_with_parentheses_in_filter(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-12', attributes={'givenName': 'givenname-10'}))
+    def test_search_exact_match_with_escaped_parentheses_in_filter(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-12', attributes={'givenName': 'givenname-12'}))
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -236,3 +236,48 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes']['givenName'], 'givenname-4')
         else:
             self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-4')
+
+    def test_search_exact_match_with_unescaped_backslash_in_filter(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-13', attributes={'givenName': testcase_id + 'givenname\\-13'}))
+        result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\*)', attributes=[test_name_attr, 'sn'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'search-13')
+        else:
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'search-13')
+
+    def test_search_exact_match_with_escaped_backslash_in_filter(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-14', attributes={'givenName': testcase_id + 'givenname\\-14'}))
+        result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\5c*)', attributes=[test_name_attr, 'sn'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'search-14')
+        else:
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'search-14')
+
+    def test_search_exact_match_with_escape_chars_backslash_in_filter(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-15', attributes={'givenName': testcase_id + 'givenname\\-15'}))
+        result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*' + escape_filter_chars('\\') + '*)', attributes=[test_name_attr, 'sn'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'search-15')
+        else:
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'search-15')

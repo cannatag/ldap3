@@ -22,6 +22,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+
+
 from .addMembersToGroups import edir_add_members_to_groups
 from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, BASE, DEREF_NEVER
@@ -113,10 +115,10 @@ def _check_groups_contain_members(connection,
 
 
 def edir_check_groups_memberships(connection,
-                             members_dn,
-                             groups_dn,
-                             fix,
-                             transaction):
+                                  members_dn,
+                                  groups_dn,
+                                  fix,
+                                  transaction):
     """
     :param connection: a bound Connection object
     :param members_dn: the list of members to check
@@ -162,6 +164,6 @@ def edir_check_groups_memberships(connection,
 
             for member in members_dn:
                 for group in groups_dn:
-                    add_members_to_groups(connection, member, group, True, transaction)
+                    edir_add_members_to_groups(connection, member, group, True, transaction)
 
     return True

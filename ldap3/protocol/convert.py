@@ -177,7 +177,7 @@ def prepare_filter_for_sending(raw_string):
             try:
                 ints.append(int(raw_string[i + 1: i + 3], 16))
                 i += 2
-            except ValueError: # not an ldap escaped value, sends as is
+            except ValueError:  # not an ldap escaped value, sends as is
                 ints.append(92)  # adds backslash
         else:
             if str != bytes:  # Python 3

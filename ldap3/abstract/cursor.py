@@ -602,7 +602,7 @@ class Writer(Cursor):
         return writer
 
     @staticmethod
-    def from_response(connection, object_def, response=None, custom_validator=None):
+    def from_response(connection, object_def, response=None):
         if response is None:
             if not connection.strategy.sync:
                 raise LDAPCursorError(' with async strategies response must be specified')
@@ -697,9 +697,8 @@ class Writer(Cursor):
         return entry
 
     def refresh_entry(self, entry, tries=4, seconds=2):
-
         self._do_not_reset = True
-        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes, tries, seconds=2)  # if any attributes is added adds only to the entry not to the definition
+        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes, tries, seconds=seconds)  # if any attributes is added adds only to the entry not to the definition
         self._do_not_reset = False
         if temp_entry:
             temp_entry._state.origin = entry._state.origin

@@ -24,7 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, MODIFY_ADD, BASE, DEREF_NEVER
-from ...utils.dn import safe_dn
 
 
 def ad_add_members_to_groups(connection,
@@ -70,12 +69,12 @@ def ad_add_members_to_groups(connection,
             changes['member'] = (MODIFY_ADD, member_to_add)
         if changes:
             result = connection.modify(group, changes)
-        if not connection.strategy.sync:
-            _, result = connection.get_response(result)
-        else:
-            result = connection.result
-        if result['description'] != 'success':
-            error = True
-            break
+            if not connection.strategy.sync:
+                _, result = connection.get_response(result)
+            else:
+                result = connection.result
+            if result['description'] != 'success':
+                error = True
+                break
 
     return not error  # returns True if no error is raised in the LDAP operations

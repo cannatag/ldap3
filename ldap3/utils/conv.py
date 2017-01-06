@@ -64,31 +64,6 @@ def to_raw(obj, encoding='utf-8'):
     return obj
 
 
-def escape_filter_chars_old(text, encoding=None):
-    """ Escape chars mentioned in RFC4515. """
-
-    if isinstance(text, STRING_TYPES):
-        if '\\' in text:  # could already be escaped
-            return text
-    elif isinstance(text, (bytes, bytearray)):  # always returns bytes
-        # if b'\\' in text:  # could already be escaped
-        #     return text
-        return text
-
-    if encoding is None:
-        encoding = get_config_parameter('DEFAULT_ENCODING')
-
-    text = to_unicode(text, encoding)
-    output = text.replace('\\', '\\5c')
-    output = output.replace('*', '\\2a')
-    output = output.replace('(', '\\28')
-    output = output.replace(')', '\\29')
-    output = output.replace('\x00', '\\00')
-    # escape all octets greater than 0x7F that are not part of a valid UTF-8
-    output = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in output)
-    return output
-
-
 def escape_filter_chars(text, encoding=None):
     """ Escape chars mentioned in RFC4515. """
 
@@ -103,38 +78,6 @@ def escape_filter_chars(text, encoding=None):
     escaped = escaped.replace('\x00', '\\00')
     # escape all octets greater than 0x7F that are not part of a valid UTF-8
     # escaped = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in output)
-    return escaped
-
-
-def escape_filter_chars_new(text, encoding=None):
-    """ Escape chars mentioned in RFC4515. """
-
-    if encoding is None:
-        encoding = get_config_parameter('DEFAULT_ENCODING')
-
-    text = to_unicode(text, encoding)
-
-    pos = 0
-    escaped = ''
-    while pos < len(text):
-        curr_char = text[pos]
-        next_char = text[pos + 1] if pos + 1 < len(text) else None
-        if curr_char == '\\':
-            if next_char == '*':
-                escaped += '\\2a'
-            elif next_char == '(':
-                escaped += '\\28'
-            elif next_char == ')':
-                escaped += '\\29'
-            elif next_char == '\x00':
-                escaped += '\\00'
-            else:
-                escaped += '\\5c'
-        else:
-            escaped += curr_char
-        pos += 1
-    # escape all octets greater than 0x7F that are not part of a valid UTF-8
-    escaped = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in escaped)
     return escaped
 
 

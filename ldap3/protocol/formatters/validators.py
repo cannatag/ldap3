@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from ... import SEQUENCE_TYPES, STRING_TYPES
 from .formatters import format_time

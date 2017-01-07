@@ -104,50 +104,25 @@ def prepare_for_stream(value):
         return value.decode()
 
 
-def check_escape(raw_string):
-    if isinstance(raw_string, bytes) or '\\' not in raw_string:
-        return raw_string
-
-    escaped = ''
-    i = 0
-    while i < len(raw_string):
-        if raw_string[i] == '\\' and i < len(raw_string) - 2:
-            try:
-                value = int(raw_string[i + 1: i + 3], 16)
-                escaped += chr(value)
-                i += 2
-            except ValueError:
-                escaped += '\\\\'
-        else:
-            escaped += raw_string[i]
-        i += 1
-
-    return escaped
-
-
-def to_bytes(raw_string):
-    # if isinstance(raw_string, bytes) or '\\' not in raw_string:
-    if '\\' not in raw_string:
-        return raw_string
-
-    i = 0
-    ints = []
-    while i < len(raw_string):
-        if raw_string[i] == '\\' and i < len(raw_string) - 2:
-            try:
-                ints.append(int(raw_string[i + 1: i + 3], 16))
-                i += 2
-            except ValueError:
-                ints.append(92)
-                ints.append(92)  # adds backslash (two bytes)
-        else:
-            ints.append(ord(raw_string[i]))
-        i += 1
-
-    if str != bytes:  # Python 3
-        return bytes(ints)
-    else:
-        return ''.join(chr(x) for x in ints)
+# def check_escape(raw_string):
+#     if isinstance(raw_string, bytes) or '\\' not in raw_string:
+#         return raw_string
+#
+#     escaped = ''
+#     i = 0
+#     while i < len(raw_string):
+#         if raw_string[i] == '\\' and i < len(raw_string) - 2:
+#             try:
+#                 value = int(raw_string[i + 1: i + 3], 16)
+#                 escaped += chr(value)
+#                 i += 2
+#             except ValueError:
+#                 escaped += '\\\\'
+#         else:
+#             escaped += raw_string[i]
+#         i += 1
+#
+#     return escaped
 
 
 def json_encode_b64(obj):
@@ -203,13 +178,15 @@ def format_json(obj):
     try:
         if str != bytes:  # python3
             if isinstance(obj, bytes):
-                return check_escape(str(obj, 'utf-8', errors='strict'))
+                # return check_escape(str(obj, 'utf-8', errors='strict'))
+                return str(obj, 'utf-8', errors='strict')
             raise LDAPDefinitionError('unable to serialize ' + str(obj))
         else:  # python2
             if isinstance(obj, unicode):
                 return obj
             else:
-                return unicode(check_escape(obj))
+                # return unicode(check_escape(obj))
+                return unicode(obj)
     except (TypeError, UnicodeDecodeError):
         pass
 

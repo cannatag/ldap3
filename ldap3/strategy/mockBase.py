@@ -38,7 +38,7 @@ from ..operation.modify import modify_request_to_dict
 from ..operation.search import search_request_to_dict, parse_filter, ROOT, AND, OR, NOT, MATCH_APPROX, \
     MATCH_GREATER_OR_EQUAL, MATCH_LESS_OR_EQUAL, MATCH_EXTENSIBLE, MATCH_PRESENT,\
     MATCH_SUBSTRING, MATCH_EQUAL
-from ..utils.conv import json_hook, check_escape, to_unicode, to_raw
+from ..utils.conv import json_hook, to_unicode, to_raw
 from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
@@ -87,10 +87,12 @@ class MockBaseStrategy(object):
                     self.connection.server.dit[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
                 for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
                     if rdn[0] not in self.connection.server.dit[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
-                        self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
+                        # self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
+                        self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(rdn[1])]
                     else:
                         if rdn[1] not in self.connection.server.dit[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                            self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
+                            # self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
+                            self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(rdn[1]))
                 return True
             return False
 

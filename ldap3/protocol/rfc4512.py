@@ -30,7 +30,7 @@ import json
 from .oid import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, \
     ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
 from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
-from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, check_escape
+from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.formatters.standard import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax, oid_to_string
@@ -82,7 +82,8 @@ def quoted_string_to_list(quoted_string):
     if string[0] == '(' and string[-1] == ')':
         string = string[1:-1]
     elements = string.split("'")
-    return [check_escape(element.strip("'").strip()) for element in elements if element.strip()]
+    # return [check_escape(element.strip("'").strip()) for element in elements if element.strip()]
+    return [element.strip("'").strip() for element in elements if element.strip()]
 
 
 def oids_string_to_list(oid_string):
@@ -127,10 +128,12 @@ class BaseServerInfo(object):
 
         if schema:
             for attribute in definition['raw']:
-                attributes[attribute] = format_attribute_values(schema, check_escape(attribute), [check_escape(value) for value in definition['raw'][attribute]], custom_formatter)
+                # attributes[attribute] = format_attribute_values(schema, check_escape(attribute), [check_escape(value) for value in definition['raw'][attribute]], custom_formatter)
+                attributes[attribute] = format_attribute_values(schema, attribute, [value for value in definition['raw'][attribute]], custom_formatter)
         else:
             for attribute in definition['raw']:
-                attributes[attribute] = [check_escape(value) for value in definition['raw'][attribute]]
+                # attributes[attribute] = [check_escape(value) for value in definition['raw'][attribute]]
+                attributes[attribute] = [value for value in definition['raw'][attribute]]
 
         if cls.__name__ != definition['type']:
             raise LDAPDefinitionError('JSON info not of type ' + cls.__name__)

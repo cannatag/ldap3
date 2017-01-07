@@ -71,7 +71,7 @@ Connection parameters are:
 
 * auto_escape: automatically applies LDAP encoding to filter values, default to True
 
-* auto_encode: automatically tries to convert from local encoding to UTF8 when sending data to the server, default to True
+* auto_encode: automatically tries to convert from local encoding to UTF8 for well known syntaxes and types, default to True
 
 
 .. note::

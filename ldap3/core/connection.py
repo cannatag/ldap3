@@ -31,8 +31,7 @@ import json
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, \
-    STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI, CLASSES_EXCLUDED_FROM_CHECK, \
-    ATTRIBUTES_EXCLUDED_FROM_CHECK
+    STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
 
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
@@ -742,7 +741,7 @@ class Connection(object):
                         attribute_name_to_check = attribute_name.split(';')[0]
                     else:
                         attribute_name_to_check = attribute_name
-                    if attribute_name_to_check not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
             request = search_operation(search_base,
@@ -799,7 +798,7 @@ class Connection(object):
                 log(EXTENDED, 'dn sanitized to <%s> for COMPARE operation via <%s>', dn, self)
 
         if self.server and self.server.schema and self.check_names:
-            if attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute not in self.server.schema.attribute_types:
+            if attribute not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute not in self.server.schema.attribute_types:
                 raise LDAPAttributeError('invalid attribute type ' + attribute)
 
         with self.lock:
@@ -876,11 +875,11 @@ class Connection(object):
 
             if self.server and self.server.schema and self.check_names:
                 for object_class_name in attributes[object_class_attr_name]:
-                    if object_class_name not in CLASSES_EXCLUDED_FROM_CHECK and object_class_name not in self.server.schema.object_classes:
+                    if object_class_name not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and object_class_name not in self.server.schema.object_classes:
                         raise LDAPObjectClassError('invalid object class ' + object_class_name)
 
                 for attribute_name in attributes:
-                    if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
+                    if attribute_name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name)
 
             request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None)
@@ -991,7 +990,7 @@ class Connection(object):
 
             for attribute_name in changes:
                 if self.server and self.server.schema and self.check_names:
-                    if attribute_name not in ATTRIBUTES_EXCLUDED_FROM_CHECK and attribute_name not in self.server.schema.attribute_types:
+                    if attribute_name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name)
                 change = changes[attribute_name]
                 if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:

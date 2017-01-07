@@ -27,9 +27,8 @@ from base64 import b64encode, b64decode
 import datetime
 import re
 
-from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
+from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES, get_config_parameter
 from ..utils.ciDict import CaseInsensitiveDict
-from ..utils.config import get_config_parameter
 from ..core.exceptions import LDAPDefinitionError
 
 

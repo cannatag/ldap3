@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SEQUENCE_TYPES, CLASSES_EXCLUDED_FROM_CHECK, ATTRIBUTES_EXCLUDED_FROM_CHECK, STRING_TYPES
+from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
 from ..utils.conv import to_raw, to_unicode, escape_filter_chars, is_filter_escaped
@@ -126,45 +126,20 @@ def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
     if auto_escape:
         if '\\' in value and not is_filter_escaped(value):
             value = escape_filter_chars(value)
-
     value = validate_attribute_value(schema, name, value, auto_encode)
-
-    # if b'\\' in value:
-    #     validated_value = bytearray()
-    #     pos = 0
-    #     while pos < len(value):
-    #         if value[pos] == 92 or value[pos] == b'\\':  # asc for \ in python 3
-    #             byte = value[pos + 1: pos + 3]
-    #             if len(byte) == 2:
-    #                 try:
-    #                     validated_value.append(int(value[pos + 1: pos + 3], 16))
-    #                     pos += 3
-    #                     continue
-    #                 except ValueError:
-    #                     pass
-    #         if isinstance(value, STRING_TYPES):
-    #             validated_value += value[pos].encode('utf-8')
-    #         else:
-    #             validated_value += chr(value[pos]).encode('utf-8')
-    #         pos += 1
-    #     validated_value = bytes(validated_value)
-    # else:
-    #     validated_value = value
-    #
-    # # return validated_value
-
     return value
 
 
 def validate_attribute_value(schema, name, value, auto_encode):
     if schema:
-        if schema.attribute_types is not None and name not in schema.attribute_types and name not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
+        if schema.attribute_types is not None and name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
             raise LDAPAttributeError('invalid attribute ' + name)
         if schema.object_classes is not None and name == 'objectClass':
-            if value not in CLASSES_EXCLUDED_FROM_CHECK and value not in schema.object_classes:
+            if value not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
-    if auto_encode:
-        value = to_unicode(value)  # tries to convert from local encoding
+        # encodes to utf-8 for well known Unicode LDAP syntaxes
+        if auto_encode and (schema.attribute_types[name].syntax in get_config_parameter('UTF8_ENCODED_SYNTAXES') or name in get_config_parameter('UTF8_ENCODED_TYPES')):
+            value = to_unicode(value)  # tries to convert from local encoding to Unicode
     return to_raw(value)
 
 

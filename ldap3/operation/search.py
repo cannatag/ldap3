@@ -26,8 +26,7 @@
 from string import whitespace
 from os import linesep
 
-from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, ATTRIBUTES_EXCLUDED_FROM_CHECK, \
-    SEQUENCE_TYPES, get_config_parameter
+from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, SEQUENCE_TYPES, get_config_parameter
 
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..protocol.formatters.formatters import format_unicode
@@ -293,10 +292,10 @@ def build_attribute_selection(attribute_list, schema):
     for index, attribute in enumerate(attribute_list):
         if schema and schema.attribute_types is not None:
             if ';' in attribute:  # exclude tags from validation
-                if not attribute[0:attribute.index(';')] in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
+                if not attribute[0:attribute.index(';')] in schema.attribute_types and attribute not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
                     raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
             else:
-                if attribute not in schema.attribute_types and attribute not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
+                if attribute not in schema.attribute_types and attribute not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
                     raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
         attribute_selection[index] = Selector(attribute)
 

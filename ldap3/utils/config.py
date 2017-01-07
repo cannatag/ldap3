@@ -50,8 +50,7 @@ _ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
                                    'vendorName',
                                    'vendorVersion',
                                    'subschemaSubentry',
-                                   'ACL'
-                                  ]
+                                   'ACL']
 _UTF8_ENCODED_SYNTAXES = ['1.2.840.113556.1.4.904',  # DN String [MICROSOFT]
                           '1.2.840.113556.1.4.1362',  # String (Case) [MICROSOFT]
                           '1.3.6.1.4.1.1466.115.121.1.12',  # DN String [RFC4517]
@@ -62,8 +61,7 @@ _UTF8_ENCODED_SYNTAXES = ['1.2.840.113556.1.4.904',  # DN String [MICROSOFT]
                           '2.16.840.1.113719.1.1.5.1.14',  # Tagged String [NOVELL]
                           '2.16.840.1.113719.1.1.5.1.15',  # Tagged Name and String [NOVELL]
                           '2.16.840.1.113719.1.1.5.1.23',  # Tagged Name [NOVELL]
-                          '2.16.840.1.113719.1.1.5.1.25'  # Typed Name [NOVELL]
-                         ]
+                          '2.16.840.1.113719.1.1.5.1.25']  # Typed Name [NOVELL]
 
 _UTF8_ENCODED_TYPES = []
 

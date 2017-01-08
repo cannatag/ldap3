@@ -295,8 +295,7 @@ class BaseStrategy(object):
             message_controls = build_controls_list(controls)
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
-            self.connection.request = BaseStrategy.decode_request(ldap_message)
-            self.connection.request['controls'] = controls
+            self.connection.request = BaseStrategy.decode_request(message_type, request, controls)
             self._outstanding[message_id] = self.connection.request
             self.sending(ldap_message)
         else:
@@ -590,9 +589,9 @@ class BaseStrategy(object):
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod
-    def decode_request(ldap_message):
-        message_type = ldap_message.getComponentByName('protocolOp').getName()
-        component = ldap_message['protocolOp'].getComponent()
+    def decode_request(message_type, component, controls=None):
+        # message_type = ldap_message.getComponentByName('protocolOp').getName()
+        # component = ldap_message['protocolOp'].getComponent()
         if message_type == 'bindRequest':
             result = bind_request_to_dict(component)
         elif message_type == 'unbindRequest':
@@ -618,6 +617,8 @@ class BaseStrategy(object):
                 log(ERROR, 'unknown request <%s>', message_type)
             raise LDAPUnknownRequestError('unknown request')
         result['type'] = message_type
+        result['controls'] = controls
+
         return result
 
     def valid_referral_list(self, referrals):

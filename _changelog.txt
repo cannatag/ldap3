@@ -25,6 +25,7 @@
     - added UTF8_ENCODED_SYNTAXES in ldap3.config.utils and made available via get_config_parameter()
     - config parameters made available only via get_config_parameters()
     - removed to_bytes() and check_escape() from ldap3.utils.conv (ambiguous functions)
+    - added connection.request to MockSync (thanks Fabian)
 
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate

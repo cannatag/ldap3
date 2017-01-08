@@ -294,7 +294,7 @@ class BaseStrategy(object):
             message_controls = build_controls_list(controls)
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
-            self.connection.request = BaseStrategy.decode_request(ldap_message)
+            self.connection.request = BaseStrategy.decode_request(message_type, request)
             self.connection.request['controls'] = controls
             self._outstanding[message_id] = self.connection.request
             self.sending(ldap_message)
@@ -581,9 +581,7 @@ class BaseStrategy(object):
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod
-    def decode_request(ldap_message):
-        message_type = ldap_message.getComponentByName('protocolOp').getName()
-        component = ldap_message['protocolOp'].getComponent()
+    def decode_request(message_type, component):
         if message_type == 'bindRequest':
             result = bind_request_to_dict(component)
         elif message_type == 'unbindRequest':

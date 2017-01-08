@@ -617,3 +617,32 @@ class MockBaseStrategy(object):
             pass
 
         return False
+
+    @staticmethod
+    def decode_request(message_type, component):
+        if message_type == 'bindRequest':
+            result = bind_request_to_dict(component)
+        elif message_type == 'unbindRequest':
+            result = dict()
+        elif message_type == 'addRequest':
+            result = add_request_to_dict(component)
+        elif message_type == 'compareRequest':
+            result = compare_request_to_dict(component)
+        elif message_type == 'delRequest':
+            result = delete_request_to_dict(component)
+        elif message_type == 'extendedReq':
+            result = extended_request_to_dict(component)
+        elif message_type == 'modifyRequest':
+            result = modify_request_to_dict(component)
+        elif message_type == 'modDNRequest':
+            result = modify_dn_request_to_dict(component)
+        elif message_type == 'searchRequest':
+            result = search_request_to_dict(component)
+        elif message_type == 'abandonRequest':
+            result = abandon_request_to_dict(component)
+        else:
+            if log_enabled(ERROR):
+                log(ERROR, 'unknown request <%s>', message_type)
+            raise LDAPUnknownRequestError('unknown request')
+        result['type'] = message_type
+        return result

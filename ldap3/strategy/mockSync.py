@@ -25,6 +25,7 @@
 
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS
 from .mockBase import MockBaseStrategy
+from .base import BaseStrategy
 from .sync import SyncStrategy
 from ..operation.bind import bind_response_to_dict
 from ..operation.delete import delete_response_to_dict
@@ -100,7 +101,7 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         MockBaseStrategy.__init__(self)
 
     def send(self, message_type, request, controls=None):
-        self.connection.request = None
+        self.connection.request = BaseStrategy.decode_request(message_type, request)
         if self.connection.listening:
             return message_type, request, controls
         else:

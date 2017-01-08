@@ -100,7 +100,7 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         MockBaseStrategy.__init__(self)
 
     def send(self, message_type, request, controls=None):
-        self.connection.request = None
+        self.connection.request = MockBaseStrategy.decode_request(message_type, request)
         if self.connection.listening:
             return message_type, request, controls
         else:

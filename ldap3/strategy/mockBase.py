@@ -337,18 +337,19 @@ class MockBaseStrategy(object):
         message = ''
         rdns = [rdn[0] for rdn in safe_rdn(dn, decompose=True)]
         if dn in self.connection.server.dit:
-            original_entry = self.connection.server.dit[dn].copy()  # to preserve atomicity of operation
+            entry = self.connection.server.dit[dn]
+            original_entry = entry.copy()  # to preserve atomicity of operation
             for modification in changes:
                 operation = modification['operation']
                 attribute = modification['attribute']['type']
                 elements = modification['attribute']['value']
                 if operation == 0:  # add
-                    if attribute not in self.connection.server.dit[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
+                    if attribute not in entry and elements:  # attribute not present, creates the new attribute and add elements
+                        entry[attribute] = [to_raw(element) for element in elements]
                     else:  # attribute present, adds elements to current values
-                        self.connection.server.dit[dn][attribute].extend([to_raw(element) for element in elements])
+                        entry[attribute].extend([to_raw(element) for element in elements])
                 elif operation == 1:  # delete
-                    if attribute not in self.connection.server.dit[dn]:  # attribute must exist
+                    if attribute not in entry:  # attribute must exist
                         result_code = 16
                         message = 'attribute must exists for deleting its values'
                     elif attribute in rdns:  # attribute can't be used in dn
@@ -356,28 +357,28 @@ class MockBaseStrategy(object):
                         message = 'cannot delete an rdn'
                     else:
                         if not elements:  # deletes whole attribute if element list is empty
-                            del self.connection.server.dit[dn][attribute]
+                            del entry[attribute]
                         else:
                             for element in elements:
                                 raw_element = to_raw(element)
                                 if self.equal(dn, attribute, raw_element):  # removes single element
-                                    self.connection.server.dit[dn][attribute].remove(raw_element)
+                                    entry[attribute].remove(raw_element)
                                 else:
                                     result_code = 1
                                     message = 'value to delete not found'
-                            if not self.connection.server.dit[dn][attribute]:  # removes the whole attribute if no elements remained
-                                del self.connection.server.dit[dn][attribute]
+                            if not entry[attribute]:  # removes the whole attribute if no elements remained
+                                del entry[attribute]
                 elif operation == 2:  # replace
-                    if attribute not in self.connection.server.dit[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
+                    if attribute not in entry and elements:  # attribute not present, creates the new attribute and add elements
+                        entry[attribute] = [to_raw(element) for element in elements]
                     elif not elements and attribute in rdns:  # attribute can't be used in dn
                         result_code = 67
                         message = 'cannot replace an rdn'
                     elif not elements:  # deletes whole attribute if element list is empty
-                        if attribute in self.connection.server.dit[dn]:
-                            del self.connection.server.dit[dn][attribute]
+                        if attribute in entry:
+                            del entry[attribute]
                     else:  # substitutes elements
-                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
+                        entry[attribute] = [to_raw(element) for element in elements]
 
             if result_code:  # an error has happened, restores the original dn
                 self.connection.server.dit[dn] = original_entry
@@ -428,7 +429,7 @@ class MockBaseStrategy(object):
         base = safe_dn(request['base'])
         scope = request['scope']
         attributes = request['attributes']
-        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=False, auto_encode=False)
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':

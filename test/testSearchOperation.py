@@ -167,6 +167,21 @@ class Test(unittest.TestCase):
         else:
             self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + '(search)-12')
 
+    # def test_search_exact_match_with_parentheses_in_filter(self):
+    #     self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-13', attributes={'givenName': 'givenname-13'}))
+    #     result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)*)', attributes=[test_name_attr, 'sn'])
+    #     if not self.connection.strategy.sync:
+    #         response, result = self.connection.get_response(result)
+    #     else:
+    #         response = self.connection.response
+    #         result = self.connection.result
+    #     self.assertEqual(result['description'], 'success')
+    #     self.assertEqual(len(response), 1)
+    #     if test_server_type == 'AD':
+    #         self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + '(search)-13')
+    #     else:
+    #         self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + '(search)-13')
+
     def test_search_integer_exact_match(self):
         result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '=0))', attributes=[test_name_attr, test_int_attr])
         if not self.connection.strategy.sync:

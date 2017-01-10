@@ -798,6 +798,9 @@ class Connection(object):
                 log(EXTENDED, 'dn sanitized to <%s> for COMPARE operation via <%s>', dn, self)
 
         if self.server and self.server.schema and self.check_names:
+            if ';' in attribute:  # remove tags for checking
+                attribute = attribute.split(';')[0]
+
             if attribute not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute not in self.server.schema.attribute_types:
                 raise LDAPAttributeError('invalid attribute type ' + attribute)
 
@@ -879,6 +882,9 @@ class Connection(object):
                         raise LDAPObjectClassError('invalid object class ' + object_class_name)
 
                 for attribute_name in attributes:
+                    if ';' in attribute_name:  # remove tags for checking
+                        attribute_name = attribute_name.split(';')[0]
+
                     if attribute_name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name)
 
@@ -990,6 +996,9 @@ class Connection(object):
 
             for attribute_name in changes:
                 if self.server and self.server.schema and self.check_names:
+                    if ';' in attribute_name:  # remove tags for checking
+                        attribute_name = attribute_name.split(';')[0]
+
                     if attribute_name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name)
                 change = changes[attribute_name]

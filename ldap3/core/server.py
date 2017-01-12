@@ -198,6 +198,8 @@ class Server(object):
         self.connect_timeout = connect_timeout
         self.mode = mode
 
+        self.get_info_from_server(None)
+
         if log_enabled(BASIC):
             log(BASIC, 'instantiated Server: <%r>', self)
 
@@ -427,27 +429,27 @@ class Server(object):
         """
         reads info from DSE and from subschema
         """
-        if not connection.closed:
+        if connection and not connection.closed:
             if self.get_info in [DSA, ALL]:
                 self._get_dsa_info(connection)
             if self.get_info in [SCHEMA, ALL]:
                     self._get_schema_info(connection)
-            if self.get_info == OFFLINE_EDIR_8_8_8:
-                from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
-                self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
-                self.attach_dsa_info(DsaInfo.from_json(edir_8_8_8_dsa_info))
-            elif self.get_info == OFFLINE_AD_2012_R2:
-                from ..protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
-                self.attach_schema_info(SchemaInfo.from_json(ad_2012_r2_schema))
-                self.attach_dsa_info(DsaInfo.from_json(ad_2012_r2_dsa_info))
-            elif self.get_info == OFFLINE_SLAPD_2_4:
-                from ..protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
-                self.attach_schema_info(SchemaInfo.from_json(slapd_2_4_schema))
-                self.attach_dsa_info(DsaInfo.from_json(slapd_2_4_dsa_info))
-            elif self.get_info == OFFLINE_DS389_1_3_3:
-                from ..protocol.schemas.ds389 import ds389_1_3_3_schema, ds389_1_3_3_dsa_info
-                self.attach_schema_info(SchemaInfo.from_json(ds389_1_3_3_schema))
-                self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
+        elif self.get_info == OFFLINE_EDIR_8_8_8:
+            from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
+            self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
+            self.attach_dsa_info(DsaInfo.from_json(edir_8_8_8_dsa_info))
+        elif self.get_info == OFFLINE_AD_2012_R2:
+            from ..protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
+            self.attach_schema_info(SchemaInfo.from_json(ad_2012_r2_schema))
+            self.attach_dsa_info(DsaInfo.from_json(ad_2012_r2_dsa_info))
+        elif self.get_info == OFFLINE_SLAPD_2_4:
+            from ..protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
+            self.attach_schema_info(SchemaInfo.from_json(slapd_2_4_schema))
+            self.attach_dsa_info(DsaInfo.from_json(slapd_2_4_dsa_info))
+        elif self.get_info == OFFLINE_DS389_1_3_3:
+            from ..protocol.schemas.ds389 import ds389_1_3_3_schema, ds389_1_3_3_dsa_info
+            self.attach_schema_info(SchemaInfo.from_json(ds389_1_3_3_schema))
+            self.attach_dsa_info(DsaInfo.from_json(ds389_1_3_3_dsa_info))
 
     def attach_dsa_info(self, dsa_info=None):
         if isinstance(dsa_info, DsaInfo):

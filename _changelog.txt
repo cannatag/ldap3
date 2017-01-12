@@ -27,6 +27,8 @@
     - removed to_bytes() and check_escape() from ldap3.utils.conv (ambiguous functions)
     - added connection.request to MockSync (thanks Fabian)
     - tags are properly managed in add, compare and modify requests (thanks guidow)
+    - in Mock strategies single-valued attributes are properly managed
+    - in Mock strategies attributes types properly managed
 
 - 2.1.1 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate

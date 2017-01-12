@@ -56,7 +56,7 @@ class MockBaseStrategy(object):
     def __init__(self):
         if not hasattr(self.connection.server, 'dit'):  # create entries dict if not already present
             self.connection.server.dit_lock = Lock()
-            self.connection.server.dit = dict()
+            self.connection.server.dit = CaseInsensitiveDict()
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
         self.bound = None
@@ -75,6 +75,9 @@ class MockBaseStrategy(object):
         self.connection.closed = True
         if self.connection.usage:
             self.connection._usage.closed_sockets += 1
+
+    def _update_attribute(self, dn, attribute_type, value):
+        pass
 
     def add_entry(self, dn, attributes):
         with self.connection.server.dit_lock:

@@ -34,6 +34,7 @@ from ..operation.compare import compare_response_to_dict
 from ..operation.modifyDn import modify_dn_response_to_dict
 from ..operation.modify import modify_response_to_dict
 from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
+from ..operation.extended import extended_response_to_dict
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult
 from ..utils.log import log, log_enabled, ERROR, PROTOCOL
 
@@ -104,6 +105,9 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         elif message_type == 'modifyRequest':
             result = modify_response_to_dict(self.mock_modify(request, controls))
             result['type'] = 'modifyResponse'
+        elif message_type == 'extendedReq':
+            result = extended_response_to_dict(self.mock_extended(request, controls))
+            result['type'] = 'extendedResp'
         self.connection.result = result
         responses.append(result)
         if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:

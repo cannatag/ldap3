@@ -115,3 +115,6 @@ it's been updated with the new values::
 
 Refreshing of the original Entry is triggered only if both cursors are using the same Server object. If you use the Writer cursor to copy Entries
 to another LDAP server refreshing of the original Entry is not executed.
+
+For specific types (boolean, integers and dates) you can set the value to the relevant Python type. The ldap3 library will perform the necessary
+conversion to the value expected from the LDAP server.

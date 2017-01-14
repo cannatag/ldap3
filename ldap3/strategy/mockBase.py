@@ -28,6 +28,8 @@ import re
 
 from threading import Lock
 
+from pyasn1.type.univ import OctetString
+
 from .. import SEQUENCE_TYPES, ALL_ATTRIBUTES
 from ..operation.bind import bind_request_to_dict
 from ..operation.delete import delete_request_to_dict
@@ -35,6 +37,7 @@ from ..operation.add import add_request_to_dict
 from ..operation.compare import compare_request_to_dict
 from ..operation.modifyDn import modify_dn_request_to_dict
 from ..operation.modify import modify_request_to_dict
+from ..operation.extended import extended_request_to_dict
 from ..operation.search import search_request_to_dict, parse_filter, ROOT, AND, OR, NOT, MATCH_APPROX, \
     MATCH_GREATER_OR_EQUAL, MATCH_LESS_OR_EQUAL, MATCH_EXTENSIBLE, MATCH_PRESENT,\
     MATCH_SUBSTRING, MATCH_EQUAL
@@ -45,6 +48,7 @@ from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
 from ..utils.log import log, log_enabled, ERROR, BASIC
 from ..protocol.formatters.standard import format_attribute_values
+from ..utils.asn1 import encoder
 
 # LDAPResult ::= SEQUENCE {
 #     resultCode         ENUMERATED {
@@ -136,22 +140,37 @@ class MockBaseStrategy(object):
         with self.connection.server.dit_lock:
             escaped_dn = safe_dn(dn)
             if escaped_dn not in self.connection.server.dit:
-                self.connection.server.dit[escaped_dn] = CaseInsensitiveDict()
+                new_entry = CaseInsensitiveDict()
                 for attribute in attributes:
                     if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
                         attributes[attribute] = [attributes[attribute]]
                     if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(attributes[attribute]) > 1:  # multiple values in single-valued attribute
-                        del self.connection.server.dit[escaped_dn]
                         return False
-                    self.connection.server.dit[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
-                for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
-                    if rdn[0] not in self.connection.server.dit[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
-                        # self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
-                        self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(rdn[1])]
+                    if attribute == 'objectClass' and self.connection.server.schema:  # builds the objectClass hierarchy only if schema is present
+                        class_set = set()
+                        for object_class in attributes['objectClass']:
+                            if object_class not in self.connection.server.schema.object_classes:
+                                return False
+                            # walkups the class hierarchy and buils a set of all classes in it
+                            class_set.add(object_class)
+                            class_set_size = 0
+                            while class_set_size != len(class_set):
+                                new_classes = set()
+                                class_set_size = len(class_set)
+                                for class_name in class_set:
+                                    if self.connection.server.schema.object_classes[class_name].superior:
+                                        new_classes.update(self.connection.server.schema.object_classes[class_name].superior)
+                                class_set.update(new_classes)
+                            new_entry['objectClass'] = [to_raw(value) for value in class_set]
                     else:
-                        if rdn[1] not in self.connection.server.dit[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                            # self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
-                            self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(rdn[1]))
+                        new_entry[attribute] = [to_raw(value) for value in attributes[attribute]]
+                for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
+                    if rdn[0] not in new_entry:  # if rdn attribute is missing adds attribute and its value
+                        new_entry[rdn[0]] = [to_raw(rdn[1])]
+                    else:
+                        if rdn[1] not in new_entry[rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
+                            new_entry[rdn[0]].append(to_raw(rdn[1]))
+                self.connection.server.dit[escaped_dn] = new_entry
                 return True
             return False
 
@@ -500,7 +519,6 @@ class MockBaseStrategy(object):
         base = safe_dn(request['base'])
         scope = request['scope']
         attributes = [attr.lower() for attr in request['attributes']]
-        # attributes = request['attributes']
         filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False)
         candidates = []
         if scope == 0:  # base object
@@ -539,6 +557,48 @@ class MockBaseStrategy(object):
                   }
 
         return responses[:request['sizeLimit']] if request['sizeLimit'] > 0 else responses, result
+
+    def mock_extended(self, request_message, controls):
+        # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
+        #     requestName      [0] LDAPOID,
+        #     requestValue     [1] OCTET STRING OPTIONAL }
+        #
+        # ExtendedResponse ::= [APPLICATION 24] SEQUENCE {
+        #     COMPONENTS OF LDAPResult,
+        #     responseName     [10] LDAPOID OPTIONAL,
+        #     responseValue    [11] OCTET STRING OPTIONAL }
+        #
+        # IntermediateResponse ::= [APPLICATION 25] SEQUENCE {
+        #     responseName     [0] LDAPOID OPTIONAL,
+        #     responseValue    [1] OCTET STRING OPTIONAL }
+        request = extended_request_to_dict(request_message)
+
+        result_code = 53
+        message = 'not implemented'
+        response_name = None
+        response_value = None
+        if self.connection.server.info:
+            for extension in self.connection.server.info.supported_extensions:
+                if request['name'] == extension[0]:  # server can answer the extended request
+                    if extension[0] == '2.16.840.1.113719.1.27.100.31':  # getBindDNRequest [NOVELL]
+                        result_code = 0
+                        message = ''
+                        response_name = '2.16.840.1.113719.1.27.100.32'  # getBindDNResponse [NOVELL]
+                        response_value = encoder.encode(OctetString(self.bound))
+                    elif extension[0] == '1.3.6.1.4.1.4203.1.11.3':  # WhoAmI [RFC4532]
+                        result_code = 0
+                        message = ''
+                        response_name = '1.3.6.1.4.1.4203.1.11.3'  # WhoAmI [RFC4532]
+                        response_value = encoder.encode(OctetString(self.bound))
+                    break
+
+        return {'resultCode': result_code,
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'referral': None,
+                'responseName': response_name,
+                'responseValue': response_value
+                }
 
     def evaluate_filter_node(self, node, candidates):
         """After evaluation each 2 sets are added to each MATCH node, one for the matched object and one for unmatched object.

@@ -35,6 +35,8 @@
     - implemented extended operation machinery in MockBase
     - implemented WhoAmI [RFC4532] in Mock strategies
     - implemented GetBindDn [NOVELL] in Mock strategies
+    - implemented operational attributes machinery in MockBase
+    - implemented entryDN [RFC5020] operational attribute in MockBase
 
 
 - 2.1.1 2016.11.18

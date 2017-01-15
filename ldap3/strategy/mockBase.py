@@ -117,6 +117,7 @@ class MockBaseStrategy(object):
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
         self.bound = None
+        self.operational_attributes = ['entryDN']
         self.add_entry('cn=schema', [])  # add default entry for schema
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
@@ -170,6 +171,7 @@ class MockBaseStrategy(object):
                     else:
                         if rdn[1] not in new_entry[rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
                             new_entry[rdn[0]].append(to_raw(rdn[1]))
+                new_entry['entryDN'] = [to_raw(escaped_dn)]
                 self.connection.server.dit[escaped_dn] = new_entry
                 return True
             return False
@@ -367,14 +369,18 @@ class MockBaseStrategy(object):
         dn_components = to_dn(dn)
         if dn in self.connection.server.dit:
             if new_superior and new_rdn:  # performs move in the DIT
-                self.connection.server.dit[safe_dn(dn_components[0] + ',' + new_superior)] = self.connection.server.dit[dn].copy()
+                new_dn = safe_dn(dn_components[0] + ',' + new_superior)
+                self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
                 if delete_old_rdn:
                     del self.connection.server.dit[dn]
                 result_code = 0
                 message = 'entry moved'
+                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
             elif new_rdn and not new_superior:  # performs rename
-                self.connection.server.dit[safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))] = self.connection.server.dit[dn].copy()
+                new_dn = safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))
+                self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
                 del self.connection.server.dit[dn]
+                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
                 result_code = 0
                 message = 'entry rdn renamed'
             else:
@@ -518,7 +524,12 @@ class MockBaseStrategy(object):
         responses = []
         base = safe_dn(request['base'])
         scope = request['scope']
+        attributes = request['attributes']
+        if '+' in attributes:  # operational attributes requested
+            attributes.extend(self.operational_attributes)
+            attributes.remove('+')
         attributes = [attr.lower() for attr in request['attributes']]
+
         filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False)
         candidates = []
         if scope == 0:  # base object

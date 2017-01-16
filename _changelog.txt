@@ -1,4 +1,4 @@
-- 2.2.0 (not yet released)
+- 2.2.0 2017.01.16
     - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6
     - updated docs regarding search response attributes (thanks James)
     - fixed LDIF representation for operation_to_ldif (thanks m7four)
@@ -37,6 +37,7 @@
     - implemented GetBindDn [NOVELL] in Mock strategies
     - implemented operational attributes machinery in MockBase
     - implemented entryDN [RFC5020] operational attribute in MockBase
+    - Sphinx updated to 1.5.1
 
 
 - 2.1.1 2016.11.18

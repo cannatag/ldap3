@@ -75,8 +75,8 @@ Connection parameters are:
 
 
 .. note::
-The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.
-So it can happens that your code works seamlessy until your data grow to exceed the 1000 entries limit and your code stops working properly without any apparent reason.
+   The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.
+   So it can happens that your code works seamlessy until your data grow to exceed the 1000 entries limit and your code stops working properly without any apparent reason.
 
 With the connection object you can perform all the standard LDAP operations:
 

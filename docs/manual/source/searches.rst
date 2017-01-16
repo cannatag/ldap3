@@ -296,9 +296,8 @@ parameter.
 
 
 .. note::
-
-Microsoft Active Directory set an hard limit of 1000 entries returned by any search. So it's better to always set up a paged search
-when dealing with AD.
+   Microsoft Active Directory set an hard limit of 1000 entries returned by any search. So it's better to always set up a paged search
+   when dealing with AD.
 
 
 Simple paged search

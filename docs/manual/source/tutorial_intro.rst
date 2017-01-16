@@ -81,12 +81,10 @@ to **import ldap3** from your Python console. If you get an ``ImportError`` you 
 
     pip install ldap3
 
-
 .. warning::
    If pip complains about certificates you should specify the path to the PyPI CA certificate with the --cert parameter::
 
-   pip install ldap3 --cert /path/to/the/DigiCert_High_Assurance_EV_Root_CA.pem
-
+      pip install ldap3 --cert /path/to/the/DigiCert_High_Assurance_EV_Root_CA.pem
 
 You can also download the source code from https://github.com/cannatag/ldap3 and install it with::
 
@@ -303,17 +301,17 @@ Supported Controls we can see it supports "paged searches", and the "who am i" a
 Supported Extensions.
 
 .. note:: Controls vs Extensions: in LDAP a *Control* is some additional information that can be attached to any LDAP request or response, while an
-    *Extension* is a custom request that can be sent to the LDAP server in an **Extended Operation** Request.
-    A Control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
-    kind of operation that each vendor decides to include in its LDAP server implementation.
-    An LDAP server declares which controls and which extendend operations it understands. The ldap3 library decodes the
-    known supported controls and extended operation and includes a brief description and a reference to the relevant
-    RFC in the ``.info`` attribute (when known). Not all controls or extensions are intended to be used by clients. Some controls and
-    extensions are used by servers that hold a replica or a data partition. Unfortunately in the LDAP specifications
-    there is no way to specify if such extensions are reserved for a server (**DSA**, *Directory Server Agent* in LDAP
-    parlance) to server communication (for example in replicas or partitions management) or can be used
-    by clients (**DUA**, *Directory User Agent*). Because the LDAP protocols doesn't provide a specific way for DSAs to communicate
-    with each other, a DSA actually presents itself as a DUA to another DSA.
+   *Extension* is a custom request that can be sent to the LDAP server in an **Extended Operation** Request.
+   A Control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
+   kind of operation that each vendor decides to include in its LDAP server implementation.
+   An LDAP server declares which controls and which extendend operations it understands. The ldap3 library decodes the
+   known supported controls and extended operation and includes a brief description and a reference to the relevant
+   RFC in the ``.info`` attribute (when known). Not all controls or extensions are intended to be used by clients. Some controls and
+   extensions are used by servers that hold a replica or a data partition. Unfortunately in the LDAP specifications
+   there is no way to specify if such extensions are reserved for a server (**DSA**, *Directory Server Agent* in LDAP
+   parlance) to server communication (for example in replicas or partitions management) or can be used
+   by clients (**DUA**, *Directory User Agent*). Because the LDAP protocols doesn't provide a specific way for DSAs to communicate
+   with each other, a DSA actually presents itself as a DUA to another DSA.
 
 Let's examine the LDAP server schema::
 
@@ -364,15 +362,15 @@ Every LDAP server must at least support the standard LDAP3 schema but can have a
 The schema defines also the *syntaxes* and the *matching rules* of the different kind of data types stored in the LDAP.
 
 .. note::
-    Object classes and attributes are independent objects. An attribute is not a "child" of a class neither a
-    class is a "parent" of any attribute. Classes and attributes are linked in the schema with the ``MAY`` and ``MUST`` options
-    of the object class definition that specify what attributes an entry can contain and which of them are mandatory.
+   Object classes and attributes are independent objects. An attribute is not a "child" of a class neither a
+   class is a "parent" of any attribute. Classes and attributes are linked in the schema with the ``MAY`` and ``MUST`` options
+   of the object class definition that specify what attributes an entry can contain and which of them are mandatory.
 
 .. note::
-    There are 3 different types of object classes: **ABSTRACT** (used only when defining the class hierarchy), **STRUCTURAL** (used to
-    create concrete entries) and **AUXILIARY** (used to add additional attributes to an entry). Only one structural class can be used
-    in an entry, while many auxiliary classes can be added to the same entry. Adding an object class to an entry simply means
-    that the attributes defined in that object class can be stored in that entry.
+   There are 3 different types of object classes: **ABSTRACT** (used only when defining the class hierarchy), **STRUCTURAL** (used to
+   create concrete entries) and **AUXILIARY** (used to add additional attributes to an entry). Only one structural class can be used
+   in an entry, while many auxiliary classes can be added to the same entry. Adding an object class to an entry simply means
+   that the attributes defined in that object class can be stored in that entry.
 
 If the ldap3 library is aware of the schema used by the LDAP server it will try to automatically convert data retrieved by the Search
 operation to their representation. So an integer will be returned as an int, a generalizedDate as a datetime object and so on.
@@ -498,7 +496,7 @@ certificate validity. You can customize the TLS behaviour providing a Tls object
     ldap3.core.exceptions.LDAPSocketOpenError: (LDAPSocketOpenError('socket ssl wrapping error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)',),)
 
 In this case, using the FreeIPA demo server we get a LDAPSocketOpenError exception because the certificate cannot be verified.
-You can configure the Tls object with a number of options. Look at :ref:`the SSL and TLS documentation <ssltls>` for more information.
+You can configure the Tls object with a number of options. Look at :ref:`SSL and TLS <ssltls>` for more information.
 
 The FreeIPA server doesn't return a valid certificate so to continue the tutorial let's revert the certificate validation to CERT_NONE::
 

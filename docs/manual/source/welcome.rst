@@ -21,7 +21,7 @@ RFCs Compliance
 The ldap3 library strictly follows the latest (as of 2015) RFCs describing the LDAP v3 protocol:
 
 * The **latest RFCs for LDAP v3** (RFCs 4510-4518, dated 2006) obsolete the previous RFCs specified in RFC3377 (2251-2256, 2829, 2830,
-3371) for LDAP v3 and amend and clarify the LDAP protocol.
+  3371) for LDAP v3 and amend and clarify the LDAP protocol.
 
 * All the ASN1 definitions are written from scratch to be current with RFC 4511.
 

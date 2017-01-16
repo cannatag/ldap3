@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -98,14 +98,9 @@ class ObjectDef(object):
         else:
             r = 'OBJ : <None>'
         r += ' [' + ', '.join([oid for oid in self._oid_info]) + ']' + linesep
-        # for oid in self._oid_info:
-        #     for line in oid.split(linesep):
-        #         r += linesep + '  ' + line
         r += 'MUST: ' + ', '.join(sorted([attr for attr in self._attributes if self._attributes[attr].mandatory])) + linesep
         r += 'MAY : ' + ', '.join(sorted([attr for attr in self._attributes if not self._attributes[attr].mandatory])) + linesep
-        # for attr in sorted(self._attributes):
-            # for line in str(self._attributes[attr]).split(linesep):
-            #     r += linesep + '  ' + line
+
         return r
 
     def __str__(self):

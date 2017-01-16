@@ -69,10 +69,14 @@ Connection parameters are:
 
 * use_referral_cache: when True referral connections are not immediately closed, and kept in a cache should another request need to contact the same server
 
+* auto_escape: automatically applies LDAP encoding to filter values, default to True
+
+* auto_encode: automatically tries to convert from local encoding to UTF8 for well known syntaxes and types, default to True
+
 
 .. note::
-The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.
-So it can happens that your code works seamlessy until your data grow to exceed the 1000 entries limit and your code stops working properly without any apparent reason.
+   The *auto_range* feature is very useful when searching Active Directory servers. When an Active Directory search returns more than 1000 entries this feature is automatically used by the server.
+   So it can happens that your code works seamlessy until your data grow to exceed the 1000 entries limit and your code stops working properly without any apparent reason.
 
 With the connection object you can perform all the standard LDAP operations:
 
@@ -306,9 +310,12 @@ Each entry is a dictionary with the following field:
 
 * dn: the distinguished name of the entry
 
-* attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format
+* attributes: a dictionary of returned attributes and their values. Values are in UTF-8 format. If the Connection is aware of the server schema,
+  values are properly stored: directly for single-valued attributes and as a list for multi-valued attributes. A multi-valued attribute
+  with a single value is always stored as a list. If the server schema is unkwown all values are stored as a list.
 
-* raw_attributes: same as 'attributes' but not encoded (bytearray)
+
+* raw_attributes: the unencoded values, always stores as a list of bytearray regardless of the schema definition.
 
 
 Checked Attributes

@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -37,11 +37,12 @@ from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, 
     LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlError, LDAPResponseTimeoutError, LDAPTransactionError
 from ..utils.uri import parse_uri
-from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
+from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID, SearchResultEntry
 from ..operation.add import add_response_to_dict, add_request_to_dict
 from ..operation.modify import modify_request_to_dict, modify_response_to_dict
 from ..operation.search import search_result_reference_response_to_dict, search_result_done_response_to_dict,\
-    search_result_entry_response_to_dict, search_request_to_dict, search_result_entry_response_to_dict_fast, search_result_reference_response_to_dict_fast
+    search_result_entry_response_to_dict, search_request_to_dict, search_result_entry_response_to_dict_fast,\
+    search_result_reference_response_to_dict_fast, attributes_to_dict, attributes_to_dict_fast
 from ..operation.bind import bind_response_to_dict, bind_request_to_dict, sicily_bind_response_to_dict, bind_response_to_dict_fast, \
     sicily_bind_response_to_dict_fast
 from ..operation.compare import compare_response_to_dict, compare_request_to_dict
@@ -294,8 +295,7 @@ class BaseStrategy(object):
             message_controls = build_controls_list(controls)
             if message_controls is not None:
                 ldap_message['controls'] = message_controls
-            self.connection.request = BaseStrategy.decode_request(ldap_message)
-            self.connection.request['controls'] = controls
+            self.connection.request = BaseStrategy.decode_request(message_type, request, controls)
             self._outstanding[message_id] = self.connection.request
             self.sending(ldap_message)
         else:
@@ -548,6 +548,10 @@ class BaseStrategy(object):
             control_value = dict()
             control_value['more_results'] = bool(control_resp['MoreResults'])  # more_result if nonzero
             control_value['cookie'] = bytes(control_resp['CookieServer'])
+        elif control_type == '1.3.6.1.1.13.1' or control_type == '1.3.6.1.1.13.2':  # Pre-Read control, Post-Read Control as per RFC 4527
+            control_resp, unprocessed = decoder.decode(control_value, asn1Spec=SearchResultEntry())
+            control_value = dict()
+            control_value['result'] = attributes_to_dict(control_resp['attributes'])
         if unprocessed:
                 if log_enabled(ERROR):
                     log(ERROR, 'unprocessed control response in substrate')
@@ -578,12 +582,16 @@ class BaseStrategy(object):
             control_value = dict()
             control_value['more_results'] = True if control_resp[0][3][0][3] else False  # more_result if nonzero
             control_value['cookie'] = control_resp[0][3][2][3]
+        elif control_type == '1.3.6.1.1.13.1' or control_type == '1.3.6.1.1.13.2':  # Pre-Read control, Post-Read Control as per RFC 4527
+            control_resp = decode_sequence(control_value, 0, len(control_value))
+            control_value = dict()
+            control_value['result'] = attributes_to_dict_fast(control_resp[0][3][1][3])
         return control_type, {'description': Oids.get(control_type, ''), 'criticality': criticality, 'value': control_value}
 
     @staticmethod
-    def decode_request(ldap_message):
-        message_type = ldap_message.getComponentByName('protocolOp').getName()
-        component = ldap_message['protocolOp'].getComponent()
+    def decode_request(message_type, component, controls=None):
+        # message_type = ldap_message.getComponentByName('protocolOp').getName()
+        # component = ldap_message['protocolOp'].getComponent()
         if message_type == 'bindRequest':
             result = bind_request_to_dict(component)
         elif message_type == 'unbindRequest':
@@ -609,6 +617,8 @@ class BaseStrategy(object):
                 log(ERROR, 'unknown request <%s>', message_type)
             raise LDAPUnknownRequestError('unknown request')
         result['type'] = message_type
+        result['controls'] = controls
+
         return result
 
     def valid_referral_list(self, referrals):

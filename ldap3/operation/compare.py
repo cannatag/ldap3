@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -32,14 +32,14 @@ from ..operation.bind import referrals_to_list
 def compare_operation(dn,
                       attribute,
                       value,
-                      auto_escape,
+                      auto_encode,
                       schema=None):
     # CompareRequest ::= [APPLICATION 14] SEQUENCE {
     #     entry           LDAPDN,
     #     ava             AttributeValueAssertion }
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
-    ava['assertionValue'] = AssertionValue(prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_escape)))
+    ava['assertionValue'] = AssertionValue(prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode)))
 
     request = CompareRequest()
     request['entry'] = LDAPDN(dn)

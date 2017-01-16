@@ -43,6 +43,7 @@ The extend.standard namespace contains extended operation defined in current RFC
             streaming,
             callback
         )
+
 To get the identity of the bound user::
 
     c = Connection(....)
@@ -112,7 +113,6 @@ To enable Persistent Searches to get all modification in the tree as they happen
     c = Connection(s, 'cn=admin,o=resources', 'password', client_strategy=ASYNC_STREAM)
     c.stream = open('myfile.log', 'w+)
     p = c.extend.standard.persistent_search()
-```
 
 now the persistent search is running in an internal thread. Each modification is recorded in the log in LDIF-CHANGE format, with the event type, event time and the modified dn and changelog number (if available) as comments.
 
@@ -149,60 +149,59 @@ If you want to stop the persistent search you can use ``p.stop()``. Use ``p.star
 
 If you don't provide a stream (a file to write to), a StringIO object is used. You can use it as a standard file or get the value of the StringIO object with ``c.stream.getvalue()``.
 
-For example an output from my test suite is the following:
-```
-# 2016-07-10T23:34:41.616615
-# add
-dn: cn=[71973491]modify-dn-1,o=test
-objectClass: inetOrgPerson
-objectClass: organizationalPerson
-objectClass: Person
-objectClass: ndsLoginProperties
-objectClass: Top
-sn: modify-dn-1
-cn: [71973491]modify-dn-1
-ACL: 2#subtree#cn=[71973491]modify-dn-1,o=test#[All Attributes Rights]
-ACL: 6#entry#cn=[71973491]modify-dn-1,o=test#loginScript
-ACL: 2#entry#[Public]#messageServer
-ACL: 2#entry#[Root]#groupMembership
-ACL: 6#entry#cn=[71973491]modify-dn-1,o=test#printJobConfiguration
-ACL: 2#entry#[Root]#networkAddress
+For example an output from my test suite is the following::
 
-# 2016-07-10T23:34:41.888506
-# modify dn
-# previous dn: cn=[71973491]modify-dn-1,o=test
-dn: cn=[71973491]modified-dn-1,o=test
-objectClass: inetOrgPerson
-objectClass: organizationalPerson
-objectClass: Person
-objectClass: ndsLoginProperties
-objectClass: Top
-sn: modify-dn-1
-cn: [71973491]modified-dn-1
-ACL: 2#subtree#cn=[71973491]modified-dn-1,o=test#[All Attributes Rights]
-ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#loginScript
-ACL: 2#entry#[Public]#messageServer
-ACL: 2#entry#[Root]#groupMembership
-ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#printJobConfiguration
-ACL: 2#entry#[Root]#networkAddress
+    # 2016-07-10T23:34:41.616615
+    # add
+    dn: cn=[71973491]modify-dn-1,o=test
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: Person
+    objectClass: ndsLoginProperties
+    objectClass: Top
+    sn: modify-dn-1
+    cn: [71973491]modify-dn-1
+    ACL: 2#subtree#cn=[71973491]modify-dn-1,o=test#[All Attributes Rights]
+    ACL: 6#entry#cn=[71973491]modify-dn-1,o=test#loginScript
+    ACL: 2#entry#[Public]#messageServer
+    ACL: 2#entry#[Root]#groupMembership
+    ACL: 6#entry#cn=[71973491]modify-dn-1,o=test#printJobConfiguration
+    ACL: 2#entry#[Root]#networkAddress
 
-# 2016-07-10T23:34:41.929022
-# delete
-dn: cn=[71973491]modified-dn-1,o=test
-objectClass: inetOrgPerson
-objectClass: organizationalPerson
-objectClass: Person
-objectClass: ndsLoginProperties
-objectClass: Top
-sn: modify-dn-1
-cn: [71973491]modified-dn-1
-ACL: 2#subtree#cn=[71973491]modified-dn-1,o=test#[All Attributes Rights]
-ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#loginScript
-ACL: 2#entry#[Public]#messageServer
-ACL: 2#entry#[Root]#groupMembership
-ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#printJobConfiguration
-ACL: 2#entry#[Root]#networkAddress
-```
+    # 2016-07-10T23:34:41.888506
+    # modify dn
+    # previous dn: cn=[71973491]modify-dn-1,o=test
+    dn: cn=[71973491]modified-dn-1,o=test
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: Person
+    objectClass: ndsLoginProperties
+    objectClass: Top
+    sn: modify-dn-1
+    cn: [71973491]modified-dn-1
+    ACL: 2#subtree#cn=[71973491]modified-dn-1,o=test#[All Attributes Rights]
+    ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#loginScript
+    ACL: 2#entry#[Public]#messageServer
+    ACL: 2#entry#[Root]#groupMembership
+    ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#printJobConfiguration
+    ACL: 2#entry#[Root]#networkAddress
+
+    # 2016-07-10T23:34:41.929022
+    # delete
+    dn: cn=[71973491]modified-dn-1,o=test
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: Person
+    objectClass: ndsLoginProperties
+    objectClass: Top
+    sn: modify-dn-1
+    cn: [71973491]modified-dn-1
+    ACL: 2#subtree#cn=[71973491]modified-dn-1,o=test#[All Attributes Rights]
+    ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#loginScript
+    ACL: 2#entry#[Public]#messageServer
+    ACL: 2#entry#[Root]#groupMembership
+    ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#printJobConfiguration
+    ACL: 2#entry#[Root]#networkAddress
 
 If you call the persistent_search() method with straming=False you can get the modified entries with the p.next() method.
 Each call to p.next() returns one event, with the extended control already decoded (as dict values) if available.

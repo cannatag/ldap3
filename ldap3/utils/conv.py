@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -25,10 +25,10 @@
 
 from base64 import b64encode, b64decode
 import datetime
+import re
 
-from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
+from .. import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES, get_config_parameter
 from ..utils.ciDict import CaseInsensitiveDict
-from ..utils.config import get_config_parameter
 from ..core.exceptions import LDAPDefinitionError
 
 
@@ -43,7 +43,7 @@ def to_unicode(obj, encoding=None):
             encoding = get_config_parameter('DEFAULT_ENCODING')
         return obj.decode(encoding)
 
-    if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 str and unicode
+    if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 unicode
         return obj
 
     raise UnicodeError("Unable to convert to unicode %r" % obj)
@@ -66,29 +66,22 @@ def to_raw(obj, encoding='utf-8'):
 def escape_filter_chars(text, encoding=None):
     """ Escape chars mentioned in RFC4515. """
 
-    if isinstance(text, STRING_TYPES):
-        if '\\' in text:  # could already be escaped
-            return text
-    elif isinstance(text, (bytes, bytearray)):  # always returns bytes
-        # if b'\\' in text:  # could already be escaped
-        #     return text
-        return text
-
     if encoding is None:
         encoding = get_config_parameter('DEFAULT_ENCODING')
 
     text = to_unicode(text, encoding)
-    output = text.replace('\\', '\\5c')
-    output = output.replace('*', '\\2a')
-    output = output.replace('(', '\\28')
-    output = output.replace(')', '\\29')
-    output = output.replace('\x00', '\\00')
+    escaped = text.replace('\\', '\\5c')
+    escaped = escaped.replace('*', '\\2a')
+    escaped = escaped.replace('(', '\\28')
+    escaped = escaped.replace(')', '\\29')
+    escaped = escaped.replace('\x00', '\\00')
     # escape all octets greater than 0x7F that are not part of a valid UTF-8
-    output = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in output)
-    return output
+    # escaped = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in output)
+    return escaped
 
 
 def escape_bytes(bytes_value):
+    """ Convert a byte sequence to a properly escaped for LDAP (format BACKSLASH HEX HEX) string"""
     if bytes_value:
         if str != bytes:  # Python 3
             if isinstance(bytes_value, str):
@@ -111,25 +104,25 @@ def prepare_for_stream(value):
         return value.decode()
 
 
-def check_escape(raw_string):
-    if isinstance(raw_string, bytes) or '\\' not in raw_string:
-        return raw_string
-
-    escaped = ''
-    i = 0
-    while i < len(raw_string):
-        if raw_string[i] == '\\' and i < len(raw_string) - 2:
-            try:
-                value = int(raw_string[i + 1: i + 3], 16)
-                escaped += chr(value)
-                i += 2
-            except ValueError:
-                escaped += '\\\\'
-        else:
-            escaped += raw_string[i]
-        i += 1
-
-    return escaped
+# def check_escape(raw_string):
+#     if isinstance(raw_string, bytes) or '\\' not in raw_string:
+#         return raw_string
+#
+#     escaped = ''
+#     i = 0
+#     while i < len(raw_string):
+#         if raw_string[i] == '\\' and i < len(raw_string) - 2:
+#             try:
+#                 value = int(raw_string[i + 1: i + 3], 16)
+#                 escaped += chr(value)
+#                 i += 2
+#             except ValueError:
+#                 escaped += '\\\\'
+#         else:
+#             escaped += raw_string[i]
+#         i += 1
+#
+#     return escaped
 
 
 def json_encode_b64(obj):
@@ -185,13 +178,15 @@ def format_json(obj):
     try:
         if str != bytes:  # python3
             if isinstance(obj, bytes):
-                return check_escape(str(obj, 'utf-8', errors='strict'))
+                # return check_escape(str(obj, 'utf-8', errors='strict'))
+                return str(obj, 'utf-8', errors='strict')
             raise LDAPDefinitionError('unable to serialize ' + str(obj))
         else:  # python2
             if isinstance(obj, unicode):
                 return obj
             else:
-                return unicode(check_escape(obj))
+                # return unicode(check_escape(obj))
+                return unicode(obj)
     except (TypeError, UnicodeDecodeError):
         pass
 
@@ -201,3 +196,10 @@ def format_json(obj):
         pass
 
     raise LDAPDefinitionError('unable to serialize ' + str(obj))
+
+
+def is_filter_escaped(text):
+    if not type(text) == ((bytes != str) and str or unicode):  # requires str for Py3 or unicode for Py2
+        raise ValueError('unicode input expected')
+
+    return all(c not in text for c in '()*\0') and not re.search('\\\\([^0-9a-fA-F]|(.[^0-9a-fA-F]))', text)

@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2016 Giovanni Cannata
+# Copyright 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -28,6 +28,8 @@ import re
 
 from threading import Lock
 
+from pyasn1.type.univ import OctetString
+
 from .. import SEQUENCE_TYPES, ALL_ATTRIBUTES
 from ..operation.bind import bind_request_to_dict
 from ..operation.delete import delete_request_to_dict
@@ -35,16 +37,71 @@ from ..operation.add import add_request_to_dict
 from ..operation.compare import compare_request_to_dict
 from ..operation.modifyDn import modify_dn_request_to_dict
 from ..operation.modify import modify_request_to_dict
+from ..operation.extended import extended_request_to_dict
 from ..operation.search import search_request_to_dict, parse_filter, ROOT, AND, OR, NOT, MATCH_APPROX, \
     MATCH_GREATER_OR_EQUAL, MATCH_LESS_OR_EQUAL, MATCH_EXTENSIBLE, MATCH_PRESENT,\
     MATCH_SUBSTRING, MATCH_EQUAL
-from ..utils.conv import json_hook, check_escape, to_unicode, to_raw
+from ..utils.conv import json_hook, to_unicode, to_raw
 from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
 from ..utils.log import log, log_enabled, ERROR, BASIC
 from ..protocol.formatters.standard import format_attribute_values
+from ..utils.asn1 import encoder
+
+# LDAPResult ::= SEQUENCE {
+#     resultCode         ENUMERATED {
+#         success                      (0),
+#         operationsError              (1),
+#         protocolError                (2),
+#         timeLimitExceeded            (3),
+#         sizeLimitExceeded            (4),
+#         compareFalse                 (5),
+#         compareTrue                  (6),
+#         authMethodNotSupported       (7),
+#         strongerAuthRequired         (8),
+#              -- 9 reserved --
+#         referral                     (10),
+#         adminLimitExceeded           (11),
+#         unavailableCriticalExtension (12),
+#         confidentialityRequired      (13),
+#         saslBindInProgress           (14),
+#         noSuchAttribute              (16),
+#         undefinedAttributeType       (17),
+#         inappropriateMatching        (18),
+#         constraintViolation          (19),
+#         attributeOrValueExists       (20),
+#         invalidAttributeSyntax       (21),
+#              -- 22-31 unused --
+#         noSuchObject                 (32),
+#         aliasProblem                 (33),
+#         invalidDNSyntax              (34),
+#              -- 35 reserved for undefined isLeaf --
+#         aliasDereferencingProblem    (36),
+#              -- 37-47 unused --
+#         inappropriateAuthentication  (48),
+#         invalidCredentials           (49),
+#         insufficientAccessRights     (50),
+#         busy                         (51),
+#         unavailable                  (52),
+#         unwillingToPerform           (53),
+#         loopDetect                   (54),
+#              -- 55-63 unused --
+#         namingViolation              (64),
+#         objectClassViolation         (65),
+#         notAllowedOnNonLeaf          (66),
+#         notAllowedOnRDN              (67),
+#         entryAlreadyExists           (68),
+#         objectClassModsProhibited    (69),
+#              -- 70 reserved for CLDAP --
+#         affectsMultipleDSAs          (71),
+#              -- 72-79 unused --
+#         other                        (80),
+#         ...  },
+#     matchedDN          LDAPDN,
+#     diagnosticMessage  LDAPString,
+#     referral           [3] Referral OPTIONAL }
 
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
@@ -56,10 +113,11 @@ class MockBaseStrategy(object):
     def __init__(self):
         if not hasattr(self.connection.server, 'dit'):  # create entries dict if not already present
             self.connection.server.dit_lock = Lock()
-            self.connection.server.dit = dict()
+            self.connection.server.dit = CaseInsensitiveDict()
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
         self.bound = None
+        self.operational_attributes = ['entryDN']
         self.add_entry('cn=schema', [])  # add default entry for schema
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
@@ -76,21 +134,45 @@ class MockBaseStrategy(object):
         if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
+    def _update_attribute(self, dn, attribute_type, value):
+        pass
+
     def add_entry(self, dn, attributes):
         with self.connection.server.dit_lock:
             escaped_dn = safe_dn(dn)
             if escaped_dn not in self.connection.server.dit:
-                self.connection.server.dit[escaped_dn] = CaseInsensitiveDict()
+                new_entry = CaseInsensitiveDict()
                 for attribute in attributes:
                     if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
                         attributes[attribute] = [attributes[attribute]]
-                    self.connection.server.dit[escaped_dn][attribute] = [to_raw(value) for value in attributes[attribute]]
-                for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
-                    if rdn[0] not in self.connection.server.dit[escaped_dn]:  # if rdn attribute is missing adds attribute and its value
-                        self.connection.server.dit[escaped_dn][rdn[0]] = [to_raw(check_escape(rdn[1]))]
+                    if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(attributes[attribute]) > 1:  # multiple values in single-valued attribute
+                        return False
+                    if attribute == 'objectClass' and self.connection.server.schema:  # builds the objectClass hierarchy only if schema is present
+                        class_set = set()
+                        for object_class in attributes['objectClass']:
+                            if object_class not in self.connection.server.schema.object_classes:
+                                return False
+                            # walkups the class hierarchy and buils a set of all classes in it
+                            class_set.add(object_class)
+                            class_set_size = 0
+                            while class_set_size != len(class_set):
+                                new_classes = set()
+                                class_set_size = len(class_set)
+                                for class_name in class_set:
+                                    if self.connection.server.schema.object_classes[class_name].superior:
+                                        new_classes.update(self.connection.server.schema.object_classes[class_name].superior)
+                                class_set.update(new_classes)
+                            new_entry['objectClass'] = [to_raw(value) for value in class_set]
                     else:
-                        if rdn[1] not in self.connection.server.dit[escaped_dn][rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                            self.connection.server.dit[escaped_dn][rdn[0]].append(to_raw(check_escape(rdn[1])))
+                        new_entry[attribute] = [to_raw(value) for value in attributes[attribute]]
+                for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
+                    if rdn[0] not in new_entry:  # if rdn attribute is missing adds attribute and its value
+                        new_entry[rdn[0]] = [to_raw(rdn[1])]
+                    else:
+                        if rdn[1] not in new_entry[rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
+                            new_entry[rdn[0]].append(to_raw(rdn[1]))
+                new_entry['entryDN'] = [to_raw(escaped_dn)]
+                self.connection.server.dit[escaped_dn] = new_entry
                 return True
             return False
 
@@ -287,14 +369,18 @@ class MockBaseStrategy(object):
         dn_components = to_dn(dn)
         if dn in self.connection.server.dit:
             if new_superior and new_rdn:  # performs move in the DIT
-                self.connection.server.dit[safe_dn(dn_components[0] + ',' + new_superior)] = self.connection.server.dit[dn].copy()
+                new_dn = safe_dn(dn_components[0] + ',' + new_superior)
+                self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
                 if delete_old_rdn:
                     del self.connection.server.dit[dn]
                 result_code = 0
                 message = 'entry moved'
+                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
             elif new_rdn and not new_superior:  # performs rename
-                self.connection.server.dit[safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))] = self.connection.server.dit[dn].copy()
+                new_dn = safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))
+                self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
                 del self.connection.server.dit[dn]
+                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
                 result_code = 0
                 message = 'entry rdn renamed'
             else:
@@ -335,18 +421,27 @@ class MockBaseStrategy(object):
         message = ''
         rdns = [rdn[0] for rdn in safe_rdn(dn, decompose=True)]
         if dn in self.connection.server.dit:
-            original_entry = self.connection.server.dit[dn].copy()  # to preserve atomicity of operation
+            entry = self.connection.server.dit[dn]
+            original_entry = entry.copy()  # to preserve atomicity of operation
             for modification in changes:
                 operation = modification['operation']
                 attribute = modification['attribute']['type']
                 elements = modification['attribute']['value']
                 if operation == 0:  # add
-                    if attribute not in self.connection.server.dit[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
+                    if attribute not in entry and elements:  # attribute not present, creates the new attribute and add elements
+                        if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(elements) > 1:  # multiple values in single-valued attribute
+                            result_code = 19
+                            message = 'attribute is single-valued'
+                        else:
+                            entry[attribute] = [to_raw(element) for element in elements]
                     else:  # attribute present, adds elements to current values
-                        self.connection.server.dit[dn][attribute].extend([to_raw(element) for element in elements])
+                        if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value:  # multiple values in single-valued attribute
+                            result_code = 19
+                            message = 'attribute is single-valued'
+                        else:
+                            entry[attribute].extend([to_raw(element) for element in elements])
                 elif operation == 1:  # delete
-                    if attribute not in self.connection.server.dit[dn]:  # attribute must exist
+                    if attribute not in entry:  # attribute must exist
                         result_code = 16
                         message = 'attribute must exists for deleting its values'
                     elif attribute in rdns:  # attribute can't be used in dn
@@ -354,28 +449,32 @@ class MockBaseStrategy(object):
                         message = 'cannot delete an rdn'
                     else:
                         if not elements:  # deletes whole attribute if element list is empty
-                            del self.connection.server.dit[dn][attribute]
+                            del entry[attribute]
                         else:
                             for element in elements:
                                 raw_element = to_raw(element)
                                 if self.equal(dn, attribute, raw_element):  # removes single element
-                                    self.connection.server.dit[dn][attribute].remove(raw_element)
+                                    entry[attribute].remove(raw_element)
                                 else:
                                     result_code = 1
                                     message = 'value to delete not found'
-                            if not self.connection.server.dit[dn][attribute]:  # removes the whole attribute if no elements remained
-                                del self.connection.server.dit[dn][attribute]
+                            if not entry[attribute]:  # removes the whole attribute if no elements remained
+                                del entry[attribute]
                 elif operation == 2:  # replace
-                    if attribute not in self.connection.server.dit[dn] and elements:  # attribute not present, creates the new attribute and add elements
-                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
+                    if attribute not in entry and elements:  # attribute not present, creates the new attribute and add elements
+                        if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(elements) > 1:  # multiple values in single-valued attribute
+                            result_code = 19
+                            message = 'attribute is single-valued'
+                        else:
+                            entry[attribute] = [to_raw(element) for element in elements]
                     elif not elements and attribute in rdns:  # attribute can't be used in dn
                         result_code = 67
                         message = 'cannot replace an rdn'
                     elif not elements:  # deletes whole attribute if element list is empty
-                        if attribute in self.connection.server.dit[dn]:
-                            del self.connection.server.dit[dn][attribute]
+                        if attribute in entry:
+                            del entry[attribute]
                     else:  # substitutes elements
-                        self.connection.server.dit[dn][attribute] = [to_raw(element) for element in elements]
+                        entry[attribute] = [to_raw(element) for element in elements]
 
             if result_code:  # an error has happened, restores the original dn
                 self.connection.server.dit[dn] = original_entry
@@ -426,7 +525,12 @@ class MockBaseStrategy(object):
         base = safe_dn(request['base'])
         scope = request['scope']
         attributes = request['attributes']
-        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=False)
+        if '+' in attributes:  # operational attributes requested
+            attributes.extend(self.operational_attributes)
+            attributes.remove('+')
+        attributes = [attr.lower() for attr in request['attributes']]
+
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':
@@ -451,7 +555,7 @@ class MockBaseStrategy(object):
                     'attributes': [{'type': attribute,
                                     'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
                                    for attribute in self.connection.server.dit[match]
-                                   if attribute in attributes or ALL_ATTRIBUTES in attributes]
+                                   if attribute.lower() in attributes or ALL_ATTRIBUTES in attributes]
                 })
 
             result_code = 0
@@ -464,6 +568,48 @@ class MockBaseStrategy(object):
                   }
 
         return responses[:request['sizeLimit']] if request['sizeLimit'] > 0 else responses, result
+
+    def mock_extended(self, request_message, controls):
+        # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
+        #     requestName      [0] LDAPOID,
+        #     requestValue     [1] OCTET STRING OPTIONAL }
+        #
+        # ExtendedResponse ::= [APPLICATION 24] SEQUENCE {
+        #     COMPONENTS OF LDAPResult,
+        #     responseName     [10] LDAPOID OPTIONAL,
+        #     responseValue    [11] OCTET STRING OPTIONAL }
+        #
+        # IntermediateResponse ::= [APPLICATION 25] SEQUENCE {
+        #     responseName     [0] LDAPOID OPTIONAL,
+        #     responseValue    [1] OCTET STRING OPTIONAL }
+        request = extended_request_to_dict(request_message)
+
+        result_code = 53
+        message = 'not implemented'
+        response_name = None
+        response_value = None
+        if self.connection.server.info:
+            for extension in self.connection.server.info.supported_extensions:
+                if request['name'] == extension[0]:  # server can answer the extended request
+                    if extension[0] == '2.16.840.1.113719.1.27.100.31':  # getBindDNRequest [NOVELL]
+                        result_code = 0
+                        message = ''
+                        response_name = '2.16.840.1.113719.1.27.100.32'  # getBindDNResponse [NOVELL]
+                        response_value = encoder.encode(OctetString(self.bound))
+                    elif extension[0] == '1.3.6.1.4.1.4203.1.11.3':  # WhoAmI [RFC4532]
+                        result_code = 0
+                        message = ''
+                        response_name = '1.3.6.1.4.1.4203.1.11.3'  # WhoAmI [RFC4532]
+                        response_value = encoder.encode(OctetString(self.bound))
+                    break
+
+        return {'resultCode': result_code,
+                'matchedDN': '',
+                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'referral': None,
+                'responseName': response_name,
+                'responseValue': response_value
+                }
 
     def evaluate_filter_node(self, node, candidates):
         """After evaluation each 2 sets are added to each MATCH node, one for the matched object and one for unmatched object.

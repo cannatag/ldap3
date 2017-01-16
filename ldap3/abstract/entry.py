@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2016 Giovanni Cannata
+# Copyright 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -31,7 +31,6 @@ except ImportError:
     from ..utils.ordDict import OrderedDict  # for Python 2.6
 
 from os import linesep
-from time import sleep
 
 from .. import STRING_TYPES, SEQUENCE_TYPES
 from .attribute import WritableAttribute
@@ -456,7 +455,7 @@ class WritableEntry(EntryBase):
                     self._state.set_status(STATUS_COMMITTED)
                     return True
                 else:
-                    raise LDAPCursorError('unable to commit entry, ' + result['description'] + ' - ' + result['message'])
+                    raise LDAPCursorError('unable to commit changes to entry %s, reason: %s - %s' % (self.entry_dn, result['description'], result['message']))
         return False
 
     def entry_discard_changes(self):

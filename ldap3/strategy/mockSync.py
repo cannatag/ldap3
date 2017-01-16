@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -25,6 +25,7 @@
 
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS
 from .mockBase import MockBaseStrategy
+from .base import BaseStrategy
 from .sync import SyncStrategy
 from ..operation.bind import bind_response_to_dict
 from ..operation.delete import delete_response_to_dict
@@ -33,61 +34,9 @@ from ..operation.compare import compare_response_to_dict
 from ..operation.modifyDn import modify_dn_response_to_dict
 from ..operation.modify import modify_response_to_dict
 from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
+from ..operation.extended import extended_response_to_dict
 from ..core.exceptions import LDAPSocketOpenError, LDAPOperationResult
 from ..utils.log import log, log_enabled, ERROR, PROTOCOL
-
-# LDAPResult ::= SEQUENCE {
-#     resultCode         ENUMERATED {
-#         success                      (0),
-#         operationsError              (1),
-#         protocolError                (2),
-#         timeLimitExceeded            (3),
-#         sizeLimitExceeded            (4),
-#         compareFalse                 (5),
-#         compareTrue                  (6),
-#         authMethodNotSupported       (7),
-#         strongerAuthRequired         (8),
-#              -- 9 reserved --
-#         referral                     (10),
-#         adminLimitExceeded           (11),
-#         unavailableCriticalExtension (12),
-#         confidentialityRequired      (13),
-#         saslBindInProgress           (14),
-#         noSuchAttribute              (16),
-#         undefinedAttributeType       (17),
-#         inappropriateMatching        (18),
-#         constraintViolation          (19),
-#         attributeOrValueExists       (20),
-#         invalidAttributeSyntax       (21),
-#              -- 22-31 unused --
-#         noSuchObject                 (32),
-#         aliasProblem                 (33),
-#         invalidDNSyntax              (34),
-#              -- 35 reserved for undefined isLeaf --
-#         aliasDereferencingProblem    (36),
-#              -- 37-47 unused --
-#         inappropriateAuthentication  (48),
-#         invalidCredentials           (49),
-#         insufficientAccessRights     (50),
-#         busy                         (51),
-#         unavailable                  (52),
-#         unwillingToPerform           (53),
-#         loopDetect                   (54),
-#              -- 55-63 unused --
-#         namingViolation              (64),
-#         objectClassViolation         (65),
-#         notAllowedOnNonLeaf          (66),
-#         notAllowedOnRDN              (67),
-#         entryAlreadyExists           (68),
-#         objectClassModsProhibited    (69),
-#              -- 70 reserved for CLDAP --
-#         affectsMultipleDSAs          (71),
-#              -- 72-79 unused --
-#         other                        (80),
-#         ...  },
-#     matchedDN          LDAPDN,
-#     diagnosticMessage  LDAPString,
-#     referral           [3] Referral OPTIONAL }
 
 
 class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance sequence is important, MockBaseStrategy must be the first one
@@ -100,7 +49,7 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         MockBaseStrategy.__init__(self)
 
     def send(self, message_type, request, controls=None):
-        self.connection.request = None
+        self.connection.request = BaseStrategy.decode_request(message_type, request, controls)
         if self.connection.listening:
             return message_type, request, controls
         else:
@@ -156,6 +105,9 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         elif message_type == 'modifyRequest':
             result = modify_response_to_dict(self.mock_modify(request, controls))
             result['type'] = 'modifyResponse'
+        elif message_type == 'extendedReq':
+            result = extended_response_to_dict(self.mock_extended(request, controls))
+            result['type'] = 'extendedResp'
         self.connection.result = result
         responses.append(result)
         if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:

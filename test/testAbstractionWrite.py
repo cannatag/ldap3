@@ -136,7 +136,7 @@ class Test(unittest.TestCase):
         n.entry_commit_changes()
         self.assertEqual(n.sn, 'sn-test-7')
         self.assertEqual(n.entry_status, STATUS_COMMITTED)
-        sleep(5)
+        sleep(3)
         n.entry_move(test_moved)
         self.assertEqual(n.entry_status, STATUS_READY_FOR_MOVING)
         n.entry_commit_changes()
@@ -146,13 +146,13 @@ class Test(unittest.TestCase):
         counter = 20
         while counter > 0:
             try:
-                counter -= 1
-                sleep(3)
                 n.entry_commit_changes()
                 if n.entry_status == STATUS_DELETED:
                     break
             except LDAPCursorError:
                 pass
+            counter -= 1
+            sleep(3)
         self.assertEqual(n.entry_status, STATUS_DELETED)
 
 

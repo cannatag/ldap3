@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2016 Giovanni Cannata
+# Copyright 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -27,11 +27,11 @@ from ... import SEQUENCE_TYPES, MODIFY_DELETE, BASE, DEREF_NEVER
 from ...utils.dn import safe_dn
 
 
-def remove_members_from_groups(connection,
-                               members_dn,
-                               groups_dn,
-                               fix,
-                               transaction):
+def edir_remove_members_from_groups(connection,
+                                    members_dn,
+                                    groups_dn,
+                                    fix,
+                                    transaction):
     """
     :param connection: a bound Connection object
     :param members_dn: the list of members to remove from groups

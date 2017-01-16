@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -54,14 +54,14 @@ class Attribute(object):
 
     def __repr__(self):
         if len(self.values) == 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
             filler = ' ' * (len(self.key) + 6)
             for value in self.values[1:]:
                 r += linesep + filler + to_stdout_encoding(value)
         else:
-            r = self.key + ': ' + to_stdout_encoding('<no value>')
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding('<no value>')
 
         return r
 
@@ -113,9 +113,9 @@ class OperationalAttribute(Attribute):
 
     def __repr__(self):
         if len(self.values) == 1:
-            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ' [OPERATIONAL]: ' + to_stdout_encoding(self.values[0])
             filler = ' ' * (len(self.key) + 6)
             for value in sorted(self.values[1:]):
                 r += linesep + filler + to_stdout_encoding(value)
@@ -129,13 +129,13 @@ class WritableAttribute(Attribute):
     def __repr__(self):
         filler = ' ' * (len(self.key) + 6)
         if len(self.values) == 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
         elif len(self.values) > 1:
-            r = self.key + ': ' + to_stdout_encoding(self.values[0])
+            r = to_stdout_encoding(self.key) + ': ' + to_stdout_encoding(self.values[0])
             for value in self.values[1:]:
                 r += linesep + filler + to_stdout_encoding(value)
         else:
-            r = self.key + to_stdout_encoding(': <Virtual>')
+            r = to_stdout_encoding(self.key) + to_stdout_encoding(': <Virtual>')
         if self.key in self.entry._changes:
             r += linesep + filler + 'CHANGES: ' + str(self.entry._changes[self.key])
         return r
@@ -167,8 +167,12 @@ class WritableAttribute(Attribute):
             raise LDAPCursorError('added value cannot be None')
         # if self.values and self.definition.single_value:
         #     raise LDAPCursorError("can't add to an already valued single-value attribute")
-        if values is not None and not self.definition.validate(self.definition.name, values):
-            raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+        if values is not None:
+            validated = self.definition.validate(self.definition.name, values)  # returns True, False or a value to substitute to the actual values
+            if validated is False:
+                raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+            elif validated is not True:  # a valid LDAP value equivalent to the actual values
+                values = validated
         self._update_changes((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
     def set(self, values):
@@ -177,8 +181,11 @@ class WritableAttribute(Attribute):
             raise LDAPCursorError(self.entry.entry_status + ' cannot set attributes')
         if values is None:
             raise LDAPCursorError('new value cannot be None')
-        if not self.definition.validate(self.definition.name, values):
+        validated = self.definition.validate(self.definition.name, values)  # returns True, False or a value to substitute to the actual values
+        if validated is False:
             raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+        elif validated is not True:  # a valid LDAP value equivalent to the actual values
+            values = validated
         self._update_changes((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
 
     def delete(self, values):

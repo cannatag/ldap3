@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -23,10 +23,11 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SEQUENCE_TYPES, CLASSES_EXCLUDED_FROM_CHECK, ATTRIBUTES_EXCLUDED_FROM_CHECK, STRING_TYPES
+from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
 from ..protocol.rfc4511 import Controls, Control
-from ..utils.conv import to_raw, escape_filter_chars
+from ..utils.conv import to_raw, to_unicode, escape_filter_chars, is_filter_escaped
+
 
 def attribute_to_dict(attribute):
     return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
@@ -120,74 +121,53 @@ def build_controls_list(controls):
     return built_controls
 
 
-def validate_assertion_value(schema, name, value, auto_escape):
-    value = validate_attribute_value(schema, name, value, auto_escape)
-
-    if b'\\' in value:
-        validated_value = bytearray()
-        pos = 0
-        while pos < len(value):
-            if value[pos] == 92 or value[pos] == b'\\':  # asc for \ in python 3
-                byte = value[pos + 1: pos + 3]
-                if len(byte) == 2:
-                    try:
-                        validated_value.append(int(value[pos + 1: pos + 3], 16))
-                        pos += 3
-                        continue
-                    except ValueError:
-                        pass
-            if isinstance(value, STRING_TYPES):
-                validated_value += value[pos].encode('utf-8')
-            else:
-                validated_value += chr(value[pos]).encode('utf-8')
-            pos += 1
-        validated_value = bytes(validated_value)
-    else:
-        validated_value = value
-
-    return validated_value
+def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
+    value = to_unicode(value)
+    if auto_escape:
+        if '\\' in value and not is_filter_escaped(value):
+            value = escape_filter_chars(value)
+    value = validate_attribute_value(schema, name, value, auto_encode)
+    return value
 
 
-def validate_attribute_value(schema, name, value, auto_escape):
+def validate_attribute_value(schema, name, value, auto_encode):
     if schema:
-        if schema.attribute_types is not None and name not in schema.attribute_types and name not in ATTRIBUTES_EXCLUDED_FROM_CHECK:
+        if ';' in name:
+            name = name.split(';')[0]
+        if schema.attribute_types is not None and name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
             raise LDAPAttributeError('invalid attribute ' + name)
         if schema.object_classes is not None and name == 'objectClass':
-            if value not in CLASSES_EXCLUDED_FROM_CHECK and value not in schema.object_classes:
+            if value not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
-    if auto_escape:
-        value = escape_filter_chars(value)  # tries to convert from local encoding
+        # encodes to utf-8 for well known Unicode LDAP syntaxes
+        if auto_encode and (schema.attribute_types[name].syntax in get_config_parameter('UTF8_ENCODED_SYNTAXES') or name in get_config_parameter('UTF8_ENCODED_TYPES')):
+            value = to_unicode(value)  # tries to convert from local encoding to Unicode
     return to_raw(value)
 
 
-def prepare_for_sending(raw_string):
-    if isinstance(raw_string, (bytes, bytearray)) and bytes != str:  # bytes are untouched in python 3
-        return raw_string
-
-    if isinstance(raw_string, STRING_TYPES) and '\\' not in raw_string:  #
-        return to_raw(raw_string)
-
-    if isinstance(raw_string, (bytes, bytearray)) and b'\\' not in raw_string:  #in Python 2 string could need escaping
-        return raw_string
-
-    escaped = bytearray()
+def prepare_filter_for_sending(raw_string):
     i = 0
+    ints = []
+    raw_string = to_raw(raw_string)
     while i < len(raw_string):
-        if raw_string[i] == '\\' and i < len(raw_string) - 2:
+        if (raw_string[i] == 92 or raw_string[i] == '\\') and i < len(raw_string) - 2:  # 92 is backslash
             try:
-                if str != bytes:  # python 3
-                    value = int(raw_string[i + 1: i + 3], 16)
-                else:
-                    value = chr(int(raw_string[i + 1: i + 3], 16))
-                escaped += value
+                ints.append(int(raw_string[i + 1: i + 3], 16))
                 i += 2
-            except ValueError:
-                escaped += '\\\\'
+            except ValueError:  # not an ldap escaped value, sends as is
+                ints.append(92)  # adds backslash
         else:
-            if str != bytes:  # python 3
-                escaped = int(raw_string[i])
-            else:  # python 2
-                escaped += raw_string[i]
+            if str != bytes:  # Python 3
+                ints.append(raw_string[i])
+            else:
+                ints.append(ord(raw_string[i]))
         i += 1
 
-    return escaped
+    if str != bytes:  # Python 3
+        return bytes(ints)
+    else:
+        return ''.join(chr(x) for x in ints)
+
+
+def prepare_for_sending(raw_string):
+    return to_raw(raw_string) if isinstance(raw_string, STRING_TYPES) else raw_string

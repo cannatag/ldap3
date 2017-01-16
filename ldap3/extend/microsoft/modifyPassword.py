@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015, 2016 Giovanni Cannata
+# Copyright 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -30,11 +30,11 @@ from ...core.results import RESULT_SUCCESS
 from ...utils.dn import safe_dn
 
 
-def modify_ad_password(connection, user_dn, new_password, old_password, controls=None):
+def ad_modify_password(connection, user_dn, new_password, old_password, controls=None):
     # old password must be None to reset password with sufficient privileges
     if connection.check_names:
         user_dn = safe_dn(user_dn)
-    if (bytes == str):  # python2, converts to unicode
+    if bytes == str:  # python2, converts to unicode
         new_password = unicode(new_password)
         if old_password:
             old_password = unicode(old_password)

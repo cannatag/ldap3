@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015, 2016 Giovanni Cannata
+# Copyright 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -24,18 +24,18 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 
-from ... import MODIFY_REPLACE, MODIFY_DELETE, MODIFY_ADD
+from ... import MODIFY_REPLACE
 from ...utils.log import log, log_enabled, PROTOCOL
 from ...core.results import RESULT_SUCCESS
 from ...utils.dn import safe_dn
 
 
-def unlock_ad_account(connection, user_dn, controls=None):
+def ad_unlock_account(connection, user_dn, controls=None):
     if connection.check_names:
         user_dn = safe_dn(user_dn)
     result = connection.modify(user_dn,
                                {'lockoutTime': [(MODIFY_REPLACE, [0])]},
-                                controls)
+                               controls)
 
     if not connection.strategy.sync:
         _, result = connection.get_response(result)

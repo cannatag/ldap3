@@ -9,6 +9,10 @@ LDAP3
     :target: https://pypi.python.org/pypi/ldap3/
     :alt: License
 
+.. image:: https://img.shields.io/travis/cannatag/ldap3/master.svg
+    :target: https://travis-ci.org/cannatag/ldap3
+    :alt: TRAVIS-CI build status for master branch
+
 
 ldap3 is a strictly RFC 4510 conforming **LDAP V3 pure Python client** library. The same codebase runs in Python 2, Python 3, PyPy and PyPy3.
 

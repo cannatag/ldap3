@@ -57,7 +57,10 @@ class Test(unittest.TestCase):
         else:
             bound_dn = connection.extend.standard.who_am_i()
 
-        self.assertTrue(test_secondary_user in bound_dn)
+        if bound_dn:
+            self.assertTrue(test_secondary_user in bound_dn)
+        else:
+            self.fail('no user dn in extended response')
 
         drop_connection(connection)
         self.assertFalse(connection.bound)

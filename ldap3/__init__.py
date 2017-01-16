@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -63,31 +63,6 @@ DEREF_ALWAYS = 'ALWAYS'
 ALL_ATTRIBUTES = '*'
 NO_ATTRIBUTES = '1.1'  # as per RFC 4511
 ALL_OPERATIONAL_ATTRIBUTES = '+'  # as per RFC 3673
-
-# checks
-CLASSES_EXCLUDED_FROM_CHECK = ['subschema']
-
-ATTRIBUTES_EXCLUDED_FROM_CHECK = [ALL_ATTRIBUTES,
-                                  ALL_OPERATIONAL_ATTRIBUTES,
-                                  NO_ATTRIBUTES,
-                                  'ldapSyntaxes',
-                                  'matchingRules',
-                                  'matchingRuleUse',
-                                  'dITContentRules',
-                                  'dITStructureRules',
-                                  'nameForms',
-                                  'altServer',
-                                  'namingContexts',
-                                  'supportedControl',
-                                  'supportedExtension',
-                                  'supportedFeatures',
-                                  'supportedCapabilities',
-                                  'supportedLdapVersion',
-                                  'supportedSASLMechanisms',
-                                  'vendorName',
-                                  'vendorVersion',
-                                  'subschemaSubentry',
-                                  'ACL']
 
 # modify type
 MODIFY_ADD = 'MODIFY_ADD'

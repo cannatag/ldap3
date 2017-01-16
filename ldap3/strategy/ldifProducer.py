@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -99,7 +99,7 @@ class LdifProducerStrategy(BaseStrategy):
         if message_controls is not None:
             ldap_message['controls'] = message_controls
 
-        self.connection.request = BaseStrategy.decode_request(ldap_message)
+        self.connection.request = BaseStrategy.decode_request(message_type, request, controls)
         self.connection.request['controls'] = controls
         self._outstanding[message_id] = self.connection.request
         return message_id

@@ -178,7 +178,7 @@ To search for a binary value you must use the RFC4515 ASCII escape sequence for 
     >>> search_filter = '(nsUniqueID=' + escape_bytes(unique_id) + ')'
     >>> conn.search('dc=demo1,dc=freeipa,dc=org', search_filter, attributes=['nsUniqueId'])
 
-``search_filter`` will contain ``(guid=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \\xx escaping format is specific to the LDAP protocol.
+``search_filter`` will contain ``(nsUniqueID=\\ca\\40\\f2\\6b\\1d\\86\\ca\\4c\\b7\\a2\\ca\\40\\f2\\6b\\1d\\86)``. The \\xx escaping format is specific to the LDAP protocol.
 
 Entries Retrieval
 =================
@@ -188,11 +188,11 @@ attribute.
 ldap3 provides some **standard formatters** used to format the values retrieved in a Search operation as
 specified by the RFCs according to the current schema syntaxes. If the schema
 is known (with ``get_info=SCHEMA`` or ``get_info=ALL`` in the Server object) and the ``check_names``
-parameter of the Connection object is set to True, the ``attributes`` attribute is populated with the formatted values
+parameter of the Connection object is set to True, the ``attributes`` attribute is populated with the formatted values.
 If the attribute is defined in the schema as *multi valued* then the attribute value is returned as a list (even if only
 a single value is present) else it's returned as a single value.
 
-**Custom formatters** can be added to specify how attribute values must be returned A formatter must be a callable that receives
+**Custom formatters** can be added to specify how attribute values are returned. A formatter must be a callable that receives
 a bytes value and returns an object.
 
 What about empty attributes?
@@ -204,7 +204,7 @@ You can change this behaviour setting to False the ``return_empty_attributes`` p
 
 Simple Paged search
 ===================
-The Search operation can perform a *simple paged search* as specified in RFC 2696. The RFC states that the you can ask the server
+The Search operation can perform a *simple paged search* as specified in RFC 2696. The RFC states that you can ask the server
 to return a specific number of entries in each response set. With every search the server sends back a cookie that you have to
 provide in each subsequent search. All this information must be passed in a Control attached to the request and the server responds
 with similar information in a Control attached to the response.

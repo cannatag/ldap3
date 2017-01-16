@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -90,7 +90,7 @@ def format_boolean(raw_value):
 
 def format_ad_timestamp(raw_value):
     """
-    The Active Directory stores date/time values as the number of 100-nanosecond intervals
+    Active Directory stores date/time values as the number of 100-nanosecond intervals
     that have elapsed since the 0 hour on January 1, 1601 till the date/time that is being stored.
     The time is always stored in Greenwich Mean Time (GMT) in the Active Directory.
     """
@@ -110,7 +110,7 @@ def format_time(raw_value):
     '''
     From RFC4517:
     A value of the Generalized Time syntax is a character string
-    representing a date and time.  The LDAP-specific encoding of a value
+    representing a date and time. The LDAP-specific encoding of a value
     of this syntax is a restriction of the format defined in [ISO8601],
     and is described by the following ABNF:
 

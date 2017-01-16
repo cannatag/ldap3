@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -365,9 +365,11 @@ class Reader(Cursor):
                             value = val[1:].lstrip()
 
                     if self.definition[attr].validate:
-                        if not self.definition[attr].validate(self.definition[attr].key, value):
+                        validated = self.definition[attr].validate(self.definition[attr].key, value)  # returns True, False or a value to substitute to the actual values
+                        if validated is False:
                             raise LDAPCursorError('validation failed for attribute %s and value %s' % (d, val))
-
+                        elif validated is not True:  # a valid LDAP value equivalent to the actual values
+                                value = validated
                     if val_not:
                         query += '!' + val_search_operator + value
                     else:
@@ -600,7 +602,7 @@ class Writer(Cursor):
         return writer
 
     @staticmethod
-    def from_response(connection, object_def, response=None, custom_validator=None):
+    def from_response(connection, object_def, response=None):
         if response is None:
             if not connection.strategy.sync:
                 raise LDAPCursorError(' with async strategies response must be specified')
@@ -695,9 +697,8 @@ class Writer(Cursor):
         return entry
 
     def refresh_entry(self, entry, tries=4, seconds=2):
-
         self._do_not_reset = True
-        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes, tries, seconds=2)  # if any attributes is added adds only to the entry not to the definition
+        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes, tries, seconds=seconds)  # if any attributes is added adds only to the entry not to the definition
         self._do_not_reset = False
         if temp_entry:
             temp_entry._state.origin = entry._state.origin

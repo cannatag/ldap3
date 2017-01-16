@@ -34,9 +34,9 @@ from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 
-test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE (not used on TRAVIS - look at .travis.yml)
+test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
-test_logging = True
+test_logging = False
 
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
@@ -53,6 +53,7 @@ test_get_info = ALL  # get info from DSA
 test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
+test_auto_encode = True
 
 try:
     location = environ['USERDOMAIN']
@@ -60,15 +61,18 @@ except KeyError:
     location = 'UNKNOWN'
 
 test_lazy_connection = False
-# location = 'TRAVIS,SYNC,0'  # forces configuration as if we're running on Travis
+
+# ******** test TRAVIS configuration
+# location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis
+# ********
 
 if 'TRAVIS,' in location:
-    _, strategy, lazy = location.split(',')
+    _, strategy, lazy, server_type = location.split(',')
     test_strategy = strategy
     test_lazy_connection = bool(int(lazy))
-    test_server_type = 'SLAPD'  # temporary force SLAPD on TRAVIS
-
-location += '-' + test_server_type
+    test_server_type = server_type
+else:
+    location += '-' + test_server_type
 
 if 'TRAVIS,' in location:
     # test in the cloud
@@ -77,7 +81,7 @@ if 'TRAVIS,' in location:
         test_server = 'labldap02.cloudapp.net'
         test_server_edir_name = 'SLES1'
         test_root_partition = ''
-        test_base = 'o=test'  # base context where test objects are created
+        test_base = 'ou=fixtures,o=test'  # base context where test objects are created
         test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
         test_name_attr = 'cn'  # naming attribute for test objects
         test_int_attr = 'loginGraceLimit'
@@ -101,30 +105,32 @@ if 'TRAVIS,' in location:
         test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
     elif test_server_type == 'AD':
         test_server = 'labldap01.cloudapp.net'
-        test_server_edir_name = ''
-        test_root_partition = ''
-        test_base = 'o=test'  # base context where test objects are created
-        test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+        test_domain_name = 'AD2012.LAB'  # Active Directory Domain name
+        test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+        test_base = 'OU=test,' + test_root_partition  # base context where test objects are created
+        test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
         test_name_attr = 'cn'  # naming attribute for test objects
-        test_int_attr = 'loginGraceLimit'
-        test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
-        test_password = 'Rc1234pfop'  # user password
-        test_secondary_user = 'cn=testLAB,o=resources'
-        test_secondary_password = 'Rc1234pfop'
-        test_sasl_user = 'testLAB.resources'
-        test_sasl_password = 'Rc1234pfop'
+        test_int_attr = 'logonCount'
+        test_server_context = ''  # used in novell eDirectory extended operations
+        test_server_edir_name = ''  # used in novell eDirectory extended operations
+        test_user = 'CN=Giovanni,CN=Users,' + test_root_partition  # the user that performs the tests
+        test_password = 'Rc123456pfop'  # user password
+        test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+        test_secondary_password = 'Rc9999pfop'  # user password
+        test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
+        test_sasl_password = 'Rc9999pfop'
         test_sasl_user_dn = 'cn=testLAB,o=resources'
+        test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+        test_sasl_secondary_password = 'Rc9999pfop'
+        test_sasl_secondary_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
         test_sasl_realm = None
-        test_sasl_secondary_user = 'testLAB.resources'
-        test_sasl_secondary_password = 'Rc1234pfop'
-        test_sasl_secondary_user_dn = 'cn=testLAB,o=resources'
-        test_ca_cert_file = 'test/lab-edir-ca-cert.pem'
-        test_user_cert_file = 'test/lab-edir-testlab-cert.pem'
-        test_user_key_file = 'test/lab-edir-testlab-key.pem'
-        test_ntlm_user = 'xxx\\yyy'
-        test_ntlm_password = 'zzz'
-        test_logging_filename = 'ldap3.log'
-        test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
+        test_ca_cert_file = 'local-forest-lab-ca.pem'
+        test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+        test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+        test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
+        test_ntlm_password = '# '
+        test_logging_filename = join(gettempdir(), 'ldap3.log')
+        test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
         test_server = 'ipa.demo1.freeipa.org'
         test_server_edir_name = ''
@@ -159,7 +165,7 @@ if 'TRAVIS,' in location:
 elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
-    #               'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
+    #                'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir1.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
@@ -354,7 +360,9 @@ def get_connection(bind=None,
                    fast_decoder=None,
                    simple_credentials=(None, None),
                    receive_timeout=None,
-                   auto_escape=None):
+                   auto_escape=None,
+                   auto_encode=None):
+
     if bind is None:
         bind = True
     if check_names is None:
@@ -373,6 +381,8 @@ def get_connection(bind=None,
         receive_timeout = test_receive_timeout
     if auto_escape is None:
         auto_escape = test_auto_escape
+    if auto_encode is None:
+        auto_encode = test_auto_encode
 
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
@@ -425,7 +435,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
     elif authentication == NTLM:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -440,7 +451,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
     elif authentication == ANONYMOUS:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -455,7 +467,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
     else:
         connection = Connection(server,
                                 auto_bind=bind,
@@ -470,7 +483,8 @@ def get_connection(bind=None,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
                                 receive_timeout=receive_timeout,
-                                auto_escape=auto_escape)
+                                auto_escape=auto_escape,
+                                auto_encode=auto_encode)
 
     if test_strategy in [MOCK_SYNC, MOCK_ASYNC]:
         # create authentication identities for testing mock strategies
@@ -506,7 +520,7 @@ def drop_connection(connection, dn_to_delete=None):
                 elif result['description'] == 'busy':
                     counter -= 1
                     if counter >= 0:
-                        sleep(4)  # wait and retry
+                        sleep(3)  # wait and retry
                     else:
                         print('unable to delete object ' + dn[0] + ': ' + str(result))
                         done = True

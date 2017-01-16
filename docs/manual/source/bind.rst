@@ -29,11 +29,11 @@ The Bind operation specify 4 different methods to authenticate to the server, as
 * Anonymous Bind: the user and password are passed as empty strings.
 
 * Unauthenticated simple Bind: you pass a username without a password. This method, even if specified in the protocol,
-should not be used because is higly insecure and should be forbidden by the server. It was used in the past for tracing purpose.
+  should not be used because is higly insecure and should be forbidden by the server. It was used in the past for tracing purpose.
 
 * SASL (Simple Authentication and Security Layer): this defines multiple mechanisms that each server can provide to allow access to the server.
-Before trying a mechanism you should check that the server supports it. The LDAP server publish its allowed SASL mechanism in the DSE information
-that can be read anonymously with the ``get_info=ALL`` parameter of the Server object.
+  Before trying a mechanism you should check that the server supports it. The LDAP server publish its allowed SASL mechanism in the DSE information
+  that can be read anonymously with the ``get_info=ALL`` parameter of the Server object.
 
 The Bind method returns True if the bind is successful, False if something goes wrong while binding. In this case you
 can inspect the ``result`` attribute of the Connection object to get the error description.
@@ -266,13 +266,15 @@ that let you change the user and the authentication method while the connection 
     if not c.bind():
         print('error in bind', c.result)
 
-    try:
-        c.rebind(user='different_user_dn', password='different_user_password')
-    except LDAPBindError:
-       print('error in rebind', c.result)
+    # Bind again with another user
+    if not c.rebind(user='different_user_dn', password='different_user_password')
+        print('error in rebind', c.result)
 
 In case the credentials are invalid or if the server doesn't allow you to rebind the server *could* abruptly close the connection.
 This condition is checked by the ``rebind()`` method and an LDAPBindError exception will be raised if caught.
+
+If you want an exception raised when credentials are invalid you must use the ``raise_exceptions=True`` parameter in the Connection() definition. Keep
+in mind that network errors always raise an exception, even if raise_exceptions is set to False.
 
 Extended logging
 ----------------

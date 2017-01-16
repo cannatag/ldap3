@@ -520,7 +520,7 @@ def drop_connection(connection, dn_to_delete=None):
                 elif result['description'] == 'busy':
                     counter -= 1
                     if counter >= 0:
-                        sleep(4)  # wait and retry
+                        sleep(3)  # wait and retry
                     else:
                         print('unable to delete object ' + dn[0] + ': ' + str(result))
                         done = True

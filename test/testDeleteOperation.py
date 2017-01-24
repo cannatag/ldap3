@@ -48,3 +48,13 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.delete_at_teardown = []  # remove object from delete list if delete is successful
+
+    def test_delete_with_get_request(self):
+        result = self.connection.delete(self.delete_at_teardown[0][0])
+        if not self.connection.strategy.sync:
+            response, result, request = self.connection.get_response(result, get_request=True)
+            self.assertEqual(request['type'], 'delRequest')
+        else:
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.delete_at_teardown = []  # remove object from delete list if delete is successful

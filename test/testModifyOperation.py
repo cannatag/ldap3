@@ -50,6 +50,15 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
 
+    def test_modify_replace_with_get_request(self):
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_REPLACE, ['givenname-1-replaced']), 'sn': (MODIFY_REPLACE, ['sn-replaced'])})
+        if not self.connection.strategy.sync:
+            _, result, request = self.connection.get_response(result, get_request=True)
+            self.assertEqual(request['type'], 'modifyRequest')
+        else:
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+
     def test_modify_add(self):
         result = self.connection.modify(self.delete_at_teardown[0][0], {'businessCategory': (MODIFY_ADD, ['businessCategory-2-added'])})
         if not self.connection.strategy.sync:

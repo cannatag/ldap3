@@ -402,7 +402,7 @@ class ReusableStrategy(BaseStrategy):
             self.pool.bind_pool = True  # bind pool if bind is validated
         return result
 
-    def get_response(self, counter, timeout=None):
+    def get_response(self, counter, timeout=None, get_request=False):
         if timeout is None:
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         if counter == BOGUS_BIND:  # send a bogus bindResponse
@@ -438,6 +438,9 @@ class ReusableStrategy(BaseStrategy):
 
         if isinstance(response, LDAPOperationResult):
             raise response  # an exception has been raised with raise_connections
+
+        if get_request:
+            return response, result, dict()
 
         return response, result
 

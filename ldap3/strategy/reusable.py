@@ -256,9 +256,9 @@ class ReusableStrategy(BaseStrategy):
 
                             with pool.lock:
                                 if exc:
-                                    pool._incoming[counter] = (exc, None)
+                                    pool._incoming[counter] = (exc, None, None)
                                 else:
-                                    pool._incoming[counter] = (response, result)
+                                    pool._incoming[counter] = (response, result, BaseStrategy.decode_request(message_type, request, controls))
 
                     self.worker.busy = False
                     pool.request_queue.task_done()
@@ -424,7 +424,7 @@ class ReusableStrategy(BaseStrategy):
             while timeout >= 0:  # waiting for completed message to appear in _incoming
                 try:
                     with self.connection.strategy.pool.lock:
-                        response, result = self.connection.strategy.pool._incoming.pop(counter)
+                        response, result, request = self.connection.strategy.pool._incoming.pop(counter)
                 except KeyError:
                     sleep(get_config_parameter('RESPONSE_SLEEPTIME'))
                     timeout -= get_config_parameter('RESPONSE_SLEEPTIME')
@@ -440,7 +440,7 @@ class ReusableStrategy(BaseStrategy):
             raise response  # an exception has been raised with raise_connections
 
         if get_request:
-            return response, result, dict()
+            return response, result, request
 
         return response, result
 

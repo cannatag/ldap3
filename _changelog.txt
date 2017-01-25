@@ -1,6 +1,7 @@
 - 2.2.1 not released yet
     - get_response() has an optional new parameter "get_request" to return the request too, helpful in asynchronous strategies
     - connection.request, connection.response and connection result are now properly blanked in async strategies
+    - ldap3.utils.dn.safe_dn() now checks for AD names only if no equal sign is present in the dn
 
 - 2.2.0 2017.01.16
     - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6

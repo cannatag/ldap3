@@ -325,9 +325,9 @@ def safe_dn(dn, decompose=False, reverse=False):
                 escaped_dn.append((component[0], component[1], component[2]))
             else:
                 escaped_dn += component[0] + '=' + component[1] + component[2]
-    elif '@' in dn and len(dn.split('@')) != 2:
+    elif '@' in dn and '=' not in dn and len(dn.split('@')) != 2:
         raise LDAPInvalidDnError('Active Directory User Principal Name must consist of name@domain')
-    elif '\\' in dn and len(dn.split('\\')) != 2:
+    elif '\\' in dn and '=' not in dn and len(dn.split('\\')) != 2:
         raise LDAPInvalidDnError('Active Directory Domain Level Logon Name must consist of name\\domain')
     else:
         escaped_dn = dn

@@ -195,17 +195,17 @@ class ObjectDef(object):
         if isinstance(item, STRING_TYPES):
             key = ''.join(item.split()).lower()
         elif isinstance(item, AttrDef):
-            key = item.key
+            key = item.key.lower()
 
         if key:
             for attr in self._attributes:
-                if item == attr.lower():
+                if key == attr.lower():
                     del self._attributes[attr]
                     break
             else:
                 raise LDAPKeyError('key \'%s\' not present' % key)
         else:
-            raise LDAPAttributeError('key must be str or AttrDef not ' + str(type(key)))
+            raise LDAPAttributeError('key must be str or AttrDef not ' + str(type(item)))
 
     def clear_attributes(self):
         """Empty the ObjectDef attribute list

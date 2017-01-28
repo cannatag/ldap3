@@ -234,6 +234,7 @@ class Cursor(object):
                 response, result, request = self.connection.get_response(result, get_request=True)
             else:
                 response = self.connection.response
+                result = self.connection.result
                 request = self.connection.request
 
         self._store_operation_in_history(request, result, response)
@@ -259,6 +260,18 @@ class Cursor(object):
 
     def _store_operation_in_history(self, request, result, response):
         self._operation_history.append((request, result, response))
+
+    @property
+    def operations(self):
+        return self._operation_history
+
+    @property
+    def errors(self):
+        return [error for error in self._operation_history if error[1]['result'] != RESULT_SUCCESS]
+
+    @property
+    def failed(self):
+        return any([error[1]['result'] != RESULT_SUCCESS for error in self._operation_history if 'result' in error[1]])
 
 
 class Reader(Cursor):
@@ -298,10 +311,6 @@ class Reader(Cursor):
         self._validated_query_dict = dict()
         self.query_filter = None
         self.reset()
-
-    @property
-    def history(self):
-        return self._operation_history
 
     @property
     def query(self):

@@ -364,8 +364,6 @@ class WritableEntry(EntryBase):
                 self._state.attributes[item] = WritableAttribute(self.entry_definition._attributes[item], self, self.entry_cursor)
                 self.entry_cursor.attributes.add(item)
                 return self._state.attributes[item]
-            # if item in self.entry_definition._attributes:
-            #     raise LDAPCursorError('attribute must have a value')
             raise LDAPCursorError('attribute \'%s\' is not defined' % item)
         else:
             raise LDAPCursorError('attribute must be a string')

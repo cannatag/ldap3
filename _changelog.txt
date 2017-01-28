@@ -3,9 +3,11 @@
     - connection.request, connection.response and connection result are now properly blanked in async strategies
     - ldap3.utils.dn.safe_dn() now checks for AD names only if no equal sign is present in the dn
     - Abstraction Layer properly works with asynchronous strategies
+    - added a named tuple "Operation" used to store the request, result and response of an LDAP operation in Cursor history
     - Cursors in the Abstraction Layer keep history of executed LDAP operations for the last Cursor operation in the cursor.operation property
     - Cursors in the Abstraction Layer keep history of errors for the last Cursor operation in the cursor.errors property
     - if any error has occurred in the last operation of a Cursor the cursor.failed property is set to True
+    - added a named tuple "Operation" used to store the request, result and response of an LDAP operation in Cursor history
 
 - 2.2.0 2017.01.16
     - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6

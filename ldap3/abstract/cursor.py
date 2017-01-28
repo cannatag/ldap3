@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
+from collections import namedtuple
 from copy import deepcopy
 from datetime import datetime
 from os import linesep
@@ -38,6 +38,9 @@ from ..core.results import RESULT_SUCCESS
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import safe_dn, safe_rdn
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
+
+
+Operation = namedtuple('Operation', ('request', 'result', 'response'))
 
 
 def _ret_search_value(value):
@@ -259,7 +262,7 @@ class Cursor(object):
         self._operation_history = list()
 
     def _store_operation_in_history(self, request, result, response):
-        self._operation_history.append((request, result, response))
+        self._operation_history.append(Operation(request, result, response))
 
     @property
     def operations(self):
@@ -267,11 +270,11 @@ class Cursor(object):
 
     @property
     def errors(self):
-        return [error for error in self._operation_history if error[1]['result'] != RESULT_SUCCESS]
+        return [error for error in self._operation_history if error.result['result'] != RESULT_SUCCESS]
 
     @property
     def failed(self):
-        return any([error[1]['result'] != RESULT_SUCCESS for error in self._operation_history if 'result' in error[1]])
+        return any([error.result['result'] != RESULT_SUCCESS for error in self._operation_history])
 
 
 class Reader(Cursor):
@@ -647,7 +650,7 @@ class Writer(Cursor):
     def commit(self, refresh=True):
         self._reset_history()
         for entry in self.entries:
-            entry.entry_commit_changes(refresh=refresh, controls=self.controls, do_not_clear_history=True)
+            entry.entry_commit_changes(refresh=refresh, controls=self.controls, clear_history=False)
         self.execution_time = datetime.now()
 
     def discard(self):

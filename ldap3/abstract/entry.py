@@ -123,7 +123,7 @@ class EntryBase(object):
             if self._state.attributes:
                 for attr in sorted(self._state.attributes):
                     if self._state.attributes[attr] or (hasattr(self._state.attributes[attr], 'changes') and self._state.attributes[attr].changes):
-                        r += ' ' * 4 + repr(self._state.attributes[attr]) + linesep
+                        r += '    ' + repr(self._state.attributes[attr]) + linesep
             return r
         else:
             return object.__repr__(self)
@@ -374,9 +374,20 @@ class WritableEntry(EntryBase):
     def entry_virtual_attributes(self):
         return [attr for attr in self.entry_attributes if self[attr].virtual]
 
-    def entry_commit_changes(self, refresh=True, controls=None):
+    def entry_commit_changes(self, refresh=True, controls=None, clear_history=True):
+        if clear_history:
+            self.entry_cursor._reset_history()
+
         if self.entry_status == STATUS_READY_FOR_DELETION:
-            if self.entry_cursor.connection.delete(self.entry_dn, controls):
+            result = self.entry_cursor.connection.delete(self.entry_dn, controls)
+            if not self.entry_cursor.connection.strategy.sync:
+                response, result, request = self.entry_cursor.connection.get_response(result, get_request=True)
+            else:
+                response = self.entry_cursor.connection.response
+                result = self.entry_cursor.connection.result
+                request = self.entry_cursor.connection.request
+            self.entry_cursor._store_operation_in_history(request, result, response)
+            if result['result'] == RESULT_SUCCESS:
                 dn = self.entry_dn
                 if self._state.origin and self.entry_cursor.connection.server == self._state.origin.entry_cursor.connection.server:  # deletes original read-only Entry
                     cursor = self._state.origin.entry_cursor
@@ -389,9 +400,17 @@ class WritableEntry(EntryBase):
                 self._state.set_status(STATUS_DELETED)
                 return True
             else:
-                raise LDAPCursorError('unable to delete entry, ' + self._state.cursor.connection.result['description'] + ', ' + self._state.cursor.connection.result['message'])
+                raise LDAPCursorError('unable to delete entry, ' + result['description'] + ', ' + result['message'])
         elif self.entry_status == STATUS_READY_FOR_MOVING:
-            if self.entry_cursor.connection.modify_dn(self.entry_dn, '+'.join(safe_rdn(self.entry_dn)), new_superior=self._state._to):
+            result = self.entry_cursor.connection.modify_dn(self.entry_dn, '+'.join(safe_rdn(self.entry_dn)), new_superior=self._state._to)
+            if not self.entry_cursor.connection.strategy.sync:
+                response, result, request = self.entry_cursor.connection.get_response(result, get_request=True)
+            else:
+                response = self.entry_cursor.connection.response
+                result = self.entry_cursor.connection.result
+                request = self.entry_cursor.connection.request
+            self.entry_cursor._store_operation_in_history(request, result, response)
+            if result['result'] == RESULT_SUCCESS:
                 self._state.dn = safe_dn('+'.join(safe_rdn(self.entry_dn)) + ',' + self._state._to)
                 if refresh:
                     if self.entry_refresh():
@@ -401,10 +420,18 @@ class WritableEntry(EntryBase):
                 self._state._to = None
                 return True
             else:
-                raise LDAPCursorError('unable to move entry, ' + self._state.cursor.connection.result['description'])
+                raise LDAPCursorError('unable to move entry, ' + result['description'])
         elif self.entry_status == STATUS_READY_FOR_RENAMING:
             rdn = '+'.join(safe_rdn(self._state._to))
-            if self.entry_cursor.connection.modify_dn(self.entry_dn, rdn):
+            result = self.entry_cursor.connection.modify_dn(self.entry_dn, rdn)
+            if not self.entry_cursor.connection.strategy.sync:
+                response, result, request = self.entry_cursor.connection.get_response(result, get_request=True)
+            else:
+                response = self.entry_cursor.connection.response
+                result = self.entry_cursor.connection.result
+                request = self.entry_cursor.connection.request
+            self.entry_cursor._store_operation_in_history(request, result, response)
+            if result['result'] == RESULT_SUCCESS:
                 self._state.dn = rdn + ',' + ','.join(to_dn(self.entry_dn)[1:])
                 if refresh:
                     if self.entry_refresh():
@@ -414,7 +441,7 @@ class WritableEntry(EntryBase):
                 self._state._to = None
                 return True
             else:
-                raise LDAPCursorError('unable to move entry, ' + self._state.cursor.connection.result['description'])
+                raise LDAPCursorError('unable to move entry, ' + result['description'])
         elif self.entry_status in [STATUS_VIRTUAL, STATUS_MANDATORY_MISSING]:
             missing_attributes = []
             for attr in self.entry_mandatory_attributes:
@@ -432,9 +459,13 @@ class WritableEntry(EntryBase):
                     result = self.entry_cursor.connection.modify(self.entry_dn, self._changes, controls)
 
                 if not self.entry_cursor.connection.strategy.sync:  # async request
-                    _, result = self.entry_cursor.connection.get_response(result)
+                    response, result, request = self.entry_cursor.connection.get_response(result, get_request=True)
                 else:
                     result = self.entry_cursor.connection.result
+                    response = self.entry_cursor.connection.response
+                    result = self.entry_cursor.connection.result
+                    request = self.entry_cursor.connection.request
+                self.entry_cursor._store_operation_in_history(request, result, response)
 
                 if result['result'] == RESULT_SUCCESS:
                     if refresh:

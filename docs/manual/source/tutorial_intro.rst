@@ -127,6 +127,8 @@ number, the *message_id* of the request. With asynchronous strategies you can se
 response with the ``get_response(message_id)`` method of the Connection object as you need it. ldap3 will raise an exception if
 the response has not yet arrived after a specified time. In the ``get_response()`` method this timeout value can be set
 with the ``timeout`` parameter to the number of seconds to wait for the response to appear (default is 10 seconds).
+If you use the ``get_request=True`` in the ``get_response()`` parameter you get the request dictionary back.
+
 Asynchronous strategies are thread-safe and are useful with slow servers or when you have many requests with the same Connection object in multiple threads.
 Usually you will use synchronous strategies only.
 

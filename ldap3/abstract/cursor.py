@@ -94,6 +94,7 @@ class Cursor(object):
         self.entries = []
         self.schema = self.connection.server.schema
         self._do_not_reset = False  # used for refreshing entry in entry_refresh() without removing all entries from the Cursor
+        self._operation_history = list()  # a list storing all the requests, results and responses for the last cursor operation
 
     def __repr__(self):
         r = 'CURSOR : ' + self.__class__.__name__ + linesep
@@ -154,8 +155,6 @@ class Cursor(object):
             for attr_name in response['attributes']:
                 if attr_def.name.lower() == attr_name.lower():
                     attribute_name = attr_name
-                    # if isinstance(response['attributes'][name], list) and len(response['attributes'][name]) == 0:  # empty attributes returned as empty list with the return_empty_attributes of the Connection object
-                    #    name = None
                     break
 
             if attribute_name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default
@@ -232,9 +231,12 @@ class Cursor(object):
                                             get_operational_attributes=self.get_operational_attributes,
                                             controls=self.controls)
             if not self.connection.strategy.sync:
-                response, _ = self.connection.get_response(result)
+                response, result, request = self.connection.get_response(result, get_request=True)
             else:
                 response = self.connection.response
+                request = self.connection.request
+
+        self._store_operation_in_history(request, result, response)
 
         if self._do_not_reset:  # trick to not remove entries when using _refresh()
             return self._create_entry(response[0])
@@ -251,6 +253,12 @@ class Cursor(object):
 
     def remove(self, entry):
         self.entries.remove(entry)
+
+    def _reset_history(self):
+        self._operation_history = list()
+
+    def _store_operation_in_history(self, request, result, response):
+        self._operation_history.append((request, result, response))
 
 
 class Reader(Cursor):
@@ -292,6 +300,10 @@ class Reader(Cursor):
         self.reset()
 
     @property
+    def history(self):
+        return self._operation_history
+
+    @property
     def query(self):
         return self._query
 
@@ -314,6 +326,7 @@ class Reader(Cursor):
 
         """
         self.dereference_aliases = DEREF_ALWAYS
+        self._reset_history()
 
     def reset(self):
         """Clear all the Reader parameters
@@ -611,9 +624,6 @@ class Writer(Cursor):
             else:
                 raise LDAPCursorError('response not present')
         writer = Writer(connection, object_def)
-        # for entry in connection._get_entries(response):
-        #     entry.entry_writable(object_def, writer, custom_validator=custom_validator)
-        # return writer
 
         for resp in response:
             if resp['type'] == 'searchResEntry':
@@ -626,8 +636,9 @@ class Writer(Cursor):
         self.dereference_aliases = DEREF_NEVER
 
     def commit(self, refresh=True):
+        self._reset_history()
         for entry in self.entries:
-            entry.entry_commit_changes(refresh=refresh, controls=self.controls)
+            entry.entry_commit_changes(refresh=refresh, controls=self.controls, do_not_clear_history=True)
         self.execution_time = datetime.now()
 
     def discard(self):
@@ -655,15 +666,17 @@ class Writer(Cursor):
                                                 get_operational_attributes=self.get_operational_attributes,
                                                 controls=controls)
                 if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
+                    response, result, request = self.connection.get_response(result, get_request=True)
                 else:
                     response = self.connection.response
                     result = self.connection.result
+                    request = self.connection.request
 
                 if result['result'] in [RESULT_SUCCESS]:
                     break
                 sleep(seconds)
                 counter += 1
+                self._store_operation_in_history(request, result, response)
 
         if len(response) == 1:
             return self._create_entry(response[0])

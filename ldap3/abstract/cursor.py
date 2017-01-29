@@ -127,7 +127,6 @@ class Cursor(object):
 
         return r
 
-
     def __str__(self):
         return self.__repr__()
 

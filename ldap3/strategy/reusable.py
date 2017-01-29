@@ -437,7 +437,7 @@ class ReusableStrategy(BaseStrategy):
                 raise LDAPResponseTimeoutError('no response from worker threads in Reusable connection')
 
         if isinstance(response, LDAPOperationResult):
-            raise response  # an exception has been raised with raise_connections
+            raise response  # an exception has been raised with raise_exceptions
 
         if get_request:
             return response, result, request

@@ -26,10 +26,11 @@
 import unittest
 from time import sleep
 
+from ldap3 import REUSABLE
 from ldap3.core.exceptions import LDAPCursorError, LDAPOperationResult, LDAPConstraintViolationResult
 from ldap3.abstract import STATUS_WRITABLE, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_MANDATORY_MISSING, STATUS_VIRTUAL, STATUS_PENDING_CHANGES, STATUS_READ, STATUS_READY_FOR_DELETION
 from ldap3.core.results import RESULT_CONSTRAINT_VIOLATION
-from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_int_attr
+from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_int_attr, test_strategy
 
 
 testcase_id = random_id()
@@ -157,7 +158,7 @@ class Test(unittest.TestCase):
             self.assertEqual(cursor.errors[0].result['result'], RESULT_CONSTRAINT_VIOLATION)
 
     def test_search_and_add_value_to_existing_single_value_with_exception(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and test_strategy != REUSABLE:  # in REUSABLE strategy the connection can't be changed
             old_raise_exception = self.connection.raise_exceptions
             self.connection.raise_exceptions = True
             read_only_entry = self.get_entry('search-and-modify-2')
@@ -165,14 +166,14 @@ class Test(unittest.TestCase):
             writable_entry.preferredDeliveryMethod.add('telephone')
             try:
                 writable_entry.entry_commit_changes()
-            except LDAPConstraintViolationResult as e:
+            except LDAPConstraintViolationResult:
                 return
             finally:
                 self.connection.raise_exceptions = old_raise_exception
             self.fail('error assigning to existing single value')
 
     def test_search_and_implicit_add_value_to_existing_single_value_with_exception(self):
-        if test_server_type == 'EDIR':
+        if test_server_type == 'EDIR' and test_strategy != REUSABLE:  # in REUSABLE strategy the connection can't be changed
             old_raise_exception = self.connection.raise_exceptions
             self.connection.raise_exceptions = True
             read_only_entry = self.get_entry('search-and-modify-2')
@@ -180,7 +181,7 @@ class Test(unittest.TestCase):
             writable_entry.preferredDeliveryMethod += 'telephone'
             try:
                 writable_entry.entry_commit_changes()
-            except LDAPConstraintViolationResult as e:
+            except LDAPConstraintViolationResult:
                 return
             finally:
                 self.connection.raise_exceptions = old_raise_exception

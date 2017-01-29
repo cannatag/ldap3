@@ -120,7 +120,7 @@ class ObjectDef(object):
 
             return self._attributes[attr]
 
-        raise LDAPKeyError('_attributes not defined')
+        raise LDAPKeyError('internal _attributes property not defined')
 
     def __setattr__(self, key, value):
         raise LDAPObjectError('object \'%s\' is read only' % key)
@@ -205,7 +205,7 @@ class ObjectDef(object):
             else:
                 raise LDAPKeyError('key \'%s\' not present' % key)
         else:
-            raise LDAPAttributeError('key must be str or AttrDef not ' + str(type(item)))
+            raise LDAPAttributeError('key type must be str or AttrDef not ' + str(type(item)))
 
     def clear_attributes(self):
         """Empty the ObjectDef attribute list

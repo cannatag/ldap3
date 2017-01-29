@@ -295,7 +295,7 @@ class Entry(EntryBase):
     """
     def entry_writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None):
         if not self.entry_cursor.schema:
-            raise LDAPCursorError('The schema must be available to make an entry writable')
+            raise LDAPCursorError('schema must be available to make an entry writable')
         # returns a new WritableEntry and its Writer cursor
         if object_def is None:
             if self.entry_cursor.definition._object_class:
@@ -364,9 +364,9 @@ class WritableEntry(EntryBase):
                 self._state.attributes[item] = WritableAttribute(self.entry_definition._attributes[item], self, self.entry_cursor)
                 self.entry_cursor.attributes.add(item)
                 return self._state.attributes[item]
-            raise LDAPCursorError('attribute \'%s\' is not defined' % item)
+            raise LDAPCursorError('attribute \'%s\' not defined' % item)
         else:
-            raise LDAPCursorError('attribute must be a string')
+            raise LDAPCursorError('attribute name must be a string')
 
     @property
     def entry_virtual_attributes(self):
@@ -397,8 +397,9 @@ class WritableEntry(EntryBase):
                 self._state = EntryState(dn, cursor)
                 self._state.set_status(STATUS_DELETED)
                 return True
-            else:
-                raise LDAPCursorError('unable to delete entry, ' + result['description'] + ', ' + result['message'])
+
+            # raise LDAPCursorError('unable to delete entry, ' + result['description'] + ', ' + result['message'])
+            return False
         elif self.entry_status == STATUS_READY_FOR_MOVING:
             result = self.entry_cursor.connection.modify_dn(self.entry_dn, '+'.join(safe_rdn(self.entry_dn)), new_superior=self._state._to)
             if not self.entry_cursor.connection.strategy.sync:
@@ -417,8 +418,8 @@ class WritableEntry(EntryBase):
                 self._state.set_status(STATUS_COMMITTED)
                 self._state._to = None
                 return True
-            else:
-                raise LDAPCursorError('unable to move entry, ' + result['description'])
+            # raise LDAPCursorError('unable to move entry, ' + result['description'])
+            return False
         elif self.entry_status == STATUS_READY_FOR_RENAMING:
             rdn = '+'.join(safe_rdn(self._state._to))
             result = self.entry_cursor.connection.modify_dn(self.entry_dn, rdn)
@@ -438,8 +439,8 @@ class WritableEntry(EntryBase):
                 self._state.set_status(STATUS_COMMITTED)
                 self._state._to = None
                 return True
-            else:
-                raise LDAPCursorError('unable to move entry, ' + result['description'])
+            # raise LDAPCursorError('unable to move entry, ' + result['description'])
+            return False
         elif self.entry_status in [STATUS_VIRTUAL, STATUS_MANDATORY_MISSING]:
             missing_attributes = []
             for attr in self.entry_mandatory_attributes:
@@ -483,8 +484,7 @@ class WritableEntry(EntryBase):
                         self.entry_discard_changes()  # if not refreshed remove committed changes
                     self._state.set_status(STATUS_COMMITTED)
                     return True
-                else:
-                    raise LDAPCursorError('unable to commit changes to entry %s, reason: %s - %s' % (self.entry_dn, result['description'], result['message']))
+                # raise LDAPCursorError('unable to commit changes to entry %s, reason: %s - %s' % (self.entry_dn, result['description'], result['message']))
         return False
 
     def entry_discard_changes(self):

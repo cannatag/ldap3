@@ -121,7 +121,12 @@ class Cursor(object):
         if self.execution_time:
             r += 'ENTRIES: ' + str(len(self.entries))
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
+
+        if self.failed:
+            r += 'LAST OPERATION FAILED [' + str(len(self.errors)) + ' failure' + ('s' if len(self.errors) > 1 else '') + ' at operation' + ('s ' if len(self.errors) > 1 else ' ') + ', '.join([str(i) for i, error in enumerate(self.operations) if error.result['result'] != RESULT_SUCCESS]) + ']'
+
         return r
+
 
     def __str__(self):
         return self.__repr__()
@@ -421,7 +426,7 @@ class Reader(Cursor):
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
-                raise LDAPCursorError('object_class must be a string or a list')
+                raise LDAPCursorError('object class must be a string or a list')
 
         if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
             if 'objectclass' not in self._query.lower():
@@ -526,50 +531,6 @@ class Reader(Cursor):
 
         return self.entries
 
-    # def search_size_limit(self, size_limit, attributes=None):
-    #     """Perform the LDAP search with limit of entries found
-    #
-    #     :param attributes: optional attriibutes to search
-    #     :param size_limit: maximum number of entries returned
-    #     :return: Entries found in search
-    #
-    #     """
-    #
-    #     self.clear()
-    #     self.size_limit = size_limit
-    #     query_scope = SUBTREE if self.sub_tree else LEVEL
-    #     self._execute_query(query_scope, attributes)
-    #
-    #     return self.entries
-    #
-    # def search_time_limit(self, time_limit, attributes=None):
-    #     """Perform the LDAP search with limit of time spent in searching by the server
-    #
-    #     :param attributes: optional attributes to search
-    #     :param time_limit: maximum number of seconds to wait for a search
-    #     :return: Entries found in search
-    #
-    #     """
-    #     self.clear()
-    #     self.time_limit = time_limit
-    #     query_scope = SUBTREE if self.sub_tree else LEVEL
-    #     self._execute_query(query_scope, attributes)
-    #
-    #     return self.entries
-    #
-    # def search_types_only(self, attributes=None):
-    #     """Perform the search returning attribute names only.
-    #
-    #     :return: Entries found in search
-    #
-    #     """
-    #     self.clear()
-    #     self.types_only = True
-    #     query_scope = SUBTREE if self.sub_tree else LEVEL
-    #     self._execute_query(query_scope, attributes)
-    #
-    #     return self.entries
-
     def search_paged(self, paged_size, paged_criticality=True, generator=True, attributes=None):
         """Perform a paged search, can be called as an Iterator
 
@@ -630,7 +591,7 @@ class Writer(Cursor):
     def from_response(connection, object_def, response=None):
         if response is None:
             if not connection.strategy.sync:
-                raise LDAPCursorError(' with async strategies response must be specified')
+                raise LDAPCursorError(' with asynchronous strategies response must be specified')
             elif connection.response:
                 response = connection.response
             else:
@@ -649,9 +610,14 @@ class Writer(Cursor):
 
     def commit(self, refresh=True):
         self._reset_history()
+        successful = True
         for entry in self.entries:
-            entry.entry_commit_changes(refresh=refresh, controls=self.controls, clear_history=False)
+            if not entry.entry_commit_changes(refresh=refresh, controls=self.controls, clear_history=False):
+                successful = False
+
         self.execution_time = datetime.now()
+
+        return successful
 
     def discard(self):
         for entry in self.entries:
@@ -695,7 +661,7 @@ class Writer(Cursor):
         elif len(response) == 0:
             return None
 
-        raise LDAPCursorError('Too many entries returned for a single object search')
+        raise LDAPCursorError('more than 1 entry returned for a single object search')
 
     def new(self, dn):
         dn = safe_dn(dn)
@@ -716,7 +682,7 @@ class Writer(Cursor):
                     entry.__dict__[rdn_name] = entry._state.attributes[rdn_name]
                 entry.__dict__[rdn_name].set(rdn[1])
             else:
-                raise LDAPCursorError('rdn type \'%s\' not in objectclass definition' % rdn[0])
+                raise LDAPCursorError('rdn type \'%s\' not in object class definition' % rdn[0])
         entry._state.set_status(STATUS_VIRTUAL)
         self.entries.append(entry)
         return entry

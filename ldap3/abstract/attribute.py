@@ -162,7 +162,7 @@ class WritableAttribute(Attribute):
         if self.entry._state._initial_status == STATUS_VIRTUAL:
             raise LDAPCursorError('cannot add an attribute value in a new entry')
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' cannot add attributes')
+            raise LDAPCursorError(self.entry.entry_status + ' - cannot add attributes')
         if values is None:
             raise LDAPCursorError('added value cannot be None')
         # if self.values and self.definition.single_value:
@@ -178,7 +178,7 @@ class WritableAttribute(Attribute):
     def set(self, values):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' cannot set attributes')
+            raise LDAPCursorError(self.entry.entry_status + ' - cannot set attributes')
         if values is None:
             raise LDAPCursorError('new value cannot be None')
         validated = self.definition.validate(self.definition.name, values)  # returns True, False or a value to substitute to the actual values
@@ -193,7 +193,7 @@ class WritableAttribute(Attribute):
         if self.entry._state._initial_status == STATUS_VIRTUAL:
             raise LDAPCursorError('cannot delete an attribute value in a new entry')
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' cannot delete attributes')
+            raise LDAPCursorError(self.entry.entry_status + ' - cannot delete attributes')
         if values is None:
             raise LDAPCursorError('value to delete cannot be None')
         if not isinstance(values, SEQUENCE_TYPES):
@@ -207,7 +207,7 @@ class WritableAttribute(Attribute):
         if self.entry._state._initial_status == STATUS_VIRTUAL:
             raise LDAPCursorError('cannot remove an attribute in a new entry')
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' cannot remove attributes')
+            raise LDAPCursorError(self.entry.entry_status + ' - cannot remove attributes')
         self._update_changes((MODIFY_REPLACE, []), True)
 
     def discard(self):

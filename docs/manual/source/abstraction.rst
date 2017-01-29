@@ -196,6 +196,12 @@ A Reader cursor has the following attributes:
 
 - entries: the Entries returned by the Search operation
 
+- operations: a list of LDAP Operation performed in the last Cursor operation
+
+- errors: a list of LDAP Operation unsuccessful in the last Cursor operation
+
+- failed: a boolean that indicates if any LDAP operation failed in the last Cursor operation
+
 
 To perform a search Operation you can use any of the following methods:
 
@@ -206,12 +212,6 @@ To perform a search Operation you can use any of the following methods:
 - search_subtree(): force a whole sub-tree search, starting from 'base'.
 
 - search_object(): force a object search, DN to search must be specified in 'base'.
-
-- search_size_limit(limit): search with a size limit of 'limit'.
-
-- search_time_limit(limit): search with a time limit of 'limit'.
-
-- search_types_only(): standard search but the response will not contain any value.
 
 - search_paged(page_size, criticality): perform a paged search, with 'page_size' number of entries for each call to this method. If 'criticality' is True the server aborts the operation if the Simple Paged Search extension is not available, else return the whole result set.
 

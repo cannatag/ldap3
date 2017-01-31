@@ -28,6 +28,7 @@ from datetime import datetime
 from os import linesep
 from time import sleep
 
+from ldap3.abstract import STATUS_PENDING_CHANGES
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
@@ -682,7 +683,8 @@ class Writer(Cursor):
                 entry.__dict__[rdn_name].set(rdn[1])
             else:
                 raise LDAPCursorError('rdn type \'%s\' not in object class definition' % rdn[0])
-        entry._state.set_status(STATUS_VIRTUAL)
+        entry._state.set_status(STATUS_VIRTUAL)  # set intial status
+        entry._state.set_status(STATUS_PENDING_CHANGES)  # tries to change status to PENDING_CHANGES. If mandatory attributes are missing status is reverted to MANDATORY_MISSING
         self.entries.append(entry)
         return entry
 

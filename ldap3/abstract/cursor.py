@@ -253,7 +253,8 @@ class Cursor(object):
         self.entries = []
         for r in response:
             entry = self._create_entry(r)
-            self.entries.append(entry)
+            if entry is not None:
+                self.entries.append(entry)
 
         self.execution_time = datetime.now()
 

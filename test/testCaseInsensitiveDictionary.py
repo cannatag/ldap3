@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['two'], 2)
         self.assertEqual(cid[3], 3)
 
-    def test_modify_value_in_case_insentitive_dict_invariant_key(self):
+    def test_modify_value_in_case_insentitive_dict_immmutable_key(self):
         cid = CaseInsensitiveDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -104,7 +104,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['two'], 2)
         self.assertEqual(cid[3], 3)
 
-    def test_delete_item_in_case_insentitive_dict_invariant_key(self):
+    def test_delete_item_in_case_insentitive_dict_immutable_key(self):
         cid = CaseInsensitiveDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -186,7 +186,7 @@ class Test(unittest.TestCase):
         cid['ONE'] = 'ONE'
         self.assertEqual(len(cid), 3)
 
-    def test_case_insensitive_dict_contains_invariant_key(self):
+    def test_case_insensitive_dict_contains_immutable_key(self):
         cid = CaseInsensitiveDict()
         cid['oNe'] = 1
         cid['tWo'] = 2

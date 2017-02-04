@@ -11,6 +11,7 @@
     - Cursor now honours raise_exception parameter of the Connection.
     - Cursor commit operations return True if they are successful and False if not. All pending commits are executed even if some fail
     - new entries that have no additional mandatory attributes other those defined in dn are properly managed in Writers (thanks Matt)
+    - CaseInsensitiveDict now applies strip() to keys
 
 - 2.2.0 2017.01.16
     - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6

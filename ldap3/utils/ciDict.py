@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import collections
+from .. import SEQUENCE_TYPES
 
 
 class CaseInsensitiveDict(collections.MutableMapping):
@@ -44,7 +45,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
     @staticmethod
     def _ci_key(key):
-        return key.lower() if hasattr(key, 'lower') else key
+        return key.strip().lower() if hasattr(key, 'lower') else key
 
     def __delitem__(self, key):
         ci_key = self._ci_key(key)
@@ -100,3 +101,76 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
     def copy(self):
         return CaseInsensitiveDict(self._store)
+
+
+class CaseInsensitiveWithAliasDict(CaseInsensitiveDict):
+    def __init__(self, other=None, **kwargs):
+        self._aliases = dict()
+        self._alias_keymap = dict()  # is a mapping key -> [alias1, alias2, ...]
+        CaseInsensitiveDict.__init__(self, other, **kwargs)
+
+    def __setitem__(self, key, value):
+        if isinstance(key, SEQUENCE_TYPES):
+            ci_key = self._ci_key(key[0])
+            if ci_key not in self._aliases:
+                CaseInsensitiveDict.__setitem__(self, key[0], value)
+                for alias in key[1:]:
+                    self.set_alias(ci_key, alias)
+            else:
+                raise KeyError('\'' + str(key[0] + ' already used as alias'))
+        else:
+            ci_key = self._ci_key(key)
+            if ci_key not in self._aliases:
+                CaseInsensitiveDict.__setitem__(self, key, value)
+            else:
+                self[self._aliases[ci_key]] = value
+
+    def __delitem__(self, key):
+        ci_key = self._ci_key(key)
+        try:
+            CaseInsensitiveDict.__delitem__(self, ci_key)
+            if ci_key in self._alias_keymap:
+                for alias in self._alias_keymap[ci_key][:]:  # removes aliases, uses a copy of _alias_keymap because iterator gets confused when aliases are removed from _alias_keymap
+                    self.remove_alias(alias)
+            return
+        except KeyError:  # try to remove alias
+            if ci_key in self._aliases:
+                self.remove_alias(ci_key)
+
+    def set_alias(self, key, alias):
+        if not isinstance(alias, SEQUENCE_TYPES):
+            alias = [alias]
+        for alias_to_add in alias:
+            ci_key = self._ci_key(key)
+            ci_alias = self._ci_key(alias_to_add)
+            if ci_alias not in self._case_insensitive_keymap:
+                self._aliases[ci_alias] = ci_key
+                if ci_key in self._alias_keymap:  # extend alias keymap
+                    self._alias_keymap[ci_key].append(self._ci_key(ci_alias))
+                else:
+                    self._alias_keymap[ci_key] = list()
+                    self._alias_keymap[ci_key].append(self._ci_key(ci_alias))
+            else:
+                raise KeyError('\'' + str(alias) + '\' already used as key')
+
+    def remove_alias(self, alias):
+        if not isinstance(alias, SEQUENCE_TYPES):
+            alias = [alias]
+        for alias_to_remove in alias:
+            ci_alias = self._ci_key(alias_to_remove)
+            self._alias_keymap[self._aliases[ci_alias]].remove(ci_alias)
+            if not self._alias_keymap[self._aliases[ci_alias]]:  # remove keymap if empty
+                del self._alias_keymap[self._aliases[ci_alias]]
+            del self._aliases[ci_alias]
+
+    def __getitem__(self, key):
+        try:
+            return CaseInsensitiveDict.__getitem__(self, key)
+        except KeyError:
+            return CaseInsensitiveDict.__getitem__(self, self._aliases[self._ci_key(key)])
+
+    def copy(self):
+        new = CaseInsensitiveWithAliasDict(self._store)
+        new._aliases = self._aliases.copy()
+        new._alias_keymap = self._alias_keymap
+        return new

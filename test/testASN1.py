@@ -35,4 +35,4 @@ class Test(unittest.TestCase):
             rangeInt0ToMaxConstraint(-1)
         except Exception as e:
             msg = e.args[0]
-        self.assertEqual('ValueRangeConstraint(0, Integer(2147483647)) failed at: "-1"', msg)
+        self.assertEqual('ValueRangeConstraint(0, Integer(2147483647)) failed at: ValueConstraintError(-1,)', msg)

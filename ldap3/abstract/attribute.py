@@ -51,6 +51,8 @@ class Attribute(object):
         self.response = None
         self.entry = entry
         self.cursor = cursor
+        other_names = [name for name in attr_def.oid_info.name if self.key.lower() != name.lower()] if attr_def.oid_info else None
+        self.other_names = other_names if other_names else None  # self.other_names is None if there are no short names, else is a list of secondary names
 
     def __repr__(self):
         if len(self.values) == 1:

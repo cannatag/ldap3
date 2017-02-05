@@ -36,7 +36,7 @@ from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPCursorError
 from ..core.results import RESULT_SUCCESS
-from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.ciDict import CaseInsensitiveDict, CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
 
@@ -156,7 +156,7 @@ class Cursor(object):
         If the 'dereference_dn' in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value.
 
         """
-        attributes = CaseInsensitiveDict()
+        attributes = CaseInsensitiveWithAliasDict()
         used_attribute_names = set()
         for attr_def in attr_defs:
             attribute_name = None
@@ -187,6 +187,8 @@ class Cursor(object):
                         del temp_reader  # remove the temporary Reader
                         attribute.values = temp_values
                 attributes[attribute.key] = attribute
+                if attribute.other_names:
+                    attributes.set_alias(attribute.key, attribute.other_names)
                 used_attribute_names.add(attribute_name)
 
         if self.attributes:

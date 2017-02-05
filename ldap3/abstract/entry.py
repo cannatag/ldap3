@@ -40,7 +40,7 @@ from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.dn import safe_dn, safe_rdn, to_dn
 from ..utils.repr import to_stdout_encoding
-from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED,\
     STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
 from ..core.results import RESULT_SUCCESS
@@ -56,8 +56,8 @@ class EntryState(object):
         self._initial_status = None
         self._to = None  # used for move and rename
         self.status = STATUS_INIT
-        self.attributes = CaseInsensitiveDict()
-        self.raw_attributes = CaseInsensitiveDict()
+        self.attributes = CaseInsensitiveWithAliasDict()
+        self.raw_attributes = CaseInsensitiveWithAliasDict()
         self.response = None
         self.cursor = cursor
         self.origin = None  # reference to the original read-only entry (set when made writable). Needed to update attributes in read-only when modified (only if both refer the same server)

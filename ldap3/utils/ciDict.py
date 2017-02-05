@@ -114,8 +114,7 @@ class CaseInsensitiveWithAliasDict(CaseInsensitiveDict):
             ci_key = self._ci_key(key[0])
             if ci_key not in self._aliases:
                 CaseInsensitiveDict.__setitem__(self, key[0], value)
-                for alias in key[1:]:
-                    self.set_alias(ci_key, alias)
+                self.set_alias(ci_key, key[1:])
             else:
                 raise KeyError('\'' + str(key[0] + ' already used as alias'))
         else:

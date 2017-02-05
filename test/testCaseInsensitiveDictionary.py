@@ -121,6 +121,8 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
     def test_delete_item_in_case_insentitive_dict_same_case_key(self):
         cid = CaseInsensitiveDict()
@@ -140,13 +142,16 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
     def test_delete_item_in_case_insentitive_dict_different_case_key(self):
         cid = CaseInsensitiveDict()
@@ -165,13 +170,16 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
     def test_len_empty_case_insensitive_dict(self):
         cid = CaseInsensitiveDict()

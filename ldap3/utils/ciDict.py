@@ -142,16 +142,22 @@ class CaseInsensitiveWithAliasDict(CaseInsensitiveDict):
             alias = [alias]
         for alias_to_add in alias:
             ci_key = self._ci_key(key)
-            ci_alias = self._ci_key(alias_to_add)
-            if ci_alias not in self._case_insensitive_keymap:
-                self._aliases[ci_alias] = ci_key
-                if ci_key in self._alias_keymap:  # extend alias keymap
-                    self._alias_keymap[ci_key].append(self._ci_key(ci_alias))
+            if ci_key in self._case_insensitive_keymap:
+                ci_alias = self._ci_key(alias_to_add)
+                if ci_alias not in self._case_insensitive_keymap:  # checks if alias is used a key
+                    if ci_alias not in self._aliases:  # checks if alias is used as another alias
+                        self._aliases[ci_alias] = ci_key
+                        if ci_key in self._alias_keymap:  # extend alias keymap
+                            self._alias_keymap[ci_key].append(self._ci_key(ci_alias))
+                        else:
+                            self._alias_keymap[ci_key] = list()
+                            self._alias_keymap[ci_key].append(self._ci_key(ci_alias))
+                    else:
+                        raise KeyError('\'' + str(alias_to_add) + '\' already used as alias')
                 else:
-                    self._alias_keymap[ci_key] = list()
-                    self._alias_keymap[ci_key].append(self._ci_key(ci_alias))
+                    raise KeyError('\'' + str(alias_to_add) + '\' already used as key')
             else:
-                raise KeyError('\'' + str(alias) + '\' already used as key')
+                raise KeyError('\'' + str(ci_key) + '\' is not an existing key')
 
     def remove_alias(self, alias):
         if not isinstance(alias, SEQUENCE_TYPES):

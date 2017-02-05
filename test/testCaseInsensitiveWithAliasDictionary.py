@@ -30,11 +30,11 @@ from ldap3.utils.ciDict import CaseInsensitiveWithAliasDict
 
 class Test(unittest.TestCase):
     # these tests are the same for CaseInsensitiveDict
-    def test_create_empty_case_insensitive_dict(self):
+    def test_create_empty(self):
         cid = CaseInsensitiveWithAliasDict()
         self.assertTrue(isinstance(cid, CaseInsensitiveWithAliasDict))
 
-    def test_create_case_insensitive_dict_from_dict(self):
+    def test_create_from_dict(self):
         dic = dict()
         dic['ONE'] = 1
         dic['TWO'] = 2
@@ -46,14 +46,14 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['two'], 2)
         self.assertEqual(cid[3], 3)
 
-    def test_create_case_insensitive_dict_from_parameters(self):
+    def test_create_from_parameters(self):
         cid = CaseInsensitiveWithAliasDict(one=1, two=2)
         self.assertEqual(cid['ONE'], 1)
         self.assertEqual(cid['one'], 1)
         self.assertEqual(cid['TWO'], 2)
         self.assertEqual(cid['two'], 2)
 
-    def test_add_values_to_case_insensitive_dict(self):
+    def test_add_values(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -64,7 +64,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['two'], 2)
         self.assertEqual(cid[3], 3)
 
-    def test_modify_value_in_case_insensitive_dict_immutable_key(self):
+    def test_modify_value_immutable_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['tWo'], 2)
         self.assertEqual(cid[3], 'Three')
 
-    def test_modify_value_in_case_insensitive_dict_same_case_key(self):
+    def test_modify_value_same_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -91,7 +91,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['two'], 2)
         self.assertEqual(cid[3], 3)
 
-    def test_modify_value_in_case_insensitive_dict_different_case_key(self):
+    def test_modify_value_different_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -105,7 +105,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['two'], 2)
         self.assertEqual(cid[3], 3)
 
-    def test_delete_item_in_case_insensitive_dict_immutable_key(self):
+    def test_delete_item_immutable_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -122,8 +122,9 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
-    def test_delete_item_in_case_insensitive_dict_same_case_key(self):
+        else:
+            self.fail('key still present')
+    def test_delete_item_same_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -141,15 +142,18 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
-    def test_delete_item_in_case_insensitive_dict_different_case_key(self):
+    def test_delete_item_different_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -166,19 +170,22 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
-    def test_len_empty_case_insensitive_dict(self):
+    def test_len_empty(self):
         cid = CaseInsensitiveWithAliasDict()
         self.assertEqual(len(cid), 0)
 
-    def test_len_case_insensitive_dict(self):
+    def test_len(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -187,7 +194,7 @@ class Test(unittest.TestCase):
         cid['ONE'] = 'ONE'
         self.assertEqual(len(cid), 3)
 
-    def test_case_insensitive_dict_contains_immutable_key(self):
+    def test_contains_immutable_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -196,7 +203,7 @@ class Test(unittest.TestCase):
         self.assertFalse('THREE' in cid)
         self.assertFalse(4 in cid)
 
-    def test_case_insensitive_dict_contains_same_case_key(self):
+    def test_contains_same_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -205,7 +212,7 @@ class Test(unittest.TestCase):
         self.assertFalse('THREE' in cid)
         self.assertFalse(4 in cid)
 
-    def test_case_insensitive_dict_contains_different_case_key(self):
+    def test_contains_different_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -214,7 +221,7 @@ class Test(unittest.TestCase):
         self.assertFalse('THREE' in cid)
         self.assertFalse(4 in cid)
 
-    def test_copy_case_insensitive_dict(self):
+    def test_copy(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -227,7 +234,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid2['two'], 2)
         self.assertEqual(cid2[3], 3)
 
-    def test_equality_case_insensitive_dict_with_same_case(self):
+    def test_equality_with_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one'] = 1
         cid['two'] = 2
@@ -240,7 +247,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, cid2)
 
-    def test_equality_case_insensitive_dict_with_different_case(self):
+    def test_equality_with_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one'] = 1
         cid['two'] = 2
@@ -253,7 +260,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, cid2)
 
-    def test_equality_case_insensitive_dict_with_same_case_dict(self):
+    def test_equality_with_same_case_dict(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one'] = 1
         cid['two'] = 2
@@ -266,7 +273,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, dic)
 
-    def test_equality_case_insensitive_dict_with_different_case_dict(self):
+    def test_equality_with_different_case_dict(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one'] = 1
         cid['two'] = 2
@@ -279,7 +286,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, dic)
 
-    def test_preserve_key_case_case_insensitive_dict(self):
+    def test_preserve_key_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['One'] = 1
         cid['Two'] = 2
@@ -296,7 +303,7 @@ class Test(unittest.TestCase):
 
     # These tests are the same tests adapted to CaseInsensitiveWithAliasDict
     
-    def test_add_values_to_case_insensitive_with_alias_dict(self):
+    def test_add_values(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A'] = 1
         cid['tWo'] = 2
@@ -309,7 +316,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['one-a'], 1)
         self.assertEqual(cid['oNe-A'], 1)
 
-    def test_modify_value_in_case_insensitive_with_alias_dict_immutable_key(self):
+    def test_modify_value_in_immutable_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -323,7 +330,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid[3], 'Three')
         self.assertEqual(cid[4], 'Three')
 
-    def test_modify_value_in_case_insensitive_with_alias_dict_same_case_key(self):
+    def test_modify_value_in_same_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A'] = 1
         cid['tWo'] = 2
@@ -340,7 +347,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid[3], 3)
         self.assertEqual(cid['ONE-A'], 'ONE')
 
-    def test_modify_value_in_case_insensitive_with_alias_dict_different_case_key(self):
+    def test_modify_value_in_different_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A'] = 1
         cid['tWo'] = 2
@@ -356,7 +363,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid[3], 3)
         self.assertEqual(cid['ONE-A'], 'ONE')
 
-    def test_delete_item_in_case_insensitive_with_alias_dict_immutable_key(self):
+    def test_delete_item_in_immutable_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -373,14 +380,18 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid[4]
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
-    def test_delete_item_in_case_insensitive_with_alias_dict_same_case_key(self):
+    def test_delete_item_in_same_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A'] = 1
         cid['tWo'] = 2
@@ -399,27 +410,35 @@ class Test(unittest.TestCase):
         except KeyError:
             self.assertTrue(True)
         except Exception:
-            self.assertTrue(False)
+            self.fail()
+        else:
+            self.fail('key still present')
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['oNe-A']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['ONE-A']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
-    def test_delete_item_in_case_insensitive_with_alias_dict_different_case_key(self):
+    def test_delete_item_in_different_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A'] = 1
         cid['tWo'] = 2
@@ -438,26 +457,33 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['ONE']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['oNe-a']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['ONE-a']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
-    def test_len_case_insensitive_with_alias_dict(self):
+        else:
+            self.fail('key still present')
+    def test_len(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A'] = 1
         cid['tWo'] = 2
@@ -467,7 +493,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['ONE'], 'ONE')
         self.assertEqual(len(cid), 3)
 
-    def test_case_insensitive_with_alias_dict_contains_immutable_key(self):
+    def test_contains_immutable_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -477,7 +503,7 @@ class Test(unittest.TestCase):
         self.assertFalse('THREE' in cid)
         self.assertFalse(5 in cid)
 
-    def test_case_insensitive_with_alias_dict_contains_same_case_key(self):
+    def test_contains_same_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-a'] = 1
         cid['tWo'] = 2
@@ -487,7 +513,7 @@ class Test(unittest.TestCase):
         self.assertFalse('THREE' in cid)
         self.assertFalse(4 in cid)
 
-    def test_case_insensitive_with_alias_dict_contains_different_case_key(self):
+    def test_contains_different_case_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-a'] = 1
         cid['tWo'] = 2
@@ -497,7 +523,7 @@ class Test(unittest.TestCase):
         self.assertFalse('THREE' in cid)
         self.assertFalse(4 in cid)
 
-    def test_copy_case_insensitive_with_alias_dict(self):
+    def test_copy(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A'] = 1
         cid['tWo'] = 2
@@ -513,7 +539,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid2['ONE-A'], 1)
         self.assertEqual(cid2[4], 3)
 
-    def test_equality_case_insensitive_with_alias_dict_with_same_case(self):
+    def test_equality_with_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one', 'oNe-A'] = 1
         cid['two'] = 2
@@ -526,7 +552,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, cid2)
 
-    def test_equality_case_insensitive_with_alias_dict_with_different_case(self):
+    def test_equality_with_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one', 'oNe-A'] = 1
         cid['two'] = 2
@@ -539,7 +565,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, cid2)
 
-    def test_equality_case_insensitive_with_alias_dict_with_same_case_dict(self):
+    def test_equality_with_same_case_dict(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one', 'oNe-A'] = 1
         cid['two'] = 2
@@ -552,7 +578,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, dic)
 
-    def test_equality_case_insensitive_with_alias_dict_with_different_case_dict(self):
+    def test_equality_with_different_case_dict(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['one', 'oNe-A'] = 1
         cid['two'] = 2
@@ -565,7 +591,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(cid, dic)
 
-    def test_preserve_key_case_case_insensitive_with_alias_dict(self):
+    def test_preserve_key_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['One', 'oNe-A'] = 1
         cid['Two'] = 2
@@ -583,7 +609,7 @@ class Test(unittest.TestCase):
 
     # These are specific tests for CaseInsensitiveWithAliasDict
 
-    def test_add_alias_to_key_same_case_case_insensitive_with_alias_dict(self):
+    def test_add_alias_to_key_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -593,7 +619,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-A'], 1)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_add_alias_to_key_different_case_case_insensitive_with_alias_dict(self):
+    def test_add_alias_to_key_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -603,7 +629,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-A'], 1)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_implicit_add_multiple_aliases_to_same_key_case_insensitive_with_alias_dict(self):
+    def test_implicit_add_multiple_aliases_to_same_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -613,7 +639,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-B'], 1)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_explicit_add_multiple_aliases_to_same_key_same_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_add_multiple_aliases_to_same_key_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -625,7 +651,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-B'], 1)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_explicit_add_multiple_aliases_to_same_key_different_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_add_multiple_aliases_to_same_key_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -637,7 +663,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-B'], 1)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_implicit_add_multiple_aliases_to_different_key_case_insensitive_with_alias_dict(self):
+    def test_implicit_add_multiple_aliases_to_different_key(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo', 'tWo-A', 'tWo-B'] = 2
@@ -649,7 +675,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['tWo-A'], 2)
         self.assertEqual(cid['tWo-B'], 2)
 
-    def test_explicit_add_multiple_aliases_to_different_key_same_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_add_multiple_aliases_to_different_key_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -665,7 +691,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['tWo-B'], 2)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_explicit_add_multiple_alias_to_different_key_different_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_add_multiple_alias_to_different_key_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -681,7 +707,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['tWo-B'], 2)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_explicit_single_add_multiple_aliases_to_same_key_same_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_single_add_multiple_aliases_to_same_key_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -695,7 +721,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['tWo-B'], 2)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_explicit_add_multiple_aliases_to_same_key_different_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_add_multiple_aliases_to_same_key_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe'] = 1
         cid['tWo'] = 2
@@ -709,7 +735,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['tWo-B'], 2)
         self.assertEqual(cid['tWo'], 2)
 
-    def test_modify_value_by_key_same_case_case_insensitive_with_alias_dict(self):
+    def test_modify_value_by_key_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -719,7 +745,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-A'], 3)
         self.assertEqual(cid['oNe-B'], 3)
 
-    def test_modify_value_by_key_different_case_case_insensitive_with_alias_dict(self):
+    def test_modify_value_by_key_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -729,7 +755,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-A'], 3)
         self.assertEqual(cid['oNe-B'], 3)
 
-    def test_modify_value_by_alias_same_case_case_insensitive_with_alias_dict(self):
+    def test_modify_value_by_alias_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -739,7 +765,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-A'], 3)
         self.assertEqual(cid['oNe-B'], 3)
 
-    def test_modify_value_by_alias_different_case_case_insensitive_with_alias_dict(self):
+    def test_modify_value_by_alias_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -749,7 +775,7 @@ class Test(unittest.TestCase):
         self.assertEqual(cid['oNe-A'], 3)
         self.assertEqual(cid['oNe-B'], 3)
 
-    def test_delete_key_same_case_case_insensitive_with_alias_dict(self):
+    def test_delete_key_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -762,23 +788,29 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['oNe-A']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['oNe-B']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         self.assertEqual(cid._store, dict(tWo=2))
         self.assertEqual(cid._aliases, dict())
         self.assertEqual(cid._alias_keymap, dict())
 
-    def test_delete_key_different_case_case_insensitive_with_alias_dict(self):
+    def test_delete_key_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -791,23 +823,29 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['oNe-A']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['oNe-B']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         self.assertEqual(cid._store, dict(tWo=2))
         self.assertEqual(cid._aliases, dict())
         self.assertEqual(cid._alias_keymap, dict())
 
-    def test_delete_alias_same_case_case_insensitive_with_alias_dict(self):
+    def test_delete_alias_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -822,12 +860,13 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
         self.assertEqual(cid._aliases, {'one-b': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-b']})
 
-    def test_delete_alias_different_case_case_insensitive_with_alias_dict(self):
+    def test_delete_alias_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -842,12 +881,13 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
         self.assertEqual(cid._aliases, {'one-b': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-b']})
 
-    def test_explicit_remove_alias_same_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_remove_alias_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -862,12 +902,13 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
         self.assertEqual(cid._aliases, {'one-b': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-b']})
 
-    def test_explicit_remove_alias_same_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_remove_alias_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -882,12 +923,13 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
         self.assertEqual(cid._aliases, {'one-b': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-b']})
 
-    def test_explicit_remove_alias_different_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_remove_alias_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -902,12 +944,13 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
-
+        else:
+            self.fail('key still present')
         self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
         self.assertEqual(cid._aliases, {'one-b': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-b']})
 
-    def test_explicit_single_remove_aliases_same_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_single_remove_aliases_same_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -921,18 +964,22 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
         try:
             cid['oNe-B']
         except KeyError:
             self.assertTrue(True)
         except Exception:
             self.assertTrue(False)
+        else:
+            self.fail('key still present')
 
         self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
         self.assertEqual(cid._aliases, {})
         self.assertEqual(cid._alias_keymap, {})
 
-    def test_explicit_single_remove_aliases_different_case_case_insensitive_with_alias_dict(self):
+    def test_explicit_single_remove_aliases_different_case(self):
         cid = CaseInsensitiveWithAliasDict()
         cid['oNe', 'oNe-A', 'oNe-B'] = 1
         cid['tWo'] = 2
@@ -956,3 +1003,140 @@ class Test(unittest.TestCase):
         self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
         self.assertEqual(cid._aliases, {})
         self.assertEqual(cid._alias_keymap, {})
+
+    def test_add_same_alias_twice_to_same_key_same_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        try:
+            cid['oNe', 'oNe-A', 'oNe-A'] = 1
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_add_same_alias_twice_to_same_key_different_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        try:
+            cid['oNe', 'oNe-A', 'ONE-A'] = 1
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_explicit_add_same_alias_twice_to_same_key_same_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        cid['oNe'] = 1
+        try:
+            cid.set_alias('oNe', ['oNe-A', 'oNe-A'])
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_explicit_add_same_alias_twice_to_same_key_different_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        cid['oNe'] = 1
+        try:
+            cid.set_alias('ONE', ['oNe-A', 'ONE-A'])
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_add_same_alias_to_different_key_same_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        cid['oNe', 'oNe-A'] = 1
+        try:
+            cid['tWo', 'oNe-A'] = 2
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_add_same_alias_to_different_key_different_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        cid['oNe', 'oNe-A'] = 1
+        try:
+            cid['tWo', 'ONE-A'] = 2
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_explicit_add_same_alias_to_different_key_same_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        cid['oNe', 'oNe-A'] = 1
+        cid['tWo'] = 2
+        try:
+            cid.set_alias('tWo', 'oNe-A')
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_explicit_add_same_alias_to_different_key_different_case(self):
+        cid = CaseInsensitiveWithAliasDict()
+        cid['oNe', 'oNe-A'] = 1
+        cid['tWo'] = 2
+        try:
+            cid.set_alias('TWO', 'ONE-A')
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            self.fail('double alias')
+        self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
+
+    def test_explicit_add_alias_to_unexistent_key(self):
+        cid = CaseInsensitiveWithAliasDict()
+        cid['oNe', 'oNe-A'] = 1
+        cid['tWo'] = 2
+        try:
+            cid.set_alias('THREE', 'THREE-A')
+        except KeyError:
+            self.assertTrue(True)
+        except Exception:
+            self.fail('wrong exception')
+        else:
+            # self.fail('double alias')
+            pass
+        self.assertEqual(cid._store, {'oNe': 1, 'tWo': 2})
+        self.assertEqual(cid._aliases, {'one-a': 'one'})
+        self.assertEqual(cid._alias_keymap, {'one': ['one-a']})

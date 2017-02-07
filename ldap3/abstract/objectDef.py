@@ -30,7 +30,7 @@ from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError,
 from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo, constant_to_class_kind
 from ..protocol.formatters.standard import find_attribute_validator
-from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.ciDict import CaseInsensitiveWithAliasDict
 
 
 class ObjectDef(object):
@@ -48,7 +48,7 @@ class ObjectDef(object):
         if not isinstance(object_class, SEQUENCE_TYPES):
             object_class = [object_class]
 
-        self.__dict__['_attributes'] = CaseInsensitiveDict()
+        self.__dict__['_attributes'] = CaseInsensitiveWithAliasDict()
         self.__dict__['_custom_validator'] = custom_validator
         self.__dict__['_oid_info'] = []
 

@@ -152,7 +152,11 @@ class EntryBase(object):
                 if item == attr.lower():
                     break
             else:
-                raise LDAPCursorError('attribute \'%s\' not found' % item)
+                for attr in self._state.attributes.aliases():
+                    if item == attr.lower():
+                        break
+                else:
+                    raise LDAPCursorError('attribute \'%s\' not found' % item)
             return self._state.attributes[attr]
 
         raise LDAPCursorError('attribute name must be a string')
@@ -170,7 +174,11 @@ class EntryBase(object):
                 if item == attr.lower():
                     break
             else:
-                raise LDAPKeyError('key \'%s\' not found' % item)
+                for attr in self._state.attributes.aliases():
+                    if item == attr.lower():
+                        break
+                else:
+                    raise LDAPKeyError('key \'%s\' not found' % item)
             return self._state.attributes[attr]
 
         raise LDAPKeyError('key must be a string')
@@ -358,6 +366,9 @@ class WritableEntry(EntryBase):
                 return self.__dict__['_state']
             item = ''.join(item.split()).lower()
             for attr in self._state.attributes.keys():
+                if item == attr.lower():
+                    return self._state.attributes[attr]
+            for attr in self._state.attributes.aliases():
                 if item == attr.lower():
                     return self._state.attributes[attr]
             if item in self.entry_definition._attributes:  # item is a new attribute to commit, creates the AttrDef and add to the attributes to retrive

@@ -109,6 +109,9 @@ class CaseInsensitiveWithAliasDict(CaseInsensitiveDict):
         self._alias_keymap = dict()  # is a mapping key -> [alias1, alias2, ...]
         CaseInsensitiveDict.__init__(self, other, **kwargs)
 
+    def aliases(self):
+        return self._aliases.keys()
+
     def __setitem__(self, key, value):
         if isinstance(key, SEQUENCE_TYPES):
             ci_key = self._ci_key(key[0])

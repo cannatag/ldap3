@@ -555,3 +555,30 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
         self.assertEqual(writable_entry.givenname.value, None)
         self.assertEqual(len(writable_entry.givenname), 0)
+
+    def test_search_and_add_value_to_existing_multi_value_using_alias(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.cn)
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.commonname)
+        writable_entry.commonname.add('added-commonname-1')
+        result = writable_entry.entry_commit_changes()
+        self.assertTrue(result)
+        self.assertTrue('added-commonname-1' in writable_entry.cn)
+        self.assertTrue('added-commonname-1' in writable_entry.commonname)
+        self.assertEqual(len(writable_entry.commonname), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_add_value_to_existing_multi_value_using_alias(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.cn)
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.commonname)
+        writable_entry.commonname += 'implicit-added-commonname-1'
+        result = writable_entry.entry_commit_changes()
+        self.assertTrue(result)
+        self.assertTrue('givenname-1' in writable_entry.givenName)
+        self.assertTrue('implicit-added-commonname-1' in writable_entry.cn)
+        self.assertTrue('implicit-added-commonname-1' in writable_entry.commonname)
+        self.assertEqual(len(writable_entry.commonname), 2)
+        self.compare_entries(read_only_entry, writable_entry)

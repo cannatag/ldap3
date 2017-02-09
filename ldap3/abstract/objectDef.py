@@ -176,7 +176,12 @@ class ObjectDef(object):
         if isinstance(definition, STRING_TYPES):
             self.add_from_schema(definition)
         elif isinstance(definition, AttrDef):
-            self._attributes[definition.key] = definition
+            if definition.key not in self._attributes:
+                self._attributes[definition.key] = definition
+                other_names = [name for name in definition.oid_info.name if definition.key.lower() != name.lower()] if definition.oid_info else None
+                if other_names:
+                    self._attributes.set_alias(definition.key, other_names)
+
             if not definition.validate:
                 validator = find_attribute_validator(self._schema, definition.key, self._custom_validator)
                 self._attributes[definition.key].validate = validator

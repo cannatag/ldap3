@@ -9,7 +9,6 @@ LDAP operation at all.
 
 Overview
 --------
-
 With the Abstraction Layer you describe LDAP objects using the ObjectDef and AttrDef classes and access the LDAP server via a *Cursor* in read-only
 or read-write mode. Optionally you can use a Simplified Query Language to read the Entries from the DIT.
 
@@ -22,7 +21,6 @@ object refers to an ObjectDef that describes the relation between the Attributes
 
 ObjectDef class
 ---------------
-
 The ObjectDef class is used to define an abstract Entry object. You can create ObjectDefs manually, defining each Attribute defininition (AttrDef)
 or in an automatic way with the information read from the schema.
 
@@ -82,7 +80,6 @@ or in a program with the str() function.
 
 AttrDef class
 -------------
-
 The AttrDef class is used to define an abstract LDAP attribute. If you use the automatic ObjectDef creation the relevant AttrDefs
 are automatically created. AttrDef has a single mandatory parameter, the attribute name, and a number of optional parameters.
 The optional ``key`` parameter defines a friendly name to use while accessing the attribute. The ``description`` parameter can
@@ -102,7 +99,6 @@ You can even add a list of attrDefs or attribute names to an ObjectDef::
 
 Validation
 ^^^^^^^^^^
-
 You can specify a ``validate`` parameter to check if the attribute value is valid.
 Two parameters are passed to the callable, the AttrDef.key and the value. The callable must return a boolean allowing or denying the validation::
 
@@ -115,7 +111,6 @@ In this example the Cursor object will raise an exception if values for the 'Dep
 
 Pre Query transformation
 ^^^^^^^^^^^^^^^^^^^^^^^^
-
 A ``pre_query`` parameter indicates a callable used to perform a transformation on the value to be searched for the attribute defined::
 
     # transform value to be search
@@ -132,7 +127,6 @@ be for employeeType = 'A', 'F' or 'E'.
 
 Post query transformation
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-
 A 'post_query' parameter indicates a callable to perform a transformation on the returned value::
 
     get_department_name = lambda attr, value: deps.get(value, 'not a department') if attr == 'Department' else value
@@ -145,7 +139,6 @@ With a multivalue attribute post_query receives a list of all values in the attr
 
 Dereferencing DNs
 ^^^^^^^^^^^^^^^^^
-
 With ``dereference_dn`` you can establish a relation between different ObjectDefs. When dereference_dn is set to an ObjectDef the Cursor
 reads the attribute and use its value as a DN for an object to be searched (using a temporary Reader) with the specified ObjectDef
 in the same Connection. The result of the second search is returned as value of the first search::
@@ -154,18 +147,16 @@ in the same Connection. The result of the second search is returned as value of 
     department += 'cn'
     department += AttrDef('member', key = 'employeer', dereference_dn = person)  # values of 'employeer' will be the 'Person' entries members of the found department
 
-
 Cursor
 ------
-
 There are two kind of *Cursor* in the Abstraction Layer, **Reader** and **Writer**. This helps to avoid the risk of accidentally change
 values when you're just reading them. This is a safe-guard because many application uses LDAP only for reading information,
 so having a read-only Cursor eliminates the risk of accidentally change or remove an entry. A Writer Cursor cannot read data
-from the DIT as well, Writer cursors are only used for DIT modification.
+from the DIT as well, Writer cursors are only used for DIT modification. Please refer to the Abstraction Layer tutorial for an in-depth
+description of Cursor capabilities and usage.
 
-Reader
-------
-
+Reader Cursor
+^^^^^^^^^^^^^
 Once you have defined the ObjectDef(s) and the AttrDef(s) you can instance a Reader for the ObjectDef. With it you can perform searches
 using a standard LDAP filter or a simplified query language (explained in next paragraph). To execute a different search
 the reader can be reset to its initial status with the ``reset()`` method.
@@ -215,6 +206,14 @@ To perform a search Operation you can use any of the following methods:
 
 - search_paged(page_size, criticality): perform a paged search, with 'page_size' number of entries for each call to this method. If 'criticality' is True the server aborts the operation if the Simple Paged Search extension is not available, else return the whole result set.
 
+
+To retrieve some matching entries from a search operation the cursor:
+
+- match_dn(text): returns a list of entries where the specified text is found in the dn. The match is case insensitive
+
+- match(attributes, text): returns a list of entries where the specified text is found in one of the attribute values.
+  The match is case insensitive and checks for single and multi-valued attributes. The ``attributes`` parameter can be an attribute name or a list of attribute names
+
 Example::
 
     s = Server('server')
@@ -238,9 +237,28 @@ summarize the Reader configuration and status::
     FILTER : '(&(objectClass=inetOrgPerson)(cn=test-add*)(sn=t*))'
     ENTRIES: 1 [SUB] [executed at: Sun Feb  9 20:43:47 2014]
 
+Writer Cursor
+^^^^^^^^^^^^^
+A Writer Cursor has no Search capability because it can be only used to create new Entries or to modify the Entries in a Reader
+cursor or in an LDAP Search operation.
+
+Instead of the search_* methods the Writer has the following methods:
+
+- from_cursor: creates a Writer cursor from a Reader cursor, populated with a copy of the Entries in the Reader cursor
+
+- from_response: create a Writer cursor from a Search operation response, populated with a copy of the Entries in the Search response
+
+- commit: writes all the pending changes to the DIT
+
+- discard: discards all the pending changes
+
+- new: creates a new Entry
+
+- refresh_entry: re-reads the Entry from the DIT
+
+
 Simplified Query Language
 -------------------------
-
 In the Reader you can express the query filter using the standard LDAP filter syntax or using a *Simplified Query Language* that resembles
 a dictionary structure. If you use the standard LDAP filter syntax you must use the real attribute names because the filter is directly
 passed to the Search operation.
@@ -272,29 +290,8 @@ Object classes defined in the ObjectDef are always included in the filter, so fo
 
 when using a Reader with the 'engineer' ObjectDef.
 
-Writer Cursor
--------------
-
-By design a Writer Cursor has no Search capability because it can be only used to create new Entries or to modify the Entries in a Reader
-cursor or in an LDAP Search operation.
-
-Instead of the search_* methods the Writer has the following methods:
-
-- from_cursor: creates a Writer cursor from a Reader cursor, populated with a copy of the Entries in the Reader cursor
-
-- from_response: create a Writer cursor from a Search operation response, populated with a copy of the Entries in the Search response
-
-- commit: writes all the pending changes to the DIT
-
-- discard: discards all the pending changes
-
-- new: creates a new Entry
-
-- refresh_entry: re-reads the Entry from the DIT
-
 Entry
 -----
-
 Cursors contains Entries that are the Python representation of entries stored in the LDAP DIT. There are two types of Entries,
 **Read** and **Writable**. Each Entry has a ``state`` attribute that keeps information on the current status of the Entry.
 
@@ -404,7 +401,6 @@ Entries can be easily printed at the interactive prompt::
 
 Attribute
 ---------
-
 Values found for each attribute are stored in the Attribute object. You can access the 'values' and the 'raw_values' lists. You can
 also get a reference to the relevant AttrDef in the 'definition' property, and to the relevant Entry in the 'entry' property.
 You can iterate over the Attribute to get each value::
@@ -440,7 +436,6 @@ When an entry is Writable the Attribute has additional attributes and methods an
 
 Modifying an Entry
 ------------------
-
 With the Abstraction Layer you can "build" your Entry object and then commit it to the LDAP server in a simple pythonic way. First
 you must obtain a **Writable** Entry. Entry may become writable in four different way: as Entries from a Reader Cursor,
 as Entries form a Search response, as a single Entry from a Search response or as a new (Virtual) Entry::
@@ -508,8 +503,19 @@ conversion to the value expected from the LDAP server.
 You can discard the pending changes with ``e.entry_discard_changes()`` or delete the whole entry with ``e.delete()``. You can
 also move the Entry to another container in the DIT with ``e.entry_move()`` or renaming it with ``e.entry_rename)``.
 
+Matching entries in cursor results
+----------------------------------
+Once a cursor is populated with entries you can get a specific entry with the standard index feature of List object: ``r.entries[0]`` returns the first entry
+found, ``r.entries[1]`` returns he second one and any subsequent entry is returned by the relevant index number. The Cursor object has a shortcut
+for this operation: you can use ``r[0]``, ``r[1]`` to perform the same operation. Furthermore, the Cursor object has an useful feature that helps you to
+find a specific entry without knowing its index: when you use a string as the Cursor index the text will be searched in all entry DNs.
+If only one entry matches it is returned, if more than one entry match the text a KeyError exception is raised. You can also use the ``r.match_dn(text)``
+method to return all entries with the specified text in the DN and ``r.match(attributes, text)`` to return all entries that contain the ``text`` value in any
+of the specified ``attributes`` where you can pass a single attribute name or a list of attribute names.
+
 OperationalAttribute
 --------------------
-
 The OperationalAttribute class is used to store Operational Attributes read with the 'get_operational_attributes' of the Reader object set to True. It's the same
 of the Attribute class except for the 'definition' property that is not present. Operational attributes key are prefixed with 'OA_'.
+
+

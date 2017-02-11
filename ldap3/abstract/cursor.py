@@ -135,7 +135,25 @@ class Cursor(object):
         return self.entries.__iter__()
 
     def __getitem__(self, item):
-        return self.entries[item]
+        """Return indexed item, if index is not found then try to sequentially search in DN of entries.
+        If only one entry is found return it else raise a KeyError exception. The exception message
+        includes the number of entries that matches, if less than 10 entries match then show the DNs
+        in the exception message.
+        """
+        try:
+            return self.entries[item]
+        except TypeError:
+            pass
+
+        if isinstance(item, STRING_TYPES):
+            found = self.match_dn(item)
+
+            if len(found) == 1:
+                return found[0]
+            elif len(found) > 1:
+                raise KeyError('Multiple entries found: %d entries match the text in dn' % len(found) + ('' if len(found) > 10 else (' [' + '; '.join([e.entry_dn for e in found]) + ']')))
+
+        raise KeyError('no entry found')
 
     def __len__(self):
         return len(self.entries)
@@ -205,6 +223,37 @@ class Cursor(object):
                     attributes[get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name] = attribute
 
         return attributes
+
+    def match_dn(self, text):
+        """Return entries with text in DN"""
+        matched = []
+        for entry in self.entries:
+            if text.lower() in entry.entry_dn.lower():
+                matched.append(entry)
+        return matched
+
+    def match(self, attributes, text):
+        """Return entries with text in one of the specified attributes"""
+        matched = []
+        if not isinstance(attributes, SEQUENCE_TYPES):
+            attributes = [attributes]
+
+        for entry in self.entries:
+            found = False
+            for attribute in attributes:
+                if attribute in entry:
+                    for value in entry[attribute].values:
+                        if hasattr(value, 'lower') and text.lower() in value.lower():
+                            found = True
+                        elif text in value:
+                            found = True
+                        if found:
+                            matched.append(entry)
+                            break
+                    if found:
+                        break
+
+        return matched
 
     def _create_entry(self, response):
         if not response['type'] == 'searchResEntry':

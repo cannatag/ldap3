@@ -14,6 +14,9 @@
     - new entries that have no additional mandatory attributes other those defined in dn are properly managed in Writers (thanks Matt)
     - CaseInsensitiveDict now applies strip() to keys
     - updated hashing alghoritm SHA to SHA1 (thanks Satoh)
+    - added match_dn(text) to Cursor for matching entries with specified text in DN
+    - added match(attributes, text) for matching entries with specified text in one or more attribute values
+    - Cursors have simple search capability. When key is a string Cursor tries to match it against the DN of entries found.
 
 - 2.2.0 2017.01.16
     - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6

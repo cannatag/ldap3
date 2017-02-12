@@ -26,8 +26,9 @@ In the ldap3 library the signature for the Compare operation is::
 For synchronous strategies the compare method returns True if the attribute value equals the value sent in the operation,
 returns False in case it's different.
 
-For asynchronous strategies the compare method returns the message id of the operation. You can get the operation result
-with the get_response(message_id) method of the connection object.
+For asynchronous strategies the add method returns the message id of the operation. You can get the operation result with
+the ``get_response(message_id)`` method of the connection object. If you use the ``get_request=True`` parameter you get the request dictionary back.
+
 
 False value is returned even if the entry is not found in the LDAP server. You can check the description of the connection
 result attribute to know the reason of the missed match. The dessription is set to compareTrue, compareFalse, or an appropriate error.

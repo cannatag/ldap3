@@ -22,12 +22,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
+from collections import namedtuple
 from copy import deepcopy
 from datetime import datetime
 from os import linesep
 from time import sleep
 
+from ldap3.abstract import STATUS_PENDING_CHANGES
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
@@ -35,9 +36,13 @@ from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPCursorError
 from ..core.results import RESULT_SUCCESS
-from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
+from ..utils.conv import to_raw
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
+
+
+Operation = namedtuple('Operation', ('request', 'result', 'response'))
 
 
 def _ret_search_value(value):
@@ -94,6 +99,7 @@ class Cursor(object):
         self.entries = []
         self.schema = self.connection.server.schema
         self._do_not_reset = False  # used for refreshing entry in entry_refresh() without removing all entries from the Cursor
+        self._operation_history = list()  # a list storing all the requests, results and responses for the last cursor operation
 
     def __repr__(self):
         r = 'CURSOR : ' + self.__class__.__name__ + linesep
@@ -117,6 +123,10 @@ class Cursor(object):
         if self.execution_time:
             r += 'ENTRIES: ' + str(len(self.entries))
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
+
+        if self.failed:
+            r += 'LAST OPERATION FAILED [' + str(len(self.errors)) + ' failure' + ('s' if len(self.errors) > 1 else '') + ' at operation' + ('s ' if len(self.errors) > 1 else ' ') + ', '.join([str(i) for i, error in enumerate(self.operations) if error.result['result'] != RESULT_SUCCESS]) + ']'
+
         return r
 
     def __str__(self):
@@ -126,7 +136,25 @@ class Cursor(object):
         return self.entries.__iter__()
 
     def __getitem__(self, item):
-        return self.entries[item]
+        """Return indexed item, if index is not found then try to sequentially search in DN of entries.
+        If only one entry is found return it else raise a KeyError exception. The exception message
+        includes the number of entries that matches, if less than 10 entries match then show the DNs
+        in the exception message.
+        """
+        try:
+            return self.entries[item]
+        except TypeError:
+            pass
+
+        if isinstance(item, STRING_TYPES):
+            found = self.match_dn(item)
+
+            if len(found) == 1:
+                return found[0]
+            elif len(found) > 1:
+                raise KeyError('Multiple entries found: %d entries match the text in dn' % len(found) + ('' if len(found) > 10 else (' [' + '; '.join([e.entry_dn for e in found]) + ']')))
+
+        raise KeyError('no entry found')
 
     def __len__(self):
         return len(self.entries)
@@ -147,15 +175,13 @@ class Cursor(object):
         If the 'dereference_dn' in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value.
 
         """
-        attributes = CaseInsensitiveDict()
+        attributes = CaseInsensitiveWithAliasDict()
         used_attribute_names = set()
         for attr_def in attr_defs:
             attribute_name = None
             for attr_name in response['attributes']:
                 if attr_def.name.lower() == attr_name.lower():
                     attribute_name = attr_name
-                    # if isinstance(response['attributes'][name], list) and len(response['attributes'][name]) == 0:  # empty attributes returned as empty list with the return_empty_attributes of the Connection object
-                    #    name = None
                     break
 
             if attribute_name or attr_def.default is not NotImplemented:  # attribute value found in result or default value present - NotImplemented allows use of None as default
@@ -180,6 +206,8 @@ class Cursor(object):
                         del temp_reader  # remove the temporary Reader
                         attribute.values = temp_values
                 attributes[attribute.key] = attribute
+                if attribute.other_names:
+                    attributes.set_alias(attribute.key, attribute.other_names)
                 used_attribute_names.add(attribute_name)
 
         if self.attributes:
@@ -196,6 +224,49 @@ class Cursor(object):
                     attributes[get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name] = attribute
 
         return attributes
+
+    def match_dn(self, dn):
+        """Return entries with text in DN"""
+        matched = []
+        for entry in self.entries:
+            if dn.lower() in entry.entry_dn.lower():
+                matched.append(entry)
+        return matched
+
+    def match(self, attributes, value):
+        """Return entries with text in one of the specified attributes"""
+        matched = []
+        if not isinstance(attributes, SEQUENCE_TYPES):
+            attributes = [attributes]
+
+        for entry in self.entries:
+            found = False
+            for attribute in attributes:
+                if attribute in entry:
+                    for attr_value in entry[attribute].values:
+                        if hasattr(attr_value, 'lower') and value.lower() in attr_value.lower():
+                            found = True
+                        elif value == attr_value:
+                            found = True
+                        if found:
+                            matched.append(entry)
+                            break
+                    if found:
+                        break
+                    # checks raw values, tries to convert value to byte
+                    raw_value = to_raw(value)
+                    if isinstance(raw_value, (bytes, bytearray)):
+                        for attr_value in entry[attribute].raw_values:
+                            if hasattr(attr_value, 'lower') and hasattr(raw_value, 'lower') and raw_value.lower() in attr_value.lower():
+                                found = True
+                            elif raw_value == attr_value:
+                                found = True
+                            if found:
+                                matched.append(entry)
+                                break
+                        if found:
+                            break
+        return matched
 
     def _create_entry(self, response):
         if not response['type'] == 'searchResEntry':
@@ -232,9 +303,13 @@ class Cursor(object):
                                             get_operational_attributes=self.get_operational_attributes,
                                             controls=self.controls)
             if not self.connection.strategy.sync:
-                response, _ = self.connection.get_response(result)
+                response, result, request = self.connection.get_response(result, get_request=True)
             else:
                 response = self.connection.response
+                result = self.connection.result
+                request = self.connection.request
+
+        self._store_operation_in_history(request, result, response)
 
         if self._do_not_reset:  # trick to not remove entries when using _refresh()
             return self._create_entry(response[0])
@@ -242,7 +317,8 @@ class Cursor(object):
         self.entries = []
         for r in response:
             entry = self._create_entry(r)
-            self.entries.append(entry)
+            if entry is not None:
+                self.entries.append(entry)
 
         self.execution_time = datetime.now()
 
@@ -251,6 +327,24 @@ class Cursor(object):
 
     def remove(self, entry):
         self.entries.remove(entry)
+
+    def _reset_history(self):
+        self._operation_history = list()
+
+    def _store_operation_in_history(self, request, result, response):
+        self._operation_history.append(Operation(request, result, response))
+
+    @property
+    def operations(self):
+        return self._operation_history
+
+    @property
+    def errors(self):
+        return [error for error in self._operation_history if error.result['result'] != RESULT_SUCCESS]
+
+    @property
+    def failed(self):
+        return any([error.result['result'] != RESULT_SUCCESS for error in self._operation_history])
 
 
 class Reader(Cursor):
@@ -314,6 +408,7 @@ class Reader(Cursor):
 
         """
         self.dereference_aliases = DEREF_ALWAYS
+        self._reset_history()
 
     def reset(self):
         """Clear all the Reader parameters
@@ -365,7 +460,7 @@ class Reader(Cursor):
                             value = val[1:].lstrip()
 
                     if self.definition[attr].validate:
-                        validated = self.definition[attr].validate(self.definition[attr].key, value)  # returns True, False or a value to substitute to the actual values
+                        validated = self.definition[attr].validate(value)  # returns True, False or a value to substitute to the actual values
                         if validated is False:
                             raise LDAPCursorError('validation failed for attribute %s and value %s' % (d, val))
                         elif validated is not True:  # a valid LDAP value equivalent to the actual values
@@ -396,7 +491,7 @@ class Reader(Cursor):
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
-                raise LDAPCursorError('object_class must be a string or a list')
+                raise LDAPCursorError('object class must be a string or a list')
 
         if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
             if 'objectclass' not in self._query.lower():
@@ -501,50 +596,6 @@ class Reader(Cursor):
 
         return self.entries
 
-    # def search_size_limit(self, size_limit, attributes=None):
-    #     """Perform the LDAP search with limit of entries found
-    #
-    #     :param attributes: optional attriibutes to search
-    #     :param size_limit: maximum number of entries returned
-    #     :return: Entries found in search
-    #
-    #     """
-    #
-    #     self.clear()
-    #     self.size_limit = size_limit
-    #     query_scope = SUBTREE if self.sub_tree else LEVEL
-    #     self._execute_query(query_scope, attributes)
-    #
-    #     return self.entries
-    #
-    # def search_time_limit(self, time_limit, attributes=None):
-    #     """Perform the LDAP search with limit of time spent in searching by the server
-    #
-    #     :param attributes: optional attributes to search
-    #     :param time_limit: maximum number of seconds to wait for a search
-    #     :return: Entries found in search
-    #
-    #     """
-    #     self.clear()
-    #     self.time_limit = time_limit
-    #     query_scope = SUBTREE if self.sub_tree else LEVEL
-    #     self._execute_query(query_scope, attributes)
-    #
-    #     return self.entries
-    #
-    # def search_types_only(self, attributes=None):
-    #     """Perform the search returning attribute names only.
-    #
-    #     :return: Entries found in search
-    #
-    #     """
-    #     self.clear()
-    #     self.types_only = True
-    #     query_scope = SUBTREE if self.sub_tree else LEVEL
-    #     self._execute_query(query_scope, attributes)
-    #
-    #     return self.entries
-
     def search_paged(self, paged_size, paged_criticality=True, generator=True, attributes=None):
         """Perform a paged search, can be called as an Iterator
 
@@ -605,15 +656,12 @@ class Writer(Cursor):
     def from_response(connection, object_def, response=None):
         if response is None:
             if not connection.strategy.sync:
-                raise LDAPCursorError(' with async strategies response must be specified')
+                raise LDAPCursorError(' with asynchronous strategies response must be specified')
             elif connection.response:
                 response = connection.response
             else:
                 raise LDAPCursorError('response not present')
         writer = Writer(connection, object_def)
-        # for entry in connection._get_entries(response):
-        #     entry.entry_writable(object_def, writer, custom_validator=custom_validator)
-        # return writer
 
         for resp in response:
             if resp['type'] == 'searchResEntry':
@@ -626,9 +674,15 @@ class Writer(Cursor):
         self.dereference_aliases = DEREF_NEVER
 
     def commit(self, refresh=True):
+        self._reset_history()
+        successful = True
         for entry in self.entries:
-            entry.entry_commit_changes(refresh=refresh, controls=self.controls)
+            if not entry.entry_commit_changes(refresh=refresh, controls=self.controls, clear_history=False):
+                successful = False
+
         self.execution_time = datetime.now()
+
+        return successful
 
     def discard(self):
         for entry in self.entries:
@@ -655,22 +709,24 @@ class Writer(Cursor):
                                                 get_operational_attributes=self.get_operational_attributes,
                                                 controls=controls)
                 if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
+                    response, result, request = self.connection.get_response(result, get_request=True)
                 else:
                     response = self.connection.response
                     result = self.connection.result
+                    request = self.connection.request
 
                 if result['result'] in [RESULT_SUCCESS]:
                     break
                 sleep(seconds)
                 counter += 1
+                self._store_operation_in_history(request, result, response)
 
         if len(response) == 1:
             return self._create_entry(response[0])
         elif len(response) == 0:
             return None
 
-        raise LDAPCursorError('Too many entries returned for a single object search')
+        raise LDAPCursorError('more than 1 entry returned for a single object search')
 
     def new(self, dn):
         dn = safe_dn(dn)
@@ -691,8 +747,9 @@ class Writer(Cursor):
                     entry.__dict__[rdn_name] = entry._state.attributes[rdn_name]
                 entry.__dict__[rdn_name].set(rdn[1])
             else:
-                raise LDAPCursorError('rdn type \'%s\' not in objectclass definition' % rdn[0])
-        entry._state.set_status(STATUS_VIRTUAL)
+                raise LDAPCursorError('rdn type \'%s\' not in object class definition' % rdn[0])
+        entry._state.set_status(STATUS_VIRTUAL)  # set intial status
+        entry._state.set_status(STATUS_PENDING_CHANGES)  # tries to change status to PENDING_CHANGES. If mandatory attributes are missing status is reverted to MANDATORY_MISSING
         self.entries.append(entry)
         return entry
 

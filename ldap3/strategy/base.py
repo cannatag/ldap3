@@ -72,7 +72,7 @@ class BaseStrategy(object):
 
     def __init__(self, ldap_connection):
         self.connection = ldap_connection
-        self._outstanding = dict()
+        self._outstanding = None
         self._referrals = []
         self.sync = None  # indicates a synchronous connection
         self.no_real_dsa = None  # indicates a connection to a fake LDAP server
@@ -175,7 +175,7 @@ class BaseStrategy(object):
         self.connection.request = None
         self.connection.response = None
         self.connection.tls_started = False
-        self._outstanding = dict()
+        self._outstanding = None
         self._referrals = []
 
         if not self.connection.strategy.no_real_dsa:
@@ -306,7 +306,7 @@ class BaseStrategy(object):
 
         return message_id
 
-    def get_response(self, message_id, timeout=None):
+    def get_response(self, message_id, timeout=None, get_request=False):
         """
         Get response LDAP messages
         Responses are returned by the underlying connection strategy
@@ -319,6 +319,7 @@ class BaseStrategy(object):
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         response = None
         result = None
+        request = None
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
@@ -400,13 +401,16 @@ class BaseStrategy(object):
                                 if log_enabled(PROTOCOL):
                                     log(PROTOCOL, 'attribute value set to [] for missing attribute %s in %s', attribute_type, self)
 
-            self._outstanding.pop(message_id)
+            request = self._outstanding.pop(message_id)
         else:
             if log_enabled(ERROR):
                 log(ERROR, 'message id not in outstanding queue for <%s>', self.connection)
             raise(LDAPResponseTimeoutError('message id not in outstanding queue'))
 
-        return response, result
+        if get_request:
+            return response, result, request
+        else:
+            return response, result
 
     @staticmethod
     def compute_ldap_message_size(data):

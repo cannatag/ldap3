@@ -36,7 +36,7 @@ from ..core.exceptions import LDAPInvalidHashAlgorithmError
 
 algorithms_table = {
     HASHED_MD5: ('md5', 'MD5'),
-    HASHED_SHA: ('sha', 'DSA-SHA'),
+    HASHED_SHA: ('sha', 'SHA1'),
     HASHED_SHA256: ('sha256', 'SHA256'),
     HASHED_SHA384: ('sha384', 'SHA384'),
     HASHED_SHA512: ('sha512', 'SHA512')

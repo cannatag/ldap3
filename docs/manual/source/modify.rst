@@ -27,8 +27,8 @@ In the ldap3 library the signature for the Modify operation is::
 For synchronous strategies the modify method returns True if the operation was successful, returns False in case of errors.
 In this case you can inspect the result attribute of the connection object to get the error description.
 
-For asynchronous strategies the modify method returns the message id of the operation. You can get the operation result with
-the get_response(message_id) method of the connection object.
+For asynchronous strategies the add method returns the message id of the operation. You can get the operation result with
+the ``get_response(message_id)`` method of the connection object. If you use the ``get_request=True`` parameter you get the request dictionary back.
 
 There are 4 different kinds of change:
 

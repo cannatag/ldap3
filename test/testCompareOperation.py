@@ -50,6 +50,17 @@ class Test(unittest.TestCase):
 
         self.assertEqual(result['description'], 'compareTrue')
 
+    def test_compare_true_with_get_request(self):
+        result = self.connection.compare(self.delete_at_teardown[0][0], 'givenName', 'compare')
+        if not self.connection.strategy.sync:
+            _, result, request = self.connection.get_response(result, get_request=True)
+            self.assertEqual(request['type'], 'compareRequest')
+        else:
+            result = self.connection.result
+
+        self.assertEqual(result['description'], 'compareTrue')
+
+
     def test_compare_false(self):
         result = self.connection.compare(self.delete_at_teardown[0][0], 'givenName', 'error')
         if not self.connection.strategy.sync:

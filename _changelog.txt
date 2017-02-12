@@ -1,3 +1,23 @@
+- 2.2.1 2017.02.12
+    - tested against pyasn1 0.2.2 (thanks Ilya)
+    - get_response() has an optional new parameter "get_request" to return the request too, helpful in asynchronous strategies
+    - connection.request, connection.response and connection result are now properly blanked in async strategies
+    - ldap3.utils.dn.safe_dn() now checks for AD names only if no equal sign is present in the dn
+    - abstraction layer properly works with asynchronous strategies
+    - added a named tuple "Operation" used to store the request, result and response of an LDAP operation in Cursor history
+    - cursors in the Abstraction Layer keep history of executed LDAP operations for the last Cursor operation in the cursor.operation property
+    - Cursors in the Abstraction Layer keep history of errors for the last Cursor operation in the cursor.errors property
+    - if any error has occurred in the last operation of a Cursor the cursor.failed property is set to True
+    - added a named tuple "Operation" for storing request, result and response of an LDAP operation in Cursor history
+    - Cursor honours raise_exception parameter of the Connection.
+    - Cursor commit() return True if operations are successful and False if not. All pending commits are executed even if some fail
+    - new entries that have no additional mandatory attributes other those defined in dn are properly managed in Writers (thanks Matt)
+    - CaseInsensitiveDict now properly strips blanks from keys
+    - updated hashing alghoritm SHA to SHA1 (thanks Satoh)
+    - added match_dn(dn) to Cursor for matching entries with specified text in DN
+    - added match(attributes, value) for matching entries with specified value in one or more attribute values. It checks values and raw_values
+    - Cursors have simple match capability. When key is a string Cursor tries to match it against the DN of entries found.
+
 - 2.2.0 2017.01.16
     - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6
     - updated docs regarding search response attributes (thanks James)

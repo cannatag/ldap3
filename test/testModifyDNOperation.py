@@ -69,3 +69,34 @@ class Test(unittest.TestCase):
 
         self.assertEqual('success', result['description'])
         self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace(test_base, test_moved), self.delete_at_teardown[0][1])
+
+    def test_modify_dn_operation_with_get_request(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-1'))
+        result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modified-dn-1')
+        if not self.connection.strategy.sync:
+            _, result, request = self.connection.get_response(result, get_request=True)
+            self.assertEqual(request['type'], 'modDNRequest')
+        else:
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace('modify-dn-1', 'modified-dn-1'), self.delete_at_teardown[0][1])
+
+    def test_move_dn_with_get_request(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-2'))
+        counter = 20
+        result = None
+        while counter > 0:  # tries move operation for at maximum 20 times - partition may be busy while moving (at least on eDirectory)
+            result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modify-dn-2', new_superior=test_moved)
+            if not self.connection.strategy.sync:
+                _, result, request = self.connection.get_response(result, get_request=True)
+                self.assertEqual(request['type'], 'modDNRequest')
+            else:
+                result = self.connection.result
+            if result['description'] == 'success':
+                break
+            sleep(3)
+            counter -= 1
+
+        self.assertEqual('success', result['description'])
+        self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace(test_base, test_moved), self.delete_at_teardown[0][1])
+

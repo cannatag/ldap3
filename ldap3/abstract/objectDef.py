@@ -30,7 +30,7 @@ from ..core.exceptions import LDAPKeyError, LDAPObjectError, LDAPAttributeError,
 from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo, constant_to_class_kind
 from ..protocol.formatters.standard import find_attribute_validator
-from ..utils.ciDict import CaseInsensitiveDict
+from ..utils.ciDict import CaseInsensitiveWithAliasDict
 
 
 class ObjectDef(object):
@@ -48,7 +48,7 @@ class ObjectDef(object):
         if not isinstance(object_class, SEQUENCE_TYPES):
             object_class = [object_class]
 
-        self.__dict__['_attributes'] = CaseInsensitiveDict()
+        self.__dict__['_attributes'] = CaseInsensitiveWithAliasDict()
         self.__dict__['_custom_validator'] = custom_validator
         self.__dict__['_oid_info'] = []
 
@@ -120,7 +120,7 @@ class ObjectDef(object):
 
             return self._attributes[attr]
 
-        raise LDAPKeyError('_attributes not defined')
+        raise LDAPKeyError('internal _attributes property not defined')
 
     def __setattr__(self, key, value):
         raise LDAPObjectError('object \'%s\' is read only' % key)
@@ -176,7 +176,12 @@ class ObjectDef(object):
         if isinstance(definition, STRING_TYPES):
             self.add_from_schema(definition)
         elif isinstance(definition, AttrDef):
-            self._attributes[definition.key] = definition
+            if definition.key not in self._attributes:
+                self._attributes[definition.key] = definition
+                other_names = [name for name in definition.oid_info.name if definition.key.lower() != name.lower()] if definition.oid_info else None
+                if other_names:
+                    self._attributes.set_alias(definition.key, other_names)
+
             if not definition.validate:
                 validator = find_attribute_validator(self._schema, definition.key, self._custom_validator)
                 self._attributes[definition.key].validate = validator
@@ -195,17 +200,17 @@ class ObjectDef(object):
         if isinstance(item, STRING_TYPES):
             key = ''.join(item.split()).lower()
         elif isinstance(item, AttrDef):
-            key = item.key
+            key = item.key.lower()
 
         if key:
             for attr in self._attributes:
-                if item == attr.lower():
+                if key == attr.lower():
                     del self._attributes[attr]
                     break
             else:
                 raise LDAPKeyError('key \'%s\' not present' % key)
         else:
-            raise LDAPAttributeError('key must be str or AttrDef not ' + str(type(key)))
+            raise LDAPAttributeError('key type must be str or AttrDef not ' + str(type(item)))
 
     def clear_attributes(self):
         """Empty the ObjectDef attribute list

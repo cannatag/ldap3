@@ -45,11 +45,11 @@ def check_type(input_value, value_type):
     return False
 
 
-def always_valid(name, input_value):
+def always_valid(input_value):
     return True
 
 
-def validate_generic_single_value(name, input_value):
+def validate_generic_single_value(input_value):
     if not isinstance(input_value, SEQUENCE_TYPES):
         return True
     if len(input_value) == 1:
@@ -57,17 +57,17 @@ def validate_generic_single_value(name, input_value):
     return False
 
 
-def validate_integer(name, input_value):
+def validate_integer(input_value):
     return check_type(input_value, int)
 
 
-def validate_bytes(name, input_value):
+def validate_bytes(input_value):
     return check_type(input_value, bytes)
 
 
-def validate_boolean(name, input_value):
+def validate_boolean(input_value):
     # it could be a real bool or the string TRUE or FALSE, # only a single valued is allowed
-    if validate_generic_single_value(name, input_value):
+    if validate_generic_single_value(input_value):
         if isinstance(input_value, SEQUENCE_TYPES):
             input_value = input_value[0]
         if isinstance(input_value, bool):
@@ -84,7 +84,7 @@ def validate_boolean(name, input_value):
     return False
 
 
-def validate_time(name, input_value):
+def validate_time(input_value):
     # if datetime object doesn't have a timezone it's considered local time and is adjusted to UTC
     changed = False
     sequence = True  # indicates if a sequence must be returned

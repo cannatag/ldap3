@@ -26,9 +26,11 @@
 import unittest
 from time import sleep
 
-from ldap3.core.exceptions import LDAPCursorError
+from ldap3 import REUSABLE
+from ldap3.core.exceptions import LDAPCursorError, LDAPOperationResult, LDAPConstraintViolationResult
 from ldap3.abstract import STATUS_WRITABLE, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_MANDATORY_MISSING, STATUS_VIRTUAL, STATUS_PENDING_CHANGES, STATUS_READ, STATUS_READY_FOR_DELETION
-from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_int_attr
+from ldap3.core.results import RESULT_CONSTRAINT_VIOLATION
+from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_int_attr, test_strategy
 
 
 testcase_id = random_id()
@@ -136,23 +138,53 @@ class Test(unittest.TestCase):
             read_only_entry = self.get_entry('search-and-modify-2')
             writable_entry = read_only_entry.entry_writable('inetorgperson')
             writable_entry.preferredDeliveryMethod.add('telephone')
-            try:
-                writable_entry.entry_commit_changes()
-            except LDAPCursorError as e:
-                self.assertTrue('constraintViolation' in e.args[0])
-                return
-            self.fail('error assigning to existing single value')
+            writable_entry.entry_commit_changes()
+            cursor = writable_entry.entry_cursor
+            if not cursor.failed:
+                self.fail('error assigning to existing single value')
+            self.assertEqual(len(cursor.errors), 1)
+            self.assertEqual(cursor.errors[0].result['result'], RESULT_CONSTRAINT_VIOLATION)
 
     def test_search_and_implicit_add_value_to_existing_single_value(self):
         if test_server_type == 'EDIR':
             read_only_entry = self.get_entry('search-and-modify-2')
             writable_entry = read_only_entry.entry_writable('inetorgperson')
             writable_entry.preferredDeliveryMethod += 'telephone'
+            writable_entry.entry_commit_changes()
+            cursor = writable_entry.entry_cursor
+            if not cursor.failed:
+                self.fail('error assigning to existing single value')
+            self.assertEqual(len(cursor.errors), 1)
+            self.assertEqual(cursor.errors[0].result['result'], RESULT_CONSTRAINT_VIOLATION)
+
+    def test_search_and_add_value_to_existing_single_value_with_exception(self):
+        if test_server_type == 'EDIR' and test_strategy != REUSABLE:  # in REUSABLE strategy the connection can't be changed
+            old_raise_exception = self.connection.raise_exceptions
+            self.connection.raise_exceptions = True
+            read_only_entry = self.get_entry('search-and-modify-2')
+            writable_entry = read_only_entry.entry_writable('inetorgperson')
+            writable_entry.preferredDeliveryMethod.add('telephone')
             try:
                 writable_entry.entry_commit_changes()
-            except LDAPCursorError as e:
-                self.assertTrue('constraintViolation' in e.args[0])
+            except LDAPConstraintViolationResult:
                 return
+            finally:
+                self.connection.raise_exceptions = old_raise_exception
+            self.fail('error assigning to existing single value')
+
+    def test_search_and_implicit_add_value_to_existing_single_value_with_exception(self):
+        if test_server_type == 'EDIR' and test_strategy != REUSABLE:  # in REUSABLE strategy the connection can't be changed
+            old_raise_exception = self.connection.raise_exceptions
+            self.connection.raise_exceptions = True
+            read_only_entry = self.get_entry('search-and-modify-2')
+            writable_entry = read_only_entry.entry_writable('inetorgperson')
+            writable_entry.preferredDeliveryMethod += 'telephone'
+            try:
+                writable_entry.entry_commit_changes()
+            except LDAPConstraintViolationResult:
+                return
+            finally:
+                self.connection.raise_exceptions = old_raise_exception
             self.fail('error assigning to existing single value')
 
     def test_search_and_add_value_to_non_existing_single_value(self):
@@ -523,3 +555,30 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
         self.assertEqual(writable_entry.givenname.value, None)
         self.assertEqual(len(writable_entry.givenname), 0)
+
+    def test_search_and_add_value_to_existing_multi_value_using_alias(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.cn)
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.commonname)
+        writable_entry.commonname.add('added-commonname-1')
+        result = writable_entry.entry_commit_changes()
+        self.assertTrue(result)
+        self.assertTrue('added-commonname-1' in writable_entry.cn)
+        self.assertTrue('added-commonname-1' in writable_entry.commonname)
+        self.assertEqual(len(writable_entry.commonname), 2)
+        self.compare_entries(read_only_entry, writable_entry)
+
+    def test_search_and_implicit_add_value_to_existing_multi_value_using_alias(self):
+        read_only_entry = self.get_entry('search-and-modify-1')
+        writable_entry = read_only_entry.entry_writable('inetorgperson')
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.cn)
+        self.assertTrue(testcase_id + 'search-and-modify-1' in writable_entry.commonname)
+        writable_entry.commonname += 'implicit-added-commonname-1'
+        result = writable_entry.entry_commit_changes()
+        self.assertTrue(result)
+        self.assertTrue('givenname-1' in writable_entry.givenName)
+        self.assertTrue('implicit-added-commonname-1' in writable_entry.cn)
+        self.assertTrue('implicit-added-commonname-1' in writable_entry.commonname)
+        self.assertEqual(len(writable_entry.commonname), 2)
+        self.compare_entries(read_only_entry, writable_entry)

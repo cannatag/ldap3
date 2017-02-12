@@ -1118,7 +1118,7 @@ class Connection(object):
             if self.strategy._outstanding or message_id == 0:
                 # only current  operation should be abandoned, abandon, bind and unbind cannot ever be abandoned,
                 # messagiId 0 is invalid and should be used as a "ping" to keep alive the connection
-                if (message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']) or message_id == 0:
+                if (self.strategy._outstanding and message_id in self.strategy._outstanding and self.strategy._outstanding[message_id]['type'] not in ['abandonRequest', 'bindRequest', 'unbindRequest']) or message_id == 0:
                     request = abandon_operation(message_id)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'ABANDON request: <%s> sent via <%s>', abandon_request_to_dict(request), self)

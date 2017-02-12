@@ -144,6 +144,7 @@ class AsyncStrategy(BaseStrategy):
         self.no_real_dsa = False
         self.pooled = False
         self._responses = None
+        self._requests = None
         self.can_stream = False
         self.receiver = None
         self.lock = Lock()
@@ -154,6 +155,7 @@ class AsyncStrategy(BaseStrategy):
         """
         with self.lock:
             self._responses = dict()
+            self._requests = dict()
             BaseStrategy.open(self, reset_usage, read_server_info)
 
         if read_server_info:
@@ -175,7 +177,8 @@ class AsyncStrategy(BaseStrategy):
         Clears connection.response and returns messageId
         """
         self.connection.response = None
-        self.connection.result = message_id
+        self.connection.request = None
+        self.connection.result = None
         return message_id
 
     def post_send_single_response(self, message_id):
@@ -183,7 +186,8 @@ class AsyncStrategy(BaseStrategy):
         Clears connection.response and returns messageId.
         """
         self.connection.response = None
-        self.connection.result = message_id
+        self.connection.request = None
+        self.connection.result = None
         return message_id
 
     def _start_listen(self):

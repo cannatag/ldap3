@@ -28,6 +28,7 @@ import unittest
 from ldap3.operation.search import parse_filter, MATCH_EQUAL, MATCH_EXTENSIBLE
 from test import test_auto_escape, test_auto_encode
 
+
 class Test(unittest.TestCase):
     def test_parse_search_filter_equality(self):
         f = parse_filter('(cn=admin)', None, test_auto_escape, test_auto_encode)

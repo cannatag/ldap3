@@ -256,9 +256,9 @@ class ReusableStrategy(BaseStrategy):
 
                             with pool.lock:
                                 if exc:
-                                    pool._incoming[counter] = (exc, None)
+                                    pool._incoming[counter] = (exc, None, None)
                                 else:
-                                    pool._incoming[counter] = (response, result)
+                                    pool._incoming[counter] = (response, result, BaseStrategy.decode_request(message_type, request, controls))
 
                     self.worker.busy = False
                     pool.request_queue.task_done()
@@ -402,7 +402,7 @@ class ReusableStrategy(BaseStrategy):
             self.pool.bind_pool = True  # bind pool if bind is validated
         return result
 
-    def get_response(self, counter, timeout=None):
+    def get_response(self, counter, timeout=None, get_request=False):
         if timeout is None:
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         if counter == BOGUS_BIND:  # send a bogus bindResponse
@@ -424,7 +424,7 @@ class ReusableStrategy(BaseStrategy):
             while timeout >= 0:  # waiting for completed message to appear in _incoming
                 try:
                     with self.connection.strategy.pool.lock:
-                        response, result = self.connection.strategy.pool._incoming.pop(counter)
+                        response, result, request = self.connection.strategy.pool._incoming.pop(counter)
                 except KeyError:
                     sleep(get_config_parameter('RESPONSE_SLEEPTIME'))
                     timeout -= get_config_parameter('RESPONSE_SLEEPTIME')
@@ -437,7 +437,10 @@ class ReusableStrategy(BaseStrategy):
                 raise LDAPResponseTimeoutError('no response from worker threads in Reusable connection')
 
         if isinstance(response, LDAPOperationResult):
-            raise response  # an exception has been raised with raise_connections
+            raise response  # an exception has been raised with raise_exceptions
+
+        if get_request:
+            return response, result, request
 
         return response, result
 

@@ -72,6 +72,21 @@ class Test(unittest.TestCase):
         else:
             self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-1')
 
+    def test_search_exact_match_with_get_request(self):
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr, 'givenName'])
+        if not self.connection.strategy.sync:
+            response, result, request = self.connection.get_response(result, get_request=True)
+            self.assertEqual(request['type'], 'searchRequest')
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes']['givenName'], 'givenname-1')
+        else:
+            self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-1')
+
     def test_search_extensible_match(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.search(search_base=test_base, search_filter='(&(ou:dn:=fixtures)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])

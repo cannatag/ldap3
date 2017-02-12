@@ -29,7 +29,7 @@ For synchronous strategies the add method returns True if the operation was succ
 In this case you can inspect the result attribute of the connection object to get the error description.
 
 For asynchronous strategies the add method returns the message id of the operation. You can get the operation result with
-the get_response(message_id) method of the connection object.
+the ``get_response(message_id)`` method of the connection object. If you use the ``get_request=True`` parameter you get the request dictionary back.
 
 The object_class parameter is a shortcut for specify a sequence of object classes. You can specify the object classes in the
 attributes parameter too.

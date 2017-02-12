@@ -56,6 +56,7 @@ class AsyncStreamStrategy(AsyncStrategy):
         self.streaming = False
         self.callback = None
         self.events = Queue()
+        del self._requests  # remove _requests dict from Async Strategy
 
     def _start_listen(self):
         AsyncStrategy._start_listen(self)

@@ -198,7 +198,7 @@ class Test(unittest.TestCase):
         e = r.match_dn('no-match')  # no match
         self.assertEqual(len(e), 0)
 
-    def test_match_dn_in_single_attribute(self):
+    def test_match_in_single_attribute(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={'givenname': ['givenname-1', 'givenname-1a']}))
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={'givenname': ['givenname-2', 'givenname-2a']}))
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={'givenname': ['givenname-3', 'givenname-3a']}))
@@ -220,7 +220,7 @@ class Test(unittest.TestCase):
         e = r.match('givenname', 'no-match')  # no match
         self.assertEqual(len(e), 0)
 
-    def test_match_dn_in_multiple_attribute(self):
+    def test_match_in_multiple_attribute(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={'givenname': ['givenname-1', 'givenname-1a'], 'street': '1a'}))
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={'givenname': ['givenname-2', 'givenname-2a'], 'street': '3a'}))
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={'givenname': ['givenname-3', 'givenname-3a'], 'street': '4a'}))
@@ -242,3 +242,25 @@ class Test(unittest.TestCase):
         self.assertEqual(len(e), 1)
         e = r.match(['givenname', 'street'], 'no-match')  # no match
         self.assertEqual(len(e), 0)
+
+    def test_match_in_single_attribute_with_schema(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={'givenname': ['givenname-1', 'givenname-1a'], 'loginDisabled': 'FALSE'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={'givenname': ['givenname-2', 'givenname-2a'], 'loginDisabled': 'FALSE'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={'givenname': ['givenname-3', 'givenname-3a'], 'loginDisabled': 'TRUE'}))
+        r = Reader(self.connection, 'inetorgperson', test_base, 'cn:=' + testcase_id + 'match-*')
+
+        results = r.search()
+        self.assertEqual(len(results), 3)
+
+        e = r.match('givenname', 'name')  # multiple matches
+        self.assertEqual(len(e), 3)
+        e = r.match('givenname', '2a')  # single match
+        self.assertEqual(len(e), 1)
+        e = r.match('givenname', 'no-match')  # no match
+        self.assertEqual(len(e), 0)
+        e = r.match('loginDisabled', False)
+        self.assertEqual(len(e), 2)
+        e = r.match('loginDisabled', 'FALSE')
+        self.assertEqual(len(e), 2)
+        e = r.match('loginDisabled', 'fAlSe')
+        self.assertEqual(len(e), 2)

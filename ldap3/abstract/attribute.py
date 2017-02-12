@@ -170,7 +170,7 @@ class WritableAttribute(Attribute):
         # if self.values and self.definition.single_value:
         #     raise LDAPCursorError("can't add to an already valued single-value attribute")
         if values is not None:
-            validated = self.definition.validate(self.definition.name, values)  # returns True, False or a value to substitute to the actual values
+            validated = self.definition.validate(values)  # returns True, False or a value to substitute to the actual values
             if validated is False:
                 raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
             elif validated is not True:  # a valid LDAP value equivalent to the actual values
@@ -183,7 +183,7 @@ class WritableAttribute(Attribute):
             raise LDAPCursorError(self.entry.entry_status + ' - cannot set attributes')
         if values is None:
             raise LDAPCursorError('new value cannot be None')
-        validated = self.definition.validate(self.definition.name, values)  # returns True, False or a value to substitute to the actual values
+        validated = self.definition.validate(values)  # returns True, False or a value to substitute to the actual values
         if validated is False:
             raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
         elif validated is not True:  # a valid LDAP value equivalent to the actual values

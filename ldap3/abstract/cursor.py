@@ -36,8 +36,9 @@ from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
 from ..core.exceptions import LDAPCursorError
 from ..core.results import RESULT_SUCCESS
-from ..utils.ciDict import CaseInsensitiveDict, CaseInsensitiveWithAliasDict
+from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
+from ..utils.conv import to_raw
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
 
 
@@ -224,15 +225,15 @@ class Cursor(object):
 
         return attributes
 
-    def match_dn(self, text):
+    def match_dn(self, dn):
         """Return entries with text in DN"""
         matched = []
         for entry in self.entries:
-            if text.lower() in entry.entry_dn.lower():
+            if dn.lower() in entry.entry_dn.lower():
                 matched.append(entry)
         return matched
 
-    def match(self, attributes, text):
+    def match(self, attributes, value):
         """Return entries with text in one of the specified attributes"""
         matched = []
         if not isinstance(attributes, SEQUENCE_TYPES):
@@ -242,17 +243,29 @@ class Cursor(object):
             found = False
             for attribute in attributes:
                 if attribute in entry:
-                    for value in entry[attribute].values:
-                        if hasattr(value, 'lower') and text.lower() in value.lower():
+                    for attr_value in entry[attribute].values:
+                        if hasattr(attr_value, 'lower') and value.lower() in attr_value.lower():
                             found = True
-                        elif text in value:
+                        elif value == attr_value:
                             found = True
                         if found:
                             matched.append(entry)
                             break
                     if found:
                         break
-
+                    # checks raw values, tries to convert value to byte
+                    raw_value = to_raw(value)
+                    if isinstance(raw_value, (bytes, bytearray)):
+                        for attr_value in entry[attribute].raw_values:
+                            if hasattr(attr_value, 'lower') and hasattr(raw_value, 'lower') and raw_value.lower() in attr_value.lower():
+                                found = True
+                            elif raw_value == attr_value:
+                                found = True
+                            if found:
+                                matched.append(entry)
+                                break
+                        if found:
+                            break
         return matched
 
     def _create_entry(self, response):
@@ -447,7 +460,7 @@ class Reader(Cursor):
                             value = val[1:].lstrip()
 
                     if self.definition[attr].validate:
-                        validated = self.definition[attr].validate(self.definition[attr].key, value)  # returns True, False or a value to substitute to the actual values
+                        validated = self.definition[attr].validate(value)  # returns True, False or a value to substitute to the actual values
                         if validated is False:
                             raise LDAPCursorError('validation failed for attribute %s and value %s' % (d, val))
                         elif validated is not True:  # a valid LDAP value equivalent to the actual values

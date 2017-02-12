@@ -259,10 +259,13 @@ By default the Reader searches the whole sub tree starting from the specified ba
     >>> print(len(r))
     1
 
-Matching entries in cursor
---------------------------
+Matching entries in cursor results
+----------------------------------
 Once a cursor is populated with entries you can get a specific entry with the standard index feature of List object: ``r.entries[0]`` returns the first entry
-found, ``r.entries[1]`` returns he second one and any subsequent entry is returned with the relevant index number. The Cursor object has a shortcut
-for this operation: you can use ``r[0]``, ``r[1]`` to perform the same operation. Furthermore, the Cursor object has an useful feature that helps you to
+found, ``r.entries[1]`` returns he second one and any subsequent entry is returned by the relevant index number. The Cursor object has a shortcut
+for this operation: you can use ``r[0]``, ``r[1]`` (and so on) to perform the same operation. Furthermore, the Cursor object has an useful feature that helps you to
 find a specific entry without knowing its index: when you use a string as the Cursor index the text will be searched in all entry DNs.
-If only one entry matches it is returned, if more than one entry match the text a KeyError exception is raised.
+If only one entry matches it is returned, if more than one entry match the text a KeyError exception is raised. You can also use the ``r.match_dn(dn)``
+method to return all entries with the specified text in the DN and ``r.match(attributes, value)`` to return all entries that contain the ``value`` in any
+of the specified ``attributes`` where you can pass a single attribute name or a list of attribute names. When searching for values the either the formatted attribute
+and the raw value are checked.

@@ -209,9 +209,9 @@ To perform a search Operation you can use any of the following methods:
 
 To retrieve some matching entries from a search operation the cursor:
 
-- match_dn(text): returns a list of entries where the specified text is found in the dn. The match is case insensitive
+- match_dn(dn): returns a list of entries where the specified text is found in the dn. The match is case insensitive
 
-- match(attributes, text): returns a list of entries where the specified text is found in one of the attribute values.
+- match(attributes, value): returns a list of entries where the specified text is found in one of the attribute values.
   The match is case insensitive and checks for single and multi-valued attributes. The ``attributes`` parameter can be an attribute name or a list of attribute names
 
 Example::
@@ -507,11 +507,12 @@ Matching entries in cursor results
 ----------------------------------
 Once a cursor is populated with entries you can get a specific entry with the standard index feature of List object: ``r.entries[0]`` returns the first entry
 found, ``r.entries[1]`` returns he second one and any subsequent entry is returned by the relevant index number. The Cursor object has a shortcut
-for this operation: you can use ``r[0]``, ``r[1]`` to perform the same operation. Furthermore, the Cursor object has an useful feature that helps you to
+for this operation: you can use ``r[0]``, ``r[1]`` (and so on) to perform the same operation. Furthermore, the Cursor object has an useful feature that helps you to
 find a specific entry without knowing its index: when you use a string as the Cursor index the text will be searched in all entry DNs.
-If only one entry matches it is returned, if more than one entry match the text a KeyError exception is raised. You can also use the ``r.match_dn(text)``
-method to return all entries with the specified text in the DN and ``r.match(attributes, text)`` to return all entries that contain the ``text`` value in any
-of the specified ``attributes`` where you can pass a single attribute name or a list of attribute names.
+If only one entry matches it is returned, if more than one entry match the text a KeyError exception is raised. You can also use the ``r.match_dn(dn)``
+method to return all entries with the specified text in the DN and ``r.match(attributes, value)`` to return all entries that contain the ``value`` in any
+of the specified ``attributes`` where you can pass a single attribute name or a list of attribute names. When searching for values the either the formatted attribute
+and the raw value are checked.
 
 OperationalAttribute
 --------------------

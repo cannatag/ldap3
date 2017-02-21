@@ -687,8 +687,7 @@ class Connection(object):
                paged_size=None,
                paged_criticality=False,
                paged_cookie=None,
-               auto_escape=None,
-               result_encoding='utf-8'):
+               auto_escape=None):
         """
         Perform an ldap search:
 
@@ -758,7 +757,7 @@ class Connection(object):
                                        self.server.schema if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
-            response = self.post_send_search(self.send('searchRequest', request, controls, result_encoding))
+            response = self.post_send_search(self.send('searchRequest', request, controls))
             self._entries = []
 
             if isinstance(response, int):  # async strategy

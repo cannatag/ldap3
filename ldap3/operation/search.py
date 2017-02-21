@@ -521,7 +521,8 @@ def search_result_reference_response_to_dict(response):
 
 def search_result_entry_response_to_dict_fast(response, schema, custom_formatter, check_names):
     entry_dict = dict()
-    entry_dict['dn'] = response[0][3].decode('utf-8')  # object
+
+    entry_dict['dn'] = response[0][3].decode(get_config_parameter('SEARCH_RESULT_ENCODING'))  # object
     entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
     if check_names:
         entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes

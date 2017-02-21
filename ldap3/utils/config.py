@@ -85,6 +85,7 @@ _REUSABLE_THREADED_POOL_SIZE = 10
 _REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 _DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 _ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
+_SEARCH_RESULT_ENCODING = "utf-8" # some LDAP implementation have different encoding against RFC
 
 if stdin and stdin.encoding:
     _DEFAULT_ENCODING = stdin.encoding
@@ -135,6 +136,8 @@ def get_config_parameter(parameter):
         return _UTF8_ENCODED_SYNTAXES
     elif parameter == 'UTF8_ENCODED_TYPES':
         return _UTF8_ENCODED_TYPES
+    elif parameter == 'SEARCH_RESULT_ENCODING':
+        return _SEARCH_RESULT_ENCODING
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
 
@@ -199,5 +202,8 @@ def set_config_parameter(parameter, value):
     elif parameter == 'UTF8_ENCODED_TYPES':
         global _UTF8_ENCODED_TYPES
         _UTF8_ENCODED_TYPES = value
+    elif parameter == 'SEARCH_RESULT_ENCODING':
+        global _SEARCH_RESULT_ENCODING
+        _SEARCH_RESULT_ENCODING = value
     else:
         raise LDAPConfigurationParameterError('unable to set configuration parameter %s' % parameter)

@@ -134,12 +134,12 @@ class SyncStrategy(BaseStrategy):
         responses.append(result)
         return responses
 
-    def post_send_search(self, message_id):
+    def post_send_search(self, message_id, result_encoding='utf-8'):
         """
         Executed after a search request
         Returns the result message and store in connection.response the objects found
         """
-        responses, result = self.get_response(message_id)
+        responses, result = self.get_response(message_id, result_encoding)
         self.connection.result = result
         if isinstance(responses, SEQUENCE_TYPES):
             self.connection.response = responses[:]  # copy search result entries
@@ -150,7 +150,7 @@ class SyncStrategy(BaseStrategy):
             log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
         raise LDAPSocketReceiveError(self.connection.last_error)
 
-    def _get_response(self, message_id):
+    def _get_response(self, message_id, result_encoding='utf-8'):
         """
         Performs the capture of LDAP response for SyncStrategy
         """
@@ -165,7 +165,7 @@ class SyncStrategy(BaseStrategy):
                             self.connection._usage.update_received_message(len(response))
                         if self.connection.fast_decoder:
                             ldap_resp = decode_message_fast(response)
-                            dict_response = self.decode_response_fast(ldap_resp)
+                            dict_response = self.decode_response_fast(ldap_resp, result_encoding)
                         else:
                             ldap_resp, _ = decoder.decode(response, asn1Spec=LDAP_MESSAGE_TEMPLATE)  # unprocessed unused because receiving() waits for the whole message
                             dict_response = self.decode_response(ldap_resp)

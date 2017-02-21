@@ -306,7 +306,7 @@ class BaseStrategy(object):
 
         return message_id
 
-    def get_response(self, message_id, timeout=None, get_request=False):
+    def get_response(self, message_id, timeout=None, get_request=False, result_encoding='utf-8'):
         """
         Get response LDAP messages
         Responses are returned by the underlying connection strategy
@@ -322,7 +322,7 @@ class BaseStrategy(object):
         request = None
         if self._outstanding and message_id in self._outstanding:
             while timeout >= 0:  # waiting for completed message to appear in responses
-                responses = self._get_response(message_id)
+                responses = self._get_response(message_id, result_encoding)
                 if not responses:
                     sleep(get_config_parameter('RESPONSE_SLEEPTIME'))
                     timeout -= get_config_parameter('RESPONSE_SLEEPTIME')
@@ -481,7 +481,7 @@ class BaseStrategy(object):
                 result['controls'][decoded_control[0]] = decoded_control[1]
         return result
 
-    def decode_response_fast(self, ldap_message):
+    def decode_response_fast(self, ldap_message, result_encoding='utf-8'):
         """
         Convert received LDAPMessage from fast ber decoder to a dict
         """
@@ -492,7 +492,7 @@ class BaseStrategy(object):
                 result = sicily_bind_response_to_dict_fast(ldap_message['payload'])
             result['type'] = 'bindResponse'
         elif ldap_message['protocolOp'] == 4:  # searchResEntry'
-            result = search_result_entry_response_to_dict_fast(ldap_message['payload'], self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
+            result = search_result_entry_response_to_dict_fast(ldap_message['payload'], self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names, result_encoding=result_encoding)
             result['type'] = 'searchResEntry'
         elif ldap_message['protocolOp'] == 5:  # searchResDone
             result = ldap_result_to_dict_fast(ldap_message['payload'])

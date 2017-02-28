@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from .. import SIMPLE, ANONYMOUS, SASL
+from .. import SIMPLE, ANONYMOUS, SASL, STRING_TYPES
 from ..core.results import RESULT_CODES
 from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError, LDAPUserNameNotAllowedError
 from ..protocol.sasl.sasl import validate_simple_password
@@ -47,7 +47,9 @@ def bind_operation(version,
     request['version'] = Version(version)
     if name is None:
         name = ''
-    request['name'] = name
+    if isinstance(name, STRING_TYPES):
+        request['name'] = name
+
     if authentication == SIMPLE:
         if password:
             request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(validate_simple_password(password)))

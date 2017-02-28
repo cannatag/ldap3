@@ -64,6 +64,7 @@ test_lazy_connection = False
 
 # ******** test TRAVIS configuration
 # location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis
+location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis
 # ********
 
 if 'TRAVIS,' in location:
@@ -114,7 +115,7 @@ if 'TRAVIS,' in location:
         test_server_context = ''  # used in novell eDirectory extended operations
         test_server_edir_name = ''  # used in novell eDirectory extended operations
         test_user = 'CN=Giovanni,CN=Users,' + test_root_partition  # the user that performs the tests
-        test_password = 'Rc123456pfop'  # user password
+        test_password = 'Rc999999pfop'  # user password
         test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
         test_secondary_password = 'Rc9999pfop'  # user password
         test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
@@ -128,7 +129,7 @@ if 'TRAVIS,' in location:
         test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
         test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
         test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
-        test_ntlm_password = '# '
+        test_ntlm_password = 'Rc999999pfop'
         test_logging_filename = join(gettempdir(), 'ldap3.log')
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
@@ -337,7 +338,7 @@ print('Test server:', test_server)
 print('Python version:', version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage)
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', get_detail_level_name(test_log_detail) if test_logging else 'None')
-
+print('Fast decoder', test_fast_decoder)
 
 def random_id():
     return '[' + str(SystemRandom().random())[-8:] + ']'

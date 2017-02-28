@@ -57,8 +57,8 @@ class Test(unittest.TestCase):
                 response, result = self.connection.response, self.connection.result
 
             if response:
-                self.assertEquals(response[0]['attributes']['givenName'][0], 'user-1b')
-                self.assertEquals(response[0]['attributes']['sn'][0], 'sn-user-1b')
+                self.assertEqual(response[0]['attributes']['givenName'][0], 'user-1b')
+                self.assertEqual(response[0]['attributes']['sn'][0], 'sn-user-1b')
             else:
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
@@ -76,8 +76,8 @@ class Test(unittest.TestCase):
                 response, result = self.connection.response, self.connection.result
 
             if response:
-                # self.assertEquals(response[0]['attributes']['givenName'][0], 'user-1b')
-                self.assertEquals(response[0]['attributes']['sn'][0], 'user-1')
+                # self.assertEqual(response[0]['attributes']['givenName'][0], 'user-1b')
+                self.assertEqual(response[0]['attributes']['sn'][0], 'user-1')
             else:
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
@@ -96,7 +96,7 @@ class Test(unittest.TestCase):
                 response, result = self.connection.response, self.connection.result
 
             if response:
-                self.assertEquals(response[0]['attributes']['givenName'][0], 'user-1b')
-                self.assertEquals(response[0]['attributes']['sn'][0], 'user-1')
+                self.assertEqual(response[0]['attributes']['givenName'][0], 'user-1b')
+                self.assertEqual(response[0]['attributes']['sn'][0], 'user-1')
             else:
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')

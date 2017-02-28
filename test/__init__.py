@@ -517,7 +517,7 @@ def drop_connection(connection, dn_to_delete=None):
                 result = get_operation_result(connection, operation_result)
                 if result['description'] == 'success':
                     done = True
-                elif result['description'] == 'busy':
+                elif result['description'] in ['busy', 'noSuchObject']:  # moving object
                     counter -= 1
                     if counter >= 0:
                         sleep(3)  # wait and retry

@@ -43,7 +43,7 @@
 
 from ...protocol.sasl.sasl import send_sasl_negotiation
 from .sasl import sasl_prep
-from ...utils.conv import to_raw
+from ...utils.conv import to_raw, to_unicode
 
 
 def sasl_plain(connection, controls):
@@ -53,17 +53,17 @@ def sasl_plain(connection, controls):
 
     payload = b''
     if authzid:
-        payload += to_raw(sasl_prep(authzid))
+        payload += to_raw(sasl_prep(to_unicode(authzid)))
 
     payload += b'\0'
 
     if authcid:
-        payload += to_raw(sasl_prep(authcid))
+        payload += to_raw(sasl_prep(to_unicode(authcid)))
 
     payload += b'\0'
 
     if passwd:
-        payload += to_raw(sasl_prep(passwd))
+        payload += to_raw(sasl_prep(to_unicode(passwd)))
 
     result = send_sasl_negotiation(connection, controls, payload)
 

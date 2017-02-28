@@ -134,7 +134,8 @@ class EntryBase(object):
     def __iter__(self):
         for attribute in self._state.attributes:
             yield self._state.attributes[attribute]
-        raise StopIteration
+        # raise StopIteration  # deprecated in PEP 479
+        return
 
     def __contains__(self, item):
         try:

@@ -20,10 +20,6 @@ In the ldap3 library the signature for the Modify operation is::
 
 * controls: additional controls to send in the request
 
-* dn: distinguish name of the object to delete
-
-* controls: additional controls to send with the request
-
 For synchronous strategies the modify method returns True if the operation was successful, returns False in case of errors.
 In this case you can inspect the result attribute of the connection object to get the error description.
 

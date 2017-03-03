@@ -25,7 +25,7 @@
 
 from binascii import hexlify
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from ...core.timezone import OffsetTzInfo
 
@@ -94,12 +94,16 @@ def format_ad_timestamp(raw_value):
     that have elapsed since the 0 hour on January 1, 1601 till the date/time that is being stored.
     The time is always stored in Greenwich Mean Time (GMT) in the Active Directory.
     """
+    if raw_value == b'9223372036854775807':  # max value to be stored in a 64 bit signed int
+        return datetime.max  # returns datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
     try:
         timestamp = int(raw_value)
         return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
+    except (OSError, OverflowError):  # on Windows backwards timestamps are not allowed
+        unix_epoch = datetime.fromtimestamp(0, tz=OffsetTzInfo(0, 'UTC'))
+        diff_seconds = timedelta(seconds=timestamp/10000000.0 - 11644473600)
+        return unix_epoch + diff_seconds
     except Exception:
-        if raw_value == b'9223372036854775807':  # max value to be stored in a 64 bit signed int
-            return datetime.max  # returns datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
         return raw_value
 
 

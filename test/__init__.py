@@ -337,8 +337,8 @@ print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage)
-print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', get_detail_level_name(test_log_detail) if test_logging else 'None')
-print('Fast decoder', test_fast_decoder)
+print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Fast decoder: ', test_fast_decoder)
+
 
 def random_id():
     return '[' + str(SystemRandom().random())[-8:] + ']'

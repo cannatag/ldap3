@@ -36,6 +36,7 @@ Contents
    metrics
    operations
    extend
+   encoding
    abstraction
    ldif
    exceptions

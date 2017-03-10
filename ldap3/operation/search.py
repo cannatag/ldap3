@@ -498,6 +498,7 @@ def search_request_to_dict(request):
 def search_result_entry_response_to_dict(response, schema, custom_formatter, check_names):
     entry = dict()
     # entry['dn'] = str(response['object'])
+    entry['raw_dn'] = response['object']
     entry['dn'] = to_unicode(str(response['object']))
     entry['raw_attributes'] = raw_attributes_to_dict(response['attributes'])
     if check_names:
@@ -522,6 +523,7 @@ def search_result_reference_response_to_dict(response):
 
 def search_result_entry_response_to_dict_fast(response, schema, custom_formatter, check_names):
     entry_dict = dict()
+    entry_dict['raw_dn'] = response[0][3]
     for dn_encoding in get_config_parameter('RESPONSE_DN_ENCODING'):  # AD could have DN not encoded in utf-8 (even if this is not allowed by RFC4510)
         try:
             entry_dict['dn'] = response[0][3].decode(dn_encoding)  # object

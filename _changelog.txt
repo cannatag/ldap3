@@ -1,11 +1,12 @@
 - 2.2.2 not yet released
     - PLAIN mechanism added to SASL authentication (thanks Janusz)
     - added RESULT_RESERVED return code (thanks Rak)
-    - added RESPONSE_DN_ENCODING in config for flaky servers that return non utf-8 encoded DN. Set it to a list of encoding to try for decodign DNs.
-    - removed StopIteration in generators that has been deprecated by PEP 479
+    - added RESPONSE_DN_ENCODING in config for flaky servers that return non utf-8 encoded DN. Set it to a list of encoding to sequentially try for decodign DNs.
+    - removed StopIteration in generators (deprecated by PEP 479)
     - fixed a bug when converting AD datetimes on Windows systems
     - added compatability with pyasn.1 0.2.3
-    - fixed error while installing via executable on Windows (thanks TrumSteven)
+    - fixed an error when installing via executable on Windows (thanks TrumSteven)
+    - added 'raw_dn' key in search response dictionary. It contains the DN byte value returned for DN by the server
 
 
 - 2.2.1 2017.02.12

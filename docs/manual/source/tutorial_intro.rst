@@ -119,7 +119,7 @@ that the LDAP server uses to determine your authorization level. Again, keep in 
 specific access rules and that the authorization mechanism is not specified at all. So each LDAP server vendor can have a
 different method for authorizing the user to access data stored in the DIT.
 
-ldap3 let you choose the method that the client will use to connect to the server with the ``client_strategy`` parameter of the
+ldap3 lets you choose the method that the client will use to connect to the server with the ``client_strategy`` parameter of the
 Connection object. There are four strategies that can be used for establishing a connection: SYNC, ASYNC, RESTARTABLE and REUSABLE.
 As a general rule, in synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
 if they fail; in asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return a

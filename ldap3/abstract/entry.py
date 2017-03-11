@@ -149,15 +149,28 @@ class EntryBase(object):
             if item == '_state':
                 return self.__dict__['_state']
             item = ''.join(item.split()).lower()
+            attr_found = None
             for attr in self._state.attributes.keys():
                 if item == attr.lower():
+                    attr_found = attr
                     break
-            else:
+            if not attr_found:
                 for attr in self._state.attributes.aliases():
                     if item == attr.lower():
+                        attr_found = attr
                         break
-                else:
-                    raise LDAPCursorError('attribute \'%s\' not found' % item)
+            if not attr_found:
+                for attr in self._state.attributes.keys():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                for attr in self._state.attributes.aliases():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                raise LDAPCursorError('attribute \'%s\' not found' % item)
             return self._state.attributes[attr]
 
         raise LDAPCursorError('attribute name must be a string')
@@ -171,15 +184,28 @@ class EntryBase(object):
     def __getitem__(self, item):
         if isinstance(item, STRING_TYPES):
             item = ''.join(item.split()).lower()
+            attr_found = None
             for attr in self._state.attributes.keys():
                 if item == attr.lower():
+                    attr_found = attr
                     break
-            else:
+            if not attr_found:
                 for attr in self._state.attributes.aliases():
                     if item == attr.lower():
+                        attr_found = attr
                         break
-                else:
-                    raise LDAPKeyError('key \'%s\' not found' % item)
+            if not attr_found:
+                for attr in self._state.attributes.keys():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                for attr in self._state.attributes.aliases():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                raise LDAPKeyError('key \'%s\' not found' % item)
             return self._state.attributes[attr]
 
         raise LDAPKeyError('key must be a string')

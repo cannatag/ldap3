@@ -260,7 +260,7 @@ class EntryBase(object):
             else:
                 json_entry['raw'] = dict(self.entry_raw_attributes)
 
-        if str == bytes:
+        if str is bytes:  # Python 2
             check_json_dict(json_entry)
 
         json_output = json.dumps(json_entry,

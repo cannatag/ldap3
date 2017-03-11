@@ -43,7 +43,7 @@ def extended_operation(request_name,
     request['requestName'] = RequestName(request_name)
     if request_value and isinstance(request_value, Asn1Item):
         request['requestValue'] = RequestValue(encoder.encode(request_value))
-    elif str != bytes and isinstance(request_value, (bytes, bytearray)):  # in python3 doesn't try to encode a byte value
+    elif str is not bytes and isinstance(request_value, (bytes, bytearray)):  # in Python 3 doesn't try to encode a byte value
         request['requestValue'] = request_value
     elif request_value and no_encode:  # doesn't encode the value
         request['requestValue'] = request_value

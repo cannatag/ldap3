@@ -159,10 +159,10 @@ class Cursor(object):
     def __len__(self):
         return len(self.entries)
 
-    if str != bytes:  # python 3
+    if str is not bytes:  # Python 3
         def __bool__(self):  # needed to make the cursor appears as existing in "if cursor:" even if there are no entries
             return True
-    else:  # python 2
+    else:  # Python 2
         def __nonzero__(self):
             return True
 

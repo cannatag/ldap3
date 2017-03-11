@@ -152,13 +152,13 @@ def ldap_result_to_dict_fast(response):
 
 ######
 
-if str != bytes:  # python 3
+if str is not bytes:  # Python 3
     def get_byte(x):
         return x
 
     def get_bytes(x):
         return x
-else:  # python 2
+else:  # Python 2
     def get_byte(x):
         return ord(x)
 

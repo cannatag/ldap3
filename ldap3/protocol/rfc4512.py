@@ -183,7 +183,7 @@ class BaseServerInfo(object):
         else:
             raise LDAPDefinitionError('unable to convert ' + str(self) + ' to JSON')
 
-        if str == bytes:  # python 2
+        if str is bytes:  # Python 2
             check_json_dict(json_dict)
 
         return json.dumps(json_dict, ensure_ascii=False, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))

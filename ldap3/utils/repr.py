@@ -39,12 +39,12 @@ def to_stdout_encoding(value):
     if not isinstance(value, STRING_TYPES):
         value = str(value)
 
-    if str == bytes:  # python 2
+    if str is bytes:  # Python 2
         try:
             return value.encode(repr_encoding, 'backslashreplace')
         except UnicodeDecodeError:  # Python 2.6
             return hexlify(value)
-    else:
+    else:  # Python 3
         try:
             return value.encode(repr_encoding, errors='backslashreplace').decode(repr_encoding, errors='backslashreplace')
         except UnicodeDecodeError:

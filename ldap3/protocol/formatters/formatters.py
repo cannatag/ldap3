@@ -32,9 +32,9 @@ from ...core.timezone import OffsetTzInfo
 
 def format_unicode(raw_value):
     try:
-        if str != bytes:  # python3
+        if str is not bytes:  # Python 3
             return str(raw_value, 'utf-8', errors='strict')
-        else:
+        else:  # Python 2
             return unicode(raw_value, 'utf-8', errors='strict')
     except (TypeError, UnicodeDecodeError):
         pass
@@ -168,14 +168,14 @@ def format_time(raw_value):
     if time and (b'.' in time or b',' in time):
         # fraction time
         if time[0] in b',.':
-            minute = 6 * int(time[1] if str == bytes else chr(time[1]))
+            minute = 6 * int(time[1] if str is bytes else chr(time[1]))  # Python 2 / Python 3
         elif time[2] in b',.':
             minute = int(raw_value[10: 12])
-            second = 6 * int(time[3] if str == bytes else chr(time[3]))
+            second = 6 * int(time[3] if str is bytes else chr(time[3]))  # Python 2 / Python 3
         elif time[4] in b',.':
             minute = int(raw_value[10: 12])
             second = int(raw_value[12: 14])
-            microsecond = 100000 * int(time[5] if str == bytes else chr(time[5]))
+            microsecond = 100000 * int(time[5] if str is bytes else chr(time[5]))  # Python 2 / Python 3
     elif len(time) == 2:  # mmZ format
         minute = int(raw_value[10: 12])
     elif len(remain) == 0:  # Z format
@@ -200,9 +200,9 @@ def format_time(raw_value):
                 raise ValueError
         except ValueError:
             return raw_value
-        if str != bytes:  # python3
+        if str is not bytes:  # Python 3
             timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), 'UTC' + str(sep + offset, encoding='utf-8'))
-        else:
+        else:  # Python 2
             timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), unicode('UTC' + sep + offset, encoding='utf-8'))
 
     try:
@@ -249,7 +249,7 @@ def format_sid(raw_value):
     SubAuthority (variable): A variable length array of unsigned 32-bit integers that uniquely identifies a principal relative to the IdentifierAuthority. Its length is determined by SubAuthorityCount.
     '''
 
-    if str != bytes:  # python 3
+    if str is not bytes:  # Python 3
         revision = int(raw_value[0])
         sub_authority_count = int(raw_value[1])
         identifier_authority = int.from_bytes(raw_value[2:8], byteorder='big')
@@ -261,7 +261,7 @@ def format_sid(raw_value):
         while i < sub_authority_count:
             sub_authority += '-' + str(int.from_bytes(raw_value[8 + (i * 4): 12 + (i * 4)], byteorder='little'))  # little endian
             i += 1
-    else:  # python 2
+    else:  # Python 2
         revision = int(ord(raw_value[0]))
         sub_authority_count = int(ord(raw_value[1]))
         identifier_authority = int(hexlify(raw_value[2:8]), 16)

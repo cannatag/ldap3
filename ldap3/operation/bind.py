@@ -48,7 +48,10 @@ def bind_operation(version,
     if name is None:
         name = ''
     if isinstance(name, STRING_TYPES):
-        request['name'] = name
+        if str is bytes and type(name).__name__ == 'newstr':  # Python 2, coerces name to normal string for compatability with the "future" compatability package in Python 2
+            request['name'] = str(name)
+        else:
+            request['name'] = name
 
     if authentication == SIMPLE:
         if password:

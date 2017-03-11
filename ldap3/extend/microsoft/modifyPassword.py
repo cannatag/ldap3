@@ -34,7 +34,7 @@ def ad_modify_password(connection, user_dn, new_password, old_password, controls
     # old password must be None to reset password with sufficient privileges
     if connection.check_names:
         user_dn = safe_dn(user_dn)
-    if bytes == str:  # python2, converts to unicode
+    if str is bytes:  # python2, converts to unicode
         new_password = unicode(new_password)
         if old_password:
             old_password = unicode(old_password)

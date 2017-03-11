@@ -157,15 +157,15 @@ def prepare_filter_for_sending(raw_string):
             except ValueError:  # not an ldap escaped value, sends as is
                 ints.append(92)  # adds backslash
         else:
-            if str != bytes:  # Python 3
+            if str is not bytes:  # Python 3
                 ints.append(raw_string[i])
-            else:
+            else:  # Python 2
                 ints.append(ord(raw_string[i]))
         i += 1
 
-    if str != bytes:  # Python 3
+    if str is not bytes:  # Python 3
         return bytes(ints)
-    else:
+    else:  # Python 2
         return ''.join(chr(x) for x in ints)
 
 

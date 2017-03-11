@@ -244,7 +244,7 @@ class Cursor(object):
             for attribute in attributes:
                 if attribute in entry:
                     for attr_value in entry[attribute].values:
-                        if hasattr(attr_value, 'lower') and value.lower() in attr_value.lower():
+                        if hasattr(attr_value, 'lower') and hasattr(value, 'lower') and value.lower() in attr_value.lower():
                             found = True
                         elif value == attr_value:
                             found = True

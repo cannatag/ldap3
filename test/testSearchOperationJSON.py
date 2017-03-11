@@ -95,6 +95,12 @@ class Test(unittest.TestCase):
         self.assertEqual(len(json_entries), 2)
 
     def test_search_with_operational_attributes(self):
+        if test_server_type == 'EDIR':
+            test_operation_attribute = 'entryDN'
+        elif test_server_type == 'SLAPD':
+            test_operation_attribute = 'entryDN'
+        else:
+            test_operation_attribute = 'xxx'
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -107,9 +113,9 @@ class Test(unittest.TestCase):
             if test_server_type == 'AD':
                 self.assertEqual(json_entries[0]['dn'].lower(), self.delete_at_teardown[0][0].lower())
             elif test_server_type == 'SLAPD':
-                self.assertEqual(json_entries[0]['attributes']['entrydn'], self.delete_at_teardown[0][0])
+                self.assertEqual(json_entries[0]['attributes'][test_operation_attribute], self.delete_at_teardown[0][0])
             else:
-                self.assertEqual(json_entries[0]['attributes']['entryDN'], self.delete_at_teardown[0][0])
+                self.assertEqual(json_entries[0]['attributes'][test_operation_attribute], self.delete_at_teardown[0][0])
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-3', attributes={'givenName': 'givenname-3'}))

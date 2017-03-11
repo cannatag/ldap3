@@ -7,7 +7,8 @@
     - added compatability with pyasn.1 0.2.3
     - fixed an error when installing via executable on Windows (thanks TrumSteven)
     - added 'raw_dn' key in search response dictionary. It contains the DN byte value returned for DN by the server
-    - attributes with ";binary" tag can now be retrieved in abstraction layer with entry.atttribute syntax
+    - attributes with ";binary" tag can now be retrieved in abstraction layer with the usual entry.atttribute syntax
+    - updated tests for OpenLDAP
 
 - 2.2.1 2017.02.12
     - tested against pyasn1 0.2.2 (thanks Ilya)

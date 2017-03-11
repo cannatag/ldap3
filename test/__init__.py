@@ -228,16 +228,16 @@ elif location == 'ELITE10GC-AD':
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
 elif location == 'ELITE10GC-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
-    test_server = 'openldap.hyperv'
+    test_server = 'edir3.hyperv'
     test_server_type = 'SLAPD'
     test_root_partition = ''
-    test_base = 'o=test'  # base context where test objects are created
-    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_base = 'ou=test,o=lab'  # base context where test objects are created
+    test_moved = 'ou=moved,ou=test,o=lab'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'gidNumber'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=test'  # the user that performs the tests
+    test_user = 'cn=Administrator,ou=resources,o=lab'  # the user that performs the tests
     test_password = 'password'  # user password
     test_secondary_user = 'cn=testSASL,o=test'  # the user that performs the tests
     test_secondary_password = 'password'  # user password
@@ -570,7 +570,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
                            'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
-        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'inetUser', 'top'], 'sn': username, 'gidNumber': 0})
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)

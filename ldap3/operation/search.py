@@ -29,7 +29,6 @@ from os import linesep
 from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, SEQUENCE_TYPES, get_config_parameter
 
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError, LDAPInvalidDnError
-from ..protocol.formatters.formatters import format_unicode
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
     AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, \

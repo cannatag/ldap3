@@ -31,6 +31,7 @@ Contents
    features
    installation
    servers
+   schema
    connections
    ssltls
    metrics

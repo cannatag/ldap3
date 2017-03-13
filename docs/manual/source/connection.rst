@@ -1,6 +1,5 @@
-###########
-Connections
-###########
+Connection
+##########
 
 The Connection object is used to send operation requests to the LDAP Server. It can use different connection strategies and supports the *context manager* protocol to automatically open, bind and unbind the connection.
 

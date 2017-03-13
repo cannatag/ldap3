@@ -30,9 +30,9 @@ Contents
    tutorial
    features
    installation
-   servers
+   server
    schema
-   connections
+   connection
    ssltls
    metrics
    operations

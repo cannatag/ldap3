@@ -1,5 +1,5 @@
 Schema
-======
+######
 
 An LDAP server store information about *types* it can handle in its **schema**. The schema includes all information needed by a client to correctly performs
 LDAP operations. Let's examine an LDAP server schema::

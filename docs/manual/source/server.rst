@@ -1,5 +1,5 @@
-Servers
-#######
+Server
+######
 
 Server object
 -------------

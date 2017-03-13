@@ -1,6 +1,5 @@
-==================
 Conversion helpers
-==================
+##################
 
 In the ldap3.utils.conv you can find some helpful function to apply encoding to/from unicode:
 
@@ -15,4 +14,4 @@ In the ldap3.utils.conv you can find some helpful function to apply encoding to/
 - `escape_bytes(bytes_value)``: applies LDAP escaping to a sequence of byte values so that it can be used in an LDAP Add or Modify operation.
 
 
-These functions can be used in Python 2 or Python 3 with no code changes.
+These functions can be used in Python 2 or Python 3 with no changes in the code.

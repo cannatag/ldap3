@@ -1,5 +1,5 @@
 Encoding
-========
+########
 
 The LDAP RFCs states that strings sent and received by the LDAP server must be encoded with the **utf-8** encoding. Data in ldap3 flow from different sources to different tergets,
 so they can have different encodings. There are 6 different flows in the ldap3 library:
@@ -16,7 +16,6 @@ Server data flow
 
 The LDAP protocol stores strings in a **Directory String** type that should always be in **utf-8**. So when the ldap3 library communicate with the
 server it always encodes/decodes Directory strings with the utf-8 encoding.
-
 
 User data flow
 --------------
@@ -59,7 +58,6 @@ Log file data flow
 ------------------
 
 Data printed in the log files are always encoded in ``ascii`` with a ``backslashreplace`` failback in case of unprintable ascii values.
-
 
 Flaky Server data flow
 ----------------------

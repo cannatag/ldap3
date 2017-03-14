@@ -81,14 +81,14 @@ def edir_add_members_to_groups(connection,
 
                 existing_security_equals = response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []
                 existing_group_membership = response[0]['attributes']['groupMembership'] if 'groupMembership' in response[0]['attributes'] else []
-                existing_security_equals = [member.lower() for member in existing_security_equals]
-                existing_group_membership = [member.lower() for member in existing_group_membership]
+                existing_security_equals = [element.lower() for element in existing_security_equals]
+                existing_group_membership = [element.lower() for element in existing_group_membership]
             else:
                 existing_security_equals = []
                 existing_group_membership = []
             changes = dict()
-            security_equals_to_add = [group for group in groups_dn if group.lower() not in existing_security_equals]
-            group_membership_to_add = [group for group in groups_dn if group.lower() not in existing_group_membership]
+            security_equals_to_add = [element for element in groups_dn if element.lower() not in existing_security_equals]
+            group_membership_to_add = [element for element in groups_dn if element.lower() not in existing_group_membership]
             if security_equals_to_add:
                 changes['securityEquals'] = (MODIFY_ADD, security_equals_to_add)
             if group_membership_to_add:
@@ -118,15 +118,15 @@ def edir_add_members_to_groups(connection,
 
                 existing_members = response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []
                 existing_equivalent_to_me = response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []
-                existing_members = [member.lower() for member in existing_members]
-                existing_equivalent_to_me = [member.lower() for member in existing_equivalent_to_me]
+                existing_members = [element.lower() for element in existing_members]
+                existing_equivalent_to_me = [element.lower() for element in existing_equivalent_to_me]
             else:
                 existing_members = []
                 existing_equivalent_to_me = []
 
             changes = dict()
-            member_to_add = [member for member in members_dn if member.lower() not in existing_members]
-            equivalent_to_me_to_add = [member for member in members_dn if member.lower() not in existing_equivalent_to_me]
+            member_to_add = [element for element in members_dn if element.lower() not in existing_members]
+            equivalent_to_me_to_add = [element for element in members_dn if element.lower() not in existing_equivalent_to_me]
             if member_to_add:
                 changes['member'] = (MODIFY_ADD, member_to_add)
             if equivalent_to_me_to_add:

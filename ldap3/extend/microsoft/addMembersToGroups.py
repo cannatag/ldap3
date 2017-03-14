@@ -60,12 +60,12 @@ def ad_add_members_to_groups(connection,
                 raise LDAPInvalidDnError(group + ' not found')
 
             existing_members = response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []
-            existing_members = [member.lower() for member in existing_members]
+            existing_members = [element.lower() for element in existing_members]
         else:
             existing_members = []
 
         changes = dict()
-        member_to_add = [member for member in members_dn if member.lower() not in existing_members]
+        member_to_add = [element for element in members_dn if element.lower() not in existing_members]
         if member_to_add:
             changes['member'] = (MODIFY_ADD, member_to_add)
         if changes:

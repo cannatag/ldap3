@@ -75,9 +75,9 @@ def ad_remove_members_from_groups(connection,
         else:
             existing_members = members_dn
 
-        existing_members = [member.lower() for member in existing_members]
+        existing_members = [element.lower() for element in existing_members]
         changes = dict()
-        member_to_remove = [member for member in members_dn if member.lower() in existing_members]
+        member_to_remove = [element for element in members_dn if element.lower() in existing_members]
         if member_to_remove:
             changes['member'] = (MODIFY_DELETE, member_to_remove)
         if changes:

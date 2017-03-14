@@ -62,8 +62,8 @@ def _check_members_have_memberships(connection,
 
         existing_security_equals = response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []
         existing_group_membership = response[0]['attributes']['groupMembership'] if 'groupMembership' in response[0]['attributes'] else []
-        existing_security_equals = [member.lower() for member in existing_security_equals]
-        existing_group_membership = [member.lower() for member in existing_group_membership]
+        existing_security_equals = [element.lower() for element in existing_security_equals]
+        existing_group_membership = [element.lower() for element in existing_group_membership]
 
         for group in groups_dn:
             if group.lower() not in existing_group_membership:
@@ -106,8 +106,8 @@ def _check_groups_contain_members(connection,
 
         existing_members = response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []
         existing_equivalent_to_me = response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []
-        existing_members = [member.lower() for member in existing_members]
-        existing_equivalent_to_me = [member.lower() for member in existing_equivalent_to_me]
+        existing_members = [element.lower() for element in existing_members]
+        existing_equivalent_to_me = [element.lower() for element in existing_equivalent_to_me]
         for member in members_dn:
             if member.lower() not in existing_members:
                 return False, False

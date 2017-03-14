@@ -275,13 +275,13 @@ class EntryBase(object):
         json_entry['dn'] = self.entry_dn
         if checked_attributes:
             if not include_empty:
-                # needed for python 2.6 compatability
+                # needed for python 2.6 compatibility
                 json_entry['attributes'] = dict((key, self.entry_attributes_as_dict[key]) for key in self.entry_attributes_as_dict if self.entry_attributes_as_dict[key])
             else:
                 json_entry['attributes'] = self.entry_attributes_as_dict
         if raw:
             if not include_empty:
-                # needed for python 2.6 compatability
+                # needed for python 2.6 compatibility
                 json_entry['raw'] = dict((key, self.entry_raw_attributes[key]) for key in self.entry_raw_attributes if self.entry_raw_attributes[key])
             else:
                 json_entry['raw'] = dict(self.entry_raw_attributes)

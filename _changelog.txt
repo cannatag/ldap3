@@ -4,7 +4,8 @@
     - added RESPONSE_DN_ENCODING in config for flaky servers that return non utf-8 encoded DN. Set it to a list of encoding to sequentially try for decodign DNs.
     - removed StopIteration in generators (deprecated by PEP 479)
     - fixed a bug when converting AD datetimes on Windows systems
-    - added compatability with pyasn.1 0.2.3
+    - added compatibility with pyasn1 0.2.3
+    - fixed NTLM authentication with pyasn1 0.2.3
     - fixed an error when installing via executable on Windows (thanks TrumSteven)
     - added 'raw_dn' key in search response dictionary. It contains the DN byte value returned for DN by the server
     - attributes with ";binary" tag can now be retrieved in abstraction layer with the usual entry.atttribute syntax
@@ -123,7 +124,7 @@
     - add move and rename to abstraction layer entry
     - ldap3 namespace decluttered
     - RESULT_CODES moved to ldap3.core.results
-    - compatability constants removed
+    - compatibility constants removed
     - exceptions removed from ldap3 namespace, defined in ldap3.core.exceptions only
     - ADDRESS_INFO_REFRESH_TIME is now configurable via set_config_parameter
     - Operational attribute prefix set to 'OA_'

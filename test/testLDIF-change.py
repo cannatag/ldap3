@@ -48,7 +48,7 @@ class Test(unittest.TestCase):
         if str != bytes:  # python3
             controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray('\u00e0\u00e0', encoding='UTF-8')))
         else:
-            controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(unicode('\xe0\xe0', encoding='latin1'), encoding='UTF-8')))  # for python2 compatability
+            controls.append(('2.16.840.1.113719.1.27.103.7', False, bytearray(unicode('\xe0\xe0', encoding='latin1'), encoding='UTF-8')))  # for python2 compatibility
         controls.append(('2.16.840.1.113719.1.27.103.7', False, 'trailingspace '))
         self.connection.add(generate_dn(test_base, testcase_id, 'ldif-change-1'), 'inetOrgPerson', {'objectClass': 'inetOrgPerson', 'sn': 'ldif-change-1', test_name_attr: 'ldif-change-1'}, controls=controls)
         response = self.connection.response

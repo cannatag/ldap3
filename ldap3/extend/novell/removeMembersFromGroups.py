@@ -85,9 +85,12 @@ def edir_remove_members_from_groups(connection,
             else:
                 existing_security_equals = groups_dn
                 existing_group_membership = groups_dn
+            existing_security_equals = [member.lower() for member in existing_security_equals]
+            existing_group_membership = [member.lower() for member in existing_group_membership]
+
             changes = dict()
-            security_equals_to_remove = [group for group in groups_dn if group in existing_security_equals]
-            group_membership_to_remove = [group for group in groups_dn if group in existing_group_membership]
+            security_equals_to_remove = [group for group in groups_dn if group.lower() in existing_security_equals]
+            group_membership_to_remove = [group for group in groups_dn if group.lower() in existing_group_membership]
             if security_equals_to_remove:
                 changes['securityEquals'] = (MODIFY_DELETE, security_equals_to_remove)
             if group_membership_to_remove:
@@ -115,15 +118,18 @@ def edir_remove_members_from_groups(connection,
                 if not result['description'] == 'success':
                     raise LDAPInvalidDnError(group + ' not found')
 
-                existing_member = response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []
+                existing_members = response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []
                 existing_equivalent_to_me = response[0]['attributes']['equivalentToMe'] if 'equivalentToMe' in response[0]['attributes'] else []
             else:
-                existing_member = members_dn
+                existing_members = members_dn
                 existing_equivalent_to_me = members_dn
 
+            existing_members = [member.lower() for member in existing_members]
+            existing_equivalent_to_me = [member.lower() for member in existing_equivalent_to_me]
+
             changes = dict()
-            member_to_remove = [member for member in members_dn if member in existing_member]
-            equivalent_to_me_to_remove = [member for member in members_dn if member in existing_equivalent_to_me]
+            member_to_remove = [member for member in members_dn if member.lower() in existing_members]
+            equivalent_to_me_to_remove = [member for member in members_dn if member.lower() in existing_equivalent_to_me]
             if member_to_remove:
                 changes['member'] = (MODIFY_DELETE, member_to_remove)
             if equivalent_to_me_to_remove:

@@ -116,7 +116,6 @@ class ObjectDef(object):
                 return self._attributes[item]
             except KeyError:
                 raise LDAPKeyError('key \'%s\' not present' % item)
-
         else:
             raise LDAPKeyError('internal _attributes property not defined')
 

@@ -58,7 +58,20 @@ def validate_generic_single_value(input_value):
 
 
 def validate_integer(input_value):
-    return check_type(input_value, int)
+    if check_type(input_value, int):
+        return True
+    elif isinstance(input_value, STRING_TYPES):
+        # integer represented as string, e.g. from a simple query
+        # this also ensures RFC 4517 provision for LDIGIT
+        if input_value == str(int(input_value)):
+            return True
+    elif isinstance(input_value, SEQUENCE_TYPES):
+        for value in input_value:
+            if not ( isinstance(value, STRING_TYPES) and value == str(int(value)) ):
+                return False
+        return True
+    else:
+        return False
 
 
 def validate_bytes(input_value):

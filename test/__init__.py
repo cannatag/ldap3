@@ -239,7 +239,7 @@ elif location == 'ELITE10GC-SLAPD':
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'cn=Administrator,ou=resources,o=lab'  # the user that performs the tests
     test_password = 'password'  # user password
-    test_secondary_user = 'cn=testSASL,o=test'  # the user that performs the tests
+    test_secondary_user = 'cn=Administrator,ou=resources,o=lab'  # the user that performs the tests
     test_secondary_password = 'password'  # user password
     test_sasl_user = 'cn=testSASL,o=test'
     test_sasl_password = 'password'

@@ -12,6 +12,7 @@
     - updated tests for OpenLDAP
     - fixed error when in add/remove extend operation for case mismatch in user or group dn
     - integer validator now automatically convert valid string numbers to int
+    - invalid timezone are checked when validating Generalized Time Format
     - added test cases for validators
 
 - 2.2.1 2017.02.12

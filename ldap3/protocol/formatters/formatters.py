@@ -201,6 +201,9 @@ def format_time(raw_value):
                 raise ValueError
         except ValueError:
             return raw_value
+        if timezone_hour > 23 or timezone_minute > 59:  # invalid timezone
+            return raw_value
+
         if str is not bytes:  # Python 3
             timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), 'UTC' + str(sep + offset, encoding='utf-8'))
         else:  # Python 2

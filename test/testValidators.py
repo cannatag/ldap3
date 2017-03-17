@@ -149,6 +149,14 @@ class Test(unittest.TestCase):
         validated = validate_time('20170317094232+0100')
         self.assertTrue(validated)
 
-    def test_validate_time_invalid_str(self):
+    def test_validate_time_invalid_str_1(self):
         validated = validate_time('abc')
+        self.assertFalse(validated)
+
+    def test_validate_time_invalid_str_2(self):
+        validated = validate_time('20170317254201Z')
+        self.assertFalse(validated)
+
+    def test_validate_time_invalid_str_with_timezone(self):
+        validated = validate_time('20170317094232+24')
         self.assertFalse(validated)

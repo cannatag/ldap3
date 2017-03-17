@@ -11,6 +11,8 @@
     - attributes with ";binary" tag can now be retrieved in abstraction layer with the usual entry.atttribute syntax
     - updated tests for OpenLDAP
     - fixed error when in add/remove extend operation for case mismatch in user or group dn
+    - integer validator now automatically convert valid string numbers to int
+    - added test cases for validators
 
 - 2.2.1 2017.02.12
     - tested against pyasn1 0.2.2 (thanks Ilya)

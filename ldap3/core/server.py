@@ -99,9 +99,9 @@ class Server(object):
             self.host = host
 
         if self.ipc:
-            if str == bytes:  # Python 2
+            if str is bytes:  # Python 2
                 self.host = unquote(host[7:]).decode('utf-8')
-            else:
+            else:  # Python 3
                 self.host = unquote(host[7:])  # encoding defaults to utf-8 in python3
             self.port = None
         elif ':' in self.host and self.host.count(':') == 1:
@@ -389,7 +389,7 @@ class Server(object):
                     schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
-            if isinstance(schema_entry, bytes) and bytes != str:
+            if isinstance(schema_entry, bytes) and str is not bytes:  # Python 3
                 schema_entry = schema_entry.decode('utf-8')
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',

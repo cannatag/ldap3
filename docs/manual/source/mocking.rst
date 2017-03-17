@@ -1,4 +1,3 @@
-#######
 Mocking
 #######
 
@@ -58,7 +57,7 @@ extensible match). Abandon and Extended are not supported.
 
 While defining the mock server you can specify a predefined schema with the ``get_info`` parameter::
 
-    from ldap3 import Server, Connection. OFFLINE_SLAPD_2_4
+    from ldap3 import Server, Connection, OFFLINE_SLAPD_2_4
     server = Server('my_fake_server', get_info=OFFLINE_SLAPD_2_4)
 
 The available offline schemas are OFFLINE_SLAPD_2_4 (OpenLDAP), OFFLINE_EDIR_8_8_8 (eDirectory), OFFLINE_AD_2012_R2 (Active Directory) and

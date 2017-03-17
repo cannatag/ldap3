@@ -28,8 +28,7 @@ from os import linesep
 
 from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, SEQUENCE_TYPES, get_config_parameter
 
-from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
-from ..protocol.formatters.formatters import format_unicode
+from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError, LDAPInvalidDnError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
     AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, \
@@ -38,6 +37,7 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, prepare_filter_for_sending
 from ..protocol.formatters.standard import format_attribute_values
+from ..utils.conv import to_unicode
 
 
 ROOT = 0
@@ -497,7 +497,8 @@ def search_request_to_dict(request):
 def search_result_entry_response_to_dict(response, schema, custom_formatter, check_names):
     entry = dict()
     # entry['dn'] = str(response['object'])
-    entry['dn'] = format_unicode(str(response['object']))
+    entry['raw_dn'] = response['object']
+    entry['dn'] = to_unicode(str(response['object']))
     entry['raw_attributes'] = raw_attributes_to_dict(response['attributes'])
     if check_names:
         entry['attributes'] = checked_attributes_to_dict(response['attributes'], schema, custom_formatter)
@@ -521,7 +522,16 @@ def search_result_reference_response_to_dict(response):
 
 def search_result_entry_response_to_dict_fast(response, schema, custom_formatter, check_names):
     entry_dict = dict()
-    entry_dict['dn'] = response[0][3].decode('utf-8')  # object
+    entry_dict['raw_dn'] = response[0][3]
+    for dn_encoding in get_config_parameter('RESPONSE_DN_ENCODING'):  # AD could have DN not encoded in utf-8 (even if this is not allowed by RFC4510)
+        try:
+            entry_dict['dn'] = response[0][3].decode(dn_encoding)  # object
+            break
+        except UnicodeDecodeError:
+            pass
+    else:  # if unable to decode DN raise an exception
+        raise LDAPInvalidDnError('unable to decode DN')
+
     entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
     if check_names:
         entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes

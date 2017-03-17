@@ -31,7 +31,7 @@ import json
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, \
-    STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI
+    STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI, PLAIN
 
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
@@ -49,6 +49,7 @@ from ..operation.search import search_operation, search_request_to_dict
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
+from ..protocol.sasl.plain import sasl_plain
 from ..strategy.sync import SyncStrategy
 from ..strategy.async import AsyncStrategy
 from ..strategy.reusable import ReusableStrategy
@@ -76,7 +77,8 @@ except ImportError:
 
 SASL_AVAILABLE_MECHANISMS = [EXTERNAL,
                              DIGEST_MD5,
-                             GSSAPI]
+                             GSSAPI,
+                             PLAIN]
 
 CLIENT_STRATEGIES = [SYNC,
                      ASYNC,
@@ -145,7 +147,7 @@ class Connection(object):
     :type client_strategy: can be one of STRATEGY_SYNC, STRATEGY_ASYNC_THREADED, STRATEGY_LDIF_PRODUCER, STRATEGY_SYNC_RESTARTABLE, STRATEGY_REUSABLE_THREADED as specified in ldap3
     :param auto_referrals: specify if the connection object must automatically follow referrals
     :type auto_referrals: bool
-    :param sasl_mechanism: mechanism for SASL authentication, can be one of 'EXTERNAL', 'DIGEST-MD5'
+    :param sasl_mechanism: mechanism for SASL authentication, can be one of 'EXTERNAL', 'DIGEST-MD5', 'GSSAPI', 'PLAIN'
     :type sasl_mechanism: str
     :param sasl_credentials: credentials for SASL mechanism
     :type sasl_credentials: tuple
@@ -1218,6 +1220,8 @@ class Connection(object):
                     elif self.sasl_mechanism == GSSAPI:
                         from ..protocol.sasl.kerberos import sasl_gssapi  # needs the gssapi package
                         result = sasl_gssapi(self, controls)
+                    elif self.sasl_mechanism == 'PLAIN':
+                        result = sasl_plain(self, controls)
                 finally:
                     self.sasl_in_progress = False
 
@@ -1355,19 +1359,19 @@ class Connection(object):
                         entry['dn'] = response['dn']
                         if checked_attributes:
                             if not include_empty:
-                                # needed for python 2.6 compatability
+                                # needed for python 2.6 compatibility
                                 entry['attributes'] = dict((key, response['attributes'][key]) for key in response['attributes'] if response['attributes'][key])
                             else:
                                 entry['attributes'] = dict(response['attributes'])
                         if raw:
                             if not include_empty:
-                                # needed for python 2.6 compatability
+                                # needed for python 2.6 compatibility
                                 entry['raw_attributes'] = dict((key, response['raw_attributes'][key]) for key in response['raw_attributes'] if response['raw:attributes'][key])
                             else:
                                 entry['raw'] = dict(response['raw_attributes'])
                         json_dict['entries'].append(entry)
 
-                if str == bytes:
+                if str is bytes:  # Python 2
                     check_json_dict(json_dict)
 
                 json_output = json.dumps(json_dict, ensure_ascii=True, sort_keys=sort, indent=indent, check_circular=True, default=format_json, separators=(',', ': '))

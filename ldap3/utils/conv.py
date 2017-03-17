@@ -83,7 +83,7 @@ def escape_filter_chars(text, encoding=None):
 def escape_bytes(bytes_value):
     """ Convert a byte sequence to a properly escaped for LDAP (format BACKSLASH HEX HEX) string"""
     if bytes_value:
-        if str != bytes:  # Python 3
+        if str is not bytes:  # Python 3
             if isinstance(bytes_value, str):
                 bytes_value = bytearray(bytes_value, encoding='utf-8')
             escaped = '\\'.join([('%02x' % int(b)) for b in bytes_value])
@@ -98,7 +98,7 @@ def escape_bytes(bytes_value):
 
 
 def prepare_for_stream(value):
-    if str != bytes:  # Python 3
+    if str is not bytes:  # Python 3
         return value
     else:  # Python 2
         return value.decode()
@@ -171,17 +171,17 @@ def format_json(obj):
     if isinstance(obj, int):
         return obj
 
-    if str == bytes:
+    if str is bytes:  # Python 2
         if isinstance(obj, long):  # long exists only in python2
             return obj
 
     try:
-        if str != bytes:  # python3
+        if str is not bytes:  # Python 3
             if isinstance(obj, bytes):
                 # return check_escape(str(obj, 'utf-8', errors='strict'))
                 return str(obj, 'utf-8', errors='strict')
             raise LDAPDefinitionError('unable to serialize ' + str(obj))
-        else:  # python2
+        else:  # Python 2
             if isinstance(obj, unicode):
                 return obj
             else:
@@ -199,7 +199,7 @@ def format_json(obj):
 
 
 def is_filter_escaped(text):
-    if not type(text) == ((bytes != str) and str or unicode):  # requires str for Py3 or unicode for Py2
+    if not type(text) == ((str is not bytes) and str or unicode):  # requires str for Python 3 and unicode for Python 2
         raise ValueError('unicode input expected')
 
     return all(c not in text for c in '()*\0') and not re.search('\\\\([^0-9a-fA-F]|(.[^0-9a-fA-F]))', text)

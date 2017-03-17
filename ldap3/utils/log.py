@@ -104,7 +104,7 @@ def log(detail, message, *args):
             args = tuple([_strip_sensitive_data_from_dict(arg) if isinstance(arg, dict) else arg for arg in args])
 
         encoded_message = (get_detail_level_name(detail) + ':' + message % args).encode(_logging_encoding, 'backslashreplace')
-        if str != bytes:  # Python 3
+        if str is not bytes:  # Python 3
             encoded_message = encoded_message.decode()
 
         if len(encoded_message) > _max_line_length:

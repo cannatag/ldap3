@@ -1,5 +1,5 @@
-Servers
-#######
+Server
+######
 
 Server object
 -------------
@@ -57,7 +57,7 @@ The Server object specifies the DSA (Directory Server Agent) LDAP server that wi
 
 Example::
 
-    server = Server('server1', port = 636, use_ssl = True, allowed_referral_hosts = [('server2', True), ('server3', False)])
+    server = Server('server1', port=636, use_ssl=True, allowed_referral_hosts=[('server2', True), ('server3', False)])
 
 A server can be implicitly defined with default directly in the Connection definition::
 
@@ -147,3 +147,6 @@ to build a new server object with the saved json files you can retrieve them wit
     server = Server('hostname', dsa_info, schema_info)
 
 and then you can use the server as usual. Hostname must resolve to a real server.
+
+
+Attribute missing

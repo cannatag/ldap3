@@ -1,4 +1,3 @@
-#######
 Logging
 #######
 
@@ -86,7 +85,6 @@ set_library_log_hide_sensitive_data(False) function of the utils.log package::
 
     set_library_log_detail_level(EXTENDED)
     set_library_log_hide_sensitive_data(False)
-
 
 You can use the get_library_log_hide_sensitive_data() function of the utils.log module to check if sensitive data will
 be hidden or not.

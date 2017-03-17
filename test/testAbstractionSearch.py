@@ -25,7 +25,7 @@
 import unittest
 
 from ldap3 import ObjectDef, AttrDef, Reader
-from test import test_base, add_user, add_group, get_connection, drop_connection, random_id
+from test import test_base, add_user, add_group, get_connection, drop_connection, random_id, test_server_type
 
 testcase_id = random_id()
 
@@ -169,7 +169,7 @@ class Test(unittest.TestCase):
             pass
 
         e = r['-2']  # exact match
-        self.assertTrue(e.entry_dn.endswith('match-2,ou=fixtures,o=test'))
+        self.assertTrue('match-2' in e.entry_dn)
 
         try:
             e = r['no-match']  # no match
@@ -244,9 +244,16 @@ class Test(unittest.TestCase):
         self.assertEqual(len(e), 0)
 
     def test_match_in_single_attribute_with_schema(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={'givenname': ['givenname-1', 'givenname-1a'], 'loginDisabled': 'FALSE'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={'givenname': ['givenname-2', 'givenname-2a'], 'loginDisabled': 'FALSE'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={'givenname': ['givenname-3', 'givenname-3a'], 'loginDisabled': 'TRUE'}))
+        if test_server_type == 'EDIR':
+            single_valued_attribute = 'loginDisabled'
+        elif test_server_type == 'SLAPD':
+            single_valued_attribute = 'employeeNumber'
+        else:
+            single_valued_attribute = 'xxx'
+
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={'givenname': ['givenname-1', 'givenname-1a'], single_valued_attribute: 'FALSE'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={'givenname': ['givenname-2', 'givenname-2a'], single_valued_attribute: 'FALSE'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={'givenname': ['givenname-3', 'givenname-3a'], single_valued_attribute: 'TRUE'}))
         r = Reader(self.connection, 'inetorgperson', test_base, 'cn:=' + testcase_id + 'match-*')
 
         results = r.search()
@@ -258,9 +265,9 @@ class Test(unittest.TestCase):
         self.assertEqual(len(e), 1)
         e = r.match('givenname', 'no-match')  # no match
         self.assertEqual(len(e), 0)
-        e = r.match('loginDisabled', False)
+        e = r.match(single_valued_attribute, False)
         self.assertEqual(len(e), 2)
-        e = r.match('loginDisabled', 'FALSE')
+        e = r.match(single_valued_attribute, 'FALSE')
         self.assertEqual(len(e), 2)
-        e = r.match('loginDisabled', 'fAlSe')
+        e = r.match(single_valued_attribute, 'fAlSe')
         self.assertEqual(len(e), 2)

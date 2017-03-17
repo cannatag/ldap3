@@ -1,4 +1,3 @@
-##################
 The BIND operation
 ##################
 
@@ -121,7 +120,7 @@ Please refer to the SSLTLS section for more information.
 SASL
 ----
 
-Three SASL mechanisms are currently implemented in the ldap3 library: EXTERNAL, DIGEST-MD5 and GSSAPI (Kerberos, via the gssapi package). DIGEST-MD5 is
+Three SASL mechanisms are currently implemented in the ldap3 library: EXTERNAL, DIGEST-MD5, GSSAPI (Kerberos, via the gssapi package) and PLAIN. DIGEST-MD5 is
 implemented even if it is **deprecated** and moved to historic (RFC6331, July 2011) because it is **"insecure and unsuitable for use in protocols"**
 (as stated by the RFC).
 
@@ -145,21 +144,23 @@ External
 You can use the EXTERNAL mechanism when you're on a secure (TLS) channel. You can provide an authorization identity string in ``sasl_credentials`` or let the
 server trust the credential provided when establishing the secure channel::
 
-     tls = Tls(local_private_key_file = 'key.pem', local_certificate_file = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1,
-               ca_certs_file = 'cacert.b64')
-     server = Server(host = test_server, port = test_port_ssl, use_ssl = True, tls = tls)
-     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
-                             sasl_mechanism = 'EXTERNAL', sasl_credentials = 'username')
+    from ldap3 import Server, Connection, Tls, SASL,EXTERNAL
+    tls = Tls(local_private_key_file = 'key.pem', local_certificate_file = 'cert.pem', validate = ssl.CERT_REQUIRED, version = ssl.PROTOCOL_TLSv1,
+              ca_certs_file = 'cacert.b64')
+    server = Server(host = test_server, port = test_port_ssl, use_ssl = True, tls = tls)
+    c = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
+                             sasl_mechanism = EXTERNAL, sasl_credentials = 'username')
 
 Digest-MD5
 ^^^^^^^^^^
 
-To use the DIGEST-MD5 you must pass a 4-value tuple as sasl_credentials: (realm, user, password, authz_id). You can pass None
+To use the DIGEST-MD5 mechanism you must pass a 4-value tuple as sasl_credentials: (realm, user, password, authz_id). You can pass None
 for 'realm' and 'authz_id' if not used. Quality of Protection is always 'auth'::
 
-     server = Server(host = test_server, port = test_port)
-     connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
-                             sasl_mechanism = 'DIGEST-MD5', sasl_credentials = (None, 'username', 'password', None))
+    from ldap3 import Server, Connection, SASL, DIGEST_MD5
+    server = Server(host = test_server, port = test_port)
+    c = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
+                             sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None))
 
 Username is not required to be an LDAP entry, but it can be any identifier recognized by the server (i.e. email, principal, ...). If
 you pass None as 'realm' the default realm of the LDAP server will be used.
@@ -174,21 +175,20 @@ Kerberos
 
 Kerberos authentication uses the ``gssapi`` package. You must install it and configure your Kerberos environment to use the GSSAPI mechanism::
 
-    import ldap3
+    from ldap3 import Server, Connection, Tls, SASL, KERBEROS
     import ssl
+    tls = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1_2)
+    server = Server('<servername>', use_ssl=True, tls=tls)
+    c = Connection(
+        server, authentication=ldap3.SASL, sasl_mechanism=KERBEROS)
+    c.bind()
+    print(c.extend.standard.who_am_i())
 
-    tls = ldap3.Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1_2)
-    server = ldap3.Server('<servername>', use_ssl=True, tls=tls)
-    connection = ldap3.Connection(
-        server, authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
-    connection.bind()
-    print(connection.extend.standard.who_am_i())
+You can specify which Kerberos client principal should be used with the ``user`` parameter when declaring the Connection::
 
-You can specify which Kerberos client principal should be used with the ``user`` parameter when declaring the ``connection``::
-
-    connection = ldap3.Connection(
+    c = Connection(
         server, user='ldap-client/client.example.com',
-        authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
+        authentication=SASL, sasl_mechanism=KERBEROS)
 
 By default the library attempts to bind against the service principal for the domain you attempted to connect to.
 If your target LDAP service uses a round-robin DNS, it's likely that the hostname you connect to won't match. In this case,
@@ -196,14 +196,26 @@ you can either specify a hostname explicitly as the first element of the ``sasl_
 or pass ``True`` as the first element to do a reverse DNS lookup::
 
     # Override server hostname for authentication
-    connection = ldap3.Connection(
+    c = Connection(
         server, sasl_credentials=('ldap-3.example.com',),
-        authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
+        authentication=SASL, sasl_mechanism=KERBEROS)
 
     # Perform a reverse DNS lookup to determine the hostname to authenticate against.
-    connection = ldap3.Connection(
-        server, sasl_credentials=(True,),
-        authentication=ldap3.SASL, sasl_mechanism='GSSAPI')
+    c = Connection(server, sasl_credentials=(True,), authentication=SASL, sasl_mechanism=KERBEROS)
+
+Plain
+^^^^^
+The PLAIN SASL mechanism sends data in clear text, so it must rely on other means of securing the connection between the client and the LDAP server.
+As stated in RFC4616 the PLAIN mechanism should not be used without adequate data security protection as this mechanism affords no integrity or confidentiality
+protections itself. The mechanism is intended to be used with data security protections provided by application-layer protocol,
+generally through its use of Transport Layer Security (TLS) services.
+
+To use the PLAIN mechanism you must pass a 3-value tuple as sasl_credentials: (authorization_id, authentication_id, password). You can pass None
+for authorization_id if it is not used::
+
+    from ldap3 import Server, Connection, SASL, PLAIN
+    server = Server(host = test_server, port = test_port, use_ssl=True)
+    c = Connection(server, auto_bind=True, authentication=SASL, sasl_mechanism=PLAIN, sasl_credentials=(None, 'username', 'password'))
 
 NTLM
 ----

@@ -35,6 +35,7 @@ NTLM = 'NTLM'
 EXTERNAL = 'EXTERNAL'
 DIGEST_MD5 = 'DIGEST-MD5'
 KERBEROS = GSSAPI = 'GSSAPI'
+PLAIN = 'PLAIN'
 
 AUTO_BIND_NONE = 'NONE'  # same as False
 AUTO_BIND_NO_TLS = 'NO_TLS'  # same as True
@@ -112,10 +113,15 @@ HASHED_SALTED_MD5 = 'SALTED_MD5'
 NUMERIC_TYPES = (int, float)
 
 # types for string and sequence
-if str != bytes:  # python 3
+if str is not bytes:  # Python 3
     STRING_TYPES = (str, )
     SEQUENCE_TYPES = (set, list, tuple, GeneratorType, type(dict().keys()))  # dict.keys() is a iterable memoryview in Python 3
-else:  # python 2
+else:  # Python 2
+    try:
+        from future.types.newstr import newstr
+    except ImportError:
+        pass
+
     STRING_TYPES = (str, unicode)
     SEQUENCE_TYPES = (set, list, tuple, GeneratorType)
 

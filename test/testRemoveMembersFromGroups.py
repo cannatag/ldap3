@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
         if test_server_type == 'EDIR' and not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'user-1'))
             self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1'))
-            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1b', self.delete_at_teardown))
+            self.delete_at_teardown.append(add_group(self.connection, testcase_id, 'group-1b', [self.delete_at_teardown[0]]))
             self.connection.extend.novell.add_members_to_groups(self.delete_at_teardown[0][0],
                                                                 [self.delete_at_teardown[1][0],
                                                                  self.delete_at_teardown[2][0]],

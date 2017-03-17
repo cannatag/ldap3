@@ -63,7 +63,8 @@ except KeyError:
 test_lazy_connection = False
 
 # ******** test TRAVIS configuration
-# location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis
+# location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
+# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
 # ********
 
 if 'TRAVIS,' in location:
@@ -114,7 +115,7 @@ if 'TRAVIS,' in location:
         test_server_context = ''  # used in novell eDirectory extended operations
         test_server_edir_name = ''  # used in novell eDirectory extended operations
         test_user = 'CN=Giovanni,CN=Users,' + test_root_partition  # the user that performs the tests
-        test_password = 'Rc123456pfop'  # user password
+        test_password = 'Rc999999pfop'  # user password
         test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
         test_secondary_password = 'Rc9999pfop'  # user password
         test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
@@ -128,7 +129,7 @@ if 'TRAVIS,' in location:
         test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
         test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
         test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
-        test_ntlm_password = '# '
+        test_ntlm_password = 'Rc999999pfop'
         test_logging_filename = join(gettempdir(), 'ldap3.log')
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
@@ -227,18 +228,18 @@ elif location == 'ELITE10GC-AD':
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
 elif location == 'ELITE10GC-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
-    test_server = 'openldap.hyperv'
+    test_server = 'edir3.hyperv'
     test_server_type = 'SLAPD'
     test_root_partition = ''
-    test_base = 'o=test'  # base context where test objects are created
-    test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
+    test_base = 'ou=test,o=lab'  # base context where test objects are created
+    test_moved = 'ou=moved,ou=test,o=lab'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'gidNumber'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
-    test_user = 'cn=admin,o=test'  # the user that performs the tests
+    test_user = 'cn=Administrator,ou=resources,o=lab'  # the user that performs the tests
     test_password = 'password'  # user password
-    test_secondary_user = 'cn=testSASL,o=test'  # the user that performs the tests
+    test_secondary_user = 'cn=Administrator,ou=resources,o=lab'  # the user that performs the tests
     test_secondary_password = 'password'  # user password
     test_sasl_user = 'cn=testSASL,o=test'
     test_sasl_password = 'password'
@@ -336,7 +337,7 @@ print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage)
-print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', get_detail_level_name(test_log_detail) if test_logging else 'None')
+print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Fast decoder: ', test_fast_decoder)
 
 
 def random_id():
@@ -517,7 +518,7 @@ def drop_connection(connection, dn_to_delete=None):
                 result = get_operation_result(connection, operation_result)
                 if result['description'] == 'success':
                     done = True
-                elif result['description'] == 'busy':
+                elif result['description'] in ['busy', 'noSuchObject']:  # moving object
                     counter -= 1
                     if counter >= 0:
                         sleep(3)  # wait and retry
@@ -569,7 +570,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
                            'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
-        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'inetUser', 'top'], 'sn': username, 'gidNumber': 0})
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     dn = generate_dn(test_base, batch_id, username)

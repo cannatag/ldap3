@@ -134,7 +134,8 @@ class EntryBase(object):
     def __iter__(self):
         for attribute in self._state.attributes:
             yield self._state.attributes[attribute]
-        raise StopIteration
+        # raise StopIteration  # deprecated in PEP 479
+        return
 
     def __contains__(self, item):
         try:
@@ -148,15 +149,28 @@ class EntryBase(object):
             if item == '_state':
                 return self.__dict__['_state']
             item = ''.join(item.split()).lower()
+            attr_found = None
             for attr in self._state.attributes.keys():
                 if item == attr.lower():
+                    attr_found = attr
                     break
-            else:
+            if not attr_found:
                 for attr in self._state.attributes.aliases():
                     if item == attr.lower():
+                        attr_found = attr
                         break
-                else:
-                    raise LDAPCursorError('attribute \'%s\' not found' % item)
+            if not attr_found:
+                for attr in self._state.attributes.keys():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                for attr in self._state.attributes.aliases():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                raise LDAPCursorError('attribute \'%s\' not found' % item)
             return self._state.attributes[attr]
 
         raise LDAPCursorError('attribute name must be a string')
@@ -170,15 +184,28 @@ class EntryBase(object):
     def __getitem__(self, item):
         if isinstance(item, STRING_TYPES):
             item = ''.join(item.split()).lower()
+            attr_found = None
             for attr in self._state.attributes.keys():
                 if item == attr.lower():
+                    attr_found = attr
                     break
-            else:
+            if not attr_found:
                 for attr in self._state.attributes.aliases():
                     if item == attr.lower():
+                        attr_found = attr
                         break
-                else:
-                    raise LDAPKeyError('key \'%s\' not found' % item)
+            if not attr_found:
+                for attr in self._state.attributes.keys():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                for attr in self._state.attributes.aliases():
+                    if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                raise LDAPKeyError('key \'%s\' not found' % item)
             return self._state.attributes[attr]
 
         raise LDAPKeyError('key must be a string')
@@ -248,18 +275,18 @@ class EntryBase(object):
         json_entry['dn'] = self.entry_dn
         if checked_attributes:
             if not include_empty:
-                # needed for python 2.6 compatability
+                # needed for python 2.6 compatibility
                 json_entry['attributes'] = dict((key, self.entry_attributes_as_dict[key]) for key in self.entry_attributes_as_dict if self.entry_attributes_as_dict[key])
             else:
                 json_entry['attributes'] = self.entry_attributes_as_dict
         if raw:
             if not include_empty:
-                # needed for python 2.6 compatability
+                # needed for python 2.6 compatibility
                 json_entry['raw'] = dict((key, self.entry_raw_attributes[key]) for key in self.entry_raw_attributes if self.entry_raw_attributes[key])
             else:
                 json_entry['raw'] = dict(self.entry_raw_attributes)
 
-        if str == bytes:
+        if str is bytes:  # Python 2
             check_json_dict(json_entry)
 
         json_output = json.dumps(json_entry,

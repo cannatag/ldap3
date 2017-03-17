@@ -27,6 +27,7 @@ from datetime import datetime
 
 from ... import SEQUENCE_TYPES, STRING_TYPES
 from .formatters import format_time
+from ...utils.conv import to_raw
 
 # Validators return True if value is valid, False if value is not valid,
 # or a value different from True and False that is a valid value to substitute to the input value
@@ -52,13 +53,50 @@ def always_valid(input_value):
 def validate_generic_single_value(input_value):
     if not isinstance(input_value, SEQUENCE_TYPES):
         return True
-    if len(input_value) == 1:
-        return True
+
+    try:  # object couldn't have a __len__ method
+        if len(input_value) == 1:
+            return True
+    except Exception:
+        pass
+
     return False
 
 
 def validate_integer(input_value):
-    return check_type(input_value, int)
+    if check_type(input_value, (float, bool)):
+        return False
+
+    if str is bytes:  # Python 2, check for long too
+        if check_type(input_value, (int, long)):
+            return True
+    else:  # Python 3, int only
+        if check_type(input_value, int):
+            return True
+
+    sequence = True  # indicates if a sequence must be returned
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        sequence = False
+        input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
+
+    valid_values = []  # builds a list of valid int values
+    for element in input_value:
+        try:  # try to convert any type to int, an invalid conversion raise TypeError of ValueError, if both are valid and equal then then int() value is used
+            float_value = float(element)
+            int_value = int(element)
+            if float_value == int_value:
+                valid_values.append(int(element))
+            else:
+                return False
+        except (ValueError, TypeError):
+            return False
+
+    if sequence:
+        return valid_values
+    else:
+        return valid_values[0]
 
 
 def validate_bytes(input_value):
@@ -67,7 +105,7 @@ def validate_bytes(input_value):
 
 def validate_boolean(input_value):
     # it could be a real bool or the string TRUE or FALSE, # only a single valued is allowed
-    if validate_generic_single_value(input_value):
+    if validate_generic_single_value(input_value):  # valid only if a single value or a sequence with a single element
         if isinstance(input_value, SEQUENCE_TYPES):
             input_value = input_value[0]
         if isinstance(input_value, bool):
@@ -86,23 +124,24 @@ def validate_boolean(input_value):
 
 def validate_time(input_value):
     # if datetime object doesn't have a timezone it's considered local time and is adjusted to UTC
-    changed = False
-    sequence = True  # indicates if a sequence must be returned
     if not isinstance(input_value, SEQUENCE_TYPES):
         sequence = False
         input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
 
     valid_values = []
+    changed = False
     for element in input_value:
         if isinstance(element, STRING_TYPES):  # tries to check if it is already be a Generalized Time
-            if isinstance(format_time(element), datetime):  # valid Generalized Time string
+            if isinstance(format_time(to_raw(element)), datetime):  # valid Generalized Time string
                 valid_values.append(element)
             else:
                 return False
         elif isinstance(element, datetime):
             changed = True
             if element.tzinfo:  # a datetime with a timezone
-                valid_values.append(element.strftime('%Y%m%d%H%M%SZ%z'))
+                valid_values.append(element.strftime('%Y%m%d%H%M%S%z'))
             else:  # datetime without timezone, assumed local and adjusted to UTC
                 offset = datetime.now() - datetime.utcnow()
                 valid_values.append((element - offset).strftime('%Y%m%d%H%M%SZ'))

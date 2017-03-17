@@ -30,12 +30,14 @@ Contents
    tutorial
    features
    installation
-   servers
-   connections
+   server
+   schema
+   connection
    ssltls
    metrics
    operations
    extend
+   encoding
    abstraction
    ldif
    exceptions

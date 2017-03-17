@@ -1,4 +1,3 @@
-###############################
 Tutorial: Introduction to ldap3
 ###############################
 
@@ -61,7 +60,7 @@ specifications was revised in 2006. These later specifications are strictly foll
 
 Unicode everywhere
 ==================
-The LDAP protocol specifies that attribute names and their values must be stored in Unicode version 3.2 with the UTF-8 byte encoding. There are some
+The LDAP protocol specifies that attribute names and their string values must be stored in Unicode version 3.2 with the UTF-8 byte encoding. There are some
 limitations in the attribute names that can use only ASCII letter (upper and lowercase), number and the hypen (but not as a leading character).
 Unicode is a standard to describe thousands of printed (even if not visible) characters but what goes over the wire when you
 interact with an LDAP server is only old plain bytes (with values ranging from 0 to 255 as usual), so the UTF-8 encoding is needed when talking to an LDAP server
@@ -315,7 +314,8 @@ Supported Extensions.
    by clients (**DUA**, *Directory User Agent*). Because the LDAP protocols doesn't provide a specific way for DSAs to communicate
    with each other, a DSA actually presents itself as a DUA to another DSA.
 
-Let's examine the LDAP server schema::
+An LDAP server store information about known *types* in its **schema**. The schema includes all information needed by a client to correctly performs
+LDAP operations. Let's examine the LDAP server schema::
 
     >>> server.schema
     DSA Schema from: cn=schema
@@ -375,7 +375,7 @@ The schema defines also the *syntaxes* and the *matching rules* of the different
    that the attributes defined in that object class can be stored in that entry.
 
 If the ldap3 library is aware of the schema used by the LDAP server it will try to automatically convert data retrieved by the Search
-operation to their representation. So an integer will be returned as an int, a generalizedDate as a datetime object and so on.
+operation to their representation. An integer will be returned as an int, a generalizedDate as a datetime object and so on.
 If you don't read the schema all the values are returned as bytes and unicode strings. You can control this behaviour with
 the ``get_info`` parameter of the Server object and the ``check_names`` parameter of the Connection object.
 

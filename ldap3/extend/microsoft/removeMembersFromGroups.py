@@ -71,12 +71,13 @@ def ad_remove_members_from_groups(connection,
             if not result['description'] == 'success':
                 raise LDAPInvalidDnError(group + ' not found')
 
-            existing_member = response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []
+            existing_members = response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []
         else:
-            existing_member = members_dn
+            existing_members = members_dn
 
+        existing_members = [element.lower() for element in existing_members]
         changes = dict()
-        member_to_remove = [member for member in members_dn if member in existing_member]
+        member_to_remove = [element for element in members_dn if element.lower() in existing_members]
         if member_to_remove:
             changes['member'] = (MODIFY_DELETE, member_to_remove)
         if changes:

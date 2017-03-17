@@ -49,8 +49,8 @@ class Test(unittest.TestCase):
             _, result = self.connection.get_response(result)
         else:
             result = self.connection.result
-        self.assertEqual(result['description'], 'success')
         self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace('modify-dn-1', 'modified-dn-1'), self.delete_at_teardown[0][1])
+        self.assertEqual(result['description'], 'success')
 
     def test_move_dn(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-2'))
@@ -64,29 +64,28 @@ class Test(unittest.TestCase):
                 result = self.connection.result
             if result['description'] == 'success':
                 break
-            sleep(3)
+            sleep(2)
             counter -= 1
-
-        self.assertEqual('success', result['description'])
         self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace(test_base, test_moved), self.delete_at_teardown[0][1])
+        self.assertEqual('success', result['description'])
 
     def test_modify_dn_operation_with_get_request(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-1'))
-        result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modified-dn-1')
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-3'))
+        result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modified-dn-3')
         if not self.connection.strategy.sync:
             _, result, request = self.connection.get_response(result, get_request=True)
             self.assertEqual(request['type'], 'modDNRequest')
         else:
             result = self.connection.result
+        self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace('modify-dn-3', 'modified-dn-3'), self.delete_at_teardown[0][1])
         self.assertEqual(result['description'], 'success')
-        self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace('modify-dn-1', 'modified-dn-1'), self.delete_at_teardown[0][1])
 
     def test_move_dn_with_get_request(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'modify-dn-4'))
         counter = 20
         result = None
         while counter > 0:  # tries move operation for at maximum 20 times - partition may be busy while moving (at least on eDirectory)
-            result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modify-dn-2', new_superior=test_moved)
+            result = self.connection.modify_dn(self.delete_at_teardown[0][0], test_name_attr + '=' + testcase_id + 'modify-dn-4', new_superior=test_moved)
             if not self.connection.strategy.sync:
                 _, result, request = self.connection.get_response(result, get_request=True)
                 self.assertEqual(request['type'], 'modDNRequest')
@@ -94,9 +93,9 @@ class Test(unittest.TestCase):
                 result = self.connection.result
             if result['description'] == 'success':
                 break
-            sleep(3)
+            sleep(2)
             counter -= 1
 
-        self.assertEqual('success', result['description'])
         self.delete_at_teardown[0] = (self.delete_at_teardown[0][0].replace(test_base, test_moved), self.delete_at_teardown[0][1])
+        self.assertEqual('success', result['description'])
 

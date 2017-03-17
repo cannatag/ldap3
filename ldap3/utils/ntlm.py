@@ -160,12 +160,12 @@ def unpack_windows_version(version_message):
     if len(version_message) != 8:
         raise ValueError('version field must be 8 bytes long')
 
-    if str == bytes:  # python 2
+    if str is bytes:  # Python 2
         return (unpack('<B', version_message[0])[0],
                 unpack('<B', version_message[1])[0],
                 unpack('<H', version_message[2:4])[0],
                 unpack('<B', version_message[7])[0])
-    else:  # python 3
+    else:  # Python 3
         return (int(version_message[0]),
                 int(version_message[1]),
                 int(unpack('<H', version_message[2:4])[0]),

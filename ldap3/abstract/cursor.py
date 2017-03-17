@@ -159,10 +159,10 @@ class Cursor(object):
     def __len__(self):
         return len(self.entries)
 
-    if str != bytes:  # python 3
+    if str is not bytes:  # Python 3
         def __bool__(self):  # needed to make the cursor appears as existing in "if cursor:" even if there are no entries
             return True
-    else:  # python 2
+    else:  # Python 2
         def __nonzero__(self):
             return True
 
@@ -244,7 +244,7 @@ class Cursor(object):
             for attribute in attributes:
                 if attribute in entry:
                     for attr_value in entry[attribute].values:
-                        if hasattr(attr_value, 'lower') and value.lower() in attr_value.lower():
+                        if hasattr(attr_value, 'lower') and hasattr(value, 'lower') and value.lower() in attr_value.lower():
                             found = True
                         elif value == attr_value:
                             found = True

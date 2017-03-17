@@ -1,4 +1,3 @@
-####################
 The SEARCH operation
 ####################
 
@@ -225,7 +224,7 @@ while to get all the user and all the operational attributes you can use::
 
 Keep in mind that the server may not return some operational attribute if they are not explicitly requested
 (because they may take a long time or many resources to be computed), so if you need a specific attribute is better to
-request it explicitly.
+request it explicitly. Also, some servers dont' return operational attributes information when reading the schema.
 
 To request the operational attributes you can even set the get_operational_attributes parameter to True.
 

@@ -104,18 +104,18 @@ for simple binding::
     connection.unbind()
 
     # Create a fake server from the info and schema json files
-    fake_server = Server.from_definition('my_fake_server', 'my_real_server_info.json', 'my_real_server_schema.json'
+    fake_server = Server.from_definition('my_fake_server', 'my_real_server_info.json', 'my_real_server_schema.json')
 
     # Create a MockSyncStrategy connection to the fake server
     fake_connection = Connection(fake_server, user='cn=my_user,ou=test,o=lab', password='my_password', client_strategy=MOCK_SYNC)
 
     # Populate the DIT of the fake server
-    fake_connetion.strategy.entries_from_json('my_real_server_entries.json')
+    fake_connection.strategy.entries_from_json('my_real_server_entries.json')
 
     # Add a fake user for Simple binding
-    connection.strategy.add_entry('cn=my_user,ou=test,o=lab', {'userPassword': 'my_password', 'sn': 'user_sn', 'revision': 0})
+    fake_connection.strategy.add_entry('cn=my_user,ou=test,o=lab', {'userPassword': 'my_password', 'sn': 'user_sn', 'revision': 0})
 
     # Bind to the fake server
-    connection.bind()
+    fake_connection.bind()
 
 Then the connection is ready to be used in your tests.

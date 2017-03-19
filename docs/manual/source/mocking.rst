@@ -113,9 +113,9 @@ for simple binding::
     fake_connection.strategy.entries_from_json('my_real_server_entries.json')
 
     # Add a fake user for Simple binding
-    connection.strategy.add_entry('cn=my_user,ou=test,o=lab', {'userPassword': 'my_password', 'sn': 'user_sn', 'revision': 0})
+    fake_connection.strategy.add_entry('cn=my_user,ou=test,o=lab', {'userPassword': 'my_password', 'sn': 'user_sn', 'revision': 0})
 
     # Bind to the fake server
-    connection.bind()
+    fake_connection.bind()
 
 Then the connection is ready to be used in your tests.

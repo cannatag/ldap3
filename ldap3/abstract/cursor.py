@@ -466,9 +466,9 @@ class Reader(Cursor):
                         elif validated is not True:  # a valid LDAP value equivalent to the actual values
                                 value = validated
                     if val_not:
-                        query += '!' + val_search_operator + value
+                        query += '!' + val_search_operator + str(value)
                     else:
-                        query += val_search_operator + value
+                        query += val_search_operator + str(value)
 
                     query += ';'
                 query = query[:-1] + ', '

@@ -582,3 +582,4 @@ class Test(unittest.TestCase):
         self.assertTrue('implicit-added-commonname-1' in writable_entry.commonname)
         self.assertEqual(len(writable_entry.commonname), 2)
         self.compare_entries(read_only_entry, writable_entry)
+

@@ -755,7 +755,15 @@ class Writer(Cursor):
 
     def refresh_entry(self, entry, tries=4, seconds=2):
         self._do_not_reset = True
-        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes, tries, seconds=seconds)  # if any attributes is added adds only to the entry not to the definition
+
+        attr_list = []
+        for attr in entry._state.attributes:  # check friendly attribute name in AttrDef
+            if entry._state.definition[attr].name:
+                attr_list.append(entry._state.definition[attr].name)
+            else:
+                attr_list.append(entry._state.definition[attr].key)
+
+        temp_entry = self._refresh_object(entry.entry_dn, attr_list, tries, seconds=seconds)  # if any attributes is added adds only to the entry not to the definition
         self._do_not_reset = False
         if temp_entry:
             temp_entry._state.origin = entry._state.origin

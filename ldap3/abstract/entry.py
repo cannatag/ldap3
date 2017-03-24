@@ -256,6 +256,13 @@ class EntryBase(object):
 
     @property
     def entry_attributes(self):
+        # attr_list = list()
+        # for attr in self._state.attributes:
+        #     if self._state.definition[attr].name:
+        #         attr_list.append(self._state.definition[attr].name)
+        #     else:
+        #         attr_list.append(self._state.definition[attr].key)
+        # return attr_list
         return list(self._state.attributes.keys())
 
     @property

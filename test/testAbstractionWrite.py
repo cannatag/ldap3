@@ -25,9 +25,9 @@
 import unittest
 from time import sleep
 
-from ldap3 import Writer
+from ldap3 import Writer, Reader, AttrDef, ObjectDef
 from ldap3.core.exceptions import LDAPCursorError
-from test import test_base, get_connection, drop_connection, random_id, test_moved
+from test import test_base, get_connection, drop_connection, random_id, test_moved, add_user
 from ldap3.abstract import STATUS_COMMITTED, STATUS_MANDATORY_MISSING, STATUS_DELETED, STATUS_PENDING_CHANGES, STATUS_READ, \
     STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_VIRTUAL, STATUS_WRITABLE
 
@@ -155,7 +155,6 @@ class Test(unittest.TestCase):
             sleep(3)
         self.assertEqual(n.entry_status, STATUS_DELETED)
 
-
     def test_create_new_entry_valid_mandatory_only_case_insensitive_attribute_names(self):
         w = Writer(self.connection, 'inetorgperson')
         n = w.new('CN=' + testcase_id + 'abstraction-create-8,' + test_base)
@@ -169,3 +168,19 @@ class Test(unittest.TestCase):
         self.assertEqual(n.entry_status, STATUS_READY_FOR_DELETION)
         n.entry_commit_changes()
         self.assertEqual(n.entry_status, STATUS_DELETED)
+
+    def test_modify_entry_with_attrdef_with_friendly_name(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'friendly-attribute-user-1', attributes={'givenname': testcase_id + 'friendly-attr-name-1'}))
+        a = AttrDef(name='givenname', key='myname')
+        o = ObjectDef('inetorgperson')
+        o += a
+        r = Reader(self.connection, o, test_base, 'myname:=' + testcase_id + 'friendly*')
+        r.search()
+        print(r[0].entry_attributes)
+        print(r[0].entry_attributes_as_dict)
+        self.assertTrue(r[0].myname, testcase_id + 'friendly-attr-name-1')
+        w = Writer.from_cursor(r)
+        e = w[0]
+        e.myname += 'xyz'
+        w.commit()
+        self.assertTrue('xyz' in e.myname)

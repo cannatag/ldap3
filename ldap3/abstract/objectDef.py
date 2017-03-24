@@ -175,6 +175,8 @@ class ObjectDef(object):
         elif isinstance(definition, AttrDef):
             if definition.key not in self._attributes:
                 self._attributes[definition.key] = definition
+                if definition.name and definition.name != definition.key:
+                    self._attributes.set_alias(definition.key, definition.name)
                 other_names = [name for name in definition.oid_info.name if definition.key.lower() != name.lower()] if definition.oid_info else None
                 if other_names:
                     self._attributes.set_alias(definition.key, other_names)

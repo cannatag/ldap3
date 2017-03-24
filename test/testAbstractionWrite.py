@@ -176,8 +176,6 @@ class Test(unittest.TestCase):
         o += a
         r = Reader(self.connection, o, test_base, 'myname:=' + testcase_id + 'friendly*')
         r.search()
-        print(r[0].entry_attributes)
-        print(r[0].entry_attributes_as_dict)
         self.assertTrue(r[0].myname, testcase_id + 'friendly-attr-name-1')
         w = Writer.from_cursor(r)
         e = w[0]

@@ -134,14 +134,19 @@ def validate_attribute_value(schema, name, value, auto_encode):
     if schema:
         if ';' in name:
             name = name.split(';')[0]
-        if schema.attribute_types is not None and name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
-            raise LDAPAttributeError('invalid attribute ' + name)
+
         if schema.object_classes is not None and name == 'objectClass':
             if value not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
-        # encodes to utf-8 for well known Unicode LDAP syntaxes
-        if auto_encode and (schema.attribute_types[name].syntax in get_config_parameter('UTF8_ENCODED_SYNTAXES') or name in get_config_parameter('UTF8_ENCODED_TYPES')):
-            value = to_unicode(value)  # tries to convert from local encoding to Unicode
+
+        if schema.attribute_types is not None:
+            if name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
+                raise LDAPAttributeError('invalid attribute ' + name)
+
+            # encodes to utf-8 for well known Unicode LDAP syntaxes
+            if auto_encode and (schema.attribute_types[name].syntax in get_config_parameter('UTF8_ENCODED_SYNTAXES') or name in get_config_parameter('UTF8_ENCODED_TYPES')):
+                value = to_unicode(value)  # tries to convert from local encoding to Unicode
+
     return to_raw(value)
 
 

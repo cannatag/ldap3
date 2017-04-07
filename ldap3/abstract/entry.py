@@ -170,6 +170,16 @@ class EntryBase(object):
                         attr_found = attr
                         break
             if not attr_found:
+                for attr in self._state.attributes.keys():
+                    if item + ';range' in attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                for attr in self._state.attributes.aliases():
+                    if item + ';range' in attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
                 raise LDAPCursorError('attribute \'%s\' not found' % item)
             return self._state.attributes[attr]
 

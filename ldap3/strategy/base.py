@@ -399,7 +399,19 @@ class BaseStrategy(object):
                                 entry['raw_attributes'][attribute_type] = list()
                                 entry['attributes'][attribute_type] = list()
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute value set to [] for missing attribute %s in %s', attribute_type, self)
+                                    log(PROTOCOL, 'attribute value set to empty list for missing attribute %s in %s', attribute_type, self)
+                        if not self.connection.auto_range:
+                            attrs_to_remove = []
+                            # removes original empty attribute in case a range tag is returned
+                            for attribute_type in entry['attributes']:
+                                if ';range' in attribute_type.lower():
+                                    orig_attr, _, _ = attribute_type.partition(';')
+                                    attrs_to_remove.append(orig_attr)
+                            for attribute_type in attrs_to_remove:
+                                if log_enabled(PROTOCOL):
+                                    log(PROTOCOL, 'attribute type %s removed in response because of the same attribute returned as range by the server in %s', attribute_type, self)
+                                del entry['raw_attributes'][attribute_type]
+                                del entry['attributes'][attribute_type]
 
             request = self._outstanding.pop(message_id)
         else:
@@ -650,6 +662,7 @@ class BaseStrategy(object):
             if high_range != '*':
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'performing next search on auto-range <%s> via <%s>', str(int(high_range) + 1), self.connection)
+                requested_range = attr_type + ';range=' + str(int(high_range) + 1) + '-*'
                 result = self.connection.search(search_base=response['dn'],
                                                 search_filter='(objectclass=*)',
                                                 search_scope=BASE,
@@ -665,6 +678,9 @@ class BaseStrategy(object):
                     current_response = current_response[0]
 
                 if not done:
+                    if requested_range in current_response['raw_attributes'] and len(current_response['raw_attributes'][requested_range]) == 0:
+                        del current_response['raw_attributes'][requested_range]
+                        del current_response['attributes'][requested_range]
                     attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
                     continue
 

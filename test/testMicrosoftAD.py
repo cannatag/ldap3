@@ -28,7 +28,7 @@ from time import sleep
 
 from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SIMPLE
 from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control
-from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition
+from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition, add_group
 
 testcase_id = random_id()
 
@@ -238,11 +238,16 @@ class Test(unittest.TestCase):
     def test_search_with_auto_range(self):
         user_dns = []
         if test_server_type == 'AD':
-            # for i in range(2000):
-            #     user_dn, _ = add_user(self.connection, '', 'user-' + str(i).zfill(4), attributes={'givenName': 'givenname-' + str(i).zfill(4)})
-            #     user_dns.append(user_dn)
-            #     print(i)
-            # self.connection.extend.microsoft.add_members_to_groups(user_dns, 'CN=testgrp,OU=test,DC=AD2012,DC=LAB')
+            # for i in range(0, 6999):
+            #     try:
+            #         user_dn, _ = add_user(self.connection, '', 'user-' + str(i).zfill(4), attributes={'givenName': 'givenname-' + str(i).zfill(4)})
+            #         user_dns.append(user_dn)
+            #         print('created', user_dn)
+            #     except Exception as e:
+            #         # if 'entryAlreadyExists' not in e.args[0]:
+            #         #    raise
+            #         pass
+            # self.connection.extend.microsoft.add_members_to_groups(user_dns, 'CN=testgrp,OU=test,DC=AD2012,DC=LAB', fix=True)
             print(self.connection.auto_range)
             self.connection.auto_range = False
             result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=testgrp)', attributes=[test_name_attr, 'member'])

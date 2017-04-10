@@ -414,7 +414,7 @@ class BaseObjectInfo(object):
 
         ret_dict = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES') else dict()
         for object_definition in definitions:
-            if object_definition[0] == '(' and object_definition[:-1] == ')':
+            if object_definition[0] == '(' and object_definition[-1] == ')':
                 if cls is MatchingRuleInfo:
                     pattern = '| SYNTAX '
                 elif cls is ObjectClassInfo:
@@ -498,7 +498,7 @@ class BaseObjectInfo(object):
                             object_def.experimental = []
                         object_def.experimental.append(extension_to_tuple('E-' + value))
                     else:
-                        raise LDAPSchemaError('malformed schema definition key:' + key + ' - use get_info=NONE in Server definition')')
+                        raise LDAPSchemaError('malformed schema definition key:' + key + ' - use get_info=NONE in Server definition')
                 object_def.raw_definition = object_definition
                 if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
                     object_def.min_length = None

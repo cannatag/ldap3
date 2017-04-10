@@ -414,7 +414,7 @@ class BaseObjectInfo(object):
 
         ret_dict = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES') else dict()
         for object_definition in definitions:
-            if [object_definition[0] == ')' and object_definition[:-1] == ')']:
+            if object_definition[0] == '(' and object_definition[:-1] == ')':
                 if cls is MatchingRuleInfo:
                     pattern = '| SYNTAX '
                 elif cls is ObjectClassInfo:

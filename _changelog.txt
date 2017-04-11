@@ -6,6 +6,7 @@
     - range attributes in entries are properly recognized when auto_range is False
     - fixed random errors in auto_range searches (thanks James)
     - fixed checking of malformed schema
+    - added configuration parameter IGNORE_MALFORMED_SCHEMA to not raise exception for servers that don't follow the LDAP RFCs (defaults to False)
 
 - 2.2.2 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)

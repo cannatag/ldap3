@@ -131,7 +131,7 @@ def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
 
 
 def validate_attribute_value(schema, name, value, auto_encode):
-    if schema:
+    if schema and schema.attribute_types:
         if ';' in name:
             name = name.split(';')[0]
 
@@ -139,7 +139,7 @@ def validate_attribute_value(schema, name, value, auto_encode):
             if value not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
 
-        if schema.attribute_types and name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
+        if name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
             raise LDAPAttributeError('invalid attribute ' + name)
 
         # encodes to utf-8 for well known Unicode LDAP syntaxes

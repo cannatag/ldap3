@@ -61,13 +61,24 @@ def modify_operation(dn,
     for attribute in changes:
         for change_operation in changes[attribute]:
             partial_attribute = PartialAttribute()
-            partial_attribute['type'] = AttributeDescription(attribute)
+            if ';encoding=' in attribute:  # remove the NON STANDARD encoding tag
+                partial_attribute['type'] = AttributeDescription(attribute.partition(';')[0])
+            else:
+                partial_attribute['type'] = AttributeDescription(attribute)
             partial_attribute['vals'] = Vals()
             if isinstance(change_operation[1], SEQUENCE_TYPES):
                 for index, value in enumerate(change_operation[1]):
                     partial_attribute['vals'].setComponentByPosition(index, prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode)))
+                    if ';encoding=' in attribute:
+                        a = partial_attribute['vals'].getComponentByPosition(index)  # dirty patch for changing encoding for non standard attribute as unicodePwd
+                        a.encoding = attribute.partition('=')[2]
+                        a._encoding = attribute.partition('=')[2]
             else:
                 partial_attribute['vals'].setComponentByPosition(0, prepare_for_sending(validate_attribute_value(schema, attribute, change_operation[1], auto_encode)))
+                if ';encoding=' in attribute:
+                    a = partial_attribute['vals'].getComponentByPosition(0)  # dirty patch for changing encoding for non standard attribute as unicodePwd
+                    a.encoding = attribute.partition('=')[2]
+                    a._encoding = attribute.partition('=')[2]
 
             change = Change()
             change['operation'] = Operation(change_table[change_operation[0]])

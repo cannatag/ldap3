@@ -79,7 +79,6 @@ def modify_operation(dn,
                     a = partial_attribute['vals'].getComponentByPosition(0)  # dirty patch for changing encoding for non standard attribute as unicodePwd
                     a.encoding = attribute.partition('=')[2]
                     a._encoding = attribute.partition('=')[2]
-
             change = Change()
             change['operation'] = Operation(change_table[change_operation[0]])
             change['modification'] = partial_attribute

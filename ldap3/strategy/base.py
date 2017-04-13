@@ -688,12 +688,17 @@ class BaseStrategy(object):
 
     def do_search_on_auto_range(self, request, response):
         for resp in [r for r in response if r['type'] == 'searchResEntry']:
+            attrs_to_remove = []
             for attr_name in resp['raw_attributes'].keys():
                 if ';range=' in attr_name:
                     attr_type, _, _ = attr_name.partition(';range=')
+                    attrs_to_remove.append(attr_type)
+                    self.do_next_range_search(request, resp, attr_name)
+
+            if attrs_to_remove:
+                for attr_type in attrs_to_remove:
                     resp['raw_attributes'][attr_type] = list()
                     resp['attributes'][attr_type] = list()
-                    self.do_next_range_search(request, resp, attr_name)
 
     def do_operation_on_referral(self, request, referrals):
         if log_enabled(PROTOCOL):

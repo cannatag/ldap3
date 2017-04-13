@@ -114,12 +114,14 @@ class AttributeDescription(LDAPString):
 
 class AttributeValue(OctetString):
     # AttributeValue ::= OCTET STRING
-    encoding = 'utf-8'
+    # encoding = 'utf-8'
+    pass
 
 
 class AssertionValue(OctetString):
     # AssertionValue ::= OCTET STRING
-    encoding = 'utf-8'
+    # encoding = 'utf-8'
+    pass
 
 
 class AttributeValueAssertion(Sequence):
@@ -438,8 +440,8 @@ class Criticality(Boolean):
 
 class ControlValue(OctetString):
     # controlValue            OCTET STRING
-    encoding = 'utf-8'
-
+    # encoding = 'utf-8'
+    pass
 
 class Control(Sequence):
     # Control ::= SEQUENCE {
@@ -710,7 +712,7 @@ class RequestName(LDAPOID):
 class RequestValue(OctetString):
     # requestValue     [1] OCTET STRING
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 1))
-    encoding = 'utf-8'
+    # encoding = 'utf-8'
 
 
 class ResponseName(LDAPOID):
@@ -721,7 +723,7 @@ class ResponseName(LDAPOID):
 class ResponseValue(OctetString):
     # responseValue     [11] OCTET STRING
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 11))
-    encoding = 'utf-8'
+    # encoding = 'utf-8'
 
 
 class IntermediateResponseName(LDAPOID):
@@ -732,7 +734,7 @@ class IntermediateResponseName(LDAPOID):
 class IntermediateResponseValue(OctetString):
     # responseValue     [1] OCTET STRING
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 1))
-    encoding = 'utf-8'
+    # encoding = 'utf-8'
 
 
 # operations

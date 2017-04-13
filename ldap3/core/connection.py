@@ -805,7 +805,7 @@ class Connection(object):
             else:
                 attribute_name_to_check = attribute
 
-            if attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
+            if self.server.schema.attribute_types and attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
                 raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
         with self.lock:
@@ -1008,7 +1008,7 @@ class Connection(object):
                     else:
                         attribute_name_to_check = attribute_name
 
-                    if attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if self.server.schema.attribute_types and attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
                 change = changes[attribute_name]
                 if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:

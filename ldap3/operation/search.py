@@ -290,7 +290,7 @@ def compile_filter(filter_node):
 def build_attribute_selection(attribute_list, schema):
     attribute_selection = AttributeSelection()
     for index, attribute in enumerate(attribute_list):
-        if schema and schema.attribute_types is not None:
+        if schema and schema.attribute_types:
             if ';' in attribute:  # exclude tags from validation
                 if not attribute[0:attribute.index(';')] in schema.attribute_types and attribute not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
                     raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)

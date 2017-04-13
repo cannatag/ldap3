@@ -85,7 +85,8 @@ _REUSABLE_THREADED_POOL_SIZE = 10
 _REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 _DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 _ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
-_RESPONSE_DN_ENCODING = ["utf-8"]  # some broken LDAP implementation may havedifferent encoding against RFC
+_RESPONSE_DN_ENCODING = ["utf-8"]  # some broken LDAP implementation may have different encoding than those expected by RFCs
+_IGNORE_MALFORMED_SCHEMA = False  # some flaky LDAP servers returns malformed schema. If True no expection is raised and schema is thrown away
 
 if stdin and stdin.encoding:
     _DEFAULT_ENCODING = stdin.encoding
@@ -138,6 +139,8 @@ def get_config_parameter(parameter):
         return _UTF8_ENCODED_TYPES
     elif parameter == 'RESPONSE_DN_ENCODING':
         return _RESPONSE_DN_ENCODING
+    elif parameter == 'IGNORE_MALFORMED_SCHEMA':
+        return _IGNORE_MALFORMED_SCHEMA
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
 
@@ -205,5 +208,8 @@ def set_config_parameter(parameter, value):
     elif parameter == 'RESPONSE_DN_ENCODING':
         global _RESPONSE_DN_ENCODING
         _RESPONSE_DN_ENCODING = value if isinstance(value, SEQUENCE_TYPES) else [value]
+    elif parameter == 'IGNORE_MALFORMED_SCHEMA':
+        global _IGNORE_MALFORMED_SCHEMA
+        _IGNORE_MALFORMED_SCHEMA = value
     else:
         raise LDAPConfigurationParameterError('unable to set configuration parameter %s' % parameter)

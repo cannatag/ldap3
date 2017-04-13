@@ -295,17 +295,18 @@ class SchemaInfo(BaseServerInfo):
         self.other = attributes  # remaining schema definition attributes not in RFC4512
 
         # links attributes to class objects
-        for object_class in self.object_classes:  # CaseInsensitiveDict return keys while iterating
-            for attribute in self.object_classes[object_class].must_contain:
-                try:
-                    self.attribute_types[attribute].mandatory_in.append(object_class)
-                except KeyError:
-                    pass
-            for attribute in self.object_classes[object_class].may_contain:
-                try:
-                    self.attribute_types[attribute].optional_in.append(object_class)
-                except KeyError:
-                    pass
+        if self.object_classes and self.attribute_types:
+            for object_class in self.object_classes:  # CaseInsensitiveDict return keys while iterating
+                for attribute in self.object_classes[object_class].must_contain:
+                    try:
+                        self.attribute_types[attribute].mandatory_in.append(object_class)
+                    except KeyError:
+                        pass
+                for attribute in self.object_classes[object_class].may_contain:
+                    try:
+                        self.attribute_types[attribute].optional_in.append(object_class)
+                    except KeyError:
+                        pass
 
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
@@ -414,7 +415,7 @@ class BaseObjectInfo(object):
 
         ret_dict = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES') else dict()
         for object_definition in definitions:
-            if [object_definition[0] == ')' and object_definition[:-1] == ')']:
+            if object_definition[0] == '(' and object_definition[-1] == ')':
                 if cls is MatchingRuleInfo:
                     pattern = '| SYNTAX '
                 elif cls is ObjectClassInfo:
@@ -498,7 +499,10 @@ class BaseObjectInfo(object):
                             object_def.experimental = []
                         object_def.experimental.append(extension_to_tuple('E-' + value))
                     else:
-                        raise LDAPSchemaError('malformed schema definition key:' + key)
+                        if not get_config_parameter('IGNORE_MALFORMED_SCHEMA'):
+                            raise LDAPSchemaError('malformed schema definition key:' + key + ' - use get_info=NONE in Server definition')
+                        else:
+                            return None
                 object_def.raw_definition = object_definition
                 if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
                     object_def.min_length = None
@@ -519,7 +523,10 @@ class BaseObjectInfo(object):
                     ret_dict[object_def.oid] = object_def
 
             else:
-                raise LDAPSchemaError('malformed schema definition')
+                if not get_config_parameter('IGNORE_MALFORMED_SCHEMA'):
+                    raise LDAPSchemaError('malformed schema definition, use get_info=NONE in Server definition')
+                else:
+                    return None
         return ret_dict
 
 

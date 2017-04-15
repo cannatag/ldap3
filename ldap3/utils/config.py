@@ -66,7 +66,6 @@ _UTF8_ENCODED_SYNTAXES = ['1.2.840.113556.1.4.904',  # DN String [MICROSOFT]
 _UTF8_ENCODED_TYPES = []
 
 _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF = ['msds-memberOfTransitive', 'msds-memberTransitive']
-_IGNORED_MANDATORY_ATTRIBUTES = []
 
 _CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
 _CASE_INSENSITIVE_SCHEMA_NAMES = True
@@ -146,8 +145,6 @@ def get_config_parameter(parameter):
         return _IGNORE_MALFORMED_SCHEMA
     elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF':
         return _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF
-    elif parameter == 'IGNORED_MANDATORY_ATTRIBUTES':
-        return _IGNORED_MANDATORY_ATTRIBUTES
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
 
@@ -221,8 +218,5 @@ def set_config_parameter(parameter, value):
     elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF':
         global _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF
         _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF = value
-    elif parameter == 'IGNORED_MANDATORY_ATTRIBUTES':
-        global _IGNORED_MANDATORY_ATTRIBUTES
-        _IGNORED_MANDATORY_ATTRIBUTES = value
     else:
         raise LDAPConfigurationParameterError('unable to set configuration parameter %s' % parameter)

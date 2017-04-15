@@ -27,13 +27,15 @@ import unittest
 
 from ldap3 import ALL
 from ldap3 import ObjectDef, Reader
-from test import test_base, get_connection, drop_connection, random_id, add_user
+from test.config import test_base, get_connection, drop_connection, random_id, add_user
 
-testcase_id = random_id()
+testcase_id = None
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection(get_info=ALL, check_names=True)
         self.delete_at_teardown = []
 

@@ -27,13 +27,15 @@ import unittest
 
 from ldap3 import ALL
 from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
-from test import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
+from test.config import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
 
-testcase_id = random_id()
+testcase_id = None
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection(check_names=True, get_info=ALL)
         self.delete_at_teardown = []
 

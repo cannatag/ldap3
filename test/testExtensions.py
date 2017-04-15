@@ -26,14 +26,16 @@
 import unittest
 
 from ldap3 import Tls
-from test import test_server_context, random_id, get_connection, drop_connection, \
+from test.config import test_server_context, random_id, get_connection, drop_connection, \
     test_server_edir_name, test_server_type
 
-testcase_id = random_id()
+testcase_id = None
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection()
 
     def tearDown(self):

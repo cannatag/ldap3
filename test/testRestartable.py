@@ -25,7 +25,7 @@
 
 import unittest
 
-from test import test_server, test_user, test_password, test_lazy_connection, test_get_info, test_server_mode, test_base, test_strategy
+from test.config import test_server, test_user, test_password, test_lazy_connection, test_get_info, test_server_mode, test_base, test_strategy
 from ldap3 import Server, Connection, ServerPool, RESTARTABLE, ROUND_ROBIN, BASE, MOCK_SYNC, MOCK_ASYNC
 
 

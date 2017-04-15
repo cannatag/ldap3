@@ -25,13 +25,15 @@
 
 import unittest
 
-from test import test_base, random_id, get_connection, drop_connection, add_user, test_server_type, test_name_attr
+from test.config import test_base, random_id, get_connection, drop_connection, add_user, test_server_type, test_name_attr
 
-testcase_id = random_id()
+testcase_id = None
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection()
         self.delete_at_teardown = []
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'controls-1', attributes={'givenName': 'given name-1'}))

@@ -27,15 +27,17 @@ from time import sleep
 
 from ldap3 import Writer, Reader, AttrDef, ObjectDef
 from ldap3.core.exceptions import LDAPCursorError
-from test import test_base, get_connection, drop_connection, random_id, test_moved, add_user
+from test.config import test_base, get_connection, drop_connection, random_id, test_moved, add_user
 from ldap3.abstract import STATUS_COMMITTED, STATUS_MANDATORY_MISSING, STATUS_DELETED, STATUS_PENDING_CHANGES, STATUS_READ, \
     STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_VIRTUAL, STATUS_WRITABLE
 
-testcase_id = random_id()
+testcase_id = None
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection()
         self.delete_at_teardown = []
 

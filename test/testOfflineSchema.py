@@ -27,7 +27,7 @@ import unittest
 
 from ldap3 import Server, OFFLINE_EDIR_8_8_8, SchemaInfo, DsaInfo
 from ldap3.protocol.rfc4512 import ObjectClassInfo, AttributeTypeInfo
-from test import test_server, get_connection, drop_connection
+from test.config import test_server, get_connection, drop_connection
 
 
 class Test(unittest.TestCase):

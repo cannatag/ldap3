@@ -1,6 +1,16 @@
 # changes file for ldap3
-# generated on 2017-03-17 16:54:08.905677
-# version 2.2.2
+# generated on 2017-04-15 07:45:09.249158
+# version 2.2.3
+
+- 2.2.3 not yet released
+    - abstraction layer query converts int values to string (thanks dgadmin)
+    - CaseInsensitiveDictWithAlias doesn't raise an exception anymore if alias is set multiple times to the same key
+    - friendly names in AttrDef are properly managed when performing commits in Writer cursors
+    - no more errors when server returns an empty schema (thanks Glen)
+    - range attributes in entries are properly recognized when auto_range is False
+    - fixed random errors in auto_range searches (thanks James)
+    - fixed checking of malformed schema
+    - added configuration parameter IGNORE_MALFORMED_SCHEMA to not raise exception for servers that don't follow the LDAP RFCs (defaults to False)
 
 - 2.2.2 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)

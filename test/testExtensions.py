@@ -29,7 +29,7 @@ from ldap3 import Tls
 from test.config import test_server_context, random_id, get_connection, drop_connection, \
     test_server_edir_name, test_server_type
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

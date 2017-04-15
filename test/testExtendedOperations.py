@@ -30,7 +30,7 @@ from test.config import test_user, test_server_context, test_server_edir_name, r
     test_name_attr, test_base, test_password
 
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

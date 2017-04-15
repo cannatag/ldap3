@@ -29,7 +29,7 @@ import unittest
 from test.config import add_user, get_connection, drop_connection, random_id, test_server_type
 from ldap3 import Server, Connection, ObjectDef, Reader, Writer, ALL
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

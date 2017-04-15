@@ -33,7 +33,7 @@ from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_dsa_info, edir_8_8_8_schema
 from test.config import random_id
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

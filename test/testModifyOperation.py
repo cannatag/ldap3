@@ -29,7 +29,7 @@ from ldap3 import MODIFY_REPLACE, MODIFY_ADD, MODIFY_DELETE
 from test.config import random_id, get_connection, add_user, \
     drop_connection
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

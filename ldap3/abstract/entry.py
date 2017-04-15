@@ -41,6 +41,7 @@ from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.dn import safe_dn, safe_rdn, to_dn
 from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveWithAliasDict
+from ..utils.config import get_config_parameter
 from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED,\
     STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
 from ..core.results import RESULT_SUCCESS
@@ -262,7 +263,7 @@ class EntryBase(object):
 
     @property
     def entry_mandatory_attributes(self):
-        return [attribute for attribute in self.entry_definition._attributes if self.entry_definition._attributes[attribute].mandatory]
+        return [attribute for attribute in self.entry_definition._attributes if self.entry_definition._attributes[attribute].mandatory and attribute not in get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES')]
 
     @property
     def entry_attributes(self):

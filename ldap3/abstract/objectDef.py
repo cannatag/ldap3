@@ -31,6 +31,7 @@ from .. import STRING_TYPES, SEQUENCE_TYPES, Server, Connection
 from ..protocol.rfc4512 import SchemaInfo, constant_to_class_kind
 from ..protocol.formatters.standard import find_attribute_validator
 from ..utils.ciDict import CaseInsensitiveWithAliasDict
+from ..utils.config import get_config_parameter
 
 
 class ObjectDef(object):
@@ -157,13 +158,13 @@ class ObjectDef(object):
         return True
 
     def add_from_schema(self, attribute_name, mandatory=False):
-        attr_def = AttrDef(attribute_name)
-        attr_def.validate = find_attribute_validator(self._schema, attribute_name, self._custom_validator)
-        attr_def.mandatory = mandatory  # in schema mandatory is specified in the object class, not in the attribute class
-        if self._schema and self._schema.attribute_types and attribute_name in self._schema.attribute_types:
-            attr_def.single_value = self._schema.attribute_types[attribute_name].single_value
-            attr_def.oid_info = self._schema.attribute_types[attribute_name]
-        self.add_attribute(attr_def)
+            attr_def = AttrDef(attribute_name)
+            attr_def.validate = find_attribute_validator(self._schema, attribute_name, self._custom_validator)
+            attr_def.mandatory = mandatory  # in schema mandatory is specified in the object class, not in the attribute class
+            if self._schema and self._schema.attribute_types and attribute_name in self._schema.attribute_types:
+                attr_def.single_value = self._schema.attribute_types[attribute_name].single_value
+                attr_def.oid_info = self._schema.attribute_types[attribute_name]
+            self.add_attribute(attr_def)
 
     def add_attribute(self, definition=None):
         """Add an AttrDef to the ObjectDef. Can be called with the += operator.
@@ -173,17 +174,18 @@ class ObjectDef(object):
         if isinstance(definition, STRING_TYPES):
             self.add_from_schema(definition)
         elif isinstance(definition, AttrDef):
-            if definition.key not in self._attributes:
-                self._attributes[definition.key] = definition
-                if definition.name and definition.name != definition.key:
-                    self._attributes.set_alias(definition.key, definition.name)
-                other_names = [name for name in definition.oid_info.name if definition.key.lower() != name.lower()] if definition.oid_info else None
-                if other_names:
-                    self._attributes.set_alias(definition.key, other_names)
+            if definition.key not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF'):
+                if definition.key not in self._attributes:
+                    self._attributes[definition.key] = definition
+                    if definition.name and definition.name != definition.key:
+                        self._attributes.set_alias(definition.key, definition.name)
+                    other_names = [name for name in definition.oid_info.name if definition.key.lower() != name.lower()] if definition.oid_info else None
+                    if other_names:
+                        self._attributes.set_alias(definition.key, other_names)
 
-            if not definition.validate:
-                validator = find_attribute_validator(self._schema, definition.key, self._custom_validator)
-                self._attributes[definition.key].validate = validator
+                if not definition.validate:
+                    validator = find_attribute_validator(self._schema, definition.key, self._custom_validator)
+                    self._attributes[definition.key].validate = validator
         elif isinstance(definition, SEQUENCE_TYPES):
             for element in definition:
                 self.add_attribute(element)

@@ -30,7 +30,7 @@ from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SIMPLE
 from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control
 from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition, add_group
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

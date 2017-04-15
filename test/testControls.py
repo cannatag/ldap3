@@ -27,7 +27,7 @@ import unittest
 
 from test.config import test_base, random_id, get_connection, drop_connection, add_user, test_server_type, test_name_attr
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

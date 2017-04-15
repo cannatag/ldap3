@@ -29,7 +29,7 @@ from ldap3 import ALL
 from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
 from test.config import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

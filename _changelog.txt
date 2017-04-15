@@ -9,6 +9,7 @@
     - added configuration parameter IGNORE_MALFORMED_SCHEMA to not raise exception for servers that don't follow the LDAP RFCs (defaults to False)
     - test config moved to test/config.py
     - testcase_id generated randomly for each test
+    - added ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF paarmeter to exclude some attribute from automatic populate of ObjectDef in Abstract Layer (helpful for AD)
 
 - 2.2.2 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)

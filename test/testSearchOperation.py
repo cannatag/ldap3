@@ -31,7 +31,7 @@ from test.config import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_int_attr
 from ldap3 import SUBTREE
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3'}))  # TRADE-MARK SIGN
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-4-Öäçïó', attributes={'givenName': 'givenname-4', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-4-Öäçïó', attributes={'givenName': 'givenname-4'}))
         else:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))

@@ -31,7 +31,7 @@ from ldap3.protocol.controls import build_control
 from ldap3.protocol.novell import Integer
 from test.config import add_user, get_connection, drop_connection, random_id, test_server_type
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

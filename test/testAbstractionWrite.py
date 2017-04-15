@@ -31,7 +31,7 @@ from test.config import test_base, get_connection, drop_connection, random_id, t
 from ldap3.abstract import STATUS_COMMITTED, STATUS_MANDATORY_MISSING, STATUS_DELETED, STATUS_PENDING_CHANGES, STATUS_READ, \
     STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_VIRTUAL, STATUS_WRITABLE
 
-testcase_id = None
+testcase_id = ''
 
 
 class Test(unittest.TestCase):

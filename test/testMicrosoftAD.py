@@ -28,7 +28,7 @@ from time import sleep
 
 from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SIMPLE
 from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control
-from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition, add_group
+from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition
 
 testcase_id = ''
 
@@ -225,10 +225,9 @@ class Test(unittest.TestCase):
 
     def test_modify_existing_password_as_administrator(self):
         if test_server_type == 'AD':
-            # self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
-            # dn = self.delete_at_teardown[-1][0]
-            dn = 'CN=Test Uno,CN=Users,DC=TESTAD,DC=LAB'
-            new_password = 'Rc579efgh'
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
+            dn = self.delete_at_teardown[-1][0]
+            new_password = 'Rc56789efgh'
             result = self.connection.extend.microsoft.modify_password(dn, new_password)
             self.assertEqual(result, True)
             # creates a second connection and tries to bind with the new password
@@ -236,7 +235,7 @@ class Test(unittest.TestCase):
             test_connection.bind()
             connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
-            self.assertTrue('testuno' in connected_user)
+            # self.assertTrue('testuno' in connected_user)
 
     def test_search_with_auto_range(self):
         user_dns = []

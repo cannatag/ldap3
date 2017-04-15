@@ -263,7 +263,7 @@ class EntryBase(object):
 
     @property
     def entry_mandatory_attributes(self):
-        return [attribute for attribute in self.entry_definition._attributes if self.entry_definition._attributes[attribute].mandatory and attribute not in get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES')]
+        return [attribute for attribute in self.entry_definition._attributes if self.entry_definition._attributes[attribute].mandatory]
 
     @property
     def entry_attributes(self):

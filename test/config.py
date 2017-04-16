@@ -65,7 +65,7 @@ test_lazy_connection = False
 
 # ******** test TRAVIS configuration
 # location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
-# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
+location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
 # ********
 
 if 'TRAVIS,' in location:
@@ -359,7 +359,7 @@ print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log
 
 
 def random_id():
-    return '[' + str(SystemRandom().random())[-8:] + ']'
+    return '[' + str(SystemRandom().random())[-4:] + ']'
 
 
 def generate_dn(base, batch_id, name):

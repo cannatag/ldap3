@@ -114,7 +114,7 @@ class AttributeDescription(LDAPString):
 
 class AttributeValue(OctetString):
     # AttributeValue ::= OCTET STRING
-    # encoding = 'utf-8'
+    encoding = 'utf-8'
     pass
 
 

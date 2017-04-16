@@ -22,6 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+from pyasn1.error import PyAsn1Error
 
 from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
@@ -62,8 +63,10 @@ def decode_referrals(referrals):
 
 
 def partial_attribute_to_dict(modification):
-    return {'type': str(modification['type']), 'value': [str(value) for value in modification['vals']]}
-
+    try:
+        return {'type': str(modification['type']), 'value': [str(value) for value in modification['vals']]}
+    except PyAsn1Error:  # invalid encoding, return bytes value
+        return {'type': str(modification['type']), 'value': [bytes(value) for value in modification['vals']]}
 
 def change_to_dict(change):
     return {'operation': int(change['operation']), 'attribute': partial_attribute_to_dict(change['modification'])}

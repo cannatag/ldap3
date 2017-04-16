@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 """
 
@@ -86,7 +87,7 @@ class Test(unittest.TestCase):
             self.assertTrue(found)
 
     def test_dir_sync(self):
-        if False:
+        if False:  # takes a long long time to complete
         # if test_server_type == 'AD':
             sync = self.connection.extend.microsoft.dir_sync(test_root_partition, attributes=['*'])
             # read all previous changes
@@ -177,7 +178,7 @@ class Test(unittest.TestCase):
 
     def test_modify_password_as_administrator(self):
         if test_server_type == 'AD':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pwd-1', attributes={'givenName': 'changed-password-1'}))
             dn = self.delete_at_teardown[-1][0]
             # test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, 'Rc1234abcd'))
             # test_connection.bind()
@@ -186,16 +187,20 @@ class Test(unittest.TestCase):
             # test_connection.unbind()
             # self.assertTrue('changed-password-1' in connected_user)
 
-            new_password = 'Rc5678efgh'
+            if str is bytes:  # Python 2
+                new_password = unicode('Rc567812àèìòù', encoding='utf-8')
+            else:
+                new_password = 'Rc567812àèìòù'
             result = self.connection.extend.microsoft.modify_password(dn, new_password)
             self.assertEqual(result, True)
+
             # creates a second connection and tries to bind with the new password
             test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, new_password))
             test_connection.bind()
             connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
 
-            self.assertTrue('changed-password-1' in connected_user)
+            self.assertTrue('pwd-1' in connected_user)
 
     def test_modify_password_as_normal_user(self):
         if test_server_type == 'AD':

@@ -580,6 +580,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
         attributes.update({'objectClass': 'inetOrgPerson',
                            'sn': username})
     elif test_server_type == 'AD':
+        # attributes.update({'objectClass': ['user'],
         attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
                            'sn': username,
                            'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD

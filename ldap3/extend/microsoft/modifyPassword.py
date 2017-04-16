@@ -28,16 +28,16 @@ from ... import MODIFY_REPLACE, MODIFY_DELETE, MODIFY_ADD
 from ...utils.log import log, log_enabled, PROTOCOL
 from ...core.results import RESULT_SUCCESS
 from ...utils.dn import safe_dn
-
+from ...utils.conv import to_unicode
 
 def ad_modify_password(connection, user_dn, new_password, old_password, controls=None):
     # old password must be None to reset password with sufficient privileges
     if connection.check_names:
         user_dn = safe_dn(user_dn)
     if str is bytes:  # python2, converts to unicode
-        new_password = unicode(new_password)
+        new_password = to_unicode(new_password)
         if old_password:
-            old_password = unicode(old_password)
+            old_password = to_unicode(old_password)
 
     encoded_new_password = ('"%s"' % new_password).encode('utf-16-le')
 

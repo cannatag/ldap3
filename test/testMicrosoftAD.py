@@ -187,10 +187,7 @@ class Test(unittest.TestCase):
             # test_connection.unbind()
             # self.assertTrue('changed-password-1' in connected_user)
 
-            if str is bytes:  # Python 2
-                new_password = unicode('Rc567812àèìòù', encoding='utf-8')
-            else:
-                new_password = 'Rc567812àèìòù'
+            new_password = 'Rc567812àèìòù'
             result = self.connection.extend.microsoft.modify_password(dn, new_password)
             self.assertEqual(result, True)
 
@@ -204,9 +201,9 @@ class Test(unittest.TestCase):
 
     def test_modify_password_as_normal_user(self):
         if test_server_type == 'AD':
-            old_password = 'Ab1234cdef'
-            new_password = 'Gh5678ijkl'
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-2', password=old_password, attributes={'givenName': 'changed-password-2'}))
+            old_password = 'Ab123456cdef'
+            new_password = 'Gh567890ijkl'
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pwd-2', password=old_password, attributes={'givenName': 'changed-password-2'}))
             dn = self.delete_at_teardown[-1][0]
             # creates a second connection and tries to bind with the new password
             test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, old_password))
@@ -214,7 +211,7 @@ class Test(unittest.TestCase):
             self.assertTrue(test_connection.bound)
             connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
-            self.assertTrue('changed-password-2' in connected_user)
+            self.assertTrue('pwd-2' in connected_user)
 
             # changee the password
             result = self.connection.extend.microsoft.modify_password(dn, new_password, old_password)

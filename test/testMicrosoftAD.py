@@ -44,13 +44,14 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         if test_server_type == 'AD':
-            # drop_connection(self.connection, self.delete_at_teardown)
-            drop_connection(self.connection, False)
+            drop_connection(self.connection, self.delete_at_teardown)
             self.assertFalse(self.connection.bound)
 
     def test_search_extended_dn_ad(self):
         if test_server_type == 'AD':
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr], controls=[extended_dn_control(), show_deleted_control()])
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'srch-1', attributes={'givenName': 'srch-1'}))
+
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'srch-1)', attributes=[test_name_attr], controls=[extended_dn_control(), show_deleted_control()])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
             else:
@@ -64,12 +65,12 @@ class Test(unittest.TestCase):
 
     def test_search_deleted_objects_ad(self):
         if test_server_type == 'AD':
-            dn_to_delete, _ = add_user(self.connection, testcase_id, 'to-be-deleted-1', attributes={'givenName': 'to-be-deleted-1'})
+            dn_to_delete, _ = add_user(self.connection, testcase_id, 'del-1', attributes={'givenName': 'del-1'})
             sleep(1)
             self.connection.delete(dn_to_delete)
             sleep(1)
             result = self.connection.search(search_base=test_root_partition,
-                                            search_filter='(&(isDeleted=TRUE)(cn=*' + testcase_id + '*deleted-1*))',
+                                            search_filter='(&(isDeleted=TRUE)(cn=*' + testcase_id + '*del-1*))',
                                             search_scope=SUBTREE,
                                             attributes=[],
                                             controls=[show_deleted_control(criticality=True)])
@@ -199,35 +200,35 @@ class Test(unittest.TestCase):
 
             self.assertTrue('pwd-1' in connected_user)
 
-    def test_modify_password_as_normal_user(self):
-        if test_server_type == 'AD':
-            old_password = 'Ab123456cdef'
-            new_password = 'Gh567890ijkl'
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pwd-2', password=old_password, attributes={'givenName': 'changed-password-2'}))
-            dn = self.delete_at_teardown[-1][0]
-            # creates a second connection and tries to bind with the new password
-            test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, old_password))
-            test_connection.bind()
-            self.assertTrue(test_connection.bound)
-            connected_user = test_connection.extend.standard.who_am_i()
-            test_connection.unbind()
-            self.assertTrue('pwd-2' in connected_user)
-
-            # changee the password
-            result = self.connection.extend.microsoft.modify_password(dn, new_password, old_password)
-            self.assertEqual(result, True)
-
-            # tries to bind with the new password
-            test_connection.password =  new_password
-            test_connection.bind()
-            connected_user = test_connection.extend.standard.who_am_i()
-            test_connection.unbind()
-
-            self.assertTrue('changed-password-2' in connected_user)
+    # def test_modify_password_as_normal_user(self):
+    #     if test_server_type == 'AD':
+    #         old_password = 'Ab123456cdef'
+    #         new_password = 'Gh567890ijkl'
+    #         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pwd-2', password=old_password, attributes={'givenName': 'changed-password-2'}))
+    #         dn = self.delete_at_teardown[-1][0]
+    #         # creates a second connection and tries to bind with the new password
+    #         test_connection = get_connection(bind=False, use_ssl=True, authentication=SIMPLE, simple_credentials=(dn, old_password))
+    #         test_connection.bind()
+    #         self.assertTrue(test_connection.bound)
+    #         connected_user = test_connection.extend.standard.who_am_i()
+    #         test_connection.unbind()
+    #         self.assertTrue('pwd-2' in connected_user)
+    #
+    #         # changee the password
+    #         result = self.connection.extend.microsoft.modify_password(dn, new_password, old_password)
+    #         self.assertEqual(result, True)
+    #
+    #         # tries to bind with the new password
+    #         test_connection.password =  new_password
+    #         test_connection.bind()
+    #         connected_user = test_connection.extend.standard.who_am_i()
+    #         test_connection.unbind()
+    #
+    #         self.assertTrue('changed-password-2' in connected_user)
 
     def test_modify_existing_password_as_administrator(self):
         if test_server_type == 'AD':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'changed-password-1', attributes={'givenName': 'changed-password-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pwd-3', attributes={'givenName': 'pwd-3'}))
             dn = self.delete_at_teardown[-1][0]
             new_password = 'Rc56789efgh'
             result = self.connection.extend.microsoft.modify_password(dn, new_password)
@@ -237,11 +238,11 @@ class Test(unittest.TestCase):
             test_connection.bind()
             connected_user = test_connection.extend.standard.who_am_i()
             test_connection.unbind()
-            # self.assertTrue('testuno' in connected_user)
+            self.assertTrue('pwd-3' in connected_user)
 
-    def test_search_with_auto_range(self):
-        user_dns = []
-        if test_server_type == 'AD':
+    # def test_search_with_auto_range(self):
+    #     if test_server_type == 'AD':
+            # user_dns = []
             # for i in range(0, 6999):
             #     try:
             #         user_dn, _ = add_user(self.connection, '', 'user-' + str(i).zfill(4), attributes={'givenName': 'givenname-' + str(i).zfill(4)})
@@ -252,9 +253,9 @@ class Test(unittest.TestCase):
             #         #    raise
             #         pass
             # self.connection.extend.microsoft.add_members_to_groups(user_dns, 'CN=testgrp,OU=test,DC=AD2012,DC=LAB', fix=True)
-            print(self.connection.auto_range)
-            self.connection.auto_range = False
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=testgrp)', attributes=[test_name_attr, 'member'])
-            print(result)
-            print(self.connection.response[0]['attributes'].keys())
-            print (len(self.connection.response[0]['attributes']['member']))
+            # print(self.connection.auto_range)
+            # self.connection.auto_range = False
+            # result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=testgrp)', attributes=[test_name_attr, 'member'])
+            # print(result)
+            # print(self.connection.response[0]['attributes'].keys())
+            # print (len(self.connection.response[0]['attributes']['member']))

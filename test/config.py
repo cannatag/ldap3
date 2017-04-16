@@ -65,7 +65,7 @@ test_lazy_connection = False
 
 # ******** test TRAVIS configuration
 # location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
-location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
+# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
 # ********
 
 if 'TRAVIS,' in location:
@@ -115,7 +115,7 @@ if 'TRAVIS,' in location:
         test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
         test_name_attr = 'cn'  # naming attribute for test objects
         test_int_attr = 'logonCount'
-        test_multivalued_str_attribute = 'description'
+        test_multivalued_str_attribute = 'carLicense'
         test_singlevalued_attribute = 'street'
         test_server_context = ''  # used in novell eDirectory extended operations
         test_server_edir_name = ''  # used in novell eDirectory extended operations
@@ -215,7 +215,7 @@ elif location == 'ELITE10GC-AD':
     test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'logonCount'
-    test_multivalued_str_attribute = 'description'
+    test_multivalued_str_attribute = 'carLicense'
     test_singlevalued_attribute = 'street'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
@@ -314,7 +314,7 @@ elif location == 'W10GC9227-AD':
     test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'logonCount'
-    test_multivalued_str_attribute = 'description'
+    test_multivalued_str_attribute = 'carLicense'
     test_singlevalued_attribute = 'street'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations

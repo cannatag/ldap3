@@ -215,7 +215,7 @@ class Test(unittest.TestCase):
         writable_entry[test_multivalued_str_attribute].add('added-givenname-1')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
-        self.assertTrue('givenname-1' in writable_entry.givenName)
+        self.assertTrue('givenname-1' in writable_entry[test_multivalued_str_attribute])
         self.assertTrue('added-givenname-1' in writable_entry[test_multivalued_str_attribute])
         self.assertEqual(len(writable_entry[test_multivalued_str_attribute]), 2)
         self.compare_entries(read_only_entry, writable_entry)
@@ -234,39 +234,39 @@ class Test(unittest.TestCase):
     def test_search_and_add_values_to_existing_multi_value(self):
         read_only_entry = self.get_entry('mod-1')
         writable_entry = read_only_entry.entry_writable('inetorgperson')
-        writable_entry.givenname.add('added-givenname-1')
-        writable_entry.givenname.add('added-givenname-2')
+        writable_entry[test_multivalued_str_attribute].add('added-givenname-1')
+        writable_entry[test_multivalued_str_attribute].add('added-givenname-2')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
-        self.assertTrue('givenname-1' in writable_entry.givenName)
-        self.assertTrue('added-givenname-1' in writable_entry.givenName)
-        self.assertTrue('added-givenname-2' in writable_entry.givenName)
-        self.assertEqual(len(writable_entry.givenname), 3)
+        self.assertTrue('givenname-1' in writable_entry[test_multivalued_str_attribute])
+        self.assertTrue('added-givenname-1' in writable_entry[test_multivalued_str_attribute])
+        self.assertTrue('added-givenname-2' in writable_entry[test_multivalued_str_attribute])
+        self.assertEqual(len(writable_entry[test_multivalued_str_attribute]), 3)
         self.compare_entries(read_only_entry, writable_entry)
 
     def test_search_and_implicit_add_values_to_existing_multi_value(self):
         read_only_entry = self.get_entry('mod-1')
         writable_entry = read_only_entry.entry_writable('inetorgperson')
-        writable_entry.givenname += 'implicit-added-givenname-1'
-        writable_entry.givenname += 'implicit-added-givenname-2'
+        writable_entry[test_multivalued_str_attribute] += 'implicit-added-givenname-1'
+        writable_entry[test_multivalued_str_attribute] += 'implicit-added-givenname-2'
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
-        self.assertTrue('givenname-1' in writable_entry.givenName)
-        self.assertTrue('implicit-added-givenname-1' in writable_entry.givenName)
-        self.assertTrue('implicit-added-givenname-2' in writable_entry.givenName)
-        self.assertEqual(len(writable_entry.givenname), 3)
+        self.assertTrue('givenname-1' in writable_entry[test_multivalued_str_attribute])
+        self.assertTrue('implicit-added-givenname-1' in writable_entry[test_multivalued_str_attribute])
+        self.assertTrue('implicit-added-givenname-2' in writable_entry[test_multivalued_str_attribute])
+        self.assertEqual(len(writable_entry[test_multivalued_str_attribute]), 3)
         self.compare_entries(read_only_entry, writable_entry)
 
     def test_search_and_add_values_from_sequence_to_existing_multi_value(self):
         read_only_entry = self.get_entry('mod-1')
         writable_entry = read_only_entry.entry_writable('inetorgperson')
-        writable_entry.givenname.add(['added-givenname-1', 'added-givenname-2'])
+        writable_entry[test_multivalued_str_attribute].add(['added-givenname-1', 'added-givenname-2'])
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
-        self.assertTrue('givenname-1' in writable_entry.givenName)
-        self.assertTrue('added-givenname-1' in writable_entry.givenName)
-        self.assertTrue('added-givenname-2' in writable_entry.givenName)
-        self.assertEqual(len(writable_entry.givenname), 3)
+        self.assertTrue('givenname-1' in writable_entry[test_multivalued_str_attribute])
+        self.assertTrue('added-givenname-1' in writable_entry[test_multivalued_str_attribute])
+        self.assertTrue('added-givenname-2' in writable_entry[test_multivalued_str_attribute])
+        self.assertEqual(len(writable_entry[test_multivalued_str_attribute]), 3)
         self.compare_entries(read_only_entry, writable_entry)
 
     def test_search_and_implicit_add_values_from_sequence_to_existing_multi_value(self):

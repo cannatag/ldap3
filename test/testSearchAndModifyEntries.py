@@ -107,8 +107,8 @@ class Test(unittest.TestCase):
         #     self.assertFalse(entry1._state.read_time is entry2._state.read_time)
 
     def test_search_and_delete_entry(self):
-        add_user(self.connection, testcase_id, 'search-and-delete', attributes={'givenName': 'givenname-delete', test_int_attr: 0})
-        read_only_entry = self.get_entry('search-and-delete')
+        add_user(self.connection, testcase_id, 'del1', attributes={'givenName': 'givenname-delete'})
+        read_only_entry = self.get_entry('del1')
         self.assertEqual(read_only_entry.entry_status, STATUS_READ)
         writable_entry = read_only_entry.entry_writable('inetorgperson')
         self.assertEqual(writable_entry.entry_status, STATUS_WRITABLE)
@@ -119,7 +119,7 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
         counter = 20
         while counter > 0:  # waits for at maximum 20 times - delete operation can take some time to complete
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-and-delete)', attributes=[test_name_attr, 'givenName'])
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'del1)', attributes=[test_name_attr, 'givenName'])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
                 entries = self.connection._get_entries(response)

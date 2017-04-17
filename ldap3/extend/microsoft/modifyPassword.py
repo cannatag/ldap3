@@ -30,6 +30,7 @@ from ...core.results import RESULT_SUCCESS
 from ...utils.dn import safe_dn
 from ...utils.conv import to_unicode
 
+
 def ad_modify_password(connection, user_dn, new_password, old_password, controls=None):
     # old password must be None to reset password with sufficient privileges
     if connection.check_names:

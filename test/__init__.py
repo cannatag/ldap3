@@ -551,12 +551,17 @@ def get_operation_result(connection, operation_result):
     return result
 
 
-def add_user(connection, batch_id, username, password=None, attributes=None):
-    if password is None:
-        password = 'Rc2597pfop'
+def attributes_to_bytes(attributes):
+    return {
+        key: value.encode("UTF8") for key, value in attributes.items()
+    }
 
+
+def get_add_user_attributes(batch_id, username, password=None, attributes=None):
     if attributes is None:
         attributes = dict()
+    else:
+        attributes = dict(attributes)
 
     if test_server_type == 'EDIR':
         attributes.update({'objectClass': 'inetOrgPerson',
@@ -573,6 +578,17 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
         attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
+    return attributes
+
+
+def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):
+    if password is None:
+        password = 'Rc2597pfop'
+
+    attributes = get_add_user_attributes(batch_id, username, password, attributes)
+    if test_bytes:
+        attributes = attributes_to_bytes(attributes)
+
     dn = generate_dn(test_base, batch_id, username)
     operation_result = connection.add(dn, None, attributes)
     result = get_operation_result(connection, operation_result)
@@ -582,11 +598,20 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
     return dn, result
 
 
-def add_group(connection, batch_id, groupname, members=None):
+def get_add_group_attributes(members):
+    return {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]}
+
+
+def add_group(connection, batch_id, groupname, members=None, test_bytes=False):
     if members is None:
         members = list()
+
+    attributes = get_add_group_attributes(members)
+    if test_bytes:
+        attributes = attributes_to_bytes(attributes)
+
     dn = generate_dn(test_base, batch_id, groupname)
-    operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
+    operation_result = connection.add(dn, [], attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
         raise Exception('unable to create group ' + groupname + ': ' + str(result))

@@ -44,3 +44,8 @@ class Test(unittest.TestCase):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-1'))
 
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
+
+    def test_add_bytes(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-1', test_bytes=True))
+
+        self.assertEqual('success', self.delete_at_teardown[0][1]['description'])

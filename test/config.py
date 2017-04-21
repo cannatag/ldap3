@@ -26,8 +26,8 @@ from os.path import join
 from random import SystemRandom
 from tempfile import gettempdir
 
-from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, \
-    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS
+from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, STRING_TYPES,\
+    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
@@ -65,7 +65,7 @@ test_lazy_connection = False
 
 # ******** test TRAVIS configuration
 # location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
-# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
+location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
 # ********
 
 if 'TRAVIS,' in location:
@@ -572,7 +572,10 @@ def get_operation_result(connection, operation_result):
 def attributes_to_bytes(attributes):
     byte_attributes = dict()
     for key, value in attributes.items():
-        byte_attributes[key] = value.encode('utf-8')
+        if isinstance(value, SEQUENCE_TYPES):
+            byte_attributes[key] = [v.encode('utf-8') if isinstance(v, STRING_TYPES) else v for v in value if isinstance(v, STRING_TYPES)]
+        else:
+            byte_attributes[key] = value.encode('utf-8') if isinstance(value, STRING_TYPES) else value
 
     return byte_attributes
 

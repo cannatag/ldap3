@@ -65,7 +65,7 @@ from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuth
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
     LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError
 
-from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
+from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json, to_unicode
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
 from ..utils.dn import safe_dn
 
@@ -872,6 +872,7 @@ class Connection(object):
             if not object_class_attr_name:
                 object_class_attr_name = 'objectClass'
 
+            attr_object_class = [to_unicode(object_class) for object_class in attr_object_class]  # converts objectclass to unicode in case of bytes value
             attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, parm_object_class + attr_object_class, [])  # remove duplicate ObjectClasses
 
             if not attributes[object_class_attr_name]:
@@ -883,7 +884,7 @@ class Connection(object):
             if self.server and self.server.schema and self.check_names:
                 for object_class_name in attributes[object_class_attr_name]:
                     if object_class_name not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and object_class_name not in self.server.schema.object_classes:
-                        raise LDAPObjectClassError('invalid object class ' + object_class_name)
+                        raise LDAPObjectClassError('invalid object class ' + str(object_class_name))
 
                 for attribute_name in attributes:
                     if ';' in attribute_name:  # remove tags for checking

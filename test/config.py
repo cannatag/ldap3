@@ -569,7 +569,39 @@ def get_operation_result(connection, operation_result):
     return result
 
 
-def add_user(connection, batch_id, username, password=None, attributes=None):
+def attributes_to_bytes(attributes):
+    byte_attributes = dict()
+    for key, value in attributes.items():
+        byte_attributes[key] = value.encode('utf-8')
+
+    return byte_attributes
+
+
+def get_add_user_attributes(batch_id, username, password=None, attributes=None):
+    if attributes is None:
+        attributes = dict()
+    else:
+        attributes = dict(attributes)
+
+    if test_server_type == 'EDIR':
+        attributes.update({'objectClass': 'inetOrgPerson',
+                           'sn': username})
+    elif test_server_type == 'AD':
+        attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
+                           'sn': username,
+                           'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD
+                           'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,
+                           'displayName': (batch_id[1: -1] + username)[-20:],
+                           'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
+                           'userAccountControl': 512})
+    elif test_server_type == 'SLAPD':
+        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
+    else:
+        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
+    return attributes
+
+
+def add_user_old(connection, batch_id, username, password=None, attributes=None):
     if password is None:
         password = 'Rc2597pfop'
 
@@ -601,11 +633,49 @@ def add_user(connection, batch_id, username, password=None, attributes=None):
     return dn, result
 
 
-def add_group(connection, batch_id, groupname, members=None):
+def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):
+    if password is None:
+        password = 'Rc2597pfop'
+
+    attributes = get_add_user_attributes(batch_id, username, password, attributes)
+    if test_bytes:
+        attributes = attributes_to_bytes(attributes)
+
+    dn = generate_dn(test_base, batch_id, username)
+    operation_result = connection.add(dn, None, attributes)
+    result = get_operation_result(connection, operation_result)
+    if not result['description'] == 'success':
+        raise Exception('unable to create user ' + dn + ': ' + str(result))
+
+    return dn, result
+
+
+def get_add_group_attributes(members):
+    return {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]}
+
+
+def add_group_old(connection, batch_id, groupname, members=None):
     if members is None:
         members = list()
     dn = generate_dn(test_base, batch_id, groupname)
     operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
+    result = get_operation_result(connection, operation_result)
+    if not result['description'] == 'success':
+        raise Exception('unable to create group ' + groupname + ': ' + str(result))
+
+    return dn, result
+
+
+def add_group(connection, batch_id, groupname, members=None, test_bytes=False):
+    if members is None:
+        members = list()
+
+    attributes = get_add_group_attributes(members)
+    if test_bytes:
+        attributes = attributes_to_bytes(attributes)
+
+    dn = generate_dn(test_base, batch_id, groupname)
+    operation_result = connection.add(dn, [], attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
         raise Exception('unable to create group ' + groupname + ': ' + str(result))

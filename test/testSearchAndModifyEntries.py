@@ -234,8 +234,8 @@ class Test(unittest.TestCase):
     def test_search_and_add_values_to_existing_multi_value(self):
         read_only_entry = self.get_entry('mod-1')
         writable_entry = read_only_entry.entry_writable('inetorgperson')
-        writable_entry[test_multivalued_str_attribute].add('added-givenname-1')
-        writable_entry[test_multivalued_str_attribute].add('added-givenname-2')
+        writable_entry.givenname.add('added-givenname-1')
+        writable_entry.givenname.add('added-givenname-2')
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
         self.assertTrue('givenname-1' in writable_entry[test_multivalued_str_attribute])
@@ -247,8 +247,8 @@ class Test(unittest.TestCase):
     def test_search_and_implicit_add_values_to_existing_multi_value(self):
         read_only_entry = self.get_entry('mod-1')
         writable_entry = read_only_entry.entry_writable('inetorgperson')
-        writable_entry[test_multivalued_str_attribute] += 'implicit-added-givenname-1'
-        writable_entry[test_multivalued_str_attribute] += 'implicit-added-givenname-2'
+        writable_entry.givenname += 'implicit-added-givenname-1'
+        writable_entry.givenname += 'implicit-added-givenname-2'
         result = writable_entry.entry_commit_changes()
         self.assertTrue(result)
         self.assertTrue('givenname-1' in writable_entry[test_multivalued_str_attribute])

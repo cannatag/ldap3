@@ -65,7 +65,7 @@ test_lazy_connection = False
 
 # ******** test TRAVIS configuration
 # location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
-location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
+# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
 # ********
 
 if 'TRAVIS,' in location:
@@ -87,8 +87,8 @@ if 'TRAVIS,' in location:
         test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
         test_name_attr = 'cn'  # naming attribute for test objects
         test_int_attr = 'loginGraceLimit'
-        test_multivalued_str_attribute = 'givenname'
-        test_singlevalued_attribute = 'LoginDisabled'
+        test_multivalued_attribute = 'givenname'
+        test_singlevalued_attribute = 'generationQualifier'
         test_user = 'cn=testLAB,o=resources'  # the user that performs the tests
         test_password = 'Rc1234pfop'  # user password
         test_secondary_user = 'cn=testLAB,o=resources'
@@ -115,7 +115,7 @@ if 'TRAVIS,' in location:
         test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
         test_name_attr = 'cn'  # naming attribute for test objects
         test_int_attr = 'logonCount'
-        test_multivalued_str_attribute = 'carLicense'
+        test_multivalued_attribute = 'carLicense'
         test_singlevalued_attribute = 'street'
         test_server_context = ''  # used in novell eDirectory extended operations
         test_server_edir_name = ''  # used in novell eDirectory extended operations
@@ -145,7 +145,7 @@ if 'TRAVIS,' in location:
         test_moved = 'ou=ldap3-moved,dc=demo1,dc=freeipa,dc=org'  # base context where objects are moved in ModifyDN operations
         test_name_attr = 'cn'  # naming attribute for test objects
         test_int_attr = 'gidNumber'
-        test_multivalued_str_attribute = 'givenname'
+        test_multivalued_attribute = 'givenname'
         test_singlevalued_attribute = 'employeeNumber'
         test_server_context = ''  # used in novell eDirectory extended operations
         test_server_edir_name = ''  # used in novell eDirectory extended operations
@@ -181,8 +181,8 @@ elif location == 'ELITE10GC-EDIR':
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'loginGraceLimit'
-    test_multivalued_str_attribute = 'givenname'
-    test_singlevalued_attribute = 'LoginDisabled'
+    test_multivalued_attribute = 'givenname'
+    test_singlevalued_attribute = 'generationQualifier'
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
     test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
     test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
@@ -215,7 +215,7 @@ elif location == 'ELITE10GC-AD':
     test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'logonCount'
-    test_multivalued_str_attribute = 'carLicense'
+    test_multivalued_attribute = 'carLicense'
     test_singlevalued_attribute = 'street'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
@@ -246,7 +246,7 @@ elif location == 'ELITE10GC-SLAPD':
     test_moved = 'ou=moved,ou=test,o=lab'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'gidNumber'
-    test_multivalued_str_attribute = 'givenname'
+    test_multivalued_attribute = 'givenname'
     test_singlevalued_attribute = 'employeeNumber'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
@@ -282,8 +282,8 @@ elif location == 'W10GC9227-EDIR':
     test_moved = 'ou=moved,o=test'  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'loginGraceLimit'
-    test_multivalued_str_attribute = 'givenname'
-    test_singlevalued_attribute = 'LoginDisabled'
+    test_multivalued_attribute = 'givenname'
+    test_singlevalued_attribute = 'generationQualifier'
     test_server_context = 'o=risorse'  # used in novell eDirectory extended operations
     test_server_edir_name = 'sl10'  # used in novell eDirectory extended operations
     test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
@@ -314,7 +314,7 @@ elif location == 'W10GC9227-AD':
     test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
     test_name_attr = 'cn'  # naming attribute for test objects
     test_int_attr = 'logonCount'
-    test_multivalued_str_attribute = 'carLicense'
+    test_multivalued_attribute = 'carLicense'
     test_singlevalued_attribute = 'street'
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations

@@ -25,7 +25,7 @@
 import unittest
 
 from ldap3 import ObjectDef, AttrDef, Reader
-from test.config import test_base, add_user, add_group, get_connection, drop_connection, random_id, test_server_type, test_multivalued_str_attribute, test_singlevalued_attribute
+from test.config import test_base, add_user, add_group, get_connection, drop_connection, random_id, test_server_type, test_multivalued_attribute, test_singlevalued_attribute
 
 testcase_id = ''
 
@@ -50,7 +50,7 @@ class Test(unittest.TestCase):
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
-        o += AttrDef(test_multivalued_str_attribute, 'Given Name', post_query=reverse)
+        o += AttrDef(test_multivalued_attribute, 'Given Name', post_query=reverse)
 
         query_text = 'Common Name:=' + testcase_id + 'abs-*'
         r = Reader(self.connection, o, test_base, query_text)
@@ -79,7 +79,7 @@ class Test(unittest.TestCase):
         ou = ObjectDef('inetOrgPerson')
         ou += AttrDef('cn', 'Common Name', post_query=reverse)
         ou += AttrDef('sn', 'Surname')
-        ou += AttrDef(test_multivalued_str_attribute, 'Given Name', post_query=raise_parentheses_rank)
+        ou += AttrDef(test_multivalued_attribute, 'Given Name', post_query=raise_parentheses_rank)
         ou += AttrDef('ACL')
         qu = 'Common Name: ' + testcase_id + 'abstract-member-*'
         ru = Reader(self.connection, ou, test_base, qu)
@@ -111,7 +111,7 @@ class Test(unittest.TestCase):
         ou = ObjectDef('inetOrgPerson')
         ou += AttrDef('cn', 'Common Name', pre_query=change)
         ou += AttrDef('sn', 'Surname')
-        ou += AttrDef(test_multivalued_str_attribute, 'Given Name')
+        ou += AttrDef(test_multivalued_attribute, 'Given Name')
         ou += AttrDef('ACL')
         qu = 'Common Name := bug'
         ru = Reader(self.connection, ou, test_base, qu)
@@ -158,7 +158,7 @@ class Test(unittest.TestCase):
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
-        o += AttrDef(test_multivalued_str_attribute, 'Given Name')
+        o += AttrDef(test_multivalued_attribute, 'Given Name')
 
         query_text = 'Common Name:=' + testcase_id + 'match-*'
         r = Reader(self.connection, o, test_base, query_text)
@@ -185,7 +185,7 @@ class Test(unittest.TestCase):
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
-        o += AttrDef(test_multivalued_str_attribute, 'Given Name')
+        o += AttrDef(test_multivalued_attribute, 'Given Name')
 
         query_text = 'Common Name:=' + testcase_id + 'match-*'
         r = Reader(self.connection, o, test_base, query_text)
@@ -201,13 +201,13 @@ class Test(unittest.TestCase):
         self.assertEqual(len(e), 0)
 
     def test_match_in_single_attribute(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={test_multivalued_str_attribute: ['givenname-1', 'givenname-1a']}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={test_multivalued_str_attribute: ['givenname-2', 'givenname-2a']}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={test_multivalued_str_attribute: ['givenname-3', 'givenname-3a']}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={test_multivalued_attribute: ['givenname-1', 'givenname-1a']}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={test_multivalued_attribute: ['givenname-2', 'givenname-2a']}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={test_multivalued_attribute: ['givenname-3', 'givenname-3a']}))
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
-        o += AttrDef(test_multivalued_str_attribute, 'Given Name')
+        o += AttrDef(test_multivalued_attribute, 'Given Name')
 
         query_text = 'Common Name:=' + testcase_id + 'match-*'
         r = Reader(self.connection, o, test_base, query_text)
@@ -223,13 +223,13 @@ class Test(unittest.TestCase):
         self.assertEqual(len(e), 0)
 
     def test_match_in_multiple_attribute(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={test_multivalued_str_attribute: ['givenname-1', 'givenname-1a'], 'street': '1a'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={test_multivalued_str_attribute: ['givenname-2', 'givenname-2a'], 'street': '3a'}))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={test_multivalued_str_attribute: ['givenname-3', 'givenname-3a'], 'street': '4a'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-1', attributes={test_multivalued_attribute: ['givenname-1', 'givenname-1a'], 'street': '1a'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-2', attributes={test_multivalued_attribute: ['givenname-2', 'givenname-2a'], 'street': '3a'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'match-3', attributes={test_multivalued_attribute: ['givenname-3', 'givenname-3a'], 'street': '4a'}))
         o = ObjectDef('inetOrgPerson')
         o += AttrDef('cn', 'Common Name')
         o += AttrDef('sn', 'Surname')
-        o += AttrDef(test_multivalued_str_attribute, 'Given Name')
+        o += AttrDef(test_multivalued_attribute, 'Given Name')
         o += AttrDef('street', 'Street')
 
         query_text = 'Common Name:=' + testcase_id + 'match-*'

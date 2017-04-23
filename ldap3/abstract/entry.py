@@ -97,7 +97,7 @@ class EntryState(object):
             self._initial_status = STATUS_WRITABLE
         if self.status == STATUS_VIRTUAL or (self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_VIRTUAL):  # checks if all mandatory attributes are present in new entries
             for attr in self.definition._attributes:
-                if self.definition._attributes[attr].mandatory:
+                if self.definition._attributes[attr].mandatory and attr not in get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF'):
                     if (attr not in self.attributes or self.attributes[attr].virtual) and attr not in self.changes:
                         self.status = STATUS_MANDATORY_MISSING
                         break
@@ -391,6 +391,11 @@ class Entry(EntryBase):
 
 
 class WritableEntry(EntryBase):
+    def __setitem__(self, key, value):
+        if value is not Ellipsis:  # hack for using implicit operators in writable attributes
+            self.__setattr__(key, value)
+
+
     def __setattr__(self, item, value):
         if item == '_state' and isinstance(value, EntryState):
             self.__dict__['_state'] = value

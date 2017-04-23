@@ -106,7 +106,7 @@ if 'TRAVIS,' in location:
         test_ntlm_user = 'xxx\\yyy'
         test_ntlm_password = 'zzz'
         test_logging_filename = 'ldap3.log'
-        test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net', 'WIN1.FOREST.LAB']
+        test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net']
     elif test_server_type == 'AD':
         test_server = 'labldap01.cloudapp.net'
         test_domain_name = 'AD2012.LAB'  # Active Directory Domain name
@@ -122,12 +122,13 @@ if 'TRAVIS,' in location:
         test_user = 'CN=Giovanni,CN=Users,' + test_root_partition  # the user that performs the tests
         test_password = 'Rc888888pfop'  # user password
         test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
-        test_secondary_password = 'Rc9999pfop'  # user password
-        test_sasl_user = 'CN=testLAB,CN=Users,' + test_root_partition
-        test_sasl_password = 'Rc9999pfop'
+        test_secondary_password = 'Rc777777pfop'  # user password
+        # test_sasl_user = 'testLAB@' + test_domain_name
+        test_sasl_user = test_domain_name.split('.')[0] + '\\testLAB'
+        test_sasl_password = 'Rc777777pfop'
         test_sasl_user_dn = 'cn=testLAB,o=resources'
         test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
-        test_sasl_secondary_password = 'Rc9999pfop'
+        test_sasl_secondary_password = 'Rc777777pfop'
         test_sasl_secondary_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
         test_sasl_realm = None
         test_ca_cert_file = 'local-forest-lab-ca.pem'

@@ -41,7 +41,15 @@ class Test(unittest.TestCase):
         else:
             bound_dn = connection.extend.standard.who_am_i()
 
-        self.assertTrue(test_secondary_user in bound_dn)
+        if bound_dn:
+            if '\\' in bound_dn:  # for Active Directory
+                domain, _, name = bound_dn.replace('u:', '').partition('\\')
+                self.assertTrue(domain in test_secondary_user)
+                self.assertTrue(name in test_secondary_user)
+            else:
+                self.assertTrue(test_secondary_user in bound_dn)
+        else:
+            self.fail('no user dn in extended response')
 
         drop_connection(connection)
         self.assertFalse(connection.bound)
@@ -56,7 +64,12 @@ class Test(unittest.TestCase):
             bound_dn = connection.extend.standard.who_am_i()
 
         if bound_dn:
-            self.assertTrue(test_secondary_user in bound_dn)
+            if '\\' in bound_dn:  # for Active Directory
+                domain, _, name = bound_dn.replace('u:', '').partition('\\')
+                self.assertTrue(domain in test_secondary_user)
+                self.assertTrue(name in test_secondary_user)
+            else:
+                self.assertTrue(test_secondary_user in bound_dn)
         else:
             self.fail('no user dn in extended response')
 
@@ -64,28 +77,29 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_bind_sasl_digest_md5_to_secondary_sasl_user(self):
-        connection = get_connection(bind=False, authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))
-        connection.open()
-        connection.bind()
-        self.assertTrue(connection.bound)
-        if test_server_type == 'EDIR':
-            connected_user = connection.extend.novell.get_bind_dn()
-        else:
-            connected_user = str(connection.extend.standard.who_am_i())
-        self.assertEqual(connected_user, test_sasl_user_dn)
-
-        if connection.rebind(authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_secondary_user, test_sasl_secondary_password, None)):
+        if test_server_type != 'AD':
+            connection = get_connection(bind=False, authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))
+            connection.open()
+            connection.bind()
+            self.assertTrue(connection.bound)
             if test_server_type == 'EDIR':
                 connected_user = connection.extend.novell.get_bind_dn()
             else:
-                connected_user = connection.extend.standard.who_am_i()
+                connected_user = str(connection.extend.standard.who_am_i())
+            self.assertEqual(connected_user, test_sasl_user_dn)
 
-            self.assertEqual(connected_user, test_sasl_secondary_user_dn)
-        else:
-            self.fail('secondary user sasl authentication failed')
+            if connection.rebind(authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_secondary_user, test_sasl_secondary_password, None)):
+                if test_server_type == 'EDIR':
+                    connected_user = connection.extend.novell.get_bind_dn()
+                else:
+                    connected_user = connection.extend.standard.who_am_i()
 
-        drop_connection(connection)
-        self.assertFalse(connection.bound)
+                self.assertEqual(connected_user, test_sasl_secondary_user_dn)
+            else:
+                self.fail('secondary user sasl authentication failed')
+
+            drop_connection(connection)
+            self.assertFalse(connection.bound)
 
     def test_ntlm(self):
         if test_server_type == 'AD':

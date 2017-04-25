@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_bytes(self):
         single = make_bytes('àèìòù', 'utf-8')
@@ -87,7 +87,7 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_byte_values(self):
         if str is not bytes:  # integer list to bytes works only in Python 3
@@ -98,7 +98,7 @@ class Test(unittest.TestCase):
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_unicode_literal(self):
         single = make_bytes(u'\u00e0\u00e8\u00ec\u00f2\u00f9', 'utf-8')
@@ -108,7 +108,7 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_unicode_name(self):
         if str is not bytes:  # works only in Python 3
@@ -119,7 +119,7 @@ class Test(unittest.TestCase):
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_bytearray(self):
         single = make_bytearray('àèìòù', 'utf-8')
@@ -129,7 +129,7 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_bytearray_values(self):
         single = make_bytearray([195, 160, 195, 168, 195, 172, 195, 178, 195, 185])
@@ -139,7 +139,7 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_bytearray_unicode_literal(self):
         single = make_bytearray(u'\u00e0\u00e8\u00ec\u00f2\u00f9', 'utf-8')
@@ -149,7 +149,7 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_add_operation_from_bytearray_unicode_name(self):
         if str is not bytes:  # works only in python 3
@@ -160,7 +160,7 @@ class Test(unittest.TestCase):
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_compare_true_operation_with_bytes(self):
         single = make_bytes('àèìòù', 'utf-8')
@@ -196,11 +196,11 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_bytes(self):
         single = make_bytes('àèìòù', 'utf-8')
@@ -212,11 +212,11 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_byte_values(self):
         if str is not bytes:  # integer list to bytes works only in Python 3
@@ -229,11 +229,11 @@ class Test(unittest.TestCase):
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_unicode_literal(self):
         single = make_bytes(u'\u00e0\u00e8\u00ec\u00f2\u00f9', 'utf-8')
@@ -245,11 +245,11 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_unicode_name(self):
         if str is not bytes:  # works only in Python 3
@@ -262,11 +262,11 @@ class Test(unittest.TestCase):
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_bytearray(self):
         single = make_bytearray('àèìòù', 'utf-8')
@@ -278,11 +278,11 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_bytearray_values(self):
         single = make_bytearray([195, 160, 195, 168, 195, 172, 195, 178, 195, 185])
@@ -294,11 +294,11 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_bytearray_unicode_literal(self):
         single = make_bytearray(u'\u00e0\u00e8\u00ec\u00f2\u00f9', 'utf-8')
@@ -310,11 +310,11 @@ class Test(unittest.TestCase):
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_modify_operation_from_bytearray_unicode_name(self):
         if str is not bytes:  # works only in python 3
@@ -327,11 +327,11 @@ class Test(unittest.TestCase):
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
             self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi + multi_mod)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
     def test_search_operation_from_bytes_literal(self):
         single = b'abc'
@@ -345,7 +345,7 @@ class Test(unittest.TestCase):
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_search_operation_from_bytes(self):
         single = make_bytes('àèìòù', 'utf-8')
@@ -359,7 +359,7 @@ class Test(unittest.TestCase):
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_search_operation_from_byte_values(self):
         if str is not bytes:  # integer list to bytes works only in Python 3
@@ -371,7 +371,7 @@ class Test(unittest.TestCase):
             self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_search_operation_from_unicode_literal(self):
         single = make_bytes(u'\u00e0\u00e8\u00ec\u00f2\u00f9', 'utf-8')
@@ -385,7 +385,7 @@ class Test(unittest.TestCase):
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_search_operation_from_unicode_name(self):
         if str is not bytes:  # works only in Python 3
@@ -400,7 +400,8 @@ class Test(unittest.TestCase):
             self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
+
 
     def test_search_operation_from_bytearray(self):
         single = make_bytearray('àèìòù', 'utf-8')
@@ -414,7 +415,7 @@ class Test(unittest.TestCase):
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_search_operation_from_bytearray_values(self):
         single = make_bytearray([195, 160, 195, 168, 195, 172, 195, 178, 195, 185])
@@ -428,7 +429,7 @@ class Test(unittest.TestCase):
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_search_operation_from_bytearray_unicode_literal(self):
         single = make_bytearray(u'\u00e0\u00e8\u00ec\u00f2\u00f9', 'utf-8')
@@ -442,7 +443,7 @@ class Test(unittest.TestCase):
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-        self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+        self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
 
     def test_search_operation_from_bytearray_unicode_name(self):
         if str is not bytes:  # works only in python 3
@@ -454,4 +455,4 @@ class Test(unittest.TestCase):
             self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
-            self.assertEqual(self.connection.response[0]['raw_attributes'][test_multivalued_attribute], multi)
+            self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))

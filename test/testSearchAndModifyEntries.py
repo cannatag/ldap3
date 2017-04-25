@@ -139,7 +139,7 @@ class Test(unittest.TestCase):
     def test_search_and_add_value_to_existing_single_value(self):
         read_only_entry = self.get_entry('mod-2')
         writable_entry = read_only_entry.entry_writable('inetorgperson')
-        writable_entry[test_singlevalued_attribute].add('telephone')
+        writable_entry[test_singlevalued_attribute].add('single')
         writable_entry.entry_commit_changes()
         cursor = writable_entry.entry_cursor
         if not cursor.failed:
@@ -150,7 +150,7 @@ class Test(unittest.TestCase):
     def test_search_and_implicit_add_value_to_existing_single_value(self):
         read_only_entry = self.get_entry('mod-2')
         writable_entry = read_only_entry.entry_writable('inetorgperson')
-        writable_entry[test_singlevalued_attribute] += 'telephone'
+        writable_entry[test_singlevalued_attribute] += 'single'
         writable_entry.entry_commit_changes()
         cursor = writable_entry.entry_cursor
         if not cursor.failed:
@@ -179,7 +179,7 @@ class Test(unittest.TestCase):
             self.connection.raise_exceptions = True
             read_only_entry = self.get_entry('mod-2')
             writable_entry = read_only_entry.entry_writable('inetorgperson')
-            writable_entry[test_singlevalued_attribute] += 'telephone'
+            writable_entry[test_singlevalued_attribute] += 'single'
             try:
                 writable_entry.entry_commit_changes()
             except (LDAPConstraintViolationResult, LDAPAttributeOrValueExistsResult):

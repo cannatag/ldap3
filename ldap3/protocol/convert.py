@@ -68,6 +68,7 @@ def partial_attribute_to_dict(modification):
     except PyAsn1Error:  # invalid encoding, return bytes value
         return {'type': str(modification['type']), 'value': [bytes(value) for value in modification['vals']]}
 
+
 def change_to_dict(change):
     return {'operation': int(change['operation']), 'attribute': partial_attribute_to_dict(change['modification'])}
 

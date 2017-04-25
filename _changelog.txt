@@ -11,7 +11,9 @@
     - testcase_id generated randomly for each test
     - added ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF parmeter to exclude some attribute from automatic populate of ObjectDef in Abstract Layer (helpful for AD)
     - added IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF parmeter to exclude some attribute from mandatory attribute list in ObjectDef in Abstract Layer (helpful for AD)
-    - fixed error when using implicit assigning in WritabeEntry
+    - fixed error when using implicit assigning in WritableEntry
+    - added LDAPInvalidValueError Exception
+    - in Python 3 byte filter are converted to unicode before parsing
 
 - 2.2.2 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)

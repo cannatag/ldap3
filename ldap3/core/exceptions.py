@@ -455,6 +455,10 @@ class LDAPInvalidDereferenceAliasesError(LDAPExceptionError, ValueError):
     pass
 
 
+class LDAPInvalidValueError(LDAPExceptionError, ValueError):
+    pass
+
+
 class LDAPControlError(LDAPExceptionError, ValueError):
     pass
 

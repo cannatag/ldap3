@@ -63,7 +63,7 @@ from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
-    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError
+    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError
 
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json, to_unicode
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
@@ -808,6 +808,9 @@ class Connection(object):
             if self.server.schema.attribute_types and attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
                 raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
+        if isinstance(value, SEQUENCE_TYPES):  # value can't be a sequence
+            raise LDAPInvalidValueError('value cannot be a sequence')
+
         with self.lock:
             self._fire_deferred()
             request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None)
@@ -968,10 +971,9 @@ class Connection(object):
         """
         Modify attributes of entry
 
-        - Changes is a dictionary in the form {'attribute1': change),
-        'attribute2': [change, change, ...], ...}
-        change is (operation, [value1, value2, ...])
-        - Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
+        - changes is a dictionary in the form {'attribute1': change), 'attribute2': [change, change, ...], ...}
+        - change is (operation, [value1, value2, ...])
+        - operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY operation via <%s>', self)

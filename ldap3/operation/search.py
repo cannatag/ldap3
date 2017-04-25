@@ -162,6 +162,8 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
 
 
 def parse_filter(search_filter, schema, auto_escape, auto_encode):
+    if str != bytes and isinstance(search_filter, bytes):  # python 3 with byte filter
+        search_filter = to_unicode(search_filter)
     search_filter = search_filter.strip()
     if search_filter and search_filter.count('(') == search_filter.count(')') and search_filter.startswith('(') and search_filter.endswith(')'):
         state = SEARCH_OPEN_OR_CLOSE

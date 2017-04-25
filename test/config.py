@@ -573,10 +573,13 @@ def get_operation_result(connection, operation_result):
 def attributes_to_bytes(attributes):
     byte_attributes = dict()
     for key, value in attributes.items():
-        if isinstance(value, SEQUENCE_TYPES):
-            byte_attributes[key] = [v.encode('utf-8') if isinstance(v, STRING_TYPES) else v for v in value if isinstance(v, STRING_TYPES)]
+        if str is bytes: # Python 2
+            byte_attributes[key] = value
         else:
-            byte_attributes[key] = value.encode('utf-8') if isinstance(value, STRING_TYPES) else value
+            if isinstance(value, SEQUENCE_TYPES):
+                byte_attributes[key] = [v.encode('utf-8') if isinstance(v, STRING_TYPES) else v for v in value]
+            else:
+                byte_attributes[key] = value.encode('utf-8') if isinstance(value, STRING_TYPES) else value
 
     return byte_attributes
 
@@ -649,6 +652,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
     operation_result = connection.add(dn, None, attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
+        print(attributes)
         raise Exception('unable to create user ' + dn + ': ' + str(result))
 
     return dn, result

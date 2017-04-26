@@ -49,9 +49,9 @@ class Test(unittest.TestCase):
 
     def test_search_extended_dn_ad(self):
         if test_server_type == 'AD':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'srch-1', attributes={'givenName': 'srch-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'sea-1'}))
 
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'srch-1)', attributes=[test_name_attr], controls=[extended_dn_control(), show_deleted_control()])
+            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', attributes=[test_name_attr], controls=[extended_dn_control(), show_deleted_control()])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
             else:

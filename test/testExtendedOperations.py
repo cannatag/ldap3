@@ -39,14 +39,14 @@ class Test(unittest.TestCase):
         testcase_id = random_id()
         self.connection = get_connection(check_names=True)
         self.delete_at_teardown = []
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-2'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-3'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-4'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-5'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-6'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-7'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-8'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-3'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-4'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-5'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-6'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-7'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-8'))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
@@ -70,15 +70,15 @@ class Test(unittest.TestCase):
             result = self.connection.extend.novell.get_bind_dn()
             self.assertTrue(test_user in result)
 
-    def test_paged_search_accumulator(self):
+    def test_pag_accumulator(self):
         if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
-            responses = self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
+            responses = self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'pag-*)', generator=False, paged_size=3)
             self.assertEqual(len(responses), 8)
 
-    def test_paged_search_generator(self):
+    def test_pag_generator(self):
         if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
             responses = []
-            for response in self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)'):
+            for response in self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'pag-*)'):
                 responses.append(response)
             self.assertEqual(len(responses), 8)
 

@@ -42,21 +42,21 @@ class Test(unittest.TestCase):
         self.connection = get_connection()
         self.delete_at_teardown = []
         if test_server_type == 'EDIR':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
         elif test_server_type == 'AD':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2'}))
         else:
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_search_exact_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
             entries = self.connection._get_entries(response)
@@ -104,7 +104,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(entries), 2)
 
     def test_search_with_operational_attributes(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
             entries = self.connection._get_entries(response)
@@ -117,13 +117,13 @@ class Test(unittest.TestCase):
 
     def test_search_simple_paged(self):
         if not self.connection.strategy.pooled:
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-3', attributes={'givenName': 'givenname-3'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-4', attributes={'givenName': 'givenname-4'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-5'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-6', attributes={'givenName': 'givenname-6'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-7', attributes={'givenName': 'givenname-7'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-8', attributes={'givenName': 'givenname-8'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-9', attributes={'givenName': 'givenname-9'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-3', attributes={'givenName': 'givenname-3'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-4', attributes={'givenName': 'givenname-4'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-5', attributes={'givenName': 'givenname-5'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-6', attributes={'givenName': 'givenname-6'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-7', attributes={'givenName': 'givenname-7'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-8', attributes={'givenName': 'givenname-8'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-9', attributes={'givenName': 'givenname-9'}))
 
             paged_size = 4
             total_entries = 0

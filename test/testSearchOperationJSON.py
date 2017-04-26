@@ -40,21 +40,21 @@ class Test(unittest.TestCase):
         self.connection = get_connection()
         self.delete_at_teardown = []
         if test_server_type == 'EDIR':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
         elif test_server_type == 'AD':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2'}))
         else:
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2'}))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_search_exact_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, _ = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)
@@ -103,7 +103,7 @@ class Test(unittest.TestCase):
             test_operation_attribute = 'entryDN'
         else:
             test_operation_attribute = 'xxx'
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
             json_response = self.connection.response_to_json(search_result=response)

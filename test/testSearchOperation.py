@@ -41,27 +41,27 @@ class Test(unittest.TestCase):
         self.connection = get_connection()
         self.delete_at_teardown = []
         if test_server_type == 'EDIR':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3', test_int_attr: 0}))  # TRADE-MARK SIGN
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-4-Öäçïó', attributes={'givenName': 'givenname-4', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'sea-3-\u2122', attributes={'givenName': 'givenname-3', test_int_attr: 0}))  # TRADE-MARK SIGN
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'sea-4-Öäçïó', attributes={'givenName': 'givenname-4', test_int_attr: 0}))
         elif test_server_type == 'AD':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3'}))  # TRADE-MARK SIGN
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-4-Öäçïó', attributes={'givenName': 'givenname-4'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'sea-3-\u2122', attributes={'givenName': 'givenname-3'}))  # TRADE-MARK SIGN
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'sea-4-Öäçïó', attributes={'givenName': 'givenname-4'}))
         else:
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-1', attributes={'givenName': 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-2', attributes={'givenName': 'givenname-2'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-3-\u2122', attributes={'givenName': 'givenname-3'}))  # TRADE-MARK SIGN
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'search-4-Öäçïó', attributes={'givenName': 'givenname-4', test_int_attr: 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-1', attributes={'givenName': 'givenname-1'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-2', attributes={'givenName': 'givenname-2'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'sea-3-\u2122', attributes={'givenName': 'givenname-3'}))  # TRADE-MARK SIGN
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, u'sea-4-Öäçïó', attributes={'givenName': 'givenname-4', test_int_attr: 0}))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_search_exact_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -75,7 +75,7 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-1')
 
     def test_search_exact_match_with_get_request(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result, request = self.connection.get_response(result, get_request=True)
             self.assertEqual(request['type'], 'searchRequest')
@@ -121,7 +121,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(response), 4)
 
     def test_search_with_operational_attributes(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'search-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -136,13 +136,13 @@ class Test(unittest.TestCase):
 
     def test_search_simple_paged(self):
         if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-5', attributes={'givenName': 'givenname-3'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-6', attributes={'givenName': 'givenname-4'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-7', attributes={'givenName': 'givenname-5'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-8', attributes={'givenName': 'givenname-6'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-9', attributes={'givenName': 'givenname-7'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-10', attributes={'givenName': 'givenname-8'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-11', attributes={'givenName': 'givenname-9'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-5', attributes={'givenName': 'givenname-3'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-6', attributes={'givenName': 'givenname-4'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-7', attributes={'givenName': 'givenname-5'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-8', attributes={'givenName': 'givenname-6'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-9', attributes={'givenName': 'givenname-7'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-10', attributes={'givenName': 'givenname-8'}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-11', attributes={'givenName': 'givenname-9'}))
 
             paged_size = 4
             total_entries = 0
@@ -231,7 +231,7 @@ class Test(unittest.TestCase):
 
     def test_search_not_match(self):
         result = self.connection.search(search_base=test_base,
-                                        search_filter='(!(' + test_name_attr + '=' + testcase_id + 'search-1))',
+                                        search_filter='(!(' + test_name_attr + '=' + testcase_id + 'sea-1))',
                                         attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -242,7 +242,7 @@ class Test(unittest.TestCase):
         self.assertTrue(len(response) >= 1)
 
     def test_search_exact_match_with_unicode_in_filter(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'search-3-\u2122)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'sea-3-\u2122)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -256,7 +256,7 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-3')
 
     def test_search_exact_match_with_unescaped_chars(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'search-4-Öäçïó)', attributes=[test_name_attr, 'givenName'])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'sea-4-Öäçïó)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -270,7 +270,7 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-4')
 
     def test_search_exact_match_with_unescaped_backslash_in_filter(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-13', attributes={'givenName': testcase_id + 'givenname\\-13'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-13', attributes={'givenName': testcase_id + 'givenname\\-13'}))
         result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\*)', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -280,12 +280,12 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
-            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'search-13')
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'sea-13')
         else:
-            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'search-13')
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-13')
 
     def test_search_exact_match_with_escaped_backslash_in_filter(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-14', attributes={'givenName': testcase_id + 'givenname\\-14'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-14', attributes={'givenName': testcase_id + 'givenname\\-14'}))
         result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\5c*)', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -295,12 +295,12 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
-            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'search-14')
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'sea-14')
         else:
-            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'search-14')
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-14')
 
     def test_search_exact_match_with_escape_chars_backslash_in_filter(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'search-15', attributes={'givenName': testcase_id + 'givenname\\-15'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-15', attributes={'givenName': testcase_id + 'givenname\\-15'}))
         result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*' + escape_filter_chars('\\') + '*)', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -310,6 +310,6 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
-            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'search-15')
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'sea-15')
         else:
-            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'search-15')
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-15')

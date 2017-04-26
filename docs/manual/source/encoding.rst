@@ -65,7 +65,7 @@ Flaky Server data flow
 Some servers don't completely follow the LDAP RFCs and send data in a different encoding or in a mix of encodings. For example Active Directory can send
 the DN of entries found in a search in a different encoding than utf-8. In this case you can use the ``RESPONSE_DN_ENCODING`` to decode the DN of the Search
 operation response. It can be set to one encoding or a list of encodings. If a list is provided ldap3 tries sequentially until an encoding doesn't return
-a ``UnicodeDecodeError``. If any of the specified encoding is able to decode the DN value then an ``LDAPDNError`` exception is raised.
+a ``UnicodeDecodeError``. If any of the specified encoding is not able to decode the DN value then an ``LDAPDNError`` exception is raised.
 
 Raw data in search response
 ---------------------------

@@ -341,7 +341,8 @@ class Test(unittest.TestCase):
         if str is bytes:  # python 2
             byte_filter = b'(&(%s=*%s*)(%s=%s))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
         else:
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
@@ -355,7 +356,8 @@ class Test(unittest.TestCase):
         if str is bytes:  # python 2
             byte_filter = b'(&(%s=*%s*)(%s=%s))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
         else:
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
@@ -367,7 +369,8 @@ class Test(unittest.TestCase):
             multi = [make_bytes([195, 160, 195, 168, 195, 172]), make_bytes([195, 178, 195, 185])]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-22', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
             self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
@@ -381,7 +384,8 @@ class Test(unittest.TestCase):
         if str is bytes:  # python 2
             byte_filter = b'(&(%s=*%s*)(%s=%s))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
         else:
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
@@ -396,12 +400,12 @@ class Test(unittest.TestCase):
             if str is bytes:  # python 2
                 byte_filter = b'(&(%s=*%s*)(%s=%s))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             else:
-                byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+                # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+                byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
             self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(self.connection.response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
-
 
     def test_search_operation_from_bytearray(self):
         single = make_bytearray('àèìòù', 'utf-8')
@@ -411,7 +415,8 @@ class Test(unittest.TestCase):
         if str is bytes:  # python 2
             byte_filter = b'(&(%s=*%s*)(%s=%s))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
         else:
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
@@ -425,7 +430,8 @@ class Test(unittest.TestCase):
         if str is bytes:  # python 2
             byte_filter = b'(&(%s=*%s*)(%s=%s))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
         else:
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
@@ -439,7 +445,8 @@ class Test(unittest.TestCase):
         if str is bytes:  # python 2
             byte_filter = b'(&(%s=*%s*)(%s=%s))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
         else:
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
         self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         self.assertEqual(len(self.connection.response), 1)
         self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])
@@ -451,7 +458,8 @@ class Test(unittest.TestCase):
             multi = [make_bytearray(u'\N{LATIN SMALL LETTER A WITH GRAVE}\N{LATIN SMALL LETTER E WITH GRAVE}\N{LATIN SMALL LETTER I WITH GRAVE}', 'utf-8'), make_bytearray('\N{LATIN SMALL LETTER O WITH GRAVE}\N{LATIN SMALL LETTER U WITH GRAVE}', 'utf-8')]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-28', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
+            byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
             self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             self.assertEqual(len(self.connection.response), 1)
             self.assertEqual(self.connection.response[0]['raw_attributes'][test_singlevalued_attribute], [single])

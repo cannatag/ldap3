@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_who_am_i_extension(self):
-        if not test_server_type == 'EDIR':
+        if test_server_type != 'EDIR':
             if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
                 try:
                     if not self.connection.server.info:

@@ -85,6 +85,7 @@ class Test(unittest.TestCase):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-2', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
         self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
+        print('CONN:', self.connection)
         print('REQUEST:', self.connection.request)
         print('RESULT:', self.connection.result)
         print('RESPONSE:', self.connection.response)

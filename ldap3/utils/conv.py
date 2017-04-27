@@ -55,7 +55,7 @@ def to_unicode(obj, encoding=None, additional_encodings=False):
     if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 unicode
         return obj
 
-    raise UnicodeDecodeError("Unable to convert to unicode %r" % obj)
+    raise UnicodeError("Unable to convert to unicode %r" % obj)
 
 
 def to_raw(obj, encoding='utf-8'):

@@ -26,7 +26,7 @@
 from string import whitespace
 from os import linesep
 
-from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, SEQUENCE_TYPES, get_config_parameter
+from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, SEQUENCE_TYPES, get_config_parameter, STRING_TYPES
 
 from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError, LDAPInvalidDnError
 from ..utils.ciDict import CaseInsensitiveDict
@@ -37,7 +37,7 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
 from ..operation.bind import referrals_to_list
 from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, prepare_filter_for_sending
 from ..protocol.formatters.standard import format_attribute_values
-from ..utils.conv import to_unicode
+from ..utils.conv import to_unicode, to_raw
 
 
 ROOT = 0
@@ -499,8 +499,15 @@ def search_request_to_dict(request):
 def search_result_entry_response_to_dict(response, schema, custom_formatter, check_names):
     entry = dict()
     # entry['dn'] = str(response['object'])
-    entry['raw_dn'] = response['object']
-    entry['dn'] = to_unicode(response['object'], additional_encodings=True)
+    if response['object']:
+        entry['raw_dn'] = to_raw(response['object'])
+        if isinstance(response['object'], STRING_TYPES):  # mock strategies return string not a PyAsn1 object
+            entry['dn'] = to_unicode(response['object'])
+        else:
+            entry['dn'] = to_unicode(bytes(response['object']), additional_encodings=True)
+    else:
+        entry['raw_dn'] = b''
+        entry['dn'] = ''
     entry['raw_attributes'] = raw_attributes_to_dict(response['attributes'])
     if check_names:
         entry['attributes'] = checked_attributes_to_dict(response['attributes'], schema, custom_formatter)

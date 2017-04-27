@@ -47,7 +47,7 @@ test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
 
-test_fast_decoder = True  # True uses internal 10x faster than pyasn1 decoder
+test_fast_decoder = False  # True uses internal 10x faster than pyasn1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -67,7 +67,7 @@ test_lazy_connection = False
 
 # ******** test TRAVIS configuration
 # location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
-location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
+# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
 # ********
 
 if 'TRAVIS,' in location:

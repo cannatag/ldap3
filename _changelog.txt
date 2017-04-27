@@ -14,6 +14,8 @@
     - fixed error when using implicit assigning in WritableEntry
     - added LDAPInvalidValueError Exception
     - in Python 3 byte filter are converted to unicode before parsing
+    - RESPONSE_DN_ENCODING parameter renamed to ADDITIONAL_ENCODINGS
+    - to_unicode(value, encoding=None, additional_encodings=False) now checks for additional encoodings in ADDITIONAL_ENCODINGS list if additional_encoding is set to True
 
 - 2.2.2 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)

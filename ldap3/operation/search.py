@@ -500,7 +500,7 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
     entry = dict()
     # entry['dn'] = str(response['object'])
     entry['raw_dn'] = response['object']
-    entry['dn'] = to_unicode(str(response['object']))
+    entry['dn'] = to_unicode(response['object'], additional_encodings=True)
     entry['raw_attributes'] = raw_attributes_to_dict(response['attributes'])
     if check_names:
         entry['attributes'] = checked_attributes_to_dict(response['attributes'], schema, custom_formatter)
@@ -523,6 +523,19 @@ def search_result_reference_response_to_dict(response):
 
 
 def search_result_entry_response_to_dict_fast(response, schema, custom_formatter, check_names):
+    entry_dict = dict()
+    entry_dict['raw_dn'] = response[0][3]
+    entry_dict['dn'] = to_unicode(response[0][3], additional_encodings=True)  # some flaky servers can return dn not in utf-8
+    entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
+    if check_names:
+        entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes
+    else:
+        entry_dict['attributes'] = attributes_to_dict_fast(response[1][3])  # attributes
+
+    return entry_dict
+
+
+def search_result_entry_response_to_dict_fast_orig(response, schema, custom_formatter, check_names):
     entry_dict = dict()
     entry_dict['raw_dn'] = response[0][3]
     for dn_encoding in get_config_parameter('RESPONSE_DN_ENCODING'):  # AD could have DN not encoded in utf-8 (even if this is not allowed by RFC4510)

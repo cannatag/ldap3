@@ -88,7 +88,7 @@ _REUSABLE_THREADED_POOL_SIZE = 10
 _REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 _DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 _ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
-_RESPONSE_DN_ENCODING = ["utf-8"]  # some broken LDAP implementation may have different encoding than those expected by RFCs
+_ADDITIONAL_ENCODINGS = ['latin-1']  # some broken LDAP implementation may have different encoding than those expected by RFCs
 _IGNORE_MALFORMED_SCHEMA = False  # some flaky LDAP servers returns malformed schema. If True no expection is raised and schema is thrown away
 
 if stdin and stdin.encoding:
@@ -140,8 +140,8 @@ def get_config_parameter(parameter):
         return _UTF8_ENCODED_SYNTAXES
     elif parameter == 'UTF8_ENCODED_TYPES':
         return _UTF8_ENCODED_TYPES
-    elif parameter == 'RESPONSE_DN_ENCODING':
-        return _RESPONSE_DN_ENCODING
+    elif parameter == 'ADDITIONAL_ENCODINGS':
+        return _ADDITIONAL_ENCODINGS
     elif parameter == 'IGNORE_MALFORMED_SCHEMA':
         return _IGNORE_MALFORMED_SCHEMA
     elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF':
@@ -212,9 +212,9 @@ def set_config_parameter(parameter, value):
     elif parameter == 'UTF8_ENCODED_TYPES':
         global _UTF8_ENCODED_TYPES
         _UTF8_ENCODED_TYPES = value
-    elif parameter == 'RESPONSE_DN_ENCODING':
-        global _RESPONSE_DN_ENCODING
-        _RESPONSE_DN_ENCODING = value if isinstance(value, SEQUENCE_TYPES) else [value]
+    elif parameter == 'ADDITIONAL_ENCODINGS':
+        global _ADDITIONAL_ENCODINGS
+        _ADDITIONAL_ENCODINGS = value if isinstance(value, SEQUENCE_TYPES) else [value]
     elif parameter == 'IGNORE_MALFORMED_SCHEMA':
         global _IGNORE_MALFORMED_SCHEMA
         _IGNORE_MALFORMED_SCHEMA = value

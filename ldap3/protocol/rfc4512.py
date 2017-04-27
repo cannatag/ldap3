@@ -30,7 +30,7 @@ import json
 from .oid import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, \
     ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
 from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
-from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json
+from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, to_unicode
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.formatters.standard import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax, oid_to_string
@@ -415,6 +415,7 @@ class BaseObjectInfo(object):
 
         ret_dict = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES') else dict()
         for object_definition in definitions:
+            object_definition = to_unicode(object_definition, additional_encodings=True)
             if object_definition[0] == '(' and object_definition[-1] == ')':
                 if cls is MatchingRuleInfo:
                     pattern = '| SYNTAX '

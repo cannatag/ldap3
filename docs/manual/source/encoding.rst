@@ -9,7 +9,7 @@ so they can have different encodings. There are 6 different flows in the ldap3 l
 * data coming from the user
 * data going to the user
 * data going to output logs
-* data coming from flaky servers that return the DN in not utf-8 encoding in search responses.
+* data coming from flaky servers that return the DN or the schema in not utf-8 encoding.
 
 Server data flow
 ----------------
@@ -57,15 +57,16 @@ in output between Python 3 and Python 2.
 Log file data flow
 ------------------
 
-Data printed in the log files are always encoded in ``ascii`` with a ``backslashreplace`` failback in case of unprintable ascii values.
+Data printed in the log files are always encoded in ``ascii`` with a ``backslashreplace`` failback in case of unprintable ascii values. This should assure that the log
+is written without any decoding error.
 
 Flaky Server data flow
 ----------------------
 
 Some servers don't completely follow the LDAP RFCs and send data in a different encoding or in a mix of encodings. For example Active Directory can send
-the DN of entries found in a search in a different encoding than utf-8. In this case you can use the ``RESPONSE_DN_ENCODING`` to decode the DN of the Search
-operation response. It can be set to one encoding or a list of encodings. If a list is provided ldap3 tries sequentially until an encoding doesn't return
-a ``UnicodeDecodeError``. If any of the specified encoding is not able to decode the DN value then an ``LDAPDNError`` exception is raised.
+the DN of entries found in a search in a different encoding than utf-8. In this case you can use the ``ADDITIONAL_ENCODINGS`` parameter to decode the DN of the Search
+operation response. It can be set to one encoding or a list of encodings. If a list of encodings is provided ldap3 tries sequentially each encoding until a valid decode
+is performed. If any of the specified encodings is not able to decode the value then an ``UnicodeDecodeError`` exception is raised.
 
 Raw data in search response
 ---------------------------

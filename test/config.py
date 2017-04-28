@@ -75,7 +75,7 @@ else:
 
 # force TRAVIS configuration
 # location = 'TRAVIS-LOCAL'
-# test_strategy = SYNC
+# test_strategy = REUSABLE
 # test_server_type = 'AD'
 # test_fast_decoder = True
 
@@ -611,38 +611,6 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     return attributes
-
-
-def add_user_old(connection, batch_id, username, password=None, attributes=None):
-    if password is None:
-        password = 'Rc2597pfop'
-
-    if attributes is None:
-        attributes = dict()
-
-    if test_server_type == 'EDIR':
-        attributes.update({'objectClass': 'inetOrgPerson',
-                           'sn': username})
-    elif test_server_type == 'AD':
-        # attributes.update({'objectClass': ['user'],
-        attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
-                           'sn': username,
-                           'sAMAccountName': (batch_id+ username)[-20:],  # 20 is the maximum user name length in AD
-                           'userPrincipalName': (batch_id + username)[-20:] + '@' + test_domain_name,
-                           'displayName': (batch_id + username)[-20:],
-                           'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
-                           'userAccountControl': 512})
-    elif test_server_type == 'SLAPD':
-        attributes.update({'objectClass': ['inetOrgPerson', 'posixGroup', 'top'], 'sn': username, 'gidNumber': 0})
-    else:
-        attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
-    dn = generate_dn(test_base, batch_id, username)
-    operation_result = connection.add(dn, None, attributes)
-    result = get_operation_result(connection, operation_result)
-    if not result['description'] == 'success':
-        raise Exception('unable to create user ' + dn + ': ' + str(result))
-
-    return dn, result
 
 
 def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):

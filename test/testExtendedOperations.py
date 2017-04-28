@@ -58,9 +58,8 @@ class Test(unittest.TestCase):
                 try:
                     if not self.connection.server.info:
                         self.connection.refresh_server_info()
-                    self.connection.extend.standard.who_am_i()
-                    result = self.connection.result
-                    self.assertEqual(result['description'], 'success')
+                    user = self.connection.extend.standard.who_am_i()
+                    self.assertTrue(user)
                 except LDAPExtensionError as e:
                     if not e.args[0] == 'extension not in DSA list of supported extensions':
                         raise

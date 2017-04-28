@@ -69,7 +69,6 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
-        print(type(response[0]['attributes']['givenName']))
         if test_server_type == 'AD':
             self.assertEqual(response[0]['attributes']['givenName'], 'givenname-1')
         else:

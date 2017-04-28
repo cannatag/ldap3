@@ -27,9 +27,9 @@
 import unittest
 from time import sleep
 
-from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SIMPLE
+from ldap3 import SUBTREE, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SIMPLE, REUSABLE
 from ldap3.protocol.microsoft import extended_dn_control, show_deleted_control
-from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition
+from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_root_partition, test_strategy
 
 testcase_id = ''
 
@@ -227,7 +227,7 @@ class Test(unittest.TestCase):
     #         self.assertTrue('changed-password-2' in connected_user)
 
     def test_modify_existing_password_as_administrator(self):
-        if test_server_type == 'AD':
+        if test_server_type == 'AD' and test_strategy != REUSABLE:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pwd-3', attributes={'givenName': 'pwd-3'}))
             dn = self.delete_at_teardown[-1][0]
             new_password = 'Rc56789efgh'

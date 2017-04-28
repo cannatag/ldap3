@@ -365,7 +365,7 @@ print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log
 
 
 def random_id():
-    return str(SystemRandom().random())[-4:]
+    return str(SystemRandom().random())[-5:]
 
 
 def generate_dn(base, batch_id, name):

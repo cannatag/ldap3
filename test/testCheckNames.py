@@ -56,9 +56,9 @@ class Test(unittest.TestCase):
             self.assertRaises(LDAPObjectClassError, self.connection.add, generate_dn(test_base, testcase_id, 'test-add-operation-wrong'), 'inetOrgPerson', {'objectClass': ['inetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
 
     def test_valid_assertion(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-1'))
 
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'check-names-1)', attributes=[test_name_attr])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1)', attributes=[test_name_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -68,8 +68,8 @@ class Test(unittest.TestCase):
         self.assertEqual(len(response), 1)
 
     def test_valid_attribute(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-2', attributes={'givenName': 'given-name-2'}))
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'check-names-2)', attributes=[test_name_attr, 'givenName'])
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-2', attributes={'givenName': 'given-name-2'}))
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-2)', attributes=[test_name_attr, 'givenName'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -79,5 +79,5 @@ class Test(unittest.TestCase):
         self.assertEqual(len(response), 1)
 
     def test_valid_object_class_add(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'check-names-3', attributes={'objectClass': ['inetOrgPerson', 'Person']}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-3', attributes={'objectClass': ['inetOrgPerson', 'Person']}))
         self.assertEqual(self.delete_at_teardown[0][1]['description'], 'success')

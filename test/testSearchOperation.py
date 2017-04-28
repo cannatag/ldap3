@@ -69,6 +69,7 @@ class Test(unittest.TestCase):
             result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
+        print(type(response[0]['attributes']['givenName']))
         if test_server_type == 'AD':
             self.assertEqual(response[0]['attributes']['givenName'], 'givenname-1')
         else:
@@ -170,7 +171,7 @@ class Test(unittest.TestCase):
             self.assertEqual(total_entries, 11)
 
     def test_search_exact_match_with_escaped_parentheses_in_filter(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-12', attributes={'givenName': 'givenname-12'}))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(s)-12', attributes={'givenName': 'givenname-12'}))
         result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*' + escape_bytes(')') + '*)', attributes=[test_name_attr, 'sn'])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -180,9 +181,9 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
-            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + '(search)-12')
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + '(s)-12')
         else:
-            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + '(search)-12')
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + '(s)-12')
 
     # def test_search_exact_match_with_parentheses_in_filter(self):
     #     self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-13', attributes={'givenName': 'givenname-13'}))

@@ -73,6 +73,13 @@ if 'TRAVIS' in location:
 else:
     location += '-' + test_server_type
 
+# force TRAVIS configuration
+# location = 'TRAVIS-LOCAL'
+# test_strategy = SYNC
+# test_server_type = 'AD'
+# test_fast_decoder = True
+
+
 if 'TRAVIS' in location:
     # test in the cloud
     if test_server_type == 'EDIR':
@@ -358,7 +365,7 @@ print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log
 
 
 def random_id():
-    return str(SystemRandom().random())[-5:]
+    return str(SystemRandom().random())[-4:]
 
 
 def generate_dn(base, batch_id, name):
@@ -594,9 +601,9 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
     elif test_server_type == 'AD':
         attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
                            'sn': username,
-                           'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD
-                           'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,
-                           'displayName': (batch_id[1: -1] + username)[-20:],
+                           'sAMAccountName': (batch_id + username)[-20:],  # 20 is the maximum user name length in AD
+                           'userPrincipalName': (batch_id + username)[-20:] + '@' + test_domain_name,
+                           'displayName': (batch_id + username)[-20:],
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
                            'userAccountControl': 512})
     elif test_server_type == 'SLAPD':
@@ -620,9 +627,9 @@ def add_user_old(connection, batch_id, username, password=None, attributes=None)
         # attributes.update({'objectClass': ['user'],
         attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
                            'sn': username,
-                           'sAMAccountName': (batch_id[1: -1] + username)[-20:],  # 20 is the maximum user name length in AD
-                           'userPrincipalName': (batch_id[1: -1] + username)[-20:] + '@' + test_domain_name,
-                           'displayName': (batch_id[1: -1] + username)[-20:],
+                           'sAMAccountName': (batch_id+ username)[-20:],  # 20 is the maximum user name length in AD
+                           'userPrincipalName': (batch_id + username)[-20:] + '@' + test_domain_name,
+                           'displayName': (batch_id + username)[-20:],
                            'unicodePwd': ('"%s"' % password).encode('utf-16-le'),
                            'userAccountControl': 512})
     elif test_server_type == 'SLAPD':

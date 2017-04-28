@@ -64,13 +64,7 @@ try:
 except KeyError:
     location = 'UNKNOWN'
 
-# ******** test TRAVIS configuration
-# location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
-# location = 'TRAVIS,SYNC,0,AD'  # forces configuration as if we're running on Travis - test Active Directory
-# ********
-
-if 'TRAVIS,' in location:
-    _, strategy, lazy, server_type = location.split(',')
+if 'TRAVIS' in location:
     test_strategy = environ['STRATEGY']
     test_lazy_connection = True if environ['LAZY'].upper() == 'TRUE' else False
     test_server_type = environ['SERVER']
@@ -79,7 +73,7 @@ if 'TRAVIS,' in location:
 else:
     location += '-' + test_server_type
 
-if location == 'TRAVIS':
+if 'TRAVIS' in location:
     # test in the cloud
     if test_server_type == 'EDIR':
         test_server_context = 'o=resources'  # used in Novell eDirectory extended operations

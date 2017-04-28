@@ -25,6 +25,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from time import sleep
 
 from ldap3 import MODIFY_REPLACE, MODIFY_ADD, LEVEL, BASE, SEQUENCE_TYPES
 from test.config import random_id, get_connection, add_user, drop_connection, test_singlevalued_attribute, test_multivalued_attribute, test_base, test_name_attr
@@ -237,6 +238,8 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+        if not self.connection.strategy.sync:
+            sleep(2)
         result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -261,6 +264,8 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+        if not self.connection.strategy.sync:
+            sleep(2)
         result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -286,6 +291,8 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+            if not self.connection.strategy.sync:
+                sleep(2)
             result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
@@ -310,6 +317,8 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+        if not self.connection.strategy.sync:
+            sleep(2)
         result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -335,6 +344,8 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+            if not self.connection.strategy.sync:
+                sleep(2)
             result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)
@@ -359,6 +370,8 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+        if not self.connection.strategy.sync:
+            sleep(2)
         result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -383,6 +396,8 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+        if not self.connection.strategy.sync:
+            sleep(2)
         result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -407,6 +422,8 @@ class Test(unittest.TestCase):
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+        if not self.connection.strategy.sync:
+            sleep(2)
         result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
@@ -432,6 +449,8 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
+            if not self.connection.strategy.sync:
+                sleep(2)
             result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
             if not self.connection.strategy.sync:
                 response, result = self.connection.get_response(result)

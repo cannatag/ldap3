@@ -70,12 +70,12 @@ class Test(unittest.TestCase):
             result = self.connection.extend.novell.get_bind_dn()
             self.assertTrue(test_user in result)
 
-    def test_pag_accumulator(self):
+    def test_paged_search_accumulator(self):
         if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
             responses = self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'pag-*)', generator=False, paged_size=3)
             self.assertEqual(len(responses), 8)
 
-    def test_pag_generator(self):
+    def test_paged_search_generator(self):
         if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
             responses = []
             for response in self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'pag-*)'):

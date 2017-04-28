@@ -92,8 +92,8 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
-            self.assertTrue('chk-1' in response[0]['attributes']['cn'])  # cn is single-value in Active Directory
-            self.assertEqual(response[0]['attributes']['sn'], '1-khc')  # sn is single-value in Active Directory
+            self.assertTrue('CHK-1' in response[0]['attributes']['cn'])  # cn is single-valued in Active Directory
+            self.assertEqual(response[0]['attributes']['sn'], '1-khc')  # sn is single-valued in Active Directory
         else:
             self.assertTrue('CHK-1' in response[0]['attributes']['cn'][0])
             self.assertEqual(response[0]['attributes']['sn'][0], '1-khc')

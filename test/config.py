@@ -53,17 +53,16 @@ test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
 test_check_names = True  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
-test_usage = False
+test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
+test_lazy_connection = False
 
 try:
     location = environ['USERDOMAIN']
 except KeyError:
     location = 'UNKNOWN'
-
-test_lazy_connection = False
 
 # ******** test TRAVIS configuration
 # location = 'TRAVIS,SYNC,0,EDIR'  # forces configuration as if we're running on Travis - test eDirectory
@@ -72,16 +71,18 @@ test_lazy_connection = False
 
 if 'TRAVIS,' in location:
     _, strategy, lazy, server_type = location.split(',')
-    test_strategy = strategy
-    test_lazy_connection = bool(int(lazy))
-    test_server_type = server_type
+    test_strategy = environ['STRATEGY']
+    test_lazy_connection = True if environ['LAZY'].upper() == 'TRUE' else False
+    test_server_type = environ['SERVER']
+    test_fast_decoder = True if environ['DECODER'].upper() == 'INTERNAL' else False
+    test_check_names = True if environ['CHECK_NAMES'].upper() == 'TRUE' else False
 else:
     location += '-' + test_server_type
 
-if 'TRAVIS,' in location:
+if location == 'TRAVIS':
     # test in the cloud
-    test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
     if test_server_type == 'EDIR':
+        test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
         test_server = 'labldap02.cloudapp.net'
         test_server_edir_name = 'SLES1'
         test_root_partition = ''

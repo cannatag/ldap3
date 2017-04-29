@@ -37,9 +37,10 @@ from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 from ldap3 import __version__ as ldap3_version
 
-test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = REUSABLE  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 test_logging = False
+test_pool_size = 10
 
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
@@ -359,7 +360,7 @@ print('Testing location:', location)
 print('Test server:', test_server)
 print('Python version:', version)
 print('ldap3 version:', ldap3_version)
-print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage)
+print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
 print('Default encoding:', get_config_parameter('DEFAULT_ENCODING'), '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding())
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Fast decoder: ', test_fast_decoder)
 
@@ -456,6 +457,7 @@ def get_connection(bind=None,
                                 sasl_credentials=sasl_credentials,
                                 lazy=lazy_connection,
                                 pool_name='pool1',
+                                pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
@@ -472,6 +474,7 @@ def get_connection(bind=None,
                                 authentication=NTLM,
                                 lazy=lazy_connection,
                                 pool_name='pool1',
+                                pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
@@ -488,6 +491,7 @@ def get_connection(bind=None,
                                 authentication=ANONYMOUS,
                                 lazy=lazy_connection,
                                 pool_name='pool1',
+                                pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
@@ -504,6 +508,7 @@ def get_connection(bind=None,
                                 authentication=authentication,
                                 lazy=lazy_connection,
                                 pool_name='pool1',
+                                pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
                                 fast_decoder=fast_decoder,
@@ -625,8 +630,15 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
     operation_result = connection.add(dn, None, attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
-        print(attributes)
-        raise Exception('unable to create user ' + dn + ': ' + str(result))
+        # maybe the entry already exists, try to delete
+        operation_result = connection.delete(dn)
+        sleep(2)
+        result = get_operation_result(connection, operation_result)
+        operation_result = connection.add(dn, None, attributes)
+        result = get_operation_result(connection, operation_result)
+        if not result['description'] == 'success':
+            print(attributes)
+            raise Exception('unable to create user ' + dn + ': ' + str(result))
 
     return dn, result
 

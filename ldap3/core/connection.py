@@ -1402,7 +1402,7 @@ class Connection(object):
                 target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
                 target.close()
 
-    def _fire_deferred(self):
+    def _fire_deferred(self, read_info=True):
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
@@ -1416,7 +1416,8 @@ class Connection(object):
                         self.start_tls(read_server_info=False)
                     if self._deferred_bind:
                         self.bind(read_server_info=False, controls=self._bind_controls)
-                    self.refresh_server_info()
+                    if read_info:
+                        self.refresh_server_info()
                 except LDAPExceptionError as e:
                     if log_enabled(ERROR):
                         log(ERROR, '%s for <%s>', e, self)

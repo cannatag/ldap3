@@ -152,7 +152,10 @@ class RestartableStrategy(SyncStrategy):
                         self.connection.start_tls(read_server_info=False)
                     if message_type != 'bindRequest':
                         self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest
-                    self.connection.refresh_server_info()
+                    if not self.connection.server.schema and not self.connection.server.info:
+                        self.connection.refresh_server_info()
+                    else:
+                        self.connection._fire_deferred(read_info=False)  # in case of lazy connection, not open by the refresh_server_info
                 except Exception as e:
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> while restarting <%s>', e, self.connection)

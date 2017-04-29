@@ -198,7 +198,7 @@ class Server(object):
         self.connect_timeout = connect_timeout
         self.mode = mode
 
-        self.get_info_from_server(None)
+        self.get_info_from_server(None)  # load offline schema if needed
 
         if log_enabled(BASIC):
             log(BASIC, 'instantiated Server: <%r>', self)

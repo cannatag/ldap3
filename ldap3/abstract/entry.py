@@ -395,7 +395,6 @@ class WritableEntry(EntryBase):
         if value is not Ellipsis:  # hack for using implicit operators in writable attributes
             self.__setattr__(key, value)
 
-
     def __setattr__(self, item, value):
         if item == '_state' and isinstance(value, EntryState):
             self.__dict__['_state'] = value

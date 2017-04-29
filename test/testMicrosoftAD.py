@@ -66,9 +66,9 @@ class Test(unittest.TestCase):
     def test_search_deleted_objects_ad(self):
         if test_server_type == 'AD':
             dn_to_delete, _ = add_user(self.connection, testcase_id, 'del-1', attributes={'givenName': 'del-1'})
-            sleep(1)
+            sleep(2)
             self.connection.delete(dn_to_delete)
-            sleep(1)
+            sleep(5)
             result = self.connection.search(search_base=test_root_partition,
                                             search_filter='(&(isDeleted=TRUE)(cn=*' + testcase_id + '*del-1*))',
                                             search_scope=SUBTREE,
@@ -178,7 +178,7 @@ class Test(unittest.TestCase):
             self.assertTrue(found)
 
     def test_modify_password_as_administrator(self):
-        if test_server_type == 'AD':
+        if test_server_type == 'AD' and test_strategy != REUSABLE:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pwd-1', attributes={'givenName': 'changed-password-1'}))
             dn = self.delete_at_teardown[-1][0]
             # test_connection = get_connection(bind=False, authentication=SIMPLE, simple_credentials=(dn, 'Rc1234abcd'))

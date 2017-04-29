@@ -73,9 +73,9 @@ if 'TRAVIS' in location:
 else:
     location += '-' + test_server_type
 
-# force TRAVIS configuration
+# # force TRAVIS configuration
 # location = 'TRAVIS-LOCAL'
-# test_strategy = REUSABLE
+# test_strategy = SYNC
 # test_server_type = 'AD'
 # test_fast_decoder = True
 

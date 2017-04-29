@@ -27,7 +27,7 @@ from time import sleep
 
 from ldap3 import Writer, Reader, AttrDef, ObjectDef
 from ldap3.core.exceptions import LDAPCursorError
-from test.config import test_base, get_connection, drop_connection, random_id, test_moved, add_user, test_multivalued_attribute
+from test.config import test_base, get_connection, drop_connection, random_id, test_moved, add_user, test_multivalued_attribute, test_server_type
 from ldap3.abstract import STATUS_COMMITTED, STATUS_MANDATORY_MISSING, STATUS_DELETED, STATUS_PENDING_CHANGES, STATUS_READ, \
     STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_VIRTUAL, STATUS_WRITABLE
 
@@ -46,14 +46,16 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_create_new_entry_invalid_mandatory(self):
-        w = Writer(self.connection, 'inetorgperson')
-        n = w.new('cn=' + testcase_id + 'new-1,' + test_base)
-        self.assertTrue('objectClass' in n.entry_mandatory_attributes)
-        self.assertTrue(n.entry_status in [STATUS_MANDATORY_MISSING, STATUS_PENDING_CHANGES])
-        try:
-            n.entry_commit_changes()
-        except LDAPCursorError:
-            pass
+        if test_server_type == 'EDIR':
+            w = Writer(self.connection, 'inetorgperson')
+            n = w.new('cn=' + testcase_id + 'new-1,' + test_base)
+            self.assertTrue('sn' in n.entry_mandatory_attributes)
+            self.assertTrue(n.entry_status in [STATUS_MANDATORY_MISSING])
+            try:
+                n.entry_commit_changes()
+            except LDAPCursorError:
+                return
+            self.fail('Entry created with missing attributes')
 
     def test_create_new_entry_valid_mandatory_only(self):
         w = Writer(self.connection, 'inetorgperson')

@@ -325,7 +325,7 @@ class Connection(object):
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
                         self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND or auto_bind is True:
+                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
                         self.start_tls(read_server_info=False)
                         self.bind(read_server_info=True)
                     elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
@@ -447,8 +447,8 @@ class Connection(object):
             return None
         if self.strategy.pooled:  # update master connection usage from pooled connections
             self._usage.reset()
-            for connection in self.strategy.pool.connections:
-                self._usage += connection.connection.usage
+            for worker in self.strategy.pool.workers:
+                self._usage += worker.connection.usage
             self._usage += self.strategy.pool.terminated_usage
         return self._usage
 

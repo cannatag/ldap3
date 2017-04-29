@@ -37,10 +37,10 @@ from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 from ldap3 import __version__ as ldap3_version
 
-test_strategy = REUSABLE  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = SYNC # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 test_logging = False
-test_pool_size = 10
+test_pool_size = 5
 
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
@@ -645,18 +645,6 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
 
 def get_add_group_attributes(members):
     return {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]}
-
-
-def add_group_old(connection, batch_id, groupname, members=None):
-    if members is None:
-        members = list()
-    dn = generate_dn(test_base, batch_id, groupname)
-    operation_result = connection.add(dn, [], {'objectClass': 'groupOfNames', 'member': [member[0] for member in members]})
-    result = get_operation_result(connection, operation_result)
-    if not result['description'] == 'success':
-        raise Exception('unable to create group ' + groupname + ': ' + str(result))
-
-    return dn, result
 
 
 def add_group(connection, batch_id, groupname, members=None, test_bytes=False):

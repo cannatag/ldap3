@@ -16,6 +16,8 @@
     - in Python 3 byte filter are converted to unicode before parsing
     - RESPONSE_DN_ENCODING parameter renamed to ADDITIONAL_ENCODINGS
     - to_unicode(value, encoding=None, additional_encodings=False) now checks for additional encoodings in ADDITIONAL_ENCODINGS list if additional_encoding is set to True
+    - Reusable strategy uses not lazy Restartable connections
+    . Reusable strategy doesn't keep requesting the schema
 
 - 2.2.2 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)

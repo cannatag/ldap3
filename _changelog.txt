@@ -1,4 +1,4 @@
-- 2.2.3 not yet released
+- 2.2.3 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)
     - CaseInsensitiveDictWithAlias doesn't raise an exception anymore if alias is set multiple times to the same key
     - friendly names in AttrDef are properly managed when performing commits in Writer cursors
@@ -18,6 +18,8 @@
     - to_unicode(value, encoding=None, additional_encodings=False) now checks for additional encoodings in ADDITIONAL_ENCODINGS list if additional_encoding is set to True
     - Reusable strategy uses not lazy Restartable connections
     . Reusable strategy doesn't keep requesting the schema
+    - connection pool size in Reusable strategy defaults to 5
+    - optimized usage of configuration parameters
 
 - 2.2.2 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)

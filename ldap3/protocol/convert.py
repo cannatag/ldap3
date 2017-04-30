@@ -135,19 +135,23 @@ def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
 
 
 def validate_attribute_value(schema, name, value, auto_encode):
+    conf_classes_excluded_from_check = get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')
+    conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+    conf_utf8_syntaxes = get_config_parameter('UTF8_ENCODED_SYNTAXES')
+    conf_utf8_types = get_config_parameter('UTF8_ENCODED_TYPES')
     if schema and schema.attribute_types:
         if ';' in name:
             name = name.split(';')[0]
 
         if schema.object_classes and name == 'objectClass':
-            if value not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and value not in schema.object_classes:
+            if value not in conf_classes_excluded_from_check and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
 
-        if name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
+        if name not in schema.attribute_types and name not in conf_attributes_excluded_from_check:
             raise LDAPAttributeError('invalid attribute ' + name)
 
         # encodes to utf-8 for well known Unicode LDAP syntaxes
-        if auto_encode and (schema.attribute_types[name].syntax in get_config_parameter('UTF8_ENCODED_SYNTAXES') or name in get_config_parameter('UTF8_ENCODED_TYPES')):
+        if auto_encode and (schema.attribute_types[name].syntax in conf_utf8_syntaxes or name in conf_utf8_types):
             value = to_unicode(value)  # tries to convert from local encoding to Unicode
     return to_raw(value)
 

@@ -229,7 +229,8 @@ class Server(object):
 
     @property
     def address_info(self):
-        if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > get_config_parameter('ADDRESS_INFO_REFRESH_TIME'):
+        conf_refresh_interval = get_config_parameter('ADDRESS_INFO_REFRESH_TIME')
+        if not self._address_info or (datetime.now() - self._address_info_resolved_time).seconds > conf_refresh_interval:
             # converts addresses tuple to list and adds a 6th parameter for availability (None = not checked, True = available, False=not available) and a 7th parameter for the checking time
             addresses = None
             try:
@@ -278,6 +279,7 @@ class Server(object):
         and port to check availability. Timeout in seconds is specified in CHECK_AVAILABITY_TIMEOUT if not specified in
         the Server object
         """
+        conf_availability_timeout = get_config_parameter('CHECK_AVAILABILITY_TIMEOUT')
         available = False
         self.reset_availability()
         for address in self.candidate_addresses():
@@ -287,7 +289,7 @@ class Server(object):
                 if self.connect_timeout:
                     temp_socket.settimeout(self.connect_timeout)
                 else:
-                    temp_socket.settimeout(get_config_parameter('CHECK_AVAILABILITY_TIMEOUT'))  # set timeout for checking availability to default
+                    temp_socket.settimeout(conf_availability_timeout)  # set timeout for checking availability to default
                 try:
                     temp_socket.connect(address[4])
                 except socket.error:
@@ -519,6 +521,7 @@ class Server(object):
         return dummy
 
     def candidate_addresses(self):
+        conf_reset_availability_timeout = get_config_parameter('RESET_AVAILABILITY_TIMEOUT')
         if self.ipc:
             candidates = self.address_info
             if log_enabled(BASIC):
@@ -526,7 +529,7 @@ class Server(object):
         else:
             # checks reset availability timeout
             for address in self.address_info:
-                if address[6] and ((datetime.now() - address[6]).seconds > get_config_parameter('RESET_AVAILABILITY_TIMEOUT')):
+                if address[6] and ((datetime.now() - address[6]).seconds > conf_reset_availability_timeout):
                     address[5] = None
                     address[6] = None
 

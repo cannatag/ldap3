@@ -315,6 +315,7 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         A tuple (responses, result) is returned
         """
+        conf_sleep_interval = get_config_parameter('RESPONSE_SLEEPTIME')
         if timeout is None:
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         response = None
@@ -324,8 +325,8 @@ class BaseStrategy(object):
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
                 if not responses:
-                    sleep(get_config_parameter('RESPONSE_SLEEPTIME'))
-                    timeout -= get_config_parameter('RESPONSE_SLEEPTIME')
+                    sleep(conf_sleep_interval)
+                    timeout -= conf_sleep_interval
                     continue
 
                 if responses == SESSION_TERMINATED_BY_SERVER:

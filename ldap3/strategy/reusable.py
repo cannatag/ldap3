@@ -419,6 +419,8 @@ class ReusableStrategy(BaseStrategy):
         return result
 
     def get_response(self, counter, timeout=None, get_request=False):
+        sleeptime = get_config_parameter('RESPONSE_SLEEPTIME')
+        request=None
         if timeout is None:
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         if counter == BOGUS_BIND:  # send a bogus bindResponse
@@ -438,7 +440,6 @@ class ReusableStrategy(BaseStrategy):
             response = None
             result = None
             while timeout >= 0:  # waiting for completed message to appear in _incoming
-                sleeptime = get_config_parameter('RESPONSE_SLEEPTIME')
                 try:
                     with self.connection.strategy.pool.lock:
                         response, result, request = self.connection.strategy.pool._incoming.pop(counter)

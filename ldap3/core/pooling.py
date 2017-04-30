@@ -136,6 +136,7 @@ class ServerPoolState(object):
         raise LDAPServerPoolExhaustedError('no random active server available in server pool after maximum number of tries')
 
     def find_active_server(self, starting):
+        conf_pool_timeout = get_config_parameter('POOLING_LOOP_TIMEOUT')
         counter = self.server_pool.active  # can be True for "forever" or the number of cycles to try
         if starting >= len(self.servers):
             starting = 0
@@ -170,8 +171,8 @@ class ServerPoolState(object):
             if not isinstance(self.server_pool.active, bool):
                 counter -= 1
             if log_enabled(NETWORK):
-                log(NETWORK, 'waiting for %d seconds before retrying pool servers cycle', get_config_parameter('POOLING_LOOP_TIMEOUT'))
-            sleep(get_config_parameter('POOLING_LOOP_TIMEOUT'))
+                log(NETWORK, 'waiting for %d seconds before retrying pool servers cycle', conf_pool_timeout)
+            sleep(conf_pool_timeout)
 
         if log_enabled(ERROR):
             log(ERROR, 'no active server available in Server Pool <%s> after maximum number of tries', self)

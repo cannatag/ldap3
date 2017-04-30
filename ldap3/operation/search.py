@@ -28,7 +28,7 @@ from os import linesep
 
 from .. import DEREF_NEVER, BASE, LEVEL, SUBTREE, DEREF_SEARCH, DEREF_BASE, DEREF_ALWAYS, NO_ATTRIBUTES, SEQUENCE_TYPES, get_config_parameter, STRING_TYPES
 
-from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError, LDAPInvalidDnError
+from ..core.exceptions import LDAPInvalidFilterError, LDAPAttributeError, LDAPInvalidScopeError, LDAPInvalidDereferenceAliasesError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integer0ToMax, TypesOnly, \
     AttributeSelection, Selector, EqualityMatch, AttributeDescription, AssertionValue, Filter, \
@@ -290,14 +290,16 @@ def compile_filter(filter_node):
 
 
 def build_attribute_selection(attribute_list, schema):
+    conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+
     attribute_selection = AttributeSelection()
     for index, attribute in enumerate(attribute_list):
         if schema and schema.attribute_types:
             if ';' in attribute:  # exclude tags from validation
-                if not attribute[0:attribute.index(';')] in schema.attribute_types and attribute not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
+                if not attribute[0:attribute.index(';')] in schema.attribute_types and attribute not in conf_attributes_excluded_from_check:
                     raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
             else:
-                if attribute not in schema.attribute_types and attribute not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
+                if attribute not in schema.attribute_types and attribute not in conf_attributes_excluded_from_check:
                     raise LDAPAttributeError('invalid attribute type in attribute list: ' + attribute)
         attribute_selection[index] = Selector(attribute)
 
@@ -379,7 +381,8 @@ def decode_vals_fast(vals):
 
 
 def attributes_to_dict(attribute_list):
-    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
+    conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
+    attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_vals(attribute['vals'])
 
@@ -387,7 +390,8 @@ def attributes_to_dict(attribute_list):
 
 
 def attributes_to_dict_fast(attribute_list):
-    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
+    conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
+    attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
         attributes[attribute[3][0][3].decode('utf-8')] = decode_vals_fast(attribute[3][1][3])
 
@@ -403,7 +407,9 @@ def decode_raw_vals_fast(vals):
 
 
 def raw_attributes_to_dict(attribute_list):
-    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
+    conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
+
+    attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
         attributes[str(attribute['type'])] = decode_raw_vals(attribute['vals'])
 
@@ -411,7 +417,8 @@ def raw_attributes_to_dict(attribute_list):
 
 
 def raw_attributes_to_dict_fast(attribute_list):
-    attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
+    conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
+    attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
         attributes[attribute[3][0][3].decode('utf-8')] = decode_raw_vals_fast(attribute[3][1][3])
 
@@ -419,7 +426,9 @@ def raw_attributes_to_dict_fast(attribute_list):
 
 
 def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=None):
-    checked_attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
+    conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
+
+    checked_attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
         name = str(attribute['type'])
         checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals(attribute['vals']) or [], custom_formatter)
@@ -427,7 +436,9 @@ def checked_attributes_to_dict(attribute_list, schema=None, custom_formatter=Non
 
 
 def checked_attributes_to_dict_fast(attribute_list, schema=None, custom_formatter=None):
-    checked_attributes = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES') else dict()
+    conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
+
+    checked_attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
         name = attribute[3][0][3].decode('utf-8')
         checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals_fast(attribute[3][1][3]) or [], custom_formatter)
@@ -533,27 +544,6 @@ def search_result_entry_response_to_dict_fast(response, schema, custom_formatter
     entry_dict = dict()
     entry_dict['raw_dn'] = response[0][3]
     entry_dict['dn'] = to_unicode(response[0][3], additional_encodings=True)  # some flaky servers can return dn not in utf-8
-    entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
-    if check_names:
-        entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes
-    else:
-        entry_dict['attributes'] = attributes_to_dict_fast(response[1][3])  # attributes
-
-    return entry_dict
-
-
-def search_result_entry_response_to_dict_fast_orig(response, schema, custom_formatter, check_names):
-    entry_dict = dict()
-    entry_dict['raw_dn'] = response[0][3]
-    for dn_encoding in get_config_parameter('RESPONSE_DN_ENCODING'):  # AD could have DN not encoded in utf-8 (even if this is not allowed by RFC4510)
-        try:
-            entry_dict['dn'] = response[0][3].decode(dn_encoding)  # object
-            break
-        except UnicodeDecodeError:
-            pass
-    else:  # if unable to decode DN raise an exception
-        raise LDAPInvalidDnError('unable to decode DN')
-
     entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
     if check_names:
         entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes

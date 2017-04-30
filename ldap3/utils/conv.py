@@ -32,16 +32,27 @@ from ..utils.ciDict import CaseInsensitiveDict
 from ..core.exceptions import LDAPDefinitionError
 
 
-def to_unicode(obj, encoding=None):
-    """Tries to convert bytes (and str in python2) to unicode. Return object unmodified if python3 string, else raise an exception
+def to_unicode(obj, encoding=None, additional_encodings=False):
+    """Try to convert bytes (and str in python2) to unicode.
+     Return object unmodified if python3 string, else raise an exception
     """
+    conf_default_encoding = get_config_parameter('DEFAULT_ENCODING')
+    conf_additional_encodings = get_config_parameter('ADDITIONAL_ENCODINGS')
     if isinstance(obj, NUMERIC_TYPES):
         obj = str(obj)
 
     if isinstance(obj, (bytes, bytearray)):
         if encoding is None:
-            encoding = get_config_parameter('DEFAULT_ENCODING')
-        return obj.decode(encoding)
+            encoding = conf_default_encoding
+        try:
+            return obj.decode(encoding)
+        except UnicodeDecodeError:
+            if additional_encodings:
+                for encoding in conf_additional_encodings:  # AD could have DN not encoded in utf-8 (even if this is not allowed by RFC4510)
+                    try:
+                        return obj.decode(encoding)
+                    except UnicodeDecodeError:
+                        pass
 
     if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 unicode
         return obj

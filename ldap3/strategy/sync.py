@@ -50,6 +50,7 @@ class SyncStrategy(BaseStrategy):
         self.no_real_dsa = False
         self.pooled = False
         self.can_stream = False
+        self.socket_size = get_config_parameter('SOCKET_SIZE')
 
     def open(self, reset_usage=True, read_server_info=True):
         BaseStrategy.open(self, reset_usage, read_server_info)
@@ -75,11 +76,10 @@ class SyncStrategy(BaseStrategy):
         data = b''
         get_more_data = True
         exc = None
-        socket_size = get_config_parameter('SOCKET_SIZE')
         while receiving:
             if get_more_data:
                 try:
-                    data = self.connection.socket.recv(socket_size)
+                    data = self.connection.socket.recv(self.socket_size)
                 except (OSError, socket.error, AttributeError) as e:
                     self.connection.last_error = 'error receiving data: ' + str(e)
                     exc = e

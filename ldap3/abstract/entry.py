@@ -41,6 +41,7 @@ from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.dn import safe_dn, safe_rdn, to_dn
 from ..utils.repr import to_stdout_encoding
 from ..utils.ciDict import CaseInsensitiveWithAliasDict
+from ..utils.config import get_config_parameter
 from . import STATUS_VIRTUAL, STATUS_WRITABLE, STATUS_PENDING_CHANGES, STATUS_COMMITTED, STATUS_DELETED,\
     STATUS_INIT, STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING, STATUS_MANDATORY_MISSING, STATUSES, INITIAL_STATUSES
 from ..core.results import RESULT_SUCCESS
@@ -84,6 +85,7 @@ class EntryState(object):
         return self.__repr__()
 
     def set_status(self, status):
+        conf_ignored_mandatory_attributes_in_object_def = get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF')
         if status not in STATUSES:
             raise LDAPCursorError('invalid entry status ' + str(status))
 
@@ -96,7 +98,7 @@ class EntryState(object):
             self._initial_status = STATUS_WRITABLE
         if self.status == STATUS_VIRTUAL or (self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_VIRTUAL):  # checks if all mandatory attributes are present in new entries
             for attr in self.definition._attributes:
-                if self.definition._attributes[attr].mandatory:
+                if self.definition._attributes[attr].mandatory and attr not in conf_ignored_mandatory_attributes_in_object_def:
                     if (attr not in self.attributes or self.attributes[attr].virtual) and attr not in self.changes:
                         self.status = STATUS_MANDATORY_MISSING
                         break
@@ -167,6 +169,16 @@ class EntryBase(object):
             if not attr_found:
                 for attr in self._state.attributes.aliases():
                     if item + ';binary' == attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                for attr in self._state.attributes.keys():
+                    if item + ';range' in attr.lower():
+                        attr_found = attr
+                        break
+            if not attr_found:
+                for attr in self._state.attributes.aliases():
+                    if item + ';range' in attr.lower():
                         attr_found = attr
                         break
             if not attr_found:
@@ -256,6 +268,13 @@ class EntryBase(object):
 
     @property
     def entry_attributes(self):
+        # attr_list = list()
+        # for attr in self._state.attributes:
+        #     if self._state.definition[attr].name:
+        #         attr_list.append(self._state.definition[attr].name)
+        #     else:
+        #         attr_list.append(self._state.definition[attr].key)
+        # return attr_list
         return list(self._state.attributes.keys())
 
     @property
@@ -373,6 +392,10 @@ class Entry(EntryBase):
 
 
 class WritableEntry(EntryBase):
+    def __setitem__(self, key, value):
+        if value is not Ellipsis:  # hack for using implicit operators in writable attributes
+            self.__setattr__(key, value)
+
     def __setattr__(self, item, value):
         if item == '_state' and isinstance(value, EntryState):
             self.__dict__['_state'] = value
@@ -498,7 +521,6 @@ class WritableEntry(EntryBase):
                 if not self.entry_cursor.connection.strategy.sync:  # async request
                     response, result, request = self.entry_cursor.connection.get_response(result, get_request=True)
                 else:
-                    result = self.entry_cursor.connection.result
                     response = self.entry_cursor.connection.response
                     result = self.entry_cursor.connection.result
                     request = self.entry_cursor.connection.request

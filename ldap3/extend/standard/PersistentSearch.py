@@ -106,7 +106,7 @@ class PersistentSearch(object):
         self.connection.unbind()
         if self.message_id in self.connection.strategy._responses:
             del self.connection.strategy._responses[self.message_id]
-        if hasattr(self.connection.strategy, '_requests')  and self.message_id in self.connection.strategy._requests: # async strategy has a dict of request that could be returned by get_response()
+        if hasattr(self.connection.strategy, '_requests') and self.message_id in self.connection.strategy._requests:  # async strategy has a dict of request that could be returned by get_response()
             del self.connection.strategy._requests[self.message_id]
         self.connection.strategy.persistent_search_message_id = None
         self.message_id = None

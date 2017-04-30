@@ -29,10 +29,9 @@ set the defaults to their former values.
 A more pythonic LDAP
 --------------------
 
-LDAP operations look clumsy and hard-to-use because they reflect the old-age idea that time-consuming operations
-should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
-Layer** that lets you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
-LDAP operation at all.
+LDAP operations look clumsy and hard-to-use because they reflect the old-age idea that time-consuming operations should be performed client-side
+to not hog the server with heavy elaborations. To alleviate this ldap3 includes a fully functional **Abstraction Layer** that lets you
+interact with the LDAP server in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any LDAP operation at all.
 
 
 Home Page
@@ -51,7 +50,7 @@ License
 -------
 
 The ldap3 project is open source software released under the **LGPL v3 license**.
-Copyright 2013, 2014, 2015, 2016 Giovanni Cannata
+Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
 
 
 PEP8 Compliance
@@ -108,7 +107,13 @@ Thanks to
 Contact me
 ----------
 
-For information and suggestions you can contact me at cannatag@gmail.com. You can also a support ticket on https://github.com/cannatag/ldap3/issues/new
+For information and suggestions you can contact me at cannatag@gmail.com. You can also open a support ticket on https://github.com/cannatag/ldap3/issues/new
+
+
+Donate
+------
+
+If you want to keep this project up and running you can send me an Amazon gift card. I will use it to improve my skills in the Information and Communication technology.
 
 
 Changelog

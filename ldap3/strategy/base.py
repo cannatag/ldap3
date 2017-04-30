@@ -315,6 +315,7 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         A tuple (responses, result) is returned
         """
+        conf_sleep_interval = get_config_parameter('RESPONSE_SLEEPTIME')
         if timeout is None:
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         response = None
@@ -324,8 +325,8 @@ class BaseStrategy(object):
             while timeout >= 0:  # waiting for completed message to appear in responses
                 responses = self._get_response(message_id)
                 if not responses:
-                    sleep(get_config_parameter('RESPONSE_SLEEPTIME'))
-                    timeout -= get_config_parameter('RESPONSE_SLEEPTIME')
+                    sleep(conf_sleep_interval)
+                    timeout -= conf_sleep_interval
                     continue
 
                 if responses == SESSION_TERMINATED_BY_SERVER:
@@ -399,7 +400,19 @@ class BaseStrategy(object):
                                 entry['raw_attributes'][attribute_type] = list()
                                 entry['attributes'][attribute_type] = list()
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute value set to [] for missing attribute %s in %s', attribute_type, self)
+                                    log(PROTOCOL, 'attribute value set to empty list for missing attribute %s in %s', attribute_type, self)
+                        if not self.connection.auto_range:
+                            attrs_to_remove = []
+                            # removes original empty attribute in case a range tag is returned
+                            for attribute_type in entry['attributes']:
+                                if ';range' in attribute_type.lower():
+                                    orig_attr, _, _ = attribute_type.partition(';')
+                                    attrs_to_remove.append(orig_attr)
+                            for attribute_type in attrs_to_remove:
+                                if log_enabled(PROTOCOL):
+                                    log(PROTOCOL, 'attribute type %s removed in response because of the same attribute returned as range by the server in %s', attribute_type, self)
+                                del entry['raw_attributes'][attribute_type]
+                                del entry['attributes'][attribute_type]
 
             request = self._outstanding.pop(message_id)
         else:
@@ -650,6 +663,7 @@ class BaseStrategy(object):
             if high_range != '*':
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'performing next search on auto-range <%s> via <%s>', str(int(high_range) + 1), self.connection)
+                requested_range = attr_type + ';range=' + str(int(high_range) + 1) + '-*'
                 result = self.connection.search(search_base=response['dn'],
                                                 search_filter='(objectclass=*)',
                                                 search_scope=BASE,
@@ -665,6 +679,9 @@ class BaseStrategy(object):
                     current_response = current_response[0]
 
                 if not done:
+                    if requested_range in current_response['raw_attributes'] and len(current_response['raw_attributes'][requested_range]) == 0:
+                        del current_response['raw_attributes'][requested_range]
+                        del current_response['attributes'][requested_range]
                     attr_name = list(filter(lambda a: ';range=' in a, current_response['raw_attributes'].keys()))[0]
                     continue
 
@@ -672,11 +689,13 @@ class BaseStrategy(object):
 
     def do_search_on_auto_range(self, request, response):
         for resp in [r for r in response if r['type'] == 'searchResEntry']:
-            for attr_name in resp['raw_attributes'].keys():
+            for attr_name in list(resp['raw_attributes'].keys()):  # generate list to avoid changing of dict size error
                 if ';range=' in attr_name:
                     attr_type, _, _ = attr_name.partition(';range=')
-                    resp['raw_attributes'][attr_type] = list()
-                    resp['attributes'][attr_type] = list()
+                    if attr_type not in resp['raw_attributes'] or resp['raw_attributes'][attr_type] is None:
+                        resp['raw_attributes'][attr_type] = list()
+                    if attr_type not in resp['attributes'] or resp['attributes'][attr_type] is None:
+                        resp['attributes'][attr_type] = list()
                     self.do_next_range_search(request, resp, attr_name)
 
     def do_operation_on_referral(self, request, referrals):

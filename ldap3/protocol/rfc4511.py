@@ -369,7 +369,7 @@ class Referral(SequenceOf):
 class ServerSaslCreds(OctetString):
     # serverSaslCreds    [7] OCTET STRING OPTIONAL
     tagSet = OctetString.tagSet.tagImplicitly(Tag(tagClassContext, tagFormatSimple, 7))
-    # encoding = 'utf-8'
+    encoding = 'utf-8'
 
 
 class LDAPResult(Sequence):

@@ -175,6 +175,7 @@ class Cursor(object):
         If the 'dereference_dn' in AttrDef is a ObjectDef then the attribute values are treated as distinguished name and the relevant entry is retrieved and stored in the attribute value.
 
         """
+        conf_operational_attribute_prefix = get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX')
         attributes = CaseInsensitiveWithAliasDict()
         used_attribute_names = set()
         for attr_def in attr_defs:
@@ -217,11 +218,11 @@ class Cursor(object):
             if attribute_name not in used_attribute_names:
                 if attribute_name not in attr_defs:
                     raise LDAPCursorError('attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry.entry_definition._object_class), entry.entry_dn))
-                attribute = OperationalAttribute(AttrDef(get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name), entry, self)
+                attribute = OperationalAttribute(AttrDef(conf_operational_attribute_prefix + attribute_name), entry, self)
                 attribute.raw_values = response['raw_attributes'][attribute_name]
                 attribute.values = response['attributes'][attribute_name]
-                if (get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name) not in attributes:
-                    attributes[get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX') + attribute_name] = attribute
+                if (conf_operational_attribute_prefix + attribute_name) not in attributes:
+                    attributes[conf_operational_attribute_prefix + attribute_name] = attribute
 
         return attributes
 
@@ -466,9 +467,9 @@ class Reader(Cursor):
                         elif validated is not True:  # a valid LDAP value equivalent to the actual values
                                 value = validated
                     if val_not:
-                        query += '!' + val_search_operator + value
+                        query += '!' + val_search_operator + str(value)
                     else:
-                        query += val_search_operator + value
+                        query += val_search_operator + str(value)
 
                     query += ';'
                 query = query[:-1] + ', '
@@ -755,7 +756,15 @@ class Writer(Cursor):
 
     def refresh_entry(self, entry, tries=4, seconds=2):
         self._do_not_reset = True
-        temp_entry = self._refresh_object(entry.entry_dn, entry.entry_attributes, tries, seconds=seconds)  # if any attributes is added adds only to the entry not to the definition
+
+        attr_list = []
+        for attr in entry._state.attributes:  # check friendly attribute name in AttrDef
+            if entry._state.definition[attr].name:
+                attr_list.append(entry._state.definition[attr].name)
+            else:
+                attr_list.append(entry._state.definition[attr].key)
+
+        temp_entry = self._refresh_object(entry.entry_dn, attr_list, tries, seconds=seconds)  # if any attributes is added adds only to the entry not to the definition
         self._do_not_reset = False
         if temp_entry:
             temp_entry._state.origin = entry._state.origin

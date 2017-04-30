@@ -34,7 +34,7 @@ ConnectionUsage stores counters for each operation performed in the Connection, 
 * restartable_failures:
 * restartable_successes:
 
-Metrics are properly collected while the connection is open,kept while it's closed and reset if the connection is used again.
+Metrics are properly collected while the connection is open, kept while it's closed and reset if the connection is used again.
 While using a ServerPool or a restartable strategy the metrics are not reset when the server is changed.
 
 You can reset the usage metrics with the connection.usage.reset() method.
@@ -43,7 +43,7 @@ You can print out the metrics at any time of execution of your code with::
 
     print(connection.usage)
 
-and get the properly formatted metrics::
+and get the formatted metrics::
 
     Connection Usage:
       Time: [elapsed:        0:00:00.028885]

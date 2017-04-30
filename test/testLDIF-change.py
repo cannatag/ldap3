@@ -26,14 +26,16 @@
 import unittest
 
 from ldap3 import Connection, LDIF, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE
-from test import test_base, generate_dn, test_name_attr, test_moved, random_id
+from test.config import test_base, generate_dn, test_name_attr, test_moved, random_id
 
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = Connection(server=None, client_strategy=LDIF)
         self.connection.open()
 

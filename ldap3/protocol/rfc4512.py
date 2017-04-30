@@ -30,7 +30,7 @@ import json
 from .oid import CLASS_ABSTRACT, CLASS_STRUCTURAL, CLASS_AUXILIARY, ATTRIBUTE_USER_APPLICATION, \
     ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
 from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
-from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json
+from ..utils.conv import escape_bytes, json_hook, check_json_dict, format_json, to_unicode
 from ..utils.ciDict import CaseInsensitiveDict
 from ..protocol.formatters.standard import format_attribute_values
 from .oid import Oids, decode_oids, decode_syntax, oid_to_string
@@ -117,11 +117,12 @@ class BaseServerInfo(object):
 
     @classmethod
     def from_json(cls, json_definition, schema=None, custom_formatter=None):
+        conf_case_insensitive_schema = get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES')
         definition = json.loads(json_definition, object_hook=json_hook)
         if 'raw' not in definition or 'type' not in definition:
             raise LDAPDefinitionError('invalid JSON definition')
 
-        if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES'):
+        if conf_case_insensitive_schema:
             attributes = CaseInsensitiveDict()
         else:
             attributes = dict()
@@ -295,17 +296,18 @@ class SchemaInfo(BaseServerInfo):
         self.other = attributes  # remaining schema definition attributes not in RFC4512
 
         # links attributes to class objects
-        for object_class in self.object_classes:  # CaseInsensitiveDict return keys while iterating
-            for attribute in self.object_classes[object_class].must_contain:
-                try:
-                    self.attribute_types[attribute].mandatory_in.append(object_class)
-                except KeyError:
-                    pass
-            for attribute in self.object_classes[object_class].may_contain:
-                try:
-                    self.attribute_types[attribute].optional_in.append(object_class)
-                except KeyError:
-                    pass
+        if self.object_classes and self.attribute_types:
+            for object_class in self.object_classes:  # CaseInsensitiveDict return keys while iterating
+                for attribute in self.object_classes[object_class].must_contain:
+                    try:
+                        self.attribute_types[attribute].mandatory_in.append(object_class)
+                    except KeyError:
+                        pass
+                for attribute in self.object_classes[object_class].may_contain:
+                    try:
+                        self.attribute_types[attribute].optional_in.append(object_class)
+                    except KeyError:
+                        pass
 
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
@@ -409,12 +411,16 @@ class BaseObjectInfo(object):
 
     @classmethod
     def from_definition(cls, definitions):
+        conf_case_insensitive_schema = get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES')
+        conf_ignore_malformed_schema = get_config_parameter('IGNORE_MALFORMED_SCHEMA')
+
         if not definitions:
             return None
 
-        ret_dict = CaseInsensitiveDict() if get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES') else dict()
+        ret_dict = CaseInsensitiveDict() if conf_case_insensitive_schema else dict()
         for object_definition in definitions:
-            if [object_definition[0] == ')' and object_definition[:-1] == ')']:
+            object_definition = to_unicode(object_definition, additional_encodings=True)
+            if object_definition[0] == '(' and object_definition[-1] == ')':
                 if cls is MatchingRuleInfo:
                     pattern = '| SYNTAX '
                 elif cls is ObjectClassInfo:
@@ -498,7 +504,10 @@ class BaseObjectInfo(object):
                             object_def.experimental = []
                         object_def.experimental.append(extension_to_tuple('E-' + value))
                     else:
-                        raise LDAPSchemaError('malformed schema definition key:' + key)
+                        if not conf_ignore_malformed_schema:
+                            raise LDAPSchemaError('malformed schema definition key:' + key + ' - use get_info=NONE in Server definition')
+                        else:
+                            return None
                 object_def.raw_definition = object_definition
                 if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
                     object_def.min_length = None
@@ -519,7 +528,10 @@ class BaseObjectInfo(object):
                     ret_dict[object_def.oid] = object_def
 
             else:
-                raise LDAPSchemaError('malformed schema definition')
+                if not conf_ignore_malformed_schema:
+                    raise LDAPSchemaError('malformed schema definition, use get_info=NONE in Server definition')
+                else:
+                    return None
         return ret_dict
 
 

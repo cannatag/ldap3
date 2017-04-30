@@ -31,13 +31,15 @@ from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MOD
 from ldap3.core.exceptions import LDAPInvalidCredentialsResult, LDAPNoSuchObjectResult
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_dsa_info, edir_8_8_8_schema
-from test import random_id
+from test.config import random_id
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         # The mock server can be defined in two different ways, so tests are duplicated, connection_3 is without schema
         schema = SchemaInfo.from_json(edir_8_8_8_schema)
         info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)

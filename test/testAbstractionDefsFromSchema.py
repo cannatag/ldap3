@@ -27,13 +27,15 @@ import unittest
 
 from ldap3 import ALL
 from ldap3 import ObjectDef, Reader
-from test import test_base, get_connection, drop_connection, random_id, add_user
+from test.config import test_base, get_connection, drop_connection, random_id, add_user
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection(get_info=ALL, check_names=True)
         self.delete_at_teardown = []
 
@@ -49,6 +51,6 @@ class Test(unittest.TestCase):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'abstract-1'))
         o = ObjectDef(['inetorgPerson', 'person'], self.connection)
         r = Reader(self.connection, o, test_base, '(cn=' + testcase_id + 'abstract-1)')
-        r.search()
+        r.search(attributes='cn')  # AD returns operationError for reading some atributes
         self.assertEqual(len(r), 1)
         self.assertEqual(r.entries[0].cn, testcase_id + 'abstract-1')

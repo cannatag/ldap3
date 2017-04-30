@@ -68,7 +68,6 @@ def modify_operation(dn,
                     partial_attribute['vals'].setComponentByPosition(index, prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode)))
             else:
                 partial_attribute['vals'].setComponentByPosition(0, prepare_for_sending(validate_attribute_value(schema, attribute, change_operation[1], auto_encode)))
-
             change = Change()
             change['operation'] = Operation(change_table[change_operation[0]])
             change['modification'] = partial_attribute

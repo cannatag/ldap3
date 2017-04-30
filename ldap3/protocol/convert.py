@@ -22,6 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
+from pyasn1.error import PyAsn1Error
 
 from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
 from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
@@ -62,7 +63,10 @@ def decode_referrals(referrals):
 
 
 def partial_attribute_to_dict(modification):
-    return {'type': str(modification['type']), 'value': [str(value) for value in modification['vals']]}
+    try:
+        return {'type': str(modification['type']), 'value': [str(value) for value in modification['vals']]}
+    except PyAsn1Error:  # invalid encoding, return bytes value
+        return {'type': str(modification['type']), 'value': [bytes(value) for value in modification['vals']]}
 
 
 def change_to_dict(change):
@@ -131,16 +135,23 @@ def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
 
 
 def validate_attribute_value(schema, name, value, auto_encode):
-    if schema:
+    conf_classes_excluded_from_check = get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')
+    conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+    conf_utf8_syntaxes = get_config_parameter('UTF8_ENCODED_SYNTAXES')
+    conf_utf8_types = get_config_parameter('UTF8_ENCODED_TYPES')
+    if schema and schema.attribute_types:
         if ';' in name:
             name = name.split(';')[0]
-        if schema.attribute_types is not None and name not in schema.attribute_types and name not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK'):
-            raise LDAPAttributeError('invalid attribute ' + name)
-        if schema.object_classes is not None and name == 'objectClass':
-            if value not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and value not in schema.object_classes:
+
+        if schema.object_classes and name == 'objectClass':
+            if value not in conf_classes_excluded_from_check and value not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
+
+        if name not in schema.attribute_types and name not in conf_attributes_excluded_from_check:
+            raise LDAPAttributeError('invalid attribute ' + name)
+
         # encodes to utf-8 for well known Unicode LDAP syntaxes
-        if auto_encode and (schema.attribute_types[name].syntax in get_config_parameter('UTF8_ENCODED_SYNTAXES') or name in get_config_parameter('UTF8_ENCODED_TYPES')):
+        if auto_encode and (schema.attribute_types[name].syntax in conf_utf8_syntaxes or name in conf_utf8_types):
             value = to_unicode(value)  # tries to convert from local encoding to Unicode
     return to_raw(value)
 

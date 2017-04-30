@@ -69,7 +69,8 @@ class ExtendedOperation(object):
         if self.result['result'] not in [RESULT_SUCCESS]:
             if self.connection.raise_exceptions:
                 raise LDAPExtensionError('extended operation error: ' + self.result['description'] + ' - ' + self.result['message'])
-            else: return None
+            else:
+                return None
         if not self.response_name or self.result['responseName'] == self.response_name:
             if self.result['responseValue']:
                 if self.asn1_spec is not None:

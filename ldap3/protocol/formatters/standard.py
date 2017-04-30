@@ -183,7 +183,7 @@ def find_attribute_helpers(attr_type, name, custom_formatter):
 
 
 def format_attribute_values(schema, name, values, custom_formatter):
-    if schema and schema.attribute_types is not None and name in schema.attribute_types:
+    if schema and schema.attribute_types and name in schema.attribute_types:
         attr_type = schema.attribute_types[name]
     else:
         attr_type = None
@@ -202,7 +202,7 @@ def format_attribute_values(schema, name, values, custom_formatter):
 
 
 def find_attribute_validator(schema, name, custom_validator):
-    if schema and schema.attribute_types is not None and name in schema.attribute_types:
+    if schema and schema.attribute_types and name in schema.attribute_types:
         attr_type = schema.attribute_types[name]
     else:
         attr_type = None

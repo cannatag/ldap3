@@ -25,14 +25,16 @@
 
 import unittest
 
-from test import test_base, test_name_attr, get_connection, random_id, add_user, \
+from test.config import test_base, test_name_attr, get_connection, random_id, add_user, \
     drop_connection
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection()
         self.delete_at_teardown = []
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'ldif-content-1'))

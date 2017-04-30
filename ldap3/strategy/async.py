@@ -55,13 +55,13 @@ class AsyncStrategy(BaseStrategy):
         def __init__(self, ldap_connection):
             Thread.__init__(self)
             self.connection = ldap_connection
+            self.socket_size = get_config_parameter('SOCKET_SIZE')
 
         def run(self):
             """
             Wait for data on socket, compute the length of the message and wait for enough bytes to decode the message
             Message are appended to strategy._responses
             """
-            socket_size = get_config_parameter('SOCKET_SIZE')
             unprocessed = b''
             get_more_data = True
             listen = True
@@ -69,7 +69,7 @@ class AsyncStrategy(BaseStrategy):
             while listen:
                 if get_more_data:
                     try:
-                        data = self.connection.socket.recv(socket_size)
+                        data = self.connection.socket.recv(self.socket_size)
                     except (OSError, socket.error, AttributeError):
                         if self.connection.receive_timeout:  # a receive timeout has been detected - keep kistening on the socket
                             continue

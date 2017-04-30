@@ -4,7 +4,7 @@ from ldap3 import Server, Connection, BASE, ALL_ATTRIBUTES
 SERVER = 'ldaps://edir1.hyperv'
 CONNECT_TIMEOUT = 2
 RECEIVE_TIMEOUT = 3
-log = open('test_timeouts_ldap3.txt', 'w')
+log = open('timeouts_test_ldap3.txt', 'w')
 
 
 def ask(connection_working):

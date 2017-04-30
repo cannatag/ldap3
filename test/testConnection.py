@@ -25,7 +25,7 @@
 
 import unittest
 
-from test import get_connection, drop_connection
+from test.config import get_connection, drop_connection
 
 
 class Test(unittest.TestCase):

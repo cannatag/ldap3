@@ -150,7 +150,7 @@ class MockBaseStrategy(object):
                     if attribute == 'objectClass' and self.connection.server.schema:  # builds the objectClass hierarchy only if schema is present
                         class_set = set()
                         for object_class in attributes['objectClass']:
-                            if object_class not in self.connection.server.schema.object_classes:
+                            if self.connection.server.schema.object_classes and object_class not in self.connection.server.schema.object_classes:
                                 return False
                             # walkups the class hierarchy and buils a set of all classes in it
                             class_set.add(object_class)
@@ -429,13 +429,13 @@ class MockBaseStrategy(object):
                 elements = modification['attribute']['value']
                 if operation == 0:  # add
                     if attribute not in entry and elements:  # attribute not present, creates the new attribute and add elements
-                        if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(elements) > 1:  # multiple values in single-valued attribute
+                        if self.connection.server.schema and self.connection.server.schema.attribute_types and self.connection.server.schema.attribute_types[attribute].single_value and len(elements) > 1:  # multiple values in single-valued attribute
                             result_code = 19
                             message = 'attribute is single-valued'
                         else:
                             entry[attribute] = [to_raw(element) for element in elements]
                     else:  # attribute present, adds elements to current values
-                        if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value:  # multiple values in single-valued attribute
+                        if self.connection.server.schema and self.connection.server.schema.attribute_types and self.connection.server.schema.attribute_types[attribute].single_value:  # multiple values in single-valued attribute
                             result_code = 19
                             message = 'attribute is single-valued'
                         else:
@@ -462,7 +462,7 @@ class MockBaseStrategy(object):
                                 del entry[attribute]
                 elif operation == 2:  # replace
                     if attribute not in entry and elements:  # attribute not present, creates the new attribute and add elements
-                        if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(elements) > 1:  # multiple values in single-valued attribute
+                        if self.connection.server.schema and self.connection.server.schema.attribute_types and self.connection.server.schema.attribute_types[attribute].single_value and len(elements) > 1:  # multiple values in single-valued attribute
                             result_code = 19
                             message = 'attribute is single-valued'
                         else:

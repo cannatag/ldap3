@@ -65,6 +65,9 @@ _UTF8_ENCODED_SYNTAXES = ['1.2.840.113556.1.4.904',  # DN String [MICROSOFT]
 
 _UTF8_ENCODED_TYPES = []
 
+_ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF = ['msds-memberOfTransitive', 'msds-memberTransitive']
+_IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF = ['instanceType', 'nTSecurityDescriptor', 'objectCategory']
+
 _CASE_INSENSITIVE_ATTRIBUTE_NAMES = True
 _CASE_INSENSITIVE_SCHEMA_NAMES = True
 
@@ -74,18 +77,19 @@ _ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OA_'
 # communication
 _POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool
 
-_RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies
-_RESPONSE_WAITING_TIMEOUT = 20  # waiting timeout for receiving a response in asynchronous strategies
+_RESPONSE_SLEEPTIME = 0.1  # seconds to wait while waiting for a response in asynchronous strategies
+_RESPONSE_WAITING_TIMEOUT = 30  # waiting timeout for receiving a response in asynchronous strategies
 _SOCKET_SIZE = 4096  # socket byte size
 _CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 _RESET_AVAILABILITY_TIMEOUT = 5  # default timeout for resetting the availability status when checking candidate addresses
 _RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
 _RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
-_REUSABLE_THREADED_POOL_SIZE = 10
+_REUSABLE_THREADED_POOL_SIZE = 5
 _REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 _DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
 _ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
-_RESPONSE_DN_ENCODING = ["utf-8"]  # some broken LDAP implementation may havedifferent encoding against RFC
+_ADDITIONAL_ENCODINGS = ['latin-1']  # some broken LDAP implementation may have different encoding than those expected by RFCs
+_IGNORE_MALFORMED_SCHEMA = False  # some flaky LDAP servers returns malformed schema. If True no expection is raised and schema is thrown away
 
 if stdin and stdin.encoding:
     _DEFAULT_ENCODING = stdin.encoding
@@ -136,8 +140,14 @@ def get_config_parameter(parameter):
         return _UTF8_ENCODED_SYNTAXES
     elif parameter == 'UTF8_ENCODED_TYPES':
         return _UTF8_ENCODED_TYPES
-    elif parameter == 'RESPONSE_DN_ENCODING':
-        return _RESPONSE_DN_ENCODING
+    elif parameter == 'ADDITIONAL_ENCODINGS':
+        return _ADDITIONAL_ENCODINGS
+    elif parameter == 'IGNORE_MALFORMED_SCHEMA':
+        return _IGNORE_MALFORMED_SCHEMA
+    elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF':
+        return _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF
+    elif parameter == 'IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF':
+        return _IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
 
@@ -202,8 +212,17 @@ def set_config_parameter(parameter, value):
     elif parameter == 'UTF8_ENCODED_TYPES':
         global _UTF8_ENCODED_TYPES
         _UTF8_ENCODED_TYPES = value
-    elif parameter == 'RESPONSE_DN_ENCODING':
-        global _RESPONSE_DN_ENCODING
-        _RESPONSE_DN_ENCODING = value if isinstance(value, SEQUENCE_TYPES) else [value]
+    elif parameter == 'ADDITIONAL_ENCODINGS':
+        global _ADDITIONAL_ENCODINGS
+        _ADDITIONAL_ENCODINGS = value if isinstance(value, SEQUENCE_TYPES) else [value]
+    elif parameter == 'IGNORE_MALFORMED_SCHEMA':
+        global _IGNORE_MALFORMED_SCHEMA
+        _IGNORE_MALFORMED_SCHEMA = value
+    elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF':
+        global _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF
+        _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF = value
+    elif parameter == 'IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF':
+        global _IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF
+        _IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF = value
     else:
         raise LDAPConfigurationParameterError('unable to set configuration parameter %s' % parameter)

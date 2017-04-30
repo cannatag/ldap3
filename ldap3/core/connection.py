@@ -63,9 +63,9 @@ from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
-    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError
+    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError
 
-from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json
+from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json, to_unicode
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
 from ..utils.dn import safe_dn
 
@@ -201,6 +201,7 @@ class Connection(object):
                  auto_escape=True,
                  auto_encode=True):
 
+        conf_default_pool_name = get_config_parameter('DEFAULT_THREADED_POOL_NAME')
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
         with self.lock:
             if client_strategy not in CLIENT_STRATEGIES:
@@ -254,7 +255,7 @@ class Connection(object):
             self._bind_controls = None
             self._executing_deferred = False
             self.lazy = lazy
-            self.pool_name = pool_name if pool_name else get_config_parameter('DEFAULT_THREADED_POOL_NAME')
+            self.pool_name = pool_name if pool_name else conf_default_pool_name
             self.pool_size = pool_size
             self.pool_lifetime = pool_lifetime
             self.starting_tls = False
@@ -325,7 +326,7 @@ class Connection(object):
                     self.open(read_server_info=False)
                     if self.auto_bind == AUTO_BIND_NO_TLS:
                         self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND or auto_bind is True:
+                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
                         self.start_tls(read_server_info=False)
                         self.bind(read_server_info=True)
                     elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
@@ -361,6 +362,7 @@ class Connection(object):
         return ' - '.join(s)
 
     def __repr__(self):
+        conf_default_pool_name = get_config_parameter('DEFAULT_THREADED_POOL_NAME')
         if self.server_pool:
             r = 'Connection(server={0.server_pool!r}'.format(self)
         else:
@@ -379,7 +381,7 @@ class Connection(object):
         r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
-        r += '' if (self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(self)
+        r += '' if (self.pool_name is None or self.pool_name == conf_default_pool_name) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))
@@ -391,6 +393,7 @@ class Connection(object):
         return r
 
     def repr_with_sensitive_data_stripped(self):
+        conf_default_pool_name = get_config_parameter('DEFAULT_THREADED_POOL_NAME')
         if self.server_pool:
             r = 'Connection(server={0.server_pool!r}'.format(self)
         else:
@@ -413,7 +416,7 @@ class Connection(object):
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
         r += '' if (
-            self.pool_name is None or self.pool_name == get_config_parameter('DEFAULT_THREADED_POOL_NAME')) else ', pool_name={0.pool_name!r}'.format(
+            self.pool_name is None or self.pool_name == conf_default_pool_name) else ', pool_name={0.pool_name!r}'.format(
             self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
@@ -447,8 +450,8 @@ class Connection(object):
             return None
         if self.strategy.pooled:  # update master connection usage from pooled connections
             self._usage.reset()
-            for connection in self.strategy.pool.connections:
-                self._usage += connection.connection.usage
+            for worker in self.strategy.pool.workers:
+                self._usage += worker.connection.usage
             self._usage += self.strategy.pool.terminated_usage
         return self._usage
 
@@ -706,6 +709,7 @@ class Connection(object):
         - If mssing_attributes == True then an attribute not returned by the server is set to None
         - If auto_escape is set it overrides the Connection auto_escape
         """
+        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
         if log_enabled(BASIC):
             log(BASIC, 'start SEARCH operation via <%s>', self)
 
@@ -743,7 +747,7 @@ class Connection(object):
                         attribute_name_to_check = attribute_name.split(';')[0]
                     else:
                         attribute_name_to_check = attribute_name
-                    if attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if self.server.schema and attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
             request = search_operation(search_base,
@@ -791,6 +795,8 @@ class Connection(object):
         """
         Perform a compare operation
         """
+        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+
         if log_enabled(BASIC):
             log(BASIC, 'start COMPARE operation via <%s>', self)
         self.last_error = None
@@ -805,8 +811,11 @@ class Connection(object):
             else:
                 attribute_name_to_check = attribute
 
-            if attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
+            if self.server.schema.attribute_types and attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                 raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+
+        if isinstance(value, SEQUENCE_TYPES):  # value can't be a sequence
+            raise LDAPInvalidValueError('value cannot be a sequence')
 
         with self.lock:
             self._fire_deferred()
@@ -844,6 +853,8 @@ class Connection(object):
         Attributes is a dictionary in the form 'attr': 'val' or 'attr':
         ['val1', 'val2', ...] for multivalued attributes
         """
+        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+        conf_classes_excluded_from_check = get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
         self.last_error = None
@@ -872,6 +883,7 @@ class Connection(object):
             if not object_class_attr_name:
                 object_class_attr_name = 'objectClass'
 
+            attr_object_class = [to_unicode(object_class) for object_class in attr_object_class]  # converts objectclass to unicode in case of bytes value
             attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, parm_object_class + attr_object_class, [])  # remove duplicate ObjectClasses
 
             if not attributes[object_class_attr_name]:
@@ -882,8 +894,8 @@ class Connection(object):
 
             if self.server and self.server.schema and self.check_names:
                 for object_class_name in attributes[object_class_attr_name]:
-                    if object_class_name not in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK') and object_class_name not in self.server.schema.object_classes:
-                        raise LDAPObjectClassError('invalid object class ' + object_class_name)
+                    if object_class_name not in conf_classes_excluded_from_check and object_class_name not in self.server.schema.object_classes:
+                        raise LDAPObjectClassError('invalid object class ' + str(object_class_name))
 
                 for attribute_name in attributes:
                     if ';' in attribute_name:  # remove tags for checking
@@ -891,7 +903,7 @@ class Connection(object):
                     else:
                         attribute_name_to_check = attribute_name
 
-                    if attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
             request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None)
@@ -967,11 +979,12 @@ class Connection(object):
         """
         Modify attributes of entry
 
-        - Changes is a dictionary in the form {'attribute1': change),
-        'attribute2': [change, change, ...], ...}
-        change is (operation, [value1, value2, ...])
-        - Operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
+        - changes is a dictionary in the form {'attribute1': change), 'attribute2': [change, change, ...], ...}
+        - change is (operation, [value1, value2, ...])
+        - operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
+        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY operation via <%s>', self)
         self.last_error = None
@@ -1002,13 +1015,12 @@ class Connection(object):
 
             for attribute_name in changes:
                 if self.server and self.server.schema and self.check_names:
-                    tags = None
                     if ';' in attribute_name:  # remove tags for checking
                         attribute_name_to_check = attribute_name.split(';')[0]
                     else:
                         attribute_name_to_check = attribute_name
 
-                    if attribute_name_to_check not in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK') and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if self.server.schema.attribute_types and attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
                 change = changes[attribute_name]
                 if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
@@ -1399,7 +1411,7 @@ class Connection(object):
                 target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
                 target.close()
 
-    def _fire_deferred(self):
+    def _fire_deferred(self, read_info=True):
         with self.lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
@@ -1413,7 +1425,8 @@ class Connection(object):
                         self.start_tls(read_server_info=False)
                     if self._deferred_bind:
                         self.bind(read_server_info=False, controls=self._bind_controls)
-                    self.refresh_server_info()
+                    if read_info:
+                        self.refresh_server_info()
                 except LDAPExceptionError as e:
                     if log_enabled(ERROR):
                         log(ERROR, '%s for <%s>', e, self)

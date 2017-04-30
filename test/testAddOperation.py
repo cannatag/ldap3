@@ -25,14 +25,16 @@
 
 import unittest
 
-from test import get_connection, drop_connection, add_user, random_id
+from test.config import get_connection, drop_connection, add_user, random_id
 
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection()
         self.delete_at_teardown = []
 
@@ -42,5 +44,8 @@ class Test(unittest.TestCase):
 
     def test_add(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-1'))
+        self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
 
+    def test_add_bytes(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-1', test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])

@@ -27,10 +27,8 @@ import unittest
 
 from ldap3 import ANONYMOUS, SASL, NTLM, Server, Connection, EXTERNAL, DIGEST_MD5, MOCK_SYNC, MOCK_ASYNC
 from ldap3.core.exceptions import LDAPSocketOpenError
-from test import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type, \
+from test.config import test_sasl_user, test_sasl_password, random_id, get_connection, drop_connection, test_sasl_realm, test_server_type, \
     test_ntlm_user, test_ntlm_password, test_sasl_user_dn, test_strategy
-
-testcase_id = random_id()
 
 
 class Test(unittest.TestCase):
@@ -57,7 +55,7 @@ class Test(unittest.TestCase):
         self.assertFalse(connection.bound)
 
     def test_bind_sasl_digest_md5(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'AD' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             connection = get_connection(bind=False, authentication=SASL, sasl_mechanism=DIGEST_MD5, sasl_credentials=(test_sasl_realm, test_sasl_user, test_sasl_password, None))
             connection.open()
             connection.bind()

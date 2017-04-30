@@ -26,39 +26,40 @@
 import unittest
 
 from ldap3.core.exceptions import LDAPExtensionError
-from test import test_user, test_server_context, test_server_edir_name, random_id, get_connection, drop_connection, add_user, test_server_type, \
+from test.config import test_user, test_server_context, test_server_edir_name, random_id, get_connection, drop_connection, add_user, test_server_type, \
     test_name_attr, test_base, test_password
 
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection(check_names=True)
         self.delete_at_teardown = []
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-1'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-2'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-3'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-4'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-5'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-6'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-7'))
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'paged_search-8'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-3'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-4'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-5'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-6'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-7'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'pag-8'))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_who_am_i_extension(self):
-        if not test_server_type == 'EDIR':
+        if test_server_type != 'EDIR':
             if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
                 try:
                     if not self.connection.server.info:
                         self.connection.refresh_server_info()
-                    self.connection.extend.standard.who_am_i()
-                    result = self.connection.result
-                    self.assertEqual(result['description'], 'success')
+                    user = self.connection.extend.standard.who_am_i()
+                    self.assertTrue(user)
                 except LDAPExtensionError as e:
                     if not e.args[0] == 'extension not in DSA list of supported extensions':
                         raise
@@ -70,13 +71,13 @@ class Test(unittest.TestCase):
 
     def test_paged_search_accumulator(self):
         if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
-            responses = self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)', generator=False, paged_size=3)
+            responses = self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'pag-*)', generator=False, paged_size=3)
             self.assertEqual(len(responses), 8)
 
     def test_paged_search_generator(self):
         if not self.connection.strategy.pooled and not self.connection.strategy.no_real_dsa:
             responses = []
-            for response in self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'paged_search-*)'):
+            for response in self.connection.extend.standard.paged_search(test_base, '(' + test_name_attr + '=' + testcase_id + 'pag-*)'):
                 responses.append(response)
             self.assertEqual(len(responses), 8)
 

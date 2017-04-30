@@ -26,28 +26,30 @@
 import unittest
 
 from ldap3 import ALL
-from test import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
+from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection(check_names=True, get_info=ALL)
         self.delete_at_teardown = []
         if test_server_type == 'EDIR':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1', attributes={'loginGraceLimit': 0}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-1', attributes={'loginGraceLimit': 0}))
         elif test_server_type == 'AD':
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-1'))
         else:
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'checked-attributes-1'))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-1'))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)
         self.assertFalse(self.connection.bound)
 
     def test_search_checked_attributes(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'checked-attributes-1*)', attributes=[test_name_attr, 'sn', test_int_attr])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1*)', attributes=[test_name_attr, 'sn', test_int_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -56,9 +58,9 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
-            self.assertEqual(response[0]['attributes']['sn'], 'checked-attributes-1')  # sn is single-value in Active Directory
+            self.assertEqual(response[0]['attributes']['sn'], 'chk-1')  # sn is single-value in Active Directory
         else:
-            self.assertEqual(response[0]['attributes']['sn'][0], 'checked-attributes-1')
+            self.assertEqual(response[0]['attributes']['sn'][0], 'chk-1')
         self.assertEqual(response[0]['attributes'][test_int_attr], 0)
         if str != bytes:  # python3
             self.assertTrue(isinstance(response[0]['attributes']['sn'][0], str))
@@ -81,7 +83,7 @@ class Test(unittest.TestCase):
                          '2.5.4.4': lambda v: unicode(v, encoding='UTF-8')[::-1],  # sn reversed
                          '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000}  # integer syntax incremented by 1000
         self.connection.server.custom_formatter = formatter
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'checked-attributes-1*)', attributes=[test_name_attr, 'sn', test_int_attr])
+        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1*)', attributes=[test_name_attr, 'sn', test_int_attr])
         if not self.connection.strategy.sync:
             response, result = self.connection.get_response(result)
         else:
@@ -90,9 +92,9 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
-            self.assertTrue('CHECKED-ATTRIBUTES-1' in response[0]['attributes']['cn'])  # cn is single-value in Active Directory
-            self.assertEqual(response[0]['attributes']['sn'], '1-setubirtta-dekcehc')  # sn is single-value in Active Directory
+            self.assertTrue('CHK-1' in response[0]['attributes']['cn'])  # cn is single-valued in Active Directory
+            self.assertEqual(response[0]['attributes']['sn'], '1-khc')  # sn is single-valued in Active Directory
         else:
-            self.assertTrue('CHECKED-ATTRIBUTES-1' in response[0]['attributes']['cn'][0])
-            self.assertEqual(response[0]['attributes']['sn'][0], '1-setubirtta-dekcehc')
+            self.assertTrue('CHK-1' in response[0]['attributes']['cn'][0])
+            self.assertEqual(response[0]['attributes']['sn'][0], '1-khc')
         self.assertEqual(response[0]['attributes'][test_int_attr], 1000)

@@ -25,14 +25,16 @@
 
 import unittest
 
-from test import random_id, get_connection, drop_connection, add_user
+from test.config import random_id, get_connection, drop_connection, add_user
 
 
-testcase_id = random_id()
+testcase_id = ''
 
 
 class Test(unittest.TestCase):
     def setUp(self):
+        global testcase_id
+        testcase_id = random_id()
         self.connection = get_connection(check_names=True)
         self.delete_at_teardown = []
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'compare-1', attributes={'givenName': 'compare'}))

@@ -25,7 +25,7 @@
 
 from ... import SEQUENCE_TYPES
 from .formatters import format_ad_timestamp, format_binary, format_boolean, format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
-from .validators import validate_integer, validate_time, always_valid, validate_generic_single_value, validate_boolean
+from .validators import validate_integer, validate_time, always_valid, validate_generic_single_value, validate_boolean, validate_ad_timestamp
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -112,16 +112,16 @@ standard_formatter = {
     'supportedldapversion': (format_integer, None),  # supportedLdapVersion (Microsoft)
     'octetstring': (format_binary, None),  # octect string (Microsoft)
     '1.2.840.113556.1.4.2': (format_uuid_le, None),  # object guid (Microsoft)
-    '1.2.840.113556.1.4.13': (format_ad_timestamp, None),  # builtinCreationTime (Microsoft)
-    '1.2.840.113556.1.4.26': (format_ad_timestamp, None),  # creationTime (Microsoft)
-    '1.2.840.113556.1.4.49': (format_ad_timestamp, None),  # badPasswordTime (Microsoft)
-    '1.2.840.113556.1.4.51': (format_ad_timestamp, None),  # lastLogoff (Microsoft)
-    '1.2.840.113556.1.4.52': (format_ad_timestamp, None),  # lastLogon (Microsoft)
-    '1.2.840.113556.1.4.96': (format_ad_timestamp, None),  # pwdLastSet (Microsoft)
+    '1.2.840.113556.1.4.13': (format_ad_timestamp, validate_ad_timestamp),  # builtinCreationTime (Microsoft)
+    '1.2.840.113556.1.4.26': (format_ad_timestamp, validate_ad_timestamp),  # creationTime (Microsoft)
+    '1.2.840.113556.1.4.49': (format_ad_timestamp, validate_ad_timestamp),  # badPasswordTime (Microsoft)
+    '1.2.840.113556.1.4.51': (format_ad_timestamp, validate_ad_timestamp),  # lastLogoff (Microsoft)
+    '1.2.840.113556.1.4.52': (format_ad_timestamp, validate_ad_timestamp),  # lastLogon (Microsoft)
+    '1.2.840.113556.1.4.96': (format_ad_timestamp, validate_ad_timestamp),  # pwdLastSet (Microsoft)
     '1.2.840.113556.1.4.146': (format_sid, None),  # objectSid (Microsoft)
-    '1.2.840.113556.1.4.159': (format_ad_timestamp, None),  # accountExpires (Microsoft)
-    '1.2.840.113556.1.4.662': (format_ad_timestamp, None),  # lockoutTime (Microsoft)
-    '1.2.840.113556.1.4.1696': (format_ad_timestamp, None)  # lastLogonTimestamp (Microsoft)
+    '1.2.840.113556.1.4.159': (format_ad_timestamp, validate_ad_timestamp),  # accountExpires (Microsoft)
+    '1.2.840.113556.1.4.662': (format_ad_timestamp, validate_ad_timestamp),  # lockoutTime (Microsoft)
+    '1.2.840.113556.1.4.1696': (format_ad_timestamp, validate_ad_timestamp)  # lastLogonTimestamp (Microsoft)
 }
 
 

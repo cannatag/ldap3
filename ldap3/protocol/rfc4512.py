@@ -429,8 +429,6 @@ class BaseObjectInfo(object):
                     pattern = '| SUP | EQUALITY | ORDERING | SUBSTR | SYNTAX | SINGLE-VALUE| COLLECTIVE| NO-USER-MODIFICATION| USAGE '
                 elif cls is MatchingRuleUseInfo:
                     pattern = '| APPLIES '
-                elif cls is DitContentRuleInfo:
-                    pattern = '| AUX '
                 elif cls is LdapSyntaxInfo:
                     pattern = ''
                 elif cls is DitContentRuleInfo:
@@ -709,7 +707,8 @@ class LdapSyntaxInfo(BaseObjectInfo):
                  definition=None):
 
         BaseObjectInfo.__init__(self,
-                                oid=oid, name=None,
+                                oid=oid,
+                                name=None,
                                 description=description,
                                 obsolete=False,
                                 extensions=extensions,

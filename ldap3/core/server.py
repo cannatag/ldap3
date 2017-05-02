@@ -81,6 +81,7 @@ class Server(object):
 
         self.ipc = False
         url_given = False
+        host = host.strip()
         if host.lower().startswith('ldap://'):
             self.host = host[7:]
             use_ssl = False

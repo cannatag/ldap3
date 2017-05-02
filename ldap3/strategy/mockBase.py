@@ -46,6 +46,7 @@ from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
+from ..protocol.formatters.standard import find_attribute_validator
 from ..utils.log import log, log_enabled, ERROR, BASIC
 from ..protocol.formatters.standard import format_attribute_values
 from ..utils.asn1 import encoder
@@ -103,7 +104,6 @@ from ..utils.asn1 import encoder
 #     diagnosticMessage  LDAPString,
 #     referral           [3] Referral OPTIONAL }
 
-
 # noinspection PyProtectedMember,PyUnresolvedReferences
 class MockBaseStrategy(object):
     """
@@ -134,6 +134,20 @@ class MockBaseStrategy(object):
         if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
+    def prepare_value(self, attribute_type, value):
+        """
+        Prepare a value for being stored in the mock DIT
+        :param value: object to store
+        :return: raw value to store in the DIT
+        """
+        validator = find_attribute_validator(self.connection.server.schema, attribute_type, None)
+        validated = validator(value)
+        if validated is False:
+            raise LDAPValueError('value \'%s\' non valid for attribute \'%s\'' % (value, attribute_type))
+        elif validated is not True:  # a valid LDAP value equivalent to the actual value
+            value = validated
+        return to_raw(value)
+
     def _update_attribute(self, dn, attribute_type, value):
         pass
 
@@ -147,7 +161,7 @@ class MockBaseStrategy(object):
                         attributes[attribute] = [attributes[attribute]]
                     if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(attributes[attribute]) > 1:  # multiple values in single-valued attribute
                         return False
-                    if attribute == 'objectClass' and self.connection.server.schema:  # builds the objectClass hierarchy only if schema is present
+                    if attribute.lower() == 'objectclass' and self.connection.server.schema:  # builds the objectClass hierarchy only if schema is present
                         class_set = set()
                         for object_class in attributes['objectClass']:
                             if self.connection.server.schema.object_classes and object_class not in self.connection.server.schema.object_classes:
@@ -164,7 +178,7 @@ class MockBaseStrategy(object):
                                 class_set.update(new_classes)
                             new_entry['objectClass'] = [to_raw(value) for value in class_set]
                     else:
-                        new_entry[attribute] = [to_raw(value) for value in attributes[attribute]]
+                        new_entry[attribute] = [self.prepare_value(attribute, value) for value in attributes[attribute]]
                 for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
                     if rdn[0] not in new_entry:  # if rdn attribute is missing adds attribute and its value
                         new_entry[rdn[0]] = [to_raw(rdn[1])]

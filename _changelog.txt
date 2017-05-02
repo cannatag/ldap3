@@ -1,3 +1,7 @@
+- 2.2.4 not yet released
+    - leading and trailing spaces in server name don't raise exception anymore
+    - DitContentRule is properly read from the schema
+
 - 2.2.3 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)
     - CaseInsensitiveDictWithAlias doesn't raise an exception anymore if alias is set multiple times to the same key

@@ -1,6 +1,9 @@
 - 2.2.4 not yet released
     - leading and trailing spaces in server name don't raise exception anymore
     - DitContentRule is properly read from the schema
+    - added validator for Active Directory timestamp
+    - Mock strategies raise an exception if a non-bytes value is added to the schema when no offline schema is provided (str and int are automatically converted)
+    - added custom_validators property to Mock strategies
 
 - 2.2.3 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)

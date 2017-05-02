@@ -182,10 +182,10 @@ def validate_ad_timestamp(input_value):
         elif isinstance(element, datetime):
             changed = True
             if element.tzinfo:  # a datetime with a timezone
-                valid_values.append((timegm((element).timetuple()) + 11644473600) * 10000000)
+                valid_values.append(to_raw((timegm((element).utctimetuple()) + 11644473600) * 10000000, encoding='ascii'))
             else:  # datetime without timezone, assumed local and adjusted to UTC
                 offset = datetime.now() - datetime.utcnow()
-                valid_values.append((timegm((element - offset).timetuple()) + 11644473600) * 10000000)
+                valid_values.append(to_raw((timegm((element - offset).timetuple()) + 11644473600) * 10000000, encoding='ascii'))
         else:
             return False
 

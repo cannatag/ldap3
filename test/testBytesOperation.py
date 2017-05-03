@@ -627,3 +627,16 @@ class Test(unittest.TestCase):
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
+
+    def test_modify_operation_from_bytes_for_objectclass(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-29', test_bytes=True))
+        self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
+        result = self.connection.modify(self.delete_at_teardown[0][0], {'objectClass': (MODIFY_REPLACE, [b'top', b'organizationalunit'])})
+        if not self.connection.strategy.sync:
+            sleep(2)
+            response, result = self.connection.get_response(result)
+        else:
+            result = self.connection.result
+
+        self.assertEqual('objectClassViolation', result['description'])
+

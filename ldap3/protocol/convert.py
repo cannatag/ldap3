@@ -144,8 +144,8 @@ def validate_attribute_value(schema, name, value, auto_encode):
             name = name.split(';')[0]
 
         if schema.object_classes and name == 'objectClass':
-            if value not in conf_classes_excluded_from_check and value not in schema.object_classes:
-                raise LDAPObjectClassError('invalid class in objectClass attribute: ' + value)
+            if to_unicode(value) not in conf_classes_excluded_from_check and to_unicode(value) not in schema.object_classes:
+                raise LDAPObjectClassError('invalid class in objectClass attribute: ' + str(value))
 
         if name not in schema.attribute_types and name not in conf_attributes_excluded_from_check:
             raise LDAPAttributeError('invalid attribute ' + name)

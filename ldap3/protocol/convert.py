@@ -135,10 +135,10 @@ def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
 
 
 def validate_attribute_value(schema, name, value, auto_encode):
-    conf_classes_excluded_from_check = [value.lower() for value in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')]
-    conf_attributes_excluded_from_check = [value.lower() for value in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
+    conf_classes_excluded_from_check = [v.lower() for v in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')]
+    conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
     conf_utf8_syntaxes = get_config_parameter('UTF8_ENCODED_SYNTAXES')
-    conf_utf8_types = [value.lower() for value in get_config_parameter('UTF8_ENCODED_TYPES')]
+    conf_utf8_types = [v.lower() for v in get_config_parameter('UTF8_ENCODED_TYPES')]
     if schema and schema.attribute_types:
         if ';' in name:
             name = name.split(';')[0]

@@ -709,7 +709,7 @@ class Connection(object):
         - If mssing_attributes == True then an attribute not returned by the server is set to None
         - If auto_escape is set it overrides the Connection auto_escape
         """
-        conf_attributes_excluded_from_check = [value.lower() for value in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
         if log_enabled(BASIC):
             log(BASIC, 'start SEARCH operation via <%s>', self)
 
@@ -795,7 +795,7 @@ class Connection(object):
         """
         Perform a compare operation
         """
-        conf_attributes_excluded_from_check = [value.lower() for value in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
 
         if log_enabled(BASIC):
             log(BASIC, 'start COMPARE operation via <%s>', self)
@@ -853,8 +853,8 @@ class Connection(object):
         Attributes is a dictionary in the form 'attr': 'val' or 'attr':
         ['val1', 'val2', ...] for multivalued attributes
         """
-        conf_attributes_excluded_from_check = [value.lower() for value in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
-        conf_classes_excluded_from_check = [value.lower() for value in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')]
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
+        conf_classes_excluded_from_check = [v.lower() for v in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')]
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
         self.last_error = None
@@ -983,7 +983,7 @@ class Connection(object):
         - change is (operation, [value1, value2, ...])
         - operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
-        conf_attributes_excluded_from_check = [value.lower() for value in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
 
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY operation via <%s>', self)

@@ -171,7 +171,7 @@ class ObjectDef(object):
         :param definition: the AttrDef object to add, can also be a string containing the name of attribute to add. Can be a list of both
 
         """
-        conf_attributes_excluded_from_object_def = [value.lower() for value in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF')]
+        conf_attributes_excluded_from_object_def = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF')]
         if isinstance(definition, STRING_TYPES):
             self.add_from_schema(definition)
         elif isinstance(definition, AttrDef):

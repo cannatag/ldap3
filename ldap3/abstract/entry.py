@@ -85,7 +85,7 @@ class EntryState(object):
         return self.__repr__()
 
     def set_status(self, status):
-        conf_ignored_mandatory_attributes_in_object_def = [value.lower() for value in get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF')]
+        conf_ignored_mandatory_attributes_in_object_def = [v.lower() for v in get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF')]
         if status not in STATUSES:
             raise LDAPCursorError('invalid entry status ' + str(status))
 

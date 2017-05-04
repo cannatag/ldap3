@@ -290,7 +290,7 @@ def compile_filter(filter_node):
 
 
 def build_attribute_selection(attribute_list, schema):
-    conf_attributes_excluded_from_check = [value.lower() for value in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
+    conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
 
     attribute_selection = AttributeSelection()
     for index, attribute in enumerate(attribute_list):

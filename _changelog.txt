@@ -5,6 +5,8 @@
     - Mock strategies raise an exception if a non-bytes value is added to the schema when no offline schema is provided (str and int are automatically converted)
     - added custom_validators property to Mock strategies
     - modifying objectclass with bytes values doesn't raise an exception anymore (but it may fail anyway because of server constraints)
+    - ensure that config sequence parameters are properly set
+    - allow case insensitive attribute and class names in config parameters
 
 - 2.2.3 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)
@@ -45,6 +47,7 @@
     - integer validator now automatically convert valid string numbers to int
     - invalid timezone are checked when validating Generalized Time Format
     - added test cases for validators
+    - updated tests for OpenLDAP
 
 - 2.2.1 2017.02.12
     - tested against pyasn1 0.2.2 (thanks Ilya)

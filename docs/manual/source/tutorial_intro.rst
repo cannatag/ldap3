@@ -60,14 +60,15 @@ specifications was revised in 2006. These later specifications are strictly foll
 
 Unicode everywhere
 ==================
-The LDAP protocol specifies that attribute names and their string values must be stored in Unicode version 3.2 with the UTF-8 byte encoding. There are some
-limitations in the attribute names that can use only ASCII letter (upper and lowercase), number and the hypen (but not as a leading character).
-Unicode is a standard to describe thousands of printed (even if not visible) characters but what goes over the wire when you
+The LDAP protocol specifies that attribute names and their string values (usually in the Directory String LDAP syntax) must be stored in Unicode version 3.2
+with the UTF-8 byte encoding. There are some limitations in the attribute names that can use only ASCII letters (upper and lowercase), numbers and the hypen
+character (but not as a leading character). Unicode is a standard to describe thousands of printed (even if not visible) characters but what goes over the wire when you
 interact with an LDAP server is only old plain bytes (with values ranging from 0 to 255 as usual), so the UTF-8 encoding is needed when talking to an LDAP server
-to convert the Unicode character to a valid byte (or multi-byte) representation. For this reason when you want to use a value in any LDAP operation you must
+to convert the Unicode character to a valid byte (or multi-byte) representation. For this reason when you want to use a string value in any LDAP operation you must
 convert it to UTF-8 encoding. Your environment could have (and probably has) a different default encoding so the ldap3 library will try to convert from your
 default encoding to UTF-8 for you, but you may set a different input encoding with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')`` function
-in the ldap3 namespace. Values returned by the LDAP search operation are always encoded in UTF-8.
+of the ldap3 library. Values returned by the LDAP search operation are always encoded in UTF-8. This doesn't apply to other binary format, as Octect String that
+can use a different format.
 
 The ldap3 package
 =================
@@ -193,7 +194,7 @@ This is helpful when experimenting in the interactive console and works for most
 
 .. note::
     The tutorial is intended to be used from the *REPL* (Read, Evaluate, Print, Loop), the interactive Python command line where you can directly type
-    Python statements at the **>>>** prompt. The REPL implicitly use the ``repl()`` representation for showing the output of a statement. If you instead
+    Python statements at the **>>>** prompt. The REPL implicitly use the ``repr()`` representation for showing the output of a statement. If you instead
     want the ``str()`` representation you must explicitly use the ``print()`` statement.
 
 Getting information from the server

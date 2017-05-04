@@ -1,5 +1,5 @@
 # changes file for ldap3
-# generated on 2017-05-03 06:32:04.046619
+# generated on 2017-05-03 07:23:42.779087
 # version 2.2.4
 
 - 2.2.4 not yet released
@@ -8,6 +8,7 @@
     - added validator for Active Directory timestamp
     - Mock strategies raise an exception if a non-bytes value is added to the schema when no offline schema is provided (str and int are automatically converted)
     - added custom_validators property to Mock strategies
+    - modifying objectclass with bytes values doesn't raise an exception anymore (but it may fail anyway because of server constraints)
 
 - 2.2.3 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)

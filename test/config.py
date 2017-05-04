@@ -260,12 +260,12 @@ elif location == 'ELITE10GC-SLAPD':
     test_password = 'password'  # user password
     test_secondary_user = 'cn=Administrator,ou=resources,o=lab'  # the user that performs the tests
     test_secondary_password = 'password'  # user password
-    test_sasl_user = 'cn=testSASL,o=test'
+    test_sasl_user = 'uid=testSASL,ou=people,o=lab'
     test_sasl_password = 'password'
-    test_sasl_user_dn = 'cn=testSASL,o=test'
-    test_sasl_secondary_user = 'cn=testSASL,o=test'
+    test_sasl_user_dn = 'uid=testSASL,ou=people,o=lab'
+    test_sasl_secondary_user = 'uid=testSASL,ou=people,o=lab'
     test_sasl_secondary_password = 'password'
-    test_sasl_secondary_user_dn = 'cn=testSASL,o=test'
+    test_sasl_secondary_user_dn = 'uid=testSASL,ou=people,o=lab'
     test_sasl_realm = 'openldap.hyperv'
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''

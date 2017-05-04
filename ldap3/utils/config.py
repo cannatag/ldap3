@@ -100,54 +100,76 @@ else:
 
 
 def get_config_parameter(parameter):
-    if parameter == 'CASE_INSENSITIVE_ATTRIBUTE_NAMES':
+    if parameter == 'CASE_INSENSITIVE_ATTRIBUTE_NAMES':  # Boolean
         return _CASE_INSENSITIVE_ATTRIBUTE_NAMES
-    elif parameter == 'CASE_INSENSITIVE_SCHEMA_NAMES':
+    elif parameter == 'CASE_INSENSITIVE_SCHEMA_NAMES':  # Boolean
         return _CASE_INSENSITIVE_SCHEMA_NAMES
-    elif parameter == 'ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX':
+    elif parameter == 'ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX':  # String
         return _ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX
-    elif parameter == 'POOLING_LOOP_TIMEOUT':
+    elif parameter == 'POOLING_LOOP_TIMEOUT':  # Integer
         return _POOLING_LOOP_TIMEOUT
-    elif parameter == 'RESPONSE_SLEEPTIME':
+    elif parameter == 'RESPONSE_SLEEPTIME':  # Integer
         return _RESPONSE_SLEEPTIME
-    elif parameter == 'RESPONSE_WAITING_TIMEOUT':
+    elif parameter == 'RESPONSE_WAITING_TIMEOUT':  # Integer
         return _RESPONSE_WAITING_TIMEOUT
-    elif parameter == 'SOCKET_SIZE':
+    elif parameter == 'SOCKET_SIZE':  # Integer
         return _SOCKET_SIZE
-    elif parameter == 'CHECK_AVAILABILITY_TIMEOUT':
+    elif parameter == 'CHECK_AVAILABILITY_TIMEOUT':  # Integer
         return _CHECK_AVAILABILITY_TIMEOUT
-    elif parameter == 'RESTARTABLE_SLEEPTIME':
+    elif parameter == 'RESTARTABLE_SLEEPTIME':  # Integer
         return _RESTARTABLE_SLEEPTIME
-    elif parameter == 'RESTARTABLE_TRIES':
+    elif parameter == 'RESTARTABLE_TRIES':  # Integer
         return _RESTARTABLE_TRIES
-    elif parameter == 'REUSABLE_THREADED_POOL_SIZE':
+    elif parameter == 'REUSABLE_THREADED_POOL_SIZE':  # Integer
         return _REUSABLE_THREADED_POOL_SIZE
-    elif parameter == 'REUSABLE_THREADED_LIFETIME':
+    elif parameter == 'REUSABLE_THREADED_LIFETIME':  # Integer
         return _REUSABLE_THREADED_LIFETIME
-    elif parameter == 'DEFAULT_THREADED_POOL_NAME':
+    elif parameter == 'DEFAULT_THREADED_POOL_NAME':  # String
         return _DEFAULT_THREADED_POOL_NAME
-    elif parameter == 'ADDRESS_INFO_REFRESH_TIME':
+    elif parameter == 'ADDRESS_INFO_REFRESH_TIME':  # Integer
         return _ADDRESS_INFO_REFRESH_TIME
-    elif parameter == 'RESET_AVAILABILITY_TIMEOUT':
+    elif parameter == 'RESET_AVAILABILITY_TIMEOUT':  # Integer
         return _RESET_AVAILABILITY_TIMEOUT
-    elif parameter == 'DEFAULT_ENCODING':
+    elif parameter == 'DEFAULT_ENCODING':  # String
         return _DEFAULT_ENCODING
-    elif parameter == 'CLASSES_EXCLUDED_FROM_CHECK':
-        return _CLASSES_EXCLUDED_FROM_CHECK
-    elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_CHECK':
-        return _ATTRIBUTES_EXCLUDED_FROM_CHECK
-    elif parameter == 'UTF8_ENCODED_SYNTAXES':
-        return _UTF8_ENCODED_SYNTAXES
-    elif parameter == 'UTF8_ENCODED_TYPES':
-        return _UTF8_ENCODED_TYPES
-    elif parameter == 'ADDITIONAL_ENCODINGS':
-        return _ADDITIONAL_ENCODINGS
-    elif parameter == 'IGNORE_MALFORMED_SCHEMA':
+    elif parameter == 'CLASSES_EXCLUDED_FROM_CHECK':  # Sequence
+        if isinstance(_CLASSES_EXCLUDED_FROM_CHECK, SEQUENCE_TYPES):
+            return _CLASSES_EXCLUDED_FROM_CHECK
+        else:
+            return [_CLASSES_EXCLUDED_FROM_CHECK]
+    elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_CHECK':  # Sequence
+        if isinstance(_ATTRIBUTES_EXCLUDED_FROM_CHECK, SEQUENCE_TYPES):
+            return _ATTRIBUTES_EXCLUDED_FROM_CHECK
+        else:
+            return [_ATTRIBUTES_EXCLUDED_FROM_CHECK]
+    elif parameter == 'UTF8_ENCODED_SYNTAXES':  # Sequence
+        if isinstance(_UTF8_ENCODED_SYNTAXES, SEQUENCE_TYPES):
+            return _UTF8_ENCODED_SYNTAXES
+        else:
+            return [_UTF8_ENCODED_SYNTAXES]
+    elif parameter == 'UTF8_ENCODED_TYPES':  # Sequence
+        if isinstance(_UTF8_ENCODED_TYPES, SEQUENCE_TYPES):
+            return _UTF8_ENCODED_TYPES
+        else:
+            return [_UTF8_ENCODED_TYPES]
+    elif parameter == 'ADDITIONAL_ENCODINGS':  # Sequence
+        if isinstance(_ADDITIONAL_ENCODINGS, SEQUENCE_TYPES):
+            return _ADDITIONAL_ENCODINGS
+        else:
+            return [_ADDITIONAL_ENCODINGS]
+    elif parameter == 'IGNORE_MALFORMED_SCHEMA':  # Boolean
         return _IGNORE_MALFORMED_SCHEMA
-    elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF':
-        return _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF
-    elif parameter == 'IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF':
-        return _IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF
+    elif parameter == 'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF':  # Sequence
+        if isinstance(_ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF, SEQUENCE_TYPES):
+            return _ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF
+        else:
+            return [_ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF]
+    elif parameter == 'IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF':  # Sequence
+        if isinstance(_IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF, SEQUENCE_TYPES):
+            return _IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF
+        else:
+            return [_IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF]
+
     raise LDAPConfigurationParameterError('configuration parameter %s not valid' % parameter)
 
 

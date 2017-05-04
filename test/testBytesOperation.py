@@ -638,5 +638,5 @@ class Test(unittest.TestCase):
         else:
             result = self.connection.result
 
-        self.assertEqual('objectClassViolation', result['description'])
+        self.assertTrue(result['description'], ['objectClassViolation', 'objectClassModsProhibited'])
 

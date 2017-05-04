@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mod-2', attributes={test_multivalued_attribute: ['givenname-2a', 'givenname-2b', 'givenname-2c'], test_singlevalued_attribute: 'init'}))
         else:
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mod-1', attributes={test_multivalued_attribute: 'givenname-1'}))
-            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mod-2', attributes={test_multivalued_attribute: ['givenname-2a', 'givenname-2b', 'givenname-2c']}))
+            self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mod-2', attributes={test_multivalued_attribute: ['givenname-2a', 'givenname-2b', 'givenname-2c'], test_singlevalued_attribute: 'init'}))
 
     def tearDown(self):
         drop_connection(self.connection, self.delete_at_teardown)

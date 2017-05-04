@@ -39,9 +39,9 @@ from ldap3 import __version__ as ldap3_version
 
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
-test_logging = False
-test_pool_size = 5
 
+test_pool_size = 5
+test_logging = False
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
@@ -76,8 +76,8 @@ else:
 
 # # force TRAVIS configuration
 # location = 'TRAVIS-LOCAL'
-# test_strategy = REUSABLE
-# test_server_type = 'AD'
+# test_strategy = SYNC
+# test_server_type = 'EDIR'
 # test_fast_decoder = True
 
 

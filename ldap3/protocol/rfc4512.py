@@ -425,7 +425,7 @@ class BaseObjectInfo(object):
             return CaseInsensitiveDict() if conf_case_insensitive_schema else dict()
 
         for object_definition in definitions:
-            object_definition = to_unicode(object_definition, additional_encodings=True)
+            object_definition = to_unicode(object_definition.strip(), additional_encodings=True)
             if object_definition[0] == '(' and object_definition[-1] == ')':
                 if cls is MatchingRuleInfo:
                     pattern = '| SYNTAX '

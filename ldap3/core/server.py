@@ -419,6 +419,9 @@ class Server(object):
                         results, _ = connection.get_response(result)
                         if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                             self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
+                    # flaky servers can return an empty schema, checks if it is so and set schema to None
+                    if not self._schema_info.is_valid():
+                        self._schema_info = None
                     if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
                         for attribute in self._schema_info.other:
                             self._schema_info.other[attribute] = format_attribute_values(self._schema_info, attribute, self._schema_info.raw[attribute], self.custom_formatter)

@@ -309,6 +309,11 @@ class SchemaInfo(BaseServerInfo):
                     except KeyError:
                         pass
 
+    def is_valid(self):
+        if self.object_classes or self.attribute_types or self.matching_rules or self.matching_rule_uses or self.dit_content_rules or self.dit_structure_rules or self.name_forms or self.ldap_syntaxes:
+            return True
+        return False
+
     def __repr__(self):
         r = 'DSA Schema from: ' + self.schema_entry
         r += linesep
@@ -414,10 +419,11 @@ class BaseObjectInfo(object):
         conf_case_insensitive_schema = get_config_parameter('CASE_INSENSITIVE_SCHEMA_NAMES')
         conf_ignore_malformed_schema = get_config_parameter('IGNORE_MALFORMED_SCHEMA')
 
-        if not definitions:
-            return None
-
         ret_dict = CaseInsensitiveDict() if conf_case_insensitive_schema else dict()
+
+        if not definitions:
+            return CaseInsensitiveDict() if conf_case_insensitive_schema else dict()
+
         for object_definition in definitions:
             object_definition = to_unicode(object_definition, additional_encodings=True)
             if object_definition[0] == '(' and object_definition[-1] == ')':
@@ -505,7 +511,7 @@ class BaseObjectInfo(object):
                         if not conf_ignore_malformed_schema:
                             raise LDAPSchemaError('malformed schema definition key:' + key + ' - use get_info=NONE in Server definition')
                         else:
-                            return None
+                            return CaseInsensitiveDict() if conf_case_insensitive_schema else dict()
                 object_def.raw_definition = object_definition
                 if hasattr(object_def, 'syntax') and object_def.syntax and len(object_def.syntax) == 1:
                     object_def.min_length = None
@@ -529,7 +535,7 @@ class BaseObjectInfo(object):
                 if not conf_ignore_malformed_schema:
                     raise LDAPSchemaError('malformed schema definition, use get_info=NONE in Server definition')
                 else:
-                    return None
+                    return CaseInsensitiveDict() if conf_case_insensitive_schema else dict()
         return ret_dict
 
 

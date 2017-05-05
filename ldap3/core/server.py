@@ -416,11 +416,10 @@ class Server(object):
                     if isinstance(result, bool):  # sync request
                         self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
                     else:  # async request, must check if attributes in response
-                        results, _ = connection.get_response(result)
+                        results, result = connection.get_response(result)
                         if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                             self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
-                    # flaky servers can return an empty schema, checks if it is so and set schema to None
-                    if not self._schema_info.is_valid():
+                    if self._schema_info and not self._schema_info.is_valid():  # flaky servers can return an empty schema, checks if it is so and set schema to None
                         self._schema_info = None
                     if self._schema_info:  # if schema is valid tries to apply formatter to the "other" dict with raw values for schema and info
                         for attribute in self._schema_info.other:

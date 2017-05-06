@@ -10,6 +10,7 @@
     - added server.schema.is_valid() to check if the schema is available
     - empty schema properties are set to empty dict() instead of None
     - schema definitions with traling and leading spaces are now properly parsed and don't raise an LDAPSchemaError exception anymore
+    - fixed error when flaky servers (OpenLDAP) don't return the correct response with StartTls
 
 - 2.2.3 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)

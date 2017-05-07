@@ -24,9 +24,11 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
+from time import mktime
+from calendar import timegm
 
 from ... import SEQUENCE_TYPES, STRING_TYPES
-from .formatters import format_time
+from .formatters import format_time, format_ad_timestamp
 from ...utils.conv import to_raw
 
 # Validators return True if value is valid, False if value is not valid,
@@ -145,6 +147,45 @@ def validate_time(input_value):
             else:  # datetime without timezone, assumed local and adjusted to UTC
                 offset = datetime.now() - datetime.utcnow()
                 valid_values.append((element - offset).strftime('%Y%m%d%H%M%SZ'))
+        else:
+            return False
+
+    if changed:
+        if sequence:
+            return valid_values
+        else:
+            return valid_values[0]
+    else:
+        return True
+
+
+def validate_ad_timestamp(input_value):
+    """
+    Active Directory stores date/time values as the number of 100-nanosecond intervals
+    that have elapsed since the 0 hour on January 1, 1601 till the date/time that is being stored.
+    The time is always stored in Greenwich Mean Time (GMT) in the Active Directory.
+    """
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        sequence = False
+        input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
+
+    valid_values = []
+    changed = False
+    for element in input_value:
+        if isinstance(element, STRING_TYPES):  # tries to check if it is already be a AD timestamp
+            if isinstance(format_ad_timestamp(to_raw(element)), datetime):  # valid Generalized Time string
+                valid_values.append(element)
+            else:
+                return False
+        elif isinstance(element, datetime):
+            changed = True
+            if element.tzinfo:  # a datetime with a timezone
+                valid_values.append(to_raw((timegm((element).utctimetuple()) + 11644473600) * 10000000, encoding='ascii'))
+            else:  # datetime without timezone, assumed local and adjusted to UTC
+                offset = datetime.now() - datetime.utcnow()
+                valid_values.append(to_raw((timegm((element - offset).timetuple()) + 11644473600) * 10000000, encoding='ascii'))
         else:
             return False
 

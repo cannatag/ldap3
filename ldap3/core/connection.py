@@ -709,7 +709,7 @@ class Connection(object):
         - If mssing_attributes == True then an attribute not returned by the server is set to None
         - If auto_escape is set it overrides the Connection auto_escape
         """
-        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
         if log_enabled(BASIC):
             log(BASIC, 'start SEARCH operation via <%s>', self)
 
@@ -747,7 +747,7 @@ class Connection(object):
                         attribute_name_to_check = attribute_name.split(';')[0]
                     else:
                         attribute_name_to_check = attribute_name
-                    if self.server.schema and attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if self.server.schema and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
             request = search_operation(search_base,
@@ -795,7 +795,7 @@ class Connection(object):
         """
         Perform a compare operation
         """
-        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
 
         if log_enabled(BASIC):
             log(BASIC, 'start COMPARE operation via <%s>', self)
@@ -811,7 +811,7 @@ class Connection(object):
             else:
                 attribute_name_to_check = attribute
 
-            if self.server.schema.attribute_types and attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
+            if self.server.schema.attribute_types and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                 raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
         if isinstance(value, SEQUENCE_TYPES):  # value can't be a sequence
@@ -853,8 +853,8 @@ class Connection(object):
         Attributes is a dictionary in the form 'attr': 'val' or 'attr':
         ['val1', 'val2', ...] for multivalued attributes
         """
-        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
-        conf_classes_excluded_from_check = get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
+        conf_classes_excluded_from_check = [v.lower() for v in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')]
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
         self.last_error = None
@@ -894,7 +894,7 @@ class Connection(object):
 
             if self.server and self.server.schema and self.check_names:
                 for object_class_name in attributes[object_class_attr_name]:
-                    if object_class_name not in conf_classes_excluded_from_check and object_class_name not in self.server.schema.object_classes:
+                    if object_class_name.lower() not in conf_classes_excluded_from_check and object_class_name not in self.server.schema.object_classes:
                         raise LDAPObjectClassError('invalid object class ' + str(object_class_name))
 
                 for attribute_name in attributes:
@@ -903,7 +903,7 @@ class Connection(object):
                     else:
                         attribute_name_to_check = attribute_name
 
-                    if attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
             request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None)
@@ -983,7 +983,7 @@ class Connection(object):
         - change is (operation, [value1, value2, ...])
         - operation is 0 (MODIFY_ADD), 1 (MODIFY_DELETE), 2 (MODIFY_REPLACE), 3 (MODIFY_INCREMENT)
         """
-        conf_attributes_excluded_from_check = get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')
+        conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
 
         if log_enabled(BASIC):
             log(BASIC, 'start MODIFY operation via <%s>', self)
@@ -1020,7 +1020,7 @@ class Connection(object):
                     else:
                         attribute_name_to_check = attribute_name
 
-                    if self.server.schema.attribute_types and attribute_name_to_check not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
+                    if self.server.schema.attribute_types and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
                 change = changes[attribute_name]
                 if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:

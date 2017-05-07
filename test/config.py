@@ -39,9 +39,9 @@ from ldap3 import __version__ as ldap3_version
 
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
-test_logging = False
-test_pool_size = 5
 
+test_pool_size = 5
+test_logging = False
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
@@ -76,7 +76,7 @@ else:
 
 # # force TRAVIS configuration
 # location = 'TRAVIS-LOCAL'
-# test_strategy = REUSABLE
+# test_strategy = ASYNC
 # test_server_type = 'AD'
 # test_fast_decoder = True
 
@@ -260,12 +260,12 @@ elif location == 'ELITE10GC-SLAPD':
     test_password = 'password'  # user password
     test_secondary_user = 'cn=Administrator,ou=resources,o=lab'  # the user that performs the tests
     test_secondary_password = 'password'  # user password
-    test_sasl_user = 'cn=testSASL,o=test'
+    test_sasl_user = 'uid=testSASL,ou=people,o=lab'
     test_sasl_password = 'password'
-    test_sasl_user_dn = 'cn=testSASL,o=test'
-    test_sasl_secondary_user = 'cn=testSASL,o=test'
+    test_sasl_user_dn = 'uid=testSASL,ou=people,o=lab'
+    test_sasl_secondary_user = 'uid=testSASL,ou=people,o=lab'
     test_sasl_secondary_password = 'password'
-    test_sasl_secondary_user_dn = 'cn=testSASL,o=test'
+    test_sasl_secondary_user_dn = 'uid=testSASL,ou=people,o=lab'
     test_sasl_realm = 'openldap.hyperv'
     test_ca_cert_file = 'local-openldap-ca-cert.pem'
     test_user_cert_file = ''

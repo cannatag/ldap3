@@ -99,11 +99,11 @@ def format_ad_timestamp(raw_value):
     try:
         timestamp = int(raw_value)
         return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
-    except (OSError, OverflowError):  # on Windows backwards timestamps are not allowed
+    except (OSError, OverflowError, ValueError):  # on Windows backwards timestamps are not allowed
         unix_epoch = datetime.fromtimestamp(0, tz=OffsetTzInfo(0, 'UTC'))
         diff_seconds = timedelta(seconds=timestamp/10000000.0 - 11644473600)
         return unix_epoch + diff_seconds
-    except Exception:
+    except Exception as e:
         return raw_value
 
 

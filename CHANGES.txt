@@ -1,6 +1,20 @@
 # changes file for ldap3
-# generated on 2017-04-30 09:46:25.158834
-# version 2.2.3
+# generated on 2017-05-07 15:45:00.696072
+# version 2.2.4
+
+- 2.2.4 2017.05.07
+    leading and trailing spaces in server name don't raise exception anymore
+    - DitContentRule is properly read from the schema
+    - added validator for Active Directory timestamp
+    - Mock strategies raise an exception if a non-bytes value is added to the schema when no offline schema is provided (str and int are automatically converted)
+    - added custom_validators property to Mock strategies
+    - modifying objectClass with bytes values doesn't raise an exception anymore (but it may fail anyway because of server constraints)
+    - ensure that config sequence parameters are properly set
+    - allow case insensitive attribute and class names in config parameters
+    - added server.schema.is_valid() to check if the schema is available
+    - empty schema properties are set to empty dict() instead of None
+    - schema definitions with traling and leading spaces are now properly parsed and don't raise an LDAPSchemaError exception anymore
+    - fixed error when flaky servers (OpenLDAP) don't return the correct response with StartTls
 
 - 2.2.3 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)
@@ -41,6 +55,7 @@
     - integer validator now automatically convert valid string numbers to int
     - invalid timezone are checked when validating Generalized Time Format
     - added test cases for validators
+    - updated tests for OpenLDAP
 
 - 2.2.1 2017.02.12
     - tested against pyasn1 0.2.2 (thanks Ilya)

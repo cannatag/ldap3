@@ -85,7 +85,7 @@ class EntryState(object):
         return self.__repr__()
 
     def set_status(self, status):
-        conf_ignored_mandatory_attributes_in_object_def = get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF')
+        conf_ignored_mandatory_attributes_in_object_def = [v.lower() for v in get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF')]
         if status not in STATUSES:
             raise LDAPCursorError('invalid entry status ' + str(status))
 
@@ -98,7 +98,7 @@ class EntryState(object):
             self._initial_status = STATUS_WRITABLE
         if self.status == STATUS_VIRTUAL or (self.status == STATUS_PENDING_CHANGES and self._initial_status == STATUS_VIRTUAL):  # checks if all mandatory attributes are present in new entries
             for attr in self.definition._attributes:
-                if self.definition._attributes[attr].mandatory and attr not in conf_ignored_mandatory_attributes_in_object_def:
+                if self.definition._attributes[attr].mandatory and attr.lower() not in conf_ignored_mandatory_attributes_in_object_def:
                     if (attr not in self.attributes or self.attributes[attr].virtual) and attr not in self.changes:
                         self.status = STATUS_MANDATORY_MISSING
                         break

@@ -74,8 +74,8 @@ class Test(unittest.TestCase):
             else:
                 server = Server(host=test_server, port=test_port, tls=Tls())
             connection = Connection(server, auto_bind=False, version=3, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication, lazy=test_lazy_connection, pool_name='pool1')
-            connection.open()
-            connection.start_tls()
+            connection.open(read_server_info=False)
+            connection.start_tls(read_server_info=False)
             connection.bind()
             self.assertTrue(connection.bound)
             connection.unbind()

@@ -89,6 +89,9 @@ class Attribute(object):
         except Exception:
             return False
 
+    def __ne__(self, other):
+        return not self == other
+
     @property
     def value(self):
         """

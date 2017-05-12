@@ -1,5 +1,5 @@
 # changes file for ldap3
-# generated on 2017-05-07 15:45:00.696072
+# generated on 2017-05-07 19:43:56.205925
 # version 2.2.4
 
 - 2.2.4 2017.05.07

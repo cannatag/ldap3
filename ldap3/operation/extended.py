@@ -28,7 +28,7 @@ from pyasn1.type.base import Asn1Item
 
 from ..core.results import RESULT_CODES
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
-from ..protocol.convert import decode_referrals, referrals_to_list
+from ..protocol.convert import referrals_to_list
 from ..utils.asn1 import encoder
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
@@ -63,7 +63,7 @@ def extended_response_to_dict(response):
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
-            'referrals': decode_referrals(response['referral']),
+            'referrals': referrals_to_list(response['referral']),
             'responseName': str(response['responseName']) if response['responseName'] else None,
             'responseValue': bytes(response['responseValue']) if response['responseValue'] else bytes()}
 

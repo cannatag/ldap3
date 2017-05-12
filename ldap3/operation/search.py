@@ -35,7 +35,7 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
     Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, ExtensibleMatch, Present, SubstringFilter, \
     Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
-from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, prepare_filter_for_sending
+from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, prepare_filter_for_sending, search_refs_to_list_fast
 from ..protocol.formatters.standard import format_attribute_values
 from ..utils.conv import to_unicode, to_raw
 
@@ -554,4 +554,4 @@ def search_result_entry_response_to_dict_fast(response, schema, custom_formatter
 
 
 def search_result_reference_response_to_dict_fast(response):
-    return {'uri': search_refs_to_list([r[3] for r in response])}
+    return {'uri': search_refs_to_list_fast([r[3] for r in response])}

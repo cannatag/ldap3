@@ -50,16 +50,16 @@ def search_refs_to_list(search_refs):
     return [str(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
 
 
+def search_refs_to_list_fast(search_refs):
+    return [to_unicode(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
+
+
 def sasl_to_dict(sasl):
     return {'mechanism': str(sasl['mechanism']), 'credentials': str(sasl['credentials'])}
 
 
 def authentication_choice_to_dict(authentication_choice):
     return {'simple': str(authentication_choice['simple']) if authentication_choice.getName() == 'simple' else None, 'sasl': sasl_to_dict(authentication_choice['sasl']) if authentication_choice.getName() == 'sasl' else None}
-
-
-def decode_referrals(referrals):
-    return [str(referral) for referral in referrals if referral] if referrals else None
 
 
 def partial_attribute_to_dict(modification):

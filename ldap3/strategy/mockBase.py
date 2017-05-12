@@ -781,3 +781,14 @@ class MockBaseStrategy(object):
             pass
 
         return False
+
+    def send(self, message_type, request, controls=None):
+        self.connection.request = self.decode_request(message_type, request, controls)
+        if self.connection.listening:
+            message_id = self.connection.server.next_message_id()
+            return message_id, message_type, request, controls
+        else:
+            self.connection.last_error = 'unable to send message, connection is not open'
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            raise LDAPSocketOpenError(self.connection.last_error)

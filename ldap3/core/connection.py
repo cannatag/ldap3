@@ -51,6 +51,7 @@ from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
 from ..protocol.sasl.plain import sasl_plain
 from ..strategy.sync import SyncStrategy
+from ..strategy.mockAsync import MockAsyncStrategy
 from ..strategy.async import AsyncStrategy
 from ..strategy.reusable import ReusableStrategy
 from ..strategy.restartable import RestartableStrategy
@@ -69,11 +70,6 @@ from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, form
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
 from ..utils.dn import safe_dn
 
-try:
-    from ..strategy.mockAsync import MockAsyncStrategy  # not used yet
-except ImportError:
-    MockAsyncStrategy = NotImplemented
-
 
 SASL_AVAILABLE_MECHANISMS = [EXTERNAL,
                              DIGEST_MD5,
@@ -86,7 +82,7 @@ CLIENT_STRATEGIES = [SYNC,
                      RESTARTABLE,
                      REUSABLE,
                      MOCK_SYNC,
-                     # MOCK_ASYNC,  # not yet defined
+                     MOCK_ASYNC,
                      ASYNC_STREAM]
 
 

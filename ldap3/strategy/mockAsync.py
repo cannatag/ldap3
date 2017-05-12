@@ -25,6 +25,18 @@
 
 from .mockBase import MockBaseStrategy
 from .async import AsyncStrategy
+from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
+from ..core.results import DO_NOT_RAISE_EXCEPTIONS
+from ..utils.log import log, log_enabled, ERROR, PROTOCOL
+from ..core.exceptions import LDAPResponseTimeoutError, LDAPOperationResult
+from ..operation.bind import bind_response_to_dict
+from ..operation.delete import delete_response_to_dict
+from ..operation.add import add_response_to_dict
+from ..operation.compare import compare_response_to_dict
+from ..operation.modifyDn import modify_dn_response_to_dict
+from ..operation.modify import modify_response_to_dict
+from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
+from ..operation.extended import extended_response_to_dict
 
 # LDAPResult ::= SEQUENCE {
 #     resultCode         ENUMERATED {
@@ -88,5 +100,74 @@ class MockAsyncStrategy(MockBaseStrategy, AsyncStrategy):  # class inheritance s
     def __init__(self, ldap_connection):
         AsyncStrategy.__init__(self, ldap_connection)
         MockBaseStrategy.__init__(self)
+        #outstanding = dict()  # a dictionary with the message id as key and a tuple (result, response) as value
+
+    def post_send_search(self, payload):
+        message_id, message_type, request, controls = payload
+        async_response = []
+        async_result = dict()
+        if message_type == 'searchRequest':
+            responses, result = self.mock_search(request, controls)
+            result['type'] = 'searchResDone'
+            for entry in responses:
+                response = search_result_entry_response_to_dict(entry, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
+                response['type'] = 'searchResEntry'
+                async_response.append(response)
+            async_result = search_result_done_response_to_dict(result)
+            async_result['type'] = 'searchResDone'
+        self._responses[message_id] = (request, async_result, async_response)
+        return message_id
+
+    def post_send_single_response(self, payload):  # payload is a tuple sent by self.send() made of message_type, request, controls
+        message_id, message_type, request, controls = payload
+        responses = []
+        result = None
+        if message_type == 'bindRequest':
+            result = bind_response_to_dict(self.mock_bind(request, controls))
+            result['type'] = 'bindResponse'
+        elif message_type == 'unbindRequest':
+            self.bound = None
+        elif message_type == 'abandonRequest':
+            pass
+        elif message_type == 'delRequest':
+            result = delete_response_to_dict(self.mock_delete(request, controls))
+            result['type'] = 'delResponse'
+        elif message_type == 'addRequest':
+            result = add_response_to_dict(self.mock_add(request, controls))
+            result['type'] = 'addResponse'
+        elif message_type == 'compareRequest':
+            result = compare_response_to_dict(self.mock_compare(request, controls))
+            result['type'] = 'compareResponse'
+        elif message_type == 'modDNRequest':
+            result = modify_dn_response_to_dict(self.mock_modify_dn(request, controls))
+            result['type'] = 'modDNResponse'
+        elif message_type == 'modifyRequest':
+            result = modify_response_to_dict(self.mock_modify(request, controls))
+            result['type'] = 'modifyResponse'
+        elif message_type == 'extendedReq':
+            result = extended_response_to_dict(self.mock_extended(request, controls))
+            result['type'] = 'extendedResp'
+        responses.append(result)
+        if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
+            if log_enabled(PROTOCOL):
+                log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
+            raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
+        self._responses[message_id] = (request, result, responses)
+        return message_id
 
 
+    def get_response(self, message_id, timeout=None, get_request=False):
+        if message_id in self._responses:
+            request, result, response = self._responses.pop(message_id)
+        else:
+            raise(LDAPResponseTimeoutError('message id not in outstanding queue'))
+
+        if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
+            if log_enabled(PROTOCOL):
+                log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
+            raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
+
+        if get_request:
+            return response, result, request
+        else:
+            return response, result

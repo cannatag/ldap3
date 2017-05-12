@@ -1,5 +1,5 @@
 - 2.2.5 not yet released
-    - MockAsync strategy
+    - MockAsync strategy is available
     - added __ne__ method to Attribute in abstraction layer (thank Rodrigo)
     - added LDAPUserNameIsMandatoryError exception in simple bind when user name is empty
     - search referrals are properly decoded with fast decoder

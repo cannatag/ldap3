@@ -1,6 +1,6 @@
 - 2.2.5 not yet released
     - MockAsync strategy
-
+    - added __ne__ method to Attribute in abstraction layer (thank Rodrigo)
 
 - 2.2.4 2017.05.07
     - leading and trailing spaces in server name don't raise exception anymore

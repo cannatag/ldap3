@@ -529,13 +529,18 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
 
 
 def search_result_done_response_to_dict(response):
-    return {'result': int(response['resultCode']),
+    result = {'result': int(response['resultCode']),
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'message': str(response['diagnosticMessage']),
             'dn': str(response['matchedDN']),
             'referrals': referrals_to_list(response['referral'])}
 
+    if 'controls' in response:  # used for returning controls in Mock strategies
+        result['controls'] = dict()
+        for control in response['controls']:
+            result['controls'][control[0]] = control[1]
 
+    return result
 def search_result_reference_response_to_dict(response):
     return {'uri': search_refs_to_list(response)}
 

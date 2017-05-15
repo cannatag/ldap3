@@ -1438,31 +1438,26 @@ class Test(unittest.TestCase):
         self.assertEqual(result['description'], 'success')
         self.assertTrue(isinstance(response[0]['attributes']['revision'], list))  # no schema so attributes are returned as lists
 
-    # def test_auth_ad(self):
-    #     import ldap3
-    #     mock_server = ldap3.Server('ldaps://server.domain.local:636', get_info=ldap3.OFFLINE_AD_2012_R2)
-    #     mock_ldap_connection = ldap3.Connection(
-    #         mock_server, client_strategy=ldap3.MOCK_ASYNC, authentication=ldap3.SIMPLE)
-    #     ldap_entries = 'ad_ldap_directory.json'
-    #     mock_ldap_connection.strategy.entries_from_json(ldap_entries)
-    #     mock_ldap_connection.open()
-    #     mock_ldap_connection.user = 'CN=Test User,OU=PostMaster,DC=postmaster,DC=local'
-    #     mock_ldap_connection.password = 'P@ssW0rd'
-    #     result = mock_ldap_connection.bind()
-    #     self.assertTrue(result)
-    #     mock_ldap_connection.search('DC=postmaster,DC=local', '(distinguishedName=CN=Test User,OU=PostMaster,DC=postmaster,DC=local)', attributes=['sAMAccountName', 'objectSid'])
-    #     username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
-    #     self.assertEqual(len(mock_ldap_connection.response), 1)
-    #     self.assertEqual(username, 'testUser')
-    #     mock_ldap_connection.search('DC=postmaster,DC=local', '(objectSid=S-1-5-21-1270288957-3800934213-3019856503-1608)', attributes=['sAMAccountName'])
-    #     username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
-    #     self.assertEqual(len(mock_ldap_connection.response), 1)
-    #     self.assertEqual(username, 'testUser')
-    #     mock_ldap_connection.search('DC=postmaster,DC=local', '(sAMAccountName=testUser)', attributes=['sAMAccountName'])
-    #     username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
-    #     self.assertEqual(len(mock_ldap_connection.response), 1)
-    #     self.assertEqual(username, 'testUser')
-    #     mock_ldap_connection.search('DC=postmaster,DC=local', '(sAMAccountName=TeStUsER)', attributes=['sAMAccountName'])
-    #     username = mock_ldap_connection.response[0]['attributes']['sAMAccountName']
-    #     self.assertEqual(len(mock_ldap_connection.response), 1)
-    #     self.assertEqual(username, 'testUser')
+    def test_search_paged_1(self):
+        self.connection_1.bind()
+        response = []
+        for resp in self.connection_1.extend.standard.paged_search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'revision'], paged_size=2, paged_criticality=True):
+            response.append(resp)
+
+        self.assertEqual(len(response), 5)
+
+    def test_search_paged_2(self):
+        self.connection_2.bind()
+        response = []
+        for resp in self.connection_2.extend.standard.paged_search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'revision'], paged_size=2, paged_criticality=True):
+            response.append(resp)
+
+        self.assertEqual(len(response), 5)
+
+    def test_search_paged_3(self):
+        self.connection_3.bind()
+        response = []
+        for resp in self.connection_3.extend.standard.paged_search('o=lab', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'revision'], paged_size=2, paged_criticality=True):
+            response.append(resp)
+
+        self.assertEqual(len(response), 5)

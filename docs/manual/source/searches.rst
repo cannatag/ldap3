@@ -337,9 +337,8 @@ Example::
             print(entry['dn'], entry['attributes'])
     print('Total entries retrieved:', total_entries)
 
-Or you can use the much simpler extended operations package that wraps all the machinery and hides implementation
+Or you can use the much simpler extended operations package that wraps all this  machinery and hides implementation
 details, you can choose to get back a generator or the whole list of entries found.
-
 
 Working with a generator is better when you deal with very long list of entries or have memory issues::
 
@@ -373,6 +372,7 @@ Working with a list keeps all the found entries in a list and you can elaborate 
     total_entries = len(entry_list)
     print('Total entries retrieved:', total_entries)
 
+If the paged search operation returns an error, the paged_search() method raises an Exception of class LDAPOperationResult, subclassed to the actual error returned by the server.
 
 Response
 --------

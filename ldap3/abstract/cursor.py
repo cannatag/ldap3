@@ -618,7 +618,7 @@ class Reader(Cursor):
         self._create_query_filter()
         self.entries = []
         self.execution_time = datetime.now()
-        for response in self.connection.extend.standard.paged_search(search_base=self.base,
+        return self.connection.extend.standard.paged_search(search_base=self.base,
                                                                      search_filter=self.query_filter,
                                                                      search_scope=SUBTREE if self.sub_tree else LEVEL,
                                                                      dereference_aliases=self.dereference_aliases,
@@ -627,8 +627,8 @@ class Reader(Cursor):
                                                                      controls=self.controls,
                                                                      paged_size=paged_size,
                                                                      paged_criticality=paged_criticality,
-                                                                     generator=generator):
-            yield self._create_entry(response)
+                                                                     generator=generator)
+            # yield self._create_entry(response)
 
 
 class Writer(Cursor):

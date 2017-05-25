@@ -27,6 +27,7 @@
 from os import linesep
 
 from ..core.exceptions import LDAPKeyError
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
 
 
 class AttrDef(object):
@@ -65,6 +66,9 @@ class AttrDef(object):
         self.single_value = single_value
         self.oid_info = None
 
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated AttrDef: <%r>', self)
+
     def __repr__(self):
         r = 'ATTR: ' + self.key
         r += '' if self.name == self.key else ' [' + self.name + ']'
@@ -101,6 +105,9 @@ class AttrDef(object):
 
     def __setattr__(self, key, value):
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is being used for __hash__
-            raise LDAPKeyError('key \'%s\' already set' % key)
+            error_message = 'key \'%s\' already set' % key
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPKeyError(error_message)
         else:
             object.__setattr__(self, key, value)

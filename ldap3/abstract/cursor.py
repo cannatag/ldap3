@@ -40,7 +40,7 @@ from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
 from ..utils.conv import to_raw
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
-
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
 
 Operation = namedtuple('Operation', ('request', 'result', 'response'))
 
@@ -90,7 +90,10 @@ class Cursor(object):
                     not_defined_attributes.append(attribute)
 
             if not_defined_attributes:
-                raise LDAPCursorError('Attributes \'%s\' non in definition' % ', '.join(not_defined_attributes))
+                error_message = 'Attributes \'%s\' non in definition' % ', '.join(not_defined_attributes)
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPCursorError(error_message)
 
         self.attributes = set(attributes) if attributes else set([attr.name for attr in self.definition])
         self.get_operational_attributes = get_operational_attributes
@@ -152,9 +155,15 @@ class Cursor(object):
             if len(found) == 1:
                 return found[0]
             elif len(found) > 1:
-                raise KeyError('Multiple entries found: %d entries match the text in dn' % len(found) + ('' if len(found) > 10 else (' [' + '; '.join([e.entry_dn for e in found]) + ']')))
+                error_message = 'Multiple entries found: %d entries match the text in dn' % len(found) + ('' if len(found) > 10 else (' [' + '; '.join([e.entry_dn for e in found]) + ']'))
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise KeyError(error_message)
 
-        raise KeyError('no entry found')
+        error_message = 'no entry found'
+        if log_enabled(ERROR):
+            log(ERROR, '%s for <%s>', error_message, self)
+        raise KeyError(error_message)
 
     def __len__(self):
         return len(self.entries)
@@ -217,7 +226,10 @@ class Cursor(object):
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
                 if attribute_name not in attr_defs:
-                    raise LDAPCursorError('attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry.entry_definition._object_class), entry.entry_dn))
+                    error_message = 'attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry.entry_definition._object_class), entry.entry_dn)
+                    if log_enabled(ERROR):
+                        log(ERROR, '%s for <%s>', error_message, self)
+                    raise LDAPCursorError(error_message)
                 attribute = OperationalAttribute(AttrDef(conf_operational_attribute_prefix + attribute_name), entry, self)
                 attribute.raw_values = response['raw_attributes'][attribute_name]
                 attribute.values = response['attributes'][attribute_name]
@@ -287,7 +299,10 @@ class Cursor(object):
 
     def _execute_query(self, query_scope, attributes):
         if not self.connection:
-            raise LDAPCursorError('no connection established')
+            error_message = 'no connection established'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         old_query_filter = None
         if query_scope == BASE:  # requesting a single object so an always-valid filter is set
             if hasattr(self, 'query_filter'):  # only Reader has a query filter
@@ -386,6 +401,9 @@ class Reader(Cursor):
         self.query_filter = None
         self.reset()
 
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated Reader Cursor: <%r>', self)
+
     @property
     def query(self):
         return self._query
@@ -463,7 +481,10 @@ class Reader(Cursor):
                     if self.definition[attr].validate:
                         validated = self.definition[attr].validate(value)  # returns True, False or a value to substitute to the actual values
                         if validated is False:
-                            raise LDAPCursorError('validation failed for attribute %s and value %s' % (d, val))
+                            error_message = 'validation failed for attribute %s and value %s' % (d, val)
+                            if log_enabled(ERROR):
+                                log(ERROR, '%s for <%s>', error_message, self)
+                            raise LDAPCursorError(error_message)
                         elif validated is not True:  # a valid LDAP value equivalent to the actual values
                                 value = validated
                     if val_not:
@@ -474,7 +495,10 @@ class Reader(Cursor):
                     query += ';'
                 query = query[:-1] + ', '
             else:
-                raise LDAPCursorError('attribute \'%s\' not in definition' % attr)
+                error_message = 'attribute \'%s\' not in definition' % attr
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPCursorError(error_message)
         self.validated_query = query[:-2]
         self._validated_query_dict = _create_query_dict(self.validated_query)
 
@@ -492,7 +516,10 @@ class Reader(Cursor):
                     self.query_filter += '(objectClass=' + object_class + ')'
                 self.query_filter += ')'
             else:
-                raise LDAPCursorError('object class must be a string or a list')
+                error_message = 'object class must be a string or a list'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPCursorError(error_message)
 
         if self._query and self._query.startswith('(') and self._query.endswith(')'):  # query is already an LDAP filter
             if 'objectclass' not in self._query.lower():
@@ -612,7 +639,10 @@ class Reader(Cursor):
 
         """
         if not self.connection:
-            raise LDAPCursorError('no connection established')
+            error_message = 'no connection established'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
 
         self.clear()
         self._create_query_filter()
@@ -649,7 +679,10 @@ class Writer(Cursor):
             elif isinstance(cursor, Writer):
                 pass
             else:
-                raise LDAPCursorError('unknown cursor type %s' % str(type(cursor)))
+                error_message = 'unknown cursor type %s' % str(type(cursor))
+                if log_enabled(ERROR):
+                    log(ERROR, '%s', error_message)
+                raise LDAPCursorError(error_message)
         writer.execution_time = cursor.execution_time
         return writer
 
@@ -657,11 +690,17 @@ class Writer(Cursor):
     def from_response(connection, object_def, response=None):
         if response is None:
             if not connection.strategy.sync:
-                raise LDAPCursorError(' with asynchronous strategies response must be specified')
+                error_message = 'with asynchronous strategies response must be specified'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s', error_message)
+                raise LDAPCursorError(error_message)
             elif connection.response:
                 response = connection.response
             else:
-                raise LDAPCursorError('response not present')
+                error_message = 'response not present'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s', error_message)
+                raise LDAPCursorError(error_message)
         writer = Writer(connection, object_def)
 
         for resp in response:
@@ -673,6 +712,9 @@ class Writer(Cursor):
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
         Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
         self.dereference_aliases = DEREF_NEVER
+
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated Writer Cursor: <%r>', self)
 
     def commit(self, refresh=True):
         self._reset_history()
@@ -696,7 +738,10 @@ class Writer(Cursor):
 
         """
         if not self.connection:
-            raise LDAPCursorError('no connection established')
+            error_message = 'no connection established'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
 
         response = []
         with self.connection:
@@ -727,13 +772,19 @@ class Writer(Cursor):
         elif len(response) == 0:
             return None
 
-        raise LDAPCursorError('more than 1 entry returned for a single object search')
+        error_message = 'more than 1 entry returned for a single object search'
+        if log_enabled(ERROR):
+            log(ERROR, '%s for <%s>', error_message, self)
+        raise LDAPCursorError(error_message)
 
     def new(self, dn):
         dn = safe_dn(dn)
         for entry in self.entries:  # checks if dn is already used in an cursor entry
             if entry.entry_dn == dn:
-                raise LDAPCursorError('dn already present in cursor')
+                error_message = 'dn already present in cursor'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPCursorError(error_message)
         rdns = safe_rdn(dn, decompose=True)
         entry = self.entry_class(dn, self)  # defines a new empty Entry
         for attr in entry.entry_mandatory_attributes:  # defines all mandatory attributes as virtual
@@ -748,7 +799,10 @@ class Writer(Cursor):
                     entry.__dict__[rdn_name] = entry._state.attributes[rdn_name]
                 entry.__dict__[rdn_name].set(rdn[1])
             else:
-                raise LDAPCursorError('rdn type \'%s\' not in object class definition' % rdn[0])
+                error_message = 'rdn type \'%s\' not in object class definition' % rdn[0]
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPCursorError(error_message)
         entry._state.set_status(STATUS_VIRTUAL)  # set intial status
         entry._state.set_status(STATUS_PENDING_CHANGES)  # tries to change status to PENDING_CHANGES. If mandatory attributes are missing status is reverted to MANDATORY_MISSING
         self.entries.append(entry)

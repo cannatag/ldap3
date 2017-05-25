@@ -29,6 +29,7 @@ from .. import MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, SEQUENCE_TYPES
 from ..core.exceptions import LDAPCursorError
 from ..utils.repr import to_stdout_encoding
 from . import STATUS_PENDING_CHANGES, STATUS_VIRTUAL, STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
 
 
 # noinspection PyUnresolvedReferences
@@ -171,17 +172,27 @@ class WritableAttribute(Attribute):
     def add(self, values):
         # new value for attribute to commit with a MODIFY_ADD
         if self.entry._state._initial_status == STATUS_VIRTUAL:
-            raise LDAPCursorError('cannot add an attribute value in a new entry')
+            error_message = 'cannot add an attribute value in a new entry'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' - cannot add attributes')
+            error_message = self.entry.entry_status + ' - cannot add attributes'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if values is None:
-            raise LDAPCursorError('added value cannot be None')
-        # if self.values and self.definition.single_value:
-        #     raise LDAPCursorError("can't add to an already valued single-value attribute")
+            error_message = 'value to add cannot be None'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if values is not None:
             validated = self.definition.validate(values)  # returns True, False or a value to substitute to the actual values
             if validated is False:
-                raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+                error_message = 'value \'%s\' non valid for attribute \'%s\'' % (values, self.key)
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPCursorError(error_message)
             elif validated is not True:  # a valid LDAP value equivalent to the actual values
                 values = validated
         self._update_changes((MODIFY_ADD, values if isinstance(values, SEQUENCE_TYPES) else [values]))
@@ -189,12 +200,21 @@ class WritableAttribute(Attribute):
     def set(self, values):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' - cannot set attributes')
+            error_message = self.entry.entry_status + ' - cannot set attributes'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if values is None:
-            raise LDAPCursorError('new value cannot be None')
+            error_message = 'new value cannot be None'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         validated = self.definition.validate(values)  # returns True, False or a value to substitute to the actual values
         if validated is False:
-            raise LDAPCursorError('value \'%s\' non valid for attribute \'%s\'' % (values, self.key))
+            error_message = 'value \'%s\' non valid for attribute \'%s\'' % (values, self.key)
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         elif validated is not True:  # a valid LDAP value equivalent to the actual values
             values = validated
         self._update_changes((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
@@ -202,23 +222,41 @@ class WritableAttribute(Attribute):
     def delete(self, values):
         # value for attribute to delete in commit with a MODIFY_DELETE
         if self.entry._state._initial_status == STATUS_VIRTUAL:
-            raise LDAPCursorError('cannot delete an attribute value in a new entry')
+            error_message = 'cannot delete an attribute value in a new entry'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' - cannot delete attributes')
+            error_message = self.entry.entry_status + ' - cannot delete attributes'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if values is None:
-            raise LDAPCursorError('value to delete cannot be None')
+            error_message = 'value to delete cannot be None'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if not isinstance(values, SEQUENCE_TYPES):
             values = [values]
         for single_value in values:
             if single_value not in self.values:
-                raise LDAPCursorError('value \'%s\' not present in \'%s\'' % (single_value, ', '.join(self.values)))
+                error_message = 'value \'%s\' not present in \'%s\'' % (single_value, ', '.join(self.values))
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPCursorError(error_message)
         self._update_changes((MODIFY_DELETE, values))
 
     def remove(self):
         if self.entry._state._initial_status == STATUS_VIRTUAL:
-            raise LDAPCursorError('cannot remove an attribute in a new entry')
+            error_message = 'cannot remove an attribute in a new entry'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
-            raise LDAPCursorError(self.entry.entry_status + ' - cannot remove attributes')
+            error_message = self.entry.entry_status + ' - cannot remove attributes'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPCursorError(error_message)
         self._update_changes((MODIFY_REPLACE, []), True)
 
     def discard(self):

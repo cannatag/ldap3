@@ -32,6 +32,7 @@ from ..protocol.rfc4512 import SchemaInfo, constant_to_class_kind
 from ..protocol.formatters.standard import find_attribute_validator
 from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.config import get_config_parameter
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
 
 
 class ObjectDef(object):
@@ -64,9 +65,15 @@ class ObjectDef(object):
             elif isinstance(schema, SchemaInfo):
                 schema = schema
             elif schema:
-                raise LDAPSchemaError('unable to read schema')
+                error_message = 'unable to read schema'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPSchemaError(error_message)
             if schema is None:
-                raise LDAPSchemaError('schema not present')
+                error_message = 'schema not present'
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPSchemaError(error_message)
         self.__dict__['_schema'] = schema
 
         if self._schema:
@@ -76,6 +83,9 @@ class ObjectDef(object):
                     self._populate_attr_defs(object_name)
 
         self.__dict__['_object_class'] = object_class
+
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated ObjectDef: <%r>', self)
 
     def _populate_attr_defs(self, object_name):
         if object_name in self._schema.object_classes:
@@ -91,7 +101,10 @@ class ObjectDef(object):
                 if attribute_name not in self._attributes:  # the attribute could already be defined as "mandatory" in a superclass
                     self.add_from_schema(attribute_name, False)
         else:
-            raise LDAPObjectError('object class \'%s\' not defined in schema' % object_name)
+            error_message = 'object class \'%s\' not defined in schema' % object_name
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPObjectError(error_message)
 
     def __repr__(self):
         if self._object_class:
@@ -116,12 +129,21 @@ class ObjectDef(object):
             try:
                 return self._attributes[item]
             except KeyError:
-                raise LDAPKeyError('key \'%s\' not present' % item)
+                error_message = 'key \'%s\' not present' % item
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPKeyError(error_message)
         else:
-            raise LDAPKeyError('internal _attributes property not defined')
+            error_message = 'internal _attributes property not defined'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPKeyError(error_message)
 
     def __setattr__(self, key, value):
-        raise LDAPObjectError('object \'%s\' is read only' % key)
+        error_message = 'object \'%s\' is read only' % key
+        if log_enabled(ERROR):
+            log(ERROR, '%s for <%s>', error_message, self)
+        raise LDAPObjectError(error_message)
 
     def __iadd__(self, other):
         self.add_attribute(other)
@@ -191,7 +213,10 @@ class ObjectDef(object):
             for element in definition:
                 self.add_attribute(element)
         else:
-            raise LDAPObjectError('unable to add element to object definition')
+            error_message = 'unable to add element to object definition'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPObjectError(error_message)
 
     def remove_attribute(self, item):
         """Remove an AttrDef from the ObjectDef. Can be called with the -= operator.
@@ -210,9 +235,15 @@ class ObjectDef(object):
                     del self._attributes[attr]
                     break
             else:
-                raise LDAPKeyError('key \'%s\' not present' % key)
+                error_message = 'key \'%s\' not present' % key
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', error_message, self)
+                raise LDAPKeyError(error_message)
         else:
-            raise LDAPAttributeError('key type must be str or AttrDef not ' + str(type(item)))
+            error_message = 'key type must be str or AttrDef not ' + str(type(item))
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPAttributeError(error_message)
 
     def clear_attributes(self):
         """Empty the ObjectDef attribute list

@@ -77,13 +77,13 @@ _ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX = 'OA_'
 # communication
 _POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool
 
-_RESPONSE_SLEEPTIME = 0.1  # seconds to wait while waiting for a response in asynchronous strategies
-_RESPONSE_WAITING_TIMEOUT = 30  # waiting timeout for receiving a response in asynchronous strategies
+_RESPONSE_SLEEPTIME = 0.02  # seconds to wait while waiting for a response in asynchronous strategies
+_RESPONSE_WAITING_TIMEOUT = 1  # waiting timeout for receiving a response in asynchronous strategies
 _SOCKET_SIZE = 4096  # socket byte size
 _CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 _RESET_AVAILABILITY_TIMEOUT = 5  # default timeout for resetting the availability status when checking candidate addresses
 _RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
-_RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+_RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
 _REUSABLE_THREADED_POOL_SIZE = 5
 _REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
 _DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'

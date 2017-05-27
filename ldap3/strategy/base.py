@@ -400,7 +400,7 @@ class BaseStrategy(object):
                                 entry['raw_attributes'][attribute_type] = list()
                                 entry['attributes'][attribute_type] = list()
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute value set to empty list for missing attribute %s in %s', attribute_type, self)
+                                    log(PROTOCOL, 'attribute set to empty list for missing attribute <%s> in <%s>', attribute_type, self)
                         if not self.connection.auto_range:
                             attrs_to_remove = []
                             # removes original empty attribute in case a range tag is returned
@@ -410,7 +410,7 @@ class BaseStrategy(object):
                                     attrs_to_remove.append(orig_attr)
                             for attribute_type in attrs_to_remove:
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute type %s removed in response because of the same attribute returned as range by the server in %s', attribute_type, self)
+                                    log(PROTOCOL, 'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>', attribute_type, self)
                                 del entry['raw_attributes'][attribute_type]
                                 del entry['attributes'][attribute_type]
 

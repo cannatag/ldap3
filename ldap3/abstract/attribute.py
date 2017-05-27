@@ -167,9 +167,13 @@ class WritableAttribute(Attribute):
             self.entry._changes[key] = []  # remove old changes (for removing attribute)
 
         self.entry._changes[key].append(changes)
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'updated changes <%r> for <%s> attribute in <%s> entry', changes, self.key, self.entry.entry_dn)
         self.entry._state.set_status(STATUS_PENDING_CHANGES)
 
     def add(self, values):
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'adding %r to <%s> attribute in <%s> entry', values, self.key, self.entry.entry_dn)
         # new value for attribute to commit with a MODIFY_ADD
         if self.entry._state._initial_status == STATUS_VIRTUAL:
             error_message = 'cannot add an attribute value in a new entry'
@@ -199,6 +203,8 @@ class WritableAttribute(Attribute):
 
     def set(self, values):
         # new value for attribute to commit with a MODIFY_REPLACE, old values are deleted
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'setting %r to <%s> attribute in <%s> entry', values, self.key, self.entry.entry_dn)
         if self.entry.entry_status in [STATUS_READY_FOR_DELETION, STATUS_READY_FOR_MOVING, STATUS_READY_FOR_RENAMING]:
             error_message = self.entry.entry_status + ' - cannot set attributes'
             if log_enabled(ERROR):
@@ -221,6 +227,8 @@ class WritableAttribute(Attribute):
 
     def delete(self, values):
         # value for attribute to delete in commit with a MODIFY_DELETE
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'deleting %r from <%s> attribute in <%s> entry', values, self.key, self.entry.entry_dn)
         if self.entry._state._initial_status == STATUS_VIRTUAL:
             error_message = 'cannot delete an attribute value in a new entry'
             if log_enabled(ERROR):
@@ -247,6 +255,8 @@ class WritableAttribute(Attribute):
         self._update_changes((MODIFY_DELETE, values))
 
     def remove(self):
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'removing <%s> attribute in <%s> entry', self.key, self.entry.entry_dn)
         if self.entry._state._initial_status == STATUS_VIRTUAL:
             error_message = 'cannot remove an attribute in a new entry'
             if log_enabled(ERROR):
@@ -260,6 +270,8 @@ class WritableAttribute(Attribute):
         self._update_changes((MODIFY_REPLACE, []), True)
 
     def discard(self):
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'discarding <%s> attribute in <%s> entry', self.key, self.entry.entry_dn)
         del self.entry._changes[self.key]
         if not self.entry._changes:
             self.entry._state.set_status(self.entry._state._initial_status)

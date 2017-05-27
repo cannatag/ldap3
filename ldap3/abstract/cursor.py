@@ -310,6 +310,8 @@ class Cursor(object):
             self.query_filter = '(objectclass=*)'
         else:
             self._create_query_filter()
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'executing query - base: %s - filter: %s - scope: %s for <%s>', self.base, self.query_filter, query_scope, self)
         with self.connection:
             result = self.connection.search(search_base=self.base,
                                             search_filter=self.query_filter,
@@ -342,6 +344,8 @@ class Cursor(object):
             self.query_filter = old_query_filter
 
     def remove(self, entry):
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'removing entry <%s> in <%s>', entry, self)
         self.entries.remove(entry)
 
     def _reset_history(self):
@@ -581,6 +585,8 @@ class Reader(Cursor):
         """
         self.clear()
         query_scope = SUBTREE if self.sub_tree else LEVEL
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'performing search in <%s>', self)
         self._execute_query(query_scope, attributes)
 
         return self.entries
@@ -591,6 +597,8 @@ class Reader(Cursor):
         :return: Entry found in search
 
         """
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'performing object search in <%s>', self)
         self.clear()
         if entry_dn:
             old_base = self.base
@@ -608,6 +616,8 @@ class Reader(Cursor):
         :return: Entries found in search
 
         """
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'performing single level search in <%s>', self)
         self.clear()
         self._execute_query(LEVEL, attributes)
 
@@ -619,6 +629,8 @@ class Reader(Cursor):
         :return: Entries found in search
 
         """
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'performing whole subtree search in <%s>', self)
         self.clear()
         self._execute_query(SUBTREE, attributes)
 
@@ -638,6 +650,8 @@ class Reader(Cursor):
         :return: Entries found in search
 
         """
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'performing paged search in <%s> with paged size %s', self, str(paged_size))
         if not self.connection:
             error_message = 'no connection established'
             if log_enabled(ERROR):
@@ -684,6 +698,8 @@ class Writer(Cursor):
                     log(ERROR, '%s', error_message)
                 raise LDAPCursorError(error_message)
         writer.execution_time = cursor.execution_time
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated Writer Cursor <%r> from cursor <%r>', writer, cursor)
         return writer
 
     @staticmethod
@@ -707,6 +723,8 @@ class Writer(Cursor):
             if resp['type'] == 'searchResEntry':
                 entry = writer._create_entry(resp)
                 writer.entries.append(entry)
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated Writer Cursor <%r> from response', writer)
         return writer
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
@@ -717,6 +735,8 @@ class Writer(Cursor):
             log(BASIC, 'instantiated Writer Cursor: <%r>', self)
 
     def commit(self, refresh=True):
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'committed changes for <%s>', self)
         self._reset_history()
         successful = True
         for entry in self.entries:
@@ -728,6 +748,8 @@ class Writer(Cursor):
         return successful
 
     def discard(self):
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'discarded changes for <%s>', self)
         for entry in self.entries:
             entry.entry_discard_changes()
 
@@ -737,6 +759,8 @@ class Writer(Cursor):
         :return: Entry found in search
 
         """
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'refreshing object <%s> for <%s>', entry_dn, self)
         if not self.connection:
             error_message = 'no connection established'
             if log_enabled(ERROR):
@@ -778,6 +802,8 @@ class Writer(Cursor):
         raise LDAPCursorError(error_message)
 
     def new(self, dn):
+        if log_enabled(BASIC):
+            log(BASIC, 'creating new entry <%s> for <%s>', dn, self)
         dn = safe_dn(dn)
         for entry in self.entries:  # checks if dn is already used in an cursor entry
             if entry.entry_dn == dn:
@@ -810,8 +836,9 @@ class Writer(Cursor):
 
     def refresh_entry(self, entry, tries=4, seconds=2):
         self._do_not_reset = True
-
         attr_list = []
+        if log_enabled(PROTOCOL):
+            log(PROTOCOL, 'refreshing entry <%s> for <%s>', entry, self)
         for attr in entry._state.attributes:  # check friendly attribute name in AttrDef
             if entry._state.definition[attr].name:
                 attr_list.append(entry._state.definition[attr].name)

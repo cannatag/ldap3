@@ -35,12 +35,21 @@ Global configuration
 
 in the **ldap3.utils.config** package there are some configurable settings:
 
-* RESPONSE_SLEEPTIME = 0.02  # seconds to wait while waiting for a response in asynchronous strategies.
-* RESPONSE_WAITING_TIMEOUT = 1  # waiting timeout for receiving a response in asynchronous strategies (in seconds).
-* SOCKET_SIZE = 4096  # socket byte size.
-* RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request.
-* RESTARTABLE_TRIES = 50  # number of times to retry in a restartable strategy before giving up.
-  Set this to ```True``` for unlimited retries.
+* POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool
+* RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies
+* RESPONSE_WAITING_TIMEOUT = 2  # waiting timeout for receiving a response in asynchronous strategies
+* SOCKET_SIZE = 4096  # socket byte size
+* CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
+* RESET_AVAILABILITY_TIMEOUT = 5  # default timeout for resetting the availability status when checking candidate addresses
+* RESTARTABLE_SLEEPTIME = 2  # time to wait in a restartable strategy before retrying the request
+* RESTARTABLE_TRIES = 30  # number of times to retry in a restartable strategy before giving up. Set to True for unlimited retries
+* REUSABLE_THREADED_POOL_SIZE = 5
+* REUSABLE_THREADED_LIFETIME = 3600  # 1 hour
+* DEFAULT_THREADED_POOL_NAME = 'REUSABLE_DEFAULT_POOL'
+* ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address info from dns
+* ADDITIONAL_ENCODINGS = ['latin-1']  # some broken LDAP implementation may have different encoding than those expected by RFCs
+* IGNORE_MALFORMED_SCHEMA = False  # some flaky LDAP servers returns malformed schema. If True no expection is raised and schema is thrown away
+
 
 This parameters are library-wide and usually you should keep the default values.
 

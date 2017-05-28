@@ -6,7 +6,8 @@
     - paged search works in mock strategies
     - paged_search in extend.standard namespace raises an exception of class LDAPOperationResult if the search returns an error
     - search_paged() method of Cursor object now return the whole list of entries if generator=False
-    -updated docs for defaults parameters (thanks Guarnacciaa)
+    - updated docs for defaults parameters (thanks Guarnacciaa)
+    - fixed mockBase for integer matching (thanks Jijo)
 
 - 2.2.4 2017.05.07
     - leading and trailing spaces in server name don't raise exception anymore

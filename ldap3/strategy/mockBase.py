@@ -859,7 +859,7 @@ class MockBaseStrategy(object):
 
     @staticmethod
     def _check_equality(value1, value2):
-        if value1.isdigit() and value2.isdigit():
+        if str(value1).isdigit() and str(value2).isdigit():
             if int(value1) == int(value2):  # int comparison
                 return True
         try:

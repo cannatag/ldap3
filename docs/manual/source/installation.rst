@@ -37,7 +37,7 @@ in the **ldap3.utils.config** package there are some configurable settings:
 
 * POOLING_LOOP_TIMEOUT = 10  # number of seconds to wait before restarting a cycle to find an active server in the pool
 * RESPONSE_SLEEPTIME = 0.05  # seconds to wait while waiting for a response in asynchronous strategies
-* RESPONSE_WAITING_TIMEOUT = 2  # waiting timeout for receiving a response in asynchronous strategies
+* RESPONSE_WAITING_TIMEOUT = 3  # waiting timeout for receiving a response in asynchronous strategies
 * SOCKET_SIZE = 4096  # socket byte size
 * CHECK_AVAILABILITY_TIMEOUT = 2.5  # default timeout for socket connect when checking availability
 * RESET_AVAILABILITY_TIMEOUT = 5  # default timeout for resetting the availability status when checking candidate addresses

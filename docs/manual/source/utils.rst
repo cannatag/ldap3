@@ -9,3 +9,4 @@ LDAP3 Utils
    uri
    cidict
    conv
+   config

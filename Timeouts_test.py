@@ -2,14 +2,14 @@ from __future__ import print_function
 from time import time, sleep
 from ldap3 import Server, Connection, BASE, NONE
 from ldap3.utils.log import set_library_log_detail_level, EXTENDED
+import logging
+logging.basicConfig(filename='timeouts_test_ldap3.log', level=logging.DEBUG)
+set_library_log_detail_level(EXTENDED)
 
 SERVER = 'ldap://edir1.hyperv'
 CONNECT_TIMEOUT = 2
 RECEIVE_TIMEOUT = 3
 output = open('timeouts_test_ldap3.txt', 'w')
-import logging
-logging.basicConfig(filename='timeouts_test_ldap3.log', level=logging.DEBUG)
-set_library_log_detail_level(EXTENDED)
 
 
 def ask(connection_working, connection=None):

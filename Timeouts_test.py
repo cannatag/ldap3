@@ -1,20 +1,27 @@
 from time import time, sleep
 from ldap3 import Server, Connection, BASE, ALL_ATTRIBUTES
 
-SERVER = 'ldaps://edir1.hyperv'
+SERVER = 'ldap://edir1.hyperv'
 CONNECT_TIMEOUT = 2
 RECEIVE_TIMEOUT = 3
 log = open('timeouts_test_ldap3.txt', 'w')
 
 
-def ask(connection_working):
+def ask(connection_working, connection=None):
     message = 'Please ' + ('ensure server is REACHABLE' if connection_working else 'make server UNAVAILABLE') + ', then press Enter'
-    if str != bytes:  # python 3
-        input(message)
+    if not connection:
+        if str != bytes:  # python 3
+            input(message)
+        else:
+            raw_input(message)
     else:
-        raw_input(message)
-    print('testing...')
-    sleep(1)
+        done = False
+        print('Please ensure server is ' + ('REACHABLE' if connection_working else 'UNAVAILABLE'))
+        while not done:
+            available = connection.server.check_availability()
+            if (connection_working and available) or (not connection_working and not available):
+                done = True
+            sleep(2)
 
 
 def get_connection(connect_timeout, receive_timeout):
@@ -30,22 +37,27 @@ def get_connection(connect_timeout, receive_timeout):
 
 
 def test_connection(connect_timeout, receive_timeout):
-    print('testing CONNECT TIMEOUT %s - RECEIVE TIMEOUT %s' % (connect_timeout, receive_timeout))
+    print('Starting testing CONNECT TIMEOUT %s - RECEIVE TIMEOUT %s' % (connect_timeout, receive_timeout))
     c = get_connection(connect_timeout, receive_timeout)
 
-    ask(False)
+    ask(False, c)
+    print('Testing binding')
     t = time()
     try:
+        c.open()
         c.bind()
         p0 = 'established connection: %010f' % (time() - t)
     except:
         p0 = 'connection timeout    : %010f' % (time() - t)
 
-    ask(True)
+    ask(True, c)
+
     c = get_connection(connect_timeout, receive_timeout)
+    print('Testing searching')
     try:
+        c.open()
         c.bind()
-        ask(False)
+        ask(False, c)
         t = time()
         try:
             c.search('', '(objectclass=*)', BASE, attributes=ALL_ATTRIBUTES)
@@ -55,7 +67,25 @@ def test_connection(connect_timeout, receive_timeout):
     except:
         p1 = 'ERROR opening the connection for searching'
 
-    ask(True)
+    ask(True, c)
+    c = get_connection(connect_timeout, receive_timeout)
+    print('Testing StartTls')
+
+    try:
+        c.bind()
+        if not c.start_tls():
+            raise Exception('unable to start TLS on open socket')
+        ask(False, c)
+        t = time()
+        try:
+            c.search('', '(objectclass=*)', BASE, attributes=ALL_ATTRIBUTES)
+            p1 = 'searching data (TLS)  : %010f' % (time() - t)
+        except:
+            p1 = 'search timeout (TLS)  : %010f' % (time() - t)
+    except:
+        p1 = 'ERROR opening the connection for searching with StartTls'
+
+    ask(True, c)
     t = time()
     try:
         c.unbind()

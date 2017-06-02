@@ -382,7 +382,7 @@ class Connection(object):
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
-        r += '' if self.receive_timeout is None else (', receive_timeout=' + ('True' if self.receive_timeout else 'False'))
+        r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
         r += '' if self.empty_attributes is None else (', return_empty_attributes=' + ('True' if self.empty_attributes else 'False'))
         r += ')'
 
@@ -417,7 +417,7 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
-        r += '' if self.receive_timeout is None else (', receive_timeout=' + 'True' if self.receive_timeout else 'False')
+        r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
         r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
 
         r += ')'

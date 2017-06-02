@@ -28,7 +28,7 @@ from copy import deepcopy
 from pprint import pformat
 from ..protocol.rfc4511 import LDAPMessage
 
-# logging
+# logging levels
 OFF = 0
 ERROR = 10
 BASIC = 20

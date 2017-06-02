@@ -224,6 +224,8 @@ class Server(object):
         r += '' if not self.allowed_referral_hosts else ', allowed_referral_hosts={0.allowed_referral_hosts!r}'.format(self)
         r += '' if self.tls is None else ', tls={0.tls!r}'.format(self)
         r += '' if not self.get_info else ', get_info={0.get_info!r}'.format(self)
+        r += '' if not self.connect_timeout else ', connect_timeout={0.connect_timeout!r}'.format(self)
+        r += '' if not self.mode else ', mode={0.mode!r}'.format(self)
         r += ')'
 
         return r

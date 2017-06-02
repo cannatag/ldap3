@@ -153,6 +153,9 @@ def validate_attribute_value(schema, name, value, auto_encode):
         # encodes to utf-8 for well known Unicode LDAP syntaxes
         if auto_encode and (schema.attribute_types[name].syntax in conf_utf8_syntaxes or name.lower() in conf_utf8_types):
             value = to_unicode(value)  # tries to convert from local encoding to Unicode
+    # checks for boolean value and sets it to LDAP standard boolean string
+    if isinstance(value, bool):
+        value = 'TRUE' if value else 'FALSE'
     return to_raw(value)
 
 

@@ -201,15 +201,16 @@ class BaseStrategy(object):
 
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        try:  # set receive timeout for the connection socket
-            if self.connection.receive_timeout is not None:
+        if self.connection.receive_timeout is not None:
+            try:  # set receive timeout for the connection socket
+                self.connection.socket.settimeout(self.connection.receive_timeout)
                 if system().lower() == 'windows':
                     self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, int(1000 * self.connection.receive_timeout))
                 else:
                     self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, pack('LL', self.connection.receive_timeout, 0))
-        except socket.error as e:
-            self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
-            exc = e
+            except socket.error as e:
+                self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
+                exc = e
 
         if exc:
             if log_enabled(ERROR):
@@ -243,7 +244,7 @@ class BaseStrategy(object):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        if self.connection.server.connect_timeout:
+        if self.connection.server.connect_timeout and not self.connection.receive_timeout:
             self.connection.socket.settimeout(None)  # disable socket connection timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specified in connection
 
         if self.connection.usage:

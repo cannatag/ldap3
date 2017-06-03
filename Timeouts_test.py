@@ -6,7 +6,7 @@ import logging
 logging.basicConfig(filename='timeouts_test_ldap3.log', level=logging.DEBUG)
 set_library_log_detail_level(EXTENDED)
 
-SERVER = 'ldap://edir1.hyperv'
+SERVER = 'ldaps://edir1.hyperv'
 CONNECT_TIMEOUT = 2
 RECEIVE_TIMEOUT = 3
 output = open('timeouts_test_ldap3.txt', 'w')

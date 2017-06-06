@@ -394,11 +394,17 @@ class MockBaseStrategy(object):
                 result_code = 0
                 message = 'entry moved'
                 self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
+                new_dn_components = to_dn(new_dn)
+                core_attr, core_val = new_dn_components[0].split('=')
+                self.connection.server.dit[new_dn][core_attr] = [core_val]
             elif new_rdn and not new_superior:  # performs rename
                 new_dn = safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))
                 self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
                 del self.connection.server.dit[dn]
                 self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
+                new_dn_components = to_dn(new_dn)
+                core_attr, core_val = new_dn_components[0].split('=')
+                self.connection.server.dit[new_dn][core_attr] = [core_val]
                 result_code = 0
                 message = 'entry rdn renamed'
             else:

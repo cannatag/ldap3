@@ -77,7 +77,7 @@ GIT repository
 You can download the latest released source code at https://github.com/cannatag/ldap3/tree/master
 
 
-Contribuiting to this project
+Contributing to this project
 -----------------------------
 
 ldap3 source is hosted on github. You can contribute to the ldap3 project on https://github.com/cannatag/ldap3

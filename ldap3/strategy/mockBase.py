@@ -433,16 +433,22 @@ class MockBaseStrategy(object):
             if new_superior and new_rdn:  # performs move in the DIT
                 new_dn = safe_dn(dn_components[0] + ',' + new_superior)
                 self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
+                moved_entry = self.connection.server.dit[new_dn]
                 if delete_old_rdn:
                     del self.connection.server.dit[dn]
                 result_code = RESULT_SUCCESS
                 message = 'entry moved'
-                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
+                moved_entry['entryDN'] = [to_raw(new_dn)]
             elif new_rdn and not new_superior:  # performs rename
                 new_dn = safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))
                 self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
+                renamed_entry = self.connection.server.dit[new_dn]
                 del self.connection.server.dit[dn]
-                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
+                renamed_entry['entryDN'] = [to_raw(new_dn)]
+
+                for rdn in safe_rdn(new_dn, decompose=True):  # adds rdns to entry attributes
+                    renamed_entry[rdn[0]] = [to_raw(rdn[1])]
+
                 result_code = RESULT_SUCCESS
                 message = 'entry rdn renamed'
             else:

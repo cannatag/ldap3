@@ -39,6 +39,7 @@ from ..core.results import RESULT_SUCCESS
 from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
 from ..utils.conv import to_raw
+from ..utils.config import get_config_parameter
 from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
 
@@ -72,6 +73,7 @@ class Cursor(object):
     # entry_initial_status = STATUS, must be defined in subclasses
 
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
+        conf_attributes_excluded_from_object_def = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF')]
         self.connection = connection
 
         if connection._deferred_bind or connection._deferred_open:  # probably a lazy connection, tries to bind
@@ -86,7 +88,7 @@ class Cursor(object):
                 attributes = [attributes]
 
             for attribute in attributes:
-                if attribute not in self.definition._attributes:
+                if attribute not in self.definition._attributes and attribute.lower() not in conf_attributes_excluded_from_object_def:
                     not_defined_attributes.append(attribute)
 
             if not_defined_attributes:
@@ -185,9 +187,11 @@ class Cursor(object):
 
         """
         conf_operational_attribute_prefix = get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX')
+        conf_attributes_excluded_from_object_def = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF')]
         attributes = CaseInsensitiveWithAliasDict()
         used_attribute_names = set()
-        for attr_def in attr_defs:
+        for attr in attr_defs:
+            attr_def = attr_defs[attr]
             attribute_name = None
             for attr_name in response['attributes']:
                 if attr_def.name.lower() == attr_name.lower():
@@ -225,7 +229,7 @@ class Cursor(object):
 
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
-                if attribute_name not in attr_defs:
+                if attribute_name not in attr_defs and attribute_name.lower() not in conf_attributes_excluded_from_object_def:
                     error_message = 'attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry.entry_definition._object_class), entry.entry_dn)
                     if log_enabled(ERROR):
                         log(ERROR, '%s for <%s>', error_message, self)
@@ -286,7 +290,7 @@ class Cursor(object):
             return None
 
         entry = self.entry_class(response['dn'], self)  # define an Entry (writable or readonly), as specified in the cursor definition
-        entry._state.attributes = self._get_attributes(response, self.definition, entry)
+        entry._state.attributes = self._get_attributes(response, self.definition._attributes, entry)
         entry._state.entry_raw_attributes = deepcopy(response['raw_attributes'])
 
         entry._state.response = response
@@ -835,11 +839,15 @@ class Writer(Cursor):
         return entry
 
     def refresh_entry(self, entry, tries=4, seconds=2):
+        conf_operational_attribute_prefix = get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX')
+
         self._do_not_reset = True
         attr_list = []
         if log_enabled(PROTOCOL):
             log(PROTOCOL, 'refreshing entry <%s> for <%s>', entry, self)
-        for attr in entry._state.attributes:  # check friendly attribute name in AttrDef
+        for attr in entry._state.attributes:  # check friendly attribute name in AttrDef, do not check operational attributes
+            if attr.lower().startswith(conf_operational_attribute_prefix.lower()):
+                continue
             if entry._state.definition[attr].name:
                 attr_list.append(entry._state.definition[attr].name)
             else:

@@ -114,7 +114,7 @@ def _find_last_unescaped(dn, char, start, stop=0):
     return stop
 
 
-def get_next_ava(dn):
+def _get_next_ava(dn):
     comma = _find_first_unescaped(dn, ',', 0)
     plus = _find_first_unescaped(dn, '+', 0)
 
@@ -133,17 +133,17 @@ def get_next_ava(dn):
     return dn, ''
 
 
-def split_ava(ava, escape=False, strip=True):
+def _split_ava(ava, escape=False, strip=True):
     equal = ava.find('=')
     while equal > 0:  # not first character
         if ava[equal - 1] != '\\':  # not an escaped equal so it must be an ava separator
             # attribute_type1 = ava[0:equal].strip() if strip else ava[0:equal]
             if strip:
                 attribute_type = ava[0:equal].strip()
-                attribute_value = escape_attribute_value(ava[equal + 1:].strip()) if escape else ava[equal + 1:].strip()
+                attribute_value = _escape_attribute_value(ava[equal + 1:].strip()) if escape else ava[equal + 1:].strip()
             else:
                 attribute_type = ava[0:equal]
-                attribute_value = escape_attribute_value(ava[equal + 1:]) if escape else ava[equal + 1:]
+                attribute_value = _escape_attribute_value(ava[equal + 1:]) if escape else ava[equal + 1:]
 
             return attribute_type, attribute_value
         equal = ava.find('=', equal + 1)
@@ -151,7 +151,7 @@ def split_ava(ava, escape=False, strip=True):
     return '', (ava.strip if strip else ava)  # if no equal found return only value
 
 
-def validate_attribute_type(attribute_type):
+def _validate_attribute_type(attribute_type):
     if not attribute_type:
         raise LDAPInvalidDnError('attribute type not present')
 
@@ -168,7 +168,7 @@ def validate_attribute_type(attribute_type):
     return True
 
 
-def validate_attribute_value(attribute_value):
+def _validate_attribute_value(attribute_value):
     if not attribute_value:
         return False
 
@@ -210,7 +210,7 @@ def validate_attribute_value(attribute_value):
     return True
 
 
-def escape_attribute_value(attribute_value):
+def _escape_attribute_value(attribute_value):
     if not attribute_value:
         return ''
 
@@ -275,7 +275,7 @@ def parse_dn(dn, escape=False, strip=True):
     rdns = []
     avas = []
     while dn:
-        ava, separator = get_next_ava(dn)  # if returned ava doesn't containg any unescaped equal it'a appended to last ava in avas
+        ava, separator = _get_next_ava(dn)  # if returned ava doesn't containg any unescaped equal it'a appended to last ava in avas
 
         dn = dn[len(ava) + 1:]
         if _find_first_unescaped(ava, '=', 0) > 0 or len(avas) == 0:
@@ -284,12 +284,12 @@ def parse_dn(dn, escape=False, strip=True):
             avas[len(avas) - 1] = (avas[len(avas) - 1][0] + avas[len(avas) - 1][1] + ava, separator)
 
     for ava, separator in avas:
-        attribute_type, attribute_value = split_ava(ava, escape, strip)
+        attribute_type, attribute_value = _split_ava(ava, escape, strip)
 
-        if not validate_attribute_type(attribute_type):
+        if not _validate_attribute_type(attribute_type):
             raise LDAPInvalidDnError('unable to validate attribute type in ' + ava)
 
-        if not validate_attribute_value(attribute_value):
+        if not _validate_attribute_value(attribute_value):
             raise LDAPInvalidDnError('unable to validate attribute value in ' + ava)
 
         rdns.append((attribute_type, attribute_value, separator))

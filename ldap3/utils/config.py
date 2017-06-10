@@ -65,7 +65,7 @@ _UTF8_ENCODED_SYNTAXES = ['1.2.840.113556.1.4.904',  # DN String [MICROSOFT]
 
 _UTF8_ENCODED_TYPES = []
 
-_ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF = ['msds-memberOfTransitive', 'msds-memberTransitive']
+_ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF = ['msds-memberOfTransitive', 'msds-memberTransitive', 'entryDN']
 _IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF = ['instanceType', 'nTSecurityDescriptor', 'objectCategory']
 
 _CASE_INSENSITIVE_ATTRIBUTE_NAMES = True

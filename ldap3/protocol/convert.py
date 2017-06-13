@@ -82,7 +82,7 @@ def attributes_to_list(attributes):
 
 
 def ava_to_dict(ava):
-    return {'attribute': str(ava['attributeDesc']), 'value': str(ava['assertionValue'])}
+    return {'attribute': str(ava['attributeDesc']), 'value': ''.join(chr(i) for i in ava['assertionValue']._value)}
 
 
 def substring_to_dict(substring):

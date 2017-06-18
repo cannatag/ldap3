@@ -130,6 +130,7 @@ class Tls(object):
         self.certificate_file = local_certificate_file
         self.valid_names = valid_names
         self.ciphers = ciphers
+        self.sni = sni
 
         if log_enabled(BASIC):
             log(BASIC, 'instantiated Tls: <%r>' % self)

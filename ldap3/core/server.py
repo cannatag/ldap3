@@ -386,7 +386,7 @@ class Server(object):
         else:
             result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
-                if result:
+                if result and 'subschemaSubentry' in connection.response[0]['raw_attributes']:
                     schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
             else:  # async request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)

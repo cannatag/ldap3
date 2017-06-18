@@ -146,7 +146,8 @@ class Tls(object):
             'CA certificates data: ' + ('present ' if self.ca_certs_data else 'not present'),
             'verify mode: ' + str(self.validate),
             'valid names: ' + str(self.valid_names),
-            'ciphers: ' + str(self.ciphers)
+            'ciphers: ' + str(self.ciphers),
+            'sni: ' + str(self.sni)
         ]
         return ' - '.join(s)
 
@@ -159,6 +160,7 @@ class Tls(object):
         r += '' if self.ca_certs_path is None else ', ca_certs_path={0.ca_certs_path!r}'.format(self)
         r += '' if self.ca_certs_data is None else ', ca_certs_data={0.ca_certs_data!r}'.format(self)
         r += '' if self.ciphers is None else ', ciphers={0.ciphers!r}'.format(self)
+        r += '' if self.sni is None else ', sni={0.sni!r}'.format(self)
         r = 'Tls(' + r[2:] + ')'
         return r
 

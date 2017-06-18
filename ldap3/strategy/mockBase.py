@@ -55,6 +55,9 @@ from ..protocol.rfc2696 import paged_search_control
 from ..utils.log import log, log_enabled, ERROR, BASIC
 from ..utils.asn1 import encoder
 from ..strategy.base import BaseStrategy  # needed for decode_control() method
+from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
+from ..protocol.convert import build_controls_list
+
 
 # LDAPResult ::= SEQUENCE {
 #     resultCode         ENUMERATED {
@@ -112,6 +115,7 @@ from ..strategy.base import BaseStrategy  # needed for decode_control() method
 # noinspection PyProtectedMember,PyUnresolvedReferences
 
 SEARCH_CONTROLS = ['1.2.840.113556.1.4.319'  # simple paged search [RFC 2696]
+
                    ]
 def random_cookie():
     return to_raw(SystemRandom().random())[-6:]
@@ -880,9 +884,19 @@ class MockBaseStrategy(object):
         self.connection.request = self.decode_request(message_type, request, controls)
         if self.connection.listening:
             message_id = self.connection.server.next_message_id()
+            if self.connection.usage:  # ldap message is built for updating metrics only
+                ldap_message = LDAPMessage()
+                ldap_message['messageID'] = MessageID(message_id)
+                ldap_message['protocolOp'] = ProtocolOp().setComponentByName(message_type, request)
+                message_controls = build_controls_list(controls)
+                if message_controls is not None:
+                    ldap_message['controls'] = message_controls
+                asn1_request = BaseStrategy.decode_request(message_type, request, controls)
+                self.connection._usage.update_transmitted_message(asn1_request, len(encoder.encode(ldap_message)))
             return message_id, message_type, request, controls
         else:
             self.connection.last_error = 'unable to send message, connection is not open'
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             raise LDAPSocketOpenError(self.connection.last_error)
+

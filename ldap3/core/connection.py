@@ -64,7 +64,7 @@ from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
-    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError
+    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError, LDAPConfigurationError
 
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json, to_unicode
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
@@ -195,7 +195,8 @@ class Connection(object):
                  return_empty_attributes=True,
                  use_referral_cache=False,
                  auto_escape=True,
-                 auto_encode=True):
+                 auto_encode=True,
+                 pool_keepalive=None):
 
         conf_default_pool_name = get_config_parameter('DEFAULT_THREADED_POOL_NAME')
         self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
@@ -254,6 +255,7 @@ class Connection(object):
             self.pool_name = pool_name if pool_name else conf_default_pool_name
             self.pool_size = pool_size
             self.pool_lifetime = pool_lifetime
+            self.pool_keepalive = pool_keepalive
             self.starting_tls = False
             self.check_names = check_names
             self.raise_exceptions = raise_exceptions
@@ -380,6 +382,7 @@ class Connection(object):
         r += '' if (self.pool_name is None or self.pool_name == conf_default_pool_name) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
+        r += '' if self.pool_keepalive is None else ', pool_keepalive={0.pool_keepalive!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
@@ -411,12 +414,12 @@ class Connection(object):
         r += '' if self.read_only is None else ', read_only={0.read_only!r}'.format(self)
         r += '' if self.lazy is None else ', lazy={0.lazy!r}'.format(self)
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
-        r += '' if (
-            self.pool_name is None or self.pool_name == conf_default_pool_name) else ', pool_name={0.pool_name!r}'.format(
-            self)
+        r += '' if (self.pool_name is None or self.pool_name == conf_default_pool_name) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
+        r += '' if self.pool_keepalive is None else ', pool_keepalive={0.pool_keepalive!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
+        r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
         r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
 

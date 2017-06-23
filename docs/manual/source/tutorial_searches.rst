@@ -107,7 +107,7 @@ value and the raw value (the value actually returned by the server) in the ``val
     >>> entry.krbLastPwdChange.raw_values
     [b'20161009010118Z']
 
-Note that the entry status is *Read*. This is not relevant if you only need to retrive the entries from the DIT but it's vital if you want to take advantage
+Note that the entry status is *Read*. This is not relevant if you only need to retrieve the entries from the DIT but it's vital if you want to take advantage
 of the ldap3 Abstraction Layer making it *Writable* and change or delete its content via the Abstraction Layer. The Abstraction Layer also records the time
 of the last data read operation for the entry.
 

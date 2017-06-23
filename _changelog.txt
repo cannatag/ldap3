@@ -16,7 +16,8 @@
     - metrics are now updated for Mock strategies, except that for received bytes (thanks joehy)
     - better managing of missing schema from the server (thanks Deborah)
     - SNI support added when the underlying python library allows it (thanks Edmund)
-    - added pool_keepalive parameter to Connection object for REUSABLE strategy.
+    - added pool_keepalive parameter to Connection object for REUSABLE strategy
+    - connection.extend.microsoft.modify_password returns False when change is not successful
 
 # 2.2.4 - 2017.05.07
     - leading and trailing spaces in server name don't raise exception anymore

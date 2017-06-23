@@ -80,7 +80,6 @@ else:
 # test_server_type = 'AD'
 # test_fast_decoder = True
 
-
 if 'TRAVIS' in location:
     # test in the cloud
     if test_server_type == 'EDIR':

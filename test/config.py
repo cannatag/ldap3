@@ -28,8 +28,10 @@ from os.path import join
 from random import SystemRandom
 from tempfile import gettempdir
 
-from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, STRING_TYPES, get_config_parameter,\
-    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES
+from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
+    ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
+    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM,\
+    AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
@@ -112,6 +114,7 @@ if 'TRAVIS' in location:
         test_logging_filename = 'ldap3.log'
         test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net']
     elif test_server_type == 'AD':
+        set_config_parameter('RESPONSE_WAITING_TIMEOUT', 10)
         test_server = 'labldap01.cloudapp.net'
         test_domain_name = 'AD2012.LAB'  # Active Directory Domain name
         test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
@@ -124,22 +127,22 @@ if 'TRAVIS' in location:
         test_server_context = ''  # used in novell eDirectory extended operations
         test_server_edir_name = ''  # used in novell eDirectory extended operations
         test_user = 'CN=Giovanni,CN=Users,' + test_root_partition  # the user that performs the tests
-        test_password = 'Rc888888pfop'  # user password
+        test_password = 'Rc666666pfop'  # user password
         test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
-        test_secondary_password = 'Rc777777pfop'  # user password
+        test_secondary_password = 'Rc555555pfop'  # user password
         # test_sasl_user = 'testLAB@' + test_domain_name
         test_sasl_user = test_domain_name.split('.')[0] + '\\testLAB'
-        test_sasl_password = 'Rc777777pfop'
+        test_sasl_password = 'Rc555555pfop'
         test_sasl_user_dn = 'cn=testLAB,o=resources'
         test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
-        test_sasl_secondary_password = 'Rc777777pfop'
+        test_sasl_secondary_password = 'Rc555555pfop'
         test_sasl_secondary_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
         test_sasl_realm = None
         test_ca_cert_file = 'local-forest-lab-ca.pem'
         test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
         test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
         test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
-        test_ntlm_password = 'Rc888888pfop'
+        test_ntlm_password = 'Rc666666pfop'
         test_logging_filename = join(gettempdir(), 'ldap3.log')
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':

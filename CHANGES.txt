@@ -1,8 +1,4 @@
-# changes file for ldap3
-# generated on 2017-06-02 06:51:10.055285
-# version 2.2.5
-
-- 2.2.5 not yet released
+# 2.2.5 - 2017.06.24
     - MockAsync strategy is available
     - added __ne__ method to Attribute in abstraction layer (thank Rodrigo)
     - added LDAPUserNameIsMandatoryError exception in simple bind when user name is empty
@@ -13,8 +9,18 @@
     - updated docs for defaults parameters (thanks Guarnacciaa)
     - fixed mockBase for integer matching (thanks Jijo)
     - boolean values are now uppercase in LDIF (thanks Linus)
+    - fixed timeout in SSL connection on Linux and Mac (thanks Allan)
+    - changed some internal functions to private in ldap3.utils.dn
+    - operational attribute entryDN is properly managed in Mock strategies (thanks Mark)
+    - new rdn in renamed entry is properly set in Mock strategies (thanks Mark)
+    - metrics are now updated for Mock strategies, except that for received bytes (thanks joehy)
+    - better managing of missing schema from the server (thanks Deborah)
+    - SNI support added when the underlying python library allows it (thanks Edmund)
+    - added pool_keepalive parameter to Connection object for REUSABLE strategy
+    - connection.extend.microsoft.modify_password returns False when change is not successful (thanks Ashley)
+    - updated changelog format (thanks Jannis)
 
-- 2.2.4 2017.05.07
+# 2.2.4 - 2017.05.07
     - leading and trailing spaces in server name don't raise exception anymore
     - DitContentRule is properly read from the schema
     - added validator for Active Directory timestamp
@@ -28,7 +34,7 @@
     - schema definitions with traling and leading spaces are now properly parsed and don't raise an LDAPSchemaError exception anymore
     - fixed error when flaky servers (OpenLDAP) don't return the correct response with StartTls
 
-- 2.2.3 2017.04.30
+# 2.2.3 - 2017.04.30
     - abstraction layer query converts int values to string (thanks dgadmin)
     - CaseInsensitiveDictWithAlias doesn't raise an exception anymore if alias is set multiple times to the same key
     - friendly names in AttrDef are properly managed when performing commits in Writer cursors
@@ -51,7 +57,7 @@
     - connection pool size in Reusable strategy defaults to 5
     - optimized usage of configuration parameters
 
-- 2.2.2 2017.03.17
+# 2.2.2 - 2017.03.17
     - PLAIN mechanism added to SASL authentication (thanks Janusz)
     - added RESULT_RESERVED return code (thanks Rak)
     - added RESPONSE_DN_ENCODING in config for flaky servers that return non utf-8 encoded DN. Set it to a list of encoding to sequentially try for decodign DNs.
@@ -69,7 +75,7 @@
     - added test cases for validators
     - updated tests for OpenLDAP
 
-- 2.2.1 2017.02.12
+# 2.2.1 - 2017.02.12
     - tested against pyasn1 0.2.2 (thanks Ilya)
     - get_response() has an optional new parameter "get_request" to return the request too, helpful in asynchronous strategies
     - connection.request, connection.response and connection result are now properly blanked in async strategies
@@ -89,7 +95,7 @@
     - added match(attributes, value) for matching entries with specified value in one or more attribute values. It checks values and raw_values
     - Cursors have simple match capability. When key is a string Cursor tries to match it against the DN of entries found.
 
-- 2.2.0 2017.01.16
+# 2.2.0 - 2017.01.16
     - tested againsts Python 3.6.0, Python 2.7.13 and Python 2.6.6
     - updated docs regarding search response attributes (thanks James)
     - fixed LDIF representation for operation_to_ldif (thanks m7four)
@@ -131,7 +137,7 @@
     - Sphinx updated to 1.5.1
 
 
-- 2.1.1 2016.11.18
+# 2.1.1 - 2016.11.18
     - Mock strategy uses case insensitive matching when appropriate
     - fixed error when adding a virtual attribute in the abstract Entry object
     - fixed error messages in Entry moving and renaming
@@ -148,7 +154,7 @@
     - fixed auto_escape for python 2
     - fixed tutorials (thanks Ivano)
 
-- 2.1.0 2016.11.03
+# 2.1.0 - 2016.11.03
     - changed default Connection strategy from SYNC to RESTARTABLE
     - enable automatic escaping of assertion values
     - fixed decoding error with check_name=False
@@ -157,13 +163,13 @@
     - SASLBindInProgress doesn't raise an exception anymore with raise_exceptions=True
     - standard formatters are applied in mocking strategies when serching for exact match
 
-- 2.0.9 2016.10.28
+# 2.0.9 - 2016.10.28
     - removed sanitization of DN in bind operation because some servers accept non standard DN for Simple Bind
 
-- 2.0.8 2016.10.28
+# 2.0.8 - 2016.10.28
     - included referral caching (thanks TWAC)
 
-- 2.0.7 2016.10.27
+# 2.0.7 - 2016.10.27
     - FIRST RELEASE OF LDAP3 V2
     - changed signature of ldap3.abstract.Reader object
     - removed search_size_limit(), search_time_limit() and search_types_only in the Reader cursor
@@ -236,7 +242,7 @@
     - GET_SCHEMA_INFO = SCHEMA
     - GET_ALL_INFO = ALL
 
-- 1.4.0 2016.07.18
+# 1.4.0 - 2016.07.18
     - Multiple Mock strategies now share entries when using the same Server object
     - Added AsyncStreamStrategy
     - Added Connection.extend.standard.persistent_search() (Thanks martinrm77)
@@ -246,7 +252,7 @@
     - Added callback in Persistent Search
     - MockStrategy now honors raise_exception parameter (thanks Simon)
 
-- 1.3.3 2016.07.03
+# 1.3.3 - 2016.07.03
     - Change paameter name from 'check' to 'fix' in connection.extend.novell.add_members_to_groups() and connection.extend.novell.remove_members_from_groups
     - Added connection.extend.novell.check_groups_memberships() that check if members are in groups and fixes the user-group relation if incorrect
     - Updated docs link to ldap3.readthedocs.io
@@ -256,10 +262,10 @@
     - Fixed typo in docs for use_ssl (thanks Brooks Kindle)
     - Tested against Python 2.6., Python 2.7.12, Python 3.5.2 and PyPy 5.3.1
 
-- 1.3.2 2016.07.01
+# 1.3.2 - 2016.07.01
     - unreleased on pypi
 
-- 1.3.1 2016.05.11
+# 1.3.1 - 2016.05.11
     - Added support for mocking the ldap3 library
     - Added support for MockSync strategy (thanks Roxana)
     - Added checked_attributes=True parameter to connection.response_to_json()
@@ -285,14 +291,14 @@
     - Ignore cheching of ssl context when cadata, cafile and capath are not provided (thanks DelboyJan)
 
 
-- 1.2.2 2016.03.23
+# 1.2.2 - 2016.03.23
     - repr encoding set to 'ascii' when sys.stdout.encoding is None (thanks Jeff)
 
-- 1.2.1 2016.03.19
+# 1.2.1 - 2016.03.19
     - try to use the requested ssl protocol in SSLContext for Python>=3.4 (thanks Patrick)
     - added return_empty_attributes to Connection object to return an empty list when the attribute requested is missing in the retrieved object
 
-- 1.1.2 2016.03.10
+# 1.1.2 - 2016.03.10
     - Added rebind() method to Connection object to rebind with a different user (thanks Lorenzo)
     - Added Tests for rebind operation
     - Start_tls honored in referrals
@@ -304,36 +310,36 @@
     - Fixed abstract entry __getattr__() throwing KeyError instead of AttributeError (thanks Kilroy)
     - Fixed start_tls() Reusable strategy
 
-* 1.0.4 2016.01.25
+# 1.0.4 - 2016.01.25
     - Controls can be added to extended operation in the extend package (thanks Hinel)
 
-* 1.0.3 2015.12.1
+# 1.0.3 - 2015.12.1
     - Fixed set_config_parameter (thanks Sigmunau)
     - Disabled unauthenticated authentication, see RFC 4513 section 5.1.2 (thanks Petros)
     - Fixed falsey value in abstract Entry object __contains__() (thanks Vampouille)
 
-* 1.0.2 2015.12.07
+# 1.0.2 - 2015.12.07
     - Allowed_referral_hosts in Server objects defaults to [('*', True)] to accept any referral server with authentication
     - Referral uri is now properly percent-undecoded (thanks TWAC)
     - Referral Server object now use the same configuration of the original Server object
     - Fixed __contains__() in Entry object (thanks Vampouille)
 
-* 1.0.1 2015.12.06
+# 1.0.1 - 2015.12.06
     - Removed the compat package
     - Refactored docs for extend operations
 
-* 1.0.0 2015.12.06
+# 1.0.0 - 2015.12.06
     - Private RC for production
     - Status moved to 5 - Production/Stable
 
-* 0.9.9.4 2015.12.02
+# 0.9.9.4 - 2015.12.02
     - Added items() to CaseInsensitiveDict class (thanks Jan-Hendrik)
     - Added set_config_parameter() in ldap3 namespace to modify the values of the configurable parameters of ldap3
     - Added microsoft.extend.modify_password() extended operation to change AD password
     - Fixed find_active_random_server() in pooling (thanks Sargul)
     - Fixed referral decoding in fast ber decoder (thanks TWAC)
 
-* 0.9.9.3 2015.11.15
+# 0.9.9.3 - 2015.11.15
     - Added LDAPI (LDAP over IPC) support for unix socket communication
     - Added mandatory_in and optional_in in server schema for attribute types. Now you can see in which classes attributes are used
     - Added last_transmitted_time and last_received_time to Usage object to track time of the last sent and received operation
@@ -343,7 +349,7 @@
     - Added escape_filter_chars in utils.conv (thanks Peter)
     - Reverted ALL_ATTRIBUTES behaviour in search to 0.9.9.1 (thanks Petros)
 
-* 0.9.9.2 2015.10.19
+# 0.9.9.2 - 2015.10.19
     - Fixed hasattr() behaviour for Entry object in Python 3
     - Allows empty sasl_credentials in SASL bind
     - Added POOLING_LOOP_TIMEOUT constant to specify how many seconds the server pooling strategy has to wait before retrying if it did not find an active server (defaults to 10)
@@ -358,14 +364,14 @@
     - Fixed AD tests for single valued attributes
     - Added ACL attribute in the ATTRIBUTES_EXCLUDED_FROM_CHECK list
 
-* 0.9.9.1 2015.09.21
+# 0.9.9.1 - 2015.09.21
     - Allows empty member values in groups while adding - this should not be as per rfc4511 4.1.7, but some servers expects it (thanks John)
     - Faster case insensitive dict while getting and setting key (thanks Pierre)
     - Updated setuptools to 18.3.2
     - Updated wheel to 0.26
     - Tested against Python 2.6 - Python 2.7 - Python 3.3 - Python 3.4 - Python 3.5 - pypy - pypy3
 
-* 0.9.9 2015.09.09
+# 0.9.9 - 2015.09.09
     - Fixed boolean value for True value in ASN.1 encoding for certain ldap servers. (thanks Will)
     - Fixed follow auto referrals. (thanks WIll)
     - Now protocol defined integer values can be used for scope and derefAliases arguments when searching. (thanks Will)
@@ -377,7 +383,7 @@
     - Added freeIPA OID descriptors
     - Removed unneeded OidInfo class
 
-* 0.9.8.8 2015.08.14
+# 0.9.8.8 - 2015.08.14
     - Coerce objectClass to a list in Add operation. (thanks Yutaka)
     - ObjectClass attribute values mantain their order in the Add operation. (thanks Yutaka)
     - Fixed search filter composition when the value part of the assertion contains = character. (thanks Eero)
@@ -387,14 +393,14 @@
     - Target name can be read from DNS in sasl_credential for Kerberos authentication. (thanks Alex)
     - Fixed connection.entries error when referrals are in the search response. (thanks WIll)
 
-* 0.9.8.7 2015.07.19
+# 0.9.8.7 - 2015.07.19
     - Backported ssl.match_hostname from Python 3.4.3 standard library to be used in Python < 2.7.10
     - Use backports.ssl_match_hostname if present instead of static backported functions for matching server names in ssl certificate (thanks Michal)
     - Attributes values are properly printed when not strings in abstract.attribute (thanks hogneh)
     - Checking unicode __repr__() in python2
     - Added hashing capability to Modify Password extended operation (thanks Gawain)
 
-* 0.9.8.6 2015.06.30
+# 0.9.8.6 - 2015.06.30
     - Modify operation now accept multiple changes for same attribute (Thanks Lorenzo)
     - Fixed entries property in connection when objects from multiple object classes are returned
     - Hide sensitive data in logging. use the utils.log.set_library_hide_sensitive_data(False) to show sensitive data
@@ -403,17 +409,17 @@
       and utils.log.get_library_log_max_line_length(length) to get the current value
     - Added CHANGES.txt with full changelog, latest changes only in README.txt
 
-* 0.9.8.5.post2 2015.06.24
+# 0.9.8.5.post2 - 2015.06.24
     - Updated pyasn1 to 0.1.8
     - Fixed error in not filter with pyasn1 0.1.8
 
-* 0.9.8.5 2015.06.23
+# 0.9.8.5 - 2015.06.23
     - Updated docs with ldap operations pages
     - Fixed a bug where an Exception was raised on OpenBSD for missing IPV4_MAPPED flag
     - Fixed missing add operation usage metrics
     - Abstract Attribute doesn't permit "falsy" values or None as default (thanks Lucas)
 
-* 0.9.8.4 2015.05.19
+# 0.9.8.4 - 2015.05.19
     - Added EXTENDED log detail level with prettyPrint description of ldap messages
     - Fixed logging of IPv6 address description
     - Fixed checking of open address when dns returns more than one ip for the same host
@@ -421,7 +427,7 @@
     - When sending controls controlValue is now optional (as stated in RFC 4511), specify None to not send it
     - Moved badges to shields.io
 
-* 0.9.8.3 2015.05.11
+# 0.9.8.3 - 2015.05.11
     - Added support for logging
     - Added LDAPInvalidTlsSpecificationError exception
     - Added support for kerberos sasl - needs the gssapi package (thanks sigmaris and pefoley2)
@@ -429,31 +435,31 @@
     - Fixed bug in collect_usage (thanks Philippe)
     - Changed default server mode from IP_SYSTEM_DEFAULT to IP_V6_PREFERRED
 
-* 0.9.8.2 2015.04.08
+# 0.9.8.2 - 2015.04.08
     - SaslCred returned as raw bytes (thanks Peter)
     - Search_paged now properly works in abstract.reader (thanks wazboy)
 
-* 0.9.8.1 2015.04.04
+# 0.9.8.1 - 2015.04.04
     - Added NTLMv2 authentication method
     - extend.standard.who_am_i() now try to decode the authzid as unicode
     - Tests for AD (Active Directory) now use tls_before_bind when opening a connection
     - 0.9.8 not working for pypi problems
 
-* 0.9.7.12 2015.03.18
+# 0.9.7.12 - 2015.03.18
     - Fixed missing optional authzid in digestMD5 sasl mechanism (thanks Damiano)
     - Changed unneeded classmethods to staticmethods
 
-* 0.9.7.11 2015.03.12
+# 0.9.7.11 - 2015.03.12
     - Fixed address_info resolution on systems without the IPV4MAPPED flag (thanks Andryi)
 
-* 0.9.7.10 2015.02.28
+# 0.9.7.10 - 2015.02.28
     - Fixed bug in PagedSearch when server has a hard limit on the number of entries returned (thanks Reimar)
     - 0.9.7.9 not working for pypi problems
     - 0.9.7.8 not working for pypi problems
     - 0.9.7.7 not working for pypi problems
     - 0.9.7.6 not working for pypi problems
 
-* 0.9.7.5 2015.02.20
+# 0.9.7.5 - 2015.02.20
     - Fixed exception raised when opening a connection to a server. If there is only one candidate address and there is an error it returns the specific Exception, not a generic LDAPException error
     - Address_info filters out any impossible address to reach
     - Address_info include an IPV4MAPPED address for IPV6 host that try to reach an IPV4 only server
@@ -461,16 +467,16 @@
     - Fixed bug when using the aproximation operation in ldap search operations (thanks Laurent)
     - Removed response from exception raised with raise_exceptions=True to avoid very long exceptions message
 
-* 0.9.7.4 2015.02.02
+# 0.9.7.4 - 2015.02.02
     - Added connection.entries property for storing response from search operations as and abstract.Entry collection.
 
-* 0.9.7.3 2015.01.25
+# 0.9.7.3 - 2015.01.25
     - Modify operation type can also be passed as integer
 
-* 0.9.7.2 2015.01.16
+# 0.9.7.2 - 2015.01.16
     - Fixed a bug when resolving IP address with getaddrinfo(). On OSX returned an UDP connection (thanks Hiroshi).
 
-* 0.9.7.1 2015.01.05
+# 0.9.7.1 - 2015.01.05
     - Moved to Github
     - Moved to Travis-CI for continuous integration
     - Moved to ReadTheDocs for documentation
@@ -480,7 +486,7 @@
     - Test suite fully refactored to be used in cloud lab and local development lab
     - Test suite includes options for testing against eDirectory, Active Directory and OpenLDAP
 
-* 0.9.7 2014.12.17
+# 0.9.7 - 2014.12.17
     - Fixed bug for auto_range used in paged search
     - Added dual IP stack mode parameter in Server object, values are: IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V4_PREFERRED, IP_V6_ONLY, IP_V6_PREFERRED
     - Added read_server_info parameter to bind() and start_tls() to avoid multiple schema and info read operations with auto_bind
@@ -497,19 +503,19 @@
     - Tested against Python 2.7.9, PyPy 2.4.0 and PyPy3 2.4.0
     - setuptools updated to 8.2.1
 
-* 0.9.6.2 2014.11.17
+# 0.9.6.2 - 2014.11.17
     - Changed SESSION_TERMINATED_BY_SERVER from 0 to -2
     - Removed unneeded FORMAT_xxx variables in ldap3 namespace
     - Fixed bug in auto_range when search operation returns search continuations
     - Added infrastructure for Mock DSA (not functional yet)
 
-* 0.9.6.1 2014.11.11
+# 0.9.6.1 - 2014.11.11
     - Added boolean parameter "auto_range" to catch the "range" ldap tag in searches. When true all needed search operation are made to fully obtain the whole range of result values
     - Fixed bug in sdist
     - Added offline schema for Fedora 389 Directory Server 1.3.3
     - Fixed bug while reading DSA info
 
-* 0.9.6 2014.11.01
+# 0.9.6 - 2014.11.01
     - New feature 'offline schema' to let the client have knowledge of schema and DSA info even if not returned by the server
     - Offline schema for Novell eDirectory 8.8.8
     - Offline schema for Microsoft Active Directory 2012 R2
@@ -531,7 +537,7 @@
     - Tested against Python 3.4.2, 2.7.8, 2.6.6
     - Updated setuptools to 7.0
 
-* 0.9.5.4 2014.09.22
+# 0.9.5.4 - 2014.09.22
     - Fixed security issue in lazy connections (thanks Moritz)
     - Added ldap3.utils.dn with parse_dn(dn) to verify dn compliance with RFC4514
     - Added safe_dn(dn) to properly escape dn (if possible)
@@ -541,7 +547,7 @@
     - Closing socket error doesn't raise exception anymore
     - ServerPool can be implicity defined with a list of server names (even when defining a connection)
 
-* 0.9.5.3 2014.08.24
+# 0.9.5.3 - 2014.08.24
     - elements returned in schema and dsa info are in a case insensitive dictionary (can be changed in ldap3.CASE_INSENSITIVE_SCHEMA_NAMES = True|False)
     - attributes name returned in searches are now case insensitive (can be changed in ldap3.CASE_INSENSITIVE_ATTRIBUTE_NAMES = True|False)
     - change parameter name from separe_rdn to separate_rdn in ldap3.utils.conv.to_dn()
@@ -552,21 +558,21 @@
     - new extended operation: partition_entry_count (Novell)
     - renamed convert_to_ldif() to _convert_to_ldif()
 
-* 0.9.5.2 2014.08.05
+# 0.9.5.2 - 2014.08.05
     - fixed LDAPOperationResult.__str__ (thanks David)
     - added to_dn() in utils.conv to convert a dn string to a list of components (strings or tuples)
     - added __version__ in ldap3
     - don't raise exception if the schema cannot be read in unauthenticated state
     - server.address_info is now a property
 
-* 0.9.5.1 2014.08.02
+# 0.9.5.1 - 2014.08.02
     - getaddrinfo called only once
     - real_server machinery removed - messageId is now global and monotonic for the whole library
     - attributes are returned formatted if schema is read and check_names = True, removed checked_attributes
     - bind result is populated again when successful (was removed in 0.9.2.1)
     - exception is now raised if you receive multiple extended response to a single extended request. This is not allowed by RFC 4511
 
-* 0.9.5 2014.07.22
+# 0.9.5 - 2014.07.22
     - added support for IPv6 (thanks Robert)
     - auto_bind can be used even for establishing tls, possible values (defined in ldap3) are: AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND
     - refactored extend package to use classes
@@ -579,15 +585,15 @@
     - added formatter for generalizedTime syntax as specified in RFC4517 (ASN.1)
     - custom formatter can be added in Server definition
 
-* 0.9.4.2 2014.07.03
+# 0.9.4.2 - 2014.07.03
     - Moved to Bitbucket + Mercurial
     - Fixed import in core.tls package
     - Removed unneeded imports
 
-* 0.9.4.1 2014.07.02
+# 0.9.4.1 - 2014.07.02
     - included missing extend package (thanks to debnet)
 
-* 0.9.4 2014.07.02
+# 0.9.4 - 2014.07.02
     - when running in python 3.4 or newer now Tls class uses SSLContext object with default secure setting
     - added parameters ca_certs_path, ca_certs_data, local_private_key_password to Tls object creation, valid when using SSLContext
     - in python 3.4 or newer the system CA certificates configuration can be used (just leave ca_cert_file, ca_certs_path and ca_certs_data set to None)
@@ -605,12 +611,12 @@
     - new extended operation: get_bind_dn (Novell)
     - updated setuptools to version 5.3
 
-* 0.9.3.5 2014.06.22
+# 0.9.3.5 - 2014.06.22
     - Exception history in restartable strategy is printed when reached the maximum number of retries
     - Fixed conditions on terminated_by_server unsolicited message
     - Added python2.6 egg installation package
 
-* 0.9.3.4 2014.06.16
+# 0.9.3.4 - 2014.06.16
     - Exception can now be imported from ldap3 package
     - Escape_bytes return '' for empty string instead of None (thanks Brian)
     - Added exception history to restartable connection (not for infinite retries)
@@ -618,16 +624,16 @@
     - New exception LDAPMaximumRetriesError for signalling when the SyncRestartable Strategy has reached the maximum number of retries while performing an operation
     - Inverted deleteoldrdn value in LDIF output (thanks Joseph)
 
-* 0.9.3.3 2014.06.01
+# 0.9.3.3 - 2014.06.01
     - Fixed a bug in LDIFProducer when using context manager for connection
     - LDIF header in stream is added only whene there are actual data in the stream
     - Now LDIF stream can be added to an existing file - version header will not be written if stream is not empty
 
-* 0.9.3.2 2014.05.30
+# 0.9.3.2 - 2014.05.30
     - Fixed a bug while reading schema
     - Add an implicit open() when trying binding on a closed connection
 
-* 0.9.3.1 2014.05.28
+# 0.9.3.1 - 2014.05.28
     - Added stream capability to LDIFProducer strategy
     - Customizable line separator for LDIF output
     - Customizable sorting order for LDIF output
@@ -636,7 +642,7 @@
     - Added stream capability to response_to_ldif() while searching
 
 
-* 0.9.3 2014.05.20
+# 0.9.3 - 2014.05.20
     - Now the key in server.schema.attribute_type is the attribute name (was the oid)
     - Now the key in server.schema.object_classes is the class name (was the oid)
     - Added check_names to Connection definition to have name of attributes and of object class checked against the schema
@@ -646,13 +652,13 @@
     - Exception hierarchy reworked
     - Added locking to Server object (for multithreading)
 
-* 0.9.2.2 2014.04.30
+# 0.9.2.2 - 2014.04.30
     - fixed a bug from 0.9.1 that broke start_tls() (thanks Mark)
 
-* 0.9.2.1 2014.04.28
+# 0.9.2.1 - 2014.04.28
     - fixed a bug in 0.9.2 that allowed only string attributes in add, modify and compare operations (thank Mladen)
 
-* 0.9.2 2014.04.26
+# 0.9.2 - 2014.04.26
     - changed return value in get_response from response to (response, result) - helpful for multi-threaded connections
     - added ReusableStrategy for pooling connections
     - refined docstrings (thanks Will)
@@ -660,7 +666,7 @@
     - fixed search for binary values (thanks Marcin)
     - added convenience function to convert bytes to LDAP binary value string format for search filter
 
-* 0.9.1 2014.03.30
+# 0.9.1 - 2014.03.30
     - added laziness flag to test suite
     - changed ServerPool signature to accept active and exhaust parameters
     - removed unneeded start_listen parameter
@@ -672,79 +678,79 @@
     - tested against Python 3.4, 3.3, 2.7, 2.6
     - updated setuptools to 3.3
 
-* 0.9.0 2014.03.20
+# 0.9.0 - 2014.03.20
     - PEP8 compliance
     - added ldap3.compat package with older (non PEP8 compliant) signatures
     - renamed ldap3.abstraction to ldap3.abstract
     - moved connection.py, server.py and tls.py files to ldap3.core
     - fixed SyncWaitRestartableStrategy (thanks Christoph)
 
-* 0.8.3 2014.03.08
+# 0.8.3 - 2014.03.08
     - added SyncWaitRestartable strategy
     - removed useless forceBind parameter
     - usage statistics updated with restartable success/failure counters and open/closed/wrapped socket counters
 
-* 0.8.2 2014.03.04
+# 0.8.2 - 2014.03.04
     - Added refresh() method to Entry object to read again the attributes from the Reader in the abstraction layer
     - Fixed Python 2.6 issues
     - Fixed test suite for Python 2.6
 
-* 0.8,1 2014.02.12
+# 0.8.1 - 2014.02.12
     - Changed exceptions returned by the library to LDAPException, a subclass of Exception.
     - Fixed documentation typos
 
-* 0.8.0 - 2014.02.08
+# 0.8.0 - 2014.02.08
     - Added abstraction layer (for searching, read only)
     - Added context manager to Connection class
     - Added readOnly parameter to Connection class
     - Fixed a bug in search with 'less than' parameter
     - Remove validation of available SSL protocols because different Python interpreters can use different ssl packages
 
-* 0.7.3 - 2014.01.05
+# 0.7.3 - 2014.01.05
     - Added SASL DIGEST-MD5 support
     - Moved to intrapackage (relative) imports
 
-* 0.7.2 - 2013.12.30
+# 0.7.2 - 2013.12.30
     - Fixed a bug when parentheses are used in search filter as ASCII escaped sequences
 
-* 0.7.1 - 2013.12.21
+# 0.7.1 - 2013.12.21
     - Completed support for LDIF as per RFC2849
     - Added new LDIF_PRODUCER strategy to generate LDIF-CHANGE stream
     - Fixed a bug in the autoReferral feature when controls where used in operation
 
-* 0.7.0 - 2013.12.12
+# 0.7.0 - 2013.12.12
     - Added support for LDIF as per RFC2849
     - Added LDIF-CONTENT compliant search responses
     - Added exception when using autoBind if connection is not successful
 
-* 0.6.7 - 2013.12.03
+# 0.6.7 - 2013.12.03
     - Fixed exception when DSA is not willing to return rootDSE and schema info
 
-* 0.6.6 - 2013.11.13
+# 0.6.6 - 2013.11.13
     - Added parameters to test suite
 
-* 0.6.5 - 2013.11.05
+# 0.6.5 - 2013.11.05
     - Modified rawAttributes decoding, now null (empty) values are returned
 
-* 0.6.4 - 2013.10.16
+# 0.6.4 - 2013.10.16
     - Added simple paged search as per RFC2696
     - Controls return values are decoded and stored in result attribute of connection
 
-* 0.6.3 - 2013.10.07
+# 0.6.3 - 2013.10.07
     - Added Extesible Filter syntax to search filter
     - Fixed exception while closing connection in AsyncThreaded strategy
 
-* 0.6.2 - 2013.10.01
+# 0.6.2 - 2013.10.01
     - Fix for referrals in searchRefResult
     - Disabled schema reading on Active Directory
 
-* 0.6.1 - 2013.09.22
+# 0.6.1 - 2013.09.22
     - Experimental support for Python 2 - no unicode
     - Added backport of ssl.match_name for Python 2
     - Minor fixes for using the client in Python 2
     - Fix for getting schema info with AsyncThreaded strategy
 
-* 0.6.0 - 2013.09.16
+# 0.6.0 - 2013.09.16
     - Moved to beta!
     - Added support site hosted on www.assembla.com
     - Added public svn repository on www.assembla.com
@@ -753,7 +759,7 @@
     - Updated connection usage info (elapsed time is now computed when connection is closed)
     - Updated OID dictionary with extensions and controls from Active Directory specifications.
 
-* 0.5.3 - 2013.09.03
+# 0.5.3 - 2013.09.03
     - Added getOperationalAttributes boolean to Search operation to fetch the operational attributes during search
     - Added increment operation to modify operation as per RFC4525
     - Added dictionary of OID descriptions (for DSE and schema decoding)
@@ -762,16 +768,16 @@
     - Added connection usage (in connection.usage if collectUsage=True in connection definition)
     - Fixed StartTls in asynchronous client strategy
 
-* 0.5.2 - 2013.08.27
+# 0.5.2 - 2013.08.27
     - Added SASLprep profile for validating password
     - Fixed RFC4511 asn1 definitions
 
-* 0.5.1 - 2013.08.17
+# 0.5.1 - 2013.08.17
     - Refactored package structure
     - Project description reformatted with reStructuredText
     - Added Windows graphical installation
 
-* 0.5.0 - 2013.08.15
+# 0.5.0 - 2013.08.15
     - Added reference to LGPL v3 license
     - Added Tls object to hold ssl/tls configuration
     - Added StartTLS feature
@@ -780,50 +786,50 @@
     - Fixed Unbind
     - connection.close is now an alias for connection.unbind
 
-* 0.4.4 - 2013.08.01
+# 0.4.4 - 2013.08.01
     - Added 'Controls' to all LDAP Requests
     - Added Extended Request feature
     - Added Intermediate Response feature
     - Added namespace 'ldap3'
 
-* 0.4.3 - 2013.07.31
+# 0.4.3 - 2013.07.31
     - Test suite refactored
     - Fixed single object search response error
     - Changed attributes returned in search from tuple to dict
     - Added 'raw_attributes' key in search response to hold undecoded (binary) attribute values read from ldap
     - Added __repr__ for Server and Connection objects to re-create the object instance
 
-* 0.4.2 - 2013.07.29
+# 0.4.2 - 2013.07.29
     - Added autoReferral feature as per RFC4511 (4.1.10)
     - Added allowedReferralHosts to conform to Security considerations of RFC4516
 
-* 0.4.1 - 2013.07.20
+# 0.4.1 - 2013.07.20
     - Add validation to Abandon operation
     - Added connection.request to hold a dictionary of infos about last request
     - Added info about outstanding operation in connection.strategy._oustanding
     - Implemented RFC4515 for search filter coding and decoding
     - Added a parser to build filter string from LdapMessage
 
-* 0.4.0 - 2013.07.15
+# 0.4.0 - 2013.07.15
     - Refactoring of the connection and strategy classes
     - Added the ldap3.strategy namespace to contain client connection strategies
     - Added ssl authentication
     - Moved authentication parameters from Server object to Connection object
     - Added ssl parameters to Server Object
 
-* 0.3.0 - 2013.07.14
+# 0.3.0 - 2013.07.14
     - Fixed AsyncThreaded strategy with _outstanding and _responses attributes to hold the pending requests and the not-yet-read responses
     - Added Extended Operation
     - Added "Unsolicited Notification" discover logic
     - Added managing of "Notice of Disconnection" from server to properly close connection
 
-* 0.2.0 - 2013.07.13
+# 0.2.0 - 2013.07.13
     - Update setup with setuptools 0.7
     - Docstrings added to class
     - Removed ez_setup dependency
     - Removed distribute dependency
 
-* 0.1.0 - 2013.07.12
+# 0.1.0 - 2013.07.12
     - Initial upload on pypi
     - PyASN1 RFC4511 module completed and tested
     - Synchronous client working properly

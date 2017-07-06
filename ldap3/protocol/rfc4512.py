@@ -446,7 +446,7 @@ class BaseObjectInfo(object):
                 else:
                     raise LDAPSchemaError('unknown schema definition class')
 
-                splitted = re.split('( NAME | DESC | OBSOLETE| X-| E-' + pattern + ')', str(object_definition[1:-1]))
+                splitted = re.split('( NAME | DESC | OBSOLETE| X-| E-' + pattern + ')', object_definition[1:-1])
                 values = splitted[::2]
                 separators = splitted[1::2]
                 separators.insert(0, 'OID')

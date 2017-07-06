@@ -15,12 +15,14 @@
     - new rdn in renamed entry is properly set in Mock strategies (thanks Mark)
     - metrics are now updated for Mock strategies, except that for received bytes (thanks joehy)
     - better managing of missing schema from the server (thanks Deborah)
+    - fixed error while schema is not in string format (thanks Alexandre)
     - SNI support added when the underlying python library allows it (thanks Edmund)
     - added pool_keepalive parameter to Connection object for REUSABLE strategy
     - connection.extend.microsoft.modify_password returns False when change is not successful (thanks Ashley)
     - added validators for uuid and uuid_le
     - fixed error while searching for bytes
     - fixed pickling and unpickling of datetime values (thanks David)
+    - fixed error that resulted in valid generalizedTime strings not being parsed (thanks Busuwe)
 
 # 2.2.4 - 2017.05.07
     - leading and trailing spaces in server name don't raise exception anymore

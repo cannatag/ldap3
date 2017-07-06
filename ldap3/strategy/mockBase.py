@@ -187,8 +187,9 @@ class MockBaseStrategy(object):
                     if rdn[0] not in new_entry:  # if rdn attribute is missing adds attribute and its value
                         new_entry[rdn[0]] = [to_raw(rdn[1])]
                     else:
-                        if rdn[1] not in new_entry[rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                            new_entry[rdn[0]].append(to_raw(rdn[1]))
+                        raw_rdn = to_raw(rdn[1])
+                        if raw_rdn not in new_entry[rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
+                            new_entry[rdn[0]].append(raw_rdn)
                 new_entry['entryDN'] = [to_raw(escaped_dn)]
                 self.connection.server.dit[escaped_dn] = new_entry
                 return True

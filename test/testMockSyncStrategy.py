@@ -318,6 +318,13 @@ class Test(unittest.TestCase):
             result = self.connection_3.result
         self.assertEqual(result['description'], 'entryAlreadyExists')
 
+    def test_add_entry_already_exists_4(self):
+        dn = 'cn=user5,ou=test,o=lab'
+        self.connection_3.bind()
+        self.connection_3.strategy.add_entry(dn, {'objectClass': ['inetOrgPerson', 'top'], 'sn': 'user5_sn', 'cn': 'user5'})
+        result = self.connection_3.server.dit[dn]
+        self.assertEqual(result['cn'], [b'user5'])
+
     def test_delete_entry_nonexisting_1(self):
         dn = 'cn=user5,ou=test,o=lab'
         self.connection_1.bind()

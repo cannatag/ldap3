@@ -179,7 +179,7 @@ def format_time(raw_value):
             microsecond = 100000 * int(time[5] if str is bytes else chr(time[5]))  # Python 2 / Python 3
     elif len(time) == 2:  # mmZ format
         minute = int(raw_value[10: 12])
-    elif len(remain) == 0:  # Z format
+    elif len(time) == 0:  # Z format
         pass
     elif len(time) == 4:  # mmssZ
         minute = int(raw_value[10: 12])

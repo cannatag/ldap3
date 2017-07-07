@@ -222,6 +222,8 @@ class Cursor(object):
                 attributes[attribute.key] = attribute
                 if attribute.other_names:
                     attributes.set_alias(attribute.key, attribute.other_names)
+                if attr_def.other_names:
+                    attributes.set_alias(attribute.key, attr_def.other_names)
                 used_attribute_names.add(attribute_name)
 
         if self.attributes:

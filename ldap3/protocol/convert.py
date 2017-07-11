@@ -94,7 +94,10 @@ def substring_to_dict(substring):
 def prepare_changes_for_request(changes):
     prepared = dict()
     for change in changes:
-        prepared[change['attribute']['type']] = (change['operation'], change['attribute']['value'])
+        attribute_name = change['attribute']['type']
+        if attribute_name not in prepared:
+            prepared[attribute_name] = []
+        prepared[attribute_name].append((change['operation'], change['attribute']['value']))
     return prepared
 
 

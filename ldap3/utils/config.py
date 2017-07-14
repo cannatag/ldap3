@@ -90,7 +90,7 @@ _ADDRESS_INFO_REFRESH_TIME = 300  # seconds to wait before refreshing address in
 _ADDITIONAL_ENCODINGS = ['latin-1']  # some broken LDAP implementation may have different encoding than those expected by RFCs
 _IGNORE_MALFORMED_SCHEMA = False  # some flaky LDAP servers returns malformed schema. If True no expection is raised and schema is thrown away
 
-if stdin and stdin.encoding:
+if stdin and hasattr(stdin, 'encoding') and stdin.encoding:
     _DEFAULT_ENCODING = stdin.encoding
 elif getdefaultencoding():
     _DEFAULT_ENCODING = getdefaultencoding()

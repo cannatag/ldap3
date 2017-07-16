@@ -26,7 +26,7 @@
 # implements RFC4532
 
 from ...extend.operation import ExtendedOperation
-
+from ...utils.conv import to_unicode
 
 class WhoAmI(ExtendedOperation):
     def config(self):
@@ -35,6 +35,6 @@ class WhoAmI(ExtendedOperation):
 
     def populate_result(self):
         try:
-            self.result['authzid'] = self.decoded_response.decode('utf-8') if self.decoded_response else None
+            self.result['authzid'] = to_unicode(self.decoded_response) if self.decoded_response else None
         except TypeError:
             self.result['authzid'] = self.decoded_response if self.decoded_response else None

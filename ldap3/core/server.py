@@ -34,7 +34,7 @@ from ..protocol.rfc4511 import LDAP_MAX_INT
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
-
+from ..utils.conv import to_unicode
 try:
     from urllib.parse import unquote  # Python 3
 except ImportError:
@@ -395,7 +395,7 @@ class Server(object):
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             if isinstance(schema_entry, bytes) and str is not bytes:  # Python 3
-                schema_entry = schema_entry.decode('utf-8')
+                schema_entry = to_unicode(schema_entry, from_server=True)
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=BASE,

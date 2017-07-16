@@ -26,6 +26,13 @@
     - fixed error with modify operation on referrals (thanks Busuwe)
     - fixed error in mockBase add_entry() with raw rdn (thanks Chad)
     - fixed error when stdin has not encoding in config.py (thanks cronicryo)
+    - fixed error when optional field are not present in pyasn1 requests (thanks Ilya)
+    - added DEFAULT_SERVER_ENCODING config parameter, should always be utf-8
+    - DEFAULT_ENCODING config parameter renamed to DEFAULT_CLIENT_ENCODING
+    - ADDITIONAL_ENCODINGS config parameter renamed to ADDITIONAL_SERVER_ENCONDINGS
+    - additional encodings are applied to all data received from the server
+    - additional encodings are not applied to client data
+    - added from_server=False parameter to to_unicode() to not try client encoding while decoding data from server
 
 # 2.2.4 - 2017.05.07
     - leading and trailing spaces in server name don't raise exception anymore
@@ -38,7 +45,7 @@
     - allow case insensitive attribute and class names in config parameters
     - added server.schema.is_valid() to check if the schema is available
     - empty schema properties are set to empty dict() instead of None
-    - schema definitions with traling and leading spaces are now properly parsed and don't raise an LDAPSchemaError exception anymore
+    - schema definitions with trailing and leading spaces are now properly parsed and don't raise an LDAPSchemaError exception anymore
     - fixed error when flaky servers (OpenLDAP) don't return the correct response with StartTls
 
 # 2.2.3 - 2017.04.30

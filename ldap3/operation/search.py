@@ -375,7 +375,7 @@ def decode_vals(vals):
 
 def decode_vals_fast(vals):
     try:
-        return [val[3].decode('utf-8') for val in vals if val] if vals else None
+        return [to_unicode(val[3], from_server=True) for val in vals if val] if vals else None
     except UnicodeDecodeError:
         return [val[3] for val in vals if val] if vals else None
 
@@ -393,7 +393,7 @@ def attributes_to_dict_fast(attribute_list):
     conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
     attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
-        attributes[attribute[3][0][3].decode('utf-8')] = decode_vals_fast(attribute[3][1][3])
+        attributes[to_unicode(attribute[3][0][3], from_server=True)] = decode_vals_fast(attribute[3][1][3])
 
     return attributes
 
@@ -420,7 +420,7 @@ def raw_attributes_to_dict_fast(attribute_list):
     conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
     attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
-        attributes[attribute[3][0][3].decode('utf-8')] = decode_raw_vals_fast(attribute[3][1][3])
+        attributes[to_unicode(attribute[3][0][3], from_server=True)] = decode_raw_vals_fast(attribute[3][1][3])
 
     return attributes
 
@@ -440,7 +440,7 @@ def checked_attributes_to_dict_fast(attribute_list, schema=None, custom_formatte
 
     checked_attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
-        name = attribute[3][0][3].decode('utf-8')
+        name = to_unicode(attribute[3][0][3], from_server=True)
         checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals_fast(attribute[3][1][3]) or [], custom_formatter)
     return checked_attributes
 
@@ -515,7 +515,7 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
         if isinstance(response['object'], STRING_TYPES):  # mock strategies return string not a PyAsn1 object
             entry['dn'] = to_unicode(response['object'])
         else:
-            entry['dn'] = to_unicode(bytes(response['object']), additional_encodings=True)
+            entry['dn'] = to_unicode(bytes(response['object']), from_server=True)
     else:
         entry['raw_dn'] = b''
         entry['dn'] = ''
@@ -548,7 +548,7 @@ def search_result_reference_response_to_dict(response):
 def search_result_entry_response_to_dict_fast(response, schema, custom_formatter, check_names):
     entry_dict = dict()
     entry_dict['raw_dn'] = response[0][3]
-    entry_dict['dn'] = to_unicode(response[0][3], additional_encodings=True)  # some flaky servers can return dn not in utf-8
+    entry_dict['dn'] = to_unicode(response[0][3], from_server=True)  # some flaky servers can return dn not in utf-8
     entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
     if check_names:
         entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes

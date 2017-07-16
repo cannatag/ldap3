@@ -58,6 +58,7 @@ from ..protocol.rfc2696 import RealSearchControlValue
 from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
+from ..utils.conv import to_unicode
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 TRANSACTION_ERROR = 'TRANSACTION_ERROR'
@@ -582,7 +583,7 @@ class BaseStrategy(object):
         decode control, return a 2-element tuple where the first element is the control oid
         and the second element is a dictionary with description (from Oids), criticality and decoded control value
         """
-        control_type = str(control[0][3].decode('utf-8'))
+        control_type = str(to_unicode(control[0][3], from_server=True))
         criticality = False
         control_value = None
         for r in control[1:]:

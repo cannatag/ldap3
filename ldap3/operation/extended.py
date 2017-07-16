@@ -30,6 +30,7 @@ from ..core.results import RESULT_CODES
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
 from ..protocol.convert import referrals_to_list
 from ..utils.asn1 import encoder
+from ..utils.conv import to_unicode
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
 #     requestName      [0] LDAPOID,
@@ -56,7 +57,7 @@ def extended_operation(request_name,
 
 def extended_request_to_dict(request):
     # return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if request['requestValue'] else None}
-    return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if request['requestValue'] and request['requestValue'].hasValue() else None}
+    return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if 'requestValue' in request and request['requestValue'] and request['requestValue'].hasValue()  else None}
 
 def extended_response_to_dict(response):
     return {'result': int(response['resultCode']),
@@ -77,8 +78,8 @@ def extended_response_to_dict_fast(response):
     response_dict = dict()
     response_dict['result'] = int(response[0][3])  # resultCode
     response_dict['description'] = RESULT_CODES[response_dict['result']]
-    response_dict['dn'] = response[1][3].decode('utf-8')  # matchedDN
-    response_dict['message'] = response[2][3].decode('utf-8')  # diagnosticMessage
+    response_dict['dn'] = to_unicode(response[1][3], from_server=True)  # matchedDN
+    response_dict['message'] = to_unicode(response[2][3], from_server=True)  # diagnosticMessage
     response_dict['referrals'] = None  # referrals
     response_dict['responseName'] = None  # referrals
     response_dict['responseValue'] = None  # responseValue
@@ -87,7 +88,7 @@ def extended_response_to_dict_fast(response):
         if r[2] == 3:  # referrals
             response_dict['referrals'] = referrals_to_list(r[3])  # referrals
         elif r[2] == 10:  # responseName
-            response_dict['responseName'] = r[3].decode('utf-8')
+            response_dict['responseName'] = to_unicode(r[3], from_server=True)
             response_dict['responseValue'] = b''  # responseValue could be empty
 
         else:  # responseValue (11)
@@ -100,7 +101,7 @@ def intermediate_response_to_dict_fast(response):
     response_dict = dict()
     for r in response:
         if r[2] == 0:  # responseName
-            response_dict['responseName'] = r[3].decode('utf-8')
+            response_dict['responseName'] = to_unicode(r[3], from_server=True)
         else:  # responseValue (1)
             response_dict['responseValue'] = bytes(r[3])
 

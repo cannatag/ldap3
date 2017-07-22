@@ -55,7 +55,7 @@ def extended_operation(request_name,
 
 
 def extended_request_to_dict(request):
-    return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if request['requestValue'].hasValue() and request['requestValue'] else None}
+    return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if request['requestValue'] is not None and request['requestValue'].hasValue() else None}
 
 
 def extended_response_to_dict(response):

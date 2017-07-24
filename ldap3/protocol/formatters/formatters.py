@@ -47,6 +47,7 @@ def format_integer(raw_value):
         return int(raw_value)
     except (TypeError, ValueError):
         pass
+
     return raw_value
 
 
@@ -55,6 +56,7 @@ def format_binary(raw_value):
         return bytes(raw_value)
     except TypeError:
         pass
+
     return raw_value
 
 
@@ -85,6 +87,7 @@ def format_boolean(raw_value):
         return True
     if raw_value in [b'FALSE', b'false', b'False']:
         return False
+
     return raw_value
 
 
@@ -104,7 +107,9 @@ def format_ad_timestamp(raw_value):
         diff_seconds = timedelta(seconds=timestamp/10000000.0 - 11644473600)
         return unix_epoch + diff_seconds
     except Exception as e:
-        return raw_value
+        pass
+
+    return raw_value
 
 
 def format_time(raw_value):
@@ -219,7 +224,9 @@ def format_time(raw_value):
                         microsecond=microsecond,
                         tzinfo=timezone)
     except (TypeError, ValueError):
-        return raw_value
+        pass
+
+    return raw_value
 
 
 def format_sid(raw_value):

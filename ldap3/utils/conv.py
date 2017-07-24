@@ -66,7 +66,7 @@ def to_unicode(obj, encoding=None, from_server=False):
     if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 unicode
         return obj
 
-    raise UnicodeError("Unable to convert unknown type %s to unicode: %r" % (type(obj).__class__.__name__, obj))
+    raise UnicodeError("Unable to convert type %s to unicode: %r" % (type(obj).__class__.__name__, obj))
 
 def to_raw(obj, encoding='utf-8'):
     """Tries to convert to raw bytes from unicode"""

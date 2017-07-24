@@ -35,6 +35,7 @@ from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
 from ..utils.conv import to_unicode
+
 try:
     from urllib.parse import unquote  # Python 3
 except ImportError:
@@ -95,7 +96,7 @@ class Server(object):
             use_ssl = False
             url_given = True
         elif host.lower().startswith('ldapi://') and not unix_socket_available:
-            raise LDAPSocketOpenError('LDAP over IPC not available')
+            raise LDAPSocketOpenError('LDAP over IPC not available - UNIX sockets non present')
         else:
             self.host = host
 

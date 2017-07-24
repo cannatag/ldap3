@@ -115,8 +115,10 @@ from ..protocol.convert import build_controls_list
 # noinspection PyProtectedMember,PyUnresolvedReferences
 
 SEARCH_CONTROLS = ['1.2.840.113556.1.4.319'  # simple paged search [RFC 2696]
-
                    ]
+SERVER_ENCODING = 'utf-8'
+
+
 def random_cookie():
     return to_raw(SystemRandom().random())[-6:]
 
@@ -145,7 +147,7 @@ class PagedSearchSet(object):
         response_control = paged_search_control(False, len(self.response), self.cookie)
         result = {'resultCode': RESULT_SUCCESS,
                   'matchedDN': '',
-                  'diagnosticMessage': to_unicode(message, 'utf-8'),
+                  'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                   'referral': None,
                   'controls': [BaseStrategy.decode_control(response_control)]
                   }
@@ -324,7 +326,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None,
                 'serverSaslCreds': None
                 }
@@ -348,7 +350,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -379,7 +381,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -413,7 +415,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -465,7 +467,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -557,7 +559,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -601,7 +603,7 @@ class MockBaseStrategy(object):
                     message = 'Critical requested control ' + str(decoded_control[0]) + ' not available'
                     result = {'resultCode': RESULT_UNAVAILABLE_CRITICAL_EXTENSION,
                               'matchedDN': '',
-                              'diagnosticMessage': to_unicode(message, 'utf-8'),
+                              'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                               'referral': None
                               }
                     return [], result
@@ -629,7 +631,7 @@ class MockBaseStrategy(object):
                         message = 'Invalid cookie in simple paged search'
                         result = {'resultCode': RESULT_OPERATIONS_ERROR,
                                   'matchedDN': '',
-                                  'diagnosticMessage': to_unicode(message, 'utf-8'),
+                                  'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                                   'referral': None
                                   }
                         return [], result
@@ -680,7 +682,7 @@ class MockBaseStrategy(object):
 
         result = {'resultCode': result_code,
                   'matchedDN': '',
-                  'diagnosticMessage': to_unicode(message, 'utf-8'),
+                  'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                   'referral': None
                   }
 
@@ -722,7 +724,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None,
                 'responseName': response_name,
                 'responseValue': response_value
@@ -770,7 +772,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value, 'utf-8').lower() >= to_unicode(attr_value, 'utf-8').lower():  # case insensitive string comparison
+                            if to_unicode(value, SERVER_ENCODING).lower() >= to_unicode(attr_value, SERVER_ENCODING).lower():  # case insensitive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -786,7 +788,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value, 'utf-8').lower() <= to_unicode(attr_value, 'utf-8').lower():  # case insentive string comparison
+                            if to_unicode(value, SERVER_ENCODING).lower() <= to_unicode(attr_value, SERVER_ENCODING).lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -806,16 +808,16 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             # rebuild the original substring filter
             if node.assertion['initial']:
-                substring_filter = re.escape(to_unicode(node.assertion['initial'], 'utf-8'))
+                substring_filter = re.escape(to_unicode(node.assertion['initial'], SERVER_ENCODING))
             else:
                 substring_filter = ''
 
             if node.assertion['any']:
                 for middle in node.assertion['any']:
-                    substring_filter += '.*' + re.escape(to_unicode(middle, 'utf-8'))
+                    substring_filter += '.*' + re.escape(to_unicode(middle, SERVER_ENCODING))
 
             if node.assertion['final']:
-                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], 'utf-8'))
+                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], SERVER_ENCODING))
 
             if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # only initial, adds .*
                 substring_filter += '.*'
@@ -824,7 +826,7 @@ class MockBaseStrategy(object):
             for candidate in candidates:
                 if attr_name in self.connection.server.dit[candidate]:
                     for value in self.connection.server.dit[candidate][attr_name]:
-                        if regex_filter.match(to_unicode(value, 'utf-8')):
+                        if regex_filter.match(to_unicode(value, SERVER_ENCODING)):
                             node.matched.add(candidate)
                         else:
                             node.unmatched.add(candidate)
@@ -841,8 +843,8 @@ class MockBaseStrategy(object):
                 #     formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
                 #     if not isinstance(formatted_values, SEQUENCE_TYPES):
                 #         formatted_values = [formatted_values]
-                #     # if attr_value.decode('utf-8') in formatted_values:  # attributes values should be returned in utf-8
-                #     if self.equal(attr_name, attr_value.decode('utf-8'), formatted_values):  # attributes values should be returned in utf-8
+                #     # if attr_value.decode(SERVER_ENCODING) in formatted_values:  # attributes values should be returned in utf-8
+                #     if self.equal(attr_name, attr_value.decode(SERVER_ENCODING), formatted_values):  # attributes values should be returned in utf-8
                 #         node.matched.add(candidate)
                 #     else:
                 #         node.unmatched.add(candidate)
@@ -874,7 +876,7 @@ class MockBaseStrategy(object):
             if int(value1) == int(value2):  # int comparison
                 return True
         try:
-            if to_unicode(value1, 'utf-8').lower() == to_unicode(value2, 'utf-8').lower():  # case insensitive comparison
+            if to_unicode(value1, SERVER_ENCODING).lower() == to_unicode(value2, SERVER_ENCODING).lower():  # case insensitive comparison
                 return True
         except UnicodeDecodeError:
             pass

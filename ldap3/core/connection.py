@@ -607,7 +607,7 @@ class Connection(object):
         with self.lock:
             if user:
                 self.user = user
-            if password:
+            if password is not None:
                 self.password = password
             if not authentication and user:
                 self.authentication = SIMPLE

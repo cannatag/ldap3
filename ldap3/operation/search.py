@@ -97,7 +97,7 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part, auto_escape, auto_encode)}
-    elif left_part.endswith('<'):  # # less or equal match '<='
+    elif left_part.endswith('<'):  # less or equal match '<='
         tag = MATCH_LESS_OR_EQUAL
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
@@ -139,11 +139,11 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
         attribute_name = attribute_name.strip() if attribute_name else None
         matching_rule = matching_rule.strip() if matching_rule else None
         assertion = {'attr': attribute_name, 'value': validate_assertion_value(schema, attribute_name, right_part, auto_escape, auto_encode), 'matchingRule': matching_rule, 'dnAttributes': dn_attributes}
-    elif right_part == '*':  # # attribute present match '=*'
+    elif right_part == '*':  # attribute present match '=*'
         tag = MATCH_PRESENT
         left_part = left_part.strip()
         assertion = {'attr': left_part}
-    elif '*' in right_part:  # # substring match '=initial*substring*substring*final'
+    elif '*' in right_part:  # substring match '=initial*substring*substring*final'
         tag = MATCH_SUBSTRING
         left_part = left_part.strip()
         right_part = right_part.strip()
@@ -151,7 +151,14 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
         initial = validate_assertion_value(schema, left_part, substrings[0], auto_escape, auto_encode) if substrings[0] else None
         final = validate_assertion_value(schema, left_part, substrings[-1], auto_escape, auto_encode) if substrings[-1] else None
         any_string = [validate_assertion_value(schema, left_part, substring, auto_escape, auto_encode) for substring in substrings[1:-1] if substring]
-        assertion = {'attr': left_part, 'initial': initial, 'any': any_string, 'final': final}
+        #assertion = {'attr': left_part, 'initial': initial, 'any': any_string, 'final': final}
+        assertion = {'attr': left_part}
+        if initial:
+            assertion['initial'] =  initial
+        if any_string:
+            assertion['any'] = any_string
+        if final:
+            assertion['final'] =  final
     else:  # equality match '='
         tag = MATCH_EQUAL
         left_part = left_part.strip()
@@ -195,7 +202,7 @@ def parse_filter(search_filter, schema, auto_escape, auto_encode):
                     end_pos = pos
                     if start_pos:
                         if current_node.tag == NOT and len(current_node.elements) > 0:
-                            raise LDAPInvalidFilterError('not clause in filter cannot be multiple')
+                            raise LDAPInvalidFilterError('NOT (!) clause in filter cannot be multiple')
                         current_node.append(evaluate_match(search_filter[start_pos:end_pos], schema, auto_escape, auto_encode))
                 start_pos = None
                 state = SEARCH_OPEN_OR_CLOSE
@@ -267,14 +274,14 @@ def compile_filter(filter_node):
         matching_filter['type'] = AttributeDescription(filter_node.assertion['attr'])
         substrings = Substrings()
         pos = 0
-        if filter_node.assertion['initial']:
+        if 'initial' in filter_node.assertion and filter_node.assertion['initial']:
             substrings[pos] = Substring().setComponentByName('initial', Initial(prepare_filter_for_sending(filter_node.assertion['initial'])))
             pos += 1
-        if filter_node.assertion['any']:
+        if 'any' in filter_node.assertion and filter_node.assertion['any']:
             for substring in filter_node.assertion['any']:
                 substrings[pos] = Substring().setComponentByName('any', Any(prepare_filter_for_sending(substring)))
                 pos += 1
-        if filter_node.assertion['final']:
+        if 'final' in filter_node.assertion and filter_node.assertion['final']:
             substrings[pos] = Substring().setComponentByName('final', Final(prepare_filter_for_sending(filter_node.assertion['final'])))
         matching_filter['substrings'] = substrings
         compiled_filter['substringFilter'] = matching_filter
@@ -469,12 +476,12 @@ def filter_to_string(filter_object):
         attribute = filter_object['substringFilter']['type']
         filter_string += str(attribute) + '='
         for substring in filter_object['substringFilter']['substrings']:
-            if substring['initial']:
+            if 'initial' in substring and substring['initial'] is not None and substring['initial'].hasValue():
                 filter_string += str(substring['initial']) + '*'
-            elif substring['any']:
+            elif 'any' in substring and substring['any'] is not None and substring['any'].hasValue():
                 filter_string += str(substring['any']) if filter_string.endswith('*') else '*' + str(substring['any'])
                 filter_string += '*'
-            elif substring['final']:
+            elif 'final' in substring and substring['final'] is not None and substring['final'].hasValue():
                 filter_string += '*' + str(substring['final'])
     elif filter_type == 'greaterOrEqual':
         ava = ava_to_dict(filter_object['greaterOrEqual'])

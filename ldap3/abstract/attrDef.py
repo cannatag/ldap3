@@ -69,7 +69,8 @@ class AttrDef(object):
         if not alias:
             self.other_names = None
         elif isinstance(alias, SEQUENCE_TYPES):  # multiple aliases
-            self.other_names = set(alias)
+            self.\
+                other_names = set(alias)
         else:  # single alias
             self.other_names = set([alias])  # python 2 compatibility
 

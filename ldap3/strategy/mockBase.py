@@ -807,16 +807,16 @@ class MockBaseStrategy(object):
         elif node.tag == MATCH_SUBSTRING:
             attr_name = node.assertion['attr']
             # rebuild the original substring filter
-            if node.assertion['initial']:
+            if 'initial' in node.assertion and node.assertion['initial'] is not None:
                 substring_filter = re.escape(to_unicode(node.assertion['initial'], SERVER_ENCODING))
             else:
                 substring_filter = ''
 
-            if node.assertion['any']:
+            if 'any' in node.assertion and node.assertion['any'] is not None:
                 for middle in node.assertion['any']:
                     substring_filter += '.*' + re.escape(to_unicode(middle, SERVER_ENCODING))
 
-            if node.assertion['final']:
+            if 'final' in node.assertion and node.assertion['final'] is not None:
                 substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], SERVER_ENCODING))
 
             if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # only initial, adds .*

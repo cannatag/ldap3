@@ -50,6 +50,7 @@ def extended_operation(request_name,
         request['requestValue'] = request_value
     elif request_value:  # tries to encode as a octet string
         request['requestValue'] = RequestValue(encoder.encode(OctetString(str(request_value))))
+
     # elif request_value is not None:
     #     raise LDAPExtensionError('unable to encode value for extended operation')
     return request
@@ -57,7 +58,7 @@ def extended_operation(request_name,
 
 def extended_request_to_dict(request):
     # return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if request['requestValue'] else None}
-    return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if 'requestValue' in request and request['requestValue'] and request['requestValue'].hasValue()  else None}
+    return {'name': str(request['requestName']), 'value': bytes(request['requestValue']) if 'requestValue' in request and request['requestValue'] is not None and request['requestValue'].hasValue()  else None}
 
 def extended_response_to_dict(response):
     return {'result': int(response['resultCode']),
@@ -66,7 +67,7 @@ def extended_response_to_dict(response):
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'referrals': referrals_to_list(response['referral']),
             'responseName': str(response['responseName']) if response['responseName'] else None,
-            'responseValue': bytes(response['responseValue']) if response['responseValue'] else bytes()}
+            'responseValue': bytes(response['responseValue']) if 'responseValue' in response and response['responseValue'] is not None and response['responseValue'].hasValue() else bytes()}
 
 
 def intermediate_response_to_dict(response):

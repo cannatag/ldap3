@@ -62,6 +62,8 @@ def bind_operation(version,
         sasl_creds['mechanism'] = sasl_mechanism
         if sasl_credentials is not None:
             sasl_creds['credentials'] = sasl_credentials
+        # else:
+            # sasl_creds['credentials'] = None
         request['authentication'] = AuthenticationChoice().setComponentByName('sasl', sasl_creds)
     elif authentication == ANONYMOUS:
         if name:
@@ -121,7 +123,7 @@ def bind_response_to_dict(response):
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral']),
-            'saslCreds': bytes(response['serverSaslCreds']) if response['serverSaslCreds'] is not None else None}
+            'saslCreds': bytes(response['serverSaslCreds']) if response['serverSaslCreds'] is not None and response['serverSaslCreds'].hasValue() else None}
 
 
 def sicily_bind_response_to_dict(response):

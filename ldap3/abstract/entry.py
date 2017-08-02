@@ -444,6 +444,7 @@ class Entry(EntryBase):
                     new_attr.values = writable_entry._state.attributes[original_attr.name].values
                     new_attr.response = writable_entry._state.attributes[original_attr.name].response
                 writable_entry._state.attributes[attr] = new_attr
+                # writable_entry._state.attributes.set_alias(attr, new_attr.other_names)
                 del writable_entry._state.attributes[original_attr.name]
 
         writable_entry._state.set_status(STATUS_WRITABLE)

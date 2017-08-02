@@ -18,7 +18,7 @@ The LDAP protocol stores strings in a **Directory String** type that should alwa
 ``DEFAULT_CLIENT_ENCODING`` config parameter. For flaky server this encoding can be changed with::
 
     >>> from ldap3 import set_config_parameter
-    >>> set_config_parameter('DEFAULT_SERVER_ENCODING', 'server_encoding')
+    >>> set_config_parameter('DEFAULT_SERVER_ENCODING', 'latin-1')
 
 DEFAULT_SERVER_ENCODING can be changed multiple times as needed. To know the current ``DEFAULT_SERVER_ENCODING`` you can use the following code::
 
@@ -27,11 +27,11 @@ DEFAULT_SERVER_ENCODING can be changed multiple times as needed. To know the cur
     'utf-8'
 
 
-Some servers don't completely follow the LDAP RFCs and send data in a different encoding or in a mix of encodings. For example Active Directory can send
-the DN of entries found in a search in a different encoding than utf-8. In this case you can use the ``ADDITIONAL_SERVER_ENCODINGS`` config
-parameter to decode the DN of the Search operation response. It can be set to one encoding or a list of encodings. If a list of encodings is
-provided ldap3 tries sequentially each encoding until a valid decode is performed. If any of the specified encodings is not able
-to decode the value then an ``UnicodeError`` exception is raised.
+Some servers don't completely follow the LDAP RFCs and send data in a different encoding or in a mix of encodings. For example Active Directory
+can send the DN of entries found in a search in a different encoding than utf-8. In this case you can use the ``ADDITIONAL_SERVER_ENCODINGS``
+config parameter to decode the DN of the Search operation response. It can be set to one encoding or a list of encodings. If
+a list of encodings is provided ldap3 tries sequentially each encoding until a valid decode is performed. If any of the specified
+encodings is able to decode the value then an ``UnicodeError`` exception is raised.
 
 ``ADDITIONAL_SERVER_ENCODINGS`` defaults to ['latin1, 'koi8-r'] for european and russian encodings
 

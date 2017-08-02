@@ -54,7 +54,6 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         self.connection.result = dict()
         if message_type == 'searchRequest':
             responses, result = self.mock_search(request, controls)
-            result['type'] = 'searchResDone'
             for entry in responses:
                 response = search_result_entry_response_to_dict(entry, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
                 response['type'] = 'searchResEntry'

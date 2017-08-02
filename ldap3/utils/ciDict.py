@@ -155,7 +155,7 @@ class CaseInsensitiveWithAliasDict(CaseInsensitiveDict):
                             self._alias_keymap[ci_key] = list()
                             self._alias_keymap[ci_key].append(self._ci_key(ci_alias))
                     else:
-                        if ci_key == self._ci_key(self._case_insensitive_keymap[ci_alias]):  # passes if alias is already defined to the same key
+                        if ci_key == self._ci_key(self._alias_keymap[ci_alias]):  # passes if alias is already defined to the same key
                             pass
                         else:
                             raise KeyError('\'' + str(alias_to_add) + '\' already used as alias')

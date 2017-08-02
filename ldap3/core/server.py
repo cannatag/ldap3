@@ -34,6 +34,7 @@ from ..protocol.rfc4511 import LDAP_MAX_INT
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
+from ..utils.conv import to_unicode
 
 try:
     from urllib.parse import unquote  # Python 3
@@ -95,7 +96,7 @@ class Server(object):
             use_ssl = False
             url_given = True
         elif host.lower().startswith('ldapi://') and not unix_socket_available:
-            raise LDAPSocketOpenError('LDAP over IPC not available')
+            raise LDAPSocketOpenError('LDAP over IPC not available - UNIX sockets non present')
         else:
             self.host = host
 
@@ -224,6 +225,8 @@ class Server(object):
         r += '' if not self.allowed_referral_hosts else ', allowed_referral_hosts={0.allowed_referral_hosts!r}'.format(self)
         r += '' if self.tls is None else ', tls={0.tls!r}'.format(self)
         r += '' if not self.get_info else ', get_info={0.get_info!r}'.format(self)
+        r += '' if not self.connect_timeout else ', connect_timeout={0.connect_timeout!r}'.format(self)
+        r += '' if not self.mode else ', mode={0.mode!r}'.format(self)
         r += ')'
 
         return r
@@ -384,7 +387,7 @@ class Server(object):
         else:
             result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
-                if result:
+                if result and 'subschemaSubentry' in connection.response[0]['raw_attributes']:
                     schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
             else:  # async request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
@@ -393,7 +396,7 @@ class Server(object):
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             if isinstance(schema_entry, bytes) and str is not bytes:  # Python 3
-                schema_entry = schema_entry.decode('utf-8')
+                schema_entry = to_unicode(schema_entry, from_server=True)
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=BASE,

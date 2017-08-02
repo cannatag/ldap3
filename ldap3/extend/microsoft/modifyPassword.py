@@ -69,4 +69,4 @@ def ad_modify_password(connection, user_dn, new_password, old_password, controls
             log(PROTOCOL, 'operation result <%s> for <%s>', result, connection)
         raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
 
-    return result
+    return False

@@ -26,7 +26,9 @@
 
 from os import linesep
 
+from .. import SEQUENCE_TYPES
 from ..core.exceptions import LDAPKeyError
+from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
 
 
 class AttrDef(object):
@@ -52,7 +54,7 @@ class AttrDef(object):
     :type mandatory: boolean
     """
 
-    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, mandatory=False, single_value=None):
+    def __init__(self, name, key=None, validate=None, pre_query=None, post_query=None, default=NotImplemented, dereference_dn=None, description=None, mandatory=False, single_value=None, alias=None):
         self.name = name
         self.key = ''.join(key.split()) if key else name  # key set to name if not present
         self.validate = validate
@@ -64,9 +66,19 @@ class AttrDef(object):
         self.mandatory = mandatory
         self.single_value = single_value
         self.oid_info = None
+        if not alias:
+            self.other_names = None
+        elif isinstance(alias, SEQUENCE_TYPES):  # multiple aliases
+            self.\
+                other_names = set(alias)
+        else:  # single alias
+            self.other_names = set([alias])  # python 2 compatibility
+
+        if log_enabled(BASIC):
+            log(BASIC, 'instantiated AttrDef: <%r>', self)
 
     def __repr__(self):
-        r = 'ATTR: ' + self.key
+        r = 'ATTR: ' + ', '.join([self.key] + list(self.other_names)) if self.other_names else self.key
         r += '' if self.name == self.key else ' [' + self.name + ']'
         r += '' if self.default is NotImplemented else ' - default: ' + str(self.default)
         r += '' if self.mandatory is None else ' - mandatory: ' + str(self.mandatory)
@@ -101,6 +113,9 @@ class AttrDef(object):
 
     def __setattr__(self, key, value):
         if hasattr(self, 'key') and key == 'key':  # key cannot be changed because is being used for __hash__
-            raise LDAPKeyError('key \'%s\' already set' % key)
+            error_message = 'key \'%s\' already set' % key
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', error_message, self)
+            raise LDAPKeyError(error_message)
         else:
             object.__setattr__(self, key, value)

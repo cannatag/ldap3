@@ -58,7 +58,7 @@ ldif_output will contain the LDIF representation of the response entries.
 LDIF-CHANGE
 ===========
 
-To get the LDIF representation of Add, Modify, Delete and ModifyDn operation you must use the LDIF_PRODUCER strategy. With this strategy operations are
+To get the LDIF representation of Add, Modify, Delete and ModifyDn operation you must use the LDIF strategy. With this strategy operations are
 not executed on an LDAP server but are converted to an LDIF-CHANGE format that can be sent to an LDAP server.
 
 For example::

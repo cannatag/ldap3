@@ -26,7 +26,7 @@
 
 import unittest
 
-from ldap3 import Server, Connection, MOCK_SYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_EDIR_8_8_8,\
+from ldap3 import Server, Connection, MOCK_ASYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_EDIR_8_8_8,\
     BASE, LEVEL, SUBTREE, AUTO_BIND_NO_TLS, NONE
 from ldap3.core.exceptions import LDAPInvalidCredentialsResult, LDAPNoSuchObjectResult
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
@@ -44,17 +44,17 @@ class Test(unittest.TestCase):
         schema = SchemaInfo.from_json(edir_8_8_8_schema)
         info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
         server_1 = Server.from_definition('MockSyncServer', info, schema)
-        self.connection_1 = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_SYNC)
-        self.connection_1b = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_SYNC)
-        self.connection_1c = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_SYNC, raise_exceptions=True)
+        self.connection_1 = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_ASYNC)
+        self.connection_1b = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_ASYNC)
+        self.connection_1c = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_ASYNC, raise_exceptions=True)
         server_2 = Server('dummy', get_info=OFFLINE_EDIR_8_8_8)
-        self.connection_2 = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_SYNC)
-        self.connection_2b = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_SYNC)
-        self.connection_2c = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_SYNC, raise_exceptions=True)
+        self.connection_2 = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_ASYNC)
+        self.connection_2b = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_ASYNC)
+        self.connection_2c = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_ASYNC, raise_exceptions=True)
         server_3 = Server('dummy')  # no schema
-        self.connection_3 = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC)
-        self.connection_3b = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC)
-        self.connection_3c = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC, raise_exceptions=True)
+        self.connection_3 = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_ASYNC)
+        self.connection_3b = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_ASYNC)
+        self.connection_3c = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_ASYNC, raise_exceptions=True)
         # creates fixtures
         self.connection_1.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
         self.connection_2.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
@@ -1114,43 +1114,31 @@ class Test(unittest.TestCase):
         self.connection_1c.bind()
         try:
             result = self.connection_1c.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+            if not self.connection_1c.strategy.sync:
+                _, result = self.connection_1c.get_response(result)
             self.fail('exception not raised')
         except LDAPNoSuchObjectResult:
             pass
-
-        if not self.connection_1c.strategy.sync:
-            _, result = self.connection_1c.get_response(result)
-        else:
-            result = self.connection_1c.result
-        self.assertEqual(result['description'], 'noSuchObject')
 
     def test_search_incorrect_base_exception_2(self):
         self.connection_2c.bind()
         try:
             result = self.connection_2c.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+            if not self.connection_2c.strategy.sync:
+                _, result = self.connection_2c.get_response(result)
             self.fail('exception not raised')
         except LDAPNoSuchObjectResult:
             pass
-
-        if not self.connection_2c.strategy.sync:
-            _, result = self.connection_2c.get_response(result)
-        else:
-            result = self.connection_2c.result
-        self.assertEqual(result['description'], 'noSuchObject')
 
     def test_search_incorrect_base_exception_3(self):
         self.connection_3c.bind()
         try:
             result = self.connection_3c.search('o=nonexistant', '(cn=*)', search_scope=SUBTREE, attributes=['cn', 'sn'])
+            if not self.connection_3c.strategy.sync:
+                _, result = self.connection_3c.get_response(result)
             self.fail('exception not raised')
         except LDAPNoSuchObjectResult:
             pass
-
-        if not self.connection_3c.strategy.sync:
-            _, result = self.connection_3c.get_response(result)
-        else:
-            result = self.connection_3c.result
-        self.assertEqual(result['description'], 'noSuchObject')
 
     def test_search_presence_and_filter_no_entries_found_1(self):
         self.connection_1.bind()

@@ -35,7 +35,7 @@ from ..protocol.rfc4511 import SearchRequest, LDAPDN, Scope, DerefAliases, Integ
     Not, And, Or, ApproxMatch, GreaterOrEqual, LessOrEqual, ExtensibleMatch, Present, SubstringFilter, \
     Substrings, Final, Initial, Any, ResultCode, Substring, MatchingRule, Type, MatchValue, DnAttributes
 from ..operation.bind import referrals_to_list
-from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, prepare_filter_for_sending
+from ..protocol.convert import ava_to_dict, attributes_to_list, search_refs_to_list, validate_assertion_value, prepare_filter_for_sending, search_refs_to_list_fast
 from ..protocol.formatters.standard import format_attribute_values
 from ..utils.conv import to_unicode, to_raw
 
@@ -97,7 +97,7 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
         assertion = {'attr': left_part, 'value': validate_assertion_value(schema, left_part, right_part, auto_escape, auto_encode)}
-    elif left_part.endswith('<'):  # # less or equal match '<='
+    elif left_part.endswith('<'):  # less or equal match '<='
         tag = MATCH_LESS_OR_EQUAL
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
@@ -139,11 +139,11 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
         attribute_name = attribute_name.strip() if attribute_name else None
         matching_rule = matching_rule.strip() if matching_rule else None
         assertion = {'attr': attribute_name, 'value': validate_assertion_value(schema, attribute_name, right_part, auto_escape, auto_encode), 'matchingRule': matching_rule, 'dnAttributes': dn_attributes}
-    elif right_part == '*':  # # attribute present match '=*'
+    elif right_part == '*':  # attribute present match '=*'
         tag = MATCH_PRESENT
         left_part = left_part.strip()
         assertion = {'attr': left_part}
-    elif '*' in right_part:  # # substring match '=initial*substring*substring*final'
+    elif '*' in right_part:  # substring match '=initial*substring*substring*final'
         tag = MATCH_SUBSTRING
         left_part = left_part.strip()
         right_part = right_part.strip()
@@ -151,7 +151,14 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
         initial = validate_assertion_value(schema, left_part, substrings[0], auto_escape, auto_encode) if substrings[0] else None
         final = validate_assertion_value(schema, left_part, substrings[-1], auto_escape, auto_encode) if substrings[-1] else None
         any_string = [validate_assertion_value(schema, left_part, substring, auto_escape, auto_encode) for substring in substrings[1:-1] if substring]
-        assertion = {'attr': left_part, 'initial': initial, 'any': any_string, 'final': final}
+        #assertion = {'attr': left_part, 'initial': initial, 'any': any_string, 'final': final}
+        assertion = {'attr': left_part}
+        if initial:
+            assertion['initial'] =  initial
+        if any_string:
+            assertion['any'] = any_string
+        if final:
+            assertion['final'] =  final
     else:  # equality match '='
         tag = MATCH_EQUAL
         left_part = left_part.strip()
@@ -195,7 +202,7 @@ def parse_filter(search_filter, schema, auto_escape, auto_encode):
                     end_pos = pos
                     if start_pos:
                         if current_node.tag == NOT and len(current_node.elements) > 0:
-                            raise LDAPInvalidFilterError('not clause in filter cannot be multiple')
+                            raise LDAPInvalidFilterError('NOT (!) clause in filter cannot be multiple')
                         current_node.append(evaluate_match(search_filter[start_pos:end_pos], schema, auto_escape, auto_encode))
                 start_pos = None
                 state = SEARCH_OPEN_OR_CLOSE
@@ -267,14 +274,14 @@ def compile_filter(filter_node):
         matching_filter['type'] = AttributeDescription(filter_node.assertion['attr'])
         substrings = Substrings()
         pos = 0
-        if filter_node.assertion['initial']:
+        if 'initial' in filter_node.assertion and filter_node.assertion['initial']:
             substrings[pos] = Substring().setComponentByName('initial', Initial(prepare_filter_for_sending(filter_node.assertion['initial'])))
             pos += 1
-        if filter_node.assertion['any']:
+        if 'any' in filter_node.assertion and filter_node.assertion['any']:
             for substring in filter_node.assertion['any']:
                 substrings[pos] = Substring().setComponentByName('any', Any(prepare_filter_for_sending(substring)))
                 pos += 1
-        if filter_node.assertion['final']:
+        if 'final' in filter_node.assertion and filter_node.assertion['final']:
             substrings[pos] = Substring().setComponentByName('final', Final(prepare_filter_for_sending(filter_node.assertion['final'])))
         matching_filter['substrings'] = substrings
         compiled_filter['substringFilter'] = matching_filter
@@ -375,7 +382,7 @@ def decode_vals(vals):
 
 def decode_vals_fast(vals):
     try:
-        return [val[3].decode('utf-8') for val in vals if val] if vals else None
+        return [to_unicode(val[3], from_server=True) for val in vals if val] if vals else None
     except UnicodeDecodeError:
         return [val[3] for val in vals if val] if vals else None
 
@@ -393,7 +400,7 @@ def attributes_to_dict_fast(attribute_list):
     conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
     attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
-        attributes[attribute[3][0][3].decode('utf-8')] = decode_vals_fast(attribute[3][1][3])
+        attributes[to_unicode(attribute[3][0][3], from_server=True)] = decode_vals_fast(attribute[3][1][3])
 
     return attributes
 
@@ -420,7 +427,7 @@ def raw_attributes_to_dict_fast(attribute_list):
     conf_case_insensitive_attributes = get_config_parameter('CASE_INSENSITIVE_ATTRIBUTE_NAMES')
     attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
-        attributes[attribute[3][0][3].decode('utf-8')] = decode_raw_vals_fast(attribute[3][1][3])
+        attributes[to_unicode(attribute[3][0][3], from_server=True)] = decode_raw_vals_fast(attribute[3][1][3])
 
     return attributes
 
@@ -440,7 +447,7 @@ def checked_attributes_to_dict_fast(attribute_list, schema=None, custom_formatte
 
     checked_attributes = CaseInsensitiveDict() if conf_case_insensitive_attributes else dict()
     for attribute in attribute_list:
-        name = attribute[3][0][3].decode('utf-8')
+        name = to_unicode(attribute[3][0][3], from_server=True)
         checked_attributes[name] = format_attribute_values(schema, name, decode_raw_vals_fast(attribute[3][1][3]) or [], custom_formatter)
     return checked_attributes
 
@@ -469,13 +476,15 @@ def filter_to_string(filter_object):
         attribute = filter_object['substringFilter']['type']
         filter_string += str(attribute) + '='
         for substring in filter_object['substringFilter']['substrings']:
-            if substring['initial']:
-                filter_string += str(substring['initial']) + '*'
-            elif substring['any']:
-                filter_string += str(substring['any']) if filter_string.endswith('*') else '*' + str(substring['any'])
-                filter_string += '*'
-            elif substring['final']:
-                filter_string += '*' + str(substring['final'])
+            component = substring.getName()
+            if substring[component] is not None and substring[component].hasValue():
+                if component == 'initial':
+                    filter_string += str(substring['initial']) + '*'
+                elif component == 'any':
+                    filter_string += str(substring['any']) if filter_string.endswith('*') else '*' + str(substring['any'])
+                    filter_string += '*'
+                elif component == 'final':
+                    filter_string += '*' + str(substring['final'])
     elif filter_type == 'greaterOrEqual':
         ava = ava_to_dict(filter_object['greaterOrEqual'])
         filter_string += ava['attribute'] + '>=' + ava['value']
@@ -515,7 +524,7 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
         if isinstance(response['object'], STRING_TYPES):  # mock strategies return string not a PyAsn1 object
             entry['dn'] = to_unicode(response['object'])
         else:
-            entry['dn'] = to_unicode(bytes(response['object']), additional_encodings=True)
+            entry['dn'] = to_unicode(bytes(response['object']), from_server=True)
     else:
         entry['raw_dn'] = b''
         entry['dn'] = ''
@@ -529,13 +538,18 @@ def search_result_entry_response_to_dict(response, schema, custom_formatter, che
 
 
 def search_result_done_response_to_dict(response):
-    return {'result': int(response['resultCode']),
+    result = {'result': int(response['resultCode']),
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'message': str(response['diagnosticMessage']),
             'dn': str(response['matchedDN']),
             'referrals': referrals_to_list(response['referral'])}
 
+    if 'controls' in response:  # used for returning controls in Mock strategies
+        result['controls'] = dict()
+        for control in response['controls']:
+            result['controls'][control[0]] = control[1]
 
+    return result
 def search_result_reference_response_to_dict(response):
     return {'uri': search_refs_to_list(response)}
 
@@ -543,7 +557,7 @@ def search_result_reference_response_to_dict(response):
 def search_result_entry_response_to_dict_fast(response, schema, custom_formatter, check_names):
     entry_dict = dict()
     entry_dict['raw_dn'] = response[0][3]
-    entry_dict['dn'] = to_unicode(response[0][3], additional_encodings=True)  # some flaky servers can return dn not in utf-8
+    entry_dict['dn'] = to_unicode(response[0][3], from_server=True)
     entry_dict['raw_attributes'] = raw_attributes_to_dict_fast(response[1][3])  # attributes
     if check_names:
         entry_dict['attributes'] = checked_attributes_to_dict_fast(response[1][3], schema, custom_formatter)  # attributes
@@ -554,4 +568,4 @@ def search_result_entry_response_to_dict_fast(response, schema, custom_formatter
 
 
 def search_result_reference_response_to_dict_fast(response):
-    return {'uri': search_refs_to_list([r[3] for r in response])}
+    return {'uri': search_refs_to_list_fast([r[3] for r in response])}

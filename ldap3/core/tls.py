@@ -63,6 +63,7 @@ class Tls(object):
     that tries to read the CAs defined at system level
     ca_certs_path and ca_certs_data are valid only when using SSLContext
     local_private_key_password is valid only when using SSLContext
+    sni is the server name for Server Name Indication (when available)
     """
 
     def __init__(self,
@@ -75,7 +76,8 @@ class Tls(object):
                  ca_certs_path=None,
                  ca_certs_data=None,
                  local_private_key_password=None,
-                 ciphers=None):
+                 ciphers=None,
+                 sni=None):
 
         if validate in [ssl.CERT_NONE, ssl.CERT_OPTIONAL, ssl.CERT_REQUIRED]:
             self.validate = validate
@@ -128,6 +130,7 @@ class Tls(object):
         self.certificate_file = local_certificate_file
         self.valid_names = valid_names
         self.ciphers = ciphers
+        self.sni = sni
 
         if log_enabled(BASIC):
             log(BASIC, 'instantiated Tls: <%r>' % self)
@@ -143,7 +146,8 @@ class Tls(object):
             'CA certificates data: ' + ('present ' if self.ca_certs_data else 'not present'),
             'verify mode: ' + str(self.validate),
             'valid names: ' + str(self.valid_names),
-            'ciphers: ' + str(self.ciphers)
+            'ciphers: ' + str(self.ciphers),
+            'sni: ' + str(self.sni)
         ]
         return ' - '.join(s)
 
@@ -156,6 +160,7 @@ class Tls(object):
         r += '' if self.ca_certs_path is None else ', ca_certs_path={0.ca_certs_path!r}'.format(self)
         r += '' if self.ca_certs_data is None else ', ca_certs_data={0.ca_certs_data!r}'.format(self)
         r += '' if self.ciphers is None else ', ciphers={0.ciphers!r}'.format(self)
+        r += '' if self.sni is None else ', sni={0.sni!r}'.format(self)
         r = 'Tls(' + r[2:] + ')'
         return r
 
@@ -187,7 +192,10 @@ class Tls(object):
                 except ssl.SSLError:
                     pass
 
-            wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
+            if self.sni:
+               wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake, server_hostname=self.sni)
+            else:
+               wrapped_socket = ssl_context.wrap_socket(connection.socket, server_side=False, do_handshake_on_connect=do_handshake)
             if log_enabled(NETWORK):
                 log(NETWORK, 'socket wrapped with SSL using SSLContext for <%s>', connection)
         else:
@@ -195,6 +203,7 @@ class Tls(object):
                 self.version = ssl.PROTOCOL_SSLv23
             if self.ciphers:
                 try:
+
                     wrapped_socket = ssl.wrap_socket(connection.socket,
                                                      keyfile=self.private_key_file,
                                                      certfile=self.certificate_file,

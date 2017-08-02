@@ -28,8 +28,10 @@ from os.path import join
 from random import SystemRandom
 from tempfile import gettempdir
 
-from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection, ServerPool, SASL, STRING_TYPES, get_config_parameter,\
-    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES
+from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
+    ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
+    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM,\
+    AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES
 from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
@@ -42,7 +44,7 @@ test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Mic
 
 test_pool_size = 5
 test_logging = False
-test_log_detail = EXTENDED
+test_log_detail = PROTOCOL
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
@@ -80,9 +82,9 @@ else:
 # test_server_type = 'AD'
 # test_fast_decoder = True
 
-
 if 'TRAVIS' in location:
     # test in the cloud
+    set_config_parameter('RESPONSE_WAITING_TIMEOUT', 30)
     if test_server_type == 'EDIR':
         test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
         test_server = 'labldap02.cloudapp.net'
@@ -125,22 +127,22 @@ if 'TRAVIS' in location:
         test_server_context = ''  # used in novell eDirectory extended operations
         test_server_edir_name = ''  # used in novell eDirectory extended operations
         test_user = 'CN=Giovanni,CN=Users,' + test_root_partition  # the user that performs the tests
-        test_password = 'Rc888888pfop'  # user password
+        test_password = 'Rc666666pfop'  # user password
         test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
-        test_secondary_password = 'Rc777777pfop'  # user password
+        test_secondary_password = 'Rc555555pfop'  # user password
         # test_sasl_user = 'testLAB@' + test_domain_name
         test_sasl_user = test_domain_name.split('.')[0] + '\\testLAB'
-        test_sasl_password = 'Rc777777pfop'
+        test_sasl_password = 'Rc555555pfop'
         test_sasl_user_dn = 'cn=testLAB,o=resources'
         test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
-        test_sasl_secondary_password = 'Rc777777pfop'
+        test_sasl_secondary_password = 'Rc555555pfop'
         test_sasl_secondary_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
         test_sasl_realm = None
         test_ca_cert_file = 'local-forest-lab-ca.pem'
         test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
         test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
         test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
-        test_ntlm_password = 'Rc888888pfop'
+        test_ntlm_password = 'Rc666666pfop'
         test_logging_filename = join(gettempdir(), 'ldap3.log')
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
@@ -356,13 +358,11 @@ if test_logging:
     set_library_log_activation_level(logging.DEBUG)
     set_library_log_detail_level(test_log_detail)
 
-print('Testing location:', location)
-print('Test server:', test_server)
-print('Python version:', version)
-print('ldap3 version:', ldap3_version)
+print('Testing location:', location, ' - Test server:', test_server)
+print('Python version:', version, ' - ldap3 version:', ldap3_version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
-print('Default encoding:', get_config_parameter('DEFAULT_ENCODING'), '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding())
-print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Fast decoder: ', test_fast_decoder)
+print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
+print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Fast decoder: ', test_fast_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
 
 
 def random_id():

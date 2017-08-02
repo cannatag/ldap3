@@ -48,23 +48,12 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         SyncStrategy.__init__(self, ldap_connection)
         MockBaseStrategy.__init__(self)
 
-    def send(self, message_type, request, controls=None):
-        self.connection.request = BaseStrategy.decode_request(message_type, request, controls)
-        if self.connection.listening:
-            return message_type, request, controls
-        else:
-            self.connection.last_error = 'unable to send message, connection is not open'
-            if log_enabled(ERROR):
-                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-            raise LDAPSocketOpenError(self.connection.last_error)
-
     def post_send_search(self, payload):
-        message_type, request, controls = payload
+        message_id, message_type, request, controls = payload
         self.connection.response = []
         self.connection.result = dict()
         if message_type == 'searchRequest':
             responses, result = self.mock_search(request, controls)
-            result['type'] = 'searchResDone'
             for entry in responses:
                 response = search_result_entry_response_to_dict(entry, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
                 response['type'] = 'searchResEntry'
@@ -80,7 +69,7 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
         return self.connection.response
 
     def post_send_single_response(self, payload):  # payload is a tuple sent by self.send() made of message_type, request, controls
-        message_type, request, controls = payload
+        message_id, message_type, request, controls = payload
         responses = []
         result = None
         if message_type == 'bindRequest':

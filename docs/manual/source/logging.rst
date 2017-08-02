@@ -9,13 +9,8 @@ To enable logging the application must have a working logging configuration that
     import logging
     logging.basicConfig(filename='client_application.log', level=logging.DEBUG)
 
-This is intended to avoid the mix of ldap3 logging records in the application logging. Only one record is emitted at
-INFO level regardless of the library log activation level::
-
-    INFO:ldap3:ldap3 library initialized - logging emitted with loglevel set to DEBUG - available detail levels are: OFF, ERROR, BASIC, PROTOCOL, NETWORK
-
-This is to inform that the logging facility is enabled and record will be emitted only when the loglevel and the detail
-level are properly set. Only when you set the log level to DEBUG ldap3 starts to emit its log records.
+This is intended to avoid the mix of ldap3 logging records in the application logging. Only when you set the log level of your application
+to DEBUG ldap3 starts to emit its log records.
 
 Logging activation level
 ========================
@@ -48,7 +43,7 @@ Logging detail level
 Each detail level details a specific feature of the library and includes the previous level details, as for standard
 logging:
 
-* NONE: nothing is logged
+* OFF: nothing is logged
 
 * ERROR: only exceptions are logged
 

@@ -67,7 +67,7 @@ def extended_response_to_dict(response):
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'referrals': referrals_to_list(response['referral']),
             'responseName': str(response['responseName']) if response['responseName'] else None,
-            'responseValue': bytes(response['responseValue']) if 'responseValue' in response and response['responseValue'] is not None and response['responseValue'].hasValue() else bytes()}
+            'responseValue': bytes(response['responseValue']) if response['responseValue'] is not None and response['responseValue'].hasValue() else bytes()}
 
 
 def intermediate_response_to_dict(response):

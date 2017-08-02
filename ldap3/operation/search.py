@@ -476,13 +476,15 @@ def filter_to_string(filter_object):
         attribute = filter_object['substringFilter']['type']
         filter_string += str(attribute) + '='
         for substring in filter_object['substringFilter']['substrings']:
-            if 'initial' in substring and substring['initial'] is not None and substring['initial'].hasValue():
-                filter_string += str(substring['initial']) + '*'
-            elif 'any' in substring and substring['any'] is not None and substring['any'].hasValue():
-                filter_string += str(substring['any']) if filter_string.endswith('*') else '*' + str(substring['any'])
-                filter_string += '*'
-            elif 'final' in substring and substring['final'] is not None and substring['final'].hasValue():
-                filter_string += '*' + str(substring['final'])
+            component = substring.getName()
+            if substring[component] is not None and substring[component].hasValue():
+                if component == 'initial':
+                    filter_string += str(substring['initial']) + '*'
+                elif component == 'any':
+                    filter_string += str(substring['any']) if filter_string.endswith('*') else '*' + str(substring['any'])
+                    filter_string += '*'
+                elif component == 'final':
+                    filter_string += '*' + str(substring['final'])
     elif filter_type == 'greaterOrEqual':
         ava = ava_to_dict(filter_object['greaterOrEqual'])
         filter_string += ava['attribute'] + '>=' + ava['value']

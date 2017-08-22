@@ -27,6 +27,7 @@ import json
 import re
 
 from threading import Lock
+from random import SystemRandom
 
 from pyasn1.type.univ import OctetString
 
@@ -42,14 +43,21 @@ from ..operation.search import search_request_to_dict, parse_filter, ROOT, AND, 
     MATCH_GREATER_OR_EQUAL, MATCH_LESS_OR_EQUAL, MATCH_EXTENSIBLE, MATCH_PRESENT,\
     MATCH_SUBSTRING, MATCH_EQUAL
 from ..utils.conv import json_hook, to_unicode, to_raw
-from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError, LDAPInvalidValueError
+from ..core.exceptions import LDAPDefinitionError, LDAPPasswordIsMandatoryError, LDAPInvalidValueError, LDAPSocketOpenError
+from ..core.results import RESULT_SUCCESS, RESULT_OPERATIONS_ERROR, RESULT_UNAVAILABLE_CRITICAL_EXTENSION, \
+    RESULT_INVALID_CREDENTIALS, RESULT_NO_SUCH_OBJECT, RESULT_ENTRY_ALREADY_EXISTS, RESULT_COMPARE_TRUE, \
+    RESULT_COMPARE_FALSE, RESULT_NO_SUCH_ATTRIBUTE, RESULT_UNWILLING_TO_PERFORM
 from ..utils.ciDict import CaseInsensitiveDict
 from ..utils.dn import to_dn, safe_dn, safe_rdn
 from ..protocol.sasl.sasl import validate_simple_password
-from ..protocol.formatters.standard import find_attribute_validator
+from ..protocol.formatters.standard import find_attribute_validator, format_attribute_values
+from ..protocol.rfc2696 import paged_search_control
 from ..utils.log import log, log_enabled, ERROR, BASIC
-from ..protocol.formatters.standard import format_attribute_values
 from ..utils.asn1 import encoder
+from ..strategy.base import BaseStrategy  # needed for decode_control() method
+from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
+from ..protocol.convert import build_controls_list
+
 
 # LDAPResult ::= SEQUENCE {
 #     resultCode         ENUMERATED {
@@ -105,6 +113,47 @@ from ..utils.asn1 import encoder
 #     referral           [3] Referral OPTIONAL }
 
 # noinspection PyProtectedMember,PyUnresolvedReferences
+
+SEARCH_CONTROLS = ['1.2.840.113556.1.4.319'  # simple paged search [RFC 2696]
+                   ]
+SERVER_ENCODING = 'utf-8'
+
+
+def random_cookie():
+    return to_raw(SystemRandom().random())[-6:]
+
+
+class PagedSearchSet(object):
+    def __init__(self, response, size, criticality):
+        self.size = size
+        self.response = response
+        self.cookie = None
+        self.sent = 0
+        self.done = False
+
+    def next(self, size=None):
+        if size:
+            self.size=size
+
+        message = ''
+        response = self.response[self.sent: self.sent + self.size]
+        self.sent += self.size
+        if self.sent > len(self.response):
+            self.done = True
+            self.cookie = ''
+        else:
+            self.cookie = random_cookie()
+
+        response_control = paged_search_control(False, len(self.response), self.cookie)
+        result = {'resultCode': RESULT_SUCCESS,
+                  'matchedDN': '',
+                  'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
+                  'referral': None,
+                  'controls': [BaseStrategy.decode_control(response_control)]
+                  }
+        return response, result
+
+
 class MockBaseStrategy(object):
     """
     Base class for connection strategy
@@ -120,6 +169,7 @@ class MockBaseStrategy(object):
         self.custom_validators = None
         self.operational_attributes = ['entryDN']
         self.add_entry('cn=schema', [])  # add default entry for schema
+        self._paged_sets = []  # list of paged search in progress
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
 
@@ -187,8 +237,9 @@ class MockBaseStrategy(object):
                     if rdn[0] not in new_entry:  # if rdn attribute is missing adds attribute and its value
                         new_entry[rdn[0]] = [to_raw(rdn[1])]
                     else:
-                        if rdn[1] not in new_entry[rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
-                            new_entry[rdn[0]].append(to_raw(rdn[1]))
+                        raw_rdn = to_raw(rdn[1])
+                        if raw_rdn not in new_entry[rdn[0]]:  # add rdn value if rdn attribute is present but value is missing
+                            new_entry[rdn[0]].append(raw_rdn)
                 new_entry['entryDN'] = [to_raw(escaped_dn)]
                 self.connection.server.dit[escaped_dn] = new_entry
                 return True
@@ -256,26 +307,26 @@ class MockBaseStrategy(object):
             if 'userPassword' in self.connection.server.dit[identity]:
                 # if self.connection.server.dit[identity]['userPassword'] == password or password in self.connection.server.dit[identity]['userPassword']:
                 if self.equal(identity, 'userPassword', password):
-                    result_code = 0
+                    result_code = RESULT_SUCCESS
                     message = ''
                     self.bound = identity
                 else:
-                    result_code = 49
+                    result_code = RESULT_INVALID_CREDENTIALS
                     message = 'invalid credentials'
             else:  # no user found, returns invalidCredentials
-                result_code = 49
+                result_code = RESULT_INVALID_CREDENTIALS
                 message = 'missing userPassword attribute'
         elif identity == '<anonymous>':
-            result_code = 0
+            result_code = RESULT_SUCCESS
             message = ''
             self.bound = identity
         else:
-            result_code = 49
+            result_code = RESULT_INVALID_CREDENTIALS
             message = 'missing object'
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None,
                 'serverSaslCreds': None
                 }
@@ -291,15 +342,15 @@ class MockBaseStrategy(object):
         dn = safe_dn(request['entry'])
         if dn in self.connection.server.dit:
             del self.connection.server.dit[dn]
-            result_code = 0
+            result_code = RESULT_SUCCESS
             message = ''
         else:
-            result_code = 32
+            result_code = RESULT_NO_SUCH_OBJECT
             message = 'object not found'
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -319,18 +370,18 @@ class MockBaseStrategy(object):
 
         if dn not in self.connection.server.dit:
             if self.add_entry(dn, attributes):
-                result_code = 0
+                result_code = RESULT_SUCCESS
                 message = ''
             else:
-                result_code = 1
+                result_code = RESULT_OPERATIONS_ERROR
                 message = 'error adding entry'
         else:
-            result_code = 68
+            result_code = RESULT_ENTRY_ALREADY_EXISTS
             message = 'entry already exist'
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -350,21 +401,21 @@ class MockBaseStrategy(object):
         if dn in self.connection.server.dit:
             if attribute in self.connection.server.dit[dn]:
                 if self.equal(dn, attribute, value):
-                    result_code = 6
+                    result_code = RESULT_COMPARE_TRUE
                     message = ''
                 else:
-                    result_code = 5
+                    result_code = RESULT_COMPARE_FALSE
                     message = ''
             else:
-                result_code = 16
+                result_code = RESULT_NO_SUCH_ATTRIBUTE
                 message = 'attribute not found'
         else:
-            result_code = 32
+            result_code = RESULT_NO_SUCH_OBJECT
             message = 'object not found'
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -389,28 +440,34 @@ class MockBaseStrategy(object):
             if new_superior and new_rdn:  # performs move in the DIT
                 new_dn = safe_dn(dn_components[0] + ',' + new_superior)
                 self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
+                moved_entry = self.connection.server.dit[new_dn]
                 if delete_old_rdn:
                     del self.connection.server.dit[dn]
-                result_code = 0
+                result_code = RESULT_SUCCESS
                 message = 'entry moved'
-                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
+                moved_entry['entryDN'] = [to_raw(new_dn)]
             elif new_rdn and not new_superior:  # performs rename
                 new_dn = safe_dn(new_rdn + ',' + safe_dn(dn_components[1:]))
                 self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
+                renamed_entry = self.connection.server.dit[new_dn]
                 del self.connection.server.dit[dn]
-                self.connection.server.dit[new_dn]['entryDN'] = [to_raw(new_dn)]
-                result_code = 0
+                renamed_entry['entryDN'] = [to_raw(new_dn)]
+
+                for rdn in safe_rdn(new_dn, decompose=True):  # adds rdns to entry attributes
+                    renamed_entry[rdn[0]] = [to_raw(rdn[1])]
+
+                result_code = RESULT_SUCCESS
                 message = 'entry rdn renamed'
             else:
-                result_code = 53
+                result_code = RESULT_UNWILLING_TO_PERFORM
                 message = 'newRdn or newSuperior missing'
         else:
-            result_code = 32
+            result_code = RESULT_NO_SUCH_OBJECT
             message = 'object not found'
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -460,7 +517,7 @@ class MockBaseStrategy(object):
                             entry[attribute].extend([to_raw(element) for element in elements])
                 elif operation == 1:  # delete
                     if attribute not in entry:  # attribute must exist
-                        result_code = 16
+                        result_code = RESULT_NO_SUCH_ATTRIBUTE
                         message = 'attribute must exists for deleting its values'
                     elif attribute in rdns:  # attribute can't be used in dn
                         result_code = 67
@@ -497,12 +554,12 @@ class MockBaseStrategy(object):
             if result_code:  # an error has happened, restores the original dn
                 self.connection.server.dit[dn] = original_entry
         else:
-            result_code = 32
+            result_code = RESULT_NO_SUCH_OBJECT
             message = 'object not found'
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None
                 }
 
@@ -539,6 +596,50 @@ class MockBaseStrategy(object):
         # response_entry: object, attributes
         # response_done: LDAPResult
         request = search_request_to_dict(request_message)
+        if controls:
+            decoded_controls = [self.decode_control(control) for control in controls if control]
+            for decoded_control in decoded_controls:
+                if decoded_control[1]['criticality'] and decoded_control[0] not in SEARCH_CONTROLS:
+                    message = 'Critical requested control ' + str(decoded_control[0]) + ' not available'
+                    result = {'resultCode': RESULT_UNAVAILABLE_CRITICAL_EXTENSION,
+                              'matchedDN': '',
+                              'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
+                              'referral': None
+                              }
+                    return [], result
+                elif decoded_control[0] == '1.2.840.113556.1.4.319':  # Simple paged search
+                    if not decoded_control[1]['value']['cookie']:  # new paged search
+                        response, result =  self._execute_search(request)
+                        if result['resultCode'] == RESULT_SUCCESS:  # success
+                            paged_set = PagedSearchSet(response, int(decoded_control[1]['value']['size']), decoded_control[1]['criticality'])
+                            response, result = paged_set.next()
+                            if paged_set.done:  # paged search already completed, no need to store the set
+                                del paged_set
+                            else:
+                                self._paged_sets.append(paged_set)
+                            return response, result
+                        else:
+                            return [], result
+                    else:
+                        for paged_set in self._paged_sets:
+                            if paged_set.cookie == decoded_control[1]['value']['cookie']: # existing paged set
+                                response, result = paged_set.next()  # returns next bunch of entries as per paged set specifications
+                                if paged_set.done:
+                                    self._paged_sets.remove(paged_set)
+                                return response, result
+                        # paged set not found
+                        message = 'Invalid cookie in simple paged search'
+                        result = {'resultCode': RESULT_OPERATIONS_ERROR,
+                                  'matchedDN': '',
+                                  'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
+                                  'referral': None
+                                  }
+                        return [], result
+
+        else:
+            return self._execute_search(request)
+
+    def _execute_search(self, request):
         responses = []
         base = safe_dn(request['base'])
         scope = request['scope']
@@ -563,7 +664,7 @@ class MockBaseStrategy(object):
                     candidates.append(entry)
 
         if not candidates:  # incorrect base
-            result_code = 32
+            result_code = RESULT_NO_SUCH_OBJECT
             message = 'incorrect base object'
         else:
             matched = self.evaluate_filter_node(filter_root, candidates)
@@ -581,7 +682,7 @@ class MockBaseStrategy(object):
 
         result = {'resultCode': result_code,
                   'matchedDN': '',
-                  'diagnosticMessage': to_unicode(message, 'utf-8'),
+                  'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                   'referral': None
                   }
 
@@ -602,7 +703,7 @@ class MockBaseStrategy(object):
         #     responseValue    [1] OCTET STRING OPTIONAL }
         request = extended_request_to_dict(request_message)
 
-        result_code = 53
+        result_code = RESULT_UNWILLING_TO_PERFORM
         message = 'not implemented'
         response_name = None
         response_value = None
@@ -623,7 +724,7 @@ class MockBaseStrategy(object):
 
         return {'resultCode': result_code,
                 'matchedDN': '',
-                'diagnosticMessage': to_unicode(message, 'utf-8'),
+                'diagnosticMessage': to_unicode(message, SERVER_ENCODING),
                 'referral': None,
                 'responseName': response_name,
                 'responseValue': response_value
@@ -671,7 +772,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value, 'utf-8').lower() >= to_unicode(attr_value, 'utf-8').lower():  # case insensitive string comparison
+                            if to_unicode(value, SERVER_ENCODING).lower() >= to_unicode(attr_value, SERVER_ENCODING).lower():  # case insensitive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -687,7 +788,7 @@ class MockBaseStrategy(object):
                             else:
                                 node.unmatched.add(candidate)
                         else:
-                            if to_unicode(value, 'utf-8').lower() <= to_unicode(attr_value, 'utf-8').lower():  # case insentive string comparison
+                            if to_unicode(value, SERVER_ENCODING).lower() <= to_unicode(attr_value, SERVER_ENCODING).lower():  # case insentive string comparison
                                 node.matched.add(candidate)
                             else:
                                 node.unmatched.add(candidate)
@@ -706,17 +807,17 @@ class MockBaseStrategy(object):
         elif node.tag == MATCH_SUBSTRING:
             attr_name = node.assertion['attr']
             # rebuild the original substring filter
-            if node.assertion['initial']:
-                substring_filter = re.escape(to_unicode(node.assertion['initial'], 'utf-8'))
+            if 'initial' in node.assertion and node.assertion['initial'] is not None:
+                substring_filter = re.escape(to_unicode(node.assertion['initial'], SERVER_ENCODING))
             else:
                 substring_filter = ''
 
-            if node.assertion['any']:
+            if 'any' in node.assertion and node.assertion['any'] is not None:
                 for middle in node.assertion['any']:
-                    substring_filter += '.*' + re.escape(to_unicode(middle, 'utf-8'))
+                    substring_filter += '.*' + re.escape(to_unicode(middle, SERVER_ENCODING))
 
-            if node.assertion['final']:
-                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], 'utf-8'))
+            if 'final' in node.assertion and node.assertion['final'] is not None:
+                substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], SERVER_ENCODING))
 
             if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # only initial, adds .*
                 substring_filter += '.*'
@@ -725,7 +826,7 @@ class MockBaseStrategy(object):
             for candidate in candidates:
                 if attr_name in self.connection.server.dit[candidate]:
                     for value in self.connection.server.dit[candidate][attr_name]:
-                        if regex_filter.match(to_unicode(value, 'utf-8')):
+                        if regex_filter.match(to_unicode(value, SERVER_ENCODING)):
                             node.matched.add(candidate)
                         else:
                             node.unmatched.add(candidate)
@@ -742,8 +843,8 @@ class MockBaseStrategy(object):
                 #     formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
                 #     if not isinstance(formatted_values, SEQUENCE_TYPES):
                 #         formatted_values = [formatted_values]
-                #     # if attr_value.decode('utf-8') in formatted_values:  # attributes values should be returned in utf-8
-                #     if self.equal(attr_name, attr_value.decode('utf-8'), formatted_values):  # attributes values should be returned in utf-8
+                #     # if attr_value.decode(SERVER_ENCODING) in formatted_values:  # attributes values should be returned in utf-8
+                #     if self.equal(attr_name, attr_value.decode(SERVER_ENCODING), formatted_values):  # attributes values should be returned in utf-8
                 #         node.matched.add(candidate)
                 #     else:
                 #         node.unmatched.add(candidate)
@@ -771,13 +872,34 @@ class MockBaseStrategy(object):
 
     @staticmethod
     def _check_equality(value1, value2):
-        if value1.isdigit() and value2.isdigit():
+        if str(value1).isdigit() and str(value2).isdigit():
             if int(value1) == int(value2):  # int comparison
                 return True
         try:
-            if to_unicode(value1, 'utf-8').lower() == to_unicode(value2, 'utf-8').lower():  # case insensitive comparison
+            if to_unicode(value1, SERVER_ENCODING).lower() == to_unicode(value2, SERVER_ENCODING).lower():  # case insensitive comparison
                 return True
         except UnicodeDecodeError:
             pass
 
         return False
+
+    def send(self, message_type, request, controls=None):
+        self.connection.request = self.decode_request(message_type, request, controls)
+        if self.connection.listening:
+            message_id = self.connection.server.next_message_id()
+            if self.connection.usage:  # ldap message is built for updating metrics only
+                ldap_message = LDAPMessage()
+                ldap_message['messageID'] = MessageID(message_id)
+                ldap_message['protocolOp'] = ProtocolOp().setComponentByName(message_type, request)
+                message_controls = build_controls_list(controls)
+                if message_controls is not None:
+                    ldap_message['controls'] = message_controls
+                asn1_request = BaseStrategy.decode_request(message_type, request, controls)
+                self.connection._usage.update_transmitted_message(asn1_request, len(encoder.encode(ldap_message)))
+            return message_id, message_type, request, controls
+        else:
+            self.connection.last_error = 'unable to send message, connection is not open'
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            raise LDAPSocketOpenError(self.connection.last_error)
+

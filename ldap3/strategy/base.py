@@ -58,6 +58,7 @@ from ..protocol.rfc2696 import RealSearchControlValue
 from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
 from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
+from ..utils.conv import to_unicode
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
 TRANSACTION_ERROR = 'TRANSACTION_ERROR'
@@ -201,15 +202,16 @@ class BaseStrategy(object):
 
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        try:  # set receive timeout for the connection socket
-            if self.connection.receive_timeout is not None:
+        if self.connection.receive_timeout is not None:
+            try:  # set receive timeout for the connection socket
+                self.connection.socket.settimeout(self.connection.receive_timeout)
                 if system().lower() == 'windows':
                     self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, int(1000 * self.connection.receive_timeout))
                 else:
                     self.connection.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, pack('LL', self.connection.receive_timeout, 0))
-        except socket.error as e:
-            self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
-            exc = e
+            except socket.error as e:
+                self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
+                exc = e
 
         if exc:
             if log_enabled(ERROR):
@@ -243,7 +245,7 @@ class BaseStrategy(object):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
-        if self.connection.server.connect_timeout:
+        if self.connection.server.connect_timeout and not self.connection.receive_timeout:
             self.connection.socket.settimeout(None)  # disable socket connection timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specified in connection
 
         if self.connection.usage:
@@ -400,7 +402,7 @@ class BaseStrategy(object):
                                 entry['raw_attributes'][attribute_type] = list()
                                 entry['attributes'][attribute_type] = list()
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute value set to empty list for missing attribute %s in %s', attribute_type, self)
+                                    log(PROTOCOL, 'attribute set to empty list for missing attribute <%s> in <%s>', attribute_type, self)
                         if not self.connection.auto_range:
                             attrs_to_remove = []
                             # removes original empty attribute in case a range tag is returned
@@ -410,7 +412,7 @@ class BaseStrategy(object):
                                     attrs_to_remove.append(orig_attr)
                             for attribute_type in attrs_to_remove:
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'attribute type %s removed in response because of the same attribute returned as range by the server in %s', attribute_type, self)
+                                    log(PROTOCOL, 'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>', attribute_type, self)
                                 del entry['raw_attributes'][attribute_type]
                                 del entry['attributes'][attribute_type]
 
@@ -581,7 +583,7 @@ class BaseStrategy(object):
         decode control, return a 2-element tuple where the first element is the control oid
         and the second element is a dictionary with description (from Oids), criticality and decoded control value
         """
-        control_type = str(control[0][3].decode('utf-8'))
+        control_type = str(to_unicode(control[0][3], from_server=True))
         criticality = False
         control_value = None
         for r in control[1:]:

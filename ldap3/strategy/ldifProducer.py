@@ -119,7 +119,7 @@ class LdifProducerStrategy(BaseStrategy):
         return None
 
     def post_send_search(self, message_id):
-        raise LDAPLDIFError('LDIF-CONTENT cannot be produced for Search Operations')
+        raise LDAPLDIFError('LDIF-CONTENT cannot be produced for Search operations')
 
     def _get_response(self, message_id):
         pass

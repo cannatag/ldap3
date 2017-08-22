@@ -43,10 +43,10 @@ BOGUS_EXTENDED = -3
 BOGUS_ABANDON = -4
 
 try:
-    from queue import Queue
+    from queue import Queue, Empty
 except ImportError:  # Python 2
     # noinspection PyUnresolvedReferences
-    from Queue import Queue
+    from Queue import Queue, Empty
 
 
 # noinspection PyProtectedMember
@@ -89,7 +89,9 @@ class ReusableStrategy(BaseStrategy):
                 if not pool.started:  # if pool is not started remove it from the pools singleton and create a new onw
                     del ReusableStrategy.pools[connection.pool_name]
                     return object.__new__(cls)
-                if connection.pool_lifetime and pool.lifetime != connection.pool_lifetime:  # change lifetime
+                if connection.pool_keepalive and pool.keepalive != connection.pool_keepalive:  # change lifetime
+                    pool.keepalive = connection.pool_keepalive
+                if connection.pool_lifetime and pool.lifetime != connection.pool_lifetime:  # change keepalive
                     pool.lifetime = connection.pool_lifetime
                 if connection.pool_size and pool.pool_size != connection.pool_size:  # if pool size has changed terminate and recreate the connections
                     pool.terminate_pool()
@@ -105,6 +107,7 @@ class ReusableStrategy(BaseStrategy):
                 self.workers = []
                 self.pool_size = connection.pool_size or get_config_parameter('REUSABLE_THREADED_POOL_SIZE')
                 self.lifetime = connection.pool_lifetime or get_config_parameter('REUSABLE_THREADED_LIFETIME')
+                self.keepalive = connection.pool_keepalive
                 self.request_queue = Queue()
                 self.open_pool = False
                 self.bind_pool = False
@@ -124,6 +127,7 @@ class ReusableStrategy(BaseStrategy):
             s += ' - responses in queue: ' + str(len(self._incoming))
             s += ' - pool size: ' + str(self.pool_size)
             s += ' - lifetime: ' + str(self.lifetime)
+            s += ' - keepalive: ' + str(self.keepalive)
             s += ' - open: ' + str(self.open_pool)
             s += ' - bind: ' + str(self.bind_pool)
             s += ' - tls: ' + str(self.tls_pool) + linesep
@@ -207,7 +211,13 @@ class ReusableStrategy(BaseStrategy):
             terminate = False
             pool = self.master_connection.strategy.pool
             while not terminate:
-                counter, message_type, request, controls = pool.request_queue.get()
+                try:
+                    counter, message_type, request, controls = pool.request_queue.get(block=True, timeout=self.master_connection.strategy.pool.keepalive)
+                except Empty:  # issue an Abandon(0) operation to keep the connection live - Abandon(0) is a harmless operation
+                    if not self.worker.connection.closed:
+                        self.worker.connection.abandon(0)
+                    continue
+
                 with self.worker.lock:
                     self.worker.busy = True
                     if counter == TERMINATE_REUSABLE:
@@ -281,7 +291,7 @@ class ReusableStrategy(BaseStrategy):
             self.creation_time = None
             self.new_connection()
             self.task_counter = 0
-            self.thread = ReusableStrategy.PooledConnectionThread(self, connection)
+            self.thread = ReusableStrategy.PooledConnectionThread(self, self.master_connection)
             self.lock = Lock()
             if log_enabled(BASIC):
                 log(BASIC, 'instantiated PooledConnectionWorker: <%s>', self)

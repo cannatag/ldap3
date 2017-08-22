@@ -50,16 +50,16 @@ def search_refs_to_list(search_refs):
     return [str(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
 
 
+def search_refs_to_list_fast(search_refs):
+    return [to_unicode(search_ref) for search_ref in search_refs if search_ref] if search_refs else None
+
+
 def sasl_to_dict(sasl):
-    return {'mechanism': str(sasl['mechanism']), 'credentials': str(sasl['credentials'])}
+    return {'mechanism': str(sasl['mechanism']), 'credentials': str(sasl['credentials'] if sasl['credentials'] is not None and sasl['credentials'].hasValue() else None)}
 
 
 def authentication_choice_to_dict(authentication_choice):
     return {'simple': str(authentication_choice['simple']) if authentication_choice.getName() == 'simple' else None, 'sasl': sasl_to_dict(authentication_choice['sasl']) if authentication_choice.getName() == 'sasl' else None}
-
-
-def decode_referrals(referrals):
-    return [str(referral) for referral in referrals if referral] if referrals else None
 
 
 def partial_attribute_to_dict(modification):
@@ -82,8 +82,10 @@ def attributes_to_list(attributes):
 
 
 def ava_to_dict(ava):
-    return {'attribute': str(ava['attributeDesc']), 'value': str(ava['assertionValue'])}
-
+    try:
+        return {'attribute': str(ava['attributeDesc']), 'value': str(ava['assertionValue'])}
+    except PyAsn1Error:  # invalid encoding, return bytes value
+        return {'attribute': str(ava['attributeDesc']), 'value': str(bytes(ava['assertionValue']))}
 
 def substring_to_dict(substring):
     return {'initial': substring['initial'] if substring['initial'] else '', 'any': [middle for middle in substring['any']] if substring['any'] else '', 'final': substring['final'] if substring['final'] else ''}
@@ -92,7 +94,10 @@ def substring_to_dict(substring):
 def prepare_changes_for_request(changes):
     prepared = dict()
     for change in changes:
-        prepared[change['attribute']['type']] = (change['operation'], change['attribute']['value'])
+        attribute_name = change['attribute']['type']
+        if attribute_name not in prepared:
+            prepared[attribute_name] = []
+        prepared[attribute_name].append((change['operation'], change['attribute']['value']))
     return prepared
 
 
@@ -150,9 +155,12 @@ def validate_attribute_value(schema, name, value, auto_encode):
         if name not in schema.attribute_types and name.lower() not in conf_attributes_excluded_from_check:
             raise LDAPAttributeError('invalid attribute ' + name)
 
-        # encodes to utf-8 for well known Unicode LDAP syntaxes
+        # converts to utf-8 for well known Unicode LDAP syntaxes
         if auto_encode and (schema.attribute_types[name].syntax in conf_utf8_syntaxes or name.lower() in conf_utf8_types):
             value = to_unicode(value)  # tries to convert from local encoding to Unicode
+    # checks for boolean value and sets it to LDAP standard boolean string
+    if isinstance(value, bool):
+        value = 'TRUE' if value else 'FALSE'
     return to_raw(value)
 
 

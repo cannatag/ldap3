@@ -30,7 +30,7 @@ from pyasn1.compat.octets import ints2octs
 from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
 
 from ..core.results import RESULT_CODES
-
+from ..utils.conv import to_unicode
 from ..protocol.convert import referrals_to_list
 
 CLASSES = {(False, False): 0,  # Universal
@@ -140,10 +140,10 @@ def ldap_result_to_dict_fast(response):
     response_dict = dict()
     response_dict['result'] = int(response[0][3])  # resultCode
     response_dict['description'] = RESULT_CODES[response_dict['result']]
-    response_dict['dn'] = response[1][3].decode('utf-8')  # matchedDN
-    response_dict['message'] = response[2][3].decode('utf-8')  # diagnosticMessage
+    response_dict['dn'] = to_unicode(response[1][3], from_server=True)  # matchedDN
+    response_dict['message'] = to_unicode(response[2][3], from_server=True)  # diagnosticMessage
     if len(response) == 4:
-        response_dict['referrals'] = referrals_to_list([referral[3].decode('utf-8') for referral in response[3][3]])  # referrals
+        response_dict['referrals'] = referrals_to_list([to_unicode(referral[3], from_server=True) for referral in response[3][3]])  # referrals
     else:
         response_dict['referrals'] = None
 

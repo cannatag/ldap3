@@ -58,6 +58,8 @@ Connection parameters are:
 
 * pool_lifetime: number of seconds before recreating a new connection in a pooled connection strategy
 
+* pool_keepalive: number of seconds to wait before sending an Abandon(0) operation in an idle connection in a pooled connection strategy. Abandon(0) is an harmless LDAP operation used to not let the server closing the connection
+
 * fast_decoder: when False use the pyasn1 decoder instead of the faster internal decoder. Gives a better output in extended log
 
 * receive_timeout: set the socket in non-blocking mode - raising an exception after the specified amount of seconds if nothing is received over the wire

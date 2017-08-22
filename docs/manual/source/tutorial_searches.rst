@@ -57,7 +57,7 @@ You have not requested any attribute, so in the response we get only the Disting
 
 .. note:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
     Search operations store the found entries in the ``response`` attribute of the Connection object. For async strategies you must use the ``get_response(id)`` method
-    that returns a tuple in the form of (response, result). If you use the ``get_request=True`` parameter you ask ``get_respose()`` to return the request dictionary too
+    that returns a tuple in the form of (response, result). If you use the ``get_request=True`` parameter you ask ``get_response()`` to return the request dictionary too
     so te returned tuple will be (response, result, request).
 
 
@@ -107,7 +107,7 @@ value and the raw value (the value actually returned by the server) in the ``val
     >>> entry.krbLastPwdChange.raw_values
     [b'20161009010118Z']
 
-Note that the entry status is *Read*. This is not relevant if you only need to retrive the entries from the DIT but it's vital if you want to take advantage
+Note that the entry status is *Read*. This is not relevant if you only need to retrieve the entries from the DIT but it's vital if you want to take advantage
 of the ldap3 Abstraction Layer making it *Writable* and change or delete its content via the Abstraction Layer. The Abstraction Layer also records the time
 of the last data read operation for the entry.
 

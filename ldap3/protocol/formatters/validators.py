@@ -24,8 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from time import mktime
 from calendar import timegm
+from uuid import UUID
 
 from ... import SEQUENCE_TYPES, STRING_TYPES
 from .formatters import format_time, format_ad_timestamp
@@ -186,6 +186,71 @@ def validate_ad_timestamp(input_value):
             else:  # datetime without timezone, assumed local and adjusted to UTC
                 offset = datetime.now() - datetime.utcnow()
                 valid_values.append(to_raw((timegm((element - offset).timetuple()) + 11644473600) * 10000000, encoding='ascii'))
+        else:
+            return False
+
+    if changed:
+        if sequence:
+            return valid_values
+        else:
+            return valid_values[0]
+    else:
+        return True
+
+def validate_uuid(input_value):
+    """
+    object guid in uuid format
+    """
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        sequence = False
+        input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
+
+    valid_values = []
+    changed = False
+    for element in input_value:
+        if isinstance(element, (bytes, bytearray)):  # assumes bytes are valid
+            valid_values.append(element)
+        elif isinstance(element,  STRING_TYPES):
+            try:
+                valid_values.append(UUID(element).bytes)
+                changed = True
+            except ValueError:
+                return False
+        else:
+            return False
+
+    if changed:
+        if sequence:
+            return valid_values
+        else:
+            return valid_values[0]
+    else:
+        return True
+
+
+def validate_uuid_le(input_value):
+    """
+    Active Directory stores objectGUID in uuid_le format
+    """
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        sequence = False
+        input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
+
+    valid_values = []
+    changed = False
+    for element in input_value:
+        if isinstance(element, (bytes, bytearray)):  # assumes bytes are valid
+            valid_values.append(element)
+        elif isinstance(element,  STRING_TYPES):
+            try:
+                valid_values.append(UUID(element).bytes_le)
+                changed = True
+            except ValueError:
+                return False
         else:
             return False
 

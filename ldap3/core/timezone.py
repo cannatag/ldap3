@@ -34,7 +34,6 @@ class OffsetTzInfo(tzinfo):
         self.offset = offset
         self.name = name
         self._offset = timedelta(minutes=offset)
-        self.name = name
 
     def __str__(self):
         return self.name
@@ -52,3 +51,6 @@ class OffsetTzInfo(tzinfo):
     # noinspection PyMethodMayBeStatic
     def dst(self, dt):
         return timedelta(0)
+
+    def __getinitargs__(self):  # for pickling/unpickling
+        return self.offset, self.name

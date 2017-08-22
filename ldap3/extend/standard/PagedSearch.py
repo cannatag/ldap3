@@ -25,7 +25,9 @@
 
 from ... import SUBTREE, DEREF_ALWAYS
 from ...utils.dn import safe_dn
-
+from ...core.results import DO_NOT_RAISE_EXCEPTIONS
+from ...core.exceptions import LDAPOperationResult
+from ...utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
 
 def paged_search_generator(connection,
                            search_base,
@@ -45,9 +47,7 @@ def paged_search_generator(connection,
 
     responses = []
     cookie = True  # performs search at least one time
-    count = 0
     while cookie:
-        count += 1
         result = connection.search(search_base,
                                    search_filter,
                                    search_scope,
@@ -67,6 +67,12 @@ def paged_search_generator(connection,
         else:
             response = connection.response
             result = connection.result
+
+        if result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
+            if log_enabled(PROTOCOL):
+                log(PROTOCOL, 'paged search operation result <%s> for <%s>', result, connection)
+            raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
+
         responses.extend(response)
         try:
             cookie = result['controls']['1.2.840.113556.1.4.319']['value']['cookie']

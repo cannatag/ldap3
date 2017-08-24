@@ -55,7 +55,7 @@ def search_refs_to_list_fast(search_refs):
 
 
 def sasl_to_dict(sasl):
-    return {'mechanism': str(sasl['mechanism']), 'credentials': str(sasl['credentials'] if sasl['credentials'] is not None and sasl['credentials'].hasValue() else None)}
+    return {'mechanism': str(sasl['mechanism']), 'credentials': sasl['credentials'] if sasl['credentials'] is not None and sasl['credentials'].hasValue() else None}
 
 
 def authentication_choice_to_dict(authentication_choice):

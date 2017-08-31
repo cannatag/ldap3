@@ -878,7 +878,7 @@ class MockBaseStrategy(object):
         try:
             if to_unicode(value1, SERVER_ENCODING).lower() == to_unicode(value2, SERVER_ENCODING).lower():  # case insensitive comparison
                 return True
-        except UnicodeDecodeError:
+        except UnicodeError:
             pass
 
         return False

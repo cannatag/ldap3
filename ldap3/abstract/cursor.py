@@ -669,15 +669,15 @@ class Reader(Cursor):
         self.entries = []
         self.execution_time = datetime.now()
         return self.connection.extend.standard.paged_search(search_base=self.base,
-                                                                     search_filter=self.query_filter,
-                                                                     search_scope=SUBTREE if self.sub_tree else LEVEL,
-                                                                     dereference_aliases=self.dereference_aliases,
-                                                                     attributes=attributes if attributes else self.attributes,
-                                                                     get_operational_attributes=self.get_operational_attributes,
-                                                                     controls=self.controls,
-                                                                     paged_size=paged_size,
-                                                                     paged_criticality=paged_criticality,
-                                                                     generator=generator)
+                                                            search_filter=self.query_filter,
+                                                            search_scope=SUBTREE if self.sub_tree else LEVEL,
+                                                            dereference_aliases=self.dereference_aliases,
+                                                            attributes=attributes if attributes else self.attributes,
+                                                            get_operational_attributes=self.get_operational_attributes,
+                                                            controls=self.controls,
+                                                            paged_size=paged_size,
+                                                            paged_criticality=paged_criticality,
+                                                            generator=generator)
             # yield self._create_entry(response)
 
 

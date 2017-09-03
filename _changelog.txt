@@ -1,7 +1,10 @@
-# 2.3.1 - not yet released
+# 2.4 - not yet released
     - security fix in the rebind() method of the Connection object (thanks Daniel)
     - fix for Sasl credentials in Python 3 (thanks Busuwe)
     - fixed bug when checking for equality in MockBase
+    - added validator parameter to Server object for custom validators
+    - attribute values are now validated in add/compare/modify operations in the Connection object
+    - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.3 for now) version
 
 # 2.3 - 2017.08.02
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.1 for now) version

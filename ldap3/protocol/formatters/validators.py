@@ -197,6 +197,7 @@ def validate_ad_timestamp(input_value):
     else:
         return True
 
+
 def validate_uuid(input_value):
     """
     object guid in uuid format

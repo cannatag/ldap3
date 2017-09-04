@@ -29,6 +29,7 @@ from ...core.results import DO_NOT_RAISE_EXCEPTIONS
 from ...core.exceptions import LDAPOperationResult
 from ...utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED
 
+
 def paged_search_generator(connection,
                            search_base,
                            search_filter,

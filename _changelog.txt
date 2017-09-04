@@ -4,7 +4,10 @@
     - fixed bug when checking for equality in MockBase
     - added validator parameter to Server object for custom validators
     - attribute values are now validated in add/compare/modify operations in the Connection object
+    - Python types can now be used in add/compare/modify operations
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.3 for now) version
+    - fixed compatibility with Twisted on Windows on Python 2.7 (thanks Pmisik)
+    - fixed paged_search behaviour in Reader object
 
 # 2.3 - 2017.08.02
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.1 for now) version

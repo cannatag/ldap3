@@ -211,7 +211,7 @@ class Server(object):
     def _is_ipv6(host):
         try:
             socket.inet_pton(socket.AF_INET6, host)
-        except (socket.error, AttributeError):
+        except (socket.error, AttributeError, ValueError):
             return False
         return True
 

@@ -819,7 +819,7 @@ class MockBaseStrategy(object):
             if 'final' in node.assertion and node.assertion['final'] is not None:
                 substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], SERVER_ENCODING))
 
-            if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # only initial, adds .*
+            if substring_filter and not node.assertion.get('any', None) and not node.assertion.get('final', None):  # only initial, adds .*
                 substring_filter += '.*'
 
             regex_filter = re.compile(substring_filter, flags=re.UNICODE | re.IGNORECASE)  # unicode AND ignorecase

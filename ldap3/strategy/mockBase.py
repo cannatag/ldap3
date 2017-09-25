@@ -714,12 +714,12 @@ class MockBaseStrategy(object):
                         result_code = 0
                         message = ''
                         response_name = '2.16.840.1.113719.1.27.100.32'  # getBindDNResponse [NOVELL]
-                        response_value = encoder.encode(OctetString(self.bound))
+                        response_value = OctetString(self.bound)
                     elif extension[0] == '1.3.6.1.4.1.4203.1.11.3':  # WhoAmI [RFC4532]
                         result_code = 0
                         message = ''
                         response_name = '1.3.6.1.4.1.4203.1.11.3'  # WhoAmI [RFC4532]
-                        response_value = encoder.encode(OctetString(self.bound))
+                        response_value = OctetString(self.bound)
                     break
 
         return {'resultCode': result_code,

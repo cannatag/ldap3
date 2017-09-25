@@ -34,6 +34,7 @@ from ..protocol.rfc4511 import LDAP_MAX_INT
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
 from .tls import Tls
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL
+from ..utils.conv import to_unicode
 
 try:
     from urllib.parse import unquote  # Python 3
@@ -77,7 +78,8 @@ class Server(object):
                  tls=None,
                  formatter=None,
                  connect_timeout=None,
-                 mode=IP_V6_PREFERRED):
+                 mode=IP_V6_PREFERRED,
+                 validator=None):
 
         self.ipc = False
         url_given = False
@@ -95,7 +97,7 @@ class Server(object):
             use_ssl = False
             url_given = True
         elif host.lower().startswith('ldapi://') and not unix_socket_available:
-            raise LDAPSocketOpenError('LDAP over IPC not available')
+            raise LDAPSocketOpenError('LDAP over IPC not available - UNIX sockets non present')
         else:
             self.host = host
 
@@ -193,6 +195,7 @@ class Server(object):
         self._schema_info = None
         self.lock = Lock()
         self.custom_formatter = formatter
+        self.custom_validator = validator
         self._address_info = []  # property self.address_info resolved at open time (or when check_availability is called)
         self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date ever
         self.current_address = None
@@ -208,7 +211,7 @@ class Server(object):
     def _is_ipv6(host):
         try:
             socket.inet_pton(socket.AF_INET6, host)
-        except (socket.error, AttributeError):
+        except (socket.error, AttributeError, ValueError):
             return False
         return True
 
@@ -395,7 +398,7 @@ class Server(object):
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             if isinstance(schema_entry, bytes) and str is not bytes:  # Python 3
-                schema_entry = schema_entry.decode('utf-8')
+                schema_entry = to_unicode(schema_entry, from_server=True)
             result = connection.search(schema_entry,
                                        search_filter='(objectClass=subschema)',
                                        search_scope=BASE,
@@ -479,7 +482,7 @@ class Server(object):
         return self._schema_info
 
     @staticmethod
-    def from_definition(host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
+    def from_definition(host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None, validator=None):
         """
         Define a dummy server with preloaded schema and info
         :param host: host name
@@ -491,9 +494,9 @@ class Server(object):
         :return: Server object
         """
         if isinstance(host, SEQUENCE_TYPES):
-            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter, get_info=ALL)  # for ServerPool object
+            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter, validator=validator, tget_info=ALL)  # for ServerPool object
         else:
-            dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter, get_info=ALL)
+            dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter, validator=validator, get_info=ALL)
         if isinstance(dsa_info, DsaInfo):
             dummy._dsa_info = dsa_info
         elif isinstance(dsa_info, STRING_TYPES):

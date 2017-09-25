@@ -57,7 +57,7 @@ You have not requested any attribute, so in the response we get only the Disting
 
 .. note:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
     Search operations store the found entries in the ``response`` attribute of the Connection object. For async strategies you must use the ``get_response(id)`` method
-    that returns a tuple in the form of (response, result). If you use the ``get_request=True`` parameter you ask ``get_respose()`` to return the request dictionary too
+    that returns a tuple in the form of (response, result). If you use the ``get_request=True`` parameter you ask ``get_response()`` to return the request dictionary too
     so te returned tuple will be (response, result, request).
 
 

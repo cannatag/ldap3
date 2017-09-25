@@ -35,6 +35,7 @@ from os import linesep
 from .. import STRING_TYPES, SEQUENCE_TYPES
 from .attribute import WritableAttribute
 from .objectDef import ObjectDef
+from .attrDef import AttrDef
 from ..core.exceptions import LDAPKeyError, LDAPCursorError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
@@ -416,6 +417,36 @@ class Entry(EntryBase):
             writable_cursor.entries.append(writable_entry)
             writable_entry._state.read_time = self.entry_read_time
         writable_entry._state.origin = self  # reference to the original read-only entry
+        # checks original entry for custom definitions in AttrDefs
+        for attr in writable_entry._state.origin.entry_definition._attributes:
+            original_attr = writable_entry._state.origin.entry_definition._attributes[attr]
+            if attr != original_attr.name and attr not in writable_entry._state.attributes:
+                old_attr_def = writable_entry.entry_definition._attributes[original_attr.name]
+                new_attr_def = AttrDef(original_attr.name,
+                                       key=attr,
+                                       validate=original_attr.validate,
+                                       pre_query=original_attr.pre_query,
+                                       post_query=original_attr.post_query,
+                                       default=original_attr.default,
+                                       dereference_dn=original_attr.dereference_dn,
+                                       description=original_attr.description,
+                                       mandatory=old_attr_def.mandatory,  # keeps value read from schema
+                                       single_value=old_attr_def.single_value,  # keeps value read from schema
+                                       alias=original_attr.other_names)
+                object_def = writable_entry.entry_definition
+                object_def -= old_attr_def
+                object_def += new_attr_def
+                # updates attribute name in entry attributes
+                new_attr = WritableAttribute(new_attr_def, writable_entry, writable_cursor)
+                if original_attr.name in writable_entry._state.attributes:
+                    new_attr.other_names = writable_entry._state.attributes[original_attr.name].other_names
+                    new_attr.raw_values = writable_entry._state.attributes[original_attr.name].raw_values
+                    new_attr.values = writable_entry._state.attributes[original_attr.name].values
+                    new_attr.response = writable_entry._state.attributes[original_attr.name].response
+                writable_entry._state.attributes[attr] = new_attr
+                # writable_entry._state.attributes.set_alias(attr, new_attr.other_names)
+                del writable_entry._state.attributes[original_attr.name]
+
         writable_entry._state.set_status(STATUS_WRITABLE)
         return writable_entry
 
@@ -426,12 +457,15 @@ class WritableEntry(EntryBase):
             self.__setattr__(key, value)
 
     def __setattr__(self, item, value):
+        conf_attributes_excluded_from_object_def = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF')]
         if item == '_state' and isinstance(value, EntryState):
             self.__dict__['_state'] = value
             return
 
         if value is not Ellipsis:  # hack for using implicit operators in writable attributes
-            if item in self.entry_cursor.definition._attributes:
+            # checks if using an alias
+            # print(self[item])
+            if item in self.entry_cursor.definition._attributes or item.lower() in conf_attributes_excluded_from_object_def:
                 if item not in self._state.attributes:  # setting value to an attribute still without values
                     new_attribute = WritableAttribute(self.entry_cursor.definition._attributes[item], self, cursor=self.entry_cursor)
                     self._state.attributes[str(item)] = new_attribute  # force item to a string for key in attributes dict

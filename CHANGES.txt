@@ -1,4 +1,13 @@
-# 2.2.5 - 2017.06.24
+# 2.4 - not yet released
+    - security fix in the rebind() method of the Connection object (thanks Daniel)
+    - fix for Sasl credentials in Python 3 (thanks Busuwe)
+    - fixed bug when checking for equality in MockBase
+    - added validator parameter to Server object for custom validators
+    - attribute values are now validated in add/compare/modify operations in the Connection object
+    - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.3 for now) version
+
+# 2.3 - 2017.08.02
+    - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.1 for now) version
     - MockAsync strategy is available
     - added __ne__ method to Attribute in abstraction layer (thank Rodrigo)
     - added LDAPUserNameIsMandatoryError exception in simple bind when user name is empty
@@ -9,16 +18,30 @@
     - updated docs for defaults parameters (thanks Guarnacciaa)
     - fixed mockBase for integer matching (thanks Jijo)
     - boolean values are now uppercase in LDIF (thanks Linus)
-    - fixed timeout in SSL connection on Linux and Mac (thanks Allan)
+    - fixed timeout in ssl connection on Linux and Mac (thanks Allan)
     - changed some internal functions to private in ldap3.utils.dn
     - operational attribute entryDN is properly managed in Mock strategies (thanks Mark)
     - new rdn in renamed entry is properly set in Mock strategies (thanks Mark)
     - metrics are now updated for Mock strategies, except that for received bytes (thanks joehy)
     - better managing of missing schema from the server (thanks Deborah)
+    - fixed error while schema is not in string format (thanks Alexandre)
     - SNI support added when the underlying python library allows it (thanks Edmund)
     - added pool_keepalive parameter to Connection object for REUSABLE strategy
     - connection.extend.microsoft.modify_password returns False when change is not successful (thanks Ashley)
-    - updated changelog format (thanks Jannis)
+    - added validators for uuid and uuid_le
+    - fixed error while searching for bytes
+    - fixed pickling and unpickling of datetime values (thanks David)
+    - fixed error that resulted in valid generalizedTime strings not being parsed (thanks Busuwe)
+    - fixed error with modify operation on referrals (thanks Busuwe)
+    - fixed error in mockBase add_entry() with raw rdn (thanks Chad)
+    - fixed error when stdin has not encoding in config.py (thanks cronicryo)
+    - fixed error when optional field are not present in pyasn1 requests (thanks Ilya)
+    - added DEFAULT_SERVER_ENCODING config parameter, should always be utf-8
+    - DEFAULT_ENCODING config parameter renamed to DEFAULT_CLIENT_ENCODING
+    - ADDITIONAL_ENCODINGS config parameter renamed to ADDITIONAL_SERVER_ENCONDINGS
+    - additional encodings are applied to all data received from the server
+    - additional encodings are not applied to client data
+    - added from_server=False parameter to to_unicode() to not try client encoding while decoding data from server
 
 # 2.2.4 - 2017.05.07
     - leading and trailing spaces in server name don't raise exception anymore
@@ -31,7 +54,7 @@
     - allow case insensitive attribute and class names in config parameters
     - added server.schema.is_valid() to check if the schema is available
     - empty schema properties are set to empty dict() instead of None
-    - schema definitions with traling and leading spaces are now properly parsed and don't raise an LDAPSchemaError exception anymore
+    - schema definitions with trailing and leading spaces are now properly parsed and don't raise an LDAPSchemaError exception anymore
     - fixed error when flaky servers (OpenLDAP) don't return the correct response with StartTls
 
 # 2.2.3 - 2017.04.30

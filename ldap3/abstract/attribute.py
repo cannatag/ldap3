@@ -53,7 +53,7 @@ class Attribute(object):
         self.entry = entry
         self.cursor = cursor
         other_names = [name for name in attr_def.oid_info.name if self.key.lower() != name.lower()] if attr_def.oid_info else None
-        self.other_names = other_names if other_names else None  # self.other_names is None if there are no short names, else is a list of secondary names
+        self.other_names = set(other_names) if other_names else None  # self.other_names is None if there are no short names, else is a set of secondary names
 
     def __repr__(self):
         if len(self.values) == 1:
@@ -142,8 +142,8 @@ class WritableAttribute(Attribute):
                 r += linesep + filler + to_stdout_encoding(value)
         else:
             r = to_stdout_encoding(self.key) + to_stdout_encoding(': <Virtual>')
-        if self.key in self.entry._changes:
-            r += linesep + filler + 'CHANGES: ' + str(self.entry._changes[self.key])
+        if self.definition.name in self.entry._changes:
+            r += linesep + filler + 'CHANGES: ' + str(self.entry._changes[self.definition.name])
         return r
 
     def __iadd__(self, other):

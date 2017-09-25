@@ -25,9 +25,10 @@
 from pyasn1.error import PyAsn1Error
 
 from .. import SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
-from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError
+from ..core.exceptions import LDAPControlError, LDAPAttributeError, LDAPObjectClassError, LDAPInvalidValueError
 from ..protocol.rfc4511 import Controls, Control
 from ..utils.conv import to_raw, to_unicode, escape_filter_chars, is_filter_escaped
+from ..protocol.formatters.standard import find_attribute_validator
 
 
 def attribute_to_dict(attribute):
@@ -55,7 +56,7 @@ def search_refs_to_list_fast(search_refs):
 
 
 def sasl_to_dict(sasl):
-    return {'mechanism': str(sasl['mechanism']), 'credentials': str(sasl['credentials'])}
+    return {'mechanism': str(sasl['mechanism']), 'credentials': sasl['credentials'] if sasl['credentials'] is not None and sasl['credentials'].hasValue() else None}
 
 
 def authentication_choice_to_dict(authentication_choice):
@@ -94,7 +95,10 @@ def substring_to_dict(substring):
 def prepare_changes_for_request(changes):
     prepared = dict()
     for change in changes:
-        prepared[change['attribute']['type']] = (change['operation'], change['attribute']['value'])
+        attribute_name = change['attribute']['type']
+        if attribute_name not in prepared:
+            prepared[attribute_name] = []
+        prepared[attribute_name].append((change['operation'], change['attribute']['value']))
     return prepared
 
 
@@ -136,7 +140,7 @@ def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
     return value
 
 
-def validate_attribute_value(schema, name, value, auto_encode):
+def validate_attribute_value(schema, name, value, auto_encode, validator=None):
     conf_classes_excluded_from_check = [v.lower() for v in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')]
     conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
     conf_utf8_syntaxes = get_config_parameter('UTF8_ENCODED_SYNTAXES')
@@ -144,20 +148,21 @@ def validate_attribute_value(schema, name, value, auto_encode):
     if schema and schema.attribute_types:
         if ';' in name:
             name = name.split(';')[0]
-
         if schema.object_classes and name.lower() == 'objectclass':
             if to_unicode(value).lower() not in conf_classes_excluded_from_check and to_unicode(value) not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + str(value))
-
-        if name not in schema.attribute_types and name.lower() not in conf_attributes_excluded_from_check:
+        elif name not in schema.attribute_types and name.lower() not in conf_attributes_excluded_from_check:
             raise LDAPAttributeError('invalid attribute ' + name)
-
-        # encodes to utf-8 for well known Unicode LDAP syntaxes
+        else:  # try standard validators
+            validator = find_attribute_validator(schema, name, validator)
+            validated = validator(value)
+            if validated is False:
+                raise LDAPInvalidValueError('value \'%s\' non valid for attribute \'%s\'' % (value, name))
+            elif validated is not True:  # a valid LDAP value equivalent to the actual value
+                value = validated
+        # converts to utf-8 for well known Unicode LDAP syntaxes
         if auto_encode and (schema.attribute_types[name].syntax in conf_utf8_syntaxes or name.lower() in conf_utf8_types):
             value = to_unicode(value)  # tries to convert from local encoding to Unicode
-    # checks for boolean value and sets it to LDAP standard boolean string
-    if isinstance(value, bool):
-        value = 'TRUE' if value else 'FALSE'
     return to_raw(value)
 
 

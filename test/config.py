@@ -50,7 +50,7 @@ test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
 
-test_fast_decoder = True  # True uses internal 10x faster than pyasn1 decoder
+test_internal_decoder = True  # True uses internal 10x faster than pyasn1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -71,7 +71,7 @@ if 'TRAVIS' in location:
     test_strategy = environ['STRATEGY']
     test_lazy_connection = True if environ['LAZY'].upper() == 'TRUE' else False
     test_server_type = environ['SERVER']
-    test_fast_decoder = True if environ['DECODER'].upper() == 'INTERNAL' else False
+    test_internal_decoder = True if environ['DECODER'].upper() == 'INTERNAL' else False
     test_check_names = True if environ['CHECK_NAMES'].upper() == 'TRUE' else False
 else:
     location += '-' + test_server_type
@@ -80,10 +80,11 @@ else:
 # location = 'TRAVIS-LOCAL'
 # test_strategy = ASYNC
 # test_server_type = 'AD'
-# test_fast_decoder = True
+# test_internal_decoder = True
 
 if 'TRAVIS' in location:
     # test in the cloud
+    set_config_parameter('RESPONSE_WAITING_TIMEOUT', 30)
     if test_server_type == 'EDIR':
         test_server_context = 'o=resources'  # used in Novell eDirectory extended operations
         test_server = 'labldap02.cloudapp.net'
@@ -114,7 +115,6 @@ if 'TRAVIS' in location:
         test_logging_filename = 'ldap3.log'
         test_valid_names = ['EDIR-TEST', 'labldap02.cloudapp.net']
     elif test_server_type == 'AD':
-        set_config_parameter('RESPONSE_WAITING_TIMEOUT', 10)
         test_server = 'labldap01.cloudapp.net'
         test_domain_name = 'AD2012.LAB'  # Active Directory Domain name
         test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
@@ -358,13 +358,11 @@ if test_logging:
     set_library_log_activation_level(logging.DEBUG)
     set_library_log_detail_level(test_log_detail)
 
-print('Testing location:', location)
-print('Test server:', test_server)
-print('Python version:', version)
-print('ldap3 version:', ldap3_version)
+print('Testing location:', location, ' - Test server:', test_server)
+print('Python version:', version, ' - ldap3 version:', ldap3_version)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
-print('Default encoding:', get_config_parameter('DEFAULT_ENCODING'), '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding())
-print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Fast decoder: ', test_fast_decoder)
+print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
+print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
 
 
 def random_id():
@@ -385,7 +383,7 @@ def get_connection(bind=None,
                    ntlm_credentials=(None, None),
                    get_info=None,
                    usage=None,
-                   fast_decoder=None,
+                   internal_decoder=None,
                    simple_credentials=(None, None),
                    receive_timeout=None,
                    auto_escape=None,
@@ -403,8 +401,8 @@ def get_connection(bind=None,
         get_info = test_get_info
     if usage is None:
         usage = test_usage
-    if fast_decoder is None:
-        fast_decoder = test_fast_decoder
+    if internal_decoder is None:
+        internal_decoder = test_internal_decoder
     if receive_timeout is None:
         receive_timeout = test_receive_timeout
     if auto_escape is None:
@@ -462,7 +460,7 @@ def get_connection(bind=None,
                                 pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
-                                fast_decoder=fast_decoder,
+                                fast_decoder=internal_decoder,
                                 receive_timeout=receive_timeout,
                                 auto_escape=auto_escape,
                                 auto_encode=auto_encode)
@@ -479,7 +477,7 @@ def get_connection(bind=None,
                                 pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
-                                fast_decoder=fast_decoder,
+                                fast_decoder=internal_decoder,
                                 receive_timeout=receive_timeout,
                                 auto_escape=auto_escape,
                                 auto_encode=auto_encode)
@@ -496,7 +494,7 @@ def get_connection(bind=None,
                                 pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
-                                fast_decoder=fast_decoder,
+                                fast_decoder=internal_decoder,
                                 receive_timeout=receive_timeout,
                                 auto_escape=auto_escape,
                                 auto_encode=auto_encode)
@@ -513,7 +511,7 @@ def get_connection(bind=None,
                                 pool_size=test_pool_size,
                                 check_names=check_names,
                                 collect_usage=usage,
-                                fast_decoder=fast_decoder,
+                                fast_decoder=internal_decoder,
                                 receive_timeout=receive_timeout,
                                 auto_escape=auto_escape,
                                 auto_encode=auto_encode)

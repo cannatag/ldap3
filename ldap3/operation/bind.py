@@ -30,7 +30,7 @@ from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
-
+from ..utils.conv import to_unicode
 
 # noinspection PyUnresolvedReferences
 def bind_operation(version,
@@ -62,6 +62,8 @@ def bind_operation(version,
         sasl_creds['mechanism'] = sasl_mechanism
         if sasl_credentials is not None:
             sasl_creds['credentials'] = sasl_credentials
+        # else:
+            # sasl_creds['credentials'] = None
         request['authentication'] = AuthenticationChoice().setComponentByName('sasl', sasl_creds)
     elif authentication == ANONYMOUS:
         if name:
@@ -121,7 +123,7 @@ def bind_response_to_dict(response):
             'dn': str(response['matchedDN']),
             'message': str(response['diagnosticMessage']),
             'referrals': referrals_to_list(response['referral']),
-            'saslCreds': bytes(response['serverSaslCreds']) if response['serverSaslCreds'] is not None else None}
+            'saslCreds': bytes(response['serverSaslCreds']) if response['serverSaslCreds'] is not None and response['serverSaslCreds'].hasValue() else None}
 
 
 def sicily_bind_response_to_dict(response):
@@ -135,8 +137,8 @@ def bind_response_to_dict_fast(response):
     response_dict = dict()
     response_dict['result'] = int(response[0][3])  # resultCode
     response_dict['description'] = RESULT_CODES[response_dict['result']]
-    response_dict['dn'] = response[1][3].decode('utf-8')  # matchedDN
-    response_dict['message'] = response[2][3].decode('utf-8')  # diagnosticMessage
+    response_dict['dn'] = to_unicode(response[1][3], from_server=True)  # matchedDN
+    response_dict['message'] = to_unicode(response[2][3], from_server=True)  # diagnosticMessage
     response_dict['referrals'] = None  # referrals
     response_dict['saslCreds'] = None  # saslCreds
     for r in response[3:]:
@@ -153,6 +155,6 @@ def sicily_bind_response_to_dict_fast(response):
     response_dict['result'] = int(response[0][3])  # resultCode
     response_dict['description'] = RESULT_CODES[response_dict['result']]
     response_dict['server_creds'] = bytes(response[1][3])  # server_creds
-    response_dict['error_message'] = response[2][3].decode('utf-8')  # error_message
+    response_dict['error_message'] = to_unicode(response[2][3], from_server=True)  # error_message
 
     return response_dict

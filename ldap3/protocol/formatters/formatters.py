@@ -47,6 +47,7 @@ def format_integer(raw_value):
         return int(raw_value)
     except (TypeError, ValueError):
         pass
+
     return raw_value
 
 
@@ -55,6 +56,7 @@ def format_binary(raw_value):
         return bytes(raw_value)
     except TypeError:
         pass
+
     return raw_value
 
 
@@ -85,6 +87,7 @@ def format_boolean(raw_value):
         return True
     if raw_value in [b'FALSE', b'false', b'False']:
         return False
+
     return raw_value
 
 
@@ -96,15 +99,17 @@ def format_ad_timestamp(raw_value):
     """
     if raw_value == b'9223372036854775807':  # max value to be stored in a 64 bit signed int
         return datetime.max  # returns datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
+    timestamp = int(raw_value)
     try:
-        timestamp = int(raw_value)
         return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
     except (OSError, OverflowError, ValueError):  # on Windows backwards timestamps are not allowed
         unix_epoch = datetime.fromtimestamp(0, tz=OffsetTzInfo(0, 'UTC'))
         diff_seconds = timedelta(seconds=timestamp/10000000.0 - 11644473600)
         return unix_epoch + diff_seconds
     except Exception as e:
-        return raw_value
+        pass
+
+    return raw_value
 
 
 def format_time(raw_value):
@@ -179,7 +184,7 @@ def format_time(raw_value):
             microsecond = 100000 * int(time[5] if str is bytes else chr(time[5]))  # Python 2 / Python 3
     elif len(time) == 2:  # mmZ format
         minute = int(raw_value[10: 12])
-    elif len(remain) == 0:  # Z format
+    elif len(time) == 0:  # Z format
         pass
     elif len(time) == 4:  # mmssZ
         minute = int(raw_value[10: 12])
@@ -219,7 +224,9 @@ def format_time(raw_value):
                         microsecond=microsecond,
                         tzinfo=timezone)
     except (TypeError, ValueError):
-        return raw_value
+        pass
+
+    return raw_value
 
 
 def format_sid(raw_value):

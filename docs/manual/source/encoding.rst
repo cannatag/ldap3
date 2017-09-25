@@ -14,8 +14,26 @@ so they can have different encodings. There are 6 different flows in the ldap3 l
 Server data flow
 ----------------
 
-The LDAP protocol stores strings in a **Directory String** type that should always be in **utf-8**. So when the ldap3 library communicate with the
-server it always encodes/decodes Directory strings with the utf-8 encoding.
+The LDAP protocol stores strings in a **Directory String** type that should always be in **utf-8** and it's stored in the
+``DEFAULT_CLIENT_ENCODING`` config parameter. For flaky server this encoding can be changed with::
+
+    >>> from ldap3 import set_config_parameter
+    >>> set_config_parameter('DEFAULT_SERVER_ENCODING', 'latin-1')
+
+DEFAULT_SERVER_ENCODING can be changed multiple times as needed. To know the current ``DEFAULT_SERVER_ENCODING`` you can use the following code::
+
+    >>> from ldap3 import get_config_parameter
+    >>> get_config_parameter('DEFAULT_SERVER_ENCODING')
+    'utf-8'
+
+
+Some servers don't completely follow the LDAP RFCs and send data in a different encoding or in a mix of encodings. For example Active Directory
+can send the DN of entries found in a search in a different encoding than utf-8. In this case you can use the ``ADDITIONAL_SERVER_ENCODINGS``
+config parameter to decode the DN of the Search operation response. It can be set to one encoding or a list of encodings. If
+a list of encodings is provided ldap3 tries sequentially each encoding until a valid decode is performed. If any of the specified
+encodings is able to decode the value then an ``UnicodeError`` exception is raised.
+
+``ADDITIONAL_SERVER_ENCODINGS`` defaults to ['latin1, 'koi8-r'] for european and russian encodings
 
 User data flow
 --------------
@@ -27,18 +45,18 @@ ldap3 can receive data from the user in 4 different ways:
 - data input from another program via stdin
 
 When dealing with user input the encoding can (and probably is) different from utf-8, so ldap3 tries to guess what encoding is used and store it in the
-``DEFAULT_ENCODING`` parameter. ldap3 uses the **stdin.encoding** if present, else the sys.getdefaultencoding() and if neither is present sets
-``DEFAULT_ENCODING`` to 'utf-8'.
+``DEFAULT_CLIENT_ENCODING`` parameter. ldap3 uses the **stdin.encoding** if present, else the sys.getdefaultencoding() and if neither is present sets
+``DEFAULT_CLIENT_ENCODING`` to 'utf-8'.
 
-You can set a specific ``DEFAULT ENCODING`` with the following code::
+You can set a specific ``DEFAULT_CLIENT_ENCODING`` with the following code::
 
     >>> from ldap3 import set_config_parameter
-    >>> set_config_parameter('DEFAULT_ENCODING', 'my_encoding')
+    >>> set_config_parameter('DEFAULT_CLIENT_ENCODING', 'my_encoding')
 
-DEFAULT_ENCODING can be changed multiple times as needed. To know the current ``DEFAULT_ENCODING`` you can use the following code::
+DEFAULT_CLIENT_ENCODING can be changed multiple times as needed. To know the current ``DEFAULT_CLIENT_ENCODING`` you can use the following code::
 
     >>> from ldap3 import get_config_parameter
-    >>> get_config_parameter('DEFAULT_ENCODING')
+    >>> get_config_parameter('DEFAULT_CLIENT_ENCODING')
     'utf-8'
 
 This parameter is used when the ``auto_encode`` and ``auto_escape`` parameters of the Connection object are set to ``True``.
@@ -59,14 +77,6 @@ Log file data flow
 
 Data printed in the log files are always encoded in ``ascii`` with a ``backslashreplace`` failback in case of unprintable ascii values. This should assure that the log
 is written without any decoding error.
-
-Flaky Server data flow
-----------------------
-
-Some servers don't completely follow the LDAP RFCs and send data in a different encoding or in a mix of encodings. For example Active Directory can send
-the DN of entries found in a search in a different encoding than utf-8. In this case you can use the ``ADDITIONAL_ENCODINGS`` parameter to decode the DN of the Search
-operation response. It can be set to one encoding or a list of encodings. If a list of encodings is provided ldap3 tries sequentially each encoding until a valid decode
-is performed. If any of the specified encodings is not able to decode the value then an ``UnicodeError`` exception is raised.
 
 Raw data in search response
 ---------------------------

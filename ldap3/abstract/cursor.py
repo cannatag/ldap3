@@ -222,6 +222,8 @@ class Cursor(object):
                 attributes[attribute.key] = attribute
                 if attribute.other_names:
                     attributes.set_alias(attribute.key, attribute.other_names)
+                if attr_def.other_names:
+                    attributes.set_alias(attribute.key, attr_def.other_names)
                 used_attribute_names.add(attribute_name)
 
         if self.attributes:
@@ -640,6 +642,10 @@ class Reader(Cursor):
 
         return self.entries
 
+    def _entries_generator(self, responses):
+        for response in responses:
+            yield self._create_entry(response)
+
     def search_paged(self, paged_size, paged_criticality=True, generator=True, attributes=None):
         """Perform a paged search, can be called as an Iterator
 
@@ -666,17 +672,20 @@ class Reader(Cursor):
         self._create_query_filter()
         self.entries = []
         self.execution_time = datetime.now()
-        return self.connection.extend.standard.paged_search(search_base=self.base,
-                                                                     search_filter=self.query_filter,
-                                                                     search_scope=SUBTREE if self.sub_tree else LEVEL,
-                                                                     dereference_aliases=self.dereference_aliases,
-                                                                     attributes=attributes if attributes else self.attributes,
-                                                                     get_operational_attributes=self.get_operational_attributes,
-                                                                     controls=self.controls,
-                                                                     paged_size=paged_size,
-                                                                     paged_criticality=paged_criticality,
-                                                                     generator=generator)
-            # yield self._create_entry(response)
+        response = self.connection.extend.standard.paged_search(search_base=self.base,
+                                                                search_filter=self.query_filter,
+                                                                search_scope=SUBTREE if self.sub_tree else LEVEL,
+                                                                dereference_aliases=self.dereference_aliases,
+                                                                attributes=attributes if attributes else self.attributes,
+                                                                get_operational_attributes=self.get_operational_attributes,
+                                                                controls=self.controls,
+                                                                paged_size=paged_size,
+                                                                paged_criticality=paged_criticality,
+                                                                generator=generator)
+        if generator:
+            return self._entries_generator(response)
+        else:
+            return list(self._entries_generator(response))
 
 
 class Writer(Cursor):

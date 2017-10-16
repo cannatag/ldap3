@@ -313,6 +313,7 @@ class Connection(object):
             # maps strategy functions to connection functions
             self.send = self.strategy.send
             self.open = self.strategy.open
+            self.connected = self.strategy.connected
             self.get_response = self.strategy.get_response
             self.post_send_single_response = self.strategy.post_send_single_response
             self.post_send_search = self.strategy.post_send_search

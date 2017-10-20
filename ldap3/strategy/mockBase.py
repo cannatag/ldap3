@@ -744,15 +744,13 @@ class MockBaseStrategy(object):
         if node.tag == ROOT:
             return node.elements[0].matched
         elif node.tag == AND:
-            for element in node.elements:
-                if not node.matched:
-                    node.matched.update(element.matched)
-                else:
-                    node.matched.intersection_update(element.matched)
-                if not node.unmatched:
-                    node.unmatched.update(element.unmatched)
-                else:
-                    node.unmatched.intersection_update(element.unmatched)
+            first_element = node.elements[0]
+            node.matched.update(first_element.matched)
+            node.unmatched.update(first_element.unmatched)
+
+            for element in node.elements[1:]:
+                node.matched.intersection_update(element.matched)
+                node.unmatched.intersection_update(element.unmatched)
         elif node.tag == OR:
             for element in node.elements:
                 node.matched.update(element.matched)

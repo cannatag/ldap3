@@ -278,6 +278,10 @@ class BaseStrategy(object):
     def _stop_listen(self):
         self.connection.listening = False
 
+    @property
+    def connected(self):
+        return self.connection.closed is False
+
     def send(self, message_type, request, controls=None):
         """
         Send an LDAP message

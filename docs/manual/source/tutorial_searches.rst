@@ -224,12 +224,19 @@ function and the set of entries found are queued in a list that is returned.
 
 If you want to directly use the Search operation to perform a Paged search your code should be similar to the following::
 
-    >>> cookie = "new_cookie"
-    >>> while cookie:
-    >>>     conn.search('dc=demo1,dc=freeipa,dc=org', '(objectClass=Person)', attributes=['cn', 'givenName'], paged_size=5, paged_cookie=cookie)
-    >>>     cookie = conn.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    >>> searchParameters = { 'search_base': 'dc=demo1,dc=freeipa,dc=org',
+    >>>                      'search_filter': '(objectClass=Person)',
+    >>>                      'attributes': ['cn', 'givenName'],
+    >>>                      'paged_size': 5 }
+    >>> while True:
+    >>>     conn.search(**searchParameters)
     >>>     for entry in conn.entries:
     >>>         print(entry)
+    >>>     cookie = conn.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    >>>     if cookie:
+    >>>         searchParameters['paged_cookie'] = cookie
+    >>>     else:
+    >>>         break
 
 Even in this case the ldap3 library hides the Simple Paged Control machinery but you have to manage the cookie by yourself.
 The code would be much longer if you would manage directly manage the Simple Search Control. Also you loose the generator feature.

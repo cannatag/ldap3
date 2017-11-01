@@ -9,6 +9,7 @@
     - fixed compatibility with Twisted on Windows on Python 2.7 (thanks Pmisik)
     - fixed paged_search behaviour in Reader object
     - fixed regression in MockBase (thanks Markus)
+    - added compatibility with Cython (thanks Pedro)
 
 # 2.3 - 2017.08.02
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.1 for now) version

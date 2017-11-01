@@ -83,7 +83,7 @@ The following code retrieves the schema and the server info from a real server, 
 in a json file. Then a fake server is created and loaded with the previoulsy saved schema, server info and entries and a fake user is defined
 for simple binding::
 
-    from ldap3 import Server, Connection, ALL, ALL_ATTRIBUTES
+    from ldap3 import Server, Connection, ALL, ALL_ATTRIBUTES, MOCK_SYNC
     REAL_SERVER = 'my_real_server'
     REAL_USER = 'cn=my_real_user,ou=test,o=lab'
     REAL_PASSWORD = 'my_real_password'

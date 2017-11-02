@@ -34,7 +34,7 @@ from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
 from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
-from ..core.exceptions import LDAPCursorError
+from ..core.exceptions import LDAPCursorError, LDAPObjectDereferenceError
 from ..core.results import RESULT_SUCCESS
 from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
@@ -216,7 +216,13 @@ class Cursor(object):
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []
                         for element in attribute.values:
-                            temp_values.append(temp_reader.search_object(element))
+                            if entry.entry_dn != element:
+                                temp_values.append(temp_reader.search_object(element))
+                            else:
+                                error_message = 'object %s is referencing itself in the \'%s\' attribute' % (entry.entry_dn, attribute.definition.name)
+                                if log_enabled(ERROR):
+                                    log(ERROR, '%s for <%s>', error_message, self)
+                                raise LDAPObjectDereferenceError(error_message)
                         del temp_reader  # remove the temporary Reader
                         attribute.values = temp_values
                 attributes[attribute.key] = attribute

@@ -14,6 +14,8 @@
     - fixed auto_encode check in validate_attribute_value for unknown attrs (thanks CFelder)
     - don't encode response_value as extended_response_to_dict expects a decoded value (thanks Matthias)
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.7 for now) version
+    - added LDAPObjectDereferenceError exception
+    - LDAPObjectDereferenceError is raised when an object tries to dereference itself in the Abstraction Layer (thanks Daniele)
 
 # 2.3 - 2017.08.02
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.1 for now) version

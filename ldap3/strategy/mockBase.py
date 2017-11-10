@@ -211,6 +211,8 @@ class MockBaseStrategy(object):
             if escaped_dn not in self.connection.server.dit:
                 new_entry = CaseInsensitiveDict()
                 for attribute in attributes:
+                    if attribute in self.operational_attributes:  # no restore of operational attributes, should be computed at runtime
+                        continue
                     if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
                         attributes[attribute] = [attributes[attribute]]
                     if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(attributes[attribute]) > 1:  # multiple values in single-valued attribute

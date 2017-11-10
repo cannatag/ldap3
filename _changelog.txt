@@ -17,6 +17,8 @@
     - added LDAPObjectDereferenceError exception
     - LDAPObjectDereferenceError is raised when an object tries to dereference itself in the Abstraction Layer (thanks Daniele)
     - async module renamed to asynchronous for compatibility with Python 3.7 (thank Barry)
+    - long integer are properly checked in mocking strategies (thanks gregn610)
+    - NUMERIC_TYPES includes long for Python 2
 
 # 2.3 - 2017.08.02
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.1 for now) version

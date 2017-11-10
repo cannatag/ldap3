@@ -364,7 +364,7 @@ class Server(object):
             with self.lock:
                 if isinstance(result, bool):  # sync request
                     self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
-                elif result:  # async request, must check if attributes in response
+                elif result:  # asynchronous request, must check if attributes in response
                     results, _ = connection.get_response(result)
                     if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                         self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
@@ -391,7 +391,7 @@ class Server(object):
             if isinstance(result, bool):  # sync request
                 if result and 'subschemaSubentry' in connection.response[0]['raw_attributes']:
                     schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
-            else:  # async request, must check if subschemaSubentry in attributes
+            else:  # asynchronous request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
                 if len(results) == 1 and 'raw_attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
                     schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
@@ -420,7 +420,7 @@ class Server(object):
                 if result:
                     if isinstance(result, bool):  # sync request
                         self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
-                    else:  # async request, must check if attributes in response
+                    else:  # asynchronous request, must check if attributes in response
                         results, result = connection.get_response(result)
                         if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                             self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])

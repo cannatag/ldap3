@@ -589,7 +589,7 @@ class WritableEntry(EntryBase):
                 else:
                     result = self.entry_cursor.connection.modify(self.entry_dn, self._changes, controls)
 
-                if not self.entry_cursor.connection.strategy.sync:  # async request
+                if not self.entry_cursor.connection.strategy.sync:  # asynchronous request
                     response, result, request = self.entry_cursor.connection.get_response(result, get_request=True)
                 else:
                     response = self.entry_cursor.connection.response

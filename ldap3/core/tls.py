@@ -252,7 +252,7 @@ class Tls(object):
             connection._awaiting_for_async_start_tls = True  # some flaky servers (OpenLDAP) doesn't return the extended response name in response
         result = connection.extended('1.3.6.1.4.1.1466.20037')
         if not connection.strategy.sync:
-            # async - _start_tls must be executed by the strategy
+            # asynchronous - _start_tls must be executed by the strategy
             response = connection.get_response(result)
             if response != (None, None):
                 if log_enabled(BASIC):

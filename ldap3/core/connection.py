@@ -52,7 +52,7 @@ from ..protocol.sasl.external import sasl_external
 from ..protocol.sasl.plain import sasl_plain
 from ..strategy.sync import SyncStrategy
 from ..strategy.mockAsync import MockAsyncStrategy
-from ..strategy.async import AsyncStrategy
+from ..strategy.asynchronous import AsyncStrategy
 from ..strategy.reusable import ReusableStrategy
 from ..strategy.restartable import RestartableStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
@@ -562,7 +562,7 @@ class Connection(object):
                         log(ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and not self.strategy.pooled and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
+                if not self.strategy.sync and not self.strategy.pooled and self.authentication not in (SASL, NTLM):  # get response if asynchronous except for SASL and NTLM that return the bind result even for asynchronous strategy
                     _, result = self.get_response(response)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'async BIND response id <%s> received via <%s>', result, self)
@@ -570,7 +570,7 @@ class Connection(object):
                     result = self.result
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'BIND response <%s> received via <%s>', result, self)
-                elif self.strategy.pooled or self.authentication in (SASL, NTLM):  # async SASL and NTLM or reusable strtegy get the bind result synchronously
+                elif self.strategy.pooled or self.authentication in (SASL, NTLM):  # asynchronous SASL and NTLM or reusable strtegy get the bind result synchronously
                     result = response
                 else:
                     self.last_error = 'unknown authentication method'
@@ -765,7 +765,7 @@ class Connection(object):
             response = self.post_send_search(self.send('searchRequest', request, controls))
             self._entries = []
 
-            if isinstance(response, int):  # async strategy
+            if isinstance(response, int):  # asynchronous strategy
                 return_value = response
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'async SEARCH response id <%s> received via <%s>', return_value, self)
@@ -1202,7 +1202,7 @@ class Connection(object):
                     log(BASIC, 'deferring START TLS for <%s>', self)
             else:
                 self._deferred_start_tls = False
-                if self.server.tls.start_tls(self) and self.strategy.sync:  # for async connections _start_tls is run by the strategy
+                if self.server.tls.start_tls(self) and self.strategy.sync:  # for asynchronous connections _start_tls is run by the strategy
                     if read_server_info:
                         self.refresh_server_info()  # refresh server info as per RFC4515 (3.1.5)
                     return_value = True

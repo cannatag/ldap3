@@ -25,7 +25,7 @@
 
 from .. import ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
 from .mockBase import MockBaseStrategy
-from .async import AsyncStrategy
+from .asynchronous import AsyncStrategy
 from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS
 from ..utils.log import log, log_enabled, ERROR, PROTOCOL

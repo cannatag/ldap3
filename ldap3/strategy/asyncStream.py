@@ -33,7 +33,7 @@ from io import StringIO
 from os import linesep
 
 from ..protocol.rfc2849 import decode_persistent_search_control
-from ..strategy.async import AsyncStrategy
+from ..strategy.asynchronous import AsyncStrategy
 from ..core.exceptions import LDAPLDIFError
 from ..utils.conv import prepare_for_stream
 from ..protocol.rfc2849 import persistent_search_response_to_ldif, add_ldif_header

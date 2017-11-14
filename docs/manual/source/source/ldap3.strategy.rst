@@ -4,10 +4,10 @@ ldap3.strategy package
 Submodules
 ----------
 
-ldap3.strategy.async module
+ldap3.strategy.asynchronous module
 ---------------------------
 
-.. automodule:: ldap3.strategy.async
+.. automodule:: ldap3.strategy.asynchronous
     :members:
     :undoc-members:
     :show-inheritance:

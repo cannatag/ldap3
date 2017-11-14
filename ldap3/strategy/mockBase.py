@@ -211,6 +211,8 @@ class MockBaseStrategy(object):
             if escaped_dn not in self.connection.server.dit:
                 new_entry = CaseInsensitiveDict()
                 for attribute in attributes:
+                    if attribute in self.operational_attributes:  # no restore of operational attributes, should be computed at runtime
+                        continue
                     if not isinstance(attributes[attribute], SEQUENCE_TYPES):  # entry attributes are always lists of bytes values
                         attributes[attribute] = [attributes[attribute]]
                     if self.connection.server.schema and self.connection.server.schema.attribute_types[attribute].single_value and len(attributes[attribute]) > 1:  # multiple values in single-valued attribute
@@ -714,12 +716,12 @@ class MockBaseStrategy(object):
                         result_code = 0
                         message = ''
                         response_name = '2.16.840.1.113719.1.27.100.32'  # getBindDNResponse [NOVELL]
-                        response_value = encoder.encode(OctetString(self.bound))
+                        response_value = OctetString(self.bound)
                     elif extension[0] == '1.3.6.1.4.1.4203.1.11.3':  # WhoAmI [RFC4532]
                         result_code = 0
                         message = ''
                         response_name = '1.3.6.1.4.1.4203.1.11.3'  # WhoAmI [RFC4532]
-                        response_value = encoder.encode(OctetString(self.bound))
+                        response_value = OctetString(self.bound)
                     break
 
         return {'resultCode': result_code,
@@ -744,15 +746,13 @@ class MockBaseStrategy(object):
         if node.tag == ROOT:
             return node.elements[0].matched
         elif node.tag == AND:
-            for element in node.elements:
-                if not node.matched:
-                    node.matched.update(element.matched)
-                else:
-                    node.matched.intersection_update(element.matched)
-                if not node.unmatched:
-                    node.unmatched.update(element.unmatched)
-                else:
-                    node.unmatched.intersection_update(element.unmatched)
+            first_element = node.elements[0]
+            node.matched.update(first_element.matched)
+            node.unmatched.update(first_element.unmatched)
+
+            for element in node.elements[1:]:
+                node.matched.intersection_update(element.matched)
+                node.unmatched.intersection_update(element.unmatched)
         elif node.tag == OR:
             for element in node.elements:
                 node.matched.update(element.matched)
@@ -819,7 +819,7 @@ class MockBaseStrategy(object):
             if 'final' in node.assertion and node.assertion['final'] is not None:
                 substring_filter += '.*' + re.escape(to_unicode(node.assertion['final'], SERVER_ENCODING))
 
-            if substring_filter and not node.assertion['any'] and not node.assertion['final']:  # only initial, adds .*
+            if substring_filter and not node.assertion.get('any', None) and not node.assertion.get('final', None):  # only initial, adds .*
                 substring_filter += '.*'
 
             regex_filter = re.compile(substring_filter, flags=re.UNICODE | re.IGNORECASE)  # unicode AND ignorecase
@@ -878,7 +878,7 @@ class MockBaseStrategy(object):
         try:
             if to_unicode(value1, SERVER_ENCODING).lower() == to_unicode(value2, SERVER_ENCODING).lower():  # case insensitive comparison
                 return True
-        except UnicodeDecodeError:
+        except UnicodeError:
             pass
 
         return False

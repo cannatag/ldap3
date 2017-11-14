@@ -52,7 +52,7 @@ from ..protocol.sasl.external import sasl_external
 from ..protocol.sasl.plain import sasl_plain
 from ..strategy.sync import SyncStrategy
 from ..strategy.mockAsync import MockAsyncStrategy
-from ..strategy.async import AsyncStrategy
+from ..strategy.asynchronous import AsyncStrategy
 from ..strategy.reusable import ReusableStrategy
 from ..strategy.restartable import RestartableStrategy
 from ..strategy.ldifProducer import LdifProducerStrategy
@@ -562,7 +562,7 @@ class Connection(object):
                         log(ERROR, '%s for <%s>', self.last_error, self)
                     raise LDAPUnknownAuthenticationMethodError(self.last_error)
 
-                if not self.strategy.sync and not self.strategy.pooled and self.authentication not in (SASL, NTLM):  # get response if async except for SASL and NTLM that return the bind result even for async
+                if not self.strategy.sync and not self.strategy.pooled and self.authentication not in (SASL, NTLM):  # get response if asynchronous except for SASL and NTLM that return the bind result even for asynchronous strategy
                     _, result = self.get_response(response)
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'async BIND response id <%s> received via <%s>', result, self)
@@ -570,7 +570,7 @@ class Connection(object):
                     result = self.result
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'BIND response <%s> received via <%s>', result, self)
-                elif self.strategy.pooled or self.authentication in (SASL, NTLM):  # async SASL and NTLM or reusable strtegy get the bind result synchronously
+                elif self.strategy.pooled or self.authentication in (SASL, NTLM):  # asynchronous SASL and NTLM or reusable strtegy get the bind result synchronously
                     result = response
                 else:
                     self.last_error = 'unknown authentication method'
@@ -615,7 +615,7 @@ class Connection(object):
         with self.lock:
             if user:
                 self.user = user
-            if password:
+            if password is not None:
                 self.password = password
             if not authentication and user:
                 self.authentication = SIMPLE
@@ -765,7 +765,7 @@ class Connection(object):
             response = self.post_send_search(self.send('searchRequest', request, controls))
             self._entries = []
 
-            if isinstance(response, int):  # async strategy
+            if isinstance(response, int):  # asynchronous strategy
                 return_value = response
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'async SEARCH response id <%s> received via <%s>', return_value, self)
@@ -818,7 +818,7 @@ class Connection(object):
 
         with self.lock:
             self._fire_deferred()
-            request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None)
+            request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
@@ -876,6 +876,7 @@ class Connection(object):
                     if attr.lower() == 'objectclass':
                         object_class_attr_name = attr
                         attr_object_class = list(attributes[object_class_attr_name]) if isinstance(attributes[object_class_attr_name], SEQUENCE_TYPES) else [attributes[object_class_attr_name]]
+                        break
             else:
                 attributes = dict()
 
@@ -905,7 +906,7 @@ class Connection(object):
                     if attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
-            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None)
+            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
@@ -1037,7 +1038,7 @@ class Connection(object):
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
                             raise LDAPChangeError(self.last_error)
-            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None)
+            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))
@@ -1201,7 +1202,7 @@ class Connection(object):
                     log(BASIC, 'deferring START TLS for <%s>', self)
             else:
                 self._deferred_start_tls = False
-                if self.server.tls.start_tls(self) and self.strategy.sync:  # for async connections _start_tls is run by the strategy
+                if self.server.tls.start_tls(self) and self.strategy.sync:  # for asynchronous connections _start_tls is run by the strategy
                     if read_server_info:
                         self.refresh_server_info()  # refresh server info as per RFC4515 (3.1.5)
                     return_value = True

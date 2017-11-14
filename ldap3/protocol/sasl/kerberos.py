@@ -47,16 +47,30 @@ def sasl_gssapi(connection, controls):
     Performs a bind using the Kerberos v5 ("GSSAPI") SASL mechanism
     from RFC 4752. Does not support any security layers, only authentication!
 
-    sasl_credentials can be empty or a 1-element tuple with the requested target_name or the True
-    value to request the target_name from DNS
+    sasl_credentials can be empty or a tuple with one or two elements.
+    The first element determines which service principal to request a ticket for and can be one of the following:
+    
+    - None or False, to use the hostname from the Server object
+    - True to perform a reverse DNS lookup to retrieve the canonical hostname for the hosts IP address
+    - A string containing the hostname
+    
+    The optional second element is what authorization ID to request.
+    
+    - If omitted or None, the authentication ID is used as the authorization ID
+    - If a string, the authorization ID to use. Should start with "dn:" or "user:".
     """
-    if connection.sasl_credentials and len(connection.sasl_credentials) == 1 and connection.sasl_credentials[0]:
-        if connection.sasl_credentials[0] is True:
-            hostname = socket.gethostbyaddr(connection.socket.getpeername()[0])[0]
-            target_name = gssapi.Name('ldap@' + hostname, gssapi.NameType.hostbased_service)
-        else:
-            target_name = gssapi.Name('ldap@' + connection.sasl_credentials[0], gssapi.NameType.hostbased_service)
-    else:
+    target_name = None
+    authz_id = b""
+    if connection.sasl_credentials:
+        if len(connection.sasl_credentials) >= 1 and connection.sasl_credentials[0]:
+            if connection.sasl_credentials[0] is True:
+                hostname = socket.gethostbyaddr(connection.socket.getpeername()[0])[0]
+                target_name = gssapi.Name('ldap@' + hostname, gssapi.NameType.hostbased_service)
+            else:
+                target_name = gssapi.Name('ldap@' + connection.sasl_credentials[0], gssapi.NameType.hostbased_service)
+        if len(connection.sasl_credentials) >= 2 and connection.sasl_credentials[1]:
+            authz_id = connection.sasl_credentials[1].encode("utf-8")
+    if target_name is None:
         target_name = gssapi.Name('ldap@' + connection.server.host, gssapi.NameType.hostbased_service)
     creds = gssapi.Credentials(name=gssapi.Name(connection.user), usage='initiate') if connection.user else None
     ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos, creds=creds)
@@ -91,7 +105,7 @@ def sasl_gssapi(connection, controls):
             raise LDAPCommunicationError("Server requires a security layer, but this is not implemented")
 
         client_security_layers = bytearray([NO_SECURITY_LAYER, 0, 0, 0])
-        out_token = ctx.wrap(bytes(client_security_layers), False)
+        out_token = ctx.wrap(bytes(client_security_layers)+authz_id, False)
         return send_sasl_negotiation(connection, controls, out_token.message)
     except (gssapi.exceptions.GSSError, LDAPCommunicationError):
         abort_sasl_negotiation(connection, controls)

@@ -85,10 +85,11 @@ def validate_integer(input_value):
 
     valid_values = []  # builds a list of valid int values
     for element in input_value:
-        try:  # try to convert any type to int, an invalid conversion raise TypeError of ValueError, if both are valid and equal then then int() value is used
-            float_value = float(element)
+        try:  # try to convert any type to int, an invalid conversion raise TypeError of ValueError, doublecheck with Decimal type, if both are valid and equal then then int() value is used
+            from decimal import Decimal
+            decimal_value = Decimal(element)
             int_value = int(element)
-            if float_value == int_value:
+            if decimal_value == int_value:
                 valid_values.append(int(element))
             else:
                 return False
@@ -196,6 +197,7 @@ def validate_ad_timestamp(input_value):
             return valid_values[0]
     else:
         return True
+
 
 def validate_uuid(input_value):
     """

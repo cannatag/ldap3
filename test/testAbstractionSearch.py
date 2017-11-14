@@ -258,3 +258,56 @@ class Test(unittest.TestCase):
         self.assertEqual(len(e), 2)
         e = r.match(test_singlevalued_attribute, 'fAlSe')
         self.assertEqual(len(e), 2)
+
+    def test_paged_search_accumulator_with_schema(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-3'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-4'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-5'))
+        r = Reader(self.connection, 'inetorgperson', test_base, 'cn:=' + testcase_id + 'mat-*')
+        entries = r.search_paged(2, True, generator=False, attributes=['cn'])
+        self.assertEqual(len(entries), 5)
+
+    def test_paged_search_generator_with_schema(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-1'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-2'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-3'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-4'))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-5'))
+        r = Reader(self.connection, 'inetorgperson', test_base, 'cn:=' + testcase_id + 'mat-*')
+        entries = r.search_paged(2, True, generator=True, attributes=['cn'])
+        cont = 0
+        for _ in entries:
+            cont += 1
+        self.assertEqual(cont, 5)
+
+    def test_paged_search_accumulator_with_schema_single_entry(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-1'))
+        r = Reader(self.connection, 'inetorgperson', test_base, 'cn:=' + testcase_id + 'mat-*')
+        entries = r.search_paged(2, True, generator=False, attributes=['cn'])
+        self.assertEqual(len(entries), 1)
+
+    def test_paged_search_generator_with_schema_single_entry(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-1'))
+        r = Reader(self.connection, 'inetorgperson', test_base, 'cn:=' + testcase_id + 'mat-*')
+        entries = r.search_paged(2, True, generator=True, attributes=['cn'])
+        cont = 0
+        for _ in entries:
+            cont += 1
+        self.assertEqual(cont, 1)
+
+    def test_paged_search_accumulator_with_schema_base_object(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-1'))
+        r = Reader(self.connection, 'inetorgperson', self.delete_at_teardown[0][0])
+        entries = r.search_paged(2, True, generator=False, attributes=['cn'])
+        self.assertEqual(len(entries), 1)
+
+    def test_paged_search_generator_with_schema_base_object(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'mat-1'))
+        r = Reader(self.connection, 'inetorgperson', self.delete_at_teardown[0][0])
+        entries = r.search_paged(2, True, generator=True, attributes=['cn'])
+        cont = 0
+        for _ in entries:
+            cont += 1
+        self.assertEqual(cont, 1)

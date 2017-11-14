@@ -14,7 +14,7 @@ You can set the following parameters::
     test_port_ssl = 636  # ldap secure port
     test_authentication = SIMPLE  # authentication type
     test_strategy = SYNC  # strategy for executing tests
-    #test_strategy = ASYNC  # uncomment this line to test the async strategy
+    #test_strategy = ASYNC  # uncomment this line to test the asynchronous strategy
     # test_strategy = RESTARTABLE  # uncomment this line to test the sync_restartable strategy
 
 To execute the test suite you need an LDAP server with the test_base and test_moved containers and a test_user with privileges to add, modify and remove objects

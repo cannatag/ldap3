@@ -25,7 +25,7 @@
 
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS
 from .mockBase import MockBaseStrategy
-from .base import BaseStrategy
+from .. import ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
 from .sync import SyncStrategy
 from ..operation.bind import bind_response_to_dict
 from ..operation.delete import delete_response_to_dict
@@ -57,6 +57,32 @@ class MockSyncStrategy(MockBaseStrategy, SyncStrategy):  # class inheritance seq
             for entry in responses:
                 response = search_result_entry_response_to_dict(entry, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
                 response['type'] = 'searchResEntry'
+                ###
+                if self.connection.empty_attributes:
+                    for attribute_type in request['attributes']:
+                        attribute_name = str(attribute_type)
+                        if attribute_name not in response['raw_attributes'] and attribute_name not in (ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES):
+                            response['raw_attributes'][attribute_name] = list()
+                            response['attributes'][attribute_name] = list()
+                            if log_enabled(PROTOCOL):
+                                log(PROTOCOL, 'attribute set to empty list for missing attribute <%s> in <%s>',
+                                    attribute_type, self)
+                    if not self.connection.auto_range:
+                        attrs_to_remove = []
+                        # removes original empty attribute in case a range tag is returned
+                        for attribute_type in response['attributes']:
+                            attribute_name = str(attribute_type)
+                            if ';range' in attribute_name.lower():
+                                orig_attr, _, _ = attribute_name.partition(';')
+                                attrs_to_remove.append(orig_attr)
+                        for attribute_type in attrs_to_remove:
+                            if log_enabled(PROTOCOL):
+                                log(PROTOCOL,
+                                    'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>',
+                                    attribute_type, self)
+                            del response['raw_attributes'][attribute_type]
+                            del response['attributes'][attribute_type]
+                ###
                 self.connection.response.append(response)
             result = search_result_done_response_to_dict(result)
             result['type'] = 'searchResDone'

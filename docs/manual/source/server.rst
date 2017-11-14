@@ -76,7 +76,7 @@ module in an application server) or when you have a multi replica LDAP server in
 parameter accept either a boolean or a number: if you set ``active=True`` while defining the ServerPool the strategy will check
 for server availability, you can also set this attribute to the maximum number of cycles to try before giving up with an
 LDAPServerPoolExhaustedError exception. With ``exhaust=True`` if a server is not active it will be removed by the pool, if you set it
-to a number this will be the number of seconds an unreachable server is considered offline. WHen this timout expires the server
+to a number this will be the number of seconds an unreachable server is considered offline. When this timout expires the server
 is reinserted in the pool and checked again for availability.
 
 When all servers in a pool are not available the strategy will wait for the number of seconds specified in ``ldap.POOLING_LOOP_TIMEOUT``

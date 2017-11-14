@@ -23,8 +23,9 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+from .. import ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
 from .mockBase import MockBaseStrategy
-from .async import AsyncStrategy
+from .asynchronous import AsyncStrategy
 from ..operation.search import search_result_done_response_to_dict, search_result_entry_response_to_dict
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS
 from ..utils.log import log, log_enabled, ERROR, PROTOCOL
@@ -112,6 +113,32 @@ class MockAsyncStrategy(MockBaseStrategy, AsyncStrategy):  # class inheritance s
             for entry in responses:
                 response = search_result_entry_response_to_dict(entry, self.connection.server.schema, self.connection.server.custom_formatter, self.connection.check_names)
                 response['type'] = 'searchResEntry'
+
+                if self.connection.empty_attributes:
+                    for attribute_type in request['attributes']:
+                        attribute_name = str(attribute_type)
+                        if attribute_name not in response['raw_attributes'] and attribute_name not in (ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES):
+                            response['raw_attributes'][attribute_name] = list()
+                            response['attributes'][attribute_name] = list()
+                            if log_enabled(PROTOCOL):
+                                log(PROTOCOL, 'attribute set to empty list for missing attribute <%s> in <%s>',
+                                    attribute_type, self)
+                    if not self.connection.auto_range:
+                        attrs_to_remove = []
+                        # removes original empty attribute in case a range tag is returned
+                        for attribute_type in response['attributes']:
+                            attribute_name = str(attribute_type)
+                            if ';range' in attribute_name.lower():
+                                orig_attr, _, _ = attribute_name.partition(';')
+                                attrs_to_remove.append(orig_attr)
+                        for attribute_type in attrs_to_remove:
+                            if log_enabled(PROTOCOL):
+                                log(PROTOCOL,
+                                    'attribute type <%s> removed in response because of same attribute returned as range by the server in <%s>',
+                                    attribute_type, self)
+                            del response['raw_attributes'][attribute_type]
+                            del response['attributes'][attribute_type]
+
                 async_response.append(response)
             async_result = search_result_done_response_to_dict(result)
             async_result['type'] = 'searchResDone'

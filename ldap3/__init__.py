@@ -110,7 +110,10 @@ HASHED_SALTED_SHA384 = 'SALTED_SHA384'
 HASHED_SALTED_SHA512 = 'SALTED_SHA512'
 HASHED_SALTED_MD5 = 'SALTED_MD5'
 
-NUMERIC_TYPES = (int, float)
+if str is not bytes:  # Python 3
+    NUMERIC_TYPES = (int, float)
+else:
+    NUMERIC_TYPES = (int, long, float)
 
 # types for string and sequence
 if str is not bytes:  # Python 3

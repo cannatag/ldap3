@@ -78,7 +78,8 @@ class Server(object):
                  tls=None,
                  formatter=None,
                  connect_timeout=None,
-                 mode=IP_V6_PREFERRED):
+                 mode=IP_V6_PREFERRED,
+                 validator=None):
 
         self.ipc = False
         url_given = False
@@ -194,6 +195,7 @@ class Server(object):
         self._schema_info = None
         self.lock = Lock()
         self.custom_formatter = formatter
+        self.custom_validator = validator
         self._address_info = []  # property self.address_info resolved at open time (or when check_availability is called)
         self._address_info_resolved_time = datetime(MINYEAR, 1, 1)  # smallest date ever
         self.current_address = None
@@ -209,7 +211,7 @@ class Server(object):
     def _is_ipv6(host):
         try:
             socket.inet_pton(socket.AF_INET6, host)
-        except (socket.error, AttributeError):
+        except (socket.error, AttributeError, ValueError):
             return False
         return True
 
@@ -362,7 +364,7 @@ class Server(object):
             with self.lock:
                 if isinstance(result, bool):  # sync request
                     self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
-                elif result:  # async request, must check if attributes in response
+                elif result:  # asynchronous request, must check if attributes in response
                     results, _ = connection.get_response(result)
                     if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                         self._dsa_info = DsaInfo(results[0]['attributes'], results[0]['raw_attributes'])
@@ -389,7 +391,7 @@ class Server(object):
             if isinstance(result, bool):  # sync request
                 if result and 'subschemaSubentry' in connection.response[0]['raw_attributes']:
                     schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
-            else:  # async request, must check if subschemaSubentry in attributes
+            else:  # asynchronous request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
                 if len(results) == 1 and 'raw_attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
                     schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
@@ -418,7 +420,7 @@ class Server(object):
                 if result:
                     if isinstance(result, bool):  # sync request
                         self._schema_info = SchemaInfo(schema_entry, connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else None
-                    else:  # async request, must check if attributes in response
+                    else:  # asynchronous request, must check if attributes in response
                         results, result = connection.get_response(result)
                         if len(results) == 1 and 'attributes' in results[0] and 'raw_attributes' in results[0]:
                             self._schema_info = SchemaInfo(schema_entry, results[0]['attributes'], results[0]['raw_attributes'])
@@ -480,7 +482,7 @@ class Server(object):
         return self._schema_info
 
     @staticmethod
-    def from_definition(host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None):
+    def from_definition(host, dsa_info, dsa_schema, port=None, use_ssl=False, formatter=None, validator=None):
         """
         Define a dummy server with preloaded schema and info
         :param host: host name
@@ -492,9 +494,9 @@ class Server(object):
         :return: Server object
         """
         if isinstance(host, SEQUENCE_TYPES):
-            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter, get_info=ALL)  # for ServerPool object
+            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter, validator=validator, tget_info=ALL)  # for ServerPool object
         else:
-            dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter, get_info=ALL)
+            dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter, validator=validator, get_info=ALL)
         if isinstance(dsa_info, DsaInfo):
             dummy._dsa_info = dsa_info
         elif isinstance(dsa_info, STRING_TYPES):

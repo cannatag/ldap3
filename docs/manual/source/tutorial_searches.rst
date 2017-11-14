@@ -56,7 +56,7 @@ Here you request all the entries of class *person*, starting from the *dc=demo1,
 You have not requested any attribute, so in the response we get only the Distinguished Name of the found entries.
 
 .. note:: response vs result: in ldap3 every operation has a *result* that is stored in the ``result`` attribute of the Connection in sync strategies.
-    Search operations store the found entries in the ``response`` attribute of the Connection object. For async strategies you must use the ``get_response(id)`` method
+    Search operations store the found entries in the ``response`` attribute of the Connection object. For asynchronous strategies you must use the ``get_response(id)`` method
     that returns a tuple in the form of (response, result). If you use the ``get_request=True`` parameter you ask ``get_response()`` to return the request dictionary too
     so te returned tuple will be (response, result, request).
 
@@ -224,12 +224,19 @@ function and the set of entries found are queued in a list that is returned.
 
 If you want to directly use the Search operation to perform a Paged search your code should be similar to the following::
 
-    >>> cookie = "new_cookie"
-    >>> while cookie:
-    >>>     conn.search('dc=demo1,dc=freeipa,dc=org', '(objectClass=Person)', attributes=['cn', 'givenName'], paged_size=5, paged_cookie=cookie)
-    >>>     cookie = conn.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    >>> searchParameters = { 'search_base': 'dc=demo1,dc=freeipa,dc=org',
+    >>>                      'search_filter': '(objectClass=Person)',
+    >>>                      'attributes': ['cn', 'givenName'],
+    >>>                      'paged_size': 5 }
+    >>> while True:
+    >>>     conn.search(**searchParameters)
     >>>     for entry in conn.entries:
     >>>         print(entry)
+    >>>     cookie = conn.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+    >>>     if cookie:
+    >>>         searchParameters['paged_cookie'] = cookie
+    >>>     else:
+    >>>         break
 
 Even in this case the ldap3 library hides the Simple Paged Control machinery but you have to manage the cookie by yourself.
 The code would be much longer if you would manage directly manage the Simple Search Control. Also you loose the generator feature.

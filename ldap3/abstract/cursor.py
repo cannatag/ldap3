@@ -34,7 +34,7 @@ from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
 from .objectDef import ObjectDef
 from .entry import Entry, WritableEntry
-from ..core.exceptions import LDAPCursorError
+from ..core.exceptions import LDAPCursorError, LDAPObjectDereferenceError
 from ..core.results import RESULT_SUCCESS
 from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
@@ -216,7 +216,13 @@ class Cursor(object):
                         temp_reader = Reader(self.connection, attr_def.dereference_dn, base='', get_operational_attributes=self.get_operational_attributes, controls=self.controls)
                         temp_values = []
                         for element in attribute.values:
-                            temp_values.append(temp_reader.search_object(element))
+                            if entry.entry_dn != element:
+                                temp_values.append(temp_reader.search_object(element))
+                            else:
+                                error_message = 'object %s is referencing itself in the \'%s\' attribute' % (entry.entry_dn, attribute.definition.name)
+                                if log_enabled(ERROR):
+                                    log(ERROR, '%s for <%s>', error_message, self)
+                                raise LDAPObjectDereferenceError(error_message)
                         del temp_reader  # remove the temporary Reader
                         attribute.values = temp_values
                 attributes[attribute.key] = attribute
@@ -642,6 +648,10 @@ class Reader(Cursor):
 
         return self.entries
 
+    def _entries_generator(self, responses):
+        for response in responses:
+            yield self._create_entry(response)
+
     def search_paged(self, paged_size, paged_criticality=True, generator=True, attributes=None):
         """Perform a paged search, can be called as an Iterator
 
@@ -668,17 +678,20 @@ class Reader(Cursor):
         self._create_query_filter()
         self.entries = []
         self.execution_time = datetime.now()
-        return self.connection.extend.standard.paged_search(search_base=self.base,
-                                                                     search_filter=self.query_filter,
-                                                                     search_scope=SUBTREE if self.sub_tree else LEVEL,
-                                                                     dereference_aliases=self.dereference_aliases,
-                                                                     attributes=attributes if attributes else self.attributes,
-                                                                     get_operational_attributes=self.get_operational_attributes,
-                                                                     controls=self.controls,
-                                                                     paged_size=paged_size,
-                                                                     paged_criticality=paged_criticality,
-                                                                     generator=generator)
-            # yield self._create_entry(response)
+        response = self.connection.extend.standard.paged_search(search_base=self.base,
+                                                                search_filter=self.query_filter,
+                                                                search_scope=SUBTREE if self.sub_tree else LEVEL,
+                                                                dereference_aliases=self.dereference_aliases,
+                                                                attributes=attributes if attributes else self.attributes,
+                                                                get_operational_attributes=self.get_operational_attributes,
+                                                                controls=self.controls,
+                                                                paged_size=paged_size,
+                                                                paged_criticality=paged_criticality,
+                                                                generator=generator)
+        if generator:
+            return self._entries_generator(response)
+        else:
+            return list(self._entries_generator(response))
 
 
 class Writer(Cursor):

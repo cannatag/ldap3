@@ -337,7 +337,7 @@ Example::
             print(entry['dn'], entry['attributes'])
     print('Total entries retrieved:', total_entries)
 
-Or you can use the much simpler extended operations package that wraps all this  machinery and hides implementation
+Or you can use the much simpler extended operations package that wraps all this machinery and hides implementation
 details, you can choose to get back a generator or the whole list of entries found.
 
 Working with a generator is better when you deal with very long list of entries or have memory issues::

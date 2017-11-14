@@ -146,6 +146,8 @@ in the same Connection. The result of the second search is returned as value of 
     department += 'cn'
     department += AttrDef('member', key = 'employeer', dereference_dn = person)  # values of 'employeer' will be the 'Person' entries members of the found department
 
+If an object is referencing itself an ``LDAPObjectDereferenceError`` is raised.
+
 Cursor
 ------
 There are two kind of *Cursor* in the Abstraction Layer, **Reader** and **Writer**. This helps to avoid the risk of accidentally change

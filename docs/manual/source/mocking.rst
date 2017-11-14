@@ -14,7 +14,7 @@ by the MockBaseStrategy.
 To mock the ldap3 library in your project you must define a fake Server object and set the client_strategy attribute to MOCK_SYNC or MOCK_ASYNC
 while defining the Connection object::
 
-    from ldap3 import Server, Connection
+    from ldap3 import Server, Connection, MOCK_SYNC
     server = Server('my_fake_server')
     connection = Connection(server, user='cn=my_user,ou=test,o=lab', password='my_password', client_strategy=MOCK_SYNC)
 

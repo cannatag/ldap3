@@ -1,10 +1,24 @@
-# 2.4 - not yet released
+# 2.4 - 2017.11.14
     - security fix in the rebind() method of the Connection object (thanks Daniel)
     - fix for Sasl credentials in Python 3 (thanks Busuwe)
     - fixed bug when checking for equality in MockBase
     - added validator parameter to Server object for custom validators
     - attribute values are now validated in add/compare/modify operations in the Connection object
+    - Python types can now be used in add/compare/modify operations
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.3 for now) version
+    - fixed compatibility with Twisted on Windows on Python 2.7 (thanks Pmisik)
+    - fixed paged_search behaviour in Reader object
+    - fixed regression in MockBase (thanks Markus)
+    - fixed invalid filter sequence in MockBase (thanks SignedBit)
+    - added compatibility with Cython (thanks Pedro)
+    - fixed auto_encode check in validate_attribute_value for unknown attrs (thanks CFelder)
+    - don't encode response_value as extended_response_to_dict expects a decoded value (thanks Matthias)
+    - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.7 for now) version
+    - added LDAPObjectDereferenceError exception
+    - LDAPObjectDereferenceError is raised when an object tries to dereference itself in the Abstraction Layer (thanks Daniele)
+    - async module renamed to asynchronous for compatibility with Python 3.7 (thank Barry)
+    - long integer are properly checked in mocking strategies (thanks gregn610)
+    - NUMERIC_TYPES includes long for Python 2
 
 # 2.3 - 2017.08.02
     - compatible with the pyasn1 library from version 0.1.8 up to latest (0.3.1 for now) version

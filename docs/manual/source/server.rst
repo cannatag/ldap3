@@ -136,7 +136,7 @@ You can also save the schema and info in a json string::
 
 or can have them saved on file::
 
-    server.info.to_file('server-info.json)
+    server.info.to_file('server-info.json')
     server.schema.to_file('server-schema.json')
 
 to build a new server object with the saved json files you can retrieve them with::

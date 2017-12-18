@@ -347,7 +347,7 @@ class Connection(object):
     def __str__(self):
         s = [
             str(self.server) if self.server else 'None',
-            'user: ' + str(self.user),
+            'user: ' + unicode(self.user),
             'lazy' if self.lazy else 'not lazy',
             'unbound' if not self.bound else ('deferred bind' if self._deferred_bind else 'bound'),
             'closed' if self.closed else ('deferred open' if self._deferred_open else 'open'),

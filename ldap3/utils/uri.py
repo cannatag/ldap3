@@ -113,6 +113,6 @@ def parse_uri(uri):
         return None
 
     uri_components['filter'] = parts[3] if len(parts) > 3 else None
-    uri_components['extensions'] = parts[3].split(',') if len(parts) > 4 else None
+    uri_components['extensions'] = parts[4].split(',') if len(parts) > 4 else None
 
     return uri_components

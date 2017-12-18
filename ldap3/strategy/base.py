@@ -741,7 +741,9 @@ class BaseStrategy(object):
                                                  check_names=self.connection.check_names,
                                                  raise_exceptions=self.connection.raise_exceptions,
                                                  fast_decoder=self.connection.fast_decoder,
-                                                 receive_timeout=self.connection.receive_timeout)
+                                                 receive_timeout=self.connection.receive_timeout,
+                                                 sasl_mechanism=self.connection.sasl_mechanism,
+                                                 sasl_credentials=self.connection.sasl_credentials)
 
                 if self.connection.usage:
                     self.connection._usage.referrals_connections += 1

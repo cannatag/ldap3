@@ -15,12 +15,12 @@ Server data flow
 ----------------
 
 The LDAP protocol stores strings in a **Directory String** type that should always be in **utf-8** and it's stored in the
-``DEFAULT_CLIENT_ENCODING`` config parameter. For flaky server this encoding can be changed with::
+``DEFAULT_SERVER_ENCODING`` config parameter. For flaky server this encoding can be changed with::
 
     >>> from ldap3 import set_config_parameter
     >>> set_config_parameter('DEFAULT_SERVER_ENCODING', 'latin-1')
 
-DEFAULT_SERVER_ENCODING can be changed multiple times as needed. To know the current ``DEFAULT_SERVER_ENCODING`` you can use the following code::
+``DEFAULT_SERVER_ENCODING`` can be changed multiple times as needed. To know the current setting you can use the following code::
 
     >>> from ldap3 import get_config_parameter
     >>> get_config_parameter('DEFAULT_SERVER_ENCODING')
@@ -33,7 +33,7 @@ config parameter to decode the DN of the Search operation response. It can be se
 a list of encodings is provided ldap3 tries sequentially each encoding until a valid decode is performed. If any of the specified
 encodings is able to decode the value then an ``UnicodeError`` exception is raised.
 
-``ADDITIONAL_SERVER_ENCODINGS`` defaults to ['latin1, 'koi8-r'] for european and russian encodings
+``ADDITIONAL_SERVER_ENCODINGS`` defaults to ``['latin1, 'koi8-r']`` for european and russian encodings
 
 User data flow
 --------------
@@ -44,16 +44,16 @@ ldap3 can receive data from the user in 4 different ways:
 - data typed at the Python interpreter (the usual >>>)
 - data input from another program via stdin
 
-When dealing with user input the encoding can (and probably is) different from utf-8, so ldap3 tries to guess what encoding is used and store it in the
+When dealing with user input the encoding can be (and probably is) different from utf-8, so ldap3 tries to guess what encoding is used and store it in the
 ``DEFAULT_CLIENT_ENCODING`` parameter. ldap3 uses the **stdin.encoding** if present, else the sys.getdefaultencoding() and if neither is present sets
-``DEFAULT_CLIENT_ENCODING`` to 'utf-8'.
+``DEFAULT_CLIENT_ENCODING`` to ``utf-8``.
 
 You can set a specific ``DEFAULT_CLIENT_ENCODING`` with the following code::
 
     >>> from ldap3 import set_config_parameter
     >>> set_config_parameter('DEFAULT_CLIENT_ENCODING', 'my_encoding')
 
-DEFAULT_CLIENT_ENCODING can be changed multiple times as needed. To know the current ``DEFAULT_CLIENT_ENCODING`` you can use the following code::
+``DEFAULT_CLIENT_ENCODING`` can be changed multiple times as needed. To know the current setting you can use the following code::
 
     >>> from ldap3 import get_config_parameter
     >>> get_config_parameter('DEFAULT_CLIENT_ENCODING')

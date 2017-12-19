@@ -514,7 +514,7 @@ class Connection(object):
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing anonymous BIND for <%s>', self)
                     if not self.strategy.pooled:
-                        request = bind_operation(self.version, self.authentication, self.user, '')
+                        request = bind_operation(self.version, self.authentication, self.user, '', auto_encode=self.auto_encode)
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
@@ -524,7 +524,7 @@ class Connection(object):
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing simple BIND for <%s>', self)
                     if not self.strategy.pooled:
-                        request = bind_operation(self.version, self.authentication, self.user, self.password)
+                        request = bind_operation(self.version, self.authentication, self.user, self.password, auto_encode=self.auto_encode)
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'simple BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))

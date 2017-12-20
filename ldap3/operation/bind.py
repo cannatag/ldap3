@@ -49,10 +49,7 @@ def bind_operation(version,
     if name is None:
         name = ''
     if isinstance(name, STRING_TYPES):
-        a = to_unicode(name) if auto_encode else name
-        request['name'] = a
-        print(type(a))
-        print(request['name'])
+        request['name'] = to_unicode(name) if auto_encode else name
     if authentication == SIMPLE:
         if not name:
             raise LDAPPasswordIsMandatoryError('user name is mandatory in simple bind')

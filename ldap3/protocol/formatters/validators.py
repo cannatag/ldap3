@@ -29,7 +29,7 @@ from uuid import UUID
 
 from ... import SEQUENCE_TYPES, STRING_TYPES
 from .formatters import format_time, format_ad_timestamp
-from ...utils.conv import to_raw
+from ...utils.conv import to_raw, to_unicode
 
 # Validators return True if value is valid, False if value is not valid,
 # or a value different from True and False that is a valid value to substitute to the input value
@@ -84,16 +84,17 @@ def validate_integer(input_value):
         sequence = True  # indicates if a sequence must be returned
 
     valid_values = []  # builds a list of valid int values
+    from decimal import Decimal, InvalidOperation
     for element in input_value:
-        try:  # try to convert any type to int, an invalid conversion raise TypeError of ValueError, doublecheck with Decimal type, if both are valid and equal then then int() value is used
-            from decimal import Decimal
-            decimal_value = Decimal(element)
-            int_value = int(element)
+        try:  # try to convert any type to int, an invalid conversion raise TypeError or ValueError, doublecheck with Decimal type, if both are valid and equal then then int() value is used
+            value = to_unicode(element) if isinstance(element, bytes) else element
+            decimal_value = Decimal(value)
+            int_value = int(value)
             if decimal_value == int_value:
-                valid_values.append(int(element))
+                valid_values.append(int_value)
             else:
                 return False
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, InvalidOperation):
             return False
 
     if sequence:

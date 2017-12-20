@@ -1,5 +1,6 @@
 # 2.4.1 - not released yet
-    - auto_encode parameter is honored when binding
+    - auto_encode parameter is honored when binding (thanks jkolo)
+    - fixed organizationalName definition in oid (thanks mingulov)
 
 # 2.4 - 2017.11.14
     - security fix in the rebind() method of the Connection object (thanks Daniel)

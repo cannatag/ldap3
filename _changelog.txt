@@ -4,7 +4,7 @@
     - automatic byte to int conversion working again (thanks Brian)
     - mock connection searchs correctly escape filters (thanks kiddick)
     - fixed bind with not unicode characters in Python 2 (thanks jkolo)
-
+    - extended filter attributes should work again with pyasn1 0.4.1 (thanks Dirk-jan)
 
 # 2.4 - 2017.11.14
     - security fix in the rebind() method of the Connection object (thanks Daniel)

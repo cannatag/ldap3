@@ -107,9 +107,9 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
         left_part = left_part[:-1].strip()
         right_part = right_part.strip()
         extended_filter_list = left_part.split(':')
-        matching_rule = None
-        dn_attributes = None
-        attribute_name = None
+        matching_rule = False
+        dn_attributes = False
+        attribute_name = False
         if extended_filter_list[0] == '':  # extensible filter format [:dn]:matchingRule:=assertionValue
             if len(extended_filter_list) == 2 and extended_filter_list[1].lower().strip() != 'dn':
                 matching_rule = extended_filter_list[1]
@@ -136,8 +136,8 @@ def evaluate_match(match, schema, auto_escape, auto_encode):
 
         if not attribute_name and not matching_rule:
             raise LDAPInvalidFilterError('invalid extensible filter')
-        attribute_name = attribute_name.strip() if attribute_name else None
-        matching_rule = matching_rule.strip() if matching_rule else None
+        attribute_name = attribute_name.strip() if attribute_name else False
+        matching_rule = matching_rule.strip() if matching_rule else False
         assertion = {'attr': attribute_name, 'value': validate_assertion_value(schema, attribute_name, right_part, auto_escape, auto_encode), 'matchingRule': matching_rule, 'dnAttributes': dn_attributes}
     elif right_part == '*':  # attribute present match '=*'
         tag = MATCH_PRESENT

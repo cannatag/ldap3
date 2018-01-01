@@ -464,7 +464,6 @@ class WritableEntry(EntryBase):
 
         if value is not Ellipsis:  # hack for using implicit operators in writable attributes
             # checks if using an alias
-            # print(self[item])
             if item in self.entry_cursor.definition._attributes or item.lower() in conf_attributes_excluded_from_object_def:
                 if item not in self._state.attributes:  # setting value to an attribute still without values
                     new_attribute = WritableAttribute(self.entry_cursor.definition._attributes[item], self, cursor=self.entry_cursor)

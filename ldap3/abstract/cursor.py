@@ -28,8 +28,9 @@ from datetime import datetime
 from os import linesep
 from time import sleep
 
-from ldap3.abstract import STATUS_PENDING_CHANGES
+from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
 from .. import SUBTREE, LEVEL, DEREF_ALWAYS, DEREF_NEVER, BASE, SEQUENCE_TYPES, STRING_TYPES, get_config_parameter
+from ..abstract import STATUS_PENDING_CHANGES
 from .attribute import Attribute, OperationalAttribute, WritableAttribute
 from .attrDef import AttrDef
 from .objectDef import ObjectDef
@@ -40,8 +41,8 @@ from ..utils.ciDict import CaseInsensitiveWithAliasDict
 from ..utils.dn import safe_dn, safe_rdn
 from ..utils.conv import to_raw
 from ..utils.config import get_config_parameter
-from . import STATUS_VIRTUAL, STATUS_READ, STATUS_WRITABLE
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
+from ..protocol.oid import ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
 
 Operation = namedtuple('Operation', ('request', 'result', 'response'))
 
@@ -237,14 +238,21 @@ class Cursor(object):
 
         for attribute_name in response['attributes']:
             if attribute_name not in used_attribute_names:
-                if attribute_name not in attr_defs and attribute_name.lower() not in conf_attributes_excluded_from_object_def:
+                operational_attribute = False
+                # check if the type is an operational attribute
+                if attribute_name in self.schema.attribute_types:
+                    if self.schema.attribute_types[attribute_name].no_user_modification or self.schema.attribute_types[attribute_name].usage in [ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION]:
+                        operational_attribute = True
+                else:
+                    operational_attribute = True
+                if not operational_attribute and attribute_name not in attr_defs and attribute_name.lower() not in conf_attributes_excluded_from_object_def:
                     error_message = 'attribute \'%s\' not in object class \'%s\' for entry %s' % (attribute_name, ', '.join(entry.entry_definition._object_class), entry.entry_dn)
                     if log_enabled(ERROR):
                         log(ERROR, '%s for <%s>', error_message, self)
                     raise LDAPCursorError(error_message)
                 attribute = OperationalAttribute(AttrDef(conf_operational_attribute_prefix + attribute_name), entry, self)
                 attribute.raw_values = response['raw_attributes'][attribute_name]
-                attribute.values = response['attributes'][attribute_name]
+                attribute.values = response['attributes'][attribute_name] if isinstance(response['attributes'][attribute_name], SEQUENCE_TYPES) else [response['attributes'][attribute_name]]
                 if (conf_operational_attribute_prefix + attribute_name) not in attributes:
                     attributes[conf_operational_attribute_prefix + attribute_name] = attribute
 
@@ -329,7 +337,7 @@ class Cursor(object):
                                             search_filter=self.query_filter,
                                             search_scope=query_scope,
                                             dereference_aliases=self.dereference_aliases,
-                                            attributes=attributes if attributes else self.attributes,
+                                            attributes=attributes if attributes else list(self.attributes),
                                             get_operational_attributes=self.get_operational_attributes,
                                             controls=self.controls)
             if not self.connection.strategy.sync:

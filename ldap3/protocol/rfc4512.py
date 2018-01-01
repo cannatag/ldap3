@@ -212,57 +212,67 @@ class DsaInfo(BaseServerInfo):
 
     def __repr__(self):
         r = 'DSA info (from DSE):' + linesep
-        if isinstance(self.supported_ldap_versions, SEQUENCE_TYPES):
-            r += ('  Supported LDAP versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions])) if self.supported_ldap_versions else ''
-        else:
-            r += ('  Supported LDAP versions: ' + str(self.supported_ldap_versions))
-        r += linesep
-        if isinstance(self.naming_contexts, SEQUENCE_TYPES):
-            r += ('  Naming contexts: ' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts])) if self.naming_contexts else ''
-        else:
-            r += ('  Naming contexts: ' + str(self.naming_contexts))
-        r += linesep
-        if isinstance(self.alt_servers, SEQUENCE_TYPES):
-            r += ('  Alternative servers: ' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers])) if self.alt_servers else ''
-        else:
-            r += ('  Alternative servers: ' + str(self.alt_servers))
-        r += linesep
-        if isinstance(self.supported_controls, SEQUENCE_TYPES):
-            r += ('  Supported controls: ' + linesep + linesep.join(['    ' + oid_to_string(s) for s in self.supported_controls])) if self.supported_controls else ''
-        else:
-            r += ('  Supported controls: ' + str(self.supported_controls))
-        r += linesep
-        if isinstance(self.supported_extensions, SEQUENCE_TYPES):
-            r += ('  Supported extensions: ' + linesep + linesep.join(['    ' + oid_to_string(s) for s in self.supported_extensions])) if self.supported_extensions else ''
-        else:
-            r += ('  Supported extensions: ' + str(self.supported_extensions))
-        r += linesep
-        if self.supported_features:
-            if isinstance(self.supported_features, SEQUENCE_TYPES):
-                r += ('  Supported features: ' + linesep + linesep.join(['    ' + oid_to_string(s) for s in self.supported_features])) if self.supported_features else ''
+        if self.supported_ldap_versions:
+            if isinstance(self.supported_ldap_versions, SEQUENCE_TYPES):
+                r += ('  Supported LDAP versions: ' + ', '.join([str(s) for s in self.supported_ldap_versions])) if self.supported_ldap_versions else ''
             else:
-                r += ('  Supported features: ' + str(self.supported_features))
+                r += ('  Supported LDAP versions: ' + str(self.supported_ldap_versions))
             r += linesep
-        if isinstance(self.supported_sasl_mechanisms, SEQUENCE_TYPES):
-            r += ('  Supported SASL mechanisms: ' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms])) if self.supported_sasl_mechanisms else ''
-        else:
-            r += ('  Supported SASL mechanisms: ' + str(self.supported_sasl_mechanisms))
-        r += linesep
-        if isinstance(self.schema_entry, SEQUENCE_TYPES):
-            r += ('  Schema entry: ' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry])) if self.schema_entry else ''
-        else:
-            r += ('  Schema entry: ' + str(self.schema_entry))
-        r += linesep
-        if isinstance(self.vendor_name, SEQUENCE_TYPES) and len(self.vendor_name) == 1:
-            r += 'Vendor name: ' + self.vendor_name[0]
-        else:
-            r += 'Vendor name: ' + str(self.vendor_name)
-        r += linesep
-        if isinstance(self.vendor_version, SEQUENCE_TYPES) and len(self.vendor_version) == 1:
-            r += 'Vendor version: ' + self.vendor_version[0]
-        else:
-            r += 'Vendor version: ' + str(self.vendor_version)
-        r += linesep
+        if self.naming_contexts:
+            if isinstance(self.naming_contexts, SEQUENCE_TYPES):
+                r += ('  Naming contexts: ' + linesep + linesep.join(['    ' + str(s) for s in self.naming_contexts])) if self.naming_contexts else ''
+            else:
+                r += ('  Naming contexts: ' + str(self.naming_contexts))
+            r += linesep
+        if self.alt_servers:
+            if isinstance(self.alt_servers, SEQUENCE_TYPES):
+                r += ('  Alternative servers: ' + linesep + linesep.join(['    ' + str(s) for s in self.alt_servers])) if self.alt_servers else ''
+            else:
+                r += ('  Alternative servers: ' + str(self.alt_servers))
+            r += linesep
+        if self.supported_controls:
+            if isinstance(self.supported_controls, SEQUENCE_TYPES):
+                r += ('  Supported controls: ' + linesep + linesep.join(['    ' + oid_to_string(s) for s in self.supported_controls])) if self.supported_controls else ''
+            else:
+                r += ('  Supported controls: ' + str(self.supported_controls))
+            r += linesep
+        if self.supported_extensions:
+            if isinstance(self.supported_extensions, SEQUENCE_TYPES):
+                r += ('  Supported extensions: ' + linesep + linesep.join(['    ' + oid_to_string(s) for s in self.supported_extensions])) if self.supported_extensions else ''
+            else:
+                r += ('  Supported extensions: ' + str(self.supported_extensions))
+            r += linesep
+        if self.supported_features:
+            if self.supported_features:
+                if isinstance(self.supported_features, SEQUENCE_TYPES):
+                    r += ('  Supported features: ' + linesep + linesep.join(['    ' + oid_to_string(s) for s in self.supported_features])) if self.supported_features else ''
+                else:
+                    r += ('  Supported features: ' + str(self.supported_features))
+                r += linesep
+        if self.supported_sasl_mechanisms:
+            if isinstance(self.supported_sasl_mechanisms, SEQUENCE_TYPES):
+                r += ('  Supported SASL mechanisms: ' + linesep + '    ' + ', '.join([str(s) for s in self.supported_sasl_mechanisms])) if self.supported_sasl_mechanisms else ''
+            else:
+                r += ('  Supported SASL mechanisms: ' + str(self.supported_sasl_mechanisms))
+            r += linesep
+        if self.schema_entry:
+            if isinstance(self.schema_entry, SEQUENCE_TYPES):
+                r += ('  Schema entry: ' + linesep + linesep.join(['    ' + str(s) for s in self.schema_entry])) if self.schema_entry else ''
+            else:
+                r += ('  Schema entry: ' + str(self.schema_entry))
+            r += linesep
+        if self.vendor_name:
+            if isinstance(self.vendor_name, SEQUENCE_TYPES) and len(self.vendor_name) == 1:
+                r += 'Vendor name: ' + self.vendor_name[0]
+            else:
+                r += 'Vendor name: ' + str(self.vendor_name)
+            r += linesep
+        if self.vendor_version:
+            if isinstance(self.vendor_version, SEQUENCE_TYPES) and len(self.vendor_version) == 1:
+                r += 'Vendor version: ' + self.vendor_version[0]
+            else:
+                r += 'Vendor version: ' + str(self.vendor_version)
+            r += linesep
         r += 'Other:' + linesep
         for k, v in self.other.items():
             r += '  ' + str(k) + ': ' + linesep
@@ -442,7 +452,7 @@ class BaseObjectInfo(object):
                 elif cls is DitStructureRuleInfo:
                     pattern = '| FORM | SUP '
                 elif cls is NameFormInfo:
-                    pattern = '| OC | MUST | MAY  '
+                    pattern = '| OC | MUST | MAY '
                 else:
                     raise LDAPSchemaError('unknown schema definition class')
 
@@ -499,6 +509,8 @@ class BaseObjectInfo(object):
                         object_def.name_form = oids_string_to_list(value)
                     elif key == 'OC':
                         object_def.object_class = oids_string_to_list(value)
+                    elif key == 'NOT':
+                        object_def.not_contains = oids_string_to_list(value)
                     elif key == 'X-':
                         if not object_def.extensions:
                             object_def.extensions = []

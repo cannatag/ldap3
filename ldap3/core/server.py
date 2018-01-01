@@ -390,11 +390,13 @@ class Server(object):
             result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
                 if result and 'subschemaSubentry' in connection.response[0]['raw_attributes']:
-                    schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
+                    if len(connection.response[0]['raw_attributes']['subschemaSubentry']) > 0:
+                        schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
             else:  # asynchronous request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
                 if len(results) == 1 and 'raw_attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
-                    schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
+                    if len(results[0]['raw_attributes']['subschemaSubentry']) > 0:
+                        schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             if isinstance(schema_entry, bytes) and str is not bytes:  # Python 3

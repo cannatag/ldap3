@@ -378,6 +378,7 @@ class BaseStrategy(object):
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
+                self._outstanding.pop(message_id)
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
 
             # checks if any response has a range tag

@@ -1,4 +1,4 @@
-"""
+typeMap,"""
 """
 
 # Created on 2015.08.19
@@ -24,9 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 
-from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder
+from pyasn1.codec.ber.encoder import tagMap, typeMap, BooleanEncoder
 from pyasn1.type.univ import Boolean
-from pyasn1.compat.octets import ints2octs
 from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
 
 from ..core.results import RESULT_CODES
@@ -42,9 +41,12 @@ CLASSES = {(False, False): 0,  # Universal
 # Monkeypatching of pyasn1 for encoding Boolean with the value 0xFF for TRUE
 # THIS IS NOT PART OF THE FAST BER DECODER
 class BooleanCEREncoder(BooleanEncoder):
-    _true = ints2octs((255,))
+    def encodeValue(self, value, asn1Spec, encodeFun, **options):
+        return value and (255,) or (0,), False, False
+
 
 tagMap[Boolean.tagSet] = BooleanCEREncoder()
+typeMap[Boolean.typeId] = BooleanCEREncoder()
 
 
 # a fast BER decoder for LDAP responses only

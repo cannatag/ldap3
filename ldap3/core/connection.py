@@ -318,23 +318,7 @@ class Connection(object):
             self.post_send_search = self.strategy.post_send_search
 
             if not self.strategy.no_real_dsa:
-                if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
-                    if log_enabled(BASIC):
-                        log(BASIC, 'performing automatic bind for <%s>', self)
-                    self.open(read_server_info=False)
-                    if self.auto_bind == AUTO_BIND_NO_TLS:
-                        self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
-                        self.start_tls(read_server_info=False)
-                        self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
-                        self.bind(read_server_info=False)
-                        self.start_tls(read_server_info=True)
-                    if not self.bound:
-                        self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
-                        if log_enabled(ERROR):
-                            log(ERROR, '%s for <%s>', self.last_error, self)
-                        raise LDAPBindError(self.last_error)
+                self.do_auto_bind()
             # else:  # for strategies with a fake server set get_info to NONE if server hasn't a schema
             #     if self.server and not self.server.schema:
             #         self.server.get_info = NONE
@@ -343,6 +327,26 @@ class Connection(object):
                     log(BASIC, 'instantiated Connection: <%s>', self.repr_with_sensitive_data_stripped())
                 else:
                     log(BASIC, 'instantiated Connection: <%r>', self)
+
+    def do_auto_bind(self):
+        if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
+            if log_enabled(BASIC):
+                log(BASIC, 'performing automatic bind for <%s>', self)
+            if self.closed:
+               self.open(read_server_info=False)
+            if self.auto_bind == AUTO_BIND_NO_TLS:
+                self.bind(read_server_info=True)
+            elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
+                self.start_tls(read_server_info=False)
+                self.bind(read_server_info=True)
+            elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
+                self.bind(read_server_info=False)
+                self.start_tls(read_server_info=True)
+            if not self.bound:
+                self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPBindError(self.last_error)
 
     def __str__(self):
         s = [

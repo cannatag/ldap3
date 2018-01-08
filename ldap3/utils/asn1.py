@@ -1,6 +1,3 @@
-typeMap,"""
-"""
-
 # Created on 2015.08.19
 #
 # Author: Giovanni Cannata

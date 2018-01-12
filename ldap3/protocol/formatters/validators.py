@@ -65,6 +65,22 @@ def validate_generic_single_value(input_value):
     return False
 
 
+def validate_minus_one(input_value):
+    """Accept -1 only (used by pwdLastSet in AD)
+    """
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        if input_value == -1 or input_value == '-1':
+            return True
+
+    try:  # object couldn't have a __len__ method
+        if len(input_value) == 1 and input_value == -1 or input_value == '-1':
+            return True
+    except Exception:
+        pass
+
+    return False
+
+
 def validate_integer(input_value):
     if check_type(input_value, (float, bool)):
         return False

@@ -186,6 +186,9 @@ def find_attribute_helpers(attr_type, name, custom_formatter):
 
 
 def format_attribute_values(schema, name, values, custom_formatter):
+    if not values:  # RFCs states that attributes must always have values, but a flaky server returns empty values too
+        return []
+
     if schema and schema.attribute_types and name in schema.attribute_types:
         attr_type = schema.attribute_types[name]
     else:

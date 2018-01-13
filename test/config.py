@@ -2,9 +2,7 @@
 
 # Created on 2013.05.23
 #
-# @author: Giovanni Cannata
-#
-# Copyright 2015 Giovanni Cannata
+# Copyright 2015 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #

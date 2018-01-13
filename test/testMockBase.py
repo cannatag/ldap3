@@ -2,7 +2,7 @@
 #
 # Author: Giovanni Cannata & signedbit
 #
-# Copyright 2016 Giovanni Cannata & signedbit
+# Copyright 2016 - 2018 Giovanni Cannata & signedbit
 #
 # This file is part of ldap3.
 #

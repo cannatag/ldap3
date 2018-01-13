@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2016, 2017 Giovanni Cannata
+# Copyright 2016 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -53,7 +53,7 @@ from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.formatters.standard import find_attribute_validator, format_attribute_values
 from ..protocol.rfc2696 import paged_search_control
 from ..utils.log import log, log_enabled, ERROR, BASIC
-from ..utils.asn1 import encoder
+from ..utils.asn1 import encode
 from ..strategy.base import BaseStrategy  # needed for decode_control() method
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..protocol.convert import build_controls_list
@@ -895,7 +895,7 @@ class MockBaseStrategy(object):
                 if message_controls is not None:
                     ldap_message['controls'] = message_controls
                 asn1_request = BaseStrategy.decode_request(message_type, request, controls)
-                self.connection._usage.update_transmitted_message(asn1_request, len(encoder.encode(ldap_message)))
+                self.connection._usage.update_transmitted_message(asn1_request, len(encode(ldap_message)))
             return message_id, message_type, request, controls
         else:
             self.connection.last_error = 'unable to send message, connection is not open'

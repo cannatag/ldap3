@@ -50,7 +50,7 @@ License
 -------
 
 The ldap3 project is open source software released under the **LGPL v3 license**.
-Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+Copyright 2013 - 2018 Giovanni Cannata
 
 
 PEP8 Compliance

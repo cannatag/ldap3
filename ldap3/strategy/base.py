@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2013 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -57,7 +57,7 @@ from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
-from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
+from ..utils.asn1 import encode, decoder, ldap_result_to_dict_fast, decode_sequence
 from ..utils.conv import to_unicode
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
@@ -823,7 +823,7 @@ class BaseStrategy(object):
         if log_enabled(NETWORK):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
         try:
-            encoded_message = encoder.encode(ldap_message)
+            encoded_message = encode(ldap_message)
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'ldap message sent via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))

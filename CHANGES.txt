@@ -1,3 +1,20 @@
+# 2.4.1 - not released yet
+    - auto_encode parameter is honored when binding (thanks jkolo)
+    - fixed organizationalName definition in oid (thanks mingulov)
+    - automatic byte to int conversion working again (thanks Brian)
+    - mock connection searchs correctly escape filters (thanks kiddick)
+    - fixed bind with not unicode characters in Python 2 (thanks jkolo)
+    - extended filter attributes should work again with pyasn1 0.4.1 (thanks Dirk-jan)
+    - fixed error when reading incomplete server info
+    - NOT keyword properly handled in dit_content_rules (thanks Michael)
+    - operational attributes are prorerly returned in Cursor whit get_operational_attributes = True (thanks a23s4a)
+    - start_tls() is properly executed with AD when raise_exceptions=True (thanks Andrew)
+    - reopening a Connection honours auto_bind setting (thanks calken)
+    - an attribute returned with no value from a flaky server doesn't raise exception anymore (thanks Terrence)
+    - pwdLastSet in AD is valid only for -1 (thanks Thane)
+    - fixed docs for ldifProducer (thanks lhoekenga)
+    - fixed monkeypatching of PyAsn1 for Boolean Value in BER encoding (thanks tmarlok88)
+
 # 2.4 - 2017.11.14
     - security fix in the rebind() method of the Connection object (thanks Daniel)
     - fix for Sasl credentials in Python 3 (thanks Busuwe)

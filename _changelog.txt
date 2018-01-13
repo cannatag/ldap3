@@ -12,6 +12,7 @@
     - reopening a Connection honours auto_bind setting (thanks calken)
     - an attribute returned with no value from a flaky server doesn't raise exception anymore (thanks Terrence)
     - pwdLastSet in AD is valid only for -1 (thanks Thane)
+    - fixed docs for ldifProducer (thanks lhoekenga)
 
 # 2.4 - 2017.11.14
     - security fix in the rebind() method of the Connection object (thanks Daniel)

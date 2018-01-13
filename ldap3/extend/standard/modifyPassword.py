@@ -29,6 +29,7 @@ from ...protocol.rfc3062 import PasswdModifyRequestValue, PasswdModifyResponseVa
 from ...utils.hashed import hashed
 from ...protocol.sasl.sasl import validate_simple_password
 from ...utils.dn import safe_dn
+from ...core.results import RESULT_SUCCESS
 
 # implements RFC3062
 
@@ -60,6 +61,10 @@ class ModifyPassword(ExtendedOperation):
 
     def populate_result(self):
         try:
-            self.result['new_password'] = str(self.decoded_response['genPasswd'])
-        except TypeError:  # optional field can be absent
-            self.result['new_password'] = None
+            self.result[self.response_attribute] = str(self.decoded_response['genPasswd'])
+        except TypeError:  # optional field can be absent, so returns True if operation is successful else False
+            self.result[self.response_attribute] = True if self.result['result'] == RESULT_SUCCESS else False
+            # change was not successful, raises exception if raise_exception = True in connection or returns the operation result, error code is in result['result']
+            if self.connection.raise_exceptions:
+                from ...core.exceptions import LDAPOperationResult
+                raise LDAPOperationResult(result=self.result['result'], description=self.result['description'], dn=result['dn'], message=self.result['message'], response_type=self.result['type'])

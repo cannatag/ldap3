@@ -103,11 +103,11 @@ def prepare_changes_for_request(changes):
 
 
 def build_controls_list(controls):
-    """
-    controls is a list of Control() or tuples
-    each tuple must have 3 elements: the control OID, the criticality, the value
+    """controls is a sequence of Control() or sequences
+    each sequence must have 3 elements: the control OID, the criticality, the value
     criticality must be a boolean
     """
+
     if not controls:
         return None
 
@@ -126,7 +126,7 @@ def build_controls_list(controls):
                 built_control['controlValue'] = control[2]
             built_controls.setComponentByPosition(idx, built_control)
         else:
-            raise LDAPControlError('control must be a tuple of 3 elements: controlType, criticality (boolean) and controlValue (None if not provided)')
+            raise LDAPControlError('control must be a sequence of 3 elements: controlType, criticality (boolean) and controlValue (None if not provided)')
 
     return built_controls
 

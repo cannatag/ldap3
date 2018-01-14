@@ -36,6 +36,7 @@ from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_library_log_detail_level, get_detail_level_name, set_library_log_activation_level, set_library_log_hide_sensitive_data
 from ldap3 import __version__ as ldap3_version
+from pyasn1 import __version__ as pyasn1_version
 
 test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
@@ -48,7 +49,7 @@ test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
 
-test_internal_decoder = True  # True uses internal 10x faster than pyasn1 decoder
+test_internal_decoder = False  # True uses internal 10x faster than pyasn1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -357,7 +358,7 @@ if test_logging:
     set_library_log_detail_level(test_log_detail)
 
 print('Testing location:', location, ' - Test server:', test_server)
-print('Python version:', version, ' - ldap3 version:', ldap3_version)
+print('Python version:', version, ' - ldap3 version:', ldap3_version, ' - pyasn1 version:', pyasn1_version,)
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
 print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))

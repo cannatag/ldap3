@@ -26,6 +26,7 @@
 import unittest
 
 from ldap3.operation.search import parse_filter, MATCH_EQUAL, MATCH_EXTENSIBLE
+from ldap3.utils.conv import escape_filter_chars
 from test.config import test_auto_escape, test_auto_encode
 
 
@@ -89,3 +90,9 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['value'], b'Dino')
         self.assertEqual(f.elements[0].assertion['matchingRule'], '2.4.6.8.''10')
         self.assertEqual(f.elements[0].assertion['dnAttributes'], True)
+
+    def test_parse_search_filter_parenteses(self):
+        f = parse_filter('(cn=' + escape_filter_chars('Doe (Missing Inc)') + ')', None, test_auto_escape, test_auto_encode)
+        self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
+        self.assertEqual(f.elements[0].assertion['attr'], 'cn')
+        self.assertEqual(f.elements[0].assertion['value'], b'Doe \\28Missing Inc\\29')

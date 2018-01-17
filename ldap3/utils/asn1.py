@@ -57,7 +57,6 @@ else:
             from pyasn1.compat.octets import ints2octs
             _true = ints2octs((255,))
             _false = ints2octs((0,))
-
             def encodeValue(self, encodeFun, value, defMode, maxChunkSize):
                 return value and self._true or self._false, 0
         elif pyasn1_version <= '0.3.1':

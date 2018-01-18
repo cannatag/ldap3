@@ -391,6 +391,9 @@ class Connection(object):
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
         r += '' if self.empty_attributes is None else (', return_empty_attributes=' + ('True' if self.empty_attributes else 'False'))
+        r += '' if self.auto_encode is None else (', auto_encode=' + ('True' if self.auto_encode else 'False'))
+        r += '' if self.auto_escape is None else (', auto_escape=' + ('True' if self.auto_escape else 'False'))
+        r += '' if self.use_referral_cache is None else (', use_referral_cache=' + ('True' if self.use_referral_cache else 'False'))
         r += ')'
 
         return r

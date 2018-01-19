@@ -651,7 +651,7 @@ class MockBaseStrategy(object):
             attributes.remove('+')
         attributes = [attr.lower() for attr in request['attributes']]
 
-        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False)
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False, check_names=self.connection.check_names)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':

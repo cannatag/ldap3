@@ -34,13 +34,14 @@ def compare_operation(dn,
                       value,
                       auto_encode,
                       schema=None,
-                      validator=None):
+                      validator=None,
+                      check_names=False):
     # CompareRequest ::= [APPLICATION 14] SEQUENCE {
     #     entry           LDAPDN,
     #     ava             AttributeValueAssertion }
     ava = AttributeValueAssertion()
     ava['attributeDesc'] = AttributeDescription(attribute)
-    ava['assertionValue'] = AssertionValue(prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode, validator)))
+    ava['assertionValue'] = AssertionValue(prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode, validator, check_names=check_names)))
 
     request = CompareRequest()
     request['entry'] = LDAPDN(dn)

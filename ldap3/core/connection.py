@@ -429,7 +429,9 @@ class Connection(object):
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
         r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
-
+        r += '' if self.auto_encode is None else (', auto_encode=' + ('True' if self.auto_encode else 'False'))
+        r += '' if self.auto_escape is None else (', auto_escape=' + ('True' if self.auto_escape else 'False'))
+        r += '' if self.use_referral_cache is None else (', use_referral_cache=' + ('True' if self.use_referral_cache else 'False'))
         r += ')'
 
         return r
@@ -766,7 +768,8 @@ class Connection(object):
                                        types_only,
                                        self.auto_escape if auto_escape is None else auto_escape,
                                        self.auto_encode,
-                                       self.server.schema if self.server else None)
+                                       self.server.schema if self.server else None,
+                                       check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
             response = self.post_send_search(self.send('searchRequest', request, controls))
@@ -825,7 +828,7 @@ class Connection(object):
 
         with self.lock:
             self._fire_deferred()
-            request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
+            request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
@@ -913,7 +916,7 @@ class Connection(object):
                     if attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
-            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
+            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
@@ -1045,7 +1048,7 @@ class Connection(object):
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
                             raise LDAPChangeError(self.last_error)
-            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
+            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))

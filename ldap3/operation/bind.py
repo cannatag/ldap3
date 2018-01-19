@@ -29,7 +29,7 @@ from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthentic
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
-from ..protocol.convert import authentication_choice_to_dict, referrals_to_list, validate_attribute_value
+from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
 from ..utils.conv import to_unicode, to_raw
 
 # noinspection PyUnresolvedReferences

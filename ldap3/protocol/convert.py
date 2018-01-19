@@ -131,16 +131,16 @@ def build_controls_list(controls):
     return built_controls
 
 
-def validate_assertion_value(schema, name, value, auto_escape, auto_encode):
+def validate_assertion_value(schema, name, value, auto_escape, auto_encode, check_names):
     value = to_unicode(value)
     if auto_escape:
         if '\\' in value and not is_filter_escaped(value):
             value = escape_filter_chars(value)
-    value = validate_attribute_value(schema, name, value, auto_encode)
+    value = validate_attribute_value(schema, name, value, auto_encode, check_names=check_names)
     return value
 
 
-def validate_attribute_value(schema, name, value, auto_encode, validator=None):
+def validate_attribute_value(schema, name, value, auto_encode, validator=None, check_names=False):
     conf_classes_excluded_from_check = [v.lower() for v in get_config_parameter('CLASSES_EXCLUDED_FROM_CHECK')]
     conf_attributes_excluded_from_check = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_CHECK')]
     conf_utf8_syntaxes = get_config_parameter('UTF8_ENCODED_SYNTAXES')
@@ -148,10 +148,10 @@ def validate_attribute_value(schema, name, value, auto_encode, validator=None):
     if schema and schema.attribute_types:
         if ';' in name:
             name = name.split(';')[0]
-        if schema.object_classes and name.lower() == 'objectclass':
+        if check_names and schema.object_classes and name.lower() == 'objectclass':
             if to_unicode(value).lower() not in conf_classes_excluded_from_check and to_unicode(value) not in schema.object_classes:
                 raise LDAPObjectClassError('invalid class in objectClass attribute: ' + str(value))
-        elif name not in schema.attribute_types and name.lower() not in conf_attributes_excluded_from_check:
+        elif check_names and name not in schema.attribute_types and name.lower() not in conf_attributes_excluded_from_check:
             raise LDAPAttributeError('invalid attribute ' + name)
         else:  # try standard validators
             validator = find_attribute_validator(schema, name, validator)
@@ -161,10 +161,7 @@ def validate_attribute_value(schema, name, value, auto_encode, validator=None):
             elif validated is not True:  # a valid LDAP value equivalent to the actual value
                 value = validated
         # converts to utf-8 for well known Unicode LDAP syntaxes
-        if auto_encode and ((name in schema.attribute_types and
-                            schema.attribute_types[name].syntax
-                            in conf_utf8_syntaxes) or name.lower() in
-                            conf_utf8_types):
+        if auto_encode and ((name in schema.attribute_types and schema.attribute_types[name].syntax in conf_utf8_syntaxes) or name.lower() in conf_utf8_types):
             value = to_unicode(value)  # tries to convert from local encoding to Unicode
     return to_raw(value)
 

@@ -49,7 +49,7 @@ test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
 
-test_internal_decoder = False  # True uses internal 10x faster than pyasn1 decoder
+test_internal_decoder = True  # True uses then internal faster than pyasn1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type

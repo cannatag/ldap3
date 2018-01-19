@@ -32,7 +32,8 @@ def add_operation(dn,
                   attributes,
                   auto_encode,
                   schema=None,
-                  validator=None):
+                  validator=None,
+                  check_names=False):
     # AddRequest ::= [APPLICATION 8] SEQUENCE {
     #     entry           LDAPDN,
     #     attributes      AttributeList }
@@ -45,9 +46,9 @@ def add_operation(dn,
         vals = Vals()  # changed from ValsAtLeast1() for allowing empty member value in groups
         if isinstance(attributes[attribute], SEQUENCE_TYPES):
             for index, value in enumerate(attributes[attribute]):
-                vals.setComponentByPosition(index, prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode, validator)))
+                vals.setComponentByPosition(index, prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode, validator, check_names)))
         else:
-            vals.setComponentByPosition(0, prepare_for_sending(validate_attribute_value(schema, attribute, attributes[attribute], auto_encode, validator)))
+            vals.setComponentByPosition(0, prepare_for_sending(validate_attribute_value(schema, attribute, attributes[attribute], auto_encode, validator, check_names)))
 
         attribute_list[pos]['vals'] = vals
 

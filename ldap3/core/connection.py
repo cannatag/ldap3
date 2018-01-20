@@ -199,8 +199,8 @@ class Connection(object):
                  pool_keepalive=None):
 
         conf_default_pool_name = get_config_parameter('DEFAULT_THREADED_POOL_NAME')
-        self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
-        with self.lock:
+        self.connection_lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
+        with self.connection_lock:
             if client_strategy not in CLIENT_STRATEGIES:
                 self.last_error = 'unknown client connection strategy'
                 if log_enabled(ERROR):
@@ -445,7 +445,7 @@ class Connection(object):
 
     @stream.setter
     def stream(self, value):
-        with self.lock:
+        with self.connection_lock:
             if self.strategy.can_stream:
                 self.strategy.set_stream(value)
 
@@ -464,7 +464,7 @@ class Connection(object):
         return self._usage
 
     def __enter__(self):
-        with self.lock:
+        with self.connection_lock:
             self._context_state.append((self.bound, self.closed))  # save status out of context as a tuple in a list
             if self.closed:
                 self.open()
@@ -475,7 +475,7 @@ class Connection(object):
 
     # noinspection PyUnusedLocal
     def __exit__(self, exc_type, exc_val, exc_tb):
-        with self.lock:
+        with self.connection_lock:
             context_bound, context_closed = self._context_state.pop()
             if (not context_bound and self.bound) or self.stream:  # restore status prior to entering context
                 try:
@@ -505,7 +505,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             if self.lazy and not self._executing_deferred:
                 if self.strategy.pooled:
                     self.strategy.validate_bind(controls)
@@ -621,7 +621,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start (RE)BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             if user:
                 self.user = user
             if password is not None:
@@ -668,7 +668,7 @@ class Connection(object):
             self.strategy.unbind_referral_cache()
 
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # _clear deferred status
                 self.strategy.close()
                 self._deferred_open = False
@@ -726,7 +726,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'search base sanitized to <%s> for SEARCH operation via <%s>', search_base, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
@@ -826,7 +826,7 @@ class Connection(object):
         if isinstance(value, SEQUENCE_TYPES):  # value can't be a sequence
             raise LDAPInvalidValueError('value cannot be a sequence')
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
@@ -872,7 +872,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'dn sanitized to <%s> for ADD operation via <%s>', dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             attr_object_class = []
             if object_class is None:
@@ -952,7 +952,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'dn sanitized to <%s> for DELETE operation via <%s>', dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
@@ -1003,7 +1003,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'dn sanitized to <%s> for MODIFY operation via <%s>', dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
@@ -1091,7 +1091,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'relative dn sanitized to <%s> for MODIFY DN operation via <%s>', relative_dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
@@ -1136,7 +1136,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start ABANDON operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             return_value = False
             if self.strategy._outstanding or message_id == 0:
@@ -1171,7 +1171,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start EXTENDED operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             request = extended_operation(request_name, request_value, no_encode=no_encode)
             if log_enabled(PROTOCOL):
@@ -1199,7 +1199,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start START TLS operation via <%s>', self)
 
-        with self.lock:
+        with self.connection_lock:
             return_value = False
             if not self.server.tls:
                 self.server.tls = Tls()
@@ -1229,7 +1229,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start SASL BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             result = None
 
             if not self.sasl_in_progress:
@@ -1257,7 +1257,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start NTLM BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True  # ntlm is same of sasl authentication
@@ -1315,7 +1315,7 @@ class Connection(object):
         #     return
 
         if not self.strategy.pooled:
-            with self.lock:
+            with self.connection_lock:
                 if not self.closed:
                     if log_enabled(BASIC):
                         log(BASIC, 'refreshing server info for <%s>', self)
@@ -1337,7 +1337,7 @@ class Connection(object):
                          line_separator=None,
                          sort_order=None,
                          stream=None):
-        with self.lock:
+        with self.connection_lock:
             if search_result is None:
                 search_result = self.response
 
@@ -1366,7 +1366,7 @@ class Connection(object):
                          checked_attributes=True,
                          include_empty=True):
 
-        with self.lock:
+        with self.connection_lock:
             if search_result is None:
                 search_result = self.response
 
@@ -1410,7 +1410,7 @@ class Connection(object):
                          raw=False,
                          indent=4,
                          sort=True):
-        with self.lock:
+        with self.connection_lock:
             if self.response:
                 if isinstance(target, STRING_TYPES):
                     target = open(target, 'w+')
@@ -1422,7 +1422,7 @@ class Connection(object):
                 target.close()
 
     def _fire_deferred(self, read_info=True):
-        with self.lock:
+        with self.connection_lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
 
@@ -1452,7 +1452,7 @@ class Connection(object):
         return self._entries
 
     def _get_entries(self, search_response):
-        with self.lock:
+        with self.connection_lock:
             from .. import ObjectDef, Reader
 
             # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset

@@ -161,7 +161,6 @@ class MockBaseStrategy(object):
 
     def __init__(self):
         if not hasattr(self.connection.server, 'dit'):  # create entries dict if not already present
-            self.connection.server.dit_lock = Lock()
             self.connection.server.dit = CaseInsensitiveDict()
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True

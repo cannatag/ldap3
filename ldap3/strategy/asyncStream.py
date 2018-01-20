@@ -71,7 +71,7 @@ class AsyncStreamStrategy(AsyncStrategy):
 
     def accumulate_stream(self, message_id, change):
         if message_id == self.persistent_search_message_id:
-            with self.lock:
+            with self.async_lock:
                 self._responses[message_id] = []
             if self.streaming:
                 if not self._header_added and self.stream.tell() == 0:

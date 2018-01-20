@@ -67,7 +67,8 @@ class Server(object):
     """
 
     _message_counter = 0
-    _message_id_lock = Lock()
+    _message_id_lock = Lock()  # global lock for message_id shared by all Server objects
+
 
     def __init__(self,
                  host,
@@ -193,7 +194,7 @@ class Server(object):
         self.get_info = get_info
         self._dsa_info = None
         self._schema_info = None
-        self.lock = Lock()
+        self.dit_lock = Lock()
         self.custom_formatter = formatter
         self.custom_validator = validator
         self._address_info = []  # property self.address_info resolved at open time (or when check_availability is called)
@@ -361,7 +362,7 @@ class Server(object):
                                                    '+'],  # requests all remaining attributes (other),
                                        get_operational_attributes=True)
 
-            with self.lock:
+            with self.dit_lock:
                 if isinstance(result, bool):  # sync request
                     self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
                 elif result:  # asynchronous request, must check if attributes in response
@@ -417,7 +418,7 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-            with self.lock:
+            with self.dit_lock:
                 self._schema_info = None
                 if result:
                     if isinstance(result, bool):  # sync request

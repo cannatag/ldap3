@@ -90,7 +90,7 @@ class PersistentSearch(object):
         if not self.connection.bound:
             self.connection.bind()
 
-        with self.connection.strategy.lock:
+        with self.connection.connection_lock:
             self.message_id = self.connection.search(search_base=self.base,
                                                      search_filter=self.filter,
                                                      search_scope=self.scope,

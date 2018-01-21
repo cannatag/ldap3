@@ -1,4 +1,5 @@
-# 2.4.1 - not released yet
+# 2.4.1 - 2018.01.21
+    - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4
     - auto_encode parameter is honored when binding (thanks jkolo)
     - fixed organizationalName definition in oid (thanks mingulov)
     - automatic byte to int conversion working again (thanks Brian)
@@ -13,7 +14,10 @@
     - an attribute returned with no value from a flaky server doesn't raise exception anymore (thanks Terrence)
     - pwdLastSet in AD is valid only for -1 (thanks Thane)
     - fixed docs for ldifProducer (thanks lhoekenga)
-    - fixed monkeypatching of PyAsn1 for Boolean Value in BER encoding (thanks tmarlok88)
+    - fixed monkeypatching of pyasn1 for Boolean Value in BER encoding (thanks tmarlok88)
+    - check_names was not honoured while validating attribute values (thanks ymcymc)
+    - locks refactored in Connection and in Async strategy
+    - socket properly closed when checking availability of an invalid server
 
 # 2.4 - 2017.11.14
     - security fix in the rebind() method of the Connection object (thanks Daniel)

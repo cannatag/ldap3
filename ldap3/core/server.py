@@ -304,9 +304,10 @@ class Server(object):
                 finally:
                     try:
                         temp_socket.shutdown(socket.SHUT_RDWR)
-                        temp_socket.close()
                     except socket.error:
                         available = False
+                    finally:
+                        temp_socket.close()
             except socket.gaierror:
                 available = False
 

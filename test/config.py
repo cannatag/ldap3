@@ -42,7 +42,7 @@ test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MO
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
-test_logging = False
+test_logging = True
 test_log_detail = PROTOCOL
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN

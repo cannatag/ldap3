@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2013 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -29,7 +29,7 @@ from pyasn1.type.base import Asn1Item
 from ..core.results import RESULT_CODES
 from ..protocol.rfc4511 import ExtendedRequest, RequestName, ResultCode, RequestValue
 from ..protocol.convert import referrals_to_list
-from ..utils.asn1 import encoder
+from ..utils.asn1 import encode
 from ..utils.conv import to_unicode
 
 # ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
@@ -43,13 +43,13 @@ def extended_operation(request_name,
     request = ExtendedRequest()
     request['requestName'] = RequestName(request_name)
     if request_value and isinstance(request_value, Asn1Item):
-        request['requestValue'] = RequestValue(encoder.encode(request_value))
+        request['requestValue'] = RequestValue(encode(request_value))
     elif str is not bytes and isinstance(request_value, (bytes, bytearray)):  # in Python 3 doesn't try to encode a byte value
         request['requestValue'] = request_value
     elif request_value and no_encode:  # doesn't encode the value
         request['requestValue'] = request_value
     elif request_value:  # tries to encode as a octet string
-        request['requestValue'] = RequestValue(encoder.encode(OctetString(str(request_value))))
+        request['requestValue'] = RequestValue(encode(OctetString(str(request_value))))
 
     # elif request_value is not None:
     #     raise LDAPExtensionError('unable to encode value for extended operation')

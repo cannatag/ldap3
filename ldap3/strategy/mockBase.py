@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2016, 2017 Giovanni Cannata
+# Copyright 2016 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -53,7 +53,7 @@ from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.formatters.standard import find_attribute_validator, format_attribute_values
 from ..protocol.rfc2696 import paged_search_control
 from ..utils.log import log, log_enabled, ERROR, BASIC
-from ..utils.asn1 import encoder
+from ..utils.asn1 import encode
 from ..strategy.base import BaseStrategy  # needed for decode_control() method
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..protocol.convert import build_controls_list
@@ -161,7 +161,6 @@ class MockBaseStrategy(object):
 
     def __init__(self):
         if not hasattr(self.connection.server, 'dit'):  # create entries dict if not already present
-            self.connection.server.dit_lock = Lock()
             self.connection.server.dit = CaseInsensitiveDict()
         self.entries = self.connection.server.dit  # for simpler reference
         self.no_real_dsa = True
@@ -651,7 +650,7 @@ class MockBaseStrategy(object):
             attributes.remove('+')
         attributes = [attr.lower() for attr in request['attributes']]
 
-        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False)
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False, check_names=self.connection.check_names)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':
@@ -895,7 +894,7 @@ class MockBaseStrategy(object):
                 if message_controls is not None:
                     ldap_message['controls'] = message_controls
                 asn1_request = BaseStrategy.decode_request(message_type, request, controls)
-                self.connection._usage.update_transmitted_message(asn1_request, len(encoder.encode(ldap_message)))
+                self.connection._usage.update_transmitted_message(asn1_request, len(encode(ldap_message)))
             return message_id, message_type, request, controls
         else:
             self.connection.last_error = 'unable to send message, connection is not open'

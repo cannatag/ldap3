@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2013 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -117,7 +117,7 @@ class AsyncStrategy(BaseStrategy):
                             raise LDAPStartTLSError(self.connection.last_error)
                         del self.connection._awaiting_for_async_start_tls
                     if message_id != 0:  # 0 is reserved for 'Unsolicited Notification' from server as per RFC4511 (paragraph 4.4)
-                        with self.connection.strategy.lock:
+                        with self.connection.strategy.async_lock:
                             if message_id in self.connection.strategy._responses:
                                 self.connection.strategy._responses[message_id].append(dict_response)
                             else:
@@ -148,13 +148,13 @@ class AsyncStrategy(BaseStrategy):
         self._requests = None
         self.can_stream = False
         self.receiver = None
-        self.lock = Lock()
+        self.async_lock = Lock()
 
     def open(self, reset_usage=True, read_server_info=True):
         """
         Open connection and start listen on the socket in a different thread
         """
-        with self.lock:
+        with self.connection.connection_lock:
             self._responses = dict()
             self._requests = dict()
             BaseStrategy.open(self, reset_usage, read_server_info)
@@ -170,7 +170,7 @@ class AsyncStrategy(BaseStrategy):
         """
         Close connection and stop socket thread
         """
-        with self.lock:
+        with self.connection.connection_lock:
             BaseStrategy.close(self)
 
     def post_send_search(self, message_id):
@@ -206,7 +206,7 @@ class AsyncStrategy(BaseStrategy):
         Performs the capture of LDAP response for this strategy
         Checks lock to avoid race condition with receiver thread
         """
-        with self.lock:
+        with self.async_lock:
             responses = self._responses.pop(message_id) if message_id in self._responses and self._responses[message_id][-1] == RESPONSE_COMPLETE else None
 
         return responses

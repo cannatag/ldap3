@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2015 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -23,12 +23,9 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-
-from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder
-from pyasn1.type.univ import Boolean
-from pyasn1.compat.octets import ints2octs
-from pyasn1.codec.ber import encoder, decoder  # for usage in other modules
-
+from pyasn1 import __version__ as pyasn1_version
+from pyasn1.codec.ber import decoder  # for usage in other modules
+from pyasn1.codec.ber.encoder import Encoder # for monkeypatching of boolean value
 from ..core.results import RESULT_CODES
 from ..utils.conv import to_unicode
 from ..protocol.convert import referrals_to_list
@@ -41,11 +38,47 @@ CLASSES = {(False, False): 0,  # Universal
 
 # Monkeypatching of pyasn1 for encoding Boolean with the value 0xFF for TRUE
 # THIS IS NOT PART OF THE FAST BER DECODER
-class BooleanCEREncoder(BooleanEncoder):
-    _true = ints2octs((255,))
+if pyasn1_version == 'xxx0.2.3':
+    from pyasn1.codec.ber.encoder import tagMap, BooleanEncoder, encode
+    from pyasn1.type.univ import Boolean
+    from pyasn1.compat.octets import ints2octs
+    class BooleanCEREncoder(BooleanEncoder):
+        _true = ints2octs((255,))
 
-tagMap[Boolean.tagSet] = BooleanCEREncoder()
+    tagMap[Boolean.tagSet] = BooleanCEREncoder()
+else:
+    from pyasn1.codec.ber.encoder import tagMap, typeMap, AbstractItemEncoder
+    from pyasn1.type.univ import Boolean
+    from copy import deepcopy
 
+    class LDAPBooleanEncoder(AbstractItemEncoder):
+        supportIndefLenMode = False
+        if pyasn1_version <= '0.2.3':
+            from pyasn1.compat.octets import ints2octs
+            _true = ints2octs((255,))
+            _false = ints2octs((0,))
+            def encodeValue(self, encodeFun, value, defMode, maxChunkSize):
+                return value and self._true or self._false, 0
+        elif pyasn1_version <= '0.3.1':
+            def encodeValue(self, encodeFun, value, defMode, maxChunkSize):
+                return value and (255,) or (0,), False, False
+        elif pyasn1_version <= '0.3.4':
+            def encodeValue(self, encodeFun, value, defMode, maxChunkSize, ifNotEmpty=False):
+                return value and (255,) or (0,), False, False
+        elif pyasn1_version <= '0.3.7':
+            def encodeValue(self, value, encodeFun, **options):
+                return value and (255,) or (0,), False, False
+        else:
+            def encodeValue(self, value, asn1Spec, encodeFun, **options):
+                return value and (255,) or (0,), False, False
+
+    customTagMap = deepcopy(tagMap)
+    customTypeMap = deepcopy(typeMap)
+    customTagMap[Boolean.tagSet] = LDAPBooleanEncoder()
+    customTypeMap[Boolean.typeId] = LDAPBooleanEncoder()
+
+    encode = Encoder(customTagMap, customTypeMap)
+# end of monkey patching
 
 # a fast BER decoder for LDAP responses only
 def compute_ber_size(data):

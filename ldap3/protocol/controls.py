@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2015 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 from .rfc4511 import Control, Criticality, LDAPOID
-from ..utils.asn1 import encoder
+from ..utils.asn1 import encode
 
 
 def build_control(oid, criticality, value, encode_control_value=True):
@@ -33,7 +33,7 @@ def build_control(oid, criticality, value, encode_control_value=True):
     control.setComponentByName('criticality', Criticality(criticality))
     if value is not None:
         if encode_control_value:
-            control.setComponentByName('controlValue', encoder.encode(value))
+            control.setComponentByName('controlValue', encode(value))
         else:
             control.setComponentByName('controlValue', value)
 

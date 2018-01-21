@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016 Giovanni Cannata
+# Copyright 2014 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -36,7 +36,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         global testcase_id
         testcase_id = random_id()
-        self.connection = get_connection(check_names=True, get_info=ALL)
+        self.connection = get_connection(check_names=False, get_info=ALL)
         self.delete_at_teardown = []
 
     def tearDown(self):
@@ -45,7 +45,7 @@ class Test(unittest.TestCase):
 
     def test_wrong_assertion(self):
         if not self.connection.strategy.pooled:
-            self.assertRaises(LDAPAttributeError, self.connection.search, search_base=test_base, search_filter='(xxx=yyy)', attributes=[test_name_attr])
+            self.connection.search(search_base=test_base, search_filter='(xxx=yyy)', attributes=[test_name_attr])
 
     def test_wrong_attribute(self):
         if not self.connection.strategy.pooled:
@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
 
     def test_wrong_object_class_add(self):
         if not self.connection.strategy.pooled:
-            self.assertRaises(LDAPObjectClassError, self.connection.add, generate_dn(test_base, testcase_id, 'test-add-operation-wrong'), 'inetOrgPerson', {'objectClass': ['inetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
+            self.connection.add(generate_dn(test_base, testcase_id, 'test-add-operation-wrong'), 'inetOrgPerson', {'objectClass': ['inetOrgPerson', 'xxx'], 'sn': 'test-add', test_name_attr: 'test-add-operation'})
 
     def test_valid_assertion(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-1'))

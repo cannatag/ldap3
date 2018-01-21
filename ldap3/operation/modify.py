@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2013 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -52,7 +52,8 @@ def modify_operation(dn,
                      changes,
                      auto_encode,
                      schema=None,
-                     validator=None):
+                     validator=None,
+                     check_names=False):
     # changes is a dictionary in the form {'attribute': [(operation, [val1, ...]), ...], ...}
     # operation is 0 (add), 1 (delete), 2 (replace), 3 (increment)
     # increment as per RFC4525
@@ -66,9 +67,9 @@ def modify_operation(dn,
             partial_attribute['vals'] = Vals()
             if isinstance(change_operation[1], SEQUENCE_TYPES):
                 for index, value in enumerate(change_operation[1]):
-                    partial_attribute['vals'].setComponentByPosition(index, prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode, validator)))
+                    partial_attribute['vals'].setComponentByPosition(index, prepare_for_sending(validate_attribute_value(schema, attribute, value, auto_encode, validator, check_names=check_names)))
             else:
-                partial_attribute['vals'].setComponentByPosition(0, prepare_for_sending(validate_attribute_value(schema, attribute, change_operation[1], auto_encode, validator)))
+                partial_attribute['vals'].setComponentByPosition(0, prepare_for_sending(validate_attribute_value(schema, attribute, change_operation[1], auto_encode, validator, check_names=check_names)))
             change = Change()
             change['operation'] = Operation(change_table[change_operation[0]])
             change['modification'] = partial_attribute

@@ -2,7 +2,7 @@
 #
 # Author: Giovanni Cannata & signedbit
 #
-# Copyright 2016 Giovanni Cannata & signedbit
+# Copyright 2016 - 2018 Giovanni Cannata & signedbit
 #
 # This file is part of ldap3.
 #
@@ -63,6 +63,6 @@ class Test(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def _evaluate_filter(self, search_filter):
-        filter_root = search.parse_filter(search_filter, self.schema, auto_escape=True, auto_encode=False)
+        filter_root = search.parse_filter(search_filter, self.schema, auto_escape=True, auto_encode=False, check_names=False)
         candidates = self.server.dit
         return self.connection.strategy.evaluate_filter_node(filter_root, candidates)

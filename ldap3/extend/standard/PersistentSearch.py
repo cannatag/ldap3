@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2016, 2017 Giovanni Cannata
+# Copyright 2016 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -90,7 +90,7 @@ class PersistentSearch(object):
         if not self.connection.bound:
             self.connection.bind()
 
-        with self.connection.strategy.lock:
+        with self.connection.strategy.async_lock:
             self.message_id = self.connection.search(search_base=self.base,
                                                      search_filter=self.filter,
                                                      search_scope=self.scope,

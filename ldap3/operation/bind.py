@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2013 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -30,7 +30,7 @@ from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
 from ..protocol.convert import authentication_choice_to_dict, referrals_to_list
-from ..utils.conv import to_unicode
+from ..utils.conv import to_unicode, to_raw
 
 # noinspection PyUnresolvedReferences
 def bind_operation(version,
@@ -38,7 +38,8 @@ def bind_operation(version,
                    name='',
                    password=None,
                    sasl_mechanism=None,
-                   sasl_credentials=None):
+                   sasl_credentials=None,
+                   auto_encode=False):
     # BindRequest ::= [APPLICATION 0] SEQUENCE {
     #                                           version        INTEGER (1 ..  127),
     #                                           name           LDAPDN,
@@ -48,8 +49,7 @@ def bind_operation(version,
     if name is None:
         name = ''
     if isinstance(name, STRING_TYPES):
-        request['name'] = name
-
+        request['name'] = to_unicode(name) if auto_encode else name
     if authentication == SIMPLE:
         if not name:
             raise LDAPPasswordIsMandatoryError('user name is mandatory in simple bind')

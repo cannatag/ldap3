@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2014 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -199,8 +199,8 @@ class Connection(object):
                  pool_keepalive=None):
 
         conf_default_pool_name = get_config_parameter('DEFAULT_THREADED_POOL_NAME')
-        self.lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
-        with self.lock:
+        self.connection_lock = RLock()  # re-entrant lock to ensure that operations in the Connection object are executed atomically in the same thread
+        with self.connection_lock:
             if client_strategy not in CLIENT_STRATEGIES:
                 self.last_error = 'unknown client connection strategy'
                 if log_enabled(ERROR):
@@ -318,23 +318,7 @@ class Connection(object):
             self.post_send_search = self.strategy.post_send_search
 
             if not self.strategy.no_real_dsa:
-                if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
-                    if log_enabled(BASIC):
-                        log(BASIC, 'performing automatic bind for <%s>', self)
-                    self.open(read_server_info=False)
-                    if self.auto_bind == AUTO_BIND_NO_TLS:
-                        self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
-                        self.start_tls(read_server_info=False)
-                        self.bind(read_server_info=True)
-                    elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
-                        self.bind(read_server_info=False)
-                        self.start_tls(read_server_info=True)
-                    if not self.bound:
-                        self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
-                        if log_enabled(ERROR):
-                            log(ERROR, '%s for <%s>', self.last_error, self)
-                        raise LDAPBindError(self.last_error)
+                self.do_auto_bind()
             # else:  # for strategies with a fake server set get_info to NONE if server hasn't a schema
             #     if self.server and not self.server.schema:
             #         self.server.get_info = NONE
@@ -343,6 +327,26 @@ class Connection(object):
                     log(BASIC, 'instantiated Connection: <%s>', self.repr_with_sensitive_data_stripped())
                 else:
                     log(BASIC, 'instantiated Connection: <%r>', self)
+
+    def do_auto_bind(self):
+        if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
+            if log_enabled(BASIC):
+                log(BASIC, 'performing automatic bind for <%s>', self)
+            if self.closed:
+               self.open(read_server_info=False)
+            if self.auto_bind == AUTO_BIND_NO_TLS:
+                self.bind(read_server_info=True)
+            elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
+                self.start_tls(read_server_info=False)
+                self.bind(read_server_info=True)
+            elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
+                self.bind(read_server_info=False)
+                self.start_tls(read_server_info=True)
+            if not self.bound:
+                self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPBindError(self.last_error)
 
     def __str__(self):
         s = [
@@ -387,6 +391,9 @@ class Connection(object):
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
         r += '' if self.empty_attributes is None else (', return_empty_attributes=' + ('True' if self.empty_attributes else 'False'))
+        r += '' if self.auto_encode is None else (', auto_encode=' + ('True' if self.auto_encode else 'False'))
+        r += '' if self.auto_escape is None else (', auto_escape=' + ('True' if self.auto_escape else 'False'))
+        r += '' if self.use_referral_cache is None else (', use_referral_cache=' + ('True' if self.use_referral_cache else 'False'))
         r += ')'
 
         return r
@@ -422,7 +429,9 @@ class Connection(object):
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
         r += '' if self.empty_attributes is None else (', return_empty_attributes=' + 'True' if self.empty_attributes else 'False')
-
+        r += '' if self.auto_encode is None else (', auto_encode=' + ('True' if self.auto_encode else 'False'))
+        r += '' if self.auto_escape is None else (', auto_escape=' + ('True' if self.auto_escape else 'False'))
+        r += '' if self.use_referral_cache is None else (', use_referral_cache=' + ('True' if self.use_referral_cache else 'False'))
         r += ')'
 
         return r
@@ -436,7 +445,7 @@ class Connection(object):
 
     @stream.setter
     def stream(self, value):
-        with self.lock:
+        with self.connection_lock:
             if self.strategy.can_stream:
                 self.strategy.set_stream(value)
 
@@ -455,7 +464,7 @@ class Connection(object):
         return self._usage
 
     def __enter__(self):
-        with self.lock:
+        with self.connection_lock:
             self._context_state.append((self.bound, self.closed))  # save status out of context as a tuple in a list
             if self.closed:
                 self.open()
@@ -466,7 +475,7 @@ class Connection(object):
 
     # noinspection PyUnusedLocal
     def __exit__(self, exc_type, exc_val, exc_tb):
-        with self.lock:
+        with self.connection_lock:
             context_bound, context_closed = self._context_state.pop()
             if (not context_bound and self.bound) or self.stream:  # restore status prior to entering context
                 try:
@@ -496,7 +505,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             if self.lazy and not self._executing_deferred:
                 if self.strategy.pooled:
                     self.strategy.validate_bind(controls)
@@ -514,7 +523,7 @@ class Connection(object):
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing anonymous BIND for <%s>', self)
                     if not self.strategy.pooled:
-                        request = bind_operation(self.version, self.authentication, self.user, '')
+                        request = bind_operation(self.version, self.authentication, self.user, '', auto_encode=self.auto_encode)
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'anonymous BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
@@ -524,7 +533,7 @@ class Connection(object):
                     if log_enabled(PROTOCOL):
                         log(PROTOCOL, 'performing simple BIND for <%s>', self)
                     if not self.strategy.pooled:
-                        request = bind_operation(self.version, self.authentication, self.user, self.password)
+                        request = bind_operation(self.version, self.authentication, self.user, self.password, auto_encode=self.auto_encode)
                         if log_enabled(PROTOCOL):
                             log(PROTOCOL, 'simple BIND request <%s> sent via <%s>', bind_request_to_dict(request), self)
                         response = self.post_send_single_response(self.send('bindRequest', request, controls))
@@ -612,7 +621,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start (RE)BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             if user:
                 self.user = user
             if password is not None:
@@ -659,7 +668,7 @@ class Connection(object):
             self.strategy.unbind_referral_cache()
 
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             if self.lazy and not self._executing_deferred and (self._deferred_bind or self._deferred_open):  # _clear deferred status
                 self.strategy.close()
                 self._deferred_open = False
@@ -695,12 +704,12 @@ class Connection(object):
         """
         Perform an ldap search:
 
-        - If attributes is empty no attribute is returned
+        - If attributes is empty noRFC2696 with the specified size
+        - If paged is 0 and cookie is present the search is abandoned on
+          server attribute is returned
         - If attributes is ALL_ATTRIBUTES all attributes are returned
         - If paged_size is an int greater than 0 a simple paged search
-          is tried as described in RFC2696 with the specified size
-        - If paged is 0 and cookie is present the search is abandoned on
-          server
+          is tried as described in
         - Cookie is an opaque string received in the last paged search
           and must be used on the next paged search response
         - If lazy == True open and bind will be deferred until another
@@ -717,7 +726,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'search base sanitized to <%s> for SEARCH operation via <%s>', search_base, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if not attributes:
                 attributes = [NO_ATTRIBUTES]
@@ -759,7 +768,8 @@ class Connection(object):
                                        types_only,
                                        self.auto_escape if auto_escape is None else auto_escape,
                                        self.auto_encode,
-                                       self.server.schema if self.server else None)
+                                       self.server.schema if self.server else None,
+                                       check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
             response = self.post_send_search(self.send('searchRequest', request, controls))
@@ -816,9 +826,9 @@ class Connection(object):
         if isinstance(value, SEQUENCE_TYPES):  # value can't be a sequence
             raise LDAPInvalidValueError('value cannot be a sequence')
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
-            request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
+            request = compare_operation(dn, attribute, value, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'COMPARE request <%s> sent via <%s>', compare_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('compareRequest', request, controls))
@@ -862,7 +872,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'dn sanitized to <%s> for ADD operation via <%s>', dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             attr_object_class = []
             if object_class is None:
@@ -906,7 +916,7 @@ class Connection(object):
                     if attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
-            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
+            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))
@@ -942,7 +952,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'dn sanitized to <%s> for DELETE operation via <%s>', dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
@@ -993,7 +1003,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'dn sanitized to <%s> for MODIFY operation via <%s>', dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
@@ -1038,7 +1048,7 @@ class Connection(object):
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
                             raise LDAPChangeError(self.last_error)
-            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None)
+            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))
@@ -1081,7 +1091,7 @@ class Connection(object):
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'relative dn sanitized to <%s> for MODIFY DN operation via <%s>', relative_dn, self)
 
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             if self.read_only:
                 self.last_error = 'connection is read-only'
@@ -1126,7 +1136,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start ABANDON operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             return_value = False
             if self.strategy._outstanding or message_id == 0:
@@ -1161,7 +1171,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start EXTENDED operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             self._fire_deferred()
             request = extended_operation(request_name, request_value, no_encode=no_encode)
             if log_enabled(PROTOCOL):
@@ -1189,7 +1199,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start START TLS operation via <%s>', self)
 
-        with self.lock:
+        with self.connection_lock:
             return_value = False
             if not self.server.tls:
                 self.server.tls = Tls()
@@ -1219,7 +1229,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start SASL BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             result = None
 
             if not self.sasl_in_progress:
@@ -1247,7 +1257,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start NTLM BIND operation via <%s>', self)
         self.last_error = None
-        with self.lock:
+        with self.connection_lock:
             result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True  # ntlm is same of sasl authentication
@@ -1305,7 +1315,7 @@ class Connection(object):
         #     return
 
         if not self.strategy.pooled:
-            with self.lock:
+            with self.connection_lock:
                 if not self.closed:
                     if log_enabled(BASIC):
                         log(BASIC, 'refreshing server info for <%s>', self)
@@ -1327,7 +1337,7 @@ class Connection(object):
                          line_separator=None,
                          sort_order=None,
                          stream=None):
-        with self.lock:
+        with self.connection_lock:
             if search_result is None:
                 search_result = self.response
 
@@ -1356,7 +1366,7 @@ class Connection(object):
                          checked_attributes=True,
                          include_empty=True):
 
-        with self.lock:
+        with self.connection_lock:
             if search_result is None:
                 search_result = self.response
 
@@ -1400,7 +1410,7 @@ class Connection(object):
                          raw=False,
                          indent=4,
                          sort=True):
-        with self.lock:
+        with self.connection_lock:
             if self.response:
                 if isinstance(target, STRING_TYPES):
                     target = open(target, 'w+')
@@ -1412,7 +1422,7 @@ class Connection(object):
                 target.close()
 
     def _fire_deferred(self, read_info=True):
-        with self.lock:
+        with self.connection_lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
 
@@ -1442,7 +1452,7 @@ class Connection(object):
         return self._entries
 
     def _get_entries(self, search_response):
-        with self.lock:
+        with self.connection_lock:
             from .. import ObjectDef, Reader
 
             # build a table of ObjectDefs, grouping the entries found in search_response for their attributes set, subset will be included in superset

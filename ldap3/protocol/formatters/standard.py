@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2014 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -28,7 +28,7 @@ from .formatters import format_ad_timestamp, format_binary, format_boolean,\
     format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
 from .validators import validate_integer, validate_time, always_valid,\
     validate_generic_single_value, validate_boolean, validate_ad_timestamp,\
-    validate_uuid_le, validate_uuid
+    validate_uuid_le, validate_uuid, validate_minus_one
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -120,7 +120,7 @@ standard_formatter = {
     '1.2.840.113556.1.4.49': (format_ad_timestamp, validate_ad_timestamp),  # badPasswordTime (Microsoft)
     '1.2.840.113556.1.4.51': (format_ad_timestamp, validate_ad_timestamp),  # lastLogoff (Microsoft)
     '1.2.840.113556.1.4.52': (format_ad_timestamp, validate_ad_timestamp),  # lastLogon (Microsoft)
-    '1.2.840.113556.1.4.96': (format_ad_timestamp, validate_ad_timestamp),  # pwdLastSet (Microsoft)
+    '1.2.840.113556.1.4.96': (format_ad_timestamp, validate_minus_one),  # pwdLastSet (Microsoft, can be set to -1 only)
     '1.2.840.113556.1.4.146': (format_sid, None),  # objectSid (Microsoft)
     '1.2.840.113556.1.4.159': (format_ad_timestamp, validate_ad_timestamp),  # accountExpires (Microsoft)
     '1.2.840.113556.1.4.662': (format_ad_timestamp, validate_ad_timestamp),  # lockoutTime (Microsoft)
@@ -186,6 +186,9 @@ def find_attribute_helpers(attr_type, name, custom_formatter):
 
 
 def format_attribute_values(schema, name, values, custom_formatter):
+    if not values:  # RFCs states that attributes must always have values, but a flaky server returns empty values too
+        return []
+
     if schema and schema.attribute_types and name in schema.attribute_types:
         attr_type = schema.attribute_types[name]
     else:

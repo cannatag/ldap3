@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2014 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -67,7 +67,8 @@ class Server(object):
     """
 
     _message_counter = 0
-    _message_id_lock = Lock()
+    _message_id_lock = Lock()  # global lock for message_id shared by all Server objects
+
 
     def __init__(self,
                  host,
@@ -193,7 +194,7 @@ class Server(object):
         self.get_info = get_info
         self._dsa_info = None
         self._schema_info = None
-        self.lock = Lock()
+        self.dit_lock = Lock()
         self.custom_formatter = formatter
         self.custom_validator = validator
         self._address_info = []  # property self.address_info resolved at open time (or when check_availability is called)
@@ -303,9 +304,10 @@ class Server(object):
                 finally:
                     try:
                         temp_socket.shutdown(socket.SHUT_RDWR)
-                        temp_socket.close()
                     except socket.error:
                         available = False
+                    finally:
+                        temp_socket.close()
             except socket.gaierror:
                 available = False
 
@@ -361,7 +363,7 @@ class Server(object):
                                                    '+'],  # requests all remaining attributes (other),
                                        get_operational_attributes=True)
 
-            with self.lock:
+            with self.dit_lock:
                 if isinstance(result, bool):  # sync request
                     self._dsa_info = DsaInfo(connection.response[0]['attributes'], connection.response[0]['raw_attributes']) if result else self._dsa_info
                 elif result:  # asynchronous request, must check if attributes in response
@@ -390,11 +392,13 @@ class Server(object):
             result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if isinstance(result, bool):  # sync request
                 if result and 'subschemaSubentry' in connection.response[0]['raw_attributes']:
-                    schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
+                    if len(connection.response[0]['raw_attributes']['subschemaSubentry']) > 0:
+                        schema_entry = connection.response[0]['raw_attributes']['subschemaSubentry'][0]
             else:  # asynchronous request, must check if subschemaSubentry in attributes
                 results, _ = connection.get_response(result)
                 if len(results) == 1 and 'raw_attributes' in results[0] and 'subschemaSubentry' in results[0]['attributes']:
-                    schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
+                    if len(results[0]['raw_attributes']['subschemaSubentry']) > 0:
+                        schema_entry = results[0]['raw_attributes']['subschemaSubentry'][0]
 
         if schema_entry and not connection.strategy.pooled:  # in pooled strategies get_schema_info is performed by the worker threads
             if isinstance(schema_entry, bytes) and str is not bytes:  # Python 3
@@ -415,7 +419,7 @@ class Server(object):
                                                    '*'],  # requests all remaining attributes (other)
                                        get_operational_attributes=True
                                        )
-            with self.lock:
+            with self.dit_lock:
                 self._schema_info = None
                 if result:
                     if isinstance(result, bool):  # sync request

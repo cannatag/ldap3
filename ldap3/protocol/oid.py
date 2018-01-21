@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2013 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -484,7 +484,7 @@ Oids = {  # administrative role
           '2.5.4.8.1': ('2.5.4.8.1', OID_ATTRIBUTE_TYPE, 'c-st', 'RFC3671'),
           '2.5.4.9': ('2.5.4.9', OID_ATTRIBUTE_TYPE, ['street', 'streetAddress'], 'RFC4519-RFC2256'),
           '2.5.4.9.1': ('2.5.4.9.1', OID_ATTRIBUTE_TYPE, 'c-street', 'RFC3671'),
-          '2.5.4.10': ('2.5.4.10', OID_ATTRIBUTE_TYPE, 'o, organizationName', 'RFC4519'),
+          '2.5.4.10': ('2.5.4.10', OID_ATTRIBUTE_TYPE, ['o', 'organizationName'], 'RFC4519'),
           '2.5.4.10.1': ('2.5.4.10.1', OID_ATTRIBUTE_TYPE, 'c-o', 'RFC3671'),
           '2.5.4.11': ('2.5.4.11', OID_ATTRIBUTE_TYPE, ['ou', 'organizationalUnitName'], 'RFC4519'),
           '2.5.4.11.1': ('2.5.4.11.1', OID_ATTRIBUTE_TYPE, 'c-ou', 'RFC3671'),

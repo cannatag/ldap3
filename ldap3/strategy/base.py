@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013, 2014, 2015, 2016, 2017 Giovanni Cannata
+# Copyright 2013 - 2018 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -57,7 +57,7 @@ from ..protocol.oid import Oids
 from ..protocol.rfc2696 import RealSearchControlValue
 from ..protocol.microsoft import DirSyncControlResponseValue
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, format_ldap_message
-from ..utils.asn1 import encoder, decoder, ldap_result_to_dict_fast, decode_sequence
+from ..utils.asn1 import encode, decoder, ldap_result_to_dict_fast, decode_sequence
 from ..utils.conv import to_unicode
 
 SESSION_TERMINATED_BY_SERVER = 'TERMINATED_BY_SERVER'
@@ -150,6 +150,7 @@ class BaseStrategy(object):
 
             self.connection._deferred_open = False
             self._start_listen()
+            self.connection.do_auto_bind()
             if log_enabled(NETWORK):
                 log(NETWORK, 'connection open for <%s>', self.connection)
 
@@ -202,6 +203,24 @@ class BaseStrategy(object):
 
             raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
 
+        try:  # set socket timeout for opening connection
+            if self.connection.server.connect_timeout:
+                self.connection.socket.settimeout(self.connection.server.connect_timeout)
+            self.connection.socket.connect(address[4])
+        except socket.error as e:
+            self.connection.last_error = 'socket connection error while opening: ' + str(e)
+            exc = e
+
+        if exc:
+            if log_enabled(ERROR):
+                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
+
+        # Set connection recv timeout (must be set after connect,
+        # because socket.settimeout() affects both, connect() as
+        # well as recv(). Set it before tls.wrap_socket() because
+        # the recv timeout should take effect during the TLS
+        # handshake.
         if self.connection.receive_timeout is not None:
             try:  # set receive timeout for the connection socket
                 self.connection.socket.settimeout(self.connection.receive_timeout)
@@ -212,19 +231,6 @@ class BaseStrategy(object):
             except socket.error as e:
                 self.connection.last_error = 'unable to set receive timeout for socket connection: ' + str(e)
                 exc = e
-
-        if exc:
-            if log_enabled(ERROR):
-                log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-            raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
-
-        try:  # set socket timeout for opening connection
-            if self.connection.server.connect_timeout:
-                self.connection.socket.settimeout(self.connection.server.connect_timeout)
-            self.connection.socket.connect(address[4])
-        except socket.error as e:
-            self.connection.last_error = 'socket connection error while opening: ' + str(e)
-            exc = e
 
         if exc:
             if log_enabled(ERROR):
@@ -244,9 +250,6 @@ class BaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
-
-        if self.connection.server.connect_timeout and not self.connection.receive_timeout:
-            self.connection.socket.settimeout(None)  # disable socket connection timeout - socket is in blocking mode or in unblocking mode if receive_timeout is specified in connection
 
         if self.connection.usage:
             self.connection._usage.open_sockets += 1
@@ -376,6 +379,7 @@ class BaseStrategy(object):
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
+                self._outstanding.pop(message_id)
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
 
             # checks if any response has a range tag
@@ -739,7 +743,9 @@ class BaseStrategy(object):
                                                  check_names=self.connection.check_names,
                                                  raise_exceptions=self.connection.raise_exceptions,
                                                  fast_decoder=self.connection.fast_decoder,
-                                                 receive_timeout=self.connection.receive_timeout)
+                                                 receive_timeout=self.connection.receive_timeout,
+                                                 sasl_mechanism=self.connection.sasl_mechanism,
+                                                 sasl_credentials=self.connection.sasl_credentials)
 
                 if self.connection.usage:
                     self.connection._usage.referrals_connections += 1
@@ -817,7 +823,7 @@ class BaseStrategy(object):
         if log_enabled(NETWORK):
             log(NETWORK, 'sending 1 ldap message for <%s>', self.connection)
         try:
-            encoded_message = encoder.encode(ldap_message)
+            encoded_message = encode(ldap_message)
             self.connection.socket.sendall(encoded_message)
             if log_enabled(EXTENDED):
                 log(EXTENDED, 'ldap message sent via <%s>:%s', self.connection, format_ldap_message(ldap_message, '>>'))

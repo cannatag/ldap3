@@ -65,6 +65,7 @@ For example::
 
     from ldap3 import Connection, LDIF
     connection = Connection(server = None, client_strategy = LDIF)  # no need of real LDAP server
+    connection.open()
     connection.add('cn=test-add-operation,o=test'), 'inetOrgPerson',
                    {'objectClass': 'inetOrgPerson', 'sn': 'test-add', 'cn': 'test-add-operation'})
 
@@ -81,6 +82,7 @@ in connection.response you will find::
 A more complex modify operation (from the RFC2849 examples)::
 
     from ldap3 import MODIFY_ADD. MODIFY_DELETE, MODIFY_REPLACE
+    connection.open()
     connection.modify('cn=Paula Jensen,ou=Product Development,dc=airius,dc=com',
         {'postaladdress': (MODIFY_ADD, ['123 Anystreet $ Sunnyvale, CA $ 94086']),
          'description': (MODIFY_DELETE, []),

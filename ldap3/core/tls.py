@@ -174,7 +174,7 @@ class Tls(object):
                                                      cafile=self.ca_certs_file,
                                                      capath=self.ca_certs_path,
                                                      cadata=self.ca_certs_data)
-            else:  # code from create_default_context in the Python standard library 3.5.1, creates a ssl context with the specificd protocol version
+            else:  # code from create_default_context in the Python standard library 3.5.1, creates a ssl context with the specified protocol version
                 ssl_context = ssl.SSLContext(self.version)
                 if self.ca_certs_file or self.ca_certs_path or self.ca_certs_data:
                     ssl_context.load_verify_locations(self.ca_certs_file, self.ca_certs_path, self.ca_certs_data)

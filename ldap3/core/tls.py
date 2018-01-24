@@ -69,7 +69,7 @@ class Tls(object):
     def __init__(self,
                  local_private_key_file=None,
                  local_certificate_file=None,
-                 validate=ssl.CERT_NONE,
+                 validate=ssl.CERT_REQUIRED,
                  version=None,
                  ca_certs_file=None,
                  valid_names=None,

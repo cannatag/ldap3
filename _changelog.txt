@@ -1,3 +1,6 @@
+# 2.4.2 - not released yet
+    - pwdLAstSet in AD is valid for 0 and -1 (thanks Taylor)
+
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4
     - auto_encode parameter is honored when binding (thanks jkolo)

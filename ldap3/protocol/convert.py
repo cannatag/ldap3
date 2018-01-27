@@ -131,12 +131,12 @@ def build_controls_list(controls):
     return built_controls
 
 
-def validate_assertion_value(schema, name, value, auto_escape, auto_encode, check_names):
+def validate_assertion_value(schema, name, value, auto_escape, auto_encode, validator, check_names):
     value = to_unicode(value)
     if auto_escape:
         if '\\' in value and not is_filter_escaped(value):
             value = escape_filter_chars(value)
-    value = validate_attribute_value(schema, name, value, auto_encode, check_names=check_names)
+    value = validate_attribute_value(schema, name, value, auto_encode, validator=validator, check_names=check_names)
     return value
 
 

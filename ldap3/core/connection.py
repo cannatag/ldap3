@@ -769,6 +769,7 @@ class Connection(object):
                                        self.auto_escape if auto_escape is None else auto_escape,
                                        self.auto_encode,
                                        self.server.schema if self.server else None,
+                                       validator=self.server.custom_validator,
                                        check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)

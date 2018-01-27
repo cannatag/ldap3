@@ -60,7 +60,7 @@ test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
 test_lazy_connection = False
-
+test_validator = {}
 try:
     location = environ['USERDOMAIN']
 except KeyError:

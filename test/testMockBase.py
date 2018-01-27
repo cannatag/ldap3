@@ -63,6 +63,6 @@ class Test(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def _evaluate_filter(self, search_filter):
-        filter_root = search.parse_filter(search_filter, self.schema, auto_escape=True, auto_encode=False, check_names=False)
+        filter_root = search.parse_filter(search_filter, self.schema, auto_escape=True, auto_encode=False, validator=None, check_names=False)
         candidates = self.server.dit
         return self.connection.strategy.evaluate_filter_node(filter_root, candidates)

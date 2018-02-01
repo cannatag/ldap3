@@ -7,7 +7,7 @@ A more pythonic LDAP
 LDAP was developed in the late '70s when hosts were very expensive. Elaboration was slow and the protocol was developed
 with the intent of shifting the burden of computing on the client side. So LDAP operations are crude and rough and clients
 must perform a lot of pre-elaboration before sending their request to servers. This is quite different from what you would
-expect from any modern API where you send requests to the server (maybe using simple JSON) withouth knowing almost anything
+expect from any modern API where you send requests to the server (maybe using simple JSON) without knowing almost anything
 about how actually the work is internally done in the server.
 
 .. note:: An example of this approach is the Search operation: one would expect that the filter string is simply sent to the

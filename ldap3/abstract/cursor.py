@@ -80,7 +80,7 @@ class Cursor(object):
         if connection._deferred_bind or connection._deferred_open:  # probably a lazy connection, tries to bind
             connection._fire_deferred()
 
-        if isinstance(object_def, STRING_TYPES, SEQUENCE_TYPES):
+        if isinstance(object_def, (STRING_TYPES, SEQUENCE_TYPES)):
             object_def = ObjectDef(object_def, connection.server.schema, auxiliary_class=auxiliary_class)
         self.definition = object_def
         if attributes:  # checks if requested attributes are defined in ObjectDef

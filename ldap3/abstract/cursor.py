@@ -73,15 +73,15 @@ class Cursor(object):
     # attribute_class = Attribute, must be defined in subclasses
     # entry_initial_status = STATUS, must be defined in subclasses
 
-    def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
+    def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None, auxiliary_class=None):
         conf_attributes_excluded_from_object_def = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF')]
         self.connection = connection
 
         if connection._deferred_bind or connection._deferred_open:  # probably a lazy connection, tries to bind
             connection._fire_deferred()
 
-        if isinstance(object_def, STRING_TYPES):
-            object_def = ObjectDef(object_def, connection.server.schema)
+        if isinstance(object_def, STRING_TYPES, SEQUENCE_TYPES):
+            object_def = ObjectDef(object_def, connection.server.schema, auxiliary_class=auxiliary_class)
         self.definition = object_def
         if attributes:  # checks if requested attributes are defined in ObjectDef
             not_defined_attributes = []

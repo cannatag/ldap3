@@ -43,12 +43,18 @@ class ObjectDef(object):
     ObjectDef can be accessed either as a sequence and a dictionary. When accessed the whole AttrDef instance is returned
 
     """
-    def __init__(self, object_class=None, schema=None, custom_validator=None):
+    def __init__(self, object_class=None, schema=None, custom_validator=None, auxiliary_class=None):
         if object_class is None:
             object_class = []
 
         if not isinstance(object_class, SEQUENCE_TYPES):
             object_class = [object_class]
+
+        if auxiliary_class is None:
+            auxiliary_class = []
+
+        if not isinstance(auxiliary_class, SEQUENCE_TYPES):
+            auxiliary_class = [auxiliary_class]
 
         self.__dict__['_attributes'] = CaseInsensitiveWithAliasDict()
         self.__dict__['_custom_validator'] = custom_validator
@@ -63,7 +69,7 @@ class ObjectDef(object):
             elif isinstance(schema, Connection):
                 schema = schema.server.schema
             elif isinstance(schema, SchemaInfo):
-                schema = schema
+                pass
             elif schema:
                 error_message = 'unable to read schema'
                 if log_enabled(ERROR):
@@ -78,11 +84,17 @@ class ObjectDef(object):
 
         if self._schema:
             object_class = [schema.object_classes[name].name[0] for name in object_class]  # uses object class names capitalized as in schema
+            auxiliary_class = [schema.object_classes[name].name[0] for name in auxiliary_class]
             for object_name in object_class:
                 if object_name:
                     self._populate_attr_defs(object_name)
 
+            for object_name in auxiliary_class:
+                if object_name:
+                    self._populate_attr_defs(object_name)
+
         self.__dict__['_object_class'] = object_class
+        self.__dict__['_auxiliary_class'] = auxiliary_class
 
         if log_enabled(BASIC):
             log(BASIC, 'instantiated ObjectDef: <%r>', self)
@@ -108,10 +120,14 @@ class ObjectDef(object):
 
     def __repr__(self):
         if self._object_class:
-            r = 'OBJ : ' + ', '.join(self._object_class)
+            r = 'OBJ : ' + ', '.join(self._object_class) + linesep
         else:
-            r = 'OBJ : <None>'
-        r += ' [' + ', '.join([oid for oid in self._oid_info]) + ']' + linesep
+            r = 'OBJ : <None>' + linesep
+        if self._auxiliary_class:
+            r += 'AUX : ' + ', '.join(self._auxiliary_class) + linesep
+        else:
+            r += 'AUX : <None>' + linesep
+        r += 'OID: ' + ', '.join([oid for oid in self._oid_info]) + linesep
         r += 'MUST: ' + ', '.join(sorted([attr for attr in self._attributes if self._attributes[attr].mandatory])) + linesep
         r += 'MAY : ' + ', '.join(sorted([attr for attr in self._attributes if not self._attributes[attr].mandatory])) + linesep
 
@@ -250,4 +266,5 @@ class ObjectDef(object):
 
         """
         self.__dict__['object_class'] = None
+        self.__dict__['auxiliary_class'] = None
         self.__dict__['_attributes'] = dict()

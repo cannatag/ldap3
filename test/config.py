@@ -60,6 +60,8 @@ test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
 test_lazy_connection = False
+test_user_password = 'Rc2597pfop'  # default password for users created in tests
+
 test_validator = {}
 try:
     location = environ['USERDOMAIN']
@@ -362,7 +364,7 @@ print('Python version:', version, ' - ldap3 version:', ldap3_version, ' - pyasn1
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
 print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
-
+print()
 
 def random_id():
     return str(SystemRandom().random())[-5:]
@@ -619,7 +621,7 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
 
 def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):
     if password is None:
-        password = 'Rc2597pfop'
+        password = test_user_password
 
     attributes = get_add_user_attributes(batch_id, username, password, attributes)
     if test_bytes:
@@ -631,7 +633,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
     if not result['description'] == 'success':
         # maybe the entry already exists, try to delete
         operation_result = connection.delete(dn)
-        sleep(2)
+        sleep(5)
         result = get_operation_result(connection, operation_result)
         operation_result = connection.add(dn, None, attributes)
         result = get_operation_result(connection, operation_result)

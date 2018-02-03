@@ -4,6 +4,7 @@
     - entryUUID is properly validated in search filters (thanks FriedrichI)
     - custom attribute formatters are properly applied when parsing the search filter
     - REUSABLE strategy now honours credentials when changed in the original connection (thanks Prof Hase)
+    - add operation doesn't change passed attribute dict anymore (thanks Daniele)
 
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4

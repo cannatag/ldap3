@@ -868,7 +868,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
         self.last_error = None
-        _attributes = deepcopy(attributes)
+        _attributes = deepcopy(attributes)  # dict could change when adding objectClass values
         if self.check_names:
             dn = safe_dn(dn)
             if log_enabled(EXTENDED):

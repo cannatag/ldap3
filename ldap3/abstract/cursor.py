@@ -412,8 +412,8 @@ class Reader(Cursor):
     attribute_class = Attribute  # attributes are read_only
     entry_initial_status = STATUS_READ
 
-    def __init__(self, connection, object_def, base, query='', components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None):
-        Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
+    def __init__(self, connection, object_def, base, query='', components_in_and=True, sub_tree=True, get_operational_attributes=False, attributes=None, controls=None, auxiliary_class=None):
+        Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls, auxiliary_class)
         self._components_in_and = components_in_and
         self.sub_tree = sub_tree
         self._query = query
@@ -754,8 +754,8 @@ class Writer(Cursor):
             log(BASIC, 'instantiated Writer Cursor <%r> from response', writer)
         return writer
 
-    def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None):
-        Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls)
+    def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None, auxiliary_class=None):
+        Cursor.__init__(self, connection, object_def, get_operational_attributes, attributes, controls, auxiliary_class)
         self.dereference_aliases = DEREF_NEVER
 
         if log_enabled(BASIC):

@@ -614,6 +614,8 @@ class WritableEntry(EntryBase):
                         self.entry_discard_changes()  # if not refreshed remove committed changes
                     self._state.set_status(STATUS_COMMITTED)
                     return True
+                else:
+                    pass  # handle error
         return False
 
     def entry_discard_changes(self):

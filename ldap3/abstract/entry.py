@@ -147,7 +147,7 @@ class EntryBase(object):
         try:
             self.__getitem__(item)
             return True
-        except LDAPKeyError:
+        except (LDAPKeyError, LDAPCursorError):
             return False
 
     def __getattr__(self, item):

@@ -27,7 +27,7 @@ from datetime import datetime
 from calendar import timegm
 from uuid import UUID
 
-from ... import SEQUENCE_TYPES, STRING_TYPES
+from ... import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
 from .formatters import format_time, format_ad_timestamp
 from ...utils.conv import to_raw, to_unicode
 
@@ -192,7 +192,12 @@ def validate_ad_timestamp(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        if isinstance(element, STRING_TYPES):  # tries to check if it is already be a AD timestamp
+        if isinstance(element, NUMERIC_TYPES):
+            if 0 <= element <= 9223372036854775807:  # min and max for the AD timestamp starting from 12:00 AM January 1, 1601
+                valid_values.append(element)
+            else:
+                return False
+        elif isinstance(element, STRING_TYPES):  # tries to check if it is already be a AD timestamp
             if isinstance(format_ad_timestamp(to_raw(element)), datetime):  # valid Generalized Time string
                 valid_values.append(element)
             else:

@@ -100,6 +100,9 @@ def format_ad_timestamp(raw_value):
     if raw_value == b'9223372036854775807':  # max value to be stored in a 64 bit signed int
         return datetime.max  # returns datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
     timestamp = int(raw_value)
+    if timestamp < 0:  # ad timestamp cannot be negative
+        return raw_value
+
     try:
         return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
     except (OSError, OverflowError, ValueError):  # on Windows backwards timestamps are not allowed

@@ -42,7 +42,7 @@ from ..utils.dn import safe_dn, safe_rdn
 from ..utils.conv import to_raw
 from ..utils.config import get_config_parameter
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
-from ..protocol.oid import ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION
+from ..protocol.oid import ATTRIBUTE_DIRECTORY_OPERATION, ATTRIBUTE_DISTRIBUTED_OPERATION, ATTRIBUTE_DSA_OPERATION, CLASS_AUXILIARY
 
 Operation = namedtuple('Operation', ('request', 'result', 'response'))
 
@@ -110,12 +110,15 @@ class Cursor(object):
     def __repr__(self):
         r = 'CURSOR : ' + self.__class__.__name__ + linesep
         r += 'CONN   : ' + str(self.connection) + linesep
-        r += 'DEFS   : ' + repr(self.definition._object_class) + ' ['
-        for attr_def in sorted(self.definition):
-            r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
-        if r[-2] == ',':
-            r = r[:-2]
-        r += ']' + linesep
+        r += 'DEFS   : ' + ', '.join(self.definition._object_class)
+        if self.definition._auxiliary_class:
+            r += ' [AUX: ' + ', '.join(self.definition._auxiliary_class) + ']'
+        r += linesep
+        # for attr_def in sorted(self.definition):
+        #     r += (attr_def.key if attr_def.key == attr_def.name else (attr_def.key + ' <' + attr_def.name + '>')) + ', '
+        # if r[-2] == ',':
+        #     r = r[:-2]
+        # r += ']' + linesep
         r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
         if isinstance(self, Reader):
             r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
@@ -357,7 +360,12 @@ class Cursor(object):
             entry = self._create_entry(r)
             if entry is not None:
                 self.entries.append(entry)
-
+                if 'objectClass' in entry:
+                    for object_class in entry.objectClass:
+                        if self.schema.object_classes[object_class].kind == CLASS_AUXILIARY and object_class not in self.definition._auxiliary_class:
+                            # add auxiliary class to object definition
+                            self.definition._auxiliary_class.append(object_class)
+                            self.definition._populate_attr_defs(object_class)
         self.execution_time = datetime.now()
 
         if old_query_filter:  # requesting a single object so an always-valid filter is set
@@ -589,10 +597,10 @@ class Reader(Cursor):
             else:
                 self.query_filter += ')'
 
-            if not self.definition._object_class and attr_counter == 1:  # remove unneeded starting filter
+            if not self.definition._object_class and attr_counter == 1:  # removes unneeded starting filter
                 self.query_filter = self.query_filter[2: -1]
 
-            if self.query_filter == '(|)' or self.query_filter == '(&)':  # remove empty filter
+            if self.query_filter == '(|)' or self.query_filter == '(&)':  # removes empty filter
                 self.query_filter = ''
         else:  # no query, remove unneeded leading (&
             self.query_filter = self.query_filter[2:]
@@ -885,7 +893,7 @@ class Writer(Cursor):
             for attr in entry._state.attributes:  # returns the attribute key
                 entry.__dict__[attr] = entry._state.attributes[attr]
 
-            for attr in entry.entry_attributes:  # if any attribute of the class was deleted make it virtual
+            for attr in entry.entry_attributes:  # if any attribute of the class was deleted makes it virtual
                 if attr not in entry._state.attributes and attr in entry.entry_definition._attributes:
                     entry._state.attributes[attr] = WritableAttribute(entry.entry_definition[attr], entry, self)
                     entry.__dict__[attr] = entry._state.attributes[attr]

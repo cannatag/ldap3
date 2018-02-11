@@ -185,8 +185,6 @@ class Test(unittest.TestCase):
         n.homeState = 'state-test-9'
         self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
         n.entry_commit_changes()
-        print("Failed:", w.failed)
-        print("Errors:", w.errors)
         self.assertEqual(n.sn, 'sn-test-9')
         self.assertEqual(n.homeState, 'state-test-9')
         self.assertEqual(n.entry_status, STATUS_COMMITTED)

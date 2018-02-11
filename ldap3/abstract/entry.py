@@ -32,7 +32,7 @@ except ImportError:
 
 from os import linesep
 
-from .. import STRING_TYPES, SEQUENCE_TYPES
+from .. import STRING_TYPES, SEQUENCE_TYPES, MODIFY_ADD, MODIFY_REPLACE
 from .attribute import WritableAttribute
 from .objectDef import ObjectDef
 from .attrDef import AttrDef
@@ -203,7 +203,7 @@ class EntryBase(object):
                 log(ERROR, '%s for <%s>', error_message, self)
             raise LDAPCursorError(error_message)
         else:
-            error_message = 'entry \'%s\' is read only' % item
+            error_message = 'entry is read only, cannot add \'%s\'' % item
             if log_enabled(ERROR):
                 log(ERROR, '%s for <%s>', error_message, self)
             raise LDAPCursorError(error_message)
@@ -235,7 +235,7 @@ class EntryBase(object):
                 error_message = 'key \'%s\' not found' % item
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', error_message, self)
-                raise LDAPCursorError(error_message)
+                raise LDAPKeyError(error_message)
             return self._state.attributes[attr]
 
         error_message = 'key must be a string'
@@ -289,13 +289,6 @@ class EntryBase(object):
 
     @property
     def entry_attributes(self):
-        # attr_list = list()
-        # for attr in self._state.attributes:
-        #     if self._state.definition[attr].name:
-        #         attr_list.append(self._state.definition[attr].name)
-        #     else:
-        #         attr_list.append(self._state.definition[attr].key)
-        # return attr_list
         return list(self._state.attributes.keys())
 
     @property
@@ -368,7 +361,7 @@ class Entry(EntryBase):
       _raw_attribute() methods
 
     """
-    def entry_writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None):
+    def entry_writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None, auxiliary_class=None):
         if not self.entry_cursor.schema:
             error_message = 'schema must be available to make an entry writable'
             if log_enabled(ERROR):
@@ -377,7 +370,8 @@ class Entry(EntryBase):
         # returns a new WritableEntry and its Writer cursor
         if object_def is None:
             if self.entry_cursor.definition._object_class:
-                object_def = self.entry_cursor.definition._object_class
+                object_def = self.entry_definition._object_class
+                auxiliary_class = self.entry_definition._auxiliary_class + (auxiliary_class if isinstance(auxiliary_class, SEQUENCE_TYPES) else [])
             elif 'objectclass' in self:
                 object_def = self.objectclass.values
 
@@ -388,7 +382,7 @@ class Entry(EntryBase):
             raise LDAPCursorError(error_message)
 
         if not isinstance(object_def, ObjectDef):
-                object_def = ObjectDef(object_def, self.entry_cursor.schema, custom_validator)
+                object_def = ObjectDef(object_def, self.entry_cursor.schema, custom_validator, auxiliary_class)
 
         if attributes:
             if isinstance(attributes, STRING_TYPES):
@@ -580,6 +574,21 @@ class WritableEntry(EntryBase):
             raise LDAPCursorError(error_message)
         elif self.entry_status == STATUS_PENDING_CHANGES:
             if self._changes:
+                if self.entry_definition._auxiliary_class:  # checks if an attribute is from an auxiliary class and adds it to the objectClass attribute if not present
+                    for attr in self._changes:
+                        # checks schema to see if attribute is defined in one of the already present object classes
+                        attr_classes = self.entry_cursor.schema.attribute_types[attr].mandatory_in + self.entry_cursor.schema.attribute_types[attr].optional_in
+                        for object_class in self.objectclass:
+                            if object_class in attr_classes:
+                                break
+                        else:  # executed only if the attribute class is not present in the objectClass attribute
+                            # checks if attribute is defined in one of the possible auxiliary classes
+                            for aux_class in self.entry_definition._auxiliary_class:
+                                if aux_class in attr_classes:
+                                    if self._state._initial_status == STATUS_VIRTUAL:  # entry is new, there must be a pending objectClass MODIFY_REPLACE
+                                        self._changes['objectClass'][0][1].append(aux_class)
+                                    else:
+                                        self.objectclass += aux_class
                 if self._state._initial_status == STATUS_VIRTUAL:
                     new_attributes = dict()
                     for attr in self._changes:
@@ -614,8 +623,6 @@ class WritableEntry(EntryBase):
                         self.entry_discard_changes()  # if not refreshed remove committed changes
                     self._state.set_status(STATUS_COMMITTED)
                     return True
-                else:
-                    pass  # handle error
         return False
 
     def entry_discard_changes(self):

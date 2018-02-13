@@ -25,7 +25,7 @@
 
 from .. import SIMPLE, ANONYMOUS, SASL, STRING_TYPES
 from ..core.results import RESULT_CODES
-from ..core.exceptions import LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError, LDAPUserNameNotAllowedError
+from ..core.exceptions import LDAPUserNameIsMandatoryError, LDAPPasswordIsMandatoryError, LDAPUnknownAuthenticationMethodError, LDAPUserNameNotAllowedError
 from ..protocol.sasl.sasl import validate_simple_password
 from ..protocol.rfc4511 import Version, AuthenticationChoice, Simple, BindRequest, ResultCode, SaslCredentials, BindResponse, \
     LDAPDN, LDAPString, Referral, ServerSaslCreds, SicilyPackageDiscovery, SicilyNegotiate, SicilyResponse
@@ -52,7 +52,7 @@ def bind_operation(version,
         request['name'] = to_unicode(name) if auto_encode else name
     if authentication == SIMPLE:
         if not name:
-            raise LDAPPasswordIsMandatoryError('user name is mandatory in simple bind')
+            raise LDAPUserNameIsMandatoryError('user name is mandatory in simple bind')
         if password:
             request['authentication'] = AuthenticationChoice().setComponentByName('simple', Simple(validate_simple_password(password)))
         else:

@@ -669,17 +669,22 @@ class MockBaseStrategy(object):
             message = 'incorrect base object'
         else:
             matched = self.evaluate_filter_node(filter_root, candidates)
-            for match in matched:
-                responses.append({
-                    'object': match,
-                    'attributes': [{'type': attribute,
-                                    'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
-                                   for attribute in self.connection.server.dit[match]
-                                   if attribute.lower() in attributes or ALL_ATTRIBUTES in attributes]
-                })
 
-            result_code = 0
-            message = ''
+            if self.connection.raise_exceptions and len(matched) > request['sizeLimit']:
+                result_code = 4
+                message = 'size limit exceeded'
+            else:
+                for match in matched:
+                    responses.append({
+                        'object': match,
+                        'attributes': [{'type': attribute,
+                                        'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
+                                       for attribute in self.connection.server.dit[match]
+                                       if attribute.lower() in attributes or ALL_ATTRIBUTES in attributes]
+                    })
+
+                result_code = 0
+                message = ''
 
         result = {'resultCode': result_code,
                   'matchedDN': '',

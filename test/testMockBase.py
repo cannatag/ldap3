@@ -69,7 +69,7 @@ class Test(unittest.TestCase):
         connection.strategy.add_entry('cn=user1,ou=test', {'userPassword': 'test1', 'revision': 1})
         connection.strategy.add_entry('cn=user2,ou=test', {'userPassword': 'test2', 'revision': 2})
         connection.strategy.add_entry('cn=user3,ou=test', {'userPassword': 'test3', 'revision': 3})
-
+        connection.bind()
         with self.assertRaises(LDAPSizeLimitExceededResult):
             connection.search('ou=test', '(cn=*)', size_limit=1)
 

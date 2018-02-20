@@ -23,12 +23,15 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+import re
+
 from binascii import hexlify
 from uuid import UUID
 from datetime import datetime, timedelta
+from ...utils.conv import to_unicode
 
 from ...core.timezone import OffsetTzInfo
-
 
 def format_unicode(raw_value):
     try:
@@ -115,121 +118,200 @@ def format_ad_timestamp(raw_value):
     return raw_value
 
 
-def format_time(raw_value):
-    """
-    """
+try:  # uses regular expressions and the timezone class (python3.2)
+    from datetime import timezone
+    time_format = re.compile(
+        r'''
+        ^
+        (?P<Year>[0-9]{4})
+        (?P<Month>0[1-9]|1[0-2])
+        (?P<Day>0[1-9]|[12][0-9]|3[01])
+        (?P<Hour>[01][0-9]|2[0-3])
+        (?:
+          (?P<Minute>[0-5][0-9])
+          (?P<Second>[0-5][0-9]|60)?
+        )?
+        (?:
+          [.,]
+          (?P<Fraction>[0-9]+)
+        )?  
+        (?:
+          Z
+          |
+          (?:
+            (?P<Offset>[+-])
+            (?P<OffHour>[01][0-9]|2[0-3])
+            (?P<OffMinute>[0-5][0-9])?
+          )
+        )
+        $
+        ''',
+        re.VERBOSE
+    )
 
-    '''
-    From RFC4517:
-    A value of the Generalized Time syntax is a character string
-    representing a date and time. The LDAP-specific encoding of a value
-    of this syntax is a restriction of the format defined in [ISO8601],
-    and is described by the following ABNF:
+    def format_time(raw_value):
+        match = time_format.fullmatch(to_unicode(raw_value))
+        if match is None:
+            return raw_value
+        matches = match.groupdict()
 
-    GeneralizedTime = century year month day hour
-                       [ minute [ second / leap-second ] ]
-                       [ fraction ]
-                       g-time-zone
+        offset = timedelta(
+            hours=int(matches['OffHour'] or 0),
+            minutes=int(matches['OffMinute'] or 0)
+        )
 
-    century = 2(%x30-39) ; "00" to "99"
-    year    = 2(%x30-39) ; "00" to "99"
-    month   =   ( %x30 %x31-39 ) ; "01" (January) to "09"
-            / ( %x31 %x30-32 ) ; "10" to "12"
-    day     =   ( %x30 %x31-39 )    ; "01" to "09"
-            / ( %x31-32 %x30-39 ) ; "10" to "29"
-            / ( %x33 %x30-31 )    ; "30" to "31"
-    hour    = ( %x30-31 %x30-39 ) / ( %x32 %x30-33 ) ; "00" to "23"
-    minute  = %x30-35 %x30-39                        ; "00" to "59"
-    second      = ( %x30-35 %x30-39 ) ; "00" to "59"
-    leap-second = ( %x36 %x30 )       ; "60"
-    fraction        = ( DOT / COMMA ) 1*(%x30-39)
-    g-time-zone     = %x5A  ; "Z"
-                    / g-differential
-    g-differential  = ( MINUS / PLUS ) hour [ minute ]
-        MINUS           = %x2D  ; minus sign ("-")
-    '''
-    # if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
-    if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
-        return raw_value
+        if matches['Offset'] == '-':
+            offset *= -1
 
-    # sets position for fixed values
+        # Python does not support leap second in datetime (!)
+        if matches['Second'] == '60':
+            matches['Second'] = '59'
 
-    year = int(raw_value[0: 4])
-    month = int(raw_value[4: 6])
-    day = int(raw_value[6: 8])
-    hour = int(raw_value[8: 10])
-    minute = 0
-    second = 0
-    microsecond = 0
+        # According to RFC, fraction may be applied to an Hour/Minute (!)
+        fraction = float('0.' + (matches['Fraction'] or '0'))
 
-    remain = raw_value[10:]
-    if remain and remain.endswith(b'Z'):  # uppercase 'Z'
-        sep = b'Z'
-    elif b'+' in remain:  # timezone can be specified with +hh[mm] or -hh[mm]
-        sep = b'+'
-    elif b'-' in remain:
-        sep = b'-'
-    else:  # timezone not specified
-        return raw_value
+        if matches['Minute'] is None:
+            fraction *= 60
+            minute = int(fraction)
+            fraction -= minute
+        else:
+            minute = int(matches['Minute'])
 
-    time, _, offset = remain.partition(sep)
+        if matches['Second'] is None:
+            fraction *= 60
+            second = int(fraction)
+            fraction -= second
+        else:
+            second = int(matches['Second'])
 
-    if time and (b'.' in time or b',' in time):
-        # fraction time
-        if time[0] in b',.':
-            minute = 6 * int(time[1] if str is bytes else chr(time[1]))  # Python 2 / Python 3
-        elif time[2] in b',.':
+        microseconds = int(fraction * 1000000)
+
+        return datetime(
+            int(matches['Year']),
+            int(matches['Month']),
+            int(matches['Day']),
+            int(matches['Hour']),
+            minute,
+            second,
+            microseconds,
+            timezone(offset),
+        )
+except ImportError:
+    def format_time(raw_value):
+        """
+        """
+
+        '''
+        From RFC4517:
+        A value of the Generalized Time syntax is a character string
+        representing a date and time. The LDAP-specific encoding of a value
+        of this syntax is a restriction of the format defined in [ISO8601],
+        and is described by the following ABNF:
+    
+        GeneralizedTime = century year month day hour
+                           [ minute [ second / leap-second ] ]
+                           [ fraction ]
+                           g-time-zone
+    
+        century = 2(%x30-39) ; "00" to "99"
+        year    = 2(%x30-39) ; "00" to "99"
+        month   =   ( %x30 %x31-39 ) ; "01" (January) to "09"
+                / ( %x31 %x30-32 ) ; "10" to "12"
+        day     =   ( %x30 %x31-39 )    ; "01" to "09"
+                / ( %x31-32 %x30-39 ) ; "10" to "29"
+                / ( %x33 %x30-31 )    ; "30" to "31"
+        hour    = ( %x30-31 %x30-39 ) / ( %x32 %x30-33 ) ; "00" to "23"
+        minute  = %x30-35 %x30-39                        ; "00" to "59"
+        second      = ( %x30-35 %x30-39 ) ; "00" to "59"
+        leap-second = ( %x36 %x30 )       ; "60"
+        fraction        = ( DOT / COMMA ) 1*(%x30-39)
+        g-time-zone     = %x5A  ; "Z"
+                        / g-differential
+        g-differential  = ( MINUS / PLUS ) hour [ minute ]
+            MINUS           = %x2D  ; minus sign ("-")
+        '''
+        # if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
+        if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
+            return raw_value
+
+        # sets position for fixed values
+
+        year = int(raw_value[0: 4])
+        month = int(raw_value[4: 6])
+        day = int(raw_value[6: 8])
+        hour = int(raw_value[8: 10])
+        minute = 0
+        second = 0
+        microsecond = 0
+
+        remain = raw_value[10:]
+        if remain and remain.endswith(b'Z'):  # uppercase 'Z'
+            sep = b'Z'
+        elif b'+' in remain:  # timezone can be specified with +hh[mm] or -hh[mm]
+            sep = b'+'
+        elif b'-' in remain:
+            sep = b'-'
+        else:  # timezone not specified
+            return raw_value
+
+        time, _, offset = remain.partition(sep)
+
+        if time and (b'.' in time or b',' in time):
+            # fraction time
+            if time[0] in b',.':
+                minute = 6 * int(time[1] if str is bytes else chr(time[1]))  # Python 2 / Python 3
+            elif time[2] in b',.':
+                minute = int(raw_value[10: 12])
+                second = 6 * int(time[3] if str is bytes else chr(time[3]))  # Python 2 / Python 3
+            elif time[4] in b',.':
+                minute = int(raw_value[10: 12])
+                second = int(raw_value[12: 14])
+                microsecond = 100000 * int(time[5] if str is bytes else chr(time[5]))  # Python 2 / Python 3
+        elif len(time) == 2:  # mmZ format
             minute = int(raw_value[10: 12])
-            second = 6 * int(time[3] if str is bytes else chr(time[3]))  # Python 2 / Python 3
-        elif time[4] in b',.':
+        elif len(time) == 0:  # Z format
+            pass
+        elif len(time) == 4:  # mmssZ
             minute = int(raw_value[10: 12])
             second = int(raw_value[12: 14])
-            microsecond = 100000 * int(time[5] if str is bytes else chr(time[5]))  # Python 2 / Python 3
-    elif len(time) == 2:  # mmZ format
-        minute = int(raw_value[10: 12])
-    elif len(time) == 0:  # Z format
-        pass
-    elif len(time) == 4:  # mmssZ
-        minute = int(raw_value[10: 12])
-        second = int(raw_value[12: 14])
-    else:
-        return raw_value
+        else:
+            return raw_value
 
-    if sep == b'Z':  # UTC
-        timezone = OffsetTzInfo(0, 'UTC')
-    else:  # build timezone
+        if sep == b'Z':  # UTC
+            timezone = OffsetTzInfo(0, 'UTC')
+        else:  # build timezone
+            try:
+                if len(offset) == 2:
+                    timezone_hour = int(offset[:2])
+                    timezone_minute = 0
+                elif len(offset) == 4:
+                    timezone_hour = int(offset[:2])
+                    timezone_minute = int(offset[2:4])
+                else:  # malformed timezone
+                    raise ValueError
+            except ValueError:
+                return raw_value
+            if timezone_hour > 23 or timezone_minute > 59:  # invalid timezone
+                return raw_value
+
+            if str is not bytes:  # Python 3
+                timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), 'UTC' + str(sep + offset, encoding='utf-8'))
+            else:  # Python 2
+                timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), unicode('UTC' + sep + offset, encoding='utf-8'))
+
         try:
-            if len(offset) == 2:
-                timezone_hour = int(offset[:2])
-                timezone_minute = 0
-            elif len(offset) == 4:
-                timezone_hour = int(offset[:2])
-                timezone_minute = int(offset[2:4])
-            else:  # malformed timezone
-                raise ValueError
-        except ValueError:
-            return raw_value
-        if timezone_hour > 23 or timezone_minute > 59:  # invalid timezone
-            return raw_value
+            return datetime(year=year,
+                            month=month,
+                            day=day,
+                            hour=hour,
+                            minute=minute,
+                            second=second,
+                            microsecond=microsecond,
+                            tzinfo=timezone)
+        except (TypeError, ValueError):
+            pass
 
-        if str is not bytes:  # Python 3
-            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), 'UTC' + str(sep + offset, encoding='utf-8'))
-        else:  # Python 2
-            timezone = OffsetTzInfo((timezone_hour * 60 + timezone_minute) * (1 if sep == b'+' else -1), unicode('UTC' + sep + offset, encoding='utf-8'))
-
-    try:
-        return datetime(year=year,
-                        month=month,
-                        day=day,
-                        hour=hour,
-                        minute=minute,
-                        second=second,
-                        microsecond=microsecond,
-                        tzinfo=timezone)
-    except (TypeError, ValueError):
-        pass
-
-    return raw_value
+        return raw_value
 
 
 def format_sid(raw_value):

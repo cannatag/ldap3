@@ -24,8 +24,10 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+from copy import deepcopy
 
-from test.config import get_connection, drop_connection, add_user, random_id
+from test.config import get_connection, drop_connection, add_user, random_id, get_add_user_attributes,\
+    test_user_password, generate_dn, test_base
 
 
 testcase_id = ''
@@ -47,5 +49,14 @@ class Test(unittest.TestCase):
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
 
     def test_add_bytes(self):
-        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-1', test_bytes=True))
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-2', test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
+
+    def test_unmodified_attributes_dict(self):
+        attributes = get_add_user_attributes(testcase_id, 'add-operation-3', test_user_password)
+        object_class = attributes.pop('objectClass')
+        copy_of_attributes = deepcopy(attributes)
+        dn = generate_dn(test_base, testcase_id, 'add-operation-3')
+        self.connection.add(dn, object_class, attributes)
+        self.connection.delete(dn)
+        self.assertDictEqual(copy_of_attributes, attributes)

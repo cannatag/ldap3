@@ -1,3 +1,16 @@
+# 2.5 - not released yet
+    - abstract layer now handles auxiliary classes
+    - pwdLAstSet in AD is valid for 0 and -1 (thanks Taylor)
+    - fixed extend.novell.get_universal_password (thanks Fernando)
+    - entryUUID is properly validated in search filters (thanks FriedrichI)
+    - custom attribute formatters are properly applied when parsing the search filter
+    - REUSABLE strategy now honours credentials when changed in the original connection (thanks Prof Hase)
+    - add operation doesn't change passed attribute dict anymore (thanks Daniele)
+    - missing entry's attribute return False when searching instead of raising an exception (thanks Maxsond)
+    - fixed ad_timestamp evaluation for integers (thanks Flynn)
+    - wrong exception raised when user name is empty in simple binding (thanks Ivan)
+    - exception is raised if size limit is exceed when searchin in mocking strategies with raise_exceptions=True (thanks David)
+
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4
     - auto_encode parameter is honored when binding (thanks jkolo)

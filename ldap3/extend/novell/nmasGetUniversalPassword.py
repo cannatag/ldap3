@@ -46,9 +46,11 @@ class NmasGetUniversalPassword(ExtendedOperation):
         self.request_value['reqdn'] = user
 
     def populate_result(self):
-        self.result['nmasver'] = int(self.decoded_response['nmasver'])
-        self.result['error'] = int(self.decoded_response['err'])
-        try:
-            self.result['password'] = str(self.decoded_response['passwd']) if self.decoded_response['passwd'] else None
-        except TypeError:
-            self.result['password'] = None
+        if self.decoded_response:
+            self.result['nmasver'] = int(self.decoded_response['nmasver'])
+            self.result['error'] = int(self.decoded_response['err'])
+            try:
+
+                self.result['password'] = str(self.decoded_response['passwd']) if self.decoded_response['passwd'].hasValue() else None
+            except TypeError:
+                self.result['password'] = None

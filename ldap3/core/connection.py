@@ -22,9 +22,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
+from copy import deepcopy
 from os import linesep
-from threading import RLock
+from threading import RLock, Lock
 from functools import reduce
 import json
 
@@ -769,6 +769,7 @@ class Connection(object):
                                        self.auto_escape if auto_escape is None else auto_escape,
                                        self.auto_encode,
                                        self.server.schema if self.server else None,
+                                       validator=self.server.custom_validator,
                                        check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'SEARCH request <%s> sent via <%s>', search_request_to_dict(request), self)
@@ -867,6 +868,7 @@ class Connection(object):
         if log_enabled(BASIC):
             log(BASIC, 'start ADD operation via <%s>', self)
         self.last_error = None
+        _attributes = deepcopy(attributes)  # dict could change when adding objectClass values
         if self.check_names:
             dn = safe_dn(dn)
             if log_enabled(EXTENDED):
@@ -881,33 +883,33 @@ class Connection(object):
                 parm_object_class = list(object_class) if isinstance(object_class, SEQUENCE_TYPES) else [object_class]
 
             object_class_attr_name = ''
-            if attributes:
-                for attr in attributes:
+            if _attributes:
+                for attr in _attributes:
                     if attr.lower() == 'objectclass':
                         object_class_attr_name = attr
-                        attr_object_class = list(attributes[object_class_attr_name]) if isinstance(attributes[object_class_attr_name], SEQUENCE_TYPES) else [attributes[object_class_attr_name]]
+                        attr_object_class = list(_attributes[object_class_attr_name]) if isinstance(_attributes[object_class_attr_name], SEQUENCE_TYPES) else [_attributes[object_class_attr_name]]
                         break
             else:
-                attributes = dict()
+                _attributes = dict()
 
             if not object_class_attr_name:
                 object_class_attr_name = 'objectClass'
 
             attr_object_class = [to_unicode(object_class) for object_class in attr_object_class]  # converts objectclass to unicode in case of bytes value
-            attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, parm_object_class + attr_object_class, [])  # remove duplicate ObjectClasses
+            _attributes[object_class_attr_name] = reduce(lambda x, y: x + [y] if y not in x else x, parm_object_class + attr_object_class, [])  # remove duplicate ObjectClasses
 
-            if not attributes[object_class_attr_name]:
+            if not _attributes[object_class_attr_name]:
                 self.last_error = 'objectClass attribute is mandatory'
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPObjectClassError(self.last_error)
 
             if self.server and self.server.schema and self.check_names:
-                for object_class_name in attributes[object_class_attr_name]:
+                for object_class_name in _attributes[object_class_attr_name]:
                     if object_class_name.lower() not in conf_classes_excluded_from_check and object_class_name not in self.server.schema.object_classes:
                         raise LDAPObjectClassError('invalid object class ' + str(object_class_name))
 
-                for attribute_name in attributes:
+                for attribute_name in _attributes:
                     if ';' in attribute_name:  # remove tags for checking
                         attribute_name_to_check = attribute_name.split(';')[0]
                     else:
@@ -916,7 +918,7 @@ class Connection(object):
                     if attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
                         raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
 
-            request = add_operation(dn, attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
+            request = add_operation(dn, _attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'ADD request <%s> sent via <%s>', add_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('addRequest', request, controls))

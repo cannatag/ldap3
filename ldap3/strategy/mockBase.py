@@ -650,7 +650,7 @@ class MockBaseStrategy(object):
             attributes.remove('+')
         attributes = [attr.lower() for attr in request['attributes']]
 
-        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False, check_names=self.connection.check_names)
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False, validator=self.connection.server.custom_validator, check_names=self.connection.check_names)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':
@@ -669,17 +669,22 @@ class MockBaseStrategy(object):
             message = 'incorrect base object'
         else:
             matched = self.evaluate_filter_node(filter_root, candidates)
-            for match in matched:
-                responses.append({
-                    'object': match,
-                    'attributes': [{'type': attribute,
-                                    'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
-                                   for attribute in self.connection.server.dit[match]
-                                   if attribute.lower() in attributes or ALL_ATTRIBUTES in attributes]
-                })
 
-            result_code = 0
-            message = ''
+            if self.connection.raise_exceptions and len(matched) > request['sizeLimit']:
+                result_code = 4
+                message = 'size limit exceeded'
+            else:
+                for match in matched:
+                    responses.append({
+                        'object': match,
+                        'attributes': [{'type': attribute,
+                                        'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
+                                       for attribute in self.connection.server.dit[match]
+                                       if attribute.lower() in attributes or ALL_ATTRIBUTES in attributes]
+                    })
+
+                result_code = 0
+                message = ''
 
         result = {'resultCode': result_code,
                   'matchedDN': '',

@@ -304,7 +304,7 @@ def parse_dn(dn, escape=False, strip=True):
 def safe_dn(dn, decompose=False, reverse=False):
     """
     normalize and escape a dn, if dn is a sequence it is joined.
-    the reverse parameter change the join direction of the sequence
+    the reverse parameter changes the join direction of the sequence
     """
     if isinstance(dn, SEQUENCE_TYPES):
         components = [rdn for rdn in dn]

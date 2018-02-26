@@ -657,11 +657,11 @@ class MockBaseStrategy(object):
                 candidates.append(base)
         elif scope == 1:  # single level
             for entry in self.connection.server.dit:
-                if entry.endswith(base) and ',' not in entry[:-len(base) - 1]:  # only leafs without commas in the remaining dn
+                if entry.lower().endswith(base.lower()) and ',' not in entry[:-len(base) - 1]:  # only leafs without commas in the remaining dn
                     candidates.append(entry)
         elif scope == 2:  # whole subtree
             for entry in self.connection.server.dit:
-                if entry.endswith(base):
+                if entry.lower().endswith(base.lower()):
                     candidates.append(entry)
 
         if not candidates:  # incorrect base

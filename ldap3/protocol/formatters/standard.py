@@ -99,8 +99,8 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.57': (format_unicode, None),  # LDAP Schema Description [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.58': (format_unicode, None),  # Substring assertion
     '1.3.6.1.1.16.1': (format_uuid, validate_uuid),  # UUID
-    '1.3.6.1.1.16.4': (format_uuid, None),  # entryUUID (RFC 4530)
-    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, None),  # GUID (Novell)
+    '1.3.6.1.1.16.4': (format_uuid, validate_uuid),  # entryUUID (RFC 4530)
+    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, validate_uuid),  # GUID (Novell)
     '2.16.840.1.113719.1.1.5.1.0': (format_binary, None),  # Unknown (Novell)
     '2.16.840.1.113719.1.1.5.1.6': (format_unicode, None),  # Case Ignore List (Novell)
     '2.16.840.1.113719.1.1.5.1.12': (format_binary, None),  # Tagged Data (Novell)
@@ -115,7 +115,7 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.25': (format_unicode, None),  # Typed Name (Novell)
     'supportedldapversion': (format_integer, None),  # supportedLdapVersion (Microsoft)
     'octetstring': (format_binary, validate_uuid_le),  # octect string (Microsoft)
-    '1.2.840.113556.1.4.2': (format_uuid_le, None),  # object guid (Microsoft)
+    '1.2.840.113556.1.4.2': (format_uuid_le, validate_uuid_le),  # object guid (Microsoft)
     '1.2.840.113556.1.4.13': (format_ad_timestamp, validate_ad_timestamp),  # builtinCreationTime (Microsoft)
     '1.2.840.113556.1.4.26': (format_ad_timestamp, validate_ad_timestamp),  # creationTime (Microsoft)
     '1.2.840.113556.1.4.49': (format_ad_timestamp, validate_ad_timestamp),  # badPasswordTime (Microsoft)

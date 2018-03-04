@@ -314,7 +314,7 @@ class Test(unittest.TestCase):
         else:
             self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-15')
 
-    def test_search_binary_guid(self):
+    def test_search_string_guid(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-16', attributes={'givenName': testcase_id + 'givenname-16'}))
         if test_server_type == 'EDIR':
             result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + 'givenname-16)', attributes=[test_name_attr, 'sn', 'guid'])

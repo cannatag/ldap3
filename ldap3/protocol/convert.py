@@ -32,8 +32,10 @@ from ..protocol.formatters.standard import find_attribute_validator
 
 
 def attribute_to_dict(attribute):
-    return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
-
+    try:
+        return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
+    except PyAsn1Error:  # invalid encoding, return bytes value
+        return {'type': str(attribute['type']), 'values': [bytes(val) for val in attribute['vals']]}
 
 def attributes_to_dict(attributes):
     attributes_dict = dict()

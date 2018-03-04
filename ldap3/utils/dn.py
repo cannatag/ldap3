@@ -355,3 +355,21 @@ def safe_rdn(dn, decompose=False):
         raise LDAPInvalidDnError('bad dn ' + str(dn))
 
     return escaped_rdn
+
+
+def escape_rdn_chars(rdn):
+    """
+    Escape rdn characters to prevent injection according to RFC 4514.
+    """
+
+    # '/' must be handled first or the escape slashes will be escaped!
+    for char in ['\\', ',', '+', '"', '<', '>', ';', '=', '\x00']:
+        rdn = rdn.replace(char, '\\' + char)
+
+    if rdn[0] == '#' or rdn[0] == ' ':
+        rdn = ''.join(('\\', rdn))
+
+    if rdn[-1] == ' ':
+        rdn = ''.join((rdn[:-1], '\\ '))
+
+    return rdn

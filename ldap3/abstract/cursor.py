@@ -76,7 +76,7 @@ class Cursor(object):
     def __init__(self, connection, object_def, get_operational_attributes=False, attributes=None, controls=None, auxiliary_class=None):
         conf_attributes_excluded_from_object_def = [v.lower() for v in get_config_parameter('ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF')]
         self.connection = connection
-
+        self.get_operational_attributes = get_operational_attributes
         if connection._deferred_bind or connection._deferred_open:  # probably a lazy connection, tries to bind
             connection._fire_deferred()
 
@@ -99,7 +99,6 @@ class Cursor(object):
                 raise LDAPCursorError(error_message)
 
         self.attributes = set(attributes) if attributes else set([attr.name for attr in self.definition])
-        self.get_operational_attributes = get_operational_attributes
         self.controls = controls
         self.execution_time = None
         self.entries = []
@@ -119,17 +118,19 @@ class Cursor(object):
         # if r[-2] == ',':
         #     r = r[:-2]
         # r += ']' + linesep
-        r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
+        if hasattr(self, 'attributes'):
+            r += 'ATTRS  : ' + repr(sorted(self.attributes)) + (' [OPERATIONAL]' if self.get_operational_attributes else '') + linesep
         if isinstance(self, Reader):
-            r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
-            if self._query:
+            if hasattr(self, 'base'):
+                r += 'BASE   : ' + repr(self.base) + (' [SUB]' if self.sub_tree else ' [LEVEL]') + linesep
+            if hasattr(self, '_query') and self._query:
                 r += 'QUERY  : ' + repr(self._query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
-            if self.validated_query:
+            if hasattr(self, 'validated_query') and self.validated_query:
                 r += 'PARSED : ' + repr(self.validated_query) + ('' if '(' in self._query else (' [AND]' if self.components_in_and else ' [OR]')) + linesep
-            if self.query_filter:
+            if hasattr(self, 'query_filter') and self.query_filter:
                 r += 'FILTER : ' + repr(self.query_filter) + linesep
 
-        if self.execution_time:
+        if hasattr(self, 'execution_time') and self.execution_time:
             r += 'ENTRIES: ' + str(len(self.entries))
             r += ' [executed at: ' + str(self.execution_time.isoformat()) + ']' + linesep
 
@@ -392,7 +393,8 @@ class Cursor(object):
 
     @property
     def failed(self):
-        return any([error.result['result'] != RESULT_SUCCESS for error in self._operation_history])
+        if hasattr(self, '_operation_history'):
+            return any([error.result['result'] != RESULT_SUCCESS for error in self._operation_history])
 
 
 class Reader(Cursor):

@@ -178,17 +178,3 @@ class Test(unittest.TestCase):
         w.commit()
         self.assertTrue('xyz' in e.myname)
 
-    def test_create_entry_with_attribute_from_auxiliary_class(self):
-        w = Writer(self.connection, 'inetorgperson', auxiliary_class='homeInfo')
-        n = w.new('CN=' + testcase_id + 'new-9,' + test_base)
-        n.sn = 'sn-test-9'
-        n.homeState = 'state-test-9'
-        self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
-        n.entry_commit_changes()
-        self.assertEqual(n.sn, 'sn-test-9')
-        self.assertEqual(n.homeState, 'state-test-9')
-        self.assertEqual(n.entry_status, STATUS_COMMITTED)
-        n.entry_delete()
-        self.assertEqual(n.entry_status, STATUS_READY_FOR_DELETION)
-        n.entry_commit_changes()
-        self.assertEqual(n.entry_status, STATUS_DELETED)

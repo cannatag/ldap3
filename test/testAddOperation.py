@@ -60,3 +60,8 @@ class Test(unittest.TestCase):
         self.connection.add(dn, object_class, attributes)
         self.connection.delete(dn)
         self.assertDictEqual(copy_of_attributes, attributes)
+
+    def test_add_binary(self):
+        der_certificates = [open('512b-rsa-example-cert.der','rb').read(), open('1024b-rsa-example-cert.der','rb').read()]
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'add-operation-4', attributes={'userCertificate;binary': der_certificates}))
+        self.assertEqual('success', self.delete_at_teardown[0][1]['description'])

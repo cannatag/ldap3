@@ -357,7 +357,7 @@ def safe_rdn(dn, decompose=False):
     return escaped_rdn
 
 
-def escape_rdn_chars(rdn):
+def escape_rdn(rdn):
     """
     Escape rdn characters to prevent injection according to RFC 4514.
     """

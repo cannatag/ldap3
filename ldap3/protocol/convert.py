@@ -88,7 +88,7 @@ def ava_to_dict(ava):
     try:
         return {'attribute': str(ava['attributeDesc']), 'value': escape_filter_chars(str(ava['assertionValue']))}
     except PyAsn1Error:  # invalid encoding, return bytes value
-        return {'attribute': str(ava['attributeDesc']), 'value': escape_filter_chars(str(bytes(ava['assertionValue'])))}
+        return {'attribute': str(ava['attributeDesc']), 'value': escape_filter_chars(bytes(ava['assertionValue']))}
 
 def substring_to_dict(substring):
     return {'initial': substring['initial'] if substring['initial'] else '', 'any': [middle for middle in substring['any']] if substring['any'] else '', 'final': substring['final'] if substring['final'] else ''}

@@ -669,7 +669,6 @@ class MockBaseStrategy(object):
             message = 'incorrect base object'
         else:
             matched = self.evaluate_filter_node(filter_root, candidates)
-
             if self.connection.raise_exceptions and len(matched) > request['sizeLimit']:
                 result_code = 4
                 message = 'size limit exceeded'
@@ -843,15 +842,6 @@ class MockBaseStrategy(object):
                 # if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
                 if attr_name in self.connection.server.dit[candidate] and self.equal(candidate, attr_name, attr_value):
                     node.matched.add(candidate)
-                # elif attr_name in self.connection.server.dit[candidate]:  # tries to apply formatters
-                #     formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
-                #     if not isinstance(formatted_values, SEQUENCE_TYPES):
-                #         formatted_values = [formatted_values]
-                #     # if attr_value.decode(SERVER_ENCODING) in formatted_values:  # attributes values should be returned in utf-8
-                #     if self.equal(attr_name, attr_value.decode(SERVER_ENCODING), formatted_values):  # attributes values should be returned in utf-8
-                #         node.matched.add(candidate)
-                #     else:
-                #         node.unmatched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
 
@@ -869,13 +859,15 @@ class MockBaseStrategy(object):
         if not isinstance(formatted_values, SEQUENCE_TYPES):
             formatted_values = [formatted_values]
         for attribute_value in formatted_values:
-            if self._check_equality(value, attribute_value):
+            if self._check_equality(format_attribute_values(self.connection.server.schema, attribute, value, None), attribute_value):
                 return True
 
         return False
 
     @staticmethod
     def _check_equality(value1, value2):
+        if value1 == value2:  # exact matching
+            return True
         if str(value1).isdigit() and str(value2).isdigit():
             if int(value1) == int(value2):  # int comparison
                 return True

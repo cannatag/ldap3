@@ -240,7 +240,13 @@ def validate_uuid(input_value):
             try:
                 valid_values.append(UUID(element).bytes)
                 changed = True
-            except ValueError:
+            except ValueError: # try if the value is an escaped byte sequence
+                try:
+                    valid_values.append(UUID(element.replace('\\', '')).bytes)
+                    changed = True
+                    continue
+                except ValueError:
+                    pass
                 return False
         else:
             return False

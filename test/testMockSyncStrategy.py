@@ -65,9 +65,9 @@ class Test(unittest.TestCase):
         self.connection_1.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2, 'guid': '07039e68-4373-264d-a0a7-222222222222'})
         self.connection_2.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2, 'guid': '07039e68-4373-264d-a0a7-222222222222'})
         self.connection_3.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2, 'guid': '07039e68-4373-264d-a0a7-222222222222'})
-        self.connection_1.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333330'})
-        self.connection_2.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333330'})
-        self.connection_3.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333330'})
+        self.connection_1.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333333'})
+        self.connection_2.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333333'})
+        self.connection_3.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333333'})
         self.connection_1.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3'], 'guid': '07039e68-4373-264d-a0a7-444444444444'})
         self.connection_2.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3'], 'guid': '07039e68-4373-264d-a0a7-444444444444'})
         self.connection_3.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3'], 'guid': '07039e68-4373-264d-a0a7-444444444444'})
@@ -988,7 +988,7 @@ class Test(unittest.TestCase):
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual('user3', response[0]['attributes']['cn'][0])
-        self.assertEqual('07039e68-4373-264d-a0a7-333333333333', response[0]['attributes']['guid'])
+        self.assertEqual('07039e68-4373-264d-a0a7-333333333333', response[0]['attributes']['guid'][0])
 
     def test_search_exact_match_case_insensitive_single_attribute_1(self):
         self.connection_1.bind()

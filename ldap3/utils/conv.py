@@ -68,6 +68,7 @@ def to_unicode(obj, encoding=None, from_server=False):
 
     raise UnicodeError("Unable to convert type %s to unicode: %r" % (type(obj).__class__.__name__, obj))
 
+
 def to_raw(obj, encoding='utf-8'):
     """Tries to convert to raw bytes from unicode"""
     if isinstance(obj, NUMERIC_TYPES):
@@ -78,7 +79,6 @@ def to_raw(obj, encoding='utf-8'):
             return [to_raw(element) for element in obj]
         elif isinstance(obj, STRING_TYPES):
             return obj.encode(encoding)
-
     return obj
 
 
@@ -123,28 +123,6 @@ def prepare_for_stream(value):
         return value
     else:  # Python 2
         return value.decode()
-
-
-# def check_escape(raw_string):
-#     if isinstance(raw_string, bytes) or '\\' not in raw_string:
-#         return raw_string
-#
-#     escaped = ''
-#     i = 0
-#     while i < len(raw_string):
-#         if raw_string[i] == '\\' and i < len(raw_string) - 2:
-#             try:
-#                 value = int(raw_string[i + 1: i + 3], 16)
-#                 escaped += chr(value)
-#                 i += 2
-#             except ValueError:
-#                 escaped += '\\\\'
-#         else:
-#             escaped += raw_string[i]
-#         i += 1
-#
-#     return escaped
-
 
 def json_encode_b64(obj):
     try:
@@ -224,3 +202,15 @@ def is_filter_escaped(text):
         raise ValueError('unicode input expected')
 
     return all(c not in text for c in '()*\0') and not re.search('\\\\([^0-9a-fA-F]|(.[^0-9a-fA-F]))', text)
+
+
+def ldap_escape_to_bytes(text):
+    bytesequence = bytearray()
+    if text.startswith('\\'):
+        byte_values = text.split('\\')
+        for value in byte_values[1:]:
+            if len(value) != 2 and not value.isdigit():
+                raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
+            bytesequence.append(int(value, 16))
+        return bytes(bytesequence)
+    raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')

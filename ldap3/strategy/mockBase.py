@@ -845,23 +845,16 @@ class MockBaseStrategy(object):
                 else:
                     node.unmatched.add(candidate)
 
-    def equal(self, dn, attribute, value):
+    def equal(self, dn, attribute_type, value_to_check):
         # value is the value to match
-        attribute_values = self.connection.server.dit[dn][attribute]
+        attribute_values = self.connection.server.dit[dn][attribute_type]
         if not isinstance(attribute_values, SEQUENCE_TYPES):
             attribute_values = [attribute_values]
         for attribute_value in attribute_values:
-            if self._check_equality(value, attribute_value):
+            if self._check_equality(value_to_check, attribute_value):
                 return True
-
-        # if not found tries to apply formatters
-        formatted_values = format_attribute_values(self.connection.server.schema, attribute, attribute_values, None)
-        if not isinstance(formatted_values, SEQUENCE_TYPES):
-            formatted_values = [formatted_values]
-        for attribute_value in formatted_values:
-            if self._check_equality(format_attribute_values(self.connection.server.schema, attribute, value, None), attribute_value):
+            if self._check_equality(self._prepare_value(attribute_type, value_to_check), attribute_value):
                 return True
-
         return False
 
     @staticmethod

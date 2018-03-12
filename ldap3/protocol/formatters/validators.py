@@ -22,14 +22,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-
+from binascii import a2b_hex
 from datetime import datetime
 from calendar import timegm
 from uuid import UUID
 
 from ... import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
 from .formatters import format_time, format_ad_timestamp
-from ...utils.conv import to_raw, to_unicode
+from ...utils.conv import to_raw, to_unicode, ldap_escape_to_bytes
 
 # Validators return True if value is valid, False if value is not valid,
 # or a value different from True and False that is a valid value to substitute to the input value
@@ -262,7 +262,12 @@ def validate_uuid(input_value):
 
 def validate_uuid_le(input_value):
     """
-    Active Directory stores objectGUID in uuid_le format
+    Active Directory stores objectGUID in uuid_le format, follows RFC4122 and MS-DTYP:
+    "{07039e68-4373-264d-a0a7-07039e684373}": string representation, converted to little endian
+    "689e0307-7343-4d26-a7a0-07039e684373": packet representation, already in little endian
+    "\68\9e\03\07\73\43\4d\26\a7\a0\07\03\9e\68\43\73": bytes representation, already in little endian
+    byte sequence: already in little endian
+
     """
     if not isinstance(input_value, SEQUENCE_TYPES):
         sequence = False
@@ -273,14 +278,18 @@ def validate_uuid_le(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        if isinstance(element, (bytes, bytearray)):  # assumes bytes are valid
-            valid_values.append(element)
-        elif isinstance(element,  STRING_TYPES):
-            try:
-                valid_values.append(UUID(element).bytes_le)
+        if isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
+            valid_values.append(element)  # value is untouched, must be in little endian
+        elif isinstance(element, STRING_TYPES):
+            if element[0] == '{' and element[-1] == '}':
+                valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
                 changed = True
-            except ValueError:
-                return False
+            elif '-' in element: # value in little endian
+                valid_values.append(UUID(bytes_le=a2b_hex(element.replace('-', ''))).bytes_le)  # packet representation, value in little endian, converts to little endian
+                changed = True
+            elif '\\' in element:
+                valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
+                changed = True
         else:
             return False
 

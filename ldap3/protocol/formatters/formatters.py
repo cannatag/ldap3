@@ -75,7 +75,7 @@ def format_uuid(raw_value):
 
 def format_uuid_le(raw_value):
     try:
-        return str(UUID(bytes_le=raw_value))
+        return '{' + str(UUID(bytes_le=raw_value)) + '}'
     except (TypeError, ValueError):
         return format_unicode(raw_value)
     except Exception:

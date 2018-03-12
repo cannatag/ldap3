@@ -193,7 +193,7 @@ class MockBaseStrategy(object):
         validator = find_attribute_validator(self.connection.server.schema, attribute_type, self.custom_validators)
         validated = validator(value)
         if validated is False:
-            raise LDAPInvalidValueError('value \'%s\' non valid for attribute \'%s\'' % (value, attribute_type))
+            raise LDAPInvalidValueError('value non valid for attribute \'%s\'' % attribute_type)
         elif validated is not True:  # a valid LDAP value equivalent to the actual value
             value = validated
         raw_value = to_raw(value)

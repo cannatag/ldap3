@@ -234,9 +234,7 @@ def validate_uuid(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        if isinstance(element, (bytes, bytearray)):  # assumes bytes are valid
-            valid_values.append(element)
-        elif isinstance(element,  STRING_TYPES):
+        if isinstance(element,  STRING_TYPES):
             try:
                 valid_values.append(UUID(element).bytes)
                 changed = True
@@ -246,8 +244,14 @@ def validate_uuid(input_value):
                     changed = True
                     continue
                 except ValueError:
-                    pass
+                    if str != bytes:  # python 3
+                        pass
+                    else:
+                        valid_values.append(element)
+                        continue
                 return False
+        elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid
+            valid_values.append(element)
         else:
             return False
 
@@ -278,9 +282,7 @@ def validate_uuid_le(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        if isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
-            valid_values.append(element)  # value is untouched, must be in little endian
-        elif isinstance(element, STRING_TYPES):
+        if isinstance(element, STRING_TYPES):
             if element[0] == '{' and element[-1] == '}':
                 valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
                 changed = True
@@ -290,6 +292,8 @@ def validate_uuid_le(input_value):
             elif '\\' in element:
                 valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
                 changed = True
+        elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
+            valid_values.append(element)  # value is untouched, must be in little endian
         else:
             return False
 

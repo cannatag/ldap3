@@ -10,12 +10,13 @@
     - fixed ad_timestamp evaluation for integers (thanks Flynn)
     - wrong exception raised when user name is empty in simple binding (thanks Ivan)
     - exception is raised if size limit is exceed when searchin in mocking strategies with raise_exceptions=True (thanks David)
-    - fixed validator for novell uuid
+    - fixed validator for novell guid
+    - fixed validator for openldap EntryUUID
+    - fixed validator for AD objectGUID, now follows MS-DTYP
+    - fixed formatter for AD objectGUID
     - fixed exception when adding binary values (thanks guidow)
     - added escape_rdn_chars() to ldap3.utils.dn for safe checking untrusted input while building DNs (thanks Alex)
     - fixed search for binary values in mock strategies
-    - fixed validator for AD objectGUID, now follows MS-DTYP
-    - fixed formatter for AD objectGUID
 
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4

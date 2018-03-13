@@ -28,7 +28,7 @@ from .formatters import format_ad_timestamp, format_binary, format_boolean,\
     format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
 from .validators import validate_integer, validate_time, always_valid,\
     validate_generic_single_value, validate_boolean, validate_ad_timestamp,\
-    validate_uuid_le, validate_uuid, validate_zero_and_minus_one
+    validate_uuid_le, validate_uuid, validate_zero_and_minus_one, validate_guid
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -100,7 +100,7 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.58': (format_unicode, None),  # Substring assertion
     '1.3.6.1.1.16.1': (format_uuid, validate_uuid),  # UUID
     '1.3.6.1.1.16.4': (format_uuid, validate_uuid),  # entryUUID (RFC 4530)
-    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, validate_uuid),  # GUID (Novell)
+    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, validate_guid),  # GUID (Novell)
     '2.16.840.1.113719.1.1.5.1.0': (format_binary, None),  # Unknown (Novell)
     '2.16.840.1.113719.1.1.5.1.6': (format_unicode, None),  # Case Ignore List (Novell)
     '2.16.840.1.113719.1.1.5.1.12': (format_binary, None),  # Tagged Data (Novell)

@@ -221,9 +221,9 @@ def validate_ad_timestamp(input_value):
         return True
 
 
-def validate_uuid(input_value):
+def validate_guid(input_value):
     """
-    object guid in uuid format
+    object guid in uuid format (Novell eDirectory)
     """
     if not isinstance(input_value, SEQUENCE_TYPES):
         sequence = False
@@ -263,12 +263,54 @@ def validate_uuid(input_value):
     else:
         return True
 
+def validate_uuid(input_value):
+    """
+    object entryUUID in uuid format
+    """
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        sequence = False
+        input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
+
+    valid_values = []
+    changed = False
+    for element in input_value:
+        if isinstance(element,  STRING_TYPES):
+            try:
+                valid_values.append(str(UUID(element)))
+                changed = True
+            except ValueError: # try if the value is an escaped byte sequence
+                try:
+                    valid_values.append(str(UUID(element.replace('\\', ''))))
+                    changed = True
+                    continue
+                except ValueError:
+                    if str != bytes:  # python 3
+                        pass
+                    else:
+                        valid_values.append(element)
+                        continue
+                return False
+        elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid
+            valid_values.append(element)
+        else:
+            return False
+
+    if changed:
+        if sequence:
+            return valid_values
+        else:
+            return valid_values[0]
+    else:
+        return True
+
 
 def validate_uuid_le(input_value):
     """
     Active Directory stores objectGUID in uuid_le format, follows RFC4122 and MS-DTYP:
-    "{07039e68-4373-264d-a0a7-07039e684373}": string representation, converted to little endian
-    "689e0307-7343-4d26-a7a0-07039e684373": packet representation, already in little endian
+    "{07039e68-4373-264d-a0a7-07039e684373}": string representation big endian, converted to little endian (with or without brace curles)
+    "689e030773434d26a7a007039e684373": packet representation, already in little endian
     "\68\9e\03\07\73\43\4d\26\a7\a0\07\03\9e\68\43\73": bytes representation, already in little endian
     byte sequence: already in little endian
 

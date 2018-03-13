@@ -286,11 +286,14 @@ def validate_uuid_le(input_value):
             if element[0] == '{' and element[-1] == '}':
                 valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
                 changed = True
-            elif '-' in element: # value in little endian
-                valid_values.append(UUID(bytes_le=a2b_hex(element.replace('-', ''))).bytes_le)  # packet representation, value in little endian, converts to little endian
+            elif '-' in element:
+                valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
                 changed = True
             elif '\\' in element:
                 valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
+                changed = True
+            elif '-' not in element: # value in little endian
+                valid_values.append(UUID(bytes_le=a2b_hex(element)).bytes_le)  # packet representation, value in little endian, converts to little endian
                 changed = True
         elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
             valid_values.append(element)  # value is untouched, must be in little endian

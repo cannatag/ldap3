@@ -487,6 +487,7 @@ def filter_to_string(filter_object):
                     filter_string += '*'
                 elif component == 'final':
                     filter_string += '*' + str(substring['final'])
+        filter_string = to_unicode(filter_string)
     elif filter_type == 'greaterOrEqual':
         ava = ava_to_dict(filter_object['greaterOrEqual'])
         filter_string += ava['attribute'] + '>=' + ava['value']

@@ -502,8 +502,11 @@ def filter_to_string(filter_object):
         filter_string += matching_rule_assertion_to_string(filter_object['extensibleMatch'])
     else:
         raise LDAPInvalidFilterError('error converting filter to string')
-
     filter_string += ')'
+
+    if str == bytes:  # Python2, forces conversion to Unicode
+        filter_string = to_unicode(filter_string)
+
     return filter_string
 
 

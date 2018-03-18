@@ -17,6 +17,8 @@
     - fixed exception when adding binary values (thanks guidow)
     - added escape_rdn_chars() to ldap3.utils.dn for safe checking untrusted input while building DNs (thanks Alex)
     - fixed search for binary values in mock strategies
+    - fixed exception with unicode chars in subfilters for python 2 (thanks Friedrich)
+    - connection.extend.paged_search() doens't miss the last entries anymore when size limit is exceeded for the search on the server (thanks Friedrich)
 
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4

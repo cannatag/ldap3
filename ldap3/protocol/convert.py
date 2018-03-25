@@ -159,6 +159,13 @@ def validate_attribute_value(schema, name, value, auto_encode, validator=None, c
             validator = find_attribute_validator(schema, name, validator)
             validated = validator(value)
             if validated is False:
+                try:  # checks if the value is a byte value erroneously converted to a string (as "b'1234'"), this is a common case in Python 3 when encoding is not specified
+                    if value[0:2] == "b'" and value [-1] == "'":
+                        value = to_raw(value[2:-1])
+                        validated = validator(value)
+                except Exception:
+                    raise LDAPInvalidValueError('value \'%s\' non valid for attribute \'%s\'' % (value, name))
+            if validated is False:
                 raise LDAPInvalidValueError('value \'%s\' non valid for attribute \'%s\'' % (value, name))
             elif validated is not True:  # a valid LDAP value equivalent to the actual value
                 value = validated

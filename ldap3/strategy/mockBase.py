@@ -167,7 +167,7 @@ class MockBaseStrategy(object):
         self.bound = None
         self.custom_validators = None
         self.operational_attributes = ['entryDN']
-        self.add_entry('cn=schema', [])  # add default entry for schema
+        self.add_entry('cn=schema', [], validate=False)  # add default entry for schema
         self._paged_sets = []  # list of paged search in progress
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
@@ -184,18 +184,19 @@ class MockBaseStrategy(object):
         if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
-    def _prepare_value(self, attribute_type, value):
+    def _prepare_value(self, attribute_type, value, validate=True):
         """
         Prepare a value for being stored in the mock DIT
         :param value: object to store
         :return: raw value to store in the DIT
         """
-        validator = find_attribute_validator(self.connection.server.schema, attribute_type, self.custom_validators)
-        validated = validator(value)
-        if validated is False:
-            raise LDAPInvalidValueError('value non valid for attribute \'%s\'' % attribute_type)
-        elif validated is not True:  # a valid LDAP value equivalent to the actual value
-            value = validated
+        if validate:  # if loading from json dump do not validate values:
+            validator = find_attribute_validator(self.connection.server.schema, attribute_type, self.custom_validators)
+            validated = validator(value)
+            if validated is False:
+                raise LDAPInvalidValueError('value non valid for attribute \'%s\'' % attribute_type)
+            elif validated is not True:  # a valid LDAP value equivalent to the actual value
+                value = validated
         raw_value = to_raw(value)
         if not isinstance(raw_value, bytes):
             raise LDAPInvalidValueError('added values must be bytes if no offline schema is provided in Mock strategies')
@@ -204,7 +205,7 @@ class MockBaseStrategy(object):
     def _update_attribute(self, dn, attribute_type, value):
         pass
 
-    def add_entry(self, dn, attributes):
+    def add_entry(self, dn, attributes, validate=True):
         with self.connection.server.dit_lock:
             escaped_dn = safe_dn(dn)
             if escaped_dn not in self.connection.server.dit:
@@ -233,7 +234,7 @@ class MockBaseStrategy(object):
                                 class_set.update(new_classes)
                             new_entry['objectClass'] = [to_raw(value) for value in class_set]
                     else:
-                        new_entry[attribute] = [self._prepare_value(attribute, value) for value in attributes[attribute]]
+                        new_entry[attribute] = [self._prepare_value(attribute, value, validate) for value in attributes[attribute]]
                 for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
                     if rdn[0] not in new_entry:  # if rdn attribute is missing adds attribute and its value
                         new_entry[rdn[0]] = [to_raw(rdn[1])]
@@ -275,7 +276,7 @@ class MockBaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise LDAPDefinitionError(self.connection.last_error)
-            self.add_entry(entry['dn'], entry['raw'])
+            self.add_entry(entry['dn'], entry['raw'], validate=False)
         target.close()
 
     def mock_bind(self, request_message, controls):

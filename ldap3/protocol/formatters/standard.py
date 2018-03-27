@@ -28,7 +28,7 @@ from .formatters import format_ad_timestamp, format_binary, format_boolean,\
     format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
 from .validators import validate_integer, validate_time, always_valid,\
     validate_generic_single_value, validate_boolean, validate_ad_timestamp,\
-    validate_uuid_le, validate_uuid, validate_zero_and_minus_one, validate_guid
+    validate_uuid_le, validate_uuid, validate_zero_and_minus_one, validate_guid, validate_time_with_0_year
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -125,7 +125,8 @@ standard_formatter = {
     '1.2.840.113556.1.4.146': (format_sid, None),  # objectSid (Microsoft)
     '1.2.840.113556.1.4.159': (format_ad_timestamp, validate_ad_timestamp),  # accountExpires (Microsoft)
     '1.2.840.113556.1.4.662': (format_ad_timestamp, validate_ad_timestamp),  # lockoutTime (Microsoft)
-    '1.2.840.113556.1.4.1696': (format_ad_timestamp, validate_ad_timestamp)  # lastLogonTimestamp (Microsoft)
+    '1.2.840.113556.1.4.1696': (format_ad_timestamp, validate_ad_timestamp),  # lastLogonTimestamp (Microsoft)
+    '1.3.6.1.4.1.42.2.27.8.1.17': (format_time, validate_time_with_0_year)
 }
 
 

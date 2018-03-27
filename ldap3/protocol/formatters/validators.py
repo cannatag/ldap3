@@ -27,7 +27,7 @@ from datetime import datetime
 from calendar import timegm
 from uuid import UUID
 
-from ... import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES
+from ... import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES, INTEGER_TYPES
 from .formatters import format_time, format_ad_timestamp
 from ...utils.conv import to_raw, to_unicode, ldap_escape_to_bytes
 
@@ -84,13 +84,8 @@ def validate_zero_and_minus_one(input_value):
 def validate_integer(input_value):
     if check_type(input_value, (float, bool)):
         return False
-
-    if str is bytes:  # Python 2, check for long too
-        if check_type(input_value, (int, long)):
-            return True
-    else:  # Python 3, int only
-        if check_type(input_value, int):
-            return True
+    if check_type(input_value, INTEGER_TYPES):
+        return True
 
     sequence = True  # indicates if a sequence must be returned
     if not isinstance(input_value, SEQUENCE_TYPES):
@@ -133,13 +128,52 @@ def validate_boolean(input_value):
                 return 'TRUE'
             else:
                 return 'FALSE'
+        if str != bytes and isinstance(input_value, bytes):  # python3 try to converts bytes to string
+            input_value = to_unicode(input_value)
         if isinstance(input_value, STRING_TYPES):
             if input_value.lower() == 'true':
                 return 'TRUE'
             elif input_value.lower() == 'false':
                 return 'FALSE'
-
     return False
+
+
+def validate_time_with_0_year(input_value):
+    # validates generalized time but accept a 0000 year too
+    # if datetime object doesn't have a timezone it's considered local time and is adjusted to UTC
+    if not isinstance(input_value, SEQUENCE_TYPES):
+        sequence = False
+        input_value = [input_value]
+    else:
+        sequence = True  # indicates if a sequence must be returned
+
+    valid_values = []
+    changed = False
+    for element in input_value:
+        if str != bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
+            element = to_unicode(element)
+        if isinstance(element, STRING_TYPES):  # tries to check if it is already be a Generalized Time
+            if element.startswith('0000') or isinstance(format_time(to_raw(element)), datetime):  # valid Generalized Time string
+                valid_values.append(element)
+            else:
+                return False
+        elif isinstance(element, datetime):
+            changed = True
+            if element.tzinfo:  # a datetime with a timezone
+                valid_values.append(element.strftime('%Y%m%d%H%M%S%z'))
+            else:  # datetime without timezone, assumed local and adjusted to UTC
+                offset = datetime.now() - datetime.utcnow()
+                valid_values.append((element - offset).strftime('%Y%m%d%H%M%SZ'))
+        else:
+            return False
+
+    if changed:
+        if sequence:
+            return valid_values
+        else:
+            return valid_values[0]
+    else:
+        return True
 
 
 def validate_time(input_value):
@@ -153,6 +187,8 @@ def validate_time(input_value):
     valid_values = []
     changed = False
     for element in input_value:
+        if str != bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
+            element = to_unicode(element)
         if isinstance(element, STRING_TYPES):  # tries to check if it is already be a Generalized Time
             if isinstance(format_time(to_raw(element)), datetime):  # valid Generalized Time string
                 valid_values.append(element)
@@ -192,6 +228,8 @@ def validate_ad_timestamp(input_value):
     valid_values = []
     changed = False
     for element in input_value:
+        if str != bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
+            element = to_unicode(element)
         if isinstance(element, NUMERIC_TYPES):
             if 0 <= element <= 9223372036854775807:  # min and max for the AD timestamp starting from 12:00 AM January 1, 1601
                 valid_values.append(element)

@@ -21,6 +21,7 @@
     - connection.extend.paged_search() doens't miss the last entries anymore when size limit is exceeded for the search on the server (thanks Friedrich)
     - validators are not applied when loading data from json dump in Mock strategies (thanks Derek)
     - additional validator to check for erroneous bytes to string conversion in Python 3 (thanks Brian)
+    - added ADDITIONAL_CLIENT_ENCODINGS parameter
 
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4

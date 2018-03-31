@@ -39,6 +39,7 @@ def to_unicode(obj, encoding=None, from_server=False):
     conf_default_client_encoding = get_config_parameter('DEFAULT_CLIENT_ENCODING')
     conf_default_server_encoding = get_config_parameter('DEFAULT_SERVER_ENCODING')
     conf_additional_server_encodings = get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')
+    conf_additional_client_encodings = get_config_parameter('ADDITIONAL_CLIENT_ENCODINGS')
     if isinstance(obj, NUMERIC_TYPES):
         obj = str(obj)
 
@@ -61,6 +62,11 @@ def to_unicode(obj, encoding=None, from_server=False):
             try:
                 return obj.decode(encoding)
             except UnicodeDecodeError:
+                for encoding in conf_additional_client_encodings:  # tries additional encodings
+                    try:
+                        return obj.decode(encoding)
+                    except UnicodeDecodeError:
+                        pass
                 raise UnicodeError("Unable to convert client data to unicode: %r" % obj)
 
     if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 unicode

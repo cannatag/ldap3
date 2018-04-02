@@ -34,7 +34,7 @@ def ad_unlock_account(connection, user_dn, controls=None):
     if connection.check_names:
         user_dn = safe_dn(user_dn)
     result = connection.modify(user_dn,
-                               {'lockoutTime': [(MODIFY_REPLACE, [0])]},
+                               {'lockoutTime': [(MODIFY_REPLACE, ['0'])]},
                                controls)
 
     if not connection.strategy.sync:

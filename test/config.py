@@ -22,7 +22,7 @@
 from time import sleep
 from sys import version, getdefaultencoding, getfilesystemencoding
 from os import environ, remove
-from os.path import join
+from os import path
 from random import SystemRandom
 from tempfile import gettempdir
 
@@ -77,11 +77,11 @@ if 'TRAVIS' in location:
 else:
     location += '-' + test_server_type
 
-# # force TRAVIS configuration
-# location = 'TRAVIS-LOCAL'
-# test_strategy = ASYNC
-# test_server_type = 'AD'
-# test_internal_decoder = True
+# force TRAVIS configuration
+location = 'TRAVIS-LOCAL'
+test_strategy = ASYNC
+test_server_type = 'AD-RAAB'
+test_internal_decoder = True
 
 if 'TRAVIS' in location:
     # test in the cloud
@@ -144,7 +144,38 @@ if 'TRAVIS' in location:
         test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
         test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
         test_ntlm_password = 'Rc666666pfop'
-        test_logging_filename = join(gettempdir(), 'ldap3.log')
+        test_logging_filename = path.join(gettempdir(), 'ldap3.log')
+        test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
+    elif test_server_type == 'AD-RAAB':
+        test_server = 'ec2-52-90-65-2.compute-1.amazonaws.com'
+        test_domain_name = 'CONTOSO12.LOCAL'  # Active Directory Domain name
+        test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+        test_base = 'cn=users,' + test_root_partition  # base context where test objects are created
+        test_moved = 'cn=users,' + test_root_partition  # base context where objects are moved in ModifyDN operations
+        test_name_attr = 'cn'  # naming attribute for test objects
+        test_int_attr = 'logonCount'
+        test_multivalued_attribute = 'carLicense'
+        test_singlevalued_attribute = 'street'
+        test_server_context = ''  # used in novell eDirectory extended operations
+        test_server_edir_name = ''  # used in novell eDirectory extended operations
+        test_user = 'CN=Administrator,CN=Users,' + test_root_partition  # the user that performs the tests
+        test_password = 'x8*QQVcoLT'  # user password
+        test_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+        test_secondary_password = 'Rc555555pfop'  # user password
+        # test_sasl_user = 'testLAB@' + test_domain_name
+        test_sasl_user = test_domain_name.split('.')[0] + '\\testLAB'
+        test_sasl_password = 'Rc555555pfop'
+        test_sasl_user_dn = 'cn=testLAB,o=resources'
+        test_sasl_secondary_user = 'CN=testLAB,CN=Users,' + test_root_partition
+        test_sasl_secondary_password = 'Rc555555pfop'
+        test_sasl_secondary_user_dn = 'CN=testLAB,CN=Users,' + test_root_partition
+        test_sasl_realm = None
+        test_ca_cert_file = 'local-forest-lab-ca.pem'
+        test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+        test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+        test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
+        test_ntlm_password = 'Rc666666pfop'
+        test_logging_filename = path.join(gettempdir(), 'ldap3.log')
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
         test_server = 'ipa.demo1.freeipa.org'
@@ -210,7 +241,7 @@ elif location == 'ELITE10GC-EDIR':
     test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102']
 elif location == 'ELITE10GC-AD':
     # test notebook - Active Directory (AD)
@@ -244,7 +275,7 @@ elif location == 'ELITE10GC-AD':
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
     test_ntlm_password = 'Rc6666pfop'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
 elif location == 'ELITE10GC-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
@@ -275,7 +306,7 @@ elif location == 'ELITE10GC-SLAPD':
     test_user_key_file = ''
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.104']
 elif location == 'W10GC9227-EDIR':
     # test camera
@@ -311,7 +342,7 @@ elif location == 'W10GC9227-EDIR':
     test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['sl10.intra.camera.it']
 elif location == 'W10GC9227-AD':
     # test notebook - Active Directory (AD)
@@ -343,7 +374,7 @@ elif location == 'W10GC9227-AD':
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
     test_ntlm_password = 'Rc99pfop'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
 else:
     raise Exception('testing location ' + location + ' is not valid')

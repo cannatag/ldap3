@@ -314,7 +314,7 @@ except ImportError:
 
 
 def format_time_with_0_year(raw_value):
-    if hasattr(raw_value, 'startswith') and raw_value.startswith('0000'):
+    if hasattr(raw_value, 'startswith') and raw_value.startswith(b'0000'):
         return raw_value
 
     return format_time(raw_value)

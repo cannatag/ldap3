@@ -23,6 +23,7 @@
     - additional validator to check for erroneous bytes to string conversion in Python 3 (thanks Brian)
     - additional formatter and validator to check for generalizedtime with 0 year (thanks Brian)
     - added ADDITIONAL_CLIENT_ENCODINGS parameter
+    - fixed AD dir_sync extended operation (thanks Lucas)
 
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4

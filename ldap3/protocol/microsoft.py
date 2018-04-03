@@ -81,6 +81,14 @@ class DirSyncControlResponseValue(Sequence):
                                )
 
 
+class SdFlags(Sequence):
+    # SDFlagsRequestValue ::= SEQUENCE {
+    #     Flags    INTEGER
+    # }
+    componentType = NamedTypes(NamedType('Flags', Integer())
+                               )
+
+
 class ExtendedDN(Sequence):
     # A flag value 0 specifies that the GUID and SID values be returned in hexadecimal string
     # A flag value of 1 will return the GUID and SID values in standard string format
@@ -123,3 +131,9 @@ def extended_dn_control(criticality=False, hex_format=False):
 
 def show_deleted_control(criticality=False):
     return build_control('1.2.840.113556.1.4.417', criticality, value=None)
+
+
+def security_descriptor_control(criticality=False, sdflags=0x0F):
+    sdcontrol = SdFlags()
+    sdcontrol.setComponentByName('Flags', sdflags)
+    return [build_control('1.2.840.113556.1.4.801', criticality, sdcontrol)]

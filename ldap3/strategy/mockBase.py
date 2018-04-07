@@ -670,7 +670,7 @@ class MockBaseStrategy(object):
             message = 'incorrect base object'
         else:
             matched = self.evaluate_filter_node(filter_root, candidates)
-            if self.connection.raise_exceptions and len(matched) > request['sizeLimit']:
+            if self.connection.raise_exceptions and 0 < request['sizeLimit'] < len(matched):
                 result_code = 4
                 message = 'size limit exceeded'
             else:

@@ -47,7 +47,9 @@ def format_unicode(raw_value):
 def format_integer(raw_value):
     try:
         return int(raw_value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError):  # expected exceptions
+        pass
+    except Exception:  # any other exception should be investigated, anyway the formatter return the raw_value
         pass
 
     return raw_value
@@ -56,7 +58,9 @@ def format_integer(raw_value):
 def format_binary(raw_value):
     try:
         return bytes(raw_value)
-    except TypeError:
+    except TypeError:  # expected exceptions
+        pass
+    except Exception:  # any other exception should be investigated, anyway the formatter return the raw_value
         pass
 
     return raw_value
@@ -67,7 +71,7 @@ def format_uuid(raw_value):
         return str(UUID(bytes=raw_value))
     except (TypeError, ValueError):
         return format_unicode(raw_value)
-    except Exception:
+    except Exception:  # any other exception should be investigated, anyway the formatter return the raw_value
         pass
 
     return raw_value
@@ -78,7 +82,7 @@ def format_uuid_le(raw_value):
         return '{' + str(UUID(bytes_le=raw_value)) + '}'
     except (TypeError, ValueError):
         return format_unicode(raw_value)
-    except Exception:
+    except Exception:  # any other exception should be investigated, anyway the formatter return the raw_value
         pass
 
     return raw_value
@@ -101,23 +105,29 @@ def format_ad_timestamp(raw_value):
     """
     if raw_value == b'9223372036854775807':  # max value to be stored in a 64 bit signed int
         return datetime.max  # returns datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
-    timestamp = int(raw_value)
-    if timestamp < 0:  # ad timestamp cannot be negative
+    try:
+        timestamp = int(raw_value)
+        if timestamp < 0:  # ad timestamp cannot be negative
+            return raw_value
+    except Exception:
         return raw_value
 
     try:
         return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
     except (OSError, OverflowError, ValueError):  # on Windows backwards timestamps are not allowed
-        unix_epoch = datetime.fromtimestamp(0, tz=OffsetTzInfo(0, 'UTC'))
-        diff_seconds = timedelta(seconds=timestamp/10000000.0 - 11644473600)
-        return unix_epoch + diff_seconds
-    except Exception as e:
+        try:
+            unix_epoch = datetime.fromtimestamp(0, tz=OffsetTzInfo(0, 'UTC'))
+            diff_seconds = timedelta(seconds=timestamp/10000000.0 - 11644473600)
+            return unix_epoch + diff_seconds
+        except Exception:
+            pass
+    except Exception:
         pass
 
     return raw_value
 
 
-try:  # uses regular expressions and the timezone class (python3.2)
+try:  # uses regular expressions and the timezone class (python3.2 and later)
     from datetime import timezone
     time_format = re.compile(
         r'''
@@ -149,58 +159,60 @@ try:  # uses regular expressions and the timezone class (python3.2)
     )
 
     def format_time(raw_value):
-        match = time_format.fullmatch(to_unicode(raw_value))
-        if match is None:
-            return raw_value
-        matches = match.groupdict()
+        try:
+            match = time_format.fullmatch(to_unicode(raw_value))
+            if match is None:
+                return raw_value
+            matches = match.groupdict()
 
-        offset = timedelta(
-            hours=int(matches['OffHour'] or 0),
-            minutes=int(matches['OffMinute'] or 0)
-        )
+            offset = timedelta(
+                hours=int(matches['OffHour'] or 0),
+                minutes=int(matches['OffMinute'] or 0)
+            )
 
-        if matches['Offset'] == '-':
-            offset *= -1
+            if matches['Offset'] == '-':
+                offset *= -1
 
-        # Python does not support leap second in datetime (!)
-        if matches['Second'] == '60':
-            matches['Second'] = '59'
+            # Python does not support leap second in datetime (!)
+            if matches['Second'] == '60':
+                matches['Second'] = '59'
 
-        # According to RFC, fraction may be applied to an Hour/Minute (!)
-        fraction = float('0.' + (matches['Fraction'] or '0'))
+            # According to RFC, fraction may be applied to an Hour/Minute (!)
+            fraction = float('0.' + (matches['Fraction'] or '0'))
 
-        if matches['Minute'] is None:
-            fraction *= 60
-            minute = int(fraction)
-            fraction -= minute
-        else:
-            minute = int(matches['Minute'])
+            if matches['Minute'] is None:
+                fraction *= 60
+                minute = int(fraction)
+                fraction -= minute
+            else:
+                minute = int(matches['Minute'])
 
-        if matches['Second'] is None:
-            fraction *= 60
-            second = int(fraction)
-            fraction -= second
-        else:
-            second = int(matches['Second'])
+            if matches['Second'] is None:
+                fraction *= 60
+                second = int(fraction)
+                fraction -= second
+            else:
+                second = int(matches['Second'])
 
-        microseconds = int(fraction * 1000000)
+            microseconds = int(fraction * 1000000)
 
-        return datetime(
-            int(matches['Year']),
-            int(matches['Month']),
-            int(matches['Day']),
-            int(matches['Hour']),
-            minute,
-            second,
-            microseconds,
-            timezone(offset),
-        )
+            return datetime(
+                int(matches['Year']),
+                int(matches['Month']),
+                int(matches['Day']),
+                int(matches['Hour']),
+                minute,
+                second,
+                microseconds,
+                timezone(offset),
+            )
+        except Exception:  # exceptions should be investigated, anyway the formatter return the raw_value
+            pass
+        return raw_value
+
 except ImportError:
     def format_time(raw_value):
         """
-        """
-
-        '''
         From RFC4517:
         A value of the Generalized Time syntax is a character string
         representing a date and time. The LDAP-specific encoding of a value
@@ -228,13 +240,12 @@ except ImportError:
                         / g-differential
         g-differential  = ( MINUS / PLUS ) hour [ minute ]
             MINUS           = %x2D  ; minus sign ("-")
-        '''
-        # if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
+        """
+
         if len(raw_value) < 10 or not all((c in b'0123456789+-,.Z' for c in raw_value)) or (b'Z' in raw_value and not raw_value.endswith(b'Z')):  # first ten characters are mandatory and must be numeric or timezone or fraction
             return raw_value
 
         # sets position for fixed values
-
         year = int(raw_value[0: 4])
         month = int(raw_value[4: 6])
         day = int(raw_value[6: 8])
@@ -329,8 +340,6 @@ def format_time_with_0_year(raw_value):
 
 def format_sid(raw_value):
     """
-    """
-    '''
     SID= "S-1-" IdentifierAuthority 1*SubAuthority
            IdentifierAuthority= IdentifierAuthorityDec / IdentifierAuthorityHex
               ; If the identifier authority is < 2^32, the
@@ -356,30 +365,34 @@ def format_sid(raw_value):
     SubAuthorityCount (1 byte): An 8-bit unsigned integer that specifies the number of elements in the SubAuthority array. The maximum number of elements allowed is 15.
     IdentifierAuthority (6 bytes): A SID_IDENTIFIER_AUTHORITY structure that indicates the authority under which the SID was created. It describes the entity that created the SID. The Identifier Authority value {0,0,0,0,0,5} denotes SIDs created by the NT SID authority.
     SubAuthority (variable): A variable length array of unsigned 32-bit integers that uniquely identifies a principal relative to the IdentifierAuthority. Its length is determined by SubAuthorityCount.
-    '''
+    """
+    try:
+        if str is not bytes:  # Python 3
+            revision = int(raw_value[0])
+            sub_authority_count = int(raw_value[1])
+            identifier_authority = int.from_bytes(raw_value[2:8], byteorder='big')
+            if identifier_authority >= 4294967296:  # 2 ^ 32
+                identifier_authority = hex(identifier_authority)
 
-    if str is not bytes:  # Python 3
-        revision = int(raw_value[0])
-        sub_authority_count = int(raw_value[1])
-        identifier_authority = int.from_bytes(raw_value[2:8], byteorder='big')
-        if identifier_authority >= 4294967296:  # 2 ^ 32
-            identifier_authority = hex(identifier_authority)
+            sub_authority = ''
+            i = 0
+            while i < sub_authority_count:
+                sub_authority += '-' + str(int.from_bytes(raw_value[8 + (i * 4): 12 + (i * 4)], byteorder='little'))  # little endian
+                i += 1
+        else:  # Python 2
+            revision = int(ord(raw_value[0]))
+            sub_authority_count = int(ord(raw_value[1]))
+            identifier_authority = int(hexlify(raw_value[2:8]), 16)
+            if identifier_authority >= 4294967296:  # 2 ^ 32
+                identifier_authority = hex(identifier_authority)
 
-        sub_authority = ''
-        i = 0
-        while i < sub_authority_count:
-            sub_authority += '-' + str(int.from_bytes(raw_value[8 + (i * 4): 12 + (i * 4)], byteorder='little'))  # little endian
-            i += 1
-    else:  # Python 2
-        revision = int(ord(raw_value[0]))
-        sub_authority_count = int(ord(raw_value[1]))
-        identifier_authority = int(hexlify(raw_value[2:8]), 16)
-        if identifier_authority >= 4294967296:  # 2 ^ 32
-            identifier_authority = hex(identifier_authority)
+            sub_authority = ''
+            i = 0
+            while i < sub_authority_count:
+                sub_authority += '-' + str(int(hexlify(raw_value[11 + (i * 4): 7 + (i * 4): -1]), 16))  # little endian
+                i += 1
+        return 'S-' + str(revision) + '-' + str(identifier_authority) + sub_authority
+    except Exception:  # any exception should be investigated, anyway the formatter return the raw_value
+        pass
 
-        sub_authority = ''
-        i = 0
-        while i < sub_authority_count:
-            sub_authority += '-' + str(int(hexlify(raw_value[11 + (i * 4): 7 + (i * 4): -1]), 16))  # little endian
-            i += 1
-    return 'S-' + str(revision) + '-' + str(identifier_authority) + sub_authority
+    return raw_value

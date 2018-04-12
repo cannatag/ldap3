@@ -747,6 +747,9 @@ class Connection(object):
 
                 if controls is None:
                     controls = []
+                else:
+                    # Copy the controls to prevent modifying the original object
+                    controls = list(controls)
                 controls.append(paged_search_control(paged_criticality, paged_size, paged_cookie))
 
             if self.server and self.server.schema and self.check_names:

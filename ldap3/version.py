@@ -1,7 +1,7 @@
 # THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY# version file for ldap3
-# generated on 2018-03-31 11:22:01.076168
+# generated on 2018-04-14 17:22:42.649409
 # on system uname_result(system='Windows', node='ELITE10GC', release='10', version='10.0.16299', machine='AMD64', processor='Intel64 Family 6 Model 58 Stepping 9, GenuineIntel')
-# with Python 3.6.4 - ('v3.6.4:d48eceb', 'Dec 19 2017 06:54:40') - MSC v.1900 64 bit (AMD64)
+# with Python 3.6.5 - ('v3.6.5:f59c0932b4', 'Mar 28 2018 17:00:18') - MSC v.1900 64 bit (AMD64)
 #
 __version__ = '2.5'
 __author__ = 'Giovanni Cannata'

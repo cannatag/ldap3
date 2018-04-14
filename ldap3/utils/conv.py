@@ -100,7 +100,7 @@ def escape_filter_chars(text, encoding=None):
         escaped = escaped.replace('(', '\\28')
         escaped = escaped.replace(')', '\\29')
         escaped = escaped.replace('\x00', '\\00')
-    except:  # probably raw bytes values, return escaped bytes value
+    except Exception:  # probably raw bytes values, return escaped bytes value
         escaped = to_unicode(escape_bytes(text))
         # escape all octets greater than 0x7F that are not part of a valid UTF-8
         # escaped = ''.join(c if c <= ord(b'\x7f') else escape_bytes(to_raw(to_unicode(c, encoding))) for c in escaped)

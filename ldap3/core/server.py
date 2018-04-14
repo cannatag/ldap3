@@ -498,7 +498,7 @@ class Server(object):
         :return: Server object
         """
         if isinstance(host, SEQUENCE_TYPES):
-            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter, validator=validator, tget_info=ALL)  # for ServerPool object
+            dummy = Server(host=host[0], port=port, use_ssl=use_ssl, formatter=formatter, validator=validator, get_info=ALL)  # for ServerPool object
         else:
             dummy = Server(host=host, port=port, use_ssl=use_ssl, formatter=formatter, validator=validator, get_info=ALL)
         if isinstance(dsa_info, DsaInfo):

@@ -48,6 +48,7 @@ def check_type(input_value, value_type):
     return False
 
 
+# noinspection PyUnusedLocal
 def always_valid(input_value):
     return True
 
@@ -87,7 +88,6 @@ def validate_integer(input_value):
     if check_type(input_value, INTEGER_TYPES):
         return True
 
-    sequence = True  # indicates if a sequence must be returned
     if not isinstance(input_value, SEQUENCE_TYPES):
         sequence = False
         input_value = [input_value]
@@ -243,7 +243,7 @@ def validate_ad_timestamp(input_value):
         elif isinstance(element, datetime):
             changed = True
             if element.tzinfo:  # a datetime with a timezone
-                valid_values.append(to_raw((timegm((element).utctimetuple()) + 11644473600) * 10000000, encoding='ascii'))
+                valid_values.append(to_raw((timegm(element.utctimetuple()) + 11644473600) * 10000000, encoding='ascii'))
             else:  # datetime without timezone, assumed local and adjusted to UTC
                 offset = datetime.now() - datetime.utcnow()
                 valid_values.append(to_raw((timegm((element - offset).timetuple()) + 11644473600) * 10000000, encoding='ascii'))

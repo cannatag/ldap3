@@ -38,12 +38,12 @@ class Test(unittest.TestCase):
     def setUp(self):
         global testcase_id
         testcase_id = random_id()
-        if test_server_type == 'AD':
+        if test_server_type == 'AD-RAAB':
             self.connection = get_connection(use_ssl=True)
             self.delete_at_teardown = []
 
     def tearDown(self):
-        if test_server_type == 'AD':
+        if test_server_type == 'AD-RAAB':
             drop_connection(self.connection, self.delete_at_teardown)
             self.assertFalse(self.connection.bound)
 
@@ -88,9 +88,9 @@ class Test(unittest.TestCase):
             self.assertTrue(found)
 
     def test_dir_sync(self):
-        if False:  # takes a long long time to complete
-        # if test_server_type == 'AD':
-            sync = self.connection.extend.microsoft.dir_sync(test_root_partition, attributes=['*'])
+        # if False:  # takes a long long time to complete
+        if test_server_type == 'AD-RAAB':
+            sync = self.connection.extend.microsoft.dir_sync(test_root_partition, attributes=['*'], incremental_values=True)
             # read all previous changes
             while sync.more_results:
                 print('PREV', len(sync.loop()))

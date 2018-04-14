@@ -32,8 +32,10 @@ from ..protocol.formatters.standard import find_attribute_validator
 
 
 def attribute_to_dict(attribute):
-    return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
-
+    try:
+        return {'type': str(attribute['type']), 'values': [str(val) for val in attribute['vals']]}
+    except PyAsn1Error:  # invalid encoding, return bytes value
+        return {'type': str(attribute['type']), 'values': [bytes(val) for val in attribute['vals']]}
 
 def attributes_to_dict(attributes):
     attributes_dict = dict()
@@ -85,8 +87,11 @@ def attributes_to_list(attributes):
 def ava_to_dict(ava):
     try:
         return {'attribute': str(ava['attributeDesc']), 'value': escape_filter_chars(str(ava['assertionValue']))}
-    except PyAsn1Error:  # invalid encoding, return bytes value
-        return {'attribute': str(ava['attributeDesc']), 'value': escape_filter_chars(str(bytes(ava['assertionValue'])))}
+    except Exception:  # invalid encoding, return bytes value
+        try:
+            return {'attribute': str(ava['attributeDesc']), 'value': escape_filter_chars(bytes(ava['assertionValue']))}
+        except Exception:
+            return {'attribute': str(ava['attributeDesc']), 'value': bytes(ava['assertionValue'])}
 
 def substring_to_dict(substring):
     return {'initial': substring['initial'] if substring['initial'] else '', 'any': [middle for middle in substring['any']] if substring['any'] else '', 'final': substring['final'] if substring['final'] else ''}
@@ -131,12 +136,12 @@ def build_controls_list(controls):
     return built_controls
 
 
-def validate_assertion_value(schema, name, value, auto_escape, auto_encode, check_names):
+def validate_assertion_value(schema, name, value, auto_escape, auto_encode, validator, check_names):
     value = to_unicode(value)
     if auto_escape:
         if '\\' in value and not is_filter_escaped(value):
             value = escape_filter_chars(value)
-    value = validate_attribute_value(schema, name, value, auto_encode, check_names=check_names)
+    value = validate_attribute_value(schema, name, value, auto_encode, validator=validator, check_names=check_names)
     return value
 
 
@@ -156,6 +161,13 @@ def validate_attribute_value(schema, name, value, auto_encode, validator=None, c
         else:  # try standard validators
             validator = find_attribute_validator(schema, name, validator)
             validated = validator(value)
+            if validated is False:
+                try:  # checks if the value is a byte value erroneously converted to a string (as "b'1234'"), this is a common case in Python 3 when encoding is not specified
+                    if value[0:2] == "b'" and value [-1] == "'":
+                        value = to_raw(value[2:-1])
+                        validated = validator(value)
+                except Exception:
+                    raise LDAPInvalidValueError('value \'%s\' non valid for attribute \'%s\'' % (value, name))
             if validated is False:
                 raise LDAPInvalidValueError('value \'%s\' non valid for attribute \'%s\'' % (value, name))
             elif validated is not True:  # a valid LDAP value equivalent to the actual value

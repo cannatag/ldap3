@@ -96,6 +96,8 @@ As you can see *person* is a structural class and it's a subclass of the abstrac
 mandatory (MUST) Attributes are listed separately from optional (MAY) Attributes because they are the attributes that must always be present in
 the entry. You can also access the Attribute definitions as if they were standard properties of the ``obj_person`` object.
 
+You can specify any additional auxiliary class with the ``auxiliary_class`` parameter of the ObjectClass or of the Cursor objects.
+
 Entry status
 ------------
 An Entry acquires a number of different statuses in its lifetime and moves from one status to another only when specific events occour.

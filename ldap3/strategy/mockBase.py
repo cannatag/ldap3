@@ -167,7 +167,7 @@ class MockBaseStrategy(object):
         self.bound = None
         self.custom_validators = None
         self.operational_attributes = ['entryDN']
-        self.add_entry('cn=schema', [])  # add default entry for schema
+        self.add_entry('cn=schema', [], validate=False)  # add default entry for schema
         self._paged_sets = []  # list of paged search in progress
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
@@ -184,18 +184,19 @@ class MockBaseStrategy(object):
         if self.connection.usage:
             self.connection._usage.closed_sockets += 1
 
-    def _prepare_value(self, attribute_type, value):
+    def _prepare_value(self, attribute_type, value, validate=True):
         """
         Prepare a value for being stored in the mock DIT
         :param value: object to store
         :return: raw value to store in the DIT
         """
-        validator = find_attribute_validator(self.connection.server.schema, attribute_type, self.custom_validators)
-        validated = validator(value)
-        if validated is False:
-            raise LDAPInvalidValueError('value \'%s\' non valid for attribute \'%s\'' % (value, attribute_type))
-        elif validated is not True:  # a valid LDAP value equivalent to the actual value
-            value = validated
+        if validate:  # if loading from json dump do not validate values:
+            validator = find_attribute_validator(self.connection.server.schema, attribute_type, self.custom_validators)
+            validated = validator(value)
+            if validated is False:
+                raise LDAPInvalidValueError('value non valid for attribute \'%s\'' % attribute_type)
+            elif validated is not True:  # a valid LDAP value equivalent to the actual value
+                value = validated
         raw_value = to_raw(value)
         if not isinstance(raw_value, bytes):
             raise LDAPInvalidValueError('added values must be bytes if no offline schema is provided in Mock strategies')
@@ -204,7 +205,7 @@ class MockBaseStrategy(object):
     def _update_attribute(self, dn, attribute_type, value):
         pass
 
-    def add_entry(self, dn, attributes):
+    def add_entry(self, dn, attributes, validate=True):
         with self.connection.server.dit_lock:
             escaped_dn = safe_dn(dn)
             if escaped_dn not in self.connection.server.dit:
@@ -233,7 +234,7 @@ class MockBaseStrategy(object):
                                 class_set.update(new_classes)
                             new_entry['objectClass'] = [to_raw(value) for value in class_set]
                     else:
-                        new_entry[attribute] = [self._prepare_value(attribute, value) for value in attributes[attribute]]
+                        new_entry[attribute] = [self._prepare_value(attribute, value, validate) for value in attributes[attribute]]
                 for rdn in safe_rdn(escaped_dn, decompose=True):  # adds rdns to entry attributes
                     if rdn[0] not in new_entry:  # if rdn attribute is missing adds attribute and its value
                         new_entry[rdn[0]] = [to_raw(rdn[1])]
@@ -275,7 +276,7 @@ class MockBaseStrategy(object):
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
                 raise LDAPDefinitionError(self.connection.last_error)
-            self.add_entry(entry['dn'], entry['raw'])
+            self.add_entry(entry['dn'], entry['raw'], validate=False)
         target.close()
 
     def mock_bind(self, request_message, controls):
@@ -650,18 +651,18 @@ class MockBaseStrategy(object):
             attributes.remove('+')
         attributes = [attr.lower() for attr in request['attributes']]
 
-        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False, check_names=self.connection.check_names)
+        filter_root = parse_filter(request['filter'], self.connection.server.schema, auto_escape=True, auto_encode=False, validator=self.connection.server.custom_validator, check_names=self.connection.check_names)
         candidates = []
         if scope == 0:  # base object
             if base in self.connection.server.dit or base.lower() == 'cn=schema':
                 candidates.append(base)
         elif scope == 1:  # single level
             for entry in self.connection.server.dit:
-                if entry.endswith(base) and ',' not in entry[:-len(base) - 1]:  # only leafs without commas in the remaining dn
+                if entry.lower().endswith(base.lower()) and ',' not in entry[:-len(base) - 1]:  # only leafs without commas in the remaining dn
                     candidates.append(entry)
         elif scope == 2:  # whole subtree
             for entry in self.connection.server.dit:
-                if entry.endswith(base):
+                if entry.lower().endswith(base.lower()):
                     candidates.append(entry)
 
         if not candidates:  # incorrect base
@@ -669,17 +670,21 @@ class MockBaseStrategy(object):
             message = 'incorrect base object'
         else:
             matched = self.evaluate_filter_node(filter_root, candidates)
-            for match in matched:
-                responses.append({
-                    'object': match,
-                    'attributes': [{'type': attribute,
-                                    'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
-                                   for attribute in self.connection.server.dit[match]
-                                   if attribute.lower() in attributes or ALL_ATTRIBUTES in attributes]
-                })
+            if self.connection.raise_exceptions and 0 < request['sizeLimit'] < len(matched):
+                result_code = 4
+                message = 'size limit exceeded'
+            else:
+                for match in matched:
+                    responses.append({
+                        'object': match,
+                        'attributes': [{'type': attribute,
+                                        'vals': [] if request['typesOnly'] else self.connection.server.dit[match][attribute]}
+                                       for attribute in self.connection.server.dit[match]
+                                       if attribute.lower() in attributes or ALL_ATTRIBUTES in attributes]
+                    })
 
-            result_code = 0
-            message = ''
+                result_code = 0
+                message = ''
 
         result = {'resultCode': result_code,
                   'matchedDN': '',
@@ -838,39 +843,25 @@ class MockBaseStrategy(object):
                 # if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
                 if attr_name in self.connection.server.dit[candidate] and self.equal(candidate, attr_name, attr_value):
                     node.matched.add(candidate)
-                # elif attr_name in self.connection.server.dit[candidate]:  # tries to apply formatters
-                #     formatted_values = format_attribute_values(self.connection.server.schema, attr_name, self.connection.server.dit[candidate][attr_name], None)
-                #     if not isinstance(formatted_values, SEQUENCE_TYPES):
-                #         formatted_values = [formatted_values]
-                #     # if attr_value.decode(SERVER_ENCODING) in formatted_values:  # attributes values should be returned in utf-8
-                #     if self.equal(attr_name, attr_value.decode(SERVER_ENCODING), formatted_values):  # attributes values should be returned in utf-8
-                #         node.matched.add(candidate)
-                #     else:
-                #         node.unmatched.add(candidate)
                 else:
                     node.unmatched.add(candidate)
 
-    def equal(self, dn, attribute, value):
+    def equal(self, dn, attribute_type, value_to_check):
         # value is the value to match
-        attribute_values = self.connection.server.dit[dn][attribute]
+        attribute_values = self.connection.server.dit[dn][attribute_type]
         if not isinstance(attribute_values, SEQUENCE_TYPES):
             attribute_values = [attribute_values]
         for attribute_value in attribute_values:
-            if self._check_equality(value, attribute_value):
+            if self._check_equality(value_to_check, attribute_value):
                 return True
-
-        # if not found tries to apply formatters
-        formatted_values = format_attribute_values(self.connection.server.schema, attribute, attribute_values, None)
-        if not isinstance(formatted_values, SEQUENCE_TYPES):
-            formatted_values = [formatted_values]
-        for attribute_value in formatted_values:
-            if self._check_equality(value, attribute_value):
+            if self._check_equality(self._prepare_value(attribute_type, value_to_check), attribute_value):
                 return True
-
         return False
 
     @staticmethod
     def _check_equality(value1, value2):
+        if value1 == value2:  # exact matching
+            return True
         if str(value1).isdigit() and str(value2).isdigit():
             if int(value1) == int(value2):  # int comparison
                 return True

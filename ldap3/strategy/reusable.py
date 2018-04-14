@@ -60,6 +60,7 @@ class ReusableStrategy(BaseStrategy):
     Strategy has two customizable properties, the total number of connections in the pool and the lifetime of each connection.
     When lifetime is expired the connection is closed and will be open again when needed.
     """
+    pools = dict()
 
     def receiving(self):
         raise NotImplementedError
@@ -75,8 +76,6 @@ class ReusableStrategy(BaseStrategy):
 
     def set_stream(self, value):
         raise NotImplementedError
-
-    pools = dict()
 
     # noinspection PyProtectedMember
     class ConnectionPool(object):
@@ -289,8 +288,8 @@ class ReusableStrategy(BaseStrategy):
             self.get_info_from_server = False
             self.connection = None
             self.creation_time = None
-            self.new_connection()
             self.task_counter = 0
+            self.new_connection()
             self.thread = ReusableStrategy.PooledConnectionThread(self, self.master_connection)
             self.worker_lock = Lock()
             if log_enabled(BASIC):
@@ -309,6 +308,7 @@ class ReusableStrategy(BaseStrategy):
         def new_connection(self):
             from ..core.connection import Connection
             # noinspection PyProtectedMember
+            self.creation_time = datetime.now()
             self.connection = Connection(server=self.master_connection.server_pool if self.master_connection.server_pool else self.master_connection.server,
                                          user=self.master_connection.user,
                                          password=self.master_connection.password,
@@ -346,8 +346,6 @@ class ReusableStrategy(BaseStrategy):
             if self.master_connection.server_pool:
                 self.connection.server_pool = self.master_connection.server_pool
                 self.connection.server_pool.initialize(self.connection)
-
-            self.creation_time = datetime.now()
 
     # ReusableStrategy methods
     def __init__(self, ldap_connection):
@@ -415,6 +413,18 @@ class ReusableStrategy(BaseStrategy):
         raise LDAPConnectionPoolNotStartedError('reusable connection pool not started')
 
     def validate_bind(self, controls):
+        # in case of a new connection or different credentials
+        if (self.connection.user != self.pool.master_connection.user or
+                self.connection.password != self.pool.master_connection.password or
+                self.connection.authentication != self.pool.master_connection.authentication or
+                self.connection.sasl_mechanism != self.pool.master_connection.sasl_mechanism or
+                self.connection.sasl_credentials != self.pool.master_connection.sasl_credentials):
+            self.pool.master_connection.user = self.connection.user
+            self.pool.master_connection.password = self.connection.password
+            self.pool.master_connection.authentication = self.connection.authentication
+            self.pool.master_connection.sasl_mechanism = self.connection.sasl_mechanism
+            self.pool.master_connection.sasl_credentials = self.connection.sasl_credentials
+            self.pool.rebind_pool()
         temp_connection = self.pool.workers[0].connection
         temp_connection.lazy = False
         if not self.connection.server.schema or not self.connection.server.info:

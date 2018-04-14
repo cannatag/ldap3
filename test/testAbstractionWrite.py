@@ -177,3 +177,4 @@ class Test(unittest.TestCase):
         e.myname += 'xyz'
         w.commit()
         self.assertTrue('xyz' in e.myname)
+

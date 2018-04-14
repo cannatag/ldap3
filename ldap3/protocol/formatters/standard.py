@@ -25,10 +25,10 @@
 
 from ... import SEQUENCE_TYPES
 from .formatters import format_ad_timestamp, format_binary, format_boolean,\
-    format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le
+    format_integer, format_sid, format_time, format_unicode, format_uuid, format_uuid_le, format_time_with_0_year
 from .validators import validate_integer, validate_time, always_valid,\
     validate_generic_single_value, validate_boolean, validate_ad_timestamp,\
-    validate_uuid_le, validate_uuid, validate_minus_one
+    validate_uuid_le, validate_uuid, validate_zero_and_minus_one, validate_guid, validate_time_with_0_year
 
 # for each syntax can be specified a format function and a input validation function
 
@@ -99,7 +99,8 @@ standard_formatter = {
     '1.3.6.1.4.1.1466.115.121.1.57': (format_unicode, None),  # LDAP Schema Description [OBSOLETE]
     '1.3.6.1.4.1.1466.115.121.1.58': (format_unicode, None),  # Substring assertion
     '1.3.6.1.1.16.1': (format_uuid, validate_uuid),  # UUID
-    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, None),  # GUID (Novell)
+    '1.3.6.1.1.16.4': (format_uuid, validate_uuid),  # entryUUID (RFC 4530)
+    '2.16.840.1.113719.1.1.4.1.501': (format_uuid, validate_guid),  # GUID (Novell)
     '2.16.840.1.113719.1.1.5.1.0': (format_binary, None),  # Unknown (Novell)
     '2.16.840.1.113719.1.1.5.1.6': (format_unicode, None),  # Case Ignore List (Novell)
     '2.16.840.1.113719.1.1.5.1.12': (format_binary, None),  # Tagged Data (Novell)
@@ -114,17 +115,18 @@ standard_formatter = {
     '2.16.840.1.113719.1.1.5.1.25': (format_unicode, None),  # Typed Name (Novell)
     'supportedldapversion': (format_integer, None),  # supportedLdapVersion (Microsoft)
     'octetstring': (format_binary, validate_uuid_le),  # octect string (Microsoft)
-    '1.2.840.113556.1.4.2': (format_uuid_le, None),  # object guid (Microsoft)
+    '1.2.840.113556.1.4.2': (format_uuid_le, validate_uuid_le),  # object guid (Microsoft)
     '1.2.840.113556.1.4.13': (format_ad_timestamp, validate_ad_timestamp),  # builtinCreationTime (Microsoft)
     '1.2.840.113556.1.4.26': (format_ad_timestamp, validate_ad_timestamp),  # creationTime (Microsoft)
     '1.2.840.113556.1.4.49': (format_ad_timestamp, validate_ad_timestamp),  # badPasswordTime (Microsoft)
     '1.2.840.113556.1.4.51': (format_ad_timestamp, validate_ad_timestamp),  # lastLogoff (Microsoft)
     '1.2.840.113556.1.4.52': (format_ad_timestamp, validate_ad_timestamp),  # lastLogon (Microsoft)
-    '1.2.840.113556.1.4.96': (format_ad_timestamp, validate_minus_one),  # pwdLastSet (Microsoft, can be set to -1 only)
+    '1.2.840.113556.1.4.96': (format_ad_timestamp, validate_zero_and_minus_one),  # pwdLastSet (Microsoft, can be set to -1 only)
     '1.2.840.113556.1.4.146': (format_sid, None),  # objectSid (Microsoft)
     '1.2.840.113556.1.4.159': (format_ad_timestamp, validate_ad_timestamp),  # accountExpires (Microsoft)
     '1.2.840.113556.1.4.662': (format_ad_timestamp, validate_ad_timestamp),  # lockoutTime (Microsoft)
-    '1.2.840.113556.1.4.1696': (format_ad_timestamp, validate_ad_timestamp)  # lastLogonTimestamp (Microsoft)
+    '1.2.840.113556.1.4.1696': (format_ad_timestamp, validate_ad_timestamp),  # lastLogonTimestamp (Microsoft)
+    '1.3.6.1.4.1.42.2.27.8.1.17': (format_time_with_0_year, validate_time_with_0_year)  # pwdAccountLockedTime (Novell)
 }
 
 
@@ -188,6 +190,9 @@ def find_attribute_helpers(attr_type, name, custom_formatter):
 def format_attribute_values(schema, name, values, custom_formatter):
     if not values:  # RFCs states that attributes must always have values, but a flaky server returns empty values too
         return []
+
+    if not isinstance(values, SEQUENCE_TYPES):
+        values = [values]
 
     if schema and schema.attribute_types and name in schema.attribute_types:
         attr_type = schema.attribute_types[name]

@@ -161,10 +161,8 @@ class WritableAttribute(Attribute):
         else:
             key = self.key
 
-        if key not in self.entry._changes:
+        if key not in self.entry._changes or remove_old:  # remove old changes (for removing attribute)
             self.entry._changes[key] = []
-        elif remove_old:
-            self.entry._changes[key] = []  # remove old changes (for removing attribute)
 
         self.entry._changes[key].append(changes)
         if log_enabled(PROTOCOL):
@@ -223,7 +221,7 @@ class WritableAttribute(Attribute):
             raise LDAPCursorError(error_message)
         elif validated is not True:  # a valid LDAP value equivalent to the actual values
             values = validated
-        self._update_changes((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]))
+        self._update_changes((MODIFY_REPLACE, values if isinstance(values, SEQUENCE_TYPES) else [values]), remove_old=True)
 
     def delete(self, values):
         # value for attribute to delete in commit with a MODIFY_DELETE

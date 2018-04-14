@@ -85,6 +85,8 @@ With the connection object you can perform all the standard LDAP operations:
 
     * controls: additional controls to send in the request
 
+.. sidebar:: When binding with a username from an untrusted source (as a user typing it in a terminal or in a web page) you should perform ``escape_rdn(username)`` to ensure that the input value doesn't contain any illegal character. The escape_rdn() function is in the ldap3.utils.dn namespace.
+
 * unbind: disconnect and close the connection:
 
     * controls: additional controls to send in the request

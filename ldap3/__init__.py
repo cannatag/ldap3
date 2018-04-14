@@ -112,8 +112,10 @@ HASHED_SALTED_MD5 = 'SALTED_MD5'
 
 if str is not bytes:  # Python 3
     NUMERIC_TYPES = (int, float)
+    INTEGER_TYPES = (int, )
 else:
     NUMERIC_TYPES = (int, long, float)
+    INTEGER_TYPES = (int, long)
 
 # types for string and sequence
 if str is not bytes:  # Python 3

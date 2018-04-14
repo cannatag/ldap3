@@ -39,6 +39,7 @@ def to_unicode(obj, encoding=None, from_server=False):
     conf_default_client_encoding = get_config_parameter('DEFAULT_CLIENT_ENCODING')
     conf_default_server_encoding = get_config_parameter('DEFAULT_SERVER_ENCODING')
     conf_additional_server_encodings = get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')
+    conf_additional_client_encodings = get_config_parameter('ADDITIONAL_CLIENT_ENCODINGS')
     if isinstance(obj, NUMERIC_TYPES):
         obj = str(obj)
 
@@ -61,12 +62,18 @@ def to_unicode(obj, encoding=None, from_server=False):
             try:
                 return obj.decode(encoding)
             except UnicodeDecodeError:
+                for encoding in conf_additional_client_encodings:  # tries additional encodings
+                    try:
+                        return obj.decode(encoding)
+                    except UnicodeDecodeError:
+                        pass
                 raise UnicodeError("Unable to convert client data to unicode: %r" % obj)
 
     if isinstance(obj, STRING_TYPES):  # python3 strings, python 2 unicode
         return obj
 
     raise UnicodeError("Unable to convert type %s to unicode: %r" % (type(obj).__class__.__name__, obj))
+
 
 def to_raw(obj, encoding='utf-8'):
     """Tries to convert to raw bytes from unicode"""
@@ -78,24 +85,25 @@ def to_raw(obj, encoding='utf-8'):
             return [to_raw(element) for element in obj]
         elif isinstance(obj, STRING_TYPES):
             return obj.encode(encoding)
-
     return obj
 
 
 def escape_filter_chars(text, encoding=None):
     """ Escape chars mentioned in RFC4515. """
-
     if encoding is None:
         encoding = get_config_parameter('DEFAULT_ENCODING')
 
-    text = to_unicode(text, encoding)
-    escaped = text.replace('\\', '\\5c')
-    escaped = escaped.replace('*', '\\2a')
-    escaped = escaped.replace('(', '\\28')
-    escaped = escaped.replace(')', '\\29')
-    escaped = escaped.replace('\x00', '\\00')
-    # escape all octets greater than 0x7F that are not part of a valid UTF-8
-    # escaped = ''.join(c if c <= '\x7f' else escape_bytes(to_raw(to_unicode(c, encoding))) for c in output)
+    try:
+        text = to_unicode(text, encoding)
+        escaped = text.replace('\\', '\\5c')
+        escaped = escaped.replace('*', '\\2a')
+        escaped = escaped.replace('(', '\\28')
+        escaped = escaped.replace(')', '\\29')
+        escaped = escaped.replace('\x00', '\\00')
+    except Exception:  # probably raw bytes values, return escaped bytes value
+        escaped = to_unicode(escape_bytes(text))
+        # escape all octets greater than 0x7F that are not part of a valid UTF-8
+        # escaped = ''.join(c if c <= ord(b'\x7f') else escape_bytes(to_raw(to_unicode(c, encoding))) for c in escaped)
     return escaped
 
 
@@ -121,28 +129,6 @@ def prepare_for_stream(value):
         return value
     else:  # Python 2
         return value.decode()
-
-
-# def check_escape(raw_string):
-#     if isinstance(raw_string, bytes) or '\\' not in raw_string:
-#         return raw_string
-#
-#     escaped = ''
-#     i = 0
-#     while i < len(raw_string):
-#         if raw_string[i] == '\\' and i < len(raw_string) - 2:
-#             try:
-#                 value = int(raw_string[i + 1: i + 3], 16)
-#                 escaped += chr(value)
-#                 i += 2
-#             except ValueError:
-#                 escaped += '\\\\'
-#         else:
-#             escaped += raw_string[i]
-#         i += 1
-#
-#     return escaped
-
 
 def json_encode_b64(obj):
     try:
@@ -222,3 +208,15 @@ def is_filter_escaped(text):
         raise ValueError('unicode input expected')
 
     return all(c not in text for c in '()*\0') and not re.search('\\\\([^0-9a-fA-F]|(.[^0-9a-fA-F]))', text)
+
+
+def ldap_escape_to_bytes(text):
+    bytesequence = bytearray()
+    if text.startswith('\\'):
+        byte_values = text.split('\\')
+        for value in byte_values[1:]:
+            if len(value) != 2 and not value.isdigit():
+                raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
+            bytesequence.append(int(value, 16))
+        return bytes(bytesequence)
+    raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')

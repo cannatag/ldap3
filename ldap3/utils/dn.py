@@ -304,7 +304,7 @@ def parse_dn(dn, escape=False, strip=True):
 def safe_dn(dn, decompose=False, reverse=False):
     """
     normalize and escape a dn, if dn is a sequence it is joined.
-    the reverse parameter change the join direction of the sequence
+    the reverse parameter changes the join direction of the sequence
     """
     if isinstance(dn, SEQUENCE_TYPES):
         components = [rdn for rdn in dn]
@@ -355,3 +355,21 @@ def safe_rdn(dn, decompose=False):
         raise LDAPInvalidDnError('bad dn ' + str(dn))
 
     return escaped_rdn
+
+
+def escape_rdn(rdn):
+    """
+    Escape rdn characters to prevent injection according to RFC 4514.
+    """
+
+    # '/' must be handled first or the escape slashes will be escaped!
+    for char in ['\\', ',', '+', '"', '<', '>', ';', '=', '\x00']:
+        rdn = rdn.replace(char, '\\' + char)
+
+    if rdn[0] == '#' or rdn[0] == ' ':
+        rdn = ''.join(('\\', rdn))
+
+    if rdn[-1] == ' ':
+        rdn = ''.join((rdn[:-1], '\\ '))
+
+    return rdn

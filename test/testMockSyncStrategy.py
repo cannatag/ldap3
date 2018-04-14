@@ -56,21 +56,21 @@ class Test(unittest.TestCase):
         self.connection_3b = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC)
         self.connection_3c = Connection(server_3, user='cn=user3,ou=test,o=lab', password='test3333', client_strategy=MOCK_SYNC, raise_exceptions=True)
         # creates fixtures
-        self.connection_1.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
-        self.connection_2.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
-        self.connection_3.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
-        self.connection_1.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1})
-        self.connection_2.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1})
-        self.connection_3.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1})
-        self.connection_1.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2})
-        self.connection_2.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2})
-        self.connection_3.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2})
-        self.connection_1.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3})
-        self.connection_2.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3})
-        self.connection_3.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3})
-        self.connection_1.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3']})
-        self.connection_2.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3']})
-        self.connection_3.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3']})
+        self.connection_1.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0, 'guid': '07039e68-4373-264d-a0a7-000000000000'})
+        self.connection_2.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0, 'guid': '07039e68-4373-264d-a0a7-000000000000'})
+        self.connection_3.strategy.add_entry('cn=user0,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0, 'guid': '07039e68-4373-264d-a0a7-000000000000'})
+        self.connection_1.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1, 'guid': '07039e68-4373-264d-a0a7-111111111111'})
+        self.connection_2.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1, 'guid': '07039e68-4373-264d-a0a7-111111111111'})
+        self.connection_3.strategy.add_entry('cn=user1,ou=test,o=lab', {'userPassword': 'test1111', 'sn': 'user1_sn', 'revision': 1, 'guid': '07039e68-4373-264d-a0a7-111111111111'})
+        self.connection_1.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2, 'guid': '07039e68-4373-264d-a0a7-222222222222'})
+        self.connection_2.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2, 'guid': '07039e68-4373-264d-a0a7-222222222222'})
+        self.connection_3.strategy.add_entry('cn=user2,ou=test,o=lab', {'userPassword': 'test2222', 'sn': 'user2_sn', 'revision': 2, 'guid': '07039e68-4373-264d-a0a7-222222222222'})
+        self.connection_1.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333333'})
+        self.connection_2.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333333'})
+        self.connection_3.strategy.add_entry('cn=user3,ou=test,o=lab', {'userPassword': 'test3333', 'sn': 'user3_sn', 'revision': 3, 'guid': '07039e68-4373-264d-a0a7-333333333333'})
+        self.connection_1.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3'], 'guid': '07039e68-4373-264d-a0a7-444444444444'})
+        self.connection_2.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3'], 'guid': '07039e68-4373-264d-a0a7-444444444444'})
+        self.connection_3.strategy.add_entry('cn=user4,ou=test,o=lab', {'userPassword': 'test4444', 'sn': 'user4_sn', 'revision': 4, 'title': ['title1', 'title2', 'title3'], 'guid': '07039e68-4373-264d-a0a7-444444444444'})
 
     def tearDown(self):
         self.connection_1.unbind()
@@ -953,6 +953,42 @@ class Test(unittest.TestCase):
             result = self.connection_3.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual('user3', response[0]['attributes']['cn'][0])
+
+    def test_search_exact_match_single_binary_attribute_1(self):
+        self.connection_1.bind()
+        result = self.connection_1.search('o=lab', '(guid=07039e68-4373-264d-a0a7-111111111111)', search_scope=SUBTREE, attributes=['cn', 'guid'])
+        response = self.connection_1.response
+        if not self.connection_1.strategy.sync:
+            response, result = self.connection_1.get_response(result)
+        else:
+            result = self.connection_1.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual('user1', response[0]['attributes']['cn'][0])
+        self.assertEqual('07039e68-4373-264d-a0a7-111111111111', response[0]['attributes']['guid'])
+
+    def test_search_exact_match_single_binary_attribute_2(self):
+        self.connection_2.bind()
+        result = self.connection_2.search('o=lab', '(guid=07039e68-4373-264d-a0a7-222222222222)', search_scope=SUBTREE, attributes=['cn', 'guid'])
+        response = self.connection_2.response
+        if not self.connection_2.strategy.sync:
+            response, result = self.connection_2.get_response(result)
+        else:
+            result = self.connection_2.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual('user2', response[0]['attributes']['cn'][0])
+        self.assertEqual('07039e68-4373-264d-a0a7-222222222222', response[0]['attributes']['guid'])
+
+    def test_search_exact_match_single_binary_attribute_3(self):
+        self.connection_3.bind()
+        result = self.connection_3.search('o=lab', '(guid=07039e68-4373-264d-a0a7-333333333333)', search_scope=SUBTREE, attributes=['cn', 'guid'])
+        response = self.connection_3.response
+        if not self.connection_3.strategy.sync:
+            response, result = self.connection_3.get_response(result)
+        else:
+            result = self.connection_3.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual('user3', response[0]['attributes']['cn'][0])
+        self.assertEqual('07039e68-4373-264d-a0a7-333333333333', response[0]['attributes']['guid'][0])
 
     def test_search_exact_match_case_insensitive_single_attribute_1(self):
         self.connection_1.bind()

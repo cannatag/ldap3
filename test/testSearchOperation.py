@@ -313,3 +313,34 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'sea-15')
         else:
             self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-15')
+
+    def test_search_string_guid(self):
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-16', attributes={'givenName': testcase_id + 'givenname-16'}))
+        if test_server_type == 'EDIR':
+            result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + 'givenname-16)', attributes=[test_name_attr, 'sn', 'guid'])
+        elif test_server_type == 'AD':  # not tested on AD yet
+            result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + 'givenname-16)', attributes=[test_name_attr, 'sn', 'objectGuid'])
+        else:  # not tested on other kind of servers
+            return
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'EDIR':
+            result = self.connection.search(search_base=test_base, search_filter='(guid=' + response[0]['attributes']['guid'] + ')', attributes=[test_name_attr, 'sn'])
+        elif test_server_type == 'AD':  # not tested on AD yet
+            result = self.connection.search(search_base=test_base, search_filter='(objectguid=' + response[0]['attributes']['objectguid'] + ')', attributes=[test_name_attr, 'sn'])
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'EDIR':
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-16')
+        elif test_server_type == 'AD':
+            self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'sea-16')

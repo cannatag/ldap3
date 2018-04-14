@@ -387,15 +387,15 @@ class BaseStrategy(object):
             if self.connection.auto_range and not hasattr(self, '_auto_range_searching') and any((True for resp in response if 'raw_attributes' in resp for name in resp['raw_attributes'] if ';range=' in name)):
                 self._auto_range_searching = result.copy()
                 temp_response = response[:]  # copy
-                self.do_search_on_auto_range(self._outstanding[message_id], response)
-                for resp in temp_response:
-                    if resp['type'] == 'searchResEntry':
-                        keys = [key for key in resp['raw_attributes'] if ';range=' in key]
-                        for key in keys:
-                            del resp['raw_attributes'][key]
-                            del resp['attributes'][key]
-                response = temp_response
-                result = self._auto_range_searching
+                if self.do_search_on_auto_range(self._outstanding[message_id], response):
+                    for resp in temp_response:
+                        if resp['type'] == 'searchResEntry':
+                            keys = [key for key in resp['raw_attributes'] if ';range=' in key]
+                            for key in keys:
+                                del resp['raw_attributes'][key]
+                                del resp['attributes'][key]
+                    response = temp_response
+                    result = self._auto_range_searching
                 del self._auto_range_searching
 
             if self.connection.empty_attributes:
@@ -697,13 +697,15 @@ class BaseStrategy(object):
         for resp in [r for r in response if r['type'] == 'searchResEntry']:
             for attr_name in list(resp['raw_attributes'].keys()):  # generate list to avoid changing of dict size error
                 if ';range=' in attr_name:
-                    attr_type, _, _ = attr_name.partition(';range=')
+                    attr_type, _, range_values = attr_name.partition(';range=')
+                    if range_values in ('1-1', '0-0'):  # DirSync returns these values for adding and removing members
+                        return False
                     if attr_type not in resp['raw_attributes'] or resp['raw_attributes'][attr_type] is None:
                         resp['raw_attributes'][attr_type] = list()
                     if attr_type not in resp['attributes'] or resp['attributes'][attr_type] is None:
                         resp['attributes'][attr_type] = list()
                     self.do_next_range_search(request, resp, attr_name)
-
+        return True
     def do_operation_on_referral(self, request, referrals):
         if log_enabled(PROTOCOL):
             log(PROTOCOL, 'following referral for <%s>', self.connection)

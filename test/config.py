@@ -22,7 +22,7 @@
 from time import sleep
 from sys import version, getdefaultencoding, getfilesystemencoding
 from os import environ, remove
-from os.path import join
+from os import path
 from random import SystemRandom
 from tempfile import gettempdir
 
@@ -60,7 +60,9 @@ test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
 test_lazy_connection = False
+test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
+test_validator = {}
 try:
     location = environ['USERDOMAIN']
 except KeyError:
@@ -142,7 +144,7 @@ if 'TRAVIS' in location:
         test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
         test_ntlm_user = test_domain_name.split('.')[0] + '\\Giovanni'
         test_ntlm_password = 'Rc666666pfop'
-        test_logging_filename = join(gettempdir(), 'ldap3.log')
+        test_logging_filename = path.join(gettempdir(), 'ldap3.log')
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
         test_server = 'ipa.demo1.freeipa.org'
@@ -208,7 +210,7 @@ elif location == 'ELITE10GC-EDIR':
     test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102']
 elif location == 'ELITE10GC-AD':
     # test notebook - Active Directory (AD)
@@ -242,7 +244,7 @@ elif location == 'ELITE10GC-AD':
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
     test_ntlm_password = 'Rc6666pfop'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
 elif location == 'ELITE10GC-SLAPD':
     # test notebook - OpenLDAP (SLAPD)
@@ -273,7 +275,7 @@ elif location == 'ELITE10GC-SLAPD':
     test_user_key_file = ''
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.104']
 elif location == 'W10GC9227-EDIR':
     # test camera
@@ -309,7 +311,7 @@ elif location == 'W10GC9227-EDIR':
     test_user_key_file = 'local-edir-test_admin-key.pem'
     test_ntlm_user = 'AMM\\Administrator'
     test_ntlm_password = 'xxx'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['sl10.intra.camera.it']
 elif location == 'W10GC9227-AD':
     # test notebook - Active Directory (AD)
@@ -341,7 +343,7 @@ elif location == 'W10GC9227-AD':
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\Administrator'
     test_ntlm_password = 'Rc99pfop'
-    test_logging_filename = join(gettempdir(), 'ldap3.log')
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
 else:
     raise Exception('testing location ' + location + ' is not valid')
@@ -362,7 +364,7 @@ print('Python version:', version, ' - ldap3 version:', ldap3_version, ' - pyasn1
 print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
 print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
-
+print()
 
 def random_id():
     return str(SystemRandom().random())[-5:]
@@ -619,7 +621,7 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
 
 def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):
     if password is None:
-        password = 'Rc2597pfop'
+        password = test_user_password
 
     attributes = get_add_user_attributes(batch_id, username, password, attributes)
     if test_bytes:
@@ -631,7 +633,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
     if not result['description'] == 'success':
         # maybe the entry already exists, try to delete
         operation_result = connection.delete(dn)
-        sleep(2)
+        sleep(5)
         result = get_operation_result(connection, operation_result)
         operation_result = connection.add(dn, None, attributes)
         result = get_operation_result(connection, operation_result)

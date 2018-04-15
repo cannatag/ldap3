@@ -3,7 +3,7 @@ The ldap3 project
 
 ldap3 is a strictly RFC 4510 conforming LDAP v3 pure Python client library. The whole ldap3 library has been **written from scratch**
 and the **same codebase works with Python 2, Python 3, PyPy and PyPy3** on any system where it can gain access to
-the network via a Python interpreter and the Python Standard Library.
+the network via Python and its Standard Library.
 
 
 License
@@ -18,7 +18,7 @@ Derivatives works of ldap3 can only be redistributed under LGPL, but application
 RFCs Compliance
 ---------------
 
-The ldap3 library strictly follows the latest (as of 2015) RFCs describing the LDAP v3 protocol:
+The ldap3 library strictly follows the latest (as of 2018) RFCs describing the LDAP v3 protocol:
 
 * The **latest RFCs for LDAP v3** (RFCs 4510-4518, dated 2006) obsolete the previous RFCs specified in RFC3377 (2251-2256, 2829, 2830,
   3371) for LDAP v3 and amend and clarify the LDAP protocol.
@@ -40,7 +40,7 @@ PEP8 Compliance
 
 ldap3 is PEP8 compliant, except for line length. PEP8 (https://www.python.org/dev/peps/pep-0008/) is the standard coding style
 guide for the Python Standard Library and for many other Python projects. It provides a consistent way of writing code for maintainability
-and readability following the principle that "software is more read then written".
+and readability following the principle that "software is more read than written".
 
 
 Home Page
@@ -106,7 +106,8 @@ https://github.com/cannatag/ldap3/issues/new
 Donate
 ------
 
-If you want to keep this project up and running you can send me an Amazon gift card. I will use it to improve my skills in the Information and Communication technology.
+If you want to keep this project up and running you can send me an Amazon gift card. I will use it to
+improve my skills in the Information and Communication technologies.
 
 
 Thanks to
@@ -118,7 +119,7 @@ Thanks to
   **Brandon Rhodes** for their books *Foundations of Python Network Programming* (Second and Third edition).
   These books are wonderful tools for learning Python and this project owes a lot to them.
 
-* **JetBrains** for donating to this project the Open Source license of *PyCharm 4 Professional*.
+* **JetBrains** for donating to this project the Open Source license of *PyCharm Professional*.
 
 * **GitHub** for providing the *free source repository space and tools* used to develop this project.
 

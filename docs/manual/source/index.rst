@@ -27,8 +27,8 @@ Contents
    :maxdepth: 2
 
    welcome
-   tutorial
    features
+   tutorial
    installation
    server
    schema

@@ -1,4 +1,4 @@
-# 2.5 - not released yet
+# 2.5 - 2018.04.15
     - abstract layer now handles auxiliary classes
     - pwdLAstSet in AD is valid for 0 and -1 (thanks Taylor)
     - fixed extend.novell.get_universal_password (thanks Fernando)

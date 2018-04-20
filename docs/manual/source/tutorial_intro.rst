@@ -67,7 +67,7 @@ The LDAP protocol specifies that attribute names and their string values (usuall
 be stored in Unicode version 3.2 with the UTF-8 byte encoding. There are some limitations in defining the attribute names
 that must use only ASCII letters (upper and lowercase), numbers and the hypen character (but not as a leading character).
 
-**Unicode** is a standard to describe tenths of thousands of printed (even if not visible) characters but what goes over the wire
+**Unicode** is a standard to describe tens of thousands of printed (even if not visible) characters but what goes over the wire
 when you interact with an LDAP server is only old plain bytes (with values ranging from 0 to 255 as usual), so the UTF-8
 encoding is needed when talking to an LDAP server to convert the Unicode character to a valid byte (or multi-byte)
 representation. For this reason when sending a string value in any LDAP operation it must be converted to

@@ -1,6 +1,6 @@
 # 2.5 - 2018.04.15
     - abstract layer now handles auxiliary classes
-    - pwdLAstSet in AD is valid for 0 and -1 (thanks Taylor)
+    - pwdLastSet in AD is valid for 0 and -1 (thanks Taylor)
     - fixed extend.novell.get_universal_password (thanks Fernando)
     - entryUUID is properly validated in search filters (thanks FriedrichI)
     - custom attribute formatters are properly applied when parsing the search filter
@@ -9,7 +9,7 @@
     - missing entry's attribute return False when searching instead of raising an exception (thanks Maxsond)
     - fixed ad_timestamp evaluation for integers (thanks Flynn)
     - wrong exception raised when user name is empty in simple binding (thanks Ivan)
-    - exception is raised if size limit is exceed when searchin in mocking strategies with raise_exceptions=True (thanks David)
+    - exception is raised if size limit is exceed when searching in mocking strategies with raise_exceptions=True (thanks David)
     - fixed validator for novell guid
     - fixed validator for openldap EntryUUID
     - fixed validator for AD objectGUID, now follows MS-DTYP
@@ -18,17 +18,17 @@
     - added escape_rdn_chars() to ldap3.utils.dn for safe checking untrusted input while building DNs (thanks Alex)
     - fixed search for binary values in mock strategies
     - fixed exception with unicode chars in subfilters for python 2 (thanks Friedrich)
-    - connection.extend.paged_search() doens't miss the last entries anymore when size limit is exceeded for the search on the server (thanks Friedrich)
+    - connection.extend.paged_search() doesn't miss the last entries anymore when size limit is exceeded on the server (thanks Friedrich)
     - validators are not applied when loading data from json dump in Mock strategies (thanks Derek)
     - additional validator to check for erroneous bytes to string conversion in Python 3 (thanks Brian)
-    - additional formatter and validator to check for generalizedtime with 0 year (thanks Brian)
+    - additional formatter and validator to check for generalizedTime with 0 year (thanks Brian)
     - added ADDITIONAL_CLIENT_ENCODINGS parameter
     - fixed AD dir_sync extended operation (thanks Lucas)
     - ad_unlock_account works properly (thanks Francowxu)
     - added Microsoft security descriptor control (thanks Dirk-jan)
     - fixed search in mock strategies when raise_exceptions=True (thanks Derek)
-    - formatters never raise exceptions but returns the raw_value when unable to format
-    - fixed comtrols duplication in paged search (thanks Dirk-jan)
+    - formatters never raise exceptions but return the raw_value when unable to format
+    - fixed controls duplication in paged search (thanks Dirk-jan)
 
 # 2.4.1 - 2018.01.21
     - tested against pyasn1 from version 0.1.8 up to version 0.4.2, Python 2.6.6, Python 2.7.14, Python 3.6.4

@@ -115,7 +115,7 @@ class EntryBase(object):
 
     The Entry object is read only
 
-    - The DN is retrieved by _dn
+    - The DN is retrieved by entry_dn
     - The cursor reference is in _cursor
     - Raw attributes values are retrieved with _raw_attributes and the _raw_attribute() methods
     """
@@ -355,7 +355,7 @@ class Entry(EntryBase):
 
     The Entry object is read only
 
-    - The DN is retrieved by _dn()
+    - The DN is retrieved by entry_dn
     - The Reader reference is in _cursor()
     - Raw attributes values are retrieved by the _ra_attributes and
       _raw_attribute() methods

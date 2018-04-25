@@ -132,7 +132,11 @@ class BaseStrategy(object):
                         break
                     except Exception:
                         self.connection.server.update_availability(candidate_address, False)
-                        exception_history.append((datetime.now(), exc_info()[0], exc_info()[1], candidate_address[4]))
+                        exc_type = exc_info()[0]
+                        exc_value = exc_info()[1]
+                        exc_type.__traceback__ = None  # remove traceback info to avoid circular reference of the frame
+                        exc_value.__traceback__ = None  # remove traceback info to avoid circular reference of the frame
+                        exception_history.append((datetime.now(), exc_type, exc_value, candidate_address[4]))
 
                 if not self.connection.server.current_address and exception_history:
                     if len(exception_history) == 1:  # only one exception, reraise
@@ -380,6 +384,7 @@ class BaseStrategy(object):
                 if log_enabled(PROTOCOL):
                     log(PROTOCOL, 'operation result <%s> for <%s>', result, self.connection)
                 self._outstanding.pop(message_id)
+                self.connection.result = result.copy()
                 raise LDAPOperationResult(result=result['result'], description=result['description'], dn=result['dn'], message=result['message'], response_type=result['type'])
 
             # checks if any response has a range tag

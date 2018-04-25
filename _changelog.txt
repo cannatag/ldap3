@@ -1,5 +1,7 @@
 # 2.5.1 - not released yet
     - connection.result is populated when exception raised with raise_exceptions=True
+    - fixed objectSid in mocking strategies
+    - fixed circular reference in exception history
 
 # 2.5 - 2018.04.15
     - abstract layer now handles auxiliary classes

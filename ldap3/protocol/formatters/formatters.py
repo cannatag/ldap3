@@ -367,8 +367,15 @@ def format_sid(raw_value):
     SubAuthority (variable): A variable length array of unsigned 32-bit integers that uniquely identifies a principal relative to the IdentifierAuthority. Its length is determined by SubAuthorityCount.
     """
     try:
-        if raw_value.startswith('S-1-'):  # SID already in printable format
-            return to_unicode(raw_value)
+        if raw_value.startswith(b'S-1-'):
+            return raw_value
+    except Exception:
+        try:
+            if raw_value.startswith('S-1-'):
+                return raw_value
+        except Exception:
+            pass
+    try:
         if str is not bytes:  # Python 3
             revision = int(raw_value[0])
             sub_authority_count = int(raw_value[1])

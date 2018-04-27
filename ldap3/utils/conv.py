@@ -107,6 +107,22 @@ def escape_filter_chars(text, encoding=None):
     return escaped
 
 
+def unescape_filter_chars(text, encoding=None):
+    """ unescape chars mentioned in RFC4515. """
+    if encoding is None:
+        encoding = get_config_parameter('DEFAULT_ENCODING')
+
+    unescaped = to_raw(text, encoding)
+    unescaped = unescaped.replace(b'\\5c', b'\\')
+    unescaped = unescaped.replace(b'\\5C', b'\\')
+    unescaped = unescaped.replace(b'\\2a', b'*')
+    unescaped = unescaped.replace(b'\\2A', b'*')
+    unescaped = unescaped.replace(b'\\28', b'(')
+    unescaped = unescaped.replace(b'\\29', b')')
+    unescaped = unescaped.replace(b'\\00', b'\x00')
+    return unescaped
+
+
 def escape_bytes(bytes_value):
     """ Convert a byte sequence to a properly escaped for LDAP (format BACKSLASH HEX HEX) string"""
     if bytes_value:
@@ -210,13 +226,47 @@ def is_filter_escaped(text):
     return all(c not in text for c in '()*\0') and not re.search('\\\\([^0-9a-fA-F]|(.[^0-9a-fA-F]))', text)
 
 
+# def ldap_escape_to_bytes(text):
+#     bytesequence = bytearray()
+#     if text.startswith('\\'):
+#         byte_values = text.split('\\')
+#         for value in byte_values[1:]:
+#             if len(value) != 2 and not value.isdigit():
+#                 raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
+#             bytesequence.append(int(value, 16))
+#         return bytes(bytesequence)
+#     raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
+
+
 def ldap_escape_to_bytes(text):
     bytesequence = bytearray()
-    if text.startswith('\\'):
-        byte_values = text.split('\\')
-        for value in byte_values[1:]:
-            if len(value) != 2 and not value.isdigit():
-                raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
-            bytesequence.append(int(value, 16))
-        return bytes(bytesequence)
-    raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
+    i = 0
+    try:
+        if isinstance(text, STRING_TYPES):
+            while i < len(text):
+                if text[i] == '\\':
+                    if len(text) > i + 2 and text[i+1:i+3].isdigit():
+                        bytesequence.append(int(text[i+1:i+3], 16))
+                        i += 2
+                    else:
+                        bytesequence.append(92)  # "\" ASCII code
+                else:
+                    raw = to_raw(text[i])
+                    for c in raw:
+                        bytesequence.append(c)
+                i += 1
+        elif isinstance(text, (bytes, bytearray)):
+            while i < len(text):
+                if text[i] == 92:  # "\" ASCII code
+                    if len(text) > i + 2 and text[i + 1:i + 3].isdigit():
+                        bytesequence.append(int(text[i + 1:i + 3], 16))
+                        i += 2
+                    else:
+                        bytesequence.append(92)  # "\" ASCII code
+                else:
+                    bytesequence.append(text[i])
+                i += 1
+    except Exception:
+        raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
+
+    return bytes(bytesequence)

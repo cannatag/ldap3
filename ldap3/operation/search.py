@@ -169,7 +169,7 @@ def evaluate_match(match, schema, auto_escape, auto_encode, validator, check_nam
 
 
 def parse_filter(search_filter, schema, auto_escape, auto_encode, validator, check_names):
-    if str != bytes and isinstance(search_filter, bytes):  # python 3 with byte filter
+    if str is not bytes and isinstance(search_filter, bytes):  # python 3 with byte filter
         search_filter = to_unicode(search_filter)
     search_filter = search_filter.strip()
     if search_filter and search_filter.count('(') == search_filter.count(')') and search_filter.startswith('(') and search_filter.endswith(')'):
@@ -504,7 +504,7 @@ def filter_to_string(filter_object):
         raise LDAPInvalidFilterError('error converting filter to string')
     filter_string += ')'
 
-    if str == bytes:  # Python2, forces conversion to Unicode
+    if str is bytes:  # Python2, forces conversion to Unicode
         filter_string = to_unicode(filter_string)
 
     return filter_string

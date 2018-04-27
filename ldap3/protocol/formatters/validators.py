@@ -130,7 +130,7 @@ def validate_boolean(input_value):
                 return 'TRUE'
             else:
                 return 'FALSE'
-        if str != bytes and isinstance(input_value, bytes):  # python3 try to converts bytes to string
+        if str is not bytes and isinstance(input_value, bytes):  # python3 try to converts bytes to string
             input_value = to_unicode(input_value)
         if isinstance(input_value, STRING_TYPES):
             if input_value.lower() == 'true':
@@ -152,7 +152,7 @@ def validate_time_with_0_year(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        if str != bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
+        if str is not bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
             element = to_unicode(element)
         if isinstance(element, STRING_TYPES):  # tries to check if it is already be a Generalized Time
             if element.startswith('0000') or isinstance(format_time(to_raw(element)), datetime):  # valid Generalized Time string
@@ -189,7 +189,7 @@ def validate_time(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        if str != bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
+        if str is not bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
             element = to_unicode(element)
         if isinstance(element, STRING_TYPES):  # tries to check if it is already be a Generalized Time
             if isinstance(format_time(to_raw(element)), datetime):  # valid Generalized Time string
@@ -230,7 +230,7 @@ def validate_ad_timestamp(input_value):
     valid_values = []
     changed = False
     for element in input_value:
-        if str != bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
+        if str is not bytes and isinstance(element, bytes):  # python3 try to converts bytes to string
             element = to_unicode(element)
         if isinstance(element, NUMERIC_TYPES):
             if 0 <= element <= 9223372036854775807:  # min and max for the AD timestamp starting from 12:00 AM January 1, 1601
@@ -284,7 +284,7 @@ def validate_guid(input_value):
                     changed = True
                     continue
                 except ValueError:
-                    if str != bytes:  # python 3
+                    if str is not bytes:  # python 3
                         pass
                     else:
                         valid_values.append(element)
@@ -326,7 +326,7 @@ def validate_uuid(input_value):
                     changed = True
                     continue
                 except ValueError:
-                    if str != bytes:  # python 3
+                    if str is not bytes:  # python 3
                         pass
                     else:
                         valid_values.append(element)

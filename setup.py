@@ -94,6 +94,9 @@ if 'LDAP3_CYTHON_COMPILE' in os.environ and HAS_CYTHON is True:
                     if filename in ('__init__.py',):
                         continue
                     relpath = os.path.join(root, filename).split(commonprefix)[-1][1:]
+                    if relpath in ('ldap3/utils/asn1.py'):
+                        # We have issues when cython compiling asn1, skipt it
+                        continue
                     module = os.path.splitext(relpath)[0].replace(os.sep, '.')
                     yield Extension(module, [full])
 
@@ -120,6 +123,10 @@ if 'LDAP3_CYTHON_COMPILE' in os.environ and HAS_CYTHON is True:
         def find_package_modules(self, package, package_dir):
             modules = build_py.find_package_modules(self, package, package_dir)
             for package, module, filename in modules:
+                if package == 'ldap3.utils' and module in ('asn1',):
+                    # We have issues when cython compiling asn1, include it as a python module
+                    yield package, module, filename
+                    continue
                 if module not in ('__init__',):
                     # We only want __init__ python files
                     # All others will be built as extensions

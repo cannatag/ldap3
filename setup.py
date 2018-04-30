@@ -153,6 +153,9 @@ if 'LDAP3_CYTHON_COMPILE' in os.environ and HAS_CYTHON is True:
     setup_kwargs['ext_modules'] = ext_modules
     setup_kwargs['zip_safe'] = False
 
+    # Since this will become a binary version of ldap3, rename the package
+    package_name += '-binary'
+
 
 class Clean(clean):
     def run(self):

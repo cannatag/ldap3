@@ -23,7 +23,9 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import glob
 from setuptools import setup
+from distutils.command.clean import clean
 from json import load
 
 version_dict = load(open('_version.json', 'r'))
@@ -143,6 +145,27 @@ if 'LDAP3_CYTHON_COMPILE' in os.environ and HAS_CYTHON is True:
     setup_kwargs['cmdclass'] = {'build_py': BuildPy, 'build_ext': BuildExt}
     setup_kwargs['ext_modules'] = ext_modules
     setup_kwargs['zip_safe'] = False
+
+
+class Clean(clean):
+    def run(self):
+        clean.run(self)
+        # Let's clean compiled *.py[c,o] *.c *.so
+        for subdir in ('ldap3',):
+            root = os.path.join(os.path.dirname(__file__), subdir)
+            for dirname, dirs, _ in os.walk(root):
+                for to_remove_filename in glob.glob('{0}/*.py[ocx]'.format(dirname)):
+                    os.remove(to_remove_filename)
+                for to_remove_filename in glob.glob('{0}/*.c'.format(dirname)):
+                    os.remove(to_remove_filename)
+                for to_remove_filename in glob.glob('{0}/*.so'.format(dirname)):
+                    os.remove(to_remove_filename)
+                for dir_ in dirs:
+                    if dir_ == '__pycache__':
+                        shutil.rmtree(os.path.join(dirname, dir_))
+
+
+setup_kwargs['cmdclass'] = {'clean': Clean}
 
 
 setup(name=package_name,

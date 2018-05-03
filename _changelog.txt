@@ -4,6 +4,7 @@
     - fixed circular reference in exception history
     - added objectSid validator
     - byte values are properly searched in MOCK strategies (thanks dyj216)
+    - exception history refactored (thanks Tamas)
 
 # 2.5 - 2018.04.15
     - abstract layer now handles auxiliary classes

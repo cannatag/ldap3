@@ -274,23 +274,18 @@ class Tls(object):
             return self._start_tls(connection)
 
     def _start_tls(self, connection):
-        exc = None
         try:
             self.wrap_socket(connection, do_handshake=True)
         except Exception as e:
             connection.last_error = 'wrap socket error: ' + str(e)
-            exc = e
-
-        connection.starting_tls = False
-
-        if exc:
             if log_enabled(ERROR):
                 log(ERROR, 'error <%s> wrapping socket for TLS in <%s>', connection.last_error, connection)
-            raise start_tls_exception_factory(LDAPStartTLSError, exc)(connection.last_error)
+            raise start_tls_exception_factory(LDAPStartTLSError, e)(connection.last_error)
+        finally:
+            connection.starting_tls = False
 
         if connection.usage:
             connection._usage.wrapped_sockets += 1
-
         connection.tls_started = True
         return True
 

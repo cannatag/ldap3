@@ -250,7 +250,6 @@ class ReusableStrategy(BaseStrategy):
                             if self.worker.get_info_from_server and counter:
                                 self.worker.connection._fire_deferred()
                                 self.worker.get_info_from_server = False
-                            exc = None
                             response = None
                             result = None
                             try:
@@ -259,13 +258,18 @@ class ReusableStrategy(BaseStrategy):
                                 else:
                                     response = self.worker.connection.post_send_single_response(self.worker.connection.send(message_type, request, controls))
                                 result = self.worker.connection.result
-                            except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
-                                exc = e
-                            with pool.pool_lock:
-                                if exc:
-                                    pool._incoming[counter] = (exc, None, None)
-                                else:
+                                with pool.pool_lock:
                                     pool._incoming[counter] = (response, result, BaseStrategy.decode_request(message_type, request, controls))
+                            except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
+                                with pool.pool_lock:
+                                    pool._incoming[counter] = (type(e)(str(e)), None, None)
+                            # except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
+                            #     exc = e
+                            # with pool.pool_lock:
+                            #     if exc:
+                            #         pool._incoming[counter] = (exc, None, None)
+                            #     else:
+                            #         pool._incoming[counter] = (response, result, BaseStrategy.decode_request(message_type, request, controls))
 
                     self.worker.busy = False
                     pool.request_queue.task_done()

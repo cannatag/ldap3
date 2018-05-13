@@ -245,11 +245,14 @@ def ldap_escape_to_bytes(text):
         if isinstance(text, STRING_TYPES):
             while i < len(text):
                 if text[i] == '\\':
-                    if len(text) > i + 2 and text[i+1:i+3].isdigit():
-                        bytesequence.append(int(text[i+1:i+3], 16))
-                        i += 2
-                    else:
-                        bytesequence.append(92)  # "\" ASCII code
+                    if len(text) > i + 2:
+                        try:
+                            bytesequence.append(int(text[i+1:i+3], 16))
+                            i += 3
+                            continue
+                        except ValueError:
+                            pass
+                    bytesequence.append(92)  # "\" ASCII code
                 else:
                     raw = to_raw(text[i])
                     for c in raw:
@@ -258,11 +261,14 @@ def ldap_escape_to_bytes(text):
         elif isinstance(text, (bytes, bytearray)):
             while i < len(text):
                 if text[i] == 92:  # "\" ASCII code
-                    if len(text) > i + 2 and text[i + 1:i + 3].isdigit():
-                        bytesequence.append(int(text[i + 1:i + 3], 16))
-                        i += 2
-                    else:
-                        bytesequence.append(92)  # "\" ASCII code
+                    if len(text) > i + 2:
+                        try:
+                            bytesequence.append(int(text[i + 1:i + 3], 16))
+                            i += 3
+                            continue
+                        except ValueError:
+                            pass
+                    bytesequence.append(92)  # "\" ASCII code
                 else:
                     bytesequence.append(text[i])
                 i += 1

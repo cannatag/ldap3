@@ -852,9 +852,9 @@ class MockBaseStrategy(object):
         attribute_values = self.connection.server.dit[dn][attribute_type]
         if not isinstance(attribute_values, SEQUENCE_TYPES):
             attribute_values = [attribute_values]
-        value_to_check = ldap_escape_to_bytes(value_to_check)
+        escaped_value_to_check = ldap_escape_to_bytes(value_to_check)
         for attribute_value in attribute_values:
-            if self._check_equality(value_to_check, attribute_value):
+            if self._check_equality(escaped_value_to_check, attribute_value):
                 return True
             if self._check_equality(self._prepare_value(attribute_type, value_to_check), attribute_value):
                 return True

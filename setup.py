@@ -24,9 +24,11 @@
 
 import os
 import glob
-from setuptools import setup
-from distutils.command.clean import clean
+import shutil
 from json import load
+from distutils.command.clean import clean
+from distutils import log
+from setuptools import setup
 
 version_dict = load(open('_version.json', 'r'))
 version = str(version_dict['version'])
@@ -57,104 +59,6 @@ packages=['ldap3',
 
 setup_kwargs = {'packages': packages,
                 'package_dir': {'': package_folder}}
-
-try:
-    from Cython.Build import cythonize
-    HAS_CYTHON = True
-except ImportError:
-    HAS_CYTHON = False
-
-if 'LDAP3_CYTHON_COMPILE' in os.environ and HAS_CYTHON is True:
-    import sys
-    import multiprocessing
-    import multiprocessing.pool
-    from setuptools import Extension
-    from distutils.command.build_py import build_py
-    from distutils.command.build_ext import build_ext
-    # Change to source's directory prior to running any command
-    try:
-        SETUP_DIRNAME = os.path.dirname(__file__)
-    except NameError:
-        # We're most likely being frozen and __file__ triggered this NameError
-        # Let's work around that
-        SETUP_DIRNAME = os.path.dirname(sys.argv[0])
-    if SETUP_DIRNAME != '':
-        os.chdir(SETUP_DIRNAME)
-
-    SETUP_DIRNAME = os.path.abspath(SETUP_DIRNAME)
-
-    def find_ext():
-        for package in ('ldap3',):
-            for root, _, files in os.walk(os.path.join(SETUP_DIRNAME, package)):
-                commonprefix = os.path.commonprefix([SETUP_DIRNAME, root])
-                for filename in files:
-                    full = os.path.join(root, filename)
-                    if not filename.endswith(('.py', '.c')):
-                        continue
-                    if filename in ('__init__.py',):
-                        continue
-                    relpath = os.path.join(root, filename).split(commonprefix)[-1][1:]
-                    if relpath in ('ldap3/utils/asn1.py'):
-                        # We have issues when cython compiling asn1, skipt it
-                        continue
-                    module = os.path.splitext(relpath)[0].replace(os.sep, '.')
-                    yield Extension(module, [full])
-
-    def discover_packages():
-        modules = []
-        pkg_data = {}
-        pkg_dir = {}
-        for package in ('ldap3',):
-            for root, _, files in os.walk(os.path.join(SETUP_DIRNAME, package)):
-                if '__init__.py' not in files:
-                    continue
-                pdir = os.path.relpath(root, SETUP_DIRNAME)
-                modname = pdir.replace(os.sep, '.')
-                modules.append(modname)
-                pkg_data.setdefault(modname, []).append('*.so')
-                pkg_dir[modname] = pdir
-        return modules, pkg_dir, pkg_data
-
-    ext_modules = cythonize(list(find_ext()), nthreads=multiprocessing.cpu_count())
-
-
-    class BuildPy(build_py):
-
-        def find_package_modules(self, package, package_dir):
-            modules = build_py.find_package_modules(self, package, package_dir)
-            for package, module, filename in modules:
-                if package == 'ldap3.utils' and module in ('asn1',):
-                    # We have issues when cython compiling asn1, include it as a python module
-                    yield package, module, filename
-                    continue
-                if module not in ('__init__',):
-                    # We only want __init__ python files
-                    # All others will be built as extensions
-                    continue
-                yield package, module, filename
-
-
-    class BuildExt(build_ext):
-
-        def run(self):
-            self.extensions = ext_modules
-            build_ext.run(self)
-
-        def build_extensions(self):
-            multiprocessing.pool.ThreadPool(
-                processes=multiprocessing.cpu_count()).map(
-                    self.build_extension, self.extensions)
-
-    packages, package_dir, package_data = discover_packages()
-    setup_kwargs['packages'] = packages
-    setup_kwargs['package_dir'] = package_dir
-    setup_kwargs['package_data'] = package_data
-    setup_kwargs['cmdclass'] = {'build_py': BuildPy, 'build_ext': BuildExt}
-    setup_kwargs['ext_modules'] = ext_modules
-    setup_kwargs['zip_safe'] = False
-
-    # Since this will become a binary version of ldap3, rename the package
-    package_name += '-binary'
 
 
 class Clean(clean):

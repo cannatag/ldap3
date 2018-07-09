@@ -200,7 +200,11 @@ class MockBaseStrategy(object):
                 value = validated
         raw_value = to_raw(value)
         if not isinstance(raw_value, bytes):
-            raise LDAPInvalidValueError('added values must be bytes if no offline schema is provided in Mock strategies')
+            raise LDAPInvalidValueError('The value "%s" of type %s for "%s" must be bytes or an offline schema needs to be provided when Mock strategy is used.' % (
+                value,
+                type(value),
+                attribute_type,
+            ))
         return raw_value
 
     def _update_attribute(self, dn, attribute_type, value):

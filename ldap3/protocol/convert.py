@@ -183,7 +183,7 @@ def prepare_filter_for_sending(raw_string):
     ints = []
     raw_string = to_raw(raw_string)
     while i < len(raw_string):
-        if (raw_string[i] == 92 or raw_string[i] == '\\') and i < len(raw_string) - 2:  # 92 is backslash
+        if (raw_string[i] == 92 or raw_string[i] == '\\') and i < len(raw_string) - 2 and (raw_string[i+1] == 120 or raw_string[i+1] == 'x'):  # 92 is backslash
             try:
                 ints.append(int(raw_string[i + 1: i + 3], 16))
                 i += 2

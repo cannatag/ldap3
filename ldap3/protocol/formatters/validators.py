@@ -68,15 +68,18 @@ def validate_generic_single_value(input_value):
     return False
 
 
-def validate_zero_and_minus_one(input_value):
+def validate_zero_and_minus_one_and_positive_int(input_value):
     """Accept -1 only (used by pwdLastSet in AD)
     """
     if not isinstance(input_value, SEQUENCE_TYPES):
-        if input_value == 0 or input_value == '0' or input_value == -1 or input_value == '-1':
-            return True
+        try:
+            if input_value == 0 or input_value == '0' or input_value == -1 or input_value == '-1' or int(input_value) > 0 or input_value > 0:
+                return True
+        except Exception:
+            pass
 
     try:  # object couldn't have a __len__ method
-        if len(input_value) == 1 and (input_value == 0  or input_value == '0' or input_value == -1 or input_value == '-1'):
+        if len(input_value) == 1 and (input_value == 0  or input_value == '0' or input_value == -1 or input_value == '-1' or int(input_value) > 0 or input_value > 0):
             return True
     except Exception:
         pass

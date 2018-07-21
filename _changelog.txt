@@ -6,6 +6,11 @@
     - byte values are properly searched in MOCK strategies (thanks dyj216)
     - exception history refactored (thanks Tamas)
     - connections in context manager don't bind anymore when auto_bind is set to AUTO_BIND_NONE (Thanks Tim)
+    - Cython compatible build (thanks Pedro)
+    - more detailed exception message in Mock strategy (thanks Janne)
+    - exceptions flow refactored in reusable strategy (thanks kxt)
+    - pwdlastset accept any positive integer (thanks abenbecker)
+
 
 # 2.5 - 2018.04.15
     - abstract layer now handles auxiliary classes

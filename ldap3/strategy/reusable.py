@@ -28,7 +28,7 @@ from os import linesep
 from threading import Thread, Lock
 from time import sleep
 
-from .. import RESTARTABLE, get_config_parameter, AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND
+from .. import RESTARTABLE, get_config_parameter, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_TLS_BEFORE_BIND
 from .base import BaseStrategy
 from ..core.usage import ConnectionUsage
 from ..core.exceptions import LDAPConnectionPoolNameIsMandatoryError, LDAPConnectionPoolNotStartedError, LDAPOperationResult, LDAPExceptionError, LDAPResponseTimeoutError
@@ -334,7 +334,7 @@ class ReusableStrategy(BaseStrategy):
                                          return_empty_attributes=self.master_connection.empty_attributes)
 
             # simulates auto_bind, always with read_server_info=False
-            if self.master_connection.auto_bind and self.master_connection.auto_bind != AUTO_BIND_NONE:
+            if self.master_connection.auto_bind and self.master_connection.auto_bind not in [AUTO_BIND_NONE, AUTO_BIND_DEFAULT]:
                 if log_enabled(BASIC):
                     log(BASIC, 'performing automatic bind for <%s>', self.connection)
                 self.connection.open(read_server_info=False)

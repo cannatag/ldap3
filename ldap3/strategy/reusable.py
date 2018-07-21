@@ -238,21 +238,21 @@ class ReusableStrategy(BaseStrategy):
                             if log_enabled(BASIC):
                                 log(BASIC, 'thread respawn')
                         if message_type not in ['bindRequest', 'unbindRequest']:
-                            if pool.open_pool and self.worker.connection.closed:
-                                self.worker.connection.open(read_server_info=False)
-                                if pool.tls_pool and not self.worker.connection.tls_started:
-                                    self.worker.connection.start_tls(read_server_info=False)
-                                if pool.bind_pool and not self.worker.connection.bound:
-                                    self.worker.connection.bind(read_server_info=False)
-                            elif pool.open_pool and not self.worker.connection.closed:  # connection already open, issues a start_tls
-                                if pool.tls_pool and not self.worker.connection.tls_started:
-                                    self.worker.connection.start_tls(read_server_info=False)
-                            if self.worker.get_info_from_server and counter:
-                                self.worker.connection._fire_deferred()
-                                self.worker.get_info_from_server = False
-                            response = None
-                            result = None
                             try:
+                                if pool.open_pool and self.worker.connection.closed:
+                                    self.worker.connection.open(read_server_info=False)
+                                    if pool.tls_pool and not self.worker.connection.tls_started:
+                                        self.worker.connection.start_tls(read_server_info=False)
+                                    if pool.bind_pool and not self.worker.connection.bound:
+                                        self.worker.connection.bind(read_server_info=False)
+                                elif pool.open_pool and not self.worker.connection.closed:  # connection already open, issues a start_tls
+                                    if pool.tls_pool and not self.worker.connection.tls_started:
+                                        self.worker.connection.start_tls(read_server_info=False)
+                                if self.worker.get_info_from_server and counter:
+                                    self.worker.connection._fire_deferred()
+                                    self.worker.get_info_from_server = False
+                                response = None
+                                result = None
                                 if message_type == 'searchRequest':
                                     response = self.worker.connection.post_send_search(self.worker.connection.send(message_type, request, controls))
                                 else:

@@ -10,6 +10,7 @@
     - more detailed exception message in Mock strategy (thanks Janne)
     - exceptions flow refactored in reusable strategy (thanks kxt)
     - pwdlastset accept any positive integer (thanks abenbecker)
+    - fixed an exception while logging packet with pyasn1 decoder
 
 
 # 2.5 - 2018.04.15

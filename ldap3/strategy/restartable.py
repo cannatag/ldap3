@@ -241,13 +241,6 @@ class RestartableStrategy(SyncStrategy):
 
     def _add_exception_to_history(self, exc):
         if not isinstance(self.restartable_tries, bool):  # doesn't accumulate when restarting forever
-            # if not isinstance(exc_info()[1], LDAPMaximumRetriesError):  # doesn't add the LDAPMaximumRetriesError exception
-                # # exc_type = exc_info()[0]
-                # # exc_value = exc_info()[1]
-                # print("222", exc_info())
-                # pprint(inspect.getinnerframes(exc_info()[2]))
-                # # exc_value.__traceback__ = None  # remove traceback info to avoid circular reference of the frame
-                # self.exception_history.append((datetime.now(), None, None))
             if not isinstance(exc, LDAPMaximumRetriesError):  # doesn't add the LDAPMaximumRetriesError exception
                 self.exception_history.append(exc)
 

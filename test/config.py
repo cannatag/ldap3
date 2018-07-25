@@ -43,7 +43,7 @@ test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Mic
 
 test_pool_size = 5
 test_logging = True
-test_log_detail = PROTOCOL
+test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20

@@ -152,7 +152,7 @@ class BaseStrategy(object):
 
             self.connection._deferred_open = False
             self._start_listen()
-            self.connection.do_auto_bind()
+            # self.connection.do_auto_bind()
             if log_enabled(NETWORK):
                 log(NETWORK, 'connection open for <%s>', self.connection)
 

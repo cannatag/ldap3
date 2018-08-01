@@ -23,11 +23,15 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import collections
+try:
+    from collections.abc import MutableMapping, Mapping
+except ImportError:
+    from collections import MutableMapping, Mapping
+
 from .. import SEQUENCE_TYPES
 
 
-class CaseInsensitiveDict(collections.MutableMapping):
+class CaseInsensitiveDict(MutableMapping):
     def __init__(self, other=None, **kwargs):
         self._store = dict()  # store use the original key
         self._case_insensitive_keymap = dict()  # is a mapping ci_key -> key
@@ -85,7 +89,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
         return self._store.items()
 
     def __eq__(self, other):
-        if not isinstance(other, (collections.Mapping, dict)):
+        if not isinstance(other, (Mapping, dict)):
             return NotImplemented
 
         if isinstance(other, CaseInsensitiveDict):

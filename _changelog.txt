@@ -11,6 +11,7 @@
     - exceptions flow refactored in reusable strategy (thanks kxt)
     - pwdlastset accept any positive integer (thanks abenbecker)
     - fixed an exception while logging packet with pyasn1 decoder
+    - fixed importing abc from collections for Python 3.8
 
 
 # 2.5 - 2018.04.15

@@ -180,7 +180,7 @@ Kerberos authentication uses the ``gssapi`` package. You must install it and con
     tls = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1_2)
     server = Server('<servername>', use_ssl=True, tls=tls)
     c = Connection(
-        server, authentication=ldap3.SASL, sasl_mechanism=KERBEROS)
+        server, authentication=SASL, sasl_mechanism=KERBEROS)
     c.bind()
     print(c.extend.standard.who_am_i())
 

@@ -99,6 +99,34 @@ elif getdefaultencoding():
 else:
     _DEFAULT_CLIENT_ENCODING = 'utf-8'
 
+PARAMETERS = ['CASE_INSENSITIVE_ATTRIBUTE_NAMES',
+              'CASE_INSENSITIVE_SCHEMA_NAMES',
+              'ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX',
+              'POOLING_LOOP_TIMEOUT',
+              'RESPONSE_SLEEPTIME',
+              'RESPONSE_WAITING_TIMEOUT',
+              'SOCKET_SIZE',
+              'CHECK_AVAILABILITY_TIMEOUT',
+              'RESTARTABLE_SLEEPTIME',
+              'RESTARTABLE_TRIES',
+              'REUSABLE_THREADED_POOL_SIZE',
+              'REUSABLE_THREADED_LIFETIME',
+              'DEFAULT_THREADED_POOL_NAME',
+              'ADDRESS_INFO_REFRESH_TIME',
+              'RESET_AVAILABILITY_TIMEOUT',
+              'DEFAULT_CLIENT_ENCODING',
+              'DEFAULT_SERVER_ENCODING',
+              'CLASSES_EXCLUDED_FROM_CHECK',
+              'ATTRIBUTES_EXCLUDED_FROM_CHECK',
+              'UTF8_ENCODED_SYNTAXES',
+              'UTF8_ENCODED_TYPES',
+              'ADDITIONAL_SERVER_ENCODINGS',
+              'ADDITIONAL_CLIENT_ENCODINGS',
+              'IGNORE_MALFORMED_SCHEMA',
+              'ATTRIBUTES_EXCLUDED_FROM_OBJECT_DEF',
+              'IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF'
+              ]
+
 
 def get_config_parameter(parameter):
     if parameter == 'CASE_INSENSITIVE_ATTRIBUTE_NAMES':  # Boolean
@@ -131,7 +159,7 @@ def get_config_parameter(parameter):
         return _ADDRESS_INFO_REFRESH_TIME
     elif parameter == 'RESET_AVAILABILITY_TIMEOUT':  # Integer
         return _RESET_AVAILABILITY_TIMEOUT
-    elif parameter in ['DEFAULT_CLIENT_ENCODING', 'DEFAULT_ENCODING']:  # String
+    elif parameter in ['DEFAULT_CLIENT_ENCODING', 'DEFAULT_ENCODING']:  # String - DEFAULT_ENCODING for backward compatibility
         return _DEFAULT_CLIENT_ENCODING
     elif parameter == 'DEFAULT_SERVER_ENCODING':  # String
         return _DEFAULT_SERVER_ENCODING
@@ -155,7 +183,7 @@ def get_config_parameter(parameter):
             return _UTF8_ENCODED_TYPES
         else:
             return [_UTF8_ENCODED_TYPES]
-    elif parameter in ['ADDITIONAL_SERVER_ENCODINGS', 'ADDITIONAL_ENCODINGS']:  # Sequence
+    elif parameter in ['ADDITIONAL_SERVER_ENCODINGS', 'ADDITIONAL_ENCODINGS']:  # Sequence - ADDITIONAL_ENCODINGS for backward compatibility
         if isinstance(_ADDITIONAL_SERVER_ENCODINGS, SEQUENCE_TYPES):
             return _ADDITIONAL_SERVER_ENCODINGS
         else:

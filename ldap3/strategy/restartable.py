@@ -23,10 +23,8 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from sys import exc_info
 from time import sleep
 import socket
-from datetime import datetime
 
 from .. import get_config_parameter
 from .sync import SyncStrategy
@@ -68,7 +66,7 @@ class RestartableStrategy(SyncStrategy):
         except Exception as e:  # machinery for restartable connection
             if log_enabled(ERROR):
                 log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-            self._add_exception_to_history()
+                self._add_exception_to_history(type(e)(str(e)))
 
         if not self._restarting:  # if not already performing a restart
             self._restarting = True
@@ -82,8 +80,10 @@ class RestartableStrategy(SyncStrategy):
                         self.connection.unbind()
                     except (socket.error, LDAPSocketOpenError):  # don't trace catch socket errors because socket could already be closed
                         pass
-                    except Exception:
-                        self._add_exception_to_history()
+                    except Exception as e:
+                        if log_enabled(ERROR):
+                            log(ERROR, '<%s> while restarting <%s>', e, self.connection)
+                        self._add_exception_to_history(type(e)(str(e)))
                 try:  # reissuing same operation
                     if self.connection.server_pool:
                         new_server = self.connection.server_pool.get_server(self.connection)  # get a server from the server_pool if available
@@ -101,7 +101,7 @@ class RestartableStrategy(SyncStrategy):
                 except Exception as e:
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-                    self._add_exception_to_history()
+                    self._add_exception_to_history(type(e)(str(e)))
                     if self.connection.usage:
                         self.connection._usage.restartable_failures += 1
                 if not isinstance(self.restartable_tries, bool):
@@ -128,7 +128,7 @@ class RestartableStrategy(SyncStrategy):
         except Exception as e:
             if log_enabled(ERROR):
                 log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-            self._add_exception_to_history()
+            self._add_exception_to_history(type(e)(str(e)))
         if not self._restarting:  # machinery for restartable connection
             self._restarting = True
             counter = self.restartable_tries
@@ -144,7 +144,7 @@ class RestartableStrategy(SyncStrategy):
                     except Exception as e:
                         if log_enabled(ERROR):
                             log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-                        self._add_exception_to_history()
+                        self._add_exception_to_history(type(e)(str(e)))
                 failure = False
                 try:  # reopening connection
                     self.connection.open(reset_usage=False, read_server_info=False)
@@ -159,7 +159,7 @@ class RestartableStrategy(SyncStrategy):
                 except Exception as e:
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-                    self._add_exception_to_history()
+                    self._add_exception_to_history(type(e)(str(e)))
                     failure = True
 
                 if not failure:
@@ -173,7 +173,7 @@ class RestartableStrategy(SyncStrategy):
                     except Exception as e:
                         if log_enabled(ERROR):
                             log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-                        self._add_exception_to_history()
+                        self._add_exception_to_history(type(e)(str(e)))
                         failure = True
 
                 if failure and self.connection.usage:
@@ -197,7 +197,7 @@ class RestartableStrategy(SyncStrategy):
         except Exception as e:
             if log_enabled(ERROR):
                 log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-            self._add_exception_to_history()
+            self._add_exception_to_history(type(e)(str(e)))
 
         # if an LDAPExceptionError is raised then resend the request
         try:
@@ -207,15 +207,12 @@ class RestartableStrategy(SyncStrategy):
         except Exception as e:
             if log_enabled(ERROR):
                 log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-            self._add_exception_to_history()
-            exc = e
-
-        if exc:
-            if not isinstance(exc, LDAPOperationResult):
+            self._add_exception_to_history(type(e)(str(e)))
+            if not isinstance(e, LDAPOperationResult):
                 self.connection.last_error = 'restartable connection strategy failed in post_send_single_response'
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-            raise exc
+            raise
 
     def post_send_search(self, message_id):
         try:
@@ -225,7 +222,7 @@ class RestartableStrategy(SyncStrategy):
         except Exception as e:
             if log_enabled(ERROR):
                 log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-            self._add_exception_to_history()
+            self._add_exception_to_history(type(e)(str(e)))
 
         # if an LDAPExceptionError is raised then resend the request
         try:
@@ -235,20 +232,17 @@ class RestartableStrategy(SyncStrategy):
         except Exception as e:
             if log_enabled(ERROR):
                 log(ERROR, '<%s> while restarting <%s>', e, self.connection)
-            self._add_exception_to_history()
-            exc = e
-
-        if exc:
-            if not isinstance(exc, LDAPOperationResult):
-                self.connection.last_error = exc.args
+            self._add_exception_to_history(type(e)(str(e)))
+            if not isinstance(e, LDAPOperationResult):
+                self.connection.last_error = e.args
             if log_enabled(ERROR):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-            raise exc
+            raise e
 
-    def _add_exception_to_history(self):
+    def _add_exception_to_history(self, exc):
         if not isinstance(self.restartable_tries, bool):  # doesn't accumulate when restarting forever
-            if not isinstance(exc_info()[1], LDAPMaximumRetriesError):  # doesn't add the LDAPMaximumRetriesError exception
-                self.exception_history.append((datetime.now(), exc_info()[0], exc_info()[1]))
+            if not isinstance(exc, LDAPMaximumRetriesError):  # doesn't add the LDAPMaximumRetriesError exception
+                self.exception_history.append(exc)
 
     def _reset_exception_history(self):
         if self.exception_history:

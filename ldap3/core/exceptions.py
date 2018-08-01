@@ -563,10 +563,12 @@ class LDAPMaximumRetriesError(LDAPExceptionError):
                     s.append('Exception history:')
                     prev_exc = ''
                     for i, exc in enumerate(self.args[1]):  # args[1] contains exception history
-                        if str(exc[1]) != prev_exc:
-                            s.append((str(i).rjust(5) + ' ' + str(exc[0]) + ': ' + str(exc[1]) + ' - ' + str(exc[2])))
-                            prev_exc = str(exc[1])
-
+                        # if str(exc[1]) != prev_exc:
+                        #     s.append((str(i).rjust(5) + ' ' + str(exc[0]) + ': ' + str(exc[1]) + ' - ' + str(exc[2])))
+                        #     prev_exc = str(exc[1])
+                        if str(exc) != prev_exc:
+                            s.append((str(i).rjust(5) + ' ' + str(type(exc)) + ': ' + str(exc)))
+                            prev_exc = str(exc)
                 if len(self.args) > 2:
                     s.append('Maximum number of retries reached: ' + str(self.args[2]))
         else:
@@ -588,7 +590,7 @@ def communication_exception_factory(exc_to_raise, exc):
 
 def start_tls_exception_factory(exc_to_raise, exc):
     """
-    Generates a new exception class of the requested type (subclass of LDAPCommunication) merged with the exception raised by the interpreter
+    Generates a new exception class of the requested type merged with the exception raised by the interpreter
     """
 
     if exc_to_raise.__name__ == 'LDAPStartTLSError':

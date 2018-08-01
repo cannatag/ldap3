@@ -66,7 +66,7 @@ def extended_response_to_dict(response):
             'message': str(response['diagnosticMessage']),
             'description': ResultCode().getNamedValues().getName(response['resultCode']),
             'referrals': referrals_to_list(response['referral']),
-            'responseName': str(response['responseName']) if response['responseName'] else None,
+            'responseName': str(response['responseName']) if response['responseName'] is not None and response['responseName'].hasValue() else str(),
             'responseValue': bytes(response['responseValue']) if response['responseValue'] is not None and response['responseValue'].hasValue() else bytes()}
 
 

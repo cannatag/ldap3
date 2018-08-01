@@ -180,8 +180,16 @@ def get_library_log_detail_level():
 
 
 def format_ldap_message(message, prefix):
+    if isinstance(message, LDAPMessage):
+        try:  # pyasn1 prettyprint raises exception in version 0.4.3
+            formatted = message.prettyPrint().split('\n')  # pyasn1 pretty print
+        except Exception as e:
+            formatted = ['pyasn1 exception', str(e)]
+    else:
+        formatted = pformat(message).split('\n')
+
     prefixed = ''
-    for line in (message.prettyPrint().split('\n') if isinstance(message, LDAPMessage) else pformat(message).split('\n')):  # uses pyasn1 LDAP message prettyPrint() method
+    for line in formatted:
         if line:
             if _hide_sensitive_data and line.strip().lower().startswith(_sensitive_lines):  # _sensitive_lines is a tuple. startswith() method checks each tuple element
                 tag, _, data = line.partition('=')

@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time
+from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int
 from ldap3.core.timezone import OffsetTzInfo
 
 class Test(unittest.TestCase):
@@ -159,4 +159,46 @@ class Test(unittest.TestCase):
 
     def test_validate_time_invalid_str_with_timezone(self):
         validated = validate_time('20170317094232+24')
+        self.assertFalse(validated)
+
+    def test_validate_minus_one_zero_greater_than_zero(self):
+        validated = validate_zero_and_minus_one_and_positive_int(0)
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(-1)
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(1)
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(2)
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(-2)
+        self.assertFalse(validated)
+        validated = validate_zero_and_minus_one_and_positive_int('0')
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int('-1')
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int('1')
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int('2')
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int('-2')
+        self.assertFalse(validated)
+        validated = validate_zero_and_minus_one_and_positive_int([0])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int([-1])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int([1])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int([2])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int([-2])
+        self.assertFalse(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(['0'])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(['-1'])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(['1'])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int(['2'])
+        self.assertTrue(validated)
+        validated = validate_zero_and_minus_one_and_positive_int('-2')
         self.assertFalse(validated)

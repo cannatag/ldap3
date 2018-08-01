@@ -15,69 +15,77 @@ Tutorial: Introduction to ldap3
     closed the connection abruptly. You can easily reopen it with the ``conn.bind()`` method.
 
 
-I assume that you already know what LDAP is, or at least have a rough idea of it. Even if you really
-don't know anything about LDAP, after reading this tutorial you should be able to access an LDAP compliant server and use it without bothering with
+Even if you really don't know anything about LDAP, after reading this tutorial you should be able to access an LDAP compliant server and use it without bothering with
 the many glitches of the LDAP protocol.
 
 What LDAP is not
 ================
 I'd rather want to be sure that you are aware of what LDAP **is not**:
 
-- LDAP is not a server
-- LDAP is not a database
-- LDAP is not a network service
-- LDAP is not an authentication procedure
-- LDAP is not a user/password repository
-- LDAP is not a specific open source neither a closed source product
+- LDAP is not a **server**
+- LDAP is not a **database**
+- LDAP is not a **network service**
+- LDAP is not a **network device**
+- LDAP is not an **authentication procedure**
+- LDAP is not a **user/password repository**
+- LDAP is not a specific **open or closed source product**
 
-It's important to know what LDAP is not because people usually call "LDAP" a peculiar part of what they use of the
-**Lightweight Directory Access Protocol**. LDAP is a *protocol* and as other 'trailing-P' words in the Internet
-ecosystem (HTTP, FTP, TCP, IP, ...) it is a set of rules you must follow to talk to an external
-server/database/service/procedure/repository/product (all the things in the above list). Data managed via LDAP are
-key/value(s) pairs grouped in a hierarchical structure. This structure is called the **DIT** (*Directory
+It's important to know what LDAP is not, because people usually call "LDAP" a peculiar part of what they use of the
+**Lightweight Directory Access Protocol**. LDAP is a *protocol* and as other 'ending in P' words in the Internet
+ecosystem (HTTP, FTP, TCP, IP, ...) it's a set of rules you must follow to talk to an external
+server/database/service/device/procedure/repository/product (all things in the previous list).
+
+Data managed via LDAP are key/value(s) pairs grouped in a hierarchical structure. This structure is called the **DIT** (*Directory
 Information Tree*). LDAP doesn't specify how data is actually stored in the DIT neither how the user is authorized to
 access it. There are only a few data types that every LDAP server must recognize (some of them being very old and not used anymore).
 LDAP version 3 is also an extensible protocol, this means that a vendor can add features not in the LDAP specifications (using Controls and Extensions).
 Any LDAP server relies on a **schema** to know which data types, attributes and object it understands. A portion of the schema is standard
-(defined in the protocol itself), but each vendor can add attributes and object for specific purposes. The schema can also be extended (with
-administrative role) by the system administrator, the developer and the end user of the LDAP server.
-Keep in mind that "extending the schema" is something that is not defined in the LDAP protocol, so each vendor has developed different methods to add
-objects and attributes.
+(defined in the protocol itself), but each vendor can add attributes and object for specific purposes. The schema can also be extended by the
+system administrator, the developer and the end user of the LDAP server.
+
+Curiously "extending the schema" is something that is not defined in the LDAP protocol, so each vendor has developed
+different methods for adding objects, attributes and additional rules to the schema.
 
 Being a protocol, LDAP is not related to any specific product and it is described in a set of **RFCs** (*Request for
 comments*, the official rules of the Internet ecosystem). Latest version of this rules is **version 3** documented
 in the RFC4510 (and subsequents RFCs) released in June 2006.
 
-A very brief history of LDAP
-============================
-You may wonder why the "lightweight" in LDAP. Its ancestor, called **DAP** (*Directory Access Protocol*), was developed in the 1980s
-by the CCITT (now ITU-T), the *International Committee for Telephone and Telegraphy* (the venerable entity that gave us, among
-others, faxes and modem protocols we used in the pre-Internet era). DAP was a very heavy and hard-to-implement protocol
-(either for client and server components) and was not accessible via TCP/IP and its intended use was to standardize access to directory services
-(i.e. phone directories). In 1993 a simpler access protocol was invented at the University of Michigan to act as a gateway to the DAP world. Afterwards vendors
-developed server products that could understand LDAP directly and the gateway to DAP was soon removed. LDAP v3 was first documented in 1997 and its
-specifications was revised in 2006. These later specifications are strictly followed by the ldap3 library.
+A brief history of LDAP
+=======================
+You may wonder why the "lightweight" in LDAP. Its ancestor, called **DAP** (*Directory Access Protocol*), was developed
+in the 1980s by the CCITT (now ITU-T), the *International Committee for Telephone and Telegraphy* (the venerable entity
+that gave us, among others, the fax and the protocols we used on modems in the pre-Internet era). Even if its intended use
+was to standardize access to directory services (i.e. phone directories) DAP was a very heavy and hard-to-implement protocol
+(for client and server components) and was not accessible via TCP/IP. In 1993 a simpler access protocol was
+invented at the University of Michigan to act as a gateway to the DAP world. Afterwards vendors developed
+products that could understand LDAP directly and the gateway to DAP was soon removed. LDAP v3 was first documented
+in 1997 and its specifications was revised in 2006. These later specifications are strictly followed by the ldap3 library.
 
 Unicode everywhere
 ==================
-The LDAP protocol specifies that attribute names and their string values (usually in the Directory String LDAP syntax) must be stored in Unicode version 3.2
-with the UTF-8 byte encoding. There are some limitations in the attribute names that can use only ASCII letters (upper and lowercase), numbers and the hypen
-character (but not as a leading character). Unicode is a standard to describe thousands of printed (even if not visible) characters but what goes over the wire when you
-interact with an LDAP server is only old plain bytes (with values ranging from 0 to 255 as usual), so the UTF-8 encoding is needed when talking to an LDAP server
-to convert the Unicode character to a valid byte (or multi-byte) representation. For this reason when you want to use a string value in any LDAP operation you must
-convert it to UTF-8 encoding. Your environment could have (and probably has) a different default encoding so the ldap3 library will try to convert from your
-default encoding to UTF-8 for you, but you may set a different input encoding with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')`` function
-of the ldap3 library. Values returned by the LDAP search operation are always encoded in UTF-8. This doesn't apply to other binary format, as Octect String that
-can use a different format.
+The LDAP protocol specifies that attribute names and their string values (usually in the Directory String LDAP syntax) must
+be stored in Unicode version 3.2 with the UTF-8 byte encoding. There are some limitations in defining the attribute names
+that must use only ASCII letters (upper and lowercase), numbers and the hypen character (but not as a leading character).
+
+**Unicode** is a standard to describe tens of thousands of printed (even if not visible) characters but what goes over the wire
+when you interact with an LDAP server is only old plain bytes (with values ranging from 0 to 255 as usual), so the UTF-8
+encoding is needed when talking to an LDAP server to convert the Unicode character to a valid byte (or multi-byte)
+representation. For this reason when sending a string value in any LDAP operation it must be converted to
+UTF-8 encoding. Your environment could have (and probably has) a different default encoding so the ldap3 library
+will try to convert from your default encoding to UTF-8 for you, but you may set a different input encoding
+with the ``set_config_parameter('DEFAULT_ENCODING', 'my_encoding')`` function of the ldap3 library. String values
+returned by the LDAP search operation are always encoded in UTF-8. This doesn't apply to other binary formats, as
+Octect String that can use a different encoding.
 
 The ldap3 package
 =================
-ldap3 is a fully compliant LDAP v3 client library following the official RFCs released in June 2006. It's written from scratch to be
-compatible with Python 2 and Python 3 and can be used on any machine where the Python interpreter can gain access to the network via the Python
-standard library.
+ldap3 is a fully compliant LDAP v3 client library following the official RFCs released in June 2006. It's written from
+scratch to be compatible with Python 2 and Python 3 and can be used on any machine where Python can gain access to the
+network via its Standard Library.
 
 Chances are that you find the ldap3 package already installed (or installable with your local package manager) on your machine, just try
-to **import ldap3** from your Python console. If you get an ``ImportError`` you need to install the package from PyPI via pip in the standard way::
+to **import ldap3** from your Python console. If you get an ``ImportError`` you need to install the package from PyPI via
+pip in the usual way::
 
     pip install ldap3
 
@@ -90,9 +98,9 @@ You can also download the source code from https://github.com/cannatag/ldap3 and
 
     python setup.py install
 
-ldap3 needs the **pyasn1** package (and will install it if not already present). This package is used to communicate with the server over the network. By default
-ldap3 uses the pyasn1 package only when sending data to the server. Data received from the server are decoded with an internal decoder, much faster (10x ) than the
-pyasn1 decoder.
+ldap3 needs the **pyasn1** package (and will install it if not already present). This package is used to communicate with
+the server over the network. By default ldap3 uses the pyasn1 package only when sending data to the server. Data received
+from the server are decoded with an internal ASN1 decoder, much faster than the pyasn1 decoder.
 
 Accessing an LDAP server
 ========================
@@ -106,39 +114,41 @@ and any additional constant you will use in your LDAP conversation (constants ar
 
 ldap3 specific exceptions are defined in the ``ldap3.core.exceptions`` package.
 
-.. warning:: **A more pythonic LDAP**: LDAP operations look clumsy and hard-to-use because they reflect the old-age idea that time-consuming operations
-    should be done on the client to not clutter and hog the server with unneeded elaboration. ldap3 includes a fully functional **Abstraction
-    Layer** that lets you interact with the DIT in a modern and *pythonic* way. With the Abstraction Layer you don't need to directly issue any
-    LDAP operation at all.
+.. note:: **A more pythonic LDAP**: LDAP operations look clumsy and hard-to-use because they reflect the old-age idea
+    that time-consuming operations should be done on the client to not clutter or hog the server with unneeded elaboration.
+    ldap3 includes a fully functional **Abstraction Layer** that lets you interact with the DIT in a modern and *pythonic*
+    way. With the Abstraction Layer you don't need to directly issue any LDAP operation at all.
 
-In the LDAP protocol the login operation is called **Bind**. A bind can be performed in 3 different ways: Anonymous Bind,
-Simple Password Bind, and SASL (*Simple Authentication and Security Layer*, allowing a larger set of authentication methods)
+In the LDAP protocol the authentication operation is called **Bind**. A bind can be performed in 3 different ways: Anonymous Bind,
+Simple Password Bind, and SASL (*Simple Authentication and Security Layer*, allowing a larger set of authentication mechanisms)
 Bind. You can think of the Anonymous Bind as of a *public* access to the LDAP server where no credentials are provided
 and the server applies some *default* access rules. With the Simple Password Bind and the SASL Bind you provide credentials
 that the LDAP server uses to determine your authorization level. Again, keep in mind that the LDAP standard doesn't define
-specific access rules and that the authorization mechanism is not specified at all. So each LDAP server vendor can have a
-different method for authorizing the user to access data stored in the DIT.
+specific access rules, so each LDAP server vendor has developed a different method for authorizing the user to access
+data stored in the DIT.
 
-ldap3 lets you choose the method that the client will use to connect to the server with the ``client_strategy`` parameter of the
-Connection object. There are four strategies that can be used for establishing a connection: SYNC, ASYNC, RESTARTABLE and REUSABLE.
-As a general rule, in synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a boolean: ``True`` if they're successful, ``False``
-if they fail; in asynchronous strategies (**ASYNC**, **REUSABLE**) all LDAP operations (except Bind that always returns a boolean) return a
-number, the *message_id* of the request. With asynchronous strategies you can send multiple requests without waiting for responses and then you get each
-response with the ``get_response(message_id)`` method of the Connection object as you need it. ldap3 will raise an exception if
-the response has not yet arrived after a specified time. In the ``get_response()`` method this timeout value can be set
+ldap3 lets you choose the method that the client will use to connect to the server with the ``client_strategy`` parameter
+of the Connection object. There are four strategies that can be used for establishing a connection: SYNC, ASYNC, RESTARTABLE
+and REUSABLE. As a general rule, in synchronous strategies (**SYNC**, **RESTARTABLE**) all LDAP operations return a
+boolean: ``True`` if they're successful, ``False`` if they fail; in asynchronous strategies (**ASYNC**, **REUSABLE**) all
+LDAP operations (except Bind that always returns a boolean) return a number, the *message_id* of the request. With
+asynchronous strategies you can send multiple requests without waiting for responses and then you get each response with
+the ``get_response(message_id)`` method of the Connection object as you need it. ldap3 will raise an exception if
+the response has not yet arrived after a specified time. In the ``get_response()`` method the timeout value can be set
 with the ``timeout`` parameter to the number of seconds to wait for the response to appear (default is 10 seconds).
-If you use the ``get_request=True`` in the ``get_response()`` parameter you get the request dictionary back.
+If you use the ``get_request=True`` in the ``get_response()`` parameter you also get the request dictionary back.
 
-Asynchronous strategies are thread-safe and are useful with slow servers or when you have many requests with the same Connection object in multiple threads.
-Usually you will use synchronous strategies only.
+Asynchronous strategies are thread-safe and are useful with slow servers or when you have many requests with the same
+Connection object in multiple threads. Usually you will use synchronous strategies only.
 
-The **LDIF** strategy is used to create a stream of LDIF-CHANGEs. (LDIF stands for *LDAP Data Interchange Format*, textual standard used
-to describe the changes performed by LDAP operations). The MOCK_SYNC strategy can be used to emulate a fake LDAP server to test your
-application without the need of a real LDAP server.
+The **LDIF** strategy is used to create a stream of LDIF-CHANGEs. (LDIF stands for *LDAP Data Interchange Format*, a textual
+standard used to describe the changes performed by LDAP operations). The MOCK_SYNC and MOCK_ASYNC strategies can be
+used to emulate a fake LDAP server to test your application without the need of a real LDAP server.
 
 .. note::
-    In this tutorial you will use the default SYNC communication strategy. If you keep loosing connection to the server you can use the RESTARTABLE
-    communication strategy that tries to reconnect and resend the operation when the link to the server fails.
+    In this tutorial you will use the default SYNC communication strategy. If you keep loosing connection to the server
+    you can use the RESTARTABLE communication strategy that tries to reconnect and resend the operation when the link
+    to the server fails.
 
 Let's start accessing the server with an anonymous bind::
 
@@ -151,8 +161,9 @@ or shorter::
 
     >>> conn = Connection('ipa.demo1.freeipa.org', auto_bind=True)
 
-Hardly it could be simpler than that. The ``auto_bind=True`` parameter forces the Bind operation while creating the Connection object.
-You have now a full working anonymous session open and bound to the server with a *synchronous* communication strategy::
+it could hardly be simpler than this. The ``auto_bind=True`` parameter forces the Bind operation to execute after creating the
+Connection object. You have now a full working anonymous session open and bound to the server with a *synchronous*
+communication strategy::
 
     >>> print(conn)
     ldap://ipa.demo1.freeipa.org:389 - cleartext - user: None - bound - open - <local: 192.168.1.101:49813 - remote: 209.132.178.99:389> -
@@ -174,35 +185,37 @@ internal decoder                                        which BER decoder the co
 ======================================================= =================================================================================
 
 .. note::
-    Object representation: the ldap3 library uses the following object representation rule: when you use ``str()`` you get back information
-    about the status of the object in a human readable format, when you use ``repr()`` you get back a string you can use in the
-    Python console to recreate the object. ``print`` always return the ``str()`` representation. Typing at the ``>>>`` prompt always
-    return the ``repr`` representation.
+    Object representation: the ldap3 library uses the following object representation rule: when you use ``str()`` you get
+    back information about the status of the object in a human readable format, when you use ``repr()`` you get back a
+    string you can use in the Python console to recreate the object. ``print()`` always return the ``str()`` representation.
+    Typing at the ``>>>`` prompt always return the ``repr`` representation that can be used to recreate the object in your code.
 
-If you ask for the ``repr()`` representation of the conn object you can get a string to recreate the object::
+If you ask for the ``repr()`` representation of the conn object you can get a snippet of Python code::
 
     >>> conn
     Connection(server=Server(host='ipa.demo1.freeipa.org', port=389, use_ssl=False, get_info='NO_INFO'), auto_bind='NONE',
     version=3, authentication='ANONYMOUS', client_strategy='SYNC', auto_referrals=True, check_names=True, read_only=False,
     lazy=False, raise_exceptions=False, fast_decoder=True)
 
-If you just copy and paste the object representation at the ``>>>`` prompt you can instantiate a new object similar to the original one.
-This is helpful when experimenting in the interactive console and works for most of the ldap3 library objects::
+If you just copy and paste the object representation at the ``>>>`` prompt you can instantiate a new object similar to
+the original one. This is helpful when experimenting in the interactive console and works for most of the ldap3 library
+objects::
 
    >>> server
    Server(host='ipa.demo1.freeipa.org', port=389, use_ssl=False, get_info='NO_INFO')
 
 .. note::
-    The tutorial is intended to be used from the *REPL* (Read, Evaluate, Print, Loop), the interactive Python command line where you can directly type
-    Python statements at the **>>>** prompt. The REPL implicitly use the ``repr()`` representation for showing the output of a statement. If you instead
-    want the ``str()`` representation you must explicitly use the ``print()`` statement.
+    The tutorial is intended to be used from the *REPL* (Read, Evaluate, Print, Loop), the interactive Python command
+    line where you can directly type Python statements at the **>>>** prompt. The REPL implicitly use the ``repr()``
+    representation for showing the output of a statement. If you instead want the ``str()`` representation you must
+    explicitly ask for it using the ``print()`` function.
 
 Getting information from the server
 ===================================
-The LDAP protocol specifies that an LDAP server must return some information about itself. You can request them with the ``get_info=ALL``
-parameter and access them with the ``.info`` attribute of the Server object::
+The LDAP protocol specifies that an LDAP server must return some information about itself. You can inspect them with
+the ``.info`` attribute of the Server object::
 
-    >>> server = Server('ipa.demo1.freeipa.org', get_info=ALL)
+    >>> server = Server('ipa.demo1.freeipa.org',  get_info=ALL)
     >>> conn = Connection(server, auto_bind=True)
     >>> server.info
     DSA info (from DSE):
@@ -297,26 +310,26 @@ Vendor version            389-Directory/1.3.3 ... The version of this LDAP serve
 Other                     ...                     Additional information provided by the server
 ========================= ======================= =============================================================
 
-From this response we know that this server is a stand-alone LDAP server that can hold entries in the dc=demo1,dc=freeipa,dc=org context,
-that supports various SASL access mechanisms and that is based on the 389 Directory Service server. Furthermore in the
-Supported Controls we can see it supports "paged searches", and the "who am i" and "StartTLS" extended operations in
-Supported Extensions.
+From this response we know that this server is a stand-alone LDAP server that can hold entries in the dc=demo1,dc=freeipa,dc=org
+portion of the DIT (usually called *context*), that supports various SASL access mechanisms and that is based on the
+"389 Directory Service" server. Furthermore in the Supported Controls we can see it supports "paged searches", and the
+"who am i" and "StartTLS" extended operations in Supported Extensions.
 
-.. note:: Controls vs Extensions: in LDAP a *Control* is some additional information that can be attached to any LDAP request or response, while an
-   *Extension* is a custom request that can be sent to the LDAP server in an **Extended Operation** Request.
-   A Control usually modifies the behaviour of a standard LDAP operation, while an Extension is a completely new
-   kind of operation that each vendor decides to include in its LDAP server implementation.
+.. note:: Controls vs Extensions: in LDAP a *Control* is some additional information that can be attached to any LDAP
+   request or response, while an *Extension* is a custom command that can be sent to the LDAP server in an **Extended
+   Operation** Request. A Control usually modifies the behaviour of a standard LDAP operation, while an Extension is
+   a completely new kind of operation that each vendor is free to include in its LDAP server implementation.
    An LDAP server declares which controls and which extendend operations it understands. The ldap3 library decodes the
    known supported controls and extended operation and includes a brief description and a reference to the relevant
    RFC in the ``.info`` attribute (when known). Not all controls or extensions are intended to be used by clients. Some controls and
    extensions are used by servers that hold a replica or a data partition. Unfortunately in the LDAP specifications
    there is no way to specify if such extensions are reserved for a server (**DSA**, *Directory Server Agent* in LDAP
    parlance) to server communication (for example in replicas or partitions management) or can be used
-   by clients (**DUA**, *Directory User Agent*). Because the LDAP protocols doesn't provide a specific way for DSAs to communicate
-   with each other, a DSA actually presents itself as a DUA to another DSA.
+   by clients (**DUA**, *Directory User Agent*). Because the LDAP protocols doesn't provide a specific way for DSAs
+   to communicate with each other, a DSA actually presents itself as a DUA to another DSA.
 
-An LDAP server store information about known *types* in its **schema**. The schema includes all information needed by a client to correctly performs
-LDAP operations. Let's examine the LDAP server schema::
+An LDAP server stores information about known *types* in its **schema**. The schema includes all information needed by
+a client to correctly performs LDAP operations. Let's examine the LDAP server schema for the ipa.demo1.freeipa.org server::
 
     >>> server.schema
     DSA Schema from: cn=schema
@@ -357,23 +370,24 @@ LDAP operations. Let's examine the LDAP server schema::
       <...long list of descriptors...>
 
 
-The schema is a very long list that describes what kind of data types the LDAP server understands. It also specifies
+The schema is a very long list that describes what type of data the server understands. It also specifies
 what attributes can be stored in each class. Some classes are containers for other entries (either container or leaf)
 and are used to build the hierarchy of the DIT. Container entries can have attributes too.
-One important specification in the schema is if the attribute is *multi-valued* or not. A multi-valued attribute can store one or more values.
-Every LDAP server must at least support the standard LDAP3 schema but can have additional custom classes and attributes.
-The schema defines also the *syntaxes* and the *matching rules* of the different kind of data types stored in the LDAP.
+One important specification in the schema is if the attribute is *multi-valued* or not. A multi-valued attribute can
+store one or more values. Every LDAP server must at least support the standard LDAP3 schema but can have additional
+custom classes and attributes. The schema defines also the *syntaxes* and the *matching rules* of the different
+data types stored in the DIT.
 
 .. note::
    Object classes and attributes are independent objects. An attribute is not a "child" of a class neither a
    class is a "parent" of any attribute. Classes and attributes are linked in the schema with the ``MAY`` and ``MUST`` options
-   of the object class definition that specify what attributes an entry can contain and which of them are mandatory.
+   of the object class definition that specifies what attributes an entry can contain and which of them are mandatory.
 
 .. note::
    There are 3 different types of object classes: **ABSTRACT** (used only when defining the class hierarchy), **STRUCTURAL** (used to
    create concrete entries) and **AUXILIARY** (used to add additional attributes to an entry). Only one structural class can be used
    in an entry, while many auxiliary classes can be added to the same entry. Adding an object class to an entry simply means
-   that the attributes defined in that object class can be stored in that entry.
+   that the attribute types defined in that object class can be stored in that entry.
 
 If the ldap3 library is aware of the schema used by the LDAP server it will try to automatically convert data retrieved by the Search
 operation to their representation. An integer will be returned as an int, a generalizedDate as a datetime object and so on.
@@ -388,19 +402,19 @@ This makes sense because originally the DAP protocol was intended for reading ph
 content could be read by anyone.
 
 If you want to establish an authenticated session you have two options: Simple Password and SASL. With Simple Password you provide
-a **DN** (*Distinguished Name*) and a password. The server checks if your credentials are valid and permits or denies access to the elements of the DIT.
-SASL provides additional methods to identify the user, as an external certificate or a Kerberos ticket.
+a **DN** (*Distinguished Name*) and a password. The server checks if your credentials are valid and permits or denies
+access to the elements of the DIT. SASL provides additional methods to identify the user, as an external certificate or a Kerberos ticket.
 
-.. note:: Distinguished Names: the DIT is a hierarchical structure, as a filesystem. To identify an entry you must specify its *path*
-    in the DIT starting from the leaf that represents the entry up to the top of the Tree. This path is called the
-    **Distinguished Name** (DN) of an entry and is constructed with key-value pairs, separated by a comma, of the names of the entries that form
-    the path from the leaf up to the top of the Tree. The DN of an entry is unique throughout the DIT and changes only if the entry is moved into
-    another container within the DIT. The parts of the DN are called **Relative Distinguished Name** (RDN) because are unique only
-    in the context where they are defined. So, for example, if you have a *inetOrgPerson* entry with RDN ``cn=Fred`` that is stored in an *organizational
-    unit* with RDN ``ou=users`` that is stored in an *organization* with RDN ``o=company`` the DN of the *inetOrgPerson* entry will
-    be ``cn=Fred,ou=users,o=company``. The RDN value must be unique in the context where the entry is stored, but there is no specification
-    in the LDAP schema on which attribute to use as RDN for a specific class. LDAP also support a (quite obscure) "multi-rdn" naming option where each
-    part of the RDN is separated with the + character, as in ``cn=Fred+sn=Smith``.
+.. note:: Distinguished Names: the DIT is a hierarchical structure, as a filesystem. To identify an entry you must specify
+    its *path* in the DIT starting from the leaf that represents the entry up to the top of the Tree. This path is called the
+    **Distinguished Name** (DN) of an entry and is constructed with key-value pairs, separated by a comma, of the names and the values
+    of the entries that form the path from the leaf up to the top of the Tree. The DN of an entry is unique throughout the DIT
+    and changes only if the entry is moved into another container within the DIT. The parts of the DN are called
+    **Relative Distinguished Name** (RDN) because are unique only in the context where they are defined. So, for example,
+    if you have a *inetOrgPerson* entry with RDN ``cn=Fred`` that is stored in an *organizationaUnit* with RDN ``ou=users`` that
+    is stored in an *organization* with RDN ``o=company`` the DN of the entry will be ``cn=Fred,ou=users,o=company``.
+    The RDN value must be unique in the context where the entry is stored. LDAP also support a (quite obscure) "multi-rdn"
+    naming option where each part of the RDN is separated with the + character, as in ``cn=Fred+sn=Smith``.
 
 .. warning:: Accessing Active Directory: with ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::
 
@@ -408,8 +422,8 @@ SASL provides additional methods to identify the user, as an external certificat
         >>> server = Server('servername', get_info=ALL)
         >>> conn = Connection(server, user="Domain\\User", password="password", authentication=NTLM)
 
-    This kind of authentication is not part of the LDAP 3 RFCs but uses a proprietary Microsoft authentication mechanism named SICILY. ldap3 implements
-    it because it's much easier to use this method than Kerberos to access Active Directory.
+    This kind of authentication is not part of the LDAP 3 RFCs but uses a proprietary Microsoft authentication mechanism
+    named SICILY. ldap3 implements it because it's much easier to use this method than Kerberos to access Active Directory.
 
 Now try to ask to the server who you are::
 
@@ -418,31 +432,33 @@ Now try to ask to the server who you are::
 We have used and Extended Operation, conveniently packaged in a function of the ``ldap3.extend.standard`` package, and get an empty response.
 This means you have no authentication status on the server, so you are an **anonymous** user. This doesn't mean
 that you are unknown to the server, actually you have a session open with it, so you can send additional operation requests. Even
-if you don't send the anonymous bind operation the server will accept any operation requests as an anonymous user, establishing a new session
-if needed.
+if you don't send the anonymous bind operation the server will accept any operation requests as an anonymous user,
+establishing a new session if needed.
 
-.. note:: The ``extend`` namespace. The connection object has a special namespace called "extend" where more complex operations are defined.
-    This namespace include a ``standard`` section and a number of specific vendor sections. In these sections you can find methods to perform
-    tricky or hard-to-implement operations. For example in the ``microsoft`` section you can find a method to easily change the user password, and
-    in the ``novell`` section a method to apply transaction to groups of LDAP operations. In the ``standard`` section you can also find an
+.. note:: The ``extend`` namespace. The connection object has a special namespace called "extend" where more complex
+    operations are defined. This namespace include a ``standard`` section and a number of specific vendor sections.
+    In these sections you can find methods to perform tricky or hard-to-implement operations. For example in the
+    ``microsoft`` section you can find a method to easily change the user password, and in the ``novell`` section
+    a method to apply transactions to groups of LDAP operations. In the ``standard`` section you can also find an
     easy way to perform a paged search via generators.
 
 
-.. warning:: Opening vs Binding: the LDAP protocol provides a Bind and an Unbind operation but, for historical reasons, they are not symmetric.
-    As any TCP connection the communication socket must be *open* before binding to the server . This is implicitly done by the ldap3 package when you
-    issue a ``bind()`` or another operation or can be esplicity done with the ``open()`` method of the Connection object. The Unbind operation
-    is actually used to *terminate* the connection, both ending the session and closing the socket. After the ``unbind()`` operation the connection
-    cannot be used anymore. If you want to access as another user or change the current session to an anonymous one, you must issue ``bind()`` again.
-    The ldap3 library allows you to use the ``rebind()`` method to access the same connection as a different user. You must use ``unbind()`` only when
-    you want to close the network socket.
+.. warning:: Opening vs Binding: the LDAP protocol provides a Bind and an Unbind operation but, for historical reasons,
+    they are not symmetrical. As any TCP connection the communication socket must be *open* before binding to the server.
+    This is implicitly done by the ldap3 package when you issue a ``bind()`` or another operation or can be esplicity
+    done with the ``open()`` method of the Connection object. The Unbind operation is actually used to *terminate* the
+    connection, both ending the session and closing the socket. After the ``unbind()`` operation the connection
+    cannot be used anymore. If you want to access as another user or change the current session to an anonymous one,
+    you must issue ``bind()`` again. The ldap3 library includes the ``rebind()`` method to access the same connection
+    as a different user. You must use ``unbind()`` only when you want to close the network socket.
 
-Try to specify a valid user::
+Try to specify an identity to access the DIT::
 
     >>> conn = Connection(server, 'uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'Secret123', auto_bind=True)
     >>> conn.extend.standard.who_am_i()
     'dn: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org'
 
-Now the server knows that you are a recognized user and the ``who_am_i()`` extended operation returns your identity.
+Now the server knows that you are a valid user and the ``who_am_i()`` extended operation returns your identity.
 
 Establishing a secure connection
 ================================
@@ -451,22 +467,22 @@ If you check the connection info you can see that the Connection is using a clea
     >>> print(conn)
     ldap://ipa.demo1.freeipa.org:389 - **cleartext** - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - bound - open - <local: 192.168.1.101:50164 - remote: 209.132.178.99:**389**> - **tls not started** - listening - SyncStrategy - internal decoder'
 
-This means that credentials pass unencrypted over the wire, so they can be easily captured by network eavesdroppers (with unencrypted
-connections a network sniffer can be easily used to capture passwords and other sensitive data). The LDAP protocol provides two ways
-to secure a connection: **LDAP over TLS** (or over SSL) and the **StartTLS** extended operation. Both methods establish a secure TLS
-connection: the former secure with TLS the communication channel as soon as the connection is open, while the latter can be used at any time on
-an already open unsecure connection to secure it issuing the StartTLS operation.
+This means that credentials pass unencrypted over the wire, so they can be easily captured by network eavesdroppers
+(with unencrypted connections a network sniffer can capture passwords and other sensitive data). The LDAP protocol provides
+two ways to secure a connection: **LDAP over TLS** and the **StartTLS** extended operation. Both methods establish a secure TLS
+connection: the former secure with TLS the communication channel as soon as the connection is open, while the latter can
+be used at any time on an already open unsecure connection to secure it issuing the StartTLS operation.
 
-.. warning:: LDAP URL scheme: a cleartext connection to a server can be expressed in the URL with the **ldap://** scheme, while LDAP over TLS can be
-    indicated with **ldaps://** even if this is not specified in any of the LDAP RFCs. If a scheme is included in the server name while creating
-    the Server object, the ldap3 library opens the proper port, unencrypted or with the specified TLS options (or the default TLS options
-    if none is specified).
+.. warning:: LDAP URL scheme: a cleartext connection to a server can be expressed in the URL with the **ldap://** scheme,
+    while LDAP over TLS can be indicated with **ldaps://** even if this is not specified in any of the LDAP RFCs.
+    If a scheme is included in the server name while creating the Server object, the ldap3 library opens the proper port,
+    unencrypted or with the specified TLS options (or the default TLS options if none is specified).
 
-.. note:: Default port numbers: the default port for cleartext (unsecure) communication is **389**, while the default for LDAP over TLS (secure)
-    communication is **636**. Note that because you can start a session on the 389 port and then raise the security level with the StartTLS operation,
-    you can have a secure communication even on the 389 port (usually considered unsecure). Obviously the server can listen on additional or different
-    ports. When defining the Server object you can specify which port to use with the ``port`` parameter. Keep this in mind if you need to connect to
-    a server behind a firewall.
+.. note:: Default port numbers: the default port for cleartext (unsecure) communication is **389**, while the default port
+   for LDAP over TLS (secure) communication is **636**. Note that because you can start a session on the 389 port and then
+    raise the security level with the StartTLS operation, you can have a secure communication even on the 389 port (usually
+    considered unsecure). Obviously the server can listen on different ports. When defining the Server object you can specify
+    which port to use with the ``port`` parameter. Keep this in mind if you need to connect to a server behind a firewall.
 
 Now try to use the StartTLS extended operation::
 
@@ -486,8 +502,10 @@ To start the connection on a SSL socket::
     >>> print(conn)
     ldaps://ipa.demo1.freeipa.org:636 - ssl - user: uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org - bound - open - <local: 192.168.1.101:51438 - remote: 209.132.178.99:636> - tls not started - listening - SyncStrategy - internal decoder
 
-Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so there is no checking of
-certificate validity. You can customize the TLS behaviour providing a Tls object to the Server object using the security context configuration::
+
+Either with the former or the latter method the connection is now encrypted. We haven't specified any TLS option, so
+there is no checking of certificate validity. You can customize the TLS behaviour providing a ``Tls`` object to the Server
+object. The Tls object configures the security context::
 
     >>> from ldap3 import Tls
     >>> import ssl
@@ -530,6 +548,6 @@ The Connection object responds to the context manager protocol, so you can perfo
                  ipaSshGroupOfPubKeys
     sn: Administrator
 
-When the Connection object exits the context manager it retains the state it had before entering the context. The connection is always open and bound while in context.
-If the connection was not bound to the server when entering the context the Unbind operation will be tried when you leave the context even if the operations
-in the context raise an exception.
+When the Connection object exits the context manager it retains the state it had before entering the context. The connection
+is always open and bound while in context. If the connection was not bound to the server when entering the context the
+Unbind operation will be tried when you leave the context even if the operations in the context raise an exception.

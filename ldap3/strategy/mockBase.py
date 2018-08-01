@@ -54,6 +54,7 @@ from ..protocol.formatters.standard import find_attribute_validator, format_attr
 from ..protocol.rfc2696 import paged_search_control
 from ..utils.log import log, log_enabled, ERROR, BASIC
 from ..utils.asn1 import encode
+from ..utils.conv import ldap_escape_to_bytes
 from ..strategy.base import BaseStrategy  # needed for decode_control() method
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID
 from ..protocol.convert import build_controls_list
@@ -199,7 +200,11 @@ class MockBaseStrategy(object):
                 value = validated
         raw_value = to_raw(value)
         if not isinstance(raw_value, bytes):
-            raise LDAPInvalidValueError('added values must be bytes if no offline schema is provided in Mock strategies')
+            raise LDAPInvalidValueError('The value "%s" of type %s for "%s" must be bytes or an offline schema needs to be provided when Mock strategy is used.' % (
+                value,
+                type(value),
+                attribute_type,
+            ))
         return raw_value
 
     def _update_attribute(self, dn, attribute_type, value):
@@ -851,8 +856,9 @@ class MockBaseStrategy(object):
         attribute_values = self.connection.server.dit[dn][attribute_type]
         if not isinstance(attribute_values, SEQUENCE_TYPES):
             attribute_values = [attribute_values]
+        escaped_value_to_check = ldap_escape_to_bytes(value_to_check)
         for attribute_value in attribute_values:
-            if self._check_equality(value_to_check, attribute_value):
+            if self._check_equality(escaped_value_to_check, attribute_value):
                 return True
             if self._check_equality(self._prepare_value(attribute_type, value_to_check), attribute_value):
                 return True

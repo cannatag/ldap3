@@ -30,7 +30,7 @@ import json
 
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, \
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, \
     STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI, PLAIN
 
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
@@ -134,7 +134,7 @@ class Connection(object):
     :param password: the password for simple authentication
     :type password: str
     :param auto_bind: specify if the bind will be performed automatically when defining the Connection object
-    :type auto_bind: int, can be one of AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND as specified in ldap3
+    :type auto_bind: int, can be one of AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_NO_TLS, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND as specified in ldap3
     :param version: LDAP version, default to 3
     :type version: int
     :param authentication: type of authentication
@@ -174,7 +174,7 @@ class Connection(object):
                  server,
                  user=None,
                  password=None,
-                 auto_bind=AUTO_BIND_NONE,
+                 auto_bind=AUTO_BIND_DEFAULT,
                  version=3,
                  authentication=None,
                  client_strategy=SYNC,
@@ -233,7 +233,7 @@ class Connection(object):
             self.closed = True
             self.last_error = None
             if auto_bind is False:  # compatibility with older version where auto_bind was a boolean
-                self.auto_bind = AUTO_BIND_NONE
+                self.auto_bind = AUTO_BIND_DEFAULT
             elif auto_bind is True:
                 self.auto_bind = AUTO_BIND_NO_TLS
             else:
@@ -329,7 +329,7 @@ class Connection(object):
                     log(BASIC, 'instantiated Connection: <%r>', self)
 
     def do_auto_bind(self):
-        if self.auto_bind and self.auto_bind != AUTO_BIND_NONE:
+        if self.auto_bind and self.auto_bind not in [AUTO_BIND_NONE, AUTO_BIND_DEFAULT]:
             if log_enabled(BASIC):
                 log(BASIC, 'performing automatic bind for <%s>', self)
             if self.closed:
@@ -466,10 +466,13 @@ class Connection(object):
     def __enter__(self):
         with self.connection_lock:
             self._context_state.append((self.bound, self.closed))  # save status out of context as a tuple in a list
-            if self.closed:
-                self.open()
-            if not self.bound:
-                self.bind()
+            if self.auto_bind != AUTO_BIND_NONE:
+                if self.auto_bind == AUTO_BIND_DEFAULT:
+                    self.auto_bind = AUTO_BIND_NO_TLS
+                if self.closed:
+                    self.open()
+                if not self.bound:
+                    self.bind()
 
             return self
 

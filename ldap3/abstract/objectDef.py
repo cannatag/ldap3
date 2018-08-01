@@ -38,7 +38,7 @@ from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED
 class ObjectDef(object):
     """Represent an object in the LDAP server. AttrDefs are stored in a dictionary; the key is the friendly name defined in AttrDef.
 
-    AttrDefs can be added and removed using the += ad -= operators
+    AttrDefs can be added and removed using the += and -= operators
 
     ObjectDef can be accessed either as a sequence and a dictionary. When accessed the whole AttrDef instance is returned
 

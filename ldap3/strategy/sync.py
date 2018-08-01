@@ -82,17 +82,14 @@ class SyncStrategy(BaseStrategy):
                     data = self.connection.socket.recv(self.socket_size)
                 except (OSError, socket.error, AttributeError) as e:
                     self.connection.last_error = 'error receiving data: ' + str(e)
-                    exc = e
-
-                if exc:
                     try:  # try to close the connection before raising exception
                         self.close()
                     except (socket.error, LDAPExceptionError):
                         pass
                     if log_enabled(ERROR):
                         log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                    raise communication_exception_factory(LDAPSocketReceiveError, exc)(self.connection.last_error)
-
+                    # raise communication_exception_factory(LDAPSocketReceiveError, exc)(self.connection.last_error)
+                    raise communication_exception_factory(LDAPSocketReceiveError, type(e)(str(e)))(self.connection.last_error)
                 unprocessed += data
             if len(data) > 0:
                 length = BaseStrategy.compute_ldap_message_size(unprocessed)

@@ -258,6 +258,14 @@ def validate_ad_timestamp(input_value):
     else:
         return True
 
+def validate_ad_timedelta(input_value):
+    """
+    Should be validated like an AD timestamp except that since it is a time
+    delta, it is stored as a negative number.
+    """
+    if not isinstance(input_value, int) or input_value > 0:
+        return False
+    return validate_ad_timestamp(input_value * -1)
 
 def validate_guid(input_value):
     """

@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from ...core.exceptions import LDAPInvalidDnError
+from ...core.exceptions import LDAPInvalidDnError, LDAPOperationsErrorResult
 from ... import SEQUENCE_TYPES, MODIFY_DELETE, BASE, DEREF_NEVER
 from ...utils.dn import safe_dn
 
@@ -30,12 +30,14 @@ from ...utils.dn import safe_dn
 def ad_remove_members_from_groups(connection,
                                   members_dn,
                                   groups_dn,
-                                  fix):
+                                  fix,
+                                  raise_error=False):
     """
     :param connection: a bound Connection object
     :param members_dn: the list of members to remove from groups
     :param groups_dn: the list of groups where members are to be removed
     :param fix: checks for group existence and existing members
+    :param raise_error: If the operation fails it raises an error instead of returning False
     :return: a boolean where True means that the operation was successful and False means an error has happened
     Removes users-groups relations following the Activwe Directory rules: users are removed from groups' member attribute
 
@@ -88,6 +90,9 @@ def ad_remove_members_from_groups(connection,
                 result = connection.result
             if result['description'] != 'success':
                 error = True
+                result_error_params = ['result', 'description', 'dn', 'message']
+                if raise_error:
+                    raise LDAPOperationsErrorResult(**{k: v for k, v in result.items() if k in result_error_params})
                 break
 
     return not error

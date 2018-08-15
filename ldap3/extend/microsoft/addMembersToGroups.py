@@ -1,6 +1,7 @@
 """
 """
 
+from ... import SEQUENCE_TYPES, MODIFY_ADD, BASE, DEREF_NEVER
 # Created on 2016.12.26
 #
 # Author: Giovanni Cannata
@@ -22,19 +23,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from ...core.exceptions import LDAPInvalidDnError
-from ... import SEQUENCE_TYPES, MODIFY_ADD, BASE, DEREF_NEVER
+from ...core.exceptions import LDAPInvalidDnError, LDAPOperationsErrorResult
 
 
 def ad_add_members_to_groups(connection,
                              members_dn,
                              groups_dn,
-                             fix=True):
+                             fix=True,
+                             raise_error=False):
     """
     :param connection: a bound Connection object
     :param members_dn: the list of members to add to groups
     :param groups_dn: the list of groups where members are to be added
     :param fix: checks for group existence and already assigned members
+    :param raise_error: If the operation fails it raises an error instead of returning False
     :return: a boolean where True means that the operation was successful and False means an error has happened
     Establishes users-groups relations following the Active Directory rules: users are added to the member attribute of groups.
     Raises LDAPInvalidDnError if members or groups are not found in the DIT.
@@ -49,7 +51,8 @@ def ad_add_members_to_groups(connection,
     error = False
     for group in groups_dn:
         if fix:  # checks for existance of group and for already assigned members
-            result = connection.search(group, '(objectclass=*)', BASE, dereference_aliases=DEREF_NEVER, attributes=['member'])
+            result = connection.search(group, '(objectclass=*)', BASE, dereference_aliases=DEREF_NEVER,
+                                       attributes=['member'])
 
             if not connection.strategy.sync:
                 response, result = connection.get_response(result)
@@ -76,6 +79,9 @@ def ad_add_members_to_groups(connection,
                 result = connection.result
             if result['description'] != 'success':
                 error = True
+                result_error_params = ['result', 'description', 'dn', 'message']
+                if raise_error:
+                    raise LDAPOperationsErrorResult(**{k: v for k, v in result.items() if k in result_error_params})
                 break
 
     return not error  # returns True if no error is raised in the LDAP operations

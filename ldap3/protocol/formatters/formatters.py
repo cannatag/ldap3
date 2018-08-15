@@ -324,19 +324,6 @@ except ImportError:
         return raw_value
 
 
-def format_ad_timedelta(raw_value):
-    """
-    Convert a negative filetime value to a timedelta.
-    """
-    # Active Directory stores attributes like "minPwdAge" as a negative
-    # "filetime" timestamp, which is the number of 100-nanosecond intervals that
-    # have elapsed since the 0 hour on January 1, 1601. By making the number
-    # positive, we can reuse format_ad_timestamp to get a datetime object.
-    # Afterwards, we can subtract a datetime representing 0 hour on January 1,
-    # 1601 from the returned datetime to get the timedelta.
-    return format_ad_timestamp(raw_value * -1) - format_ad_timestamp(0)
-
-
 def format_time_with_0_year(raw_value):
     try:
         if raw_value.startswith(b'0000'):

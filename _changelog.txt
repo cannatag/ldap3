@@ -1,3 +1,11 @@
+# 2.5.2 - not yet released
+    - fixed changelog date (thanks Adam)
+    - support for AD timedeltas (thanks mprahl)
+    - fixed WhoAmI in mock strategies (thanks mprahl)
+    - prevent unnecessary exception in extend/standard/ModifyPassword (thanks Johnny)
+    - Add support for external gssapi credentials to be passed to the sasl connection (thanks Firtyear)
+
+
 # 2.5.1 - 2018.08.01
     - connection.result is populated when exception raised with raise_exceptions=True
     - fixed objectSid in mocking strategies

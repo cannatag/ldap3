@@ -24,8 +24,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 # implements RFC4532
-from pyasn1.type.univ import NoValue
-
 from ...extend.operation import ExtendedOperation
 from ...utils.conv import to_unicode
 from ...protocol.rfc4511 import OctetString

@@ -107,9 +107,7 @@ Accessing an LDAP server
 ldap3 usage is straightforward: you define a Server object and a Connection object. Then you issue commands to the connection.
 A server can have any number of active connections with the same or a different *communication strategy*.
 
-All the importable objects are available in the ldap3 nam
-ace. At least you need to import the Server and the Connection object,
-and any additional constant you will use in your LDAP conversation (constants are defined in upper case)::
+All the importable objects are available in the ldap3 namespace. At least you need to import the Server and the Connection object,	All the importable objects are available in the ldap3 namspace. At least you need to import the Server and the Connection object, and any additional constant you will use in your LDAP conversation (constants are defined in upper case)::
 
     >>> from ldap3 import Server, Connection, ALL
 

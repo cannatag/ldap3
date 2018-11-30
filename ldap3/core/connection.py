@@ -163,6 +163,8 @@ class Connection(object):
     :type pool_size: int
     :param pool_lifetime: pool lifetime for pooled strategies
     :type pool_lifetime: int
+    :param cred_store: credential store for gssapi
+    :type cred_store: dict
     :param use_referral_cache: keep referral connections open and reuse them
     :type use_referral_cache: bool
     :param auto_escape: automatic escaping of filter values
@@ -190,6 +192,7 @@ class Connection(object):
                  pool_name=None,
                  pool_size=None,
                  pool_lifetime=None,
+                 cred_store=None,
                  fast_decoder=True,
                  receive_timeout=None,
                  return_empty_attributes=True,
@@ -254,6 +257,7 @@ class Connection(object):
             self.lazy = lazy
             self.pool_name = pool_name if pool_name else conf_default_pool_name
             self.pool_size = pool_size
+            self.cred_store = cred_store
             self.pool_lifetime = pool_lifetime
             self.pool_keepalive = pool_keepalive
             self.starting_tls = False
@@ -387,6 +391,7 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.pool_keepalive is None else ', pool_keepalive={0.pool_keepalive!r}'.format(self)
+        r += '' if self.cred_store is None else (', cred_store=' + repr(self.cred_store))
         r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
@@ -425,6 +430,7 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.pool_keepalive is None else ', pool_keepalive={0.pool_keepalive!r}'.format(self)
+        r += '' if self.cred_store is None else (', cred_store=' + repr(self.cred_store))
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)

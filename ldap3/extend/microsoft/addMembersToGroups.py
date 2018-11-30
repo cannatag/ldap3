@@ -24,6 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from ...core.exceptions import LDAPInvalidDnError
 from ... import SEQUENCE_TYPES, MODIFY_ADD, BASE, DEREF_NEVER
+from ...utils.dn import safe_dn
 
 
 def ad_add_members_to_groups(connection,
@@ -65,7 +66,7 @@ def ad_add_members_to_groups(connection,
             existing_members = []
 
         changes = dict()
-        member_to_add = [element for element in members_dn if element.lower() not in existing_members]
+        member_to_add = [safe_dn(element) for element in members_dn if safe_dn(element).lower() not in existing_members]
         if member_to_add:
             changes['member'] = (MODIFY_ADD, member_to_add)
         if changes:

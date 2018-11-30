@@ -1275,54 +1275,58 @@ class Connection(object):
             result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True  # ntlm is same of sasl authentication
-                # additional import for NTLM
-                from ..utils.ntlm import NtlmClient
-                domain_name, user_name = self.user.split('\\', 1)
-                ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
+                try:
+                    # additional import for NTLM
+                    from ..utils.ntlm import NtlmClient
+                    domain_name, user_name = self.user.split('\\', 1)
+                    ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
 
-                # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
-                # send a sicilyPackageDiscovery request (in the bindRequest)
-                request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
-                if log_enabled(PROTOCOL):
-                    log(PROTOCOL, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
-                response = self.post_send_single_response(self.send('bindRequest', request, controls))
-                if not self.strategy.sync:
-                    _, result = self.get_response(response)
-                else:
-                    result = response[0]
-                if 'server_creds' in result:
-                    sicily_packages = result['server_creds'].decode('ascii').split(';')
-                    if 'NTLM' in sicily_packages:  # NTLM available on server
-                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
-                        if log_enabled(PROTOCOL):
-                            log(PROTOCOL, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
-                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
-                        if not self.strategy.sync:
-                            _, result = self.get_response(response)
-                        else:
+                    # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
+                    # send a sicilyPackageDiscovery request (in the bindRequest)
+                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
+                    if log_enabled(PROTOCOL):
+                        log(PROTOCOL, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
+                    response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    if not self.strategy.sync:
+                        _, result = self.get_response(response)
+                    else:
+                        result = response[0]
+                    if 'server_creds' in result:
+                        sicily_packages = result['server_creds'].decode('ascii').split(';')
+                        if 'NTLM' in sicily_packages:  # NTLM available on server
+                            request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
                             if log_enabled(PROTOCOL):
-                                log(PROTOCOL, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', response[0], self)
-                            result = response[0]
-
-                        if result['result'] == RESULT_SUCCESS:
-                            request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', ntlm_client, result['server_creds'])
-                            if log_enabled(PROTOCOL):
-                                log(PROTOCOL, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)
+                                log(PROTOCOL, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
                             if not self.strategy.sync:
                                 _, result = self.get_response(response)
                             else:
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'NTLM BIND response <%s> received via <%s>', response[0], self)
+                                    log(PROTOCOL, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', response[0],
+                                        self)
                                 result = response[0]
-                else:
-                    result = None
-                self.sasl_in_progress = False
 
-            if log_enabled(BASIC):
-                log(BASIC, 'done SASL NTLM operation, result <%s>', result)
+                            if result['result'] == RESULT_SUCCESS:
+                                request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', ntlm_client,
+                                                         result['server_creds'])
+                                if log_enabled(PROTOCOL):
+                                    log(PROTOCOL, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)
+                                response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                                if not self.strategy.sync:
+                                    _, result = self.get_response(response)
+                                else:
+                                    if log_enabled(PROTOCOL):
+                                        log(PROTOCOL, 'NTLM BIND response <%s> received via <%s>', response[0], self)
+                                    result = response[0]
+                    else:
+                        result = None
+                finally:
+                    self.sasl_in_progress = False
 
-            return result
+                if log_enabled(BASIC):
+                    log(BASIC, 'done SASL NTLM operation, result <%s>', result)
+
+                return result
 
     def refresh_server_info(self):
         # if self.strategy.no_real_dsa:  # do not refresh for mock strategies

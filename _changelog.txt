@@ -6,6 +6,9 @@
     - added support for external gssapi credentials to be passed to the sasl connection (thanks Firstyear)
     - added support for gssapi store in sasl connection (thanks clhendrick)
     - fixed LdifProducer (thanks antoinell)
+    - fixed NTLM bind (thanks ribx)
+    - server state in ServerPool is now a namedtuple "ServerState" (thanks Krisztian)
+    - fixed error when adding member to AD group with unsafe DN (thanks Maxim)
 
 
 # 2.5.1 - 2018.08.01

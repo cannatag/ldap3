@@ -249,7 +249,7 @@ class ReusableStrategy(BaseStrategy):
                                     if pool.tls_pool and not self.worker.connection.tls_started:
                                         self.worker.connection.start_tls(read_server_info=False)
                                 if self.worker.get_info_from_server and counter:
-                                    self.worker.connection._fire_deferred()
+                                    self.worker.connection.refresh_server_info()
                                     self.worker.get_info_from_server = False
                                 response = None
                                 result = None

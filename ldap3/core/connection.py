@@ -163,8 +163,6 @@ class Connection(object):
     :type pool_size: int
     :param pool_lifetime: pool lifetime for pooled strategies
     :type pool_lifetime: int
-    :param store: credential store
-    :type pool_lifetime: dict
     :param use_referral_cache: keep referral connections open and reuse them
     :type use_referral_cache: bool
     :param auto_escape: automatic escaping of filter values
@@ -192,7 +190,6 @@ class Connection(object):
                  pool_name=None,
                  pool_size=None,
                  pool_lifetime=None,
-                 store=None,
                  fast_decoder=True,
                  receive_timeout=None,
                  return_empty_attributes=True,
@@ -259,7 +256,6 @@ class Connection(object):
             self.pool_size = pool_size
             self.pool_lifetime = pool_lifetime
             self.pool_keepalive = pool_keepalive
-            self.store = store
             self.starting_tls = False
             self.check_names = check_names
             self.raise_exceptions = raise_exceptions
@@ -389,7 +385,6 @@ class Connection(object):
         r += '' if self.raise_exceptions is None else ', raise_exceptions={0.raise_exceptions!r}'.format(self)
         r += '' if (self.pool_name is None or self.pool_name == conf_default_pool_name) else ', pool_name={0.pool_name!r}'.format(self)
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
-        r += '' if self.store is None else (', store=' + repr(self.store))
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.pool_keepalive is None else ', pool_keepalive={0.pool_keepalive!r}'.format(self)
         r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))

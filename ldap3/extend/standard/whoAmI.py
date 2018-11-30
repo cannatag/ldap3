@@ -26,7 +26,7 @@
 # implements RFC4532
 from ...extend.operation import ExtendedOperation
 from ...utils.conv import to_unicode
-from ...protocol.rfc4511 import OctetString
+
 
 class WhoAmI(ExtendedOperation):
     def config(self):

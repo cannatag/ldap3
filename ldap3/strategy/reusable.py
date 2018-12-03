@@ -430,6 +430,7 @@ class ReusableStrategy(BaseStrategy):
             self.pool.master_connection.sasl_credentials = self.connection.sasl_credentials
             self.pool.rebind_pool()
         temp_connection = self.pool.workers[0].connection
+        old_lazy = temp_connection.lazy
         temp_connection.lazy = False
         if not self.connection.server.schema or not self.connection.server.info:
             result = self.pool.workers[0].connection.bind(controls=controls)
@@ -437,7 +438,7 @@ class ReusableStrategy(BaseStrategy):
             result = self.pool.workers[0].connection.bind(controls=controls, read_server_info=False)
 
         temp_connection.unbind()
-        temp_connection.lazy = True
+        temp_connection.lazy = old_lazy
         if result:
             self.pool.bind_pool = True  # bind pool if bind is validated
         return result

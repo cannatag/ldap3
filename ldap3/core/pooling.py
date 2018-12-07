@@ -23,7 +23,6 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-from collections import namedtuple
 from datetime import datetime, MINYEAR
 from os import linesep
 from random import randint
@@ -37,7 +36,11 @@ from ..utils.log import log, log_enabled, ERROR, BASIC, NETWORK
 POOLING_STRATEGIES = [FIRST, ROUND_ROBIN, RANDOM]
 
 
-ServerState = namedtuple('ServerState', ['server', 'last_checked_time', 'available'])
+class ServerState(object):
+    def __init__(self, server, last_checked_time, available):
+        self.server = server
+        self.last_checked_time = last_checked_time
+        self.available = available
 
 
 class ServerPoolState(object):

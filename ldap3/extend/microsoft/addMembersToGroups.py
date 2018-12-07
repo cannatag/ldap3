@@ -50,6 +50,10 @@ def ad_add_members_to_groups(connection,
     if not isinstance(groups_dn, SEQUENCE_TYPES):
         groups_dn = [groups_dn]
 
+    if connection.check_names:  # builds new lists with sanitized dn
+        members_dn = [safe_dn(member_dn) for member_dn in members_dn]
+        groups_dn = [safe_dn(group_dn) for group_dn in groups_dn]
+
     error = False
     for group in groups_dn:
         if fix:  # checks for existance of group and for already assigned members
@@ -70,7 +74,7 @@ def ad_add_members_to_groups(connection,
             existing_members = []
 
         changes = dict()
-        member_to_add = [safe_dn(element) for element in members_dn if safe_dn(element).lower() not in existing_members]
+        member_to_add = [element for element in members_dn if element.lower() not in existing_members]
         if member_to_add:
             changes['member'] = (MODIFY_ADD, member_to_add)
         if changes:

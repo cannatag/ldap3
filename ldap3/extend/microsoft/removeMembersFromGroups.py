@@ -86,7 +86,7 @@ def ad_remove_members_from_groups(connection,
                 error = True
                 result_error_params = ['result', 'description', 'dn', 'message']
                 if raise_error:
-                    raise LDAPOperationsErrorResult(**{k: v for k, v in result.items() if k in result_error_params})
+                    raise LDAPOperationsErrorResult([(k, v) for k, v in result.items() if k in result_error_params])
                 break
 
     return not error

@@ -845,7 +845,6 @@ class MockBaseStrategy(object):
             attr_name = node.assertion['attr']
             attr_value = node.assertion['value']
             for candidate in candidates:
-                # if attr_name in self.connection.server.dit[candidate] and attr_value in self.connection.server.dit[candidate][attr_name]:
                 if attr_name in self.connection.server.dit[candidate] and self.equal(candidate, attr_name, attr_value):
                     node.matched.add(candidate)
                 else:

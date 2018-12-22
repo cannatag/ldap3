@@ -87,7 +87,7 @@ def ad_add_members_to_groups(connection,
                 error = True
                 result_error_params = ['result', 'description', 'dn', 'message']
                 if raise_error:
-                    raise LDAPOperationsErrorResult(**{k: v for k, v in result.items() if k in result_error_params})
+                    raise LDAPOperationsErrorResult([(k, v) for k, v in result.items() if k in result_error_params])
                 break
 
     return not error  # returns True if no error is raised in the LDAP operations

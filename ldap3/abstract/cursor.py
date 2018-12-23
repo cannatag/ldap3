@@ -363,7 +363,7 @@ class Cursor(object):
                 self.entries.append(entry)
                 if 'objectClass' in entry:
                     for object_class in entry.objectClass:
-                        if self.schema.object_classes[object_class].kind == CLASS_AUXILIARY and object_class not in self.definition._auxiliary_class:
+                        if self.schema and self.schema.object_classes[object_class].kind == CLASS_AUXILIARY and object_class not in self.definition._auxiliary_class:
                             # add auxiliary class to object definition
                             self.definition._auxiliary_class.append(object_class)
                             self.definition._populate_attr_defs(object_class)

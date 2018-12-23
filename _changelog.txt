@@ -12,6 +12,7 @@
     - fixed error when adding member to AD group with unsafe DN (thanks Maxim)
     - properly restore lazy status in reusable strategy (thanks Krisztian)
     - ServerState namedtuple converted to class in core/pooling (thanks Krisztian)
+    - empty schema doesn't raise exception in Abstraction Layer (thanks ghost)
 
 
 # 2.5.1 - 2018.08.01

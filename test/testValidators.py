@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int, validate_ad_timedelta
+from ldap3.protocol.formatters.validators import validate_integer, validate_boolean, validate_bytes, validate_generic_single_value, validate_time, validate_zero_and_minus_one_and_positive_int
 from ldap3.core.timezone import OffsetTzInfo
 
 class Test(unittest.TestCase):
@@ -202,9 +202,3 @@ class Test(unittest.TestCase):
         self.assertTrue(validated)
         validated = validate_zero_and_minus_one_and_positive_int('-2')
         self.assertFalse(validated)
-
-    def test_validate_ad_timedelta_valid(self):
-        self.assertTrue(validate_ad_timedelta(-36288000000000))
-
-    def test_validate_ad_timedelta_invalid(self):
-        self.assertFalse(validate_ad_timedelta(123))

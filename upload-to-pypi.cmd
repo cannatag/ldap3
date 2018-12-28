@@ -1,1 +1,1 @@
-\Python\Python36\Scripts\twine upload dist/*
+\Python\Python37\Scripts\twine upload dist/*

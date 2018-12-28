@@ -1,4 +1,4 @@
-# 2.5.2 - not yet released
+# 2.5.2 - 2018.12.28
     - when starting tls before binding the connection is automatically open
     - fixed changelog date (thanks Adam)
     - support for AD timedeltas (thanks mprahl)

@@ -26,7 +26,7 @@
 
 import unittest
 
-from ldap3.utils.conv import escape_bytes, escape_filter_chars
+from ldap3.utils.conv import escape_bytes, escape_filter_chars, ldap_escape_to_bytes
 from test.config import test_base, test_name_attr, random_id, get_connection, \
     add_user, drop_connection, test_server_type, test_int_attr
 from ldap3 import SUBTREE
@@ -344,3 +344,23 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-16')
         elif test_server_type == 'AD':
             self.assertEqual(response[0]['attributes'][test_name_attr], testcase_id + 'sea-16')
+
+    def test_search_string_guid_with_backslash(self):
+        ldap_escaped = '\\7e\\18\\2a\\9c\\60\\5c\\61\\43\\af\\f5\\89\\f5\\e6\\d8\\45\\6d'
+        ldap_bytes = ldap_escape_to_bytes(ldap_escaped)
+        self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-17', attributes={'givenName': testcase_id + 'givenname-17', 'audio': ldap_bytes}))
+        if test_server_type == 'EDIR':
+            result = self.connection.search(search_base=test_base, search_filter='(audio=%s)' % ldap_escaped, attributes=[test_name_attr, 'sn', 'givenname', 'guid', 'audio'])
+        else:  # not tested on other kind of servers
+            return
+        if not self.connection.strategy.sync:
+            response, result = self.connection.get_response(result)
+        else:
+            response = self.connection.response
+            result = self.connection.result
+        self.assertEqual(result['description'], 'success')
+        self.assertEqual(len(response), 1)
+        if test_server_type == 'EDIR':
+            self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-17')
+            self.assertEqual(response[0]['attributes']['audio'][0], ldap_bytes)
+

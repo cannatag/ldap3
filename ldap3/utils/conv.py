@@ -226,18 +226,6 @@ def is_filter_escaped(text):
     return all(c not in text for c in '()*\0') and not re.search('\\\\([^0-9a-fA-F]|(.[^0-9a-fA-F]))', text)
 
 
-# def ldap_escape_to_bytes(text):
-#     bytesequence = bytearray()
-#     if text.startswith('\\'):
-#         byte_values = text.split('\\')
-#         for value in byte_values[1:]:
-#             if len(value) != 2 and not value.isdigit():
-#                 raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
-#             bytesequence.append(int(value, 16))
-#         return bytes(bytesequence)
-#     raise LDAPDefinitionError('badly formatted LDAP byte escaped sequence')
-
-
 def ldap_escape_to_bytes(text):
     bytesequence = bytearray()
     i = 0

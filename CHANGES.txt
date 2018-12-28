@@ -1,4 +1,21 @@
-# 2.5.1 - not released yet
+# 2.5.2 - 2018.12.28
+    - when starting tls before binding the connection is automatically open
+    - fixed changelog date (thanks Adam)
+    - support for AD timedeltas (thanks mprahl)
+    - fixed WhoAmI in mock strategies (thanks mprahl)
+    - prevent unnecessary exception in extend/standard/ModifyPassword (thanks Johnny)
+    - added support for external gssapi credentials to be passed to the sasl connection (thanks Firstyear)
+    - added support for gssapi store in sasl connection (thanks clhendrick)
+    - fixed LdifProducer (thanks antoinell)
+    - fixed NTLM bind (thanks ribx)
+    - server state in ServerPool is now a namedtuple "ServerState" (thanks Krisztian)
+    - fixed error when adding member to AD group with unsafe DN (thanks Maxim)
+    - properly restore lazy status in reusable strategy (thanks Krisztian)
+    - ServerState namedtuple converted to class in core/pooling (thanks Krisztian)
+    - empty schema doesn't raise exception in Abstraction Layer (thanks ghost)
+
+
+# 2.5.1 - 2018.08.01
     - connection.result is populated when exception raised with raise_exceptions=True
     - fixed objectSid in mocking strategies
     - fixed circular reference in exception history

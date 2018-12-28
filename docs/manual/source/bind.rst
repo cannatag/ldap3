@@ -9,7 +9,7 @@ is defined by the server implementation, not by the protocol. Think of this as a
 (even if what public data mean is still a server matter). In ldap3 you establish the connection to the server
 with the ``open()`` method of the Connection object. The ``bind()`` method will open the connection if not already open.
 
-The Bind operation allows creadentials to be exchanged between the client and server to establish a new
+The Bind operation allows credentials to be exchanged between the client and server to establish a new
 authorization state.
 
 The Bind request typically specifies the desired authentication identity. Some Bind mechanisms also allow the client
@@ -180,7 +180,7 @@ Kerberos authentication uses the ``gssapi`` package. You must install it and con
     tls = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1_2)
     server = Server('<servername>', use_ssl=True, tls=tls)
     c = Connection(
-        server, authentication=ldap3.SASL, sasl_mechanism=KERBEROS)
+        server, authentication=SASL, sasl_mechanism=KERBEROS)
     c.bind()
     print(c.extend.standard.who_am_i())
 

@@ -258,6 +258,16 @@ def validate_ad_timestamp(input_value):
     else:
         return True
 
+      
+def validate_ad_timedelta(input_value):
+    """
+    Should be validated like an AD timestamp except that since it is a time
+    delta, it is stored as a negative number.
+    """
+    if not isinstance(input_value, INTEGER_TYPES) or input_value > 0:
+        return False
+    return validate_ad_timestamp(input_value * -1)
+
 
 def validate_guid(input_value):
     """
@@ -362,20 +372,35 @@ def validate_uuid_le(input_value):
     valid_values = []
     changed = False
     for element in input_value:
+        error = False
         if isinstance(element, STRING_TYPES):
             if element[0] == '{' and element[-1] == '}':
-                valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
-                changed = True
+                try:
+                    valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
+                    changed = True
+                except ValueError:
+                    error = True
             elif '-' in element:
-                valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
-                changed = True
+                try:
+                    valid_values.append(UUID(hex=element).bytes_le)  # string representation, value in big endian, converts to little endian
+                    changed = True
+                except ValueError:
+                    error = True
             elif '\\' in element:
-                valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
-                changed = True
-            elif '-' not in element: # value in little endian
-                valid_values.append(UUID(bytes_le=a2b_hex(element)).bytes_le)  # packet representation, value in little endian, converts to little endian
-                changed = True
-        elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
+                try:
+                    valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
+                    changed = True
+                except ValueError:
+                    error = True
+            elif '-' not in element:  # value in little endian
+                try:
+                    valid_values.append(UUID(bytes_le=a2b_hex(element)).bytes_le)  # packet representation, value in little endian, converts to little endian
+                    changed = True
+                except ValueError:
+                    error = True
+            if error and str == bytes:  # python2 only assume value is bytes and valid
+                valid_values.append(element)  # value is untouched, must be in little endian
+        elif isinstance(element, (bytes, bytearray)) :  # assumes bytes are valid uuid
             valid_values.append(element)  # value is untouched, must be in little endian
         else:
             return False

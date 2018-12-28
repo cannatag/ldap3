@@ -38,7 +38,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
@@ -58,7 +58,7 @@ test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
-test_lazy_connection = False
+test_lazy_connection = True
 test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
 test_validator = {}
@@ -182,7 +182,7 @@ elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
     # test_server = ['edir1.hyperv',
     #                'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
-    test_server = 'edir1.hyperv'
+    test_server = 'edir4.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
     test_base = 'ou=fixtures,o=test'  # base context where test objects are created
@@ -192,7 +192,7 @@ elif location == 'ELITE10GC-EDIR':
     test_multivalued_attribute = 'givenname'
     test_singlevalued_attribute = 'generationQualifier'
     test_server_context = 'o=resources'  # used in novell eDirectory extended operations
-    test_server_edir_name = 'edir1'  # used in novell eDirectory extended operations
+    test_server_edir_name = 'edir4'  # used in novell eDirectory extended operations
     test_user = 'cn=test_admin_user,ou=bind,o=test'  # the user that performs the tests
     test_password = 'password1'  # user password
     test_secondary_user = 'cn=test_bind_user,ou=bind,o=test'

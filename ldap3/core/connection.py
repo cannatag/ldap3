@@ -163,6 +163,8 @@ class Connection(object):
     :type pool_size: int
     :param pool_lifetime: pool lifetime for pooled strategies
     :type pool_lifetime: int
+    :param cred_store: credential store for gssapi
+    :type cred_store: dict
     :param use_referral_cache: keep referral connections open and reuse them
     :type use_referral_cache: bool
     :param auto_escape: automatic escaping of filter values
@@ -190,6 +192,7 @@ class Connection(object):
                  pool_name=None,
                  pool_size=None,
                  pool_lifetime=None,
+                 cred_store=None,
                  fast_decoder=True,
                  receive_timeout=None,
                  return_empty_attributes=True,
@@ -254,6 +257,7 @@ class Connection(object):
             self.lazy = lazy
             self.pool_name = pool_name if pool_name else conf_default_pool_name
             self.pool_size = pool_size
+            self.cred_store = cred_store
             self.pool_lifetime = pool_lifetime
             self.pool_keepalive = pool_keepalive
             self.starting_tls = False
@@ -387,6 +391,7 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.pool_keepalive is None else ', pool_keepalive={0.pool_keepalive!r}'.format(self)
+        r += '' if self.cred_store is None else (', cred_store=' + repr(self.cred_store))
         r += '' if self.fast_decoder is None else (', fast_decoder=' + ('True' if self.fast_decoder else 'False'))
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
@@ -425,6 +430,7 @@ class Connection(object):
         r += '' if self.pool_size is None else ', pool_size={0.pool_size!r}'.format(self)
         r += '' if self.pool_lifetime is None else ', pool_lifetime={0.pool_lifetime!r}'.format(self)
         r += '' if self.pool_keepalive is None else ', pool_keepalive={0.pool_keepalive!r}'.format(self)
+        r += '' if self.cred_store is None else (', cred_store=' + repr(self.cred_store))
         r += '' if self.fast_decoder is None else (', fast_decoder=' + 'True' if self.fast_decoder else 'False')
         r += '' if self.auto_range is None else (', auto_range=' + ('True' if self.auto_range else 'False'))
         r += '' if self.receive_timeout is None else ', receive_timeout={0.receive_timeout!r}'.format(self)
@@ -1220,6 +1226,8 @@ class Connection(object):
                     log(BASIC, 'deferring START TLS for <%s>', self)
             else:
                 self._deferred_start_tls = False
+                if self.closed:
+                    self.open()
                 if self.server.tls.start_tls(self) and self.strategy.sync:  # for asynchronous connections _start_tls is run by the strategy
                     if read_server_info:
                         self.refresh_server_info()  # refresh server info as per RFC4515 (3.1.5)
@@ -1269,54 +1277,58 @@ class Connection(object):
             result = None
             if not self.sasl_in_progress:
                 self.sasl_in_progress = True  # ntlm is same of sasl authentication
-                # additional import for NTLM
-                from ..utils.ntlm import NtlmClient
-                domain_name, user_name = self.user.split('\\', 1)
-                ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
+                try:
+                    # additional import for NTLM
+                    from ..utils.ntlm import NtlmClient
+                    domain_name, user_name = self.user.split('\\', 1)
+                    ntlm_client = NtlmClient(user_name=user_name, domain=domain_name, password=self.password)
 
-                # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
-                # send a sicilyPackageDiscovery request (in the bindRequest)
-                request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
-                if log_enabled(PROTOCOL):
-                    log(PROTOCOL, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
-                response = self.post_send_single_response(self.send('bindRequest', request, controls))
-                if not self.strategy.sync:
-                    _, result = self.get_response(response)
-                else:
-                    result = response[0]
-                if 'server_creds' in result:
-                    sicily_packages = result['server_creds'].decode('ascii').split(';')
-                    if 'NTLM' in sicily_packages:  # NTLM available on server
-                        request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
-                        if log_enabled(PROTOCOL):
-                            log(PROTOCOL, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
-                        response = self.post_send_single_response(self.send('bindRequest', request, controls))
-                        if not self.strategy.sync:
-                            _, result = self.get_response(response)
-                        else:
+                    # as per https://msdn.microsoft.com/en-us/library/cc223501.aspx
+                    # send a sicilyPackageDiscovery request (in the bindRequest)
+                    request = bind_operation(self.version, 'SICILY_PACKAGE_DISCOVERY', ntlm_client)
+                    if log_enabled(PROTOCOL):
+                        log(PROTOCOL, 'NTLM SICILY PACKAGE DISCOVERY request sent via <%s>', self)
+                    response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                    if not self.strategy.sync:
+                        _, result = self.get_response(response)
+                    else:
+                        result = response[0]
+                    if 'server_creds' in result:
+                        sicily_packages = result['server_creds'].decode('ascii').split(';')
+                        if 'NTLM' in sicily_packages:  # NTLM available on server
+                            request = bind_operation(self.version, 'SICILY_NEGOTIATE_NTLM', ntlm_client)
                             if log_enabled(PROTOCOL):
-                                log(PROTOCOL, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', response[0], self)
-                            result = response[0]
-
-                        if result['result'] == RESULT_SUCCESS:
-                            request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', ntlm_client, result['server_creds'])
-                            if log_enabled(PROTOCOL):
-                                log(PROTOCOL, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)
+                                log(PROTOCOL, 'NTLM SICILY NEGOTIATE request sent via <%s>', self)
                             response = self.post_send_single_response(self.send('bindRequest', request, controls))
                             if not self.strategy.sync:
                                 _, result = self.get_response(response)
                             else:
                                 if log_enabled(PROTOCOL):
-                                    log(PROTOCOL, 'NTLM BIND response <%s> received via <%s>', response[0], self)
+                                    log(PROTOCOL, 'NTLM SICILY NEGOTIATE response <%s> received via <%s>', response[0],
+                                        self)
                                 result = response[0]
-                else:
-                    result = None
-                self.sasl_in_progress = False
 
-            if log_enabled(BASIC):
-                log(BASIC, 'done SASL NTLM operation, result <%s>', result)
+                            if result['result'] == RESULT_SUCCESS:
+                                request = bind_operation(self.version, 'SICILY_RESPONSE_NTLM', ntlm_client,
+                                                         result['server_creds'])
+                                if log_enabled(PROTOCOL):
+                                    log(PROTOCOL, 'NTLM SICILY RESPONSE NTLM request sent via <%s>', self)
+                                response = self.post_send_single_response(self.send('bindRequest', request, controls))
+                                if not self.strategy.sync:
+                                    _, result = self.get_response(response)
+                                else:
+                                    if log_enabled(PROTOCOL):
+                                        log(PROTOCOL, 'NTLM BIND response <%s> received via <%s>', response[0], self)
+                                    result = response[0]
+                    else:
+                        result = None
+                finally:
+                    self.sasl_in_progress = False
 
-            return result
+                if log_enabled(BASIC):
+                    log(BASIC, 'done SASL NTLM operation, result <%s>', result)
+
+                return result
 
     def refresh_server_info(self):
         # if self.strategy.no_real_dsa:  # do not refresh for mock strategies

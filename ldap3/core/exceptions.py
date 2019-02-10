@@ -376,8 +376,10 @@ class LDAPAttributeError(LDAPExceptionError, ValueError, TypeError):
 class LDAPCursorError(LDAPExceptionError):
     pass
 
+
 class LDAPObjectDereferenceError(LDAPExceptionError):
     pass
+
 
 # security exceptions
 class LDAPSSLNotSupportedError(LDAPExceptionError, ImportError):
@@ -502,6 +504,10 @@ class LDAPResponseTimeoutError(LDAPExceptionError):
 
 
 class LDAPTransactionError(LDAPExceptionError):
+    pass
+
+
+class LDAPInfoError(LDAPExceptionError):
     pass
 
 

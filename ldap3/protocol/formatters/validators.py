@@ -31,7 +31,7 @@ from struct import pack
 
 from ... import SEQUENCE_TYPES, STRING_TYPES, NUMERIC_TYPES, INTEGER_TYPES
 from .formatters import format_time, format_ad_timestamp
-from ...utils.conv import to_raw, to_unicode, ldap_escape_to_bytes
+from ...utils.conv import to_raw, to_unicode, ldap_escape_to_bytes, escape_bytes
 
 # Validators return True if value is valid, False if value is not valid,
 # or a value different from True and False that is a valid value to substitute to the input value
@@ -97,7 +97,7 @@ def validate_integer(input_value):
     valid_values = []  # builds a list of valid int values
     from decimal import Decimal, InvalidOperation
     for element in input_value:
-        try:  # try to convert any type to int, an invalid conversion raise TypeError or ValueError, doublecheck with Decimal type, if both are valid and equal then then int() value is used
+        try:  #try to convert any type to int, an invalid conversion raise TypeError or ValueError, doublecheck with Decimal type, if both are valid and equal then then int() value is used
             value = to_unicode(element) if isinstance(element, bytes) else element
             decimal_value = Decimal(value)
             int_value = int(value)
@@ -258,7 +258,7 @@ def validate_ad_timestamp(input_value):
     else:
         return True
 
-      
+
 def validate_ad_timedelta(input_value):
     """
     Should be validated like an AD timestamp except that since it is a time
@@ -310,6 +310,7 @@ def validate_guid(input_value):
             return valid_values[0]
     else:
         return True
+
 
 def validate_uuid(input_value):
     """
@@ -388,7 +389,9 @@ def validate_uuid_le(input_value):
                     error = True
             elif '\\' in element:
                 try:
-                    valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
+                    uuid = UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le
+                    uuid = escape_bytes(uuid)
+                    valid_values.append(uuid)  # byte representation, value in little endian
                     changed = True
                 except ValueError:
                     error = True
@@ -400,7 +403,7 @@ def validate_uuid_le(input_value):
                     error = True
             if error and str == bytes:  # python2 only assume value is bytes and valid
                 valid_values.append(element)  # value is untouched, must be in little endian
-        elif isinstance(element, (bytes, bytearray)) :  # assumes bytes are valid uuid
+        elif isinstance(element, (bytes, bytearray)):  # assumes bytes are valid uuid
             valid_values.append(element)  # value is untouched, must be in little endian
         else:
             return False

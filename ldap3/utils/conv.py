@@ -146,6 +146,7 @@ def prepare_for_stream(value):
     else:  # Python 2
         return value.decode()
 
+
 def json_encode_b64(obj):
     try:
         return dict(encoding='base64', encoded=b64encode(obj))

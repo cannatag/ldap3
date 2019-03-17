@@ -124,6 +124,7 @@ standard_formatter = {
     '1.2.840.113556.1.4.51': (format_ad_timestamp, validate_ad_timestamp),  # lastLogoff (Microsoft)
     '1.2.840.113556.1.4.52': (format_ad_timestamp, validate_ad_timestamp),  # lastLogon (Microsoft)
     '1.2.840.113556.1.4.60': (format_ad_timedelta, validate_ad_timedelta),  # lockoutDuration (Microsoft)
+    '1.2.840.113556.1.4.61': (format_ad_timedelta, validate_ad_timedelta),  # lockOutObservationWindow (Microsoft)
     '1.2.840.113556.1.4.74': (format_ad_timedelta, validate_ad_timedelta),  # maxPwdAge (Microsoft)
     '1.2.840.113556.1.4.78': (format_ad_timedelta, validate_ad_timedelta),  # minPwdAge (Microsoft)
     '1.2.840.113556.1.4.96': (format_ad_timestamp, validate_zero_and_minus_one_and_positive_int),  # pwdLastSet (Microsoft, can be set to -1 only)

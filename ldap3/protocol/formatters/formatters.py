@@ -108,10 +108,10 @@ def format_ad_timestamp(raw_value):
     try:
         timestamp = int(raw_value)
         if timestamp < 0:  # ad timestamp cannot be negative
-            return raw_value
+            timestamp = timestamp * -1
     except Exception:
         return raw_value
-
+    
     try:
         return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600, tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
     except (OSError, OverflowError, ValueError):  # on Windows backwards timestamps are not allowed
@@ -334,12 +334,7 @@ def format_ad_timedelta(raw_value):
     # positive, we can reuse format_ad_timestamp to get a datetime object.
     # Afterwards, we can subtract a datetime representing 0 hour on January 1,
     # 1601 from the returned datetime to get the timedelta.
-    try:
-        raw_value = raw_value.decode()
-    except AttributeError:
-        pass
-    raw_value = int(raw_value)
-    return format_ad_timestamp(raw_value * -1) - format_ad_timestamp(0)
+    return format_ad_timestamp(raw_value) - format_ad_timestamp(0)
 
 
 def format_time_with_0_year(raw_value):

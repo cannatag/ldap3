@@ -6,6 +6,9 @@
     - added Server.has_control(control) method to check if a server has a specific control
     - added Server.has_extension(extension) method to check if a server has a specific extension
     - added Server.has_feature(feature) method to check if a server has a specific feature
+    - fixed checking of \\ in safe_dn (thanks Maxim)
+    - fixed uuid checking with 5c byte value
+    - added single=True parameter to the ServerPool object definition. Now server states is shared between connections
 
 # 2.5.2 - 2018.12.28
     - when starting tls before binding the connection is automatically open

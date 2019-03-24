@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014 - 2018 Giovanni Cannata
+# Copyright 2014 - 2019 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -195,7 +195,8 @@ class ServerPool(object):
                  servers=None,
                  pool_strategy=ROUND_ROBIN,
                  active=True,
-                 exhaust=False):
+                 exhaust=False,
+                 single_state=True):
 
         if pool_strategy not in POOLING_STRATEGIES:
             if log_enabled(ERROR):
@@ -209,6 +210,8 @@ class ServerPool(object):
         self.pool_states = dict()
         self.active = active
         self.exhaust = exhaust
+        self.single = single_state
+        self._pool_state = None # used for storing the global state of the pool
         if isinstance(servers, SEQUENCE_TYPES + (Server, )):
             self.add(servers)
         elif isinstance(servers, STRING_TYPES):
@@ -276,9 +279,13 @@ class ServerPool(object):
                 log(ERROR, 'server must be a Server of a list of Servers when adding to Server Pool <%s>', self)
             raise LDAPServerPoolError('server must be a Server or a list of Server')
 
-        for connection in self.pool_states:
-            # notifies connections using this pool to refresh
-            self.pool_states[connection].refresh()
+        if self.single:
+            if self._pool_state:
+                self._pool_state.refresh()
+        else:
+            for connection in self.pool_states:
+                # notifies connections using this pool to refresh
+                self.pool_states[connection].refresh()
 
     def remove(self, server):
         if server in self.servers:
@@ -288,14 +295,22 @@ class ServerPool(object):
                 log(ERROR, 'server %s to be removed not in Server Pool <%s>', server, self)
             raise LDAPServerPoolError('server not in server pool')
 
-        for connection in self.pool_states:
-            # notifies connections using this pool to refresh
-            self.pool_states[connection].refresh()
+        if self.single:
+            if self._pool_state:
+                self._pool_state.refresh()
+        else:
+            for connection in self.pool_states:
+                # notifies connections using this pool to refresh
+                self.pool_states[connection].refresh()
 
     def initialize(self, connection):
-        pool_state = ServerPoolState(self)
         # registers pool_state in ServerPool object
-        self.pool_states[connection] = pool_state
+        if self.single:
+            if not self._pool_state:
+                self._pool_state = ServerPoolState(self)
+            self.pool_states[connection] = self._pool_state
+        else:
+            self.pool_states[connection] = ServerPoolState(self)
 
     def get_server(self, connection):
         if connection in self.pool_states:

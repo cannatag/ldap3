@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014 - 2018 Giovanni Cannata
+# Copyright 2014 - 2019 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -145,6 +145,7 @@ def prepare_for_stream(value):
         return value
     else:  # Python 2
         return value.decode()
+
 
 def json_encode_b64(obj):
     try:

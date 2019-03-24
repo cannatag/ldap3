@@ -365,6 +365,7 @@ print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'
 print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
 print()
 
+
 def random_id():
     return str(SystemRandom().random())[-5:]
 

@@ -1,3 +1,17 @@
+# 2.6 - 2019.03.24
+    - fixed empty digestMd5.py file in 2.5.2 package
+    - explicitly declare digest module md5 in util.ntlm (thanks adawalli)
+    - change object passed to modify() was unexpectedly mutated (thanks John)
+    - added LDAPInfoError exception
+    - added Server.has_control(control) method to check if a server has a specific control
+    - added Server.has_extension(extension) method to check if a server has a specific extension
+    - added Server.has_feature(feature) method to check if a server has a specific feature
+    - fixed checking of \\ in safe_dn (thanks Maxim)
+    - fixed uuid checking with 5c byte value
+    - added single=True parameter to the ServerPool object definition. Servers state is shared between connections using the same pool
+    - updated copyright notice
+
+
 # 2.5.2 - 2018.12.28
     - when starting tls before binding the connection is automatically open
     - fixed changelog date (thanks Adam)

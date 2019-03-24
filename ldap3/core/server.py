@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014 - 2018 Giovanni Cannata
+# Copyright 2014 - 2019 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -28,7 +28,7 @@ from threading import Lock
 from datetime import datetime, MINYEAR
 
 from .. import DSA, SCHEMA, ALL, BASE, get_config_parameter, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, STRING_TYPES
-from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError, LDAPSocketOpenError
+from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError, LDAPSocketOpenError, LDAPInfoError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4511 import LDAP_MAX_INT
 from ..protocol.rfc4512 import SchemaInfo, DsaInfo
@@ -68,7 +68,6 @@ class Server(object):
 
     _message_counter = 0
     _message_id_lock = Lock()  # global lock for message_id shared by all Server objects
-
 
     def __init__(self,
                  host,
@@ -570,3 +569,34 @@ class Server(object):
                 for candidate in candidates:
                     log(BASIC, 'obtained candidate address for <%s>: <%r> with mode %s', self, candidate[:-2], self.mode)
         return candidates
+
+    def _check_info_property(self, kind, name):
+        if not self._dsa_info:
+            raise LDAPInfoError('server info not loaded')
+
+        if kind == 'control':
+            properties = self.info.supported_controls
+        elif kind == 'extension':
+            properties = self.info.supported_extensions
+        elif kind == 'feature':
+            properties = self.info.supported_features
+        else:
+            raise LDAPInfoError('invalid info category')
+
+        for prop in properties:
+                if name == prop[0] or (prop[2] and name.lower() == prop[2].lower()):  # checks oid and description
+                    return True
+
+        return False
+
+    def has_control(self, control):
+        return self._check_info_property('control', control)
+
+    def has_extension(self, extension):
+        return self._check_info_property('extension', extension)
+
+    def has_feature(self, feature):
+        return self._check_info_property('feature', feature)
+
+
+

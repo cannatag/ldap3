@@ -78,6 +78,7 @@ for server availability, you can also set this attribute to the maximum number o
 LDAPServerPoolExhaustedError exception. With ``exhaust=True`` if a server is not active it will be removed by the pool, if you set it
 to a number this will be the number of seconds an unreachable server is considered offline. When this timout expires the server
 is reinserted in the pool and checked again for availability.
+The pool keeps a single state for all connections that use it. If you want a different state for each connection you must set ``single=False`` while defining the ServerPool.
 
 When all servers in a pool are not available the strategy will wait for the number of seconds specified in ``ldap.POOLING_LOOP_TIMEOUT``
 before starting a new cycle. This defaults to 10 seconds.
@@ -149,4 +150,3 @@ to build a new server object with the saved json files you can retrieve them wit
 and then you can use the server as usual. Hostname must resolve to a real server.
 
 
-Attribute missing

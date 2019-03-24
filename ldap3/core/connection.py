@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014 - 2018 Giovanni Cannata
+# Copyright 2014 - 2019 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -1037,6 +1037,7 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPChangeError(self.last_error)
 
+            changelist = dict()
             for attribute_name in changes:
                 if self.server and self.server.schema and self.check_names:
                     if ';' in attribute_name:  # remove tags for checking
@@ -1054,7 +1055,7 @@ class Connection(object):
                             log(ERROR, '%s for <%s>', self.last_error, self)
                         raise LDAPChangeError(self.last_error)
 
-                    changes[attribute_name] = [change]  # insert change in a tuple
+                    changelist[attribute_name] = [change]  # insert change in a list
                 else:
                     for change_operation in change:
                         if len(change_operation) != 2 or change_operation[0] not in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
@@ -1062,7 +1063,8 @@ class Connection(object):
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', self.last_error, self)
                             raise LDAPChangeError(self.last_error)
-            request = modify_operation(dn, changes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
+                    changelist[attribute_name] = change
+            request = modify_operation(dn, changelist, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'MODIFY request <%s> sent via <%s>', modify_request_to_dict(request), self)
             response = self.post_send_single_response(self.send('modifyRequest', request, controls))

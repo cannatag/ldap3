@@ -99,7 +99,7 @@ salted password can provide a strong level of security against dictionary attack
 To directly modify the userPassword attribute via a modify operation you probably have to send the hashed password.
 In this case you can use the hashed() function in the ldap3.utils.hashed package::
 
-     from ldap3 import HASHED_SALTED_SHA
+     from ldap3 import HASHED_SALTED_SHA, MODIFY_REPLACE
      from ldap3.utils.hashed import hashed
 
      hashed_password = hashed(HASHED_SALTED_SHA, 'new_password')

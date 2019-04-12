@@ -1,3 +1,8 @@
+# 2.6.1 - not yet released
+    - added json converter for timedelta (thanks dirkjanm)
+    - strip parameter defaults to False in utils.dn.parse_dn()
+    - escaped space is allowed as trailing character in attribute_value in utils.dn.parse_dn() (thanks phi1010)
+
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package
     - explicitly declare digest module md5 in util.ntlm (thanks adawalli)

@@ -178,10 +178,10 @@ def _validate_attribute_value(attribute_value):
                 raise LDAPInvalidDnError('character ' + c + ' not allowed in hex representation of attribute value')
         if len(attribute_value) % 2 == 0:  # string must be # + HEX HEX (an odd number of chars)
             raise LDAPInvalidDnError('hex representation must be in the form of <HEX><HEX> pairs')
-    if attribute_value[0] == ' ':  # space cannot be used as first or last character
-        raise LDAPInvalidDnError('SPACE not allowed as first character of attribute value')
-    if attribute_value[-1] == ' ':
-        raise LDAPInvalidDnError('SPACE not allowed as last character of attribute value')
+    if attribute_value[0] == ' ':  # unescaped space cannot be used as leading or last character
+        raise LDAPInvalidDnError('SPACE must be escaped as leading character of attribute value')
+    if attribute_value.endswith(' ') and not attribute_value.endswith('\\ '):
+        raise LDAPInvalidDnError('SPACE must be escaped as trailing character of attribute value')
 
     state = STATE_ANY
     for c in attribute_value:
@@ -189,7 +189,7 @@ def _validate_attribute_value(attribute_value):
             if c == '\\':
                 state = STATE_ESCAPE
             elif c in '"#+,;<=>\00':
-                raise LDAPInvalidDnError('special characters ' + c + ' must be escaped')
+                raise LDAPInvalidDnError('special character ' + c + ' must be escaped')
         elif state == STATE_ESCAPE:
             if c in hexdigits:
                 state = STATE_ESCAPE_HEX
@@ -271,7 +271,7 @@ def _escape_attribute_value(attribute_value):
     return escaped
 
 
-def parse_dn(dn, escape=False, strip=True):
+def parse_dn(dn, escape=False, strip=False):
     rdns = []
     avas = []
     while dn:

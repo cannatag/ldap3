@@ -202,6 +202,16 @@ or pass ``True`` as the first element to do a reverse DNS lookup::
 
     # Perform a reverse DNS lookup to determine the hostname to authenticate against.
     c = Connection(server, sasl_credentials=(True,), authentication=SASL, sasl_mechanism=KERBEROS)
+    
+
+.. note::
+   `ldap3` does not currently support any SASL data security layers, only authentication.
+   
+   If your server requries a string Security Strength Factor (SSF), you may receive
+   an ``LDAPStrongerAuthRequiredResult`` error when binding, e.g.:
+   
+       SASL:[GSSAPI]: Sign or Seal are required.
+  
 
 Plain
 ^^^^^

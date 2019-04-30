@@ -48,7 +48,7 @@ different methods for adding objects, attributes and additional rules to the sch
 
 Being a protocol, LDAP is not related to any specific product and it is described in a set of **RFCs** (*Request for
 comments*, the official rules of the Internet ecosystem). Latest version of this rules is **version 3** documented
-in the RFC4510 (and subsequents RFCs) released in June 2006.
+in the RFC4510 (and subsequent RFCs) released in June 2006.
 
 A brief history of LDAP
 =======================

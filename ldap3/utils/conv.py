@@ -193,6 +193,9 @@ def format_json(obj):
     if isinstance(obj, int):
         return obj
 
+    if isinstance(obj, datetime.timedelta):
+        return str(obj)
+
     if str is bytes:  # Python 2
         if isinstance(obj, long):  # long exists only in python2
             return obj

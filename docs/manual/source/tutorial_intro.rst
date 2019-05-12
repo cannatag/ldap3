@@ -145,8 +145,8 @@ standard used to describe the changes performed by LDAP operations). The MOCK_SY
 used to emulate a fake LDAP server to test your application without the need of a real LDAP server.
 
 .. note::
-    In this tutorial you will use the default SYNC communication strategy. If you keep loosing connection to the server
-    you can use the RESTARTABLE communication strategy that tries to reconnect and resend the operation when the link
+    In this tutorial you will use the default SYNC communication strategy. If you keep losing the connection to the server
+    you can use the RESTARTABLE communication strategy, which tries to reconnect and resend the operation when the link
     to the server fails.
 
 Let's start accessing the server with an anonymous bind::

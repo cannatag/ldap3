@@ -326,7 +326,7 @@ Example::
     cookie = c.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
     while cookie:
         c.search(search_base = 'o=test',
-                 search_filter = '(object_class=inetOrgPerson)',
+                 search_filter = '(objectClass=inetOrgPerson)',
                  search_scope = SUBTREE,
                  attributes = ['cn', 'givenName'],
                  paged_size = 5,

@@ -82,4 +82,4 @@ ldap3 Features
 
     * The **NTLM** access method is available to connect to Active Directory servers using NTLM v2 authentication.
 
-    * You can use the **SASL** method to access an LDAP server with the PLAIN, EXTERNAL, MD5 andh KERBEROS mechanisms.
+    * You can use the **SASL** method to access an LDAP server with the PLAIN, EXTERNAL, MD5 and KERBEROS mechanisms.

@@ -86,7 +86,7 @@ Now let's try to request some attributes from the admin user::
 
 .. warning::
     When using attributes in a search filter, it's a good habit to always request for the *structural class* of the objects
-    you expect to retrieve. Why? You cannot be sure that the attribute you're serching for is **not** used is some other object
+    you expect to retrieve. Why? You cannot be sure that the attribute you're searching for is **not** used is some other object
     class. Even if you are sure that no other object class uses it, this attribute could always change in the future when the schema is
     extended with an object class that uses that very same attribute, thus leading your program to suddenly break for no
     apparent reason.

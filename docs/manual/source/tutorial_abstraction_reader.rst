@@ -226,7 +226,7 @@ So the ldap3 library returns it as a DateTime object (with time zone info)::
    with a "naive" date object.
 
 .. note::
-    Attributes have three properties for getting their values: the ``values`` property returns always a list containing all values (even in
+    Attributes have three properties for getting their values: the ``values`` property returns always a list containing all values, even in
     a single-valued attribute; the ``value`` property returns the very same list in a multi-valued attribute or the value in a single-valued attribute.
     ``raw_attributes`` always returns a list of the binary values received in the LDAP response. When the schema is available, the ``values``
     and ``value`` properties are properly formatted as standard Python types. You can add additional custom formatters with the ``formatter``

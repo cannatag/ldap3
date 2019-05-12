@@ -130,19 +130,19 @@ status can be one of the following:
 
 A new Entry, created in a Writer cursor can have the following status:
 
-* **Virtual**: the Entry is new and still not present in the DIT
+* **Virtual**: the Entry is new and still not present in the DIT.
 
 
 After a commit a Writable Entry can be in one of this two statuses:
 
 * **Committed**: changes have been written to the DIT.
 
-* **Deleted**: Entry has been remobed from the DIT.
+* **Deleted**: the Entry has been removed from the DIT.
 
 Note that in a Writable Entry pending changes can be discarded at any time. In this case the Entry status is set to Writable and the
 original Attribute values are retained.
 
-To get the status of an Entry use the ``get_status()`` method. You cannot directly change the status of an Entry, it's updated according
+To get the status of an Entry use the ``get_status()`` method. You cannot directly change the status of an Entry, as it's updated according
 to the operations performed.
 
-When an Entry is in Pending changes status, new Attributes are flagged as Virtual until committed (or discarded).
+When an Entry is in **Pending changes** status, new Attributes are flagged as Virtual until committed (or discarded).

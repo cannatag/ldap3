@@ -29,7 +29,7 @@ Now you can ask the Reader to execute the search, fetching the results in its ``
     ENTRIES: 3 [executed at: 2016-11-09T09:33:00.342762]
 
 There are now three Entries in the Reader. An Entry has some interesting features accessible from its properties and methods. Because
-Attribute names are used as Entry properties all the "operational" properties and methods of an Entry start with the **entry_** prefix
+Attribute names are used as Entry properties, all the "operational" properties and methods of an Entry start with the **entry_** prefix
 (the underscore is an invalid character in an attribute name, so there can't be an attribute with that name). It's easy to get a useful
 representation of an Entry::
 
@@ -107,7 +107,7 @@ Let's explore some of them::
         "dn": "cn=b.young,ou=ldap3-tutorial,dc=demo1,dc=freeipa,dc=org"
     }
 
-If you search for the uid=admin entry there are some auxiliary classes attached to it. The uid=admin entry is not an *inetOrgPerson* but a *person*,
+If you search for the uid=admin entry, there are some auxiliary classes attached to it. The uid=admin entry is not an *inetOrgPerson* but a *person*,
 so you must use the ``obj_person`` defined in the previous chapter of this tutorial::
 
     >>> obj_person
@@ -115,7 +115,7 @@ so you must use the ``obj_person`` defined in the previous chapter of this tutor
     MUST: cn, objectClass, sn
     MAY : description, seeAlso, telephoneNumber, userPassword
 
-This ObjectDef lacks the *uid* attributes, used for naming the admin entry, so we must add it to the Object definition:
+This ObjectDef lacks the *uid* attribute, used for naming the admin entry, so we must add it to the Object definition:
 
     >>> obj_person += 'uid'  # implicitly creates a new AttrDef
     >>> obj_person
@@ -123,7 +123,7 @@ This ObjectDef lacks the *uid* attributes, used for naming the admin entry, so w
     MUST: cn, objectClass, sn
     MAY : description, seeAlso, telephoneNumber, uid, userPassword
 
-Now let's build the Reader cursor, using the Simplified Query Language, note how the filter is converted::
+Now let's build the Reader cursor, using the Simplified Query Language; note how the filter is converted:
 
     >>> r = Reader(conn, obj_person, 'cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org', 'uid:=admin')
     >>> r
@@ -161,8 +161,8 @@ attributes stored in the entry. Let's define an ObjectDef that also requests the
     MUST: cn, gidNumber, homeDirectory, objectClass, sn, uid, uidNumber
     MAY : description, gecos, krbAllowedToDelegateTo, krbCanonicalName, krbExtraData, krbLastAdminUnlock, krbLastFailedAuth, krbLastPwdChange, krbLastSuccessfulAuth, krbLoginFailedCount, krbPasswordExpiration, krbPrincipalAliases, krbPrincipalAuthInd, krbPrincipalExpiration, krbPrincipalKey, krbPrincipalName, krbPrincipalType, krbPwdHistory, krbPwdPolicyReference, krbTicketPolicyReference, krbUPEnabled, loginShell, seeAlso, telephoneNumber, userPassword
 
-As you can see the ObjectDef now includes all Attributes from the *person*, *top*, *posixAccount* and *krbPrincipalAux* classes. Now create a new Reader, its
-filter will automatically includes all the requested object classes::
+As you can see, the ObjectDef now includes all Attributes from the *person*, *top*, *posixAccount* and *krbPrincipalAux* classes. Now create a new Reader, and you will see that its
+filter will automatically include all the requested object classes::
 
     >>> r = Reader(conn, obj_person, 'dc=demo1,dc=freeipa,dc=org', 'uid:=admin')
     >>> r
@@ -204,7 +204,7 @@ filter will automatically includes all the requested object classes::
         uid: admin
         uidNumber: 1120000000
 
-Note that Attribute are properly formatted thanks to information read in the server schema. For example the krbLastPwdChange is stored as
+Note that attributes are properly formatted thanks to the information read from the server schema. For example, the krbLastPwdChange is stored as
 a date (Generalized Time, a standard LDAP data type)::
 
     >>> obj_person.krblastpwdchange
@@ -222,13 +222,13 @@ So the ldap3 library returns it as a DateTime object (with time zone info)::
     <class 'datetime.datetime'>
 
 .. warning::
-   The ldap3 library returns dates with Time Zone info. These dates can be compared only with dates with Time Zone. You can't compare them
+   The ldap3 library returns dates with time tone info. These dates can be compared only with dates including time zones. You can't compare them
    with a "naive" date object.
 
 .. note::
     Attributes have three properties for getting their values: the ``values`` property returns always a list containing all values, even in
     a single-valued attribute; the ``value`` property returns the very same list in a multi-valued attribute or the value in a single-valued attribute.
-    ``raw_attributes`` always returns a list of the binary values received in the LDAP response. When the schema is available the ``values``
+    ``raw_attributes`` always returns a list of the binary values received in the LDAP response. When the schema is available, the ``values``
     and ``value`` properties are properly formatted as standard Python types. You can add additional custom formatters with the ``formatter``
     parameter of the Server object.
 
@@ -248,7 +248,7 @@ Similar formatting is applied to other well-known attribute types, for example G
 
 Search scope
 ------------
-By default the Reader searches the whole sub tree starting from the specified base. If you want to search entries only in the base, you can pass the
+By default the Reader searches the whole sub-tree starting from the specified base. If you want to search entries only in the base, you can pass the
 ``sub_tree=False`` parameter in the Reader definition. You can also override the default scope with the ``search_level()``, ``search_object()`` and
 ``search_subtree()`` methods of the Reader object::
 
@@ -261,11 +261,11 @@ By default the Reader searches the whole sub tree starting from the specified ba
 
 Matching entries in cursor results
 ----------------------------------
-Once a cursor is populated with entries you can get a specific entry with the standard index feature of List object: ``r.entries[0]`` returns the first entry
-found, ``r.entries[1]`` returns he second one and any subsequent entry is returned by the relevant index number. The Cursor object has a shortcut
-for this operation: you can use ``r[0]``, ``r[1]`` (and so on) to perform the same operation. Furthermore, the Cursor object has an useful feature that helps you to
-find a specific entry without knowing its index: when you use a string as the Cursor index the text will be searched in all entry DNs.
-If only one entry matches it is returned, if more than one entry match the text a KeyError exception is raised. You can also use the ``r.match_dn(dn)``
+Once a cursor is populated with entries, you can get a specific entry with the standard index feature of List object: ``r.entries[0]`` returns the first entry
+found, ``r.entries[1]`` returns the second one and any subsequent entry is returned by the relevant index number. The Cursor object has a shortcut
+for this operation: you can use ``r[0]``, ``r[1]`` (and so on) to perform the same operation. Furthermore, the Cursor object has a useful feature that helps you to
+find a specific entry without knowing its index: when you use a string as the Cursor index, the text will be searched in all entry DNs.
+If only one entry matches, it will be returned, but if there is more than one match, a KeyError exception is raised. You can also use the ``r.match_dn(dn)``
 method to return all entries with the specified text in the DN and ``r.match(attributes, value)`` to return all entries that contain the ``value`` in any
-of the specified ``attributes`` where you can pass a single attribute name or a list of attribute names. When searching for values the either the formatted attribute
+of the specified ``attributes`` where you can pass a single attribute name or a list of attribute names. When searching for values, both the formatted attribute
 and the raw value are checked.

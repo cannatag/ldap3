@@ -294,7 +294,7 @@ the ``.info`` attribute of the Server object::
       objectClass:
         top
 
-This server (like most LDAP servers) lets an anonymous user to know a lot about it:
+This server (like most LDAP servers) lets an anonymous user know a lot about it:
 
 ========================= ======================= =============================================================
 Supported LDAP Versions   2, 3                    Server supports LDAP 2 and 3
@@ -328,7 +328,7 @@ portion of the DIT (usually called *context*), that supports various SASL access
    to communicate with each other, a DSA actually presents itself as a DUA to another DSA.
 
 An LDAP server stores information about known *types* in its **schema**. The schema includes all information needed by
-a client to correctly performs LDAP operations. Let's examine the LDAP server schema for the ipa.demo1.freeipa.org server::
+a client to correctly perform LDAP operations. Let's examine the LDAP server schema for the ipa.demo1.freeipa.org server::
 
     >>> server.schema
     DSA Schema from: cn=schema
@@ -409,10 +409,10 @@ access to the elements of the DIT. SASL provides additional methods to identify 
     **Distinguished Name** (DN) of an entry and is constructed with key-value pairs, separated by a comma, of the names and the values
     of the entries that form the path from the leaf up to the top of the Tree. The DN of an entry is unique throughout the DIT
     and changes only if the entry is moved into another container within the DIT. The parts of the DN are called
-    **Relative Distinguished Name** (RDN) because are unique only in the context where they are defined. So, for example,
+    **Relative Distinguished Name** (RDN) because they are unique only in the context where they are defined. So, for example,
     if you have a *inetOrgPerson* entry with RDN ``cn=Fred`` that is stored in an *organizationaUnit* with RDN ``ou=users`` that
     is stored in an *organization* with RDN ``o=company`` the DN of the entry will be ``cn=Fred,ou=users,o=company``.
-    The RDN value must be unique in the context where the entry is stored. LDAP also support a (quite obscure) "multi-rdn"
+    The RDN value must be unique in the context where the entry is stored. LDAP also supports a (quite obscure) "multi-rdn"
     naming option where each part of the RDN is separated with the + character, as in ``cn=Fred+sn=Smith``.
 
 .. warning:: Accessing Active Directory: with ldap3 you can also connect to an Active Directory server with the NTLM v2 protocol::

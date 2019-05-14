@@ -139,8 +139,8 @@ class Test(unittest.TestCase):
                         dn = r'cn={0}{1}ou={0}'.format(attributeValue, separator)
                         expected = [('cn', attributeValue, separator), ('ou', attributeValue, '')]
 
-                    with self.subTest(pair=onepair, separator=separator, input=dn):
-                        self.test_parse_dn(
+                    with self.subTest(pair=onepair, separator=separator, mode=mode, input=dn):
+                        self._test_parse_dn(
                             dn,
                             expected
                         )
@@ -168,7 +168,7 @@ class Test(unittest.TestCase):
         variants = set(self.combine_strings(['a', 'b'], []))
         self.assertEqual(len(variants), 0)
 
-    def test_parse_dn(self, input, expected):
+    def _test_parse_dn(self, input, expected):
         parsed = p(input)
         self.assertEqual(parsed, expected)
 

@@ -75,7 +75,7 @@ def paged_search_generator(connection,
         except KeyError:
             cookie = None
 
-        if result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
+        if connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
             if log_enabled(PROTOCOL):
                 log(PROTOCOL, 'paged search operation result <%s> for <%s>', result, connection)
             if result['result'] == RESULT_SIZE_LIMIT_EXCEEDED:

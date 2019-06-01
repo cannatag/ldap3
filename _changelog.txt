@@ -2,6 +2,8 @@
     - added json converter for timedelta (thanks dirkjanm)
     - strip parameter defaults to False in utils.dn.parse_dn()
     - escaped space is allowed as trailing character in attribute_value in utils.dn.parse_dn() (thanks phi1010)
+    - connection.extend.standard.paged_search doesn't raise exceptions when raise_exceptions is False
+    - the Search operation returns the entries fetched by the server when size or time limits are reached even if raise_exceptions is set to True
 
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package

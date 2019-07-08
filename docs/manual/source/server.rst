@@ -80,7 +80,7 @@ to a number this will be the number of seconds an unreachable server is consider
 is reinserted in the pool and checked again for availability.
 The pool keeps a single state for all connections that use it. If you want a different state for each connection you must set ``single=False`` while defining the ServerPool.
 
-When all servers in a pool are not available the strategy will wait for the number of seconds specified in ``ldap.POOLING_LOOP_TIMEOUT``
+When all servers in a pool are not available the strategy will wait for the number of seconds specified in ``ldap3.get_config_parameter("POOLING_LOOP_TIMEOUT")``
 before starting a new cycle. This defaults to 10 seconds.
 
 The pool can have different HA strategies:
@@ -99,11 +99,11 @@ A server pool can be defined in different ways::
 
 * explicitly with Server objects in the init::
 
-    server_pool = ServerPool([server1, server2, server3], POOLING_STRATEGY_ROUND_ROBIN, active=True, exhaust=True)
+    server_pool = ServerPool([server1, server2, server3], ROUND_ROBIN, active=True, exhaust=True)
 
 * explicitly with an add operation in the pool object::
 
-    server_pool = ServerPool(None, POOLING_STRATEGY_ROUND_ROBIN_ACTIVE)
+    server_pool = ServerPool(None, ROUND_ROBIN)
     server_pool.add(server1)
     server_pool.add(server2)
     server_pool.add(server3)

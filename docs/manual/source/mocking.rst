@@ -63,7 +63,7 @@ While defining the mock server you can specify a predefined schema with the ``ge
 The available offline schemas are OFFLINE_SLAPD_2_4 (OpenLDAP), OFFLINE_EDIR_8_8_8 (eDirectory), OFFLINE_AD_2012_R2 (Active Directory) and
 OFFLINE_DS389_1_3_3 (389 Directory Server).
 
-You can also speficy a previously saved schema and info retrieved from a real server::
+You can also specify a previously saved schema and info retrieved from a real server::
 
     from ldap3 import Server, Connection, ALL
 

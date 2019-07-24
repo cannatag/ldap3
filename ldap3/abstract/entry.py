@@ -107,6 +107,10 @@ class EntryState(object):
                         self.status = STATUS_MANDATORY_MISSING
                         break
 
+    @property
+    def entry_raw_attributes(self):
+        return self.raw_attributes
+
 
 class EntryBase(object):
     """The Entry object contains a single LDAP entry.

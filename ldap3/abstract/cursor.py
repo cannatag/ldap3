@@ -311,7 +311,7 @@ class Cursor(object):
 
         entry = self.entry_class(response['dn'], self)  # define an Entry (writable or readonly), as specified in the cursor definition
         entry._state.attributes = self._get_attributes(response, self.definition._attributes, entry)
-        entry._state.entry_raw_attributes = deepcopy(response['raw_attributes'])
+        entry._state.raw_attributes = deepcopy(response['raw_attributes'])
 
         entry._state.response = response
         entry._state.read_time = datetime.now()

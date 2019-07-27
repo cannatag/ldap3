@@ -1115,11 +1115,11 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
-            if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
-                self.last_error = 'DN cannot change while performing moving'
-                if log_enabled(ERROR):
-                    log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangeError(self.last_error)
+            # if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
+            #     self.last_error = 'DN cannot change while performing moving'
+            #     if log_enabled(ERROR):
+            #         log(ERROR, '%s for <%s>', self.last_error, self)
+            #     raise LDAPChangeError(self.last_error)
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
             if log_enabled(PROTOCOL):

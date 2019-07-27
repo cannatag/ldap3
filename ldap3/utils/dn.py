@@ -272,6 +272,16 @@ def _escape_attribute_value(attribute_value):
 
 
 def parse_dn(dn, escape=False, strip=False):
+    """
+    Parses a DN into syntactic components
+    :param dn:
+    :param escape:
+    :param strip:
+    :return:
+    a list of tripels representing `attributeTypeAndValue` elements
+    containing `attributeType`, `attributeValue` and the following separator (`COMMA` or `PLUS`) if given, else an empty `str`.
+    in their original representation, still containing escapes or encoded as hex.
+    """
     rdns = []
     avas = []
     while dn:

@@ -34,6 +34,18 @@ class Test(unittest.TestCase):
         self.assertEqual(len(parsed), 1)
         self.assertEqual(parsed[0], ('cn', 'admin', ''))
 
+    def test_parse_dn_single_multi_rdn(self):
+        parsed = p('cn=admin+email=admin@site.com')
+        self.assertEqual(len(parsed), 2)
+        self.assertEqual(parsed[0], ('cn', 'admin', '+'))
+        self.assertEqual(parsed[1], ('email', 'admin@site.com', ''))
+
+    def test_parse_dn_escaped_single_multi_rdn(self):
+        parsed = p('cn=\\\\\\+admin+email=admin@site.com')
+        self.assertEqual(len(parsed), 2)
+        self.assertEqual(parsed[0], ('cn', '\\\\\\+admin', '+'))
+        self.assertEqual(parsed[1], ('email', 'admin@site.com', ''))
+
     def test_parse_dn_double(self):
         parsed = p('cn=user1,o=users')
         self.assertEqual(len(parsed), 2)
@@ -66,6 +78,12 @@ class Test(unittest.TestCase):
         self.assertEqual(len(parsed), 2)
         self.assertEqual(parsed[0], ('cn', 'us\\=er1', ','))
         self.assertEqual(parsed[1], ('o', 'us\\,ers', ''))
+
+    def test_parse_dn_escaped_double_1(self):
+        parsed = p('cn=\\\\,o=\\\\')
+        self.assertEqual(len(parsed), 2)
+        self.assertEqual(parsed[0], ('cn', '\\\\', ','))
+        self.assertEqual(parsed[1], ('o', '\\\\', ''))
 
     def test_parse_dn_escaped_multi(self):
         parsed = p('cn=us\\,er1,ou=us\\08ers,dc=br\\,anch,dc=company,c=IT')
@@ -169,7 +187,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(variants), 0)
 
     def _test_parse_dn(self, input, expected):
-        parsed = p(input)
+        parsed = p(input, escape=False)
         self.assertEqual(parsed, expected)
 
     def test_unit_test_deep_equality(self):

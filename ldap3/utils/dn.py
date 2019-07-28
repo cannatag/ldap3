@@ -93,7 +93,15 @@ def _find_first_unescaped(dn, char, pos):
             break  # no char found
         if pos > 0 and dn[pos - 1] != '\\':  # unescaped char
             break
-
+        elif pos > 1 and dn[pos - 1] == '\\':  # may be unescaped
+            escaped = True
+            for c in dn[pos - 2:0:-1]:
+                if c == '\\':
+                    escaped = not escaped
+                else:
+                    break
+            if not escaped:
+                break
         pos += 1
 
     return pos
@@ -106,7 +114,15 @@ def _find_last_unescaped(dn, char, start, stop=0):
             break
         if stop >= 0 and dn[stop - 1] != '\\':
             break
-
+        elif stop > 1 and dn[stop - 1] == '\\':  # may be unescaped
+            escaped = True
+            for c in dn[stop - 2:0:-1]:
+                if c == '\\':
+                    escaped = not escaped
+                else:
+                    break
+            if not escaped:
+                break
         if stop < start:
             stop = -1
             break

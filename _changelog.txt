@@ -7,7 +7,8 @@
     - Handle the minimum value that can be stored in an Int64 in format_ad_timedelta (thanks mprahl)
     - EntryState: `entry_raw_attributes` is populated instead of `raw_attributes` (thanks Christian)
     - Removed restriction to perform rename and move simultaneously in modify_dn (thanks Fabian)
-    - parse_dn check  for hexdigits fixed (thanks Michael)
+    - fixed checking for hexdigits in parse_dn (thanks Michael)
+    - fixed escaping when multiple backslashes are present in parse_dn (thanks Phillip)
 
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package

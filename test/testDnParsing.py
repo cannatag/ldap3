@@ -141,27 +141,29 @@ class Test(unittest.TestCase):
         return pair
 
     def test_parse_dn_pair(self):
-        for onepair in self.pair_generator():
-            for attributeValue, mode in [
-                (onepair, "alone"),
-                ("a" + onepair + "b", "between"),
-                ("a" + onepair, "after"),
-                (onepair + "b", "before")
-            ]:
-                for separator in [None, '+', ',']:
+        if hasattr(self, 'subTest'):  # python3 only
+            for onepair in self.pair_generator():
+                for attributeValue, mode in [
+                    (onepair, "alone"),
+                    ("a" + onepair + "b", "between"),
+                    ("a" + onepair, "after"),
+                    (onepair + "b", "before")
+                ]:
+                    for separator in [None, '+', ',']:
 
-                    if not separator:
-                        dn = r'cn={0}'.format(attributeValue)
-                        expected = [('cn', attributeValue, '')]
-                    else:
-                        dn = r'cn={0}{1}ou={0}'.format(attributeValue, separator)
-                        expected = [('cn', attributeValue, separator), ('ou', attributeValue, '')]
+                        if not separator:
+                            dn = r'cn={0}'.format(attributeValue)
+                            expected = [('cn', attributeValue, '')]
+                        else:
+                            dn = r'cn={0}{1}ou={0}'.format(attributeValue, separator)
+                            expected = [('cn', attributeValue, separator), ('ou', attributeValue, '')]
 
-                    with self.subTest(pair=onepair, separator=separator, mode=mode, input=dn):
-                        self._test_parse_dn(
-                            dn,
-                            expected
-                        )
+                        with self.subTest(pair=onepair, separator=separator, mode=mode, input=dn):
+                            self._test_parse_dn(
+                                dn,
+                                expected
+                            )
+
 
     def combine_strings(self, *args):
         if len(args) == 0: raise Exception("Invalid parameter")

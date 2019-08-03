@@ -10,6 +10,7 @@
     - fixed checking for hexdigits in parse_dn (thanks Michael)
     - fixed escaping when multiple backslashes are present in parse_dn (thanks Phillip)
     - fixed multiple NoneType exceptions in entry_to_json() (thanks David and cfelder)
+    - allowing Microsoft specific syntax (<WKGUID=xxx>) for WellKnownObject in DN (thanks David)
 
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package

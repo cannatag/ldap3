@@ -1,11 +1,13 @@
 language: python
+dist: xenial
 python:
   - "2.6"
   - "2.7"
   - "3.6"
+  - "3.7"
   # - "nightly"
   #- "pypy"
-  # - "pypy3"
+  - "pypy3"
 sudo: false
 env:
   global:

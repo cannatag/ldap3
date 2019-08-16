@@ -337,7 +337,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'performing automatic bind for <%s>', self)
             if self.closed:
-               self.open(read_server_info=False)
+                self.open(read_server_info=False)
             if self.auto_bind == AUTO_BIND_NO_TLS:
                 self.bind(read_server_info=True)
             elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:

@@ -262,7 +262,8 @@ class ReusableStrategy(BaseStrategy):
                                     pool._incoming[counter] = (response, result, BaseStrategy.decode_request(message_type, request, controls))
                             except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
                                 with pool.pool_lock:
-                                    pool._incoming[counter] = (type(e)(str(e)), None, None)
+                                    pool._incoming[counter] = (e, None, None)
+                                    # pool._incoming[counter] = (type(e)(str(e)), None, None)
                             # except LDAPOperationResult as e:  # raise_exceptions has raised an exception. It must be redirected to the original connection thread
                             #     exc = e
                             # with pool.pool_lock:

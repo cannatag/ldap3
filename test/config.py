@@ -38,7 +38,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = REUSABLE  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
@@ -646,6 +646,8 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
             operation_result = connection.add(dn, None, {attribute: attributes[attribute] for attribute in attributes if
                                                          attribute in ['userPassword', 'objectClass', 'sn',
                                                                        'givenname']})
+            if test_strategy == 'REUSABLE':
+                sleep(5)  # wait for the previous operation to complete
             changes = {attribute: [(MODIFY_ADD, attributes[attribute])] for attribute in attributes if
                        attribute not in ['userPassword', 'objectClass', 'sn', 'givenname']}
             if changes:

@@ -84,7 +84,7 @@ class Test(unittest.TestCase):
     def test_novell_list_replicas(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
             result = self.connection.extend.novell.list_replicas('cn=' + test_server_edir_name + ',' + test_server_context)
-            self.assertEqual(result, None)
+            self.assertEqual(result, ['', 'ou=referrals,o=test'])
 
     def test_novell_replica_info(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:

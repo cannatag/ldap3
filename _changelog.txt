@@ -12,6 +12,11 @@
     - fixed multiple NoneType exceptions in entry_to_json() (thanks David and cfelder)
     - allowing Microsoft specific syntax (<WKGUID=xxx>) for WellKnownObjects in DN (thanks David)
     - connection.extend.standard.paged_search() now follows referrals when auto_referrals=True (thanks kprativa)
+    - fixed a bug in decoding replica list in connection.extend.novell.list_replicas()
+    - fixed a bug when adding duplicate alias in CaseInsensitiveWithAliasDict()
+    - added ignore_duplicates=False in set_aliases in CaseInsensitiveWithAliasDict() to ignore a duplicate alias (either in aliases or in keys)
+    - Schema info now uses CaseInsensitiveWithAlias dict as default so object and attributes can also be referentiated with OID (thanks ahoffm11)
+
 
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package

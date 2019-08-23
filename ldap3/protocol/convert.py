@@ -47,7 +47,7 @@ def attributes_to_dict(attributes):
 
 
 def referrals_to_list(referrals):
-    return [str(referral) for referral in referrals if referral] if referrals else None
+    return [str(referral) for referral in referrals if referral] if referrals is not None and referrals.hasValue() else None
 
 
 def search_refs_to_list(search_refs):

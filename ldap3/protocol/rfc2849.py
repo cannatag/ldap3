@@ -265,8 +265,8 @@ def decode_persistent_search_control(change):
             decoded['changeType'] = 'modify dn'
         else:
             raise LDAPExtensionError('unknown Persistent Search changeType ' + str(decoded_control['changeType']))
-        decoded['changeNumber'] = decoded_control['changeNumber'] if 'changeNumber' in decoded_control else None
-        decoded['previousDN'] = decoded_control['previousDN'] if 'previousDN' in decoded_control else None
+        decoded['changeNumber'] = decoded_control['changeNumber'] if 'changeNumber' in decoded_control and decoded_control['changeNumber'] is not None and decoded_control['changeNumber'].hasValue() else None
+        decoded['previousDN'] = decoded_control['previousDN'] if 'previousDN' in decoded_control and decoded_control['previousDN'] is not None and decoded_control['previousDN'].hasValue() else None
         return decoded
 
     return None

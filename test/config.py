@@ -38,17 +38,17 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = REUSABLE  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
-test_logging = True
+test_logging = False
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
-test_internal_decoder = True  # True uses then internal decodervfaster than pyasn1 while receiving data
+test_internal_decoder = True  # True uses the internal ASN.1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -631,8 +631,9 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
 
     dn = generate_dn(test_base, batch_id, username)
     if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
-        operation_result = connection.add(dn, None, {attribute: attributes[attribute] for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']})
-        changes = {attribute: [(MODIFY_ADD, attributes[attribute])] for attribute in attributes if attribute not in ['userPassword', 'objectClass', 'sn', 'givenname']}
+        # operation_result = connection.add(dn, None, {attribute: attributes[attribute] for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']})
+        operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']))
+        changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
         if changes:
             operation_result = connection.modify(dn, changes)
     else:
@@ -643,13 +644,13 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
         operation_result = connection.delete(dn)
         sleep(5)
         if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
-            operation_result = connection.add(dn, None, {attribute: attributes[attribute] for attribute in attributes if
+            operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if
                                                          attribute in ['userPassword', 'objectClass', 'sn',
-                                                                       'givenname']})
+                                                                       'givenname']))
             if test_strategy == 'REUSABLE':
                 sleep(5)  # wait for the previous operation to complete
-            changes = {attribute: [(MODIFY_ADD, attributes[attribute])] for attribute in attributes if
-                       attribute not in ['userPassword', 'objectClass', 'sn', 'givenname']}
+            changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if
+                       attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
             if changes:
                 operation_result = connection.modify(dn, changes)
         else:

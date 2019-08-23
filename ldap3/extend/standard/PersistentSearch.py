@@ -111,10 +111,10 @@ class PersistentSearch(object):
         self.connection.strategy.persistent_search_message_id = None
         self.message_id = None
 
-    def next(self):
+    def next(self, block=False, timeout=None):
         if not self.connection.strategy.streaming and not self.connection.strategy.callback:
             try:
-                return self.connection.strategy.events.get_nowait()
+                return self.connection.strategy.events.get(block, timeout)
             except Empty:
                 return None
 

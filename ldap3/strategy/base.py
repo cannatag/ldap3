@@ -28,7 +28,6 @@ from struct import pack
 from platform import system
 from time import sleep
 from random import choice
-from datetime import datetime
 
 from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
@@ -457,7 +456,7 @@ class BaseStrategy(object):
         """
         message_type = ldap_message.getComponentByName('protocolOp').getName()
         component = ldap_message['protocolOp'].getComponent()
-        controls = ldap_message['controls']
+        controls = ldap_message['controls'] if ldap_message['controls'].hasValue() else None
         if message_type == 'bindResponse':
             if not bytes(component['matchedDN']).startswith(b'NTLM'):  # patch for microsoft ntlm authentication
                 result = bind_response_to_dict(component)

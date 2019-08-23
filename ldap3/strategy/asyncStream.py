@@ -77,7 +77,6 @@ class AsyncStreamStrategy(AsyncStrategy):
                 if not self._header_added and self.stream.tell() == 0:
                     header = add_ldif_header(['-'])[0]
                     self.stream.write(prepare_for_stream(header + self.line_separator + self.line_separator))
-
                 ldif_lines = persistent_search_response_to_ldif(change)
                 if self.stream and ldif_lines and not self.connection.closed:
                     fragment = self.line_separator.join(ldif_lines)

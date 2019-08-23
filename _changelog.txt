@@ -1,4 +1,5 @@
 # 2.6.1 - not yet released
+    - tested against pyasn1 0.4.6
     - added json converter for timedelta (thanks dirkjanm)
     - strip parameter defaults to False in utils.dn.parse_dn()
     - escaped space is allowed as trailing character in attribute_value in utils.dn.parse_dn() (thanks phi1010)
@@ -16,7 +17,7 @@
     - fixed a bug when adding duplicate alias in CaseInsensitiveWithAliasDict()
     - added ignore_duplicates=False in set_aliases in CaseInsensitiveWithAliasDict() to ignore a duplicate alias (either in aliases or in keys)
     - Schema info now uses CaseInsensitiveWithAlias dict as default so object and attributes can also be referentiated with OID (thanks ahoffm11)
-
+    - added block mode and timeout parameters to next() method of persistent_search
 
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package

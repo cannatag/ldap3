@@ -110,7 +110,7 @@ To enable Persistent Searches to get all modification in the tree as they happen
     from ldap3 import Server, Connection, ASYNC_STREAM
     s = Server('myserver')
     c = Connection(s, 'cn=admin,o=resources', 'password', client_strategy=ASYNC_STREAM)
-    c.stream = open('myfile.log', 'w+)
+    c.stream = open('myfile.log', 'w+')
     p = c.extend.standard.persistent_search()
 
 now the persistent search is running in an internal thread. Each modification is recorded in the log in LDIF-CHANGE format, with the event type, event time and the modified dn and changelog number (if available) as comments.

@@ -80,7 +80,8 @@ class PersistentSearch(object):
         else:
             self.controls = controls
 
-        self.controls.append(persistent_search_control(events_type, changes_only, notifications))
+        if events_type and changes_only and notifications:
+            self.controls.append(persistent_search_control(events_type, changes_only, notifications))
         self.start()
 
     def start(self):
@@ -101,9 +102,10 @@ class PersistentSearch(object):
                                                      controls=self.controls)
             self.connection.strategy.persistent_search_message_id = self.message_id
 
-    def stop(self):
+    def stop(self, unbind=True):
         self.connection.abandon(self.message_id)
-        self.connection.unbind()
+        if unbind:
+            self.connection.unbind()
         if self.message_id in self.connection.strategy._responses:
             del self.connection.strategy._responses[self.message_id]
         if hasattr(self.connection.strategy, '_requests') and self.message_id in self.connection.strategy._requests:  # asynchronous strategy has a dict of request that could be returned by get_response()
@@ -119,3 +121,17 @@ class PersistentSearch(object):
                 return None
 
         raise LDAPExtensionError('Persistent search is not accumulating events in queue')
+
+    def funnel(self, block=False, timeout=None):
+        esci = False
+        while not esci:
+            try:
+                entry = self.connection.strategy.events.get(block, timeout)
+            except Empty:
+                yield None
+            if entry['type'] == 'searchResEntry':
+                yield entry
+            else:
+                esci = True
+
+        yield entry

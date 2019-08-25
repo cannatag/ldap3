@@ -55,7 +55,11 @@ class AsyncStreamStrategy(AsyncStrategy):
         self.persistent_search_message_id = None
         self.streaming = False
         self.callback = None
-        self.events = Queue()
+        if ldap_connection.pool_size:
+            self.events = Queue(ldap_connection.pool_size)
+        else:
+            self.events = Queue()
+
         del self._requests  # remove _requests dict from Async Strategy
 
     def _start_listen(self):

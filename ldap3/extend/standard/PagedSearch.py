@@ -73,7 +73,7 @@ def paged_search_generator(connection,
             response = connection.response
             result = connection.result
 
-        if result['referrals']:  # if rererrals are returned start over the loop with a new connection to the referral
+        if result['referrals'] and original_auto_referrals:  # if rererrals are returned start over the loop with a new connection to the referral
             if not original_connection:
                 original_connection = connection
             _, connection, cachekey = connection.strategy.create_referral_connection(result['referrals'])   # change connection to a valid referrals

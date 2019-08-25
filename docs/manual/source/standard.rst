@@ -203,7 +203,17 @@ For example an output from my test suite is the following::
     ACL: 2#entry#[Root]#networkAddress
 
 If you call the persistent_search() method with straming=False you can get the modified entries with the p.next() method.
-Each call to p.next() returns one event, with the extended control already decoded (as dict values) if available.
+Each call to p.next(block=False, timeout=None) returns one event, with the extended control already decoded (as dict values) if available::
+
+    from ldap3 import Server, Connection, ASYNC_STREAM
+    s = Server('myserver')
+    c = Connection(s, 'cn=admin,o=resources', 'password', client_strategy=ASYNC_STREAM, auto_bind=True)
+    p = c.extend.standard.persistent_search(streaming=False)
+    p.start()
+    while True:
+        print(p.next(block=True))
+
+When using next(block=False) or next(block=True, timeout=10) the method returns None if nothing is received from the server.
 
 If you call the persistent_search() method with **callback=myfynction** (where myfunction is a callable, including lambda,
 accepting a dict as parameter) your function will be called for each event received in the persistent serach.

@@ -27,7 +27,7 @@ import socket
 from threading import Lock
 from datetime import datetime, MINYEAR
 
-from .. import DSA, SCHEMA, ALL, BASE, get_config_parameter, OFFLINE_EDIR_8_8_8, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, STRING_TYPES
+from .. import DSA, SCHEMA, ALL, BASE, get_config_parameter, OFFLINE_EDIR_8_8_8, OFFLINE_EDIR_9_1_4, OFFLINE_AD_2012_R2, OFFLINE_SLAPD_2_4, OFFLINE_DS389_1_3_3, SEQUENCE_TYPES, IP_SYSTEM_DEFAULT, IP_V4_ONLY, IP_V6_ONLY, IP_V4_PREFERRED, IP_V6_PREFERRED, STRING_TYPES
 from .exceptions import LDAPInvalidServerError, LDAPDefinitionError, LDAPInvalidPortError, LDAPInvalidTlsSpecificationError, LDAPSocketOpenError, LDAPInfoError
 from ..protocol.formatters.standard import format_attribute_values
 from ..protocol.rfc4511 import LDAP_MAX_INT
@@ -451,6 +451,10 @@ class Server(object):
             from ..protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
             self.attach_schema_info(SchemaInfo.from_json(edir_8_8_8_schema))
             self.attach_dsa_info(DsaInfo.from_json(edir_8_8_8_dsa_info))
+        elif self.get_info == OFFLINE_EDIR_9_1_4:
+            from ..protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
+            self.attach_schema_info(SchemaInfo.from_json(edir_9_1_4_schema))
+            self.attach_dsa_info(DsaInfo.from_json(edir_9_1_4_dsa_info))
         elif self.get_info == OFFLINE_AD_2012_R2:
             from ..protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
             self.attach_schema_info(SchemaInfo.from_json(ad_2012_r2_schema))

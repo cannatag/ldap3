@@ -1,5 +1,6 @@
 # 2.6.1 - not yet released
     - tested against pyasn1 0.4.6
+    - added eDirectory 9.1.4 (EDIR_9_1_4) to offline schemas
     - added json converter for timedelta (thanks dirkjanm)
     - strip parameter defaults to False in utils.dn.parse_dn()
     - escaped space is allowed as trailing character in attribute_value in utils.dn.parse_dn() (thanks phi1010)

@@ -25,14 +25,14 @@ import unittest
 from ldap3 import SchemaInfo, DsaInfo, Server, Connection, MOCK_SYNC
 from ldap3.operation import search
 from ldap3.core.exceptions import LDAPSizeLimitExceededResult
-from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
+from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 
 
 class Test(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.schema = SchemaInfo.from_json(edir_8_8_8_schema)
-        info = DsaInfo.from_json(edir_8_8_8_dsa_info, cls.schema)
+        cls.schema = SchemaInfo.from_json(edir_9_1_4_schema)
+        info = DsaInfo.from_json(edir_9_1_4_dsa_info, cls.schema)
         cls.server = Server.from_definition('MockSyncServer', info, cls.schema)
         cls.connection = Connection(cls.server, user='cn=user1,ou=test', password='test1', client_strategy=MOCK_SYNC)
 

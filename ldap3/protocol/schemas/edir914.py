@@ -1,7 +1,7 @@
 """
 """
 
-# Created on 2014.10.21
+# Created on 2019.08.31
 #
 # Author: Giovanni Cannata
 #
@@ -23,7 +23,7 @@
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
 
-edir_8_8_8_schema = """
+edir_9_1_4_schema = """
 {
     "raw": {
         "attributeTypes": [
@@ -48,14 +48,14 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.12 NAME 'cAPublicKey' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'CA Public Key' X-NDS_PUBLIC_READ '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.10 NAME 'Cartridge' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} X-NDS_NONREMOVABLE '1' )",
             "( 2.5.4.3 NAME ( 'cn' 'commonName' ) SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64} X-NDS_NAME 'CN' X-NDS_LOWER_BOUND '1' X-NDS_UPPER_BOUND '64' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.78 NAME 'printerConfiguration' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5{64512} SINGLE-VALUE X-NDS_NAME 'Printer Configuration' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.78 NAME 'printerConfiguration' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'Printer Configuration' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.15 NAME 'Convergence' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27{1} SINGLE-VALUE X-NDS_UPPER_BOUND '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.5.4.6 NAME ( 'c' 'countryName' ) SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{2} SINGLE-VALUE X-NDS_NAME 'C' X-NDS_LOWER_BOUND '2' X-NDS_UPPER_BOUND '2' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.18 NAME 'defaultQueue' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_NAME 'Default Queue' X-NDS_SERVER_READ '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.5.4.13 NAME ( 'description' 'multiLineDescription' ) SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024} X-NDS_NAME 'Description' X-NDS_LOWER_BOUND '1' X-NDS_UPPER_BOUND '1024' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.64 NAME 'partitionCreationTime' SYNTAX 2.16.840.1.113719.1.1.5.1.19 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Partition Creation Time' X-NDS_PUBLIC_READ '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.5.4.23 NAME 'facsimileTelephoneNumber' SYNTAX 1.3.6.1.4.1.1466.115.121.1.22{64512} X-NDS_NAME 'Facsimile Telephone Number' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.117 NAME 'highConvergenceSyncInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'High Convergence Sync Interval' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.117 NAME 'highConvergenceSyncInterval' SYNTAX 2.16.840.1.113719.1.1.5.1.27 SINGLE-VALUE X-NDS_NAME 'High Convergence Sync Interval' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.25 NAME 'groupMembership' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_NAME 'Group Membership' X-NDS_NAME_VALUE_ACCESS '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.26 NAME 'ndsHomeDirectory' SYNTAX 2.16.840.1.113719.1.1.5.1.15{255} SINGLE-VALUE X-NDS_NAME 'Home Directory' X-NDS_LOWER_BOUND '1' X-NDS_UPPER_BOUND '255' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.27 NAME 'hostDevice' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_NAME 'Host Device' X-NDS_NONREMOVABLE '1' )",
@@ -63,7 +63,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.29 NAME 'hostServer' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_NAME 'Host Server' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.30 NAME 'inheritedACL' SYNTAX 2.16.840.1.113719.1.1.5.1.17 NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Inherited ACL' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.5.4.7 NAME ( 'l' 'localityname' ) SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{128} X-NDS_NAME 'L' X-NDS_LOWER_BOUND '1' X-NDS_UPPER_BOUND '128' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.39 NAME 'loginAllowedTimeMap' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5{42} SINGLE-VALUE X-NDS_NAME 'Login Allowed Time Map' X-NDS_LOWER_BOUND '42' X-NDS_UPPER_BOUND '42' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.39 NAME 'loginAllowedTimeMap' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{42} SINGLE-VALUE X-NDS_NAME 'Login Allowed Time Map' X-NDS_LOWER_BOUND '42' X-NDS_UPPER_BOUND '42' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.40 NAME 'loginDisabled' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Login Disabled' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.41 NAME 'loginExpirationTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE X-NDS_NAME 'Login Expiration Time' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.42 NAME 'loginGraceLimit' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Login Grace Limit' X-NDS_NONREMOVABLE '1' )",
@@ -71,7 +71,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.44 NAME 'loginIntruderAddress' SYNTAX 2.16.840.1.113719.1.1.5.1.12 SINGLE-VALUE X-NDS_NAME 'Login Intruder Address' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.45 NAME 'loginIntruderAttempts' SYNTAX 2.16.840.1.113719.1.1.5.1.22 SINGLE-VALUE X-NDS_NAME 'Login Intruder Attempts' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.46 NAME 'loginIntruderLimit' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Login Intruder Limit' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.31 NAME 'intruderAttemptResetInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Intruder Attempt Reset Interval' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.31 NAME 'intruderAttemptResetInterval' SYNTAX 2.16.840.1.113719.1.1.5.1.27 SINGLE-VALUE X-NDS_NAME 'Intruder Attempt Reset Interval' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.47 NAME 'loginIntruderResetTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE X-NDS_NAME 'Login Intruder Reset Time' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.48 NAME 'loginMaximumSimultaneous' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Login Maximum Simultaneous' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.49 NAME 'loginScript' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE X-NDS_NAME 'Login Script' X-NDS_NONREMOVABLE '1' )",
@@ -91,7 +91,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.63 NAME 'pageDescriptionLanguage' SYNTAX 1.3.6.1.4.1.1466.115.121.1.44{64} X-NDS_NAME 'Page Description Language' X-NDS_LOWER_BOUND '1' X-NDS_UPPER_BOUND '64' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.65 NAME 'passwordsUsed' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} USAGE directoryOperation X-NDS_NAME 'Passwords Used' X-NDS_NONREMOVABLE '1' X-NDS_HIDDEN '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.66 NAME 'passwordAllowChange' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Password Allow Change' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.67 NAME 'passwordExpirationInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Password Expiration Interval' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.67 NAME 'passwordExpirationInterval' SYNTAX 2.16.840.1.113719.1.1.5.1.27 SINGLE-VALUE X-NDS_NAME 'Password Expiration Interval' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.68 NAME 'passwordExpirationTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE X-NDS_NAME 'Password Expiration Time' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.69 NAME 'passwordMinimumLength' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Password Minimum Length' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.70 NAME 'passwordRequired' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Password Required' X-NDS_NONREMOVABLE '1' )",
@@ -131,7 +131,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.4 NAME 'allowUnlimitedCredit' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Allow Unlimited Credit' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.118 NAME 'lowConvergenceResetTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE USAGE directoryOperation X-NDS_NAME 'Low Convergence Reset Time' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.54 NAME 'minimumAccountBalance' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Minimum Account Balance' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.104 NAME 'lowConvergenceSyncInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Low Convergence Sync Interval' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.104 NAME 'lowConvergenceSyncInterval' SYNTAX 2.16.840.1.113719.1.1.5.1.27 SINGLE-VALUE X-NDS_NAME 'Low Convergence Sync Interval' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.21 NAME 'Device' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.53 NAME 'messageServer' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_NAME 'Message Server' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.34 NAME 'Language' SYNTAX 2.16.840.1.113719.1.1.5.1.6{64512} SINGLE-VALUE X-NDS_NONREMOVABLE '1' )",
@@ -144,13 +144,13 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.33 NAME 'synchronizedUpTo' SYNTAX 2.16.840.1.113719.1.1.5.1.19 NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Synchronized Up To' X-NDS_PUBLIC_READ '1' X-NDS_NEVER_SYNC '1' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.5 NAME 'authorityRevocation' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Authority Revocation' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.13 NAME 'certificateRevocation' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Certificate Revocation' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.17 NAME 'ndsCrossCertificatePair' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5{64512} X-NDS_NAME 'Cross Certificate Pair' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.17 NAME 'ndsCrossCertificatePair' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'Cross Certificate Pair' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.37 NAME 'lockedByIntruder' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Locked By Intruder' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.77 NAME 'printer' SYNTAX 2.16.840.1.113719.1.1.5.1.25 X-NDS_NAME 'Printer' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.20 NAME 'detectIntruder' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Detect Intruder' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.38 NAME 'lockoutAfterDetection' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NAME 'Lockout After Detection' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.32 NAME 'intruderLockoutResetInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'Intruder Lockout Reset Interval' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.96 NAME 'serverHolds' SYNTAX 2.16.840.1.113719.1.1.5.1.23 X-NDS_NAME 'Server Holds' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.32 NAME 'intruderLockoutResetInterval' SYNTAX 2.16.840.1.113719.1.1.5.1.27 SINGLE-VALUE X-NDS_NAME 'Intruder Lockout Reset Interval' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.96 NAME 'serverHolds' SYNTAX 2.16.840.1.113719.1.1.5.1.26 X-NDS_NAME 'Server Holds' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.91 NAME 'sAPName' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{47} SINGLE-VALUE X-NDS_NAME 'SAP Name' X-NDS_LOWER_BOUND '1' X-NDS_UPPER_BOUND '47' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.113 NAME 'Volume' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.35 NAME 'lastLoginTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Last Login Time' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' )",
@@ -159,7 +159,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.120 NAME 'fullName' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{127} X-NDS_NAME 'Full Name' X-NDS_UPPER_BOUND '127' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.121 NAME 'partitionControl' SYNTAX 2.16.840.1.113719.1.1.5.1.25 NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Partition Control' X-NDS_PUBLIC_READ '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.122 NAME 'revision' SYNTAX 2.16.840.1.113719.1.1.5.1.22 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NAME 'Revision' X-NDS_PUBLIC_READ '1' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_SCHED_SYNC_NEVER '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
-            "( 2.16.840.1.113719.1.1.4.1.123 NAME 'certificateValidityInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27{4294967295} SINGLE-VALUE X-NDS_NAME 'Certificate Validity Interval' X-NDS_LOWER_BOUND '60' X-NDS_UPPER_BOUND '-1' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.1.123 NAME 'certificateValidityInterval' SYNTAX 2.16.840.1.113719.1.1.5.1.27{4294967295} SINGLE-VALUE X-NDS_NAME 'Certificate Validity Interval' X-NDS_LOWER_BOUND '60' X-NDS_UPPER_BOUND '-1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.124 NAME 'externalSynchronizer' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'External Synchronizer' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.125 NAME 'messagingDatabaseLocation' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} SINGLE-VALUE X-NDS_NAME 'Messaging Database Location' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.126 NAME 'messageRoutingGroup' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_NAME 'Message Routing Group' X-NDS_NONREMOVABLE '1' )",
@@ -228,8 +228,13 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.1.524 NAME 'monitoredConnection' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} USAGE directoryOperation X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.526 NAME 'localFederationBoundary' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE USAGE directoryOperation X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.527 NAME 'replicationFilter' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE USAGE directoryOperation X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' X-NDS_READ_FILTERED '1' )",
+            "( 2.16.840.1.113719.1.1.4.721 NAME 'ServerEBAEnabled' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE X-NDS_NEVER_SYNC '1' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.716 NAME 'EBATreeConfiguration' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_PUBLIC_READ '1' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.722 NAME 'EBAPartitionConfiguration' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.723 NAME 'EBAServerConfiguration' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NEVER_SYNC '1' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' X-NDS_HIDDEN '1' )",
             "( 2.16.840.1.113719.1.1.4.1.296 NAME 'loginActivationTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.687 NAME 'UpdateInProgress' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.4.720 NAME 'dsContainerReadyAttrs' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.4.400.1 NAME 'edirSchemaFlagVersion' SYNTAX 2.16.840.1.113719.1.1.5.1.0 SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation X-NDS_NONREMOVABLE '1' X-NDS_HIDDEN '1' X-NDS_READ_FILTERED '1' )",
             "( 2.16.840.1.113719.1.1.4.1.512 NAME 'indexDefinition' SYNTAX 2.16.840.1.113719.1.1.5.1.6{64512} X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.513 NAME 'ndsStatusRepair' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
@@ -244,6 +249,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.688 NAME 'NCPKeyMaterialName' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.1.4.713 NAME 'UTF8LoginScript' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE )",
             "( 2.16.840.1.113719.1.1.4.714 NAME 'loginScriptCharset' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE )",
+            "( 2.16.840.1.113719.1.1.4.721 NAME 'NDSRightsToMonitor' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} X-NDS_NEVER_SYNC '1' X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.1.4.1.1.192 NAME 'lDAPLogLevel' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27{32768} SINGLE-VALUE X-NDS_NAME 'LDAP Log Level' X-NDS_UPPER_BOUND '32768' )",
             "( 2.16.840.1.113719.1.27.4.12 NAME 'lDAPUDPPort' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27{65535} SINGLE-VALUE X-NDS_NAME 'LDAP UDP Port' X-NDS_UPPER_BOUND '65535' )",
             "( 2.16.840.1.113719.1.1.4.1.204 NAME 'lDAPLogFilename' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NAME 'LDAP Log Filename' )",
@@ -290,6 +296,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.27.4.83 NAME 'ldapDerefAliasOnAuth' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE )",
             "( 2.16.840.1.113719.1.27.4.84 NAME 'ldapGeneralizedTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE )",
             "( 2.16.840.1.113719.1.27.4.85 NAME 'ldapPermissiveModify' SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE )",
+            "( 2.16.840.1.113719.1.27.4.86 NAME 'ldapSSLConfig' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.27.4.15 NAME 'ldapServerList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_NAME 'LDAP Server List' )",
             "( 2.16.840.1.113719.1.27.4.16 NAME 'ldapAttributeMap' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'LDAP Attribute Map v11' )",
             "( 2.16.840.1.113719.1.27.4.17 NAME 'ldapClassMap' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'LDAP Class Map v11' )",
@@ -305,9 +312,9 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113730.3.1.3 NAME 'employeeNumber' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} X-NDS_NAME 'NSCP:employeeNumber' )",
             "( 2.16.840.1.113719.1.27.4.76 NAME 'referralExcludeFilter' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} )",
             "( 2.16.840.1.113719.1.27.4.77 NAME 'referralIncludeFilter' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} )",
-            "( 2.5.4.36 NAME 'userCertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5{64512} X-NDS_NAME 'userCertificate' X-NDS_PUBLIC_READ '1' )",
-            "( 2.5.4.37 NAME 'cACertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5{64512} X-NDS_NAME 'cACertificate' X-NDS_PUBLIC_READ '1' )",
-            "( 2.5.4.40 NAME 'crossCertificatePair' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5{64512} X-NDS_NAME 'crossCertificatePair' X-NDS_PUBLIC_READ '1' )",
+            "( 2.5.4.36 NAME 'userCertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'userCertificate' X-NDS_PUBLIC_READ '1' )",
+            "( 2.5.4.37 NAME 'cACertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'cACertificate' X-NDS_PUBLIC_READ '1' )",
+            "( 2.5.4.40 NAME 'crossCertificatePair' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'crossCertificatePair' X-NDS_PUBLIC_READ '1' )",
             "( 2.5.4.58 NAME 'attributeCertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_PUBLIC_READ '1' )",
             "( 2.5.4.2 NAME 'knowledgeInformation' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} X-NDS_LOWER_BOUND '1' X-NDS_UPPER_BOUND '32768' )",
             "( 2.5.4.14 NAME 'searchGuide' SYNTAX 1.3.6.1.4.1.1466.115.121.1.25{64512} X-NDS_NAME 'searchGuide' )",
@@ -413,13 +420,20 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.48.4.1.2 NAME 'nDSPKIPrivateKey' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Private Key' )",
             "( 2.16.840.1.113719.1.48.4.1.3 NAME 'nDSPKIPublicKeyCertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Public Key Certificate' X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.4 NAME 'nDSPKICertificateChain' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'NDSPKI:Certificate Chain' X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.16 NAME 'nDSPKIPublicKeyEC' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Public Key EC' X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.17 NAME 'nDSPKIPrivateKeyEC' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Private Key EC' )",
+            "( 2.16.840.1.113719.1.48.4.1.18 NAME 'nDSPKIPublicKeyCertificateEC' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Public Key Certificate EC' X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.19 NAME 'crossCertificatePairEC' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'Cross Certificate Pair EC' X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.20 NAME 'nDSPKICertificateChainEC' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_NAME 'NDSPKI:Certificate Chain EC' X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.5 NAME 'nDSPKIParentCA' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Parent CA' )",
             "( 2.16.840.1.113719.1.48.4.1.6 NAME 'nDSPKIParentCADN' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_NAME 'NDSPKI:Parent CA DN' )",
+            "( 2.16.840.1.113719.1.48.4.1.20 NAME 'nDSPKISuiteBMode' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_NAME 'NDSPKI:SuiteBMode' X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.7 NAME 'nDSPKIKeyFile' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Key File' )",
             "( 2.16.840.1.113719.1.48.4.1.8 NAME 'nDSPKISubjectName' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Subject Name' )",
             "( 2.16.840.1.113719.1.48.4.1.11 NAME 'nDSPKIGivenName' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Given Name' )",
             "( 2.16.840.1.113719.1.48.4.1.9 NAME 'nDSPKIKeyMaterialDN' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_NAME 'NDSPKI:Key Material DN' )",
             "( 2.16.840.1.113719.1.48.4.1.10 NAME 'nDSPKITreeCADN' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_NAME 'NDSPKI:Tree CA DN' )",
+            "( 2.5.4.59 NAME 'cAECCertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.12 NAME 'nDSPKIUserCertificateInfo' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} X-NDS_NAME 'NDSPKI:userCertificateInfo' )",
             "( 2.16.840.1.113719.1.48.4.1.13 NAME 'nDSPKITrustedRootCertificate' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Trusted Root Certificate' X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.14 NAME 'nDSPKINotBefore' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NAME 'NDSPKI:Not Before' X-NDS_PUBLIC_READ '1' )",
@@ -675,7 +689,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.48.4.1.19 NAME 'ndspkiNextIssueTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.20 NAME 'ndspkiAttemptTime' SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.21 NAME 'ndspkiTimeInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
-            "( 2.16.840.1.113719.1.48.4.1.22 NAME 'ndspkiCRLMaxProcessingInterval' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.22 NAME 'ndspkiCRLMaxProcessingInterval' SYNTAX 2.16.840.1.113719.1.1.5.1.27 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.23 NAME 'ndspkiCRLNumber' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.24 NAME 'ndspkiDistributionPoints' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.25 NAME 'ndspkiCRLProcessData' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{64512} X-NDS_PUBLIC_READ '1' )",
@@ -686,12 +700,18 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.48.4.1.30 NAME 'ndspkiDistributionPointDN' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.31 NAME 'ndspkiCRLConfigurationDN' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.32 NAME 'ndspkiDirectory' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} )",
-            "( 2.5.4.38 NAME 'authorityRevocationList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE X-NDS_NAME 'ndspkiAuthorityRevocationList' X-NDS_PUBLIC_READ '1' )",
-            "( 2.5.4.39 NAME 'certificateRevocationList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE X-NDS_NAME 'ndspkiCertificateRevocationList' X-NDS_PUBLIC_READ '1' )",
-            "( 2.5.4.53 NAME 'deltaRevocationList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.5 SINGLE-VALUE X-NDS_NAME 'ndspkiDeltaRevocationList' X-NDS_PUBLIC_READ '1' )",
+            "( 2.5.4.38 NAME 'authorityRevocationList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40 SINGLE-VALUE X-NDS_NAME 'ndspkiAuthorityRevocationList' X-NDS_PUBLIC_READ '1' )",
+            "( 2.5.4.39 NAME 'certificateRevocationList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40 SINGLE-VALUE X-NDS_NAME 'ndspkiCertificateRevocationList' X-NDS_PUBLIC_READ '1' )",
+            "( 2.5.4.53 NAME 'deltaRevocationList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.40 SINGLE-VALUE X-NDS_NAME 'ndspkiDeltaRevocationList' X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.36 NAME 'ndspkiTrustedRootList' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.48.4.1.37 NAME 'ndspkiSecurityRightsLevel' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )",
             "( 2.16.840.1.113719.1.48.4.1.38 NAME 'ndspkiKMOExport' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} )",
+            "( 2.16.840.1.113719.1.48.4.1.39 NAME 'ndspkiCRLECConfigurationDNList' SYNTAX 2.16.840.1.113719.1.1.5.1.15{64512} X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.40 NAME 'ndspkiCRLType' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.41 NAME 'ndspkiCRLExtendValidity' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.42 NAME 'ndspkiDefaultRSAKeySize' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.43 NAME 'ndspkiDefaultECCurve' SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{64512} SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
+            "( 2.16.840.1.113719.1.48.4.1.44 NAME 'ndspkiDefaultCertificateLife' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE X-NDS_PUBLIC_READ '1' )",
             "( 2.16.840.1.113719.1.7.4.1 NAME 'notfSMTPEmailHost' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.7.4.2 NAME 'notfSMTPEmailFrom' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
             "( 2.16.840.1.113719.1.7.4.3 NAME 'notfSMTPEmailUserName' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} SINGLE-VALUE X-NDS_NOT_SCHED_SYNC_IMMEDIATE '1' )",
@@ -731,9 +751,12 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.4.719 NAME 'xdasVersion' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27{32768} SINGLE-VALUE X-NDS_UPPER_BOUND '32768' )",
             "( 2.16.840.1.113719.1.347.4.79 NAME 'NAuditInstrumentation' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} )",
             "( 2.16.840.1.113719.1.347.4.2 NAME 'NAuditLoggingServer' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 X-NDS_PUBLIC_READ '1' )",
-            "( 2.16.840.1.113719.1.135.4.53 NAME 'rbsRoleMember' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )",
-            "( 2.16.840.1.113719.1.135.4.54 NAME 'rbsCategoryMembership' SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )"
+            "( 2.16.840.1.113719.1.1.4.724 NAME 'cefConfiguration' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{64512} )",
+            "( 2.16.840.1.113719.1.1.4.725 NAME 'cefVersion' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27{32768} SINGLE-VALUE X-NDS_UPPER_BOUND '32768' )"
         ],
+        "createTimestamp": [],
+        "dITContentRules": [],
+        "dITStructureRules": [],
         "ldapSyntaxes": [
             "( 1.3.6.1.4.1.1466.115.121.1.1 X-NDS_SYNTAX '9' )",
             "( 1.3.6.1.4.1.1466.115.121.1.2 X-NDS_SYNTAX '9' )",
@@ -783,7 +806,7 @@ edir_8_8_8_schema = """
             "( 1.3.6.1.4.1.1466.115.121.1.37 X-NDS_SYNTAX '3' )",
             "( 2.16.840.1.113719.1.1.5.1.13 X-NDS_SYNTAX '13' )",
             "( 1.3.6.1.4.1.1466.115.121.1.40 X-NDS_SYNTAX '9' )",
-            "( 1.3.6.1.4.1.1466.115.121.1.38 X-NDS_SYNTAX '3' )",
+            "( 1.3.6.1.4.1.1466.115.121.1.38 X-NDS_SYNTAX '20' )",
             "( 1.3.6.1.4.1.1466.115.121.1.39 X-NDS_SYNTAX '3' )",
             "( 1.3.6.1.4.1.1466.115.121.1.41 X-NDS_SYNTAX '18' )",
             "( 1.3.6.1.4.1.1466.115.121.1.43 X-NDS_SYNTAX '9' )",
@@ -804,11 +827,16 @@ edir_8_8_8_schema = """
             "( 1.3.6.1.4.1.1466.115.121.1.51 X-NDS_SYNTAX '9' )",
             "( 1.3.6.1.4.1.1466.115.121.1.52 X-NDS_SYNTAX '9' )",
             "( 2.16.840.1.113719.1.1.5.1.25 X-NDS_SYNTAX '25' )",
-            "( 1.3.6.1.4.1.1466.115.121.1.53 X-NDS_SYNTAX '9' )"
+            "( 1.3.6.1.4.1.1466.115.121.1.53 X-NDS_SYNTAX '9' )",
+            "( 2.16.840.1.113719.1.1.5.1.26 X-NDS_SYNTAX '26' )",
+            "( 2.16.840.1.113719.1.1.5.1.27 X-NDS_SYNTAX '27' )"
         ],
+        "matchingRuleUse": [],
+        "matchingRules": [],
         "modifyTimestamp": [
-            "20141014222353Z"
+            "20190831135835Z"
         ],
+        "nameForms": [],
         "objectClass": [
             "top",
             "subschema"
@@ -835,17 +863,17 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.6.1.7 NAME 'directoryMap' SUP Resource STRUCTURAL MUST hostServer MAY path X-NDS_NAME 'Directory Map' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.1.19 NAME 'Profile' SUP Top STRUCTURAL MUST ( cn $ loginScript ) MAY ( description $ l $ ou $ o $ seeAlso $ fullName ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.1.22 NAME 'Server' SUP Top ABSTRACT MUST cn MAY ( description $ hostDevice $ l $ ou $ o $ privateKey $ publicKey $ Resource $ seeAlso $ status $ User $ Version $ networkAddress $ accountBalance $ allowUnlimitedCredit $ minimumAccountBalance $ fullName $ securityEquals $ securityFlags $ Timezone $ ndapClassPasswordMgmt $ ndapClassLoginMgmt ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES ( '2#entry#[Public]#networkAddress' '16#subtree#[Self]#[Entry Rights]') )",
-            "( 2.16.840.1.113719.1.1.6.1.10 NAME 'ncpServer' SUP Server STRUCTURAL MAY ( operator $ supportedServices $ messagingServer $ dsRevision $ permanentConfigParms $ ndsPredicateStatsDN $ languageId $ indexDefinition $ CachedAttrsOnExtRefs $ NCPKeyMaterialName $ ldapServerDN $ httpServerDN $ emboxConfig $ sASServiceDN $ cACertificate $ nDSPKIPublicKey $ nDSPKIPrivateKey $ nDSPKICertificateChain $ nDSPKIParentCADN $ nDSPKISDKeyID $ nDSPKISDKeyStruct $ snmpGroupDN $ wANMANWANPolicy $ wANMANLANAreaMembership $ wANMANCost $ wANMANDefaultCost $ encryptionPolicyDN $ eDirCloneSource $ eDirCloneLock $ xdasDSConfiguration $ xdasConfiguration $ xdasVersion $ NAuditLoggingServer $ NAuditInstrumentation ) X-NDS_NAME 'NCP Server' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES '2#entry#[Public]#messagingServer' )",
+            "( 2.16.840.1.113719.1.1.6.1.10 NAME 'ncpServer' SUP Server STRUCTURAL MAY ( operator $ supportedServices $ messagingServer $ dsRevision $ permanentConfigParms $ ndsPredicateStatsDN $ languageId $ indexDefinition $ CachedAttrsOnExtRefs $ NCPKeyMaterialName $ NDSRightsToMonitor $ ldapServerDN $ httpServerDN $ emboxConfig $ sASServiceDN $ cACertificate $ cAECCertificate $ nDSPKIPublicKey $ nDSPKIPrivateKey $ nDSPKICertificateChain $ nDSPKIParentCADN $ nDSPKISDKeyID $ nDSPKISDKeyStruct $ snmpGroupDN $ wANMANWANPolicy $ wANMANLANAreaMembership $ wANMANCost $ wANMANDefaultCost $ encryptionPolicyDN $ eDirCloneSource $ eDirCloneLock $ xdasDSConfiguration $ xdasConfiguration $ xdasVersion $ NAuditLoggingServer $ NAuditInstrumentation $ cefConfiguration $ cefVersion ) X-NDS_NAME 'NCP Server' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES '2#entry#[Public]#messagingServer' )",
             "( 2.16.840.1.113719.1.1.6.1.18 NAME 'printServer' SUP Server STRUCTURAL MAY ( operator $ printer $ sAPName ) X-NDS_NAME 'Print Server' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES '2#subtree#[Root Template]#[All Attributes Rights]' )",
             "( 2.16.840.1.113719.1.1.6.1.31 NAME 'CommExec' SUP Server STRUCTURAL MAY networkAddressRestriction X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.1.2 NAME 'binderyObject' SUP Top STRUCTURAL MUST ( binderyObjectRestriction $ binderyType $ cn ) X-NDS_NAMING ( 'cn' 'binderyType' ) X-NDS_CONTAINMENT ( 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NAME 'Bindery Object' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
-            "( 2.16.840.1.113719.1.1.6.1.15 NAME 'Partition' AUXILIARY MAY ( Convergence $ partitionCreationTime $ Replica $ inheritedACL $ lowConvergenceSyncInterval $ receivedUpTo $ synchronizedUpTo $ authorityRevocation $ certificateRevocation $ cAPrivateKey $ cAPublicKey $ ndsCrossCertificatePair $ lowConvergenceResetTime $ highConvergenceSyncInterval $ partitionControl $ replicaUpTo $ partitionStatus $ transitiveVector $ purgeVector $ synchronizationTolerance $ obituaryNotify $ localReceivedUpTo $ federationControl $ syncPanePoint $ syncWindowVector $ authoritative $ allowAliasToAncestor $ sASSecurityDN $ masvLabel $ ndapPartitionPasswordMgmt $ ndapPartitionLoginMgmt $ prSyncPolicyDN $ dsEncryptedReplicationConfig ) X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.6.1.15 NAME 'Partition' AUXILIARY MAY ( Convergence $ partitionCreationTime $ Replica $ inheritedACL $ lowConvergenceSyncInterval $ receivedUpTo $ synchronizedUpTo $ authorityRevocation $ certificateRevocation $ cAPrivateKey $ cAPublicKey $ ndsCrossCertificatePair $ lowConvergenceResetTime $ highConvergenceSyncInterval $ partitionControl $ replicaUpTo $ partitionStatus $ transitiveVector $ purgeVector $ synchronizationTolerance $ obituaryNotify $ localReceivedUpTo $ federationControl $ syncPanePoint $ syncWindowVector $ EBAPartitionConfiguration $ authoritative $ allowAliasToAncestor $ sASSecurityDN $ masvLabel $ ndapPartitionPasswordMgmt $ ndapPartitionLoginMgmt $ prSyncPolicyDN $ dsEncryptedReplicationConfig ) X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.1.0 NAME 'aFPServer' SUP Server STRUCTURAL MAY ( serialNumber $ supportedConnections ) X-NDS_NAME 'AFP Server' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.1.27 NAME 'messagingServer' SUP Server STRUCTURAL MAY ( messagingDatabaseLocation $ messageRoutingGroup $ Postmaster $ supportedServices $ messagingServerType $ supportedGateway ) X-NDS_NAME 'Messaging Server' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES ( '1#subtree#[Self]#[Entry Rights]' '2#subtree#[Self]#[All Attributes Rights]' '6#entry#[Self]#status' '2#entry#[Public]#messagingServerType' '2#entry#[Public]#messagingDatabaseLocation') )",
             "( 2.16.840.1.113719.1.1.6.1.28 NAME 'messageRoutingGroup' SUP groupOfNames STRUCTURAL X-NDS_NAME 'Message Routing Group' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES ( '1#subtree#[Self]#[Entry Rights]' '2#subtree#[Self]#[All Attributes Rights]') )",
             "( 2.16.840.1.113719.1.1.6.1.29 NAME 'externalEntity' SUP Top STRUCTURAL MUST cn MAY ( description $ seeAlso $ facsimileTelephoneNumber $ l $ eMailAddress $ ou $ physicalDeliveryOfficeName $ postalAddress $ postalCode $ postOfficeBox $ st $ street $ title $ externalName $ mailboxLocation $ mailboxID ) X-NDS_NAMING ( 'cn' 'ou' ) X-NDS_CONTAINMENT ( 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NAME 'External Entity' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES '2#entry#[Public]#externalName' )",
             "( 2.16.840.1.113719.1.1.6.1.30 NAME 'List' SUP Top STRUCTURAL MUST cn MAY ( description $ l $ member $ ou $ o $ eMailAddress $ mailboxLocation $ mailboxID $ owner $ seeAlso $ fullName ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' X-NDS_ACL_TEMPLATES '2#entry#[Root Template]#member' )",
-            "( 2.16.840.1.113719.1.1.6.1.32 NAME 'treeRoot' SUP Top STRUCTURAL MUST T MAY sssActiveServerList X-NDS_NAMING 'T' X-NDS_NAME 'Tree Root' X-NDS_NONREMOVABLE '1' )",
+            "( 2.16.840.1.113719.1.1.6.1.32 NAME 'treeRoot' SUP Top STRUCTURAL MUST T MAY ( EBATreeConfiguration $ sssActiveServerList ) X-NDS_NAMING 'T' X-NDS_NAME 'Tree Root' X-NDS_NONREMOVABLE '1' )",
             "( 0.9.2342.19200300.100.4.13 NAME 'domain' SUP ( Top $ ndsLoginProperties $ ndsContainerLoginProperties ) STRUCTURAL MUST dc MAY ( searchGuide $ o $ seeAlso $ businessCategory $ x121Address $ registeredAddress $ destinationIndicator $ preferredDeliveryMethod $ telexNumber $ teletexTerminalIdentifier $ telephoneNumber $ internationaliSDNNumber $ facsimileTelephoneNumber $ street $ postOfficeBox $ postalCode $ postalAddress $ physicalDeliveryOfficeName $ l $ associatedName $ description $ sssActiveServerList $ sssServerPolicyOverrideDN $ userPassword ) X-NDS_NAMING 'dc' X-NDS_CONTAINMENT ( 'Top' 'treeRoot' 'Country' 'Locality' 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NONREMOVABLE '1' )",
             "( 1.3.6.1.4.1.1466.344 NAME 'dcObject' AUXILIARY MUST dc X-NDS_NAMING 'dc' X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.1.33 NAME 'ndsLoginProperties' SUP Top ABSTRACT MAY ( groupMembership $ loginAllowedTimeMap $ loginDisabled $ loginExpirationTime $ loginGraceLimit $ loginGraceRemaining $ loginIntruderAddress $ loginIntruderAttempts $ loginIntruderResetTime $ loginMaximumSimultaneous $ loginScript $ loginTime $ networkAddressRestriction $ networkAddress $ passwordsUsed $ passwordAllowChange $ passwordExpirationInterval $ passwordExpirationTime $ passwordMinimumLength $ passwordRequired $ passwordUniqueRequired $ privateKey $ Profile $ publicKey $ securityEquals $ accountBalance $ allowUnlimitedCredit $ minimumAccountBalance $ Language $ lockedByIntruder $ serverHolds $ lastLoginTime $ higherPrivileges $ securityFlags $ profileMembership $ Timezone $ loginActivationTime $ UTF8LoginScript $ loginScriptCharset $ sASNDSPasswordWindow $ sASLoginSecret $ sASLoginSecretKey $ sASEncryptionType $ sASLoginConfiguration $ sASLoginConfigurationKey $ sasLoginFailureDelay $ sasDefaultLoginSequence $ sasAuthorizedLoginSequences $ sasAllowableSubjectNames $ sasUpdateLoginInfo $ sasOTPEnabled $ sasOTPCounter $ sasOTPDigits $ sasOTPReSync $ sasUpdateLoginTimeInterval $ ndapPasswordMgmt $ ndapLoginMgmt $ nspmPasswordKey $ nspmPassword $ pwdChangedTime $ pwdAccountLockedTime $ pwdFailureTime $ nspmDoNotExpirePassword $ nspmDistributionPassword $ nspmPreviousDistributionPassword $ nspmPasswordHistory $ nspmAdministratorChangeCount $ nspmPasswordPolicyDN $ nsimHint $ nsimPasswordReminder $ userPassword ) X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
@@ -854,9 +882,9 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.27.6.3 NAME 'ndsPredicateStats' SUP Top STRUCTURAL MUST ( cn $ ndsPredicateState $ ndsPredicateFlush ) MAY ( ndsPredicate $ ndsPredicateTimeout $ ndsPredicateUseValues ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.400.1 NAME 'edirSchemaVersion' SUP Top ABSTRACT MAY edirSchemaFlagVersion X-NDS_NOT_CONTAINER '1' X-NDS_NONREMOVABLE '1' )",
             "( 2.16.840.1.113719.1.1.6.1.47 NAME 'immediateSuperiorReference' AUXILIARY MAY ref X-NDS_NOT_CONTAINER '1' )",
-            "( 2.16.840.1.113719.1.27.6.1 NAME 'ldapServer' SUP Top STRUCTURAL MUST cn MAY ( ldapHostServer $ ldapGroupDN $ ldapTraceLevel $ ldapServerBindLimit $ ldapServerIdleTimeout $ lDAPUDPPort $ lDAPSearchSizeLimit $ lDAPSearchTimeLimit $ lDAPLogLevel $ lDAPLogFilename $ lDAPBackupLogFilename $ lDAPLogSizeLimit $ Version $ searchSizeLimit $ searchTimeLimit $ ldapEnableTCP $ ldapTCPPort $ ldapEnableSSL $ ldapSSLPort $ ldapKeyMaterialName $ filteredReplicaUsage $ extensionInfo $ nonStdClientSchemaCompatMode $ sslEnableMutualAuthentication $ ldapEnablePSearch $ ldapMaximumPSearchOperations $ ldapIgnorePSearchLimitsForEvents $ ldapTLSTrustedRootContainer $ ldapEnableMonitorEvents $ ldapMaximumMonitorEventsLoad $ ldapTLSRequired $ ldapTLSVerifyClientCertificate $ ldapConfigVersion $ ldapDerefAlias $ ldapNonStdAllUserAttrsMode $ ldapBindRestrictions $ ldapDefaultReferralBehavior $ ldapReferral $ ldapSearchReferralUsage $ lDAPOtherReferralUsage $ ldapLBURPNumWriterThreads $ ldapInterfaces $ ldapChainSecureRequired $ ldapStdCompliance $ ldapDerefAliasOnAuth $ ldapGeneralizedTime $ ldapPermissiveModify ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'organizationalUnit' 'Organization' 'domain' ) X-NDS_NAME 'LDAP Server' X-NDS_NOT_CONTAINER '1' )",
-            "( 2.16.840.1.113719.1.27.6.2 NAME 'ldapGroup' SUP Top STRUCTURAL MUST cn MAY ( ldapReferral $ ldapServerList $ ldapAllowClearTextPassword $ ldapAnonymousIdentity $ lDAPSuffix $ ldapAttributeMap $ ldapClassMap $ ldapSearchReferralUsage $ lDAPOtherReferralUsage $ transitionGroupDN $ ldapAttributeList $ ldapClassList $ ldapConfigVersion $ Version $ ldapDefaultReferralBehavior $ ldapTransitionBackLink $ referralIncludeFilter $ referralExcludeFilter ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'organizationalUnit' 'Organization' 'domain' ) X-NDS_NAME 'LDAP Group' X-NDS_NOT_CONTAINER '1' )",
-            "( 2.5.6.22 NAME 'pkiCA' AUXILIARY MAY ( cACertificate $ certificateRevocationList $ authorityRevocationList $ crossCertificatePair $ attributeCertificate $ publicKey $ privateKey $ networkAddress $ loginTime $ lastLoginTime ) X-NDS_NOT_CONTAINER '1' )",
+            "( 2.16.840.1.113719.1.27.6.1 NAME 'ldapServer' SUP Top STRUCTURAL MUST cn MAY ( ldapHostServer $ ldapGroupDN $ ldapTraceLevel $ ldapServerBindLimit $ ldapServerIdleTimeout $ lDAPUDPPort $ lDAPSearchSizeLimit $ lDAPSearchTimeLimit $ lDAPLogLevel $ lDAPLogFilename $ lDAPBackupLogFilename $ lDAPLogSizeLimit $ Version $ searchSizeLimit $ searchTimeLimit $ ldapEnableTCP $ ldapTCPPort $ ldapEnableSSL $ ldapSSLPort $ ldapKeyMaterialName $ filteredReplicaUsage $ extensionInfo $ nonStdClientSchemaCompatMode $ sslEnableMutualAuthentication $ ldapEnablePSearch $ ldapMaximumPSearchOperations $ ldapIgnorePSearchLimitsForEvents $ ldapTLSTrustedRootContainer $ ldapEnableMonitorEvents $ ldapMaximumMonitorEventsLoad $ ldapTLSRequired $ ldapTLSVerifyClientCertificate $ ldapConfigVersion $ ldapDerefAlias $ ldapNonStdAllUserAttrsMode $ ldapBindRestrictions $ ldapDefaultReferralBehavior $ ldapReferral $ ldapSearchReferralUsage $ lDAPOtherReferralUsage $ ldapLBURPNumWriterThreads $ ldapInterfaces $ ldapChainSecureRequired $ ldapStdCompliance $ ldapDerefAliasOnAuth $ ldapGeneralizedTime $ ldapPermissiveModify $ ldapSSLConfig ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'organizationalUnit' 'Organization' 'domain' ) X-NDS_NAME 'LDAP Server' X-NDS_NOT_CONTAINER '1' )",
+            "( 2.16.840.1.113719.1.27.6.2 NAME 'ldapGroup' SUP Top STRUCTURAL MUST cn MAY ( ldapReferral $ ldapServerList $ ldapAllowClearTextPassword $ ldapAnonymousIdentity $ lDAPSuffix $ ldapAttributeMap $ ldapClassMap $ ldapSearchReferralUsage $ lDAPOtherReferralUsage $ transitionGroupDN $ ldapAttributeList $ ldapClassList $ ldapConfigVersion $ Version $ ldapDefaultReferralBehavior $ ldapTransitionBackLink $ ldapSSLConfig $ referralIncludeFilter $ referralExcludeFilter ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'organizationalUnit' 'Organization' 'domain' ) X-NDS_NAME 'LDAP Group' X-NDS_NOT_CONTAINER '1' )",
+            "( 2.5.6.22 NAME 'pkiCA' AUXILIARY MAY ( cACertificate $ certificateRevocationList $ authorityRevocationList $ crossCertificatePair $ attributeCertificate $ publicKey $ privateKey $ networkAddress $ loginTime $ lastLoginTime $ cAECCertificate $ crossCertificatePairEC ) X-NDS_NOT_CONTAINER '1' )",
             "( 2.5.6.21 NAME 'pkiUser' AUXILIARY MAY userCertificate X-NDS_NOT_CONTAINER '1' )",
             "( 2.5.6.15 NAME 'strongAuthenticationUser' AUXILIARY MAY userCertificate X-NDS_NOT_CONTAINER '1' )",
             "( 2.5.6.11 NAME 'applicationProcess' SUP Top STRUCTURAL MUST cn MAY ( seeAlso $ ou $ l $ description ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'organizationalUnit' 'Organization' 'domain' ) )",
@@ -874,7 +902,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.6.1.46 NAME 'dynamicGroupAux' SUP ( groupOfNames $ ndsLoginProperties ) AUXILIARY MAY ( memberQueryURL $ excludedMember $ dgIdentity $ dgAllowUnknown $ dgTimeOut $ dgAllowDuplicates $ userPassword ) X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.39.6.1.1 NAME 'sASSecurity' SUP Top STRUCTURAL MUST cn MAY ( nDSPKITreeCADN $ masvPolicyDN $ sASLoginPolicyDN $ sASLoginMethodContainerDN $ sasPostLoginMethodContainerDN $ nspmPolicyAgentContainerDN ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Top' 'treeRoot' 'Country' 'Organization' 'domain' ) X-NDS_NAME 'SAS:Security' )",
             "( 2.16.840.1.113719.1.39.6.1.2 NAME 'sASService' SUP Resource STRUCTURAL MAY ( hostServer $ privateKey $ publicKey $ allowUnlimitedCredit $ fullName $ lastLoginTime $ lockedByIntruder $ loginAllowedTimeMap $ loginDisabled $ loginExpirationTime $ loginIntruderAddress $ loginIntruderAttempts $ loginIntruderResetTime $ loginMaximumSimultaneous $ loginTime $ networkAddress $ networkAddressRestriction $ notify $ operator $ owner $ path $ securityEquals $ securityFlags $ status $ Version $ nDSPKIKeyMaterialDN $ ndspkiKMOExport ) X-NDS_NAMING 'cn' X-NDS_NAME 'SAS:Service' X-NDS_NOT_CONTAINER '1' )",
-            "( 2.16.840.1.113719.1.48.6.1.1 NAME 'nDSPKICertificateAuthority' SUP Top STRUCTURAL MUST cn MAY ( hostServer $ nDSPKIPublicKey $ nDSPKIPrivateKey $ nDSPKIPublicKeyCertificate $ nDSPKICertificateChain $ nDSPKIParentCA $ nDSPKIParentCADN $ nDSPKISubjectName $ cACertificate $ ndspkiCRLContainerDN $ ndspkiIssuedCertContainerDN $ ndspkiCRLConfigurationDNList $ ndspkiSecurityRightsLevel ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'sASSecurity' X-NDS_NAME 'NDSPKI:Certificate Authority' X-NDS_NOT_CONTAINER '1' )",
+            "( 2.16.840.1.113719.1.48.6.1.1 NAME 'nDSPKICertificateAuthority' SUP Top STRUCTURAL MUST cn MAY ( hostServer $ nDSPKIPublicKey $ nDSPKIPrivateKey $ nDSPKIPublicKeyCertificate $ nDSPKICertificateChain $ nDSPKICertificateChainEC $ nDSPKIParentCA $ nDSPKIParentCADN $ nDSPKISubjectName $ nDSPKIPublicKeyEC $ nDSPKIPrivateKeyEC $ nDSPKIPublicKeyCertificateEC $ crossCertificatePairEC $ nDSPKISuiteBMode $ cACertificate $ cAECCertificate $ ndspkiCRLContainerDN $ ndspkiIssuedCertContainerDN $ ndspkiCRLConfigurationDNList $ ndspkiCRLECConfigurationDNList $ ndspkiSecurityRightsLevel $ ndspkiDefaultRSAKeySize $ ndspkiDefaultECCurve $ ndspkiDefaultCertificateLife ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'sASSecurity' X-NDS_NAME 'NDSPKI:Certificate Authority' X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.48.6.1.2 NAME 'nDSPKIKeyMaterial' SUP Top STRUCTURAL MUST cn MAY ( hostServer $ nDSPKIKeyFile $ nDSPKIPrivateKey $ nDSPKIPublicKey $ nDSPKIPublicKeyCertificate $ nDSPKICertificateChain $ nDSPKISubjectName $ nDSPKIGivenName $ ndspkiAdditionalRoots $ nDSPKINotBefore $ nDSPKINotAfter ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'sASSecurity' 'Organization' 'organizationalUnit' 'domain' ) X-NDS_NAME 'NDSPKI:Key Material' X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.48.6.1.3 NAME 'nDSPKITrustedRoot' SUP Top STRUCTURAL MUST cn MAY ndspkiTrustedRootList X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'sASSecurity' 'Organization' 'organizationalUnit' 'Country' 'Locality' 'domain' ) X-NDS_NAME 'NDSPKI:Trusted Root' )",
             "( 2.16.840.1.113719.1.48.6.1.4 NAME 'nDSPKITrustedRootObject' SUP Top STRUCTURAL MUST ( cn $ nDSPKITrustedRootCertificate ) MAY ( nDSPKISubjectName $ nDSPKINotBefore $ nDSPKINotAfter $ externalName $ givenName $ sn ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'nDSPKITrustedRoot' X-NDS_NAME 'NDSPKI:Trusted Root Object' X-NDS_NOT_CONTAINER '1' )",
@@ -906,7 +934,7 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.135.6.45.1 NAME 'rbsCollection2' SUP Top STRUCTURAL MUST cn MAY ( rbsXMLInfo $ rbsParameters $ owner $ description ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'organizationalUnit' 'Organization' 'domain' ) )",
             "( 2.16.840.1.113719.1.135.6.38.1 NAME 'rbsExternalScope2' SUP Top ABSTRACT MUST cn MAY ( rbsXMLInfo $ description ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'rbsCollection2' X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.135.6.39.1 NAME 'rbsModule2' SUP Top STRUCTURAL MUST cn MAY ( rbsXMLInfo $ rbsPath $ rbsType $ description ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'rbsCollection2' )",
-            "( 2.16.840.1.113719.1.135.6.40.1 NAME 'rbsRole2' SUP Top STRUCTURAL MUST cn MAY ( rbsXMLInfo $ rbsContent $ rbsMember $ rbsTrusteeOf $ rbsParameters $ description $ rbsCategoryMembership ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'rbsCollection2' )",
+            "( 2.16.840.1.113719.1.135.6.40.1 NAME 'rbsRole2' SUP Top STRUCTURAL MUST cn MAY ( rbsXMLInfo $ rbsContent $ rbsMember $ rbsTrusteeOf $ rbsParameters $ description ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'rbsCollection2' )",
             "( 2.16.840.1.113719.1.135.6.41.1 NAME 'rbsTask2' SUP Top STRUCTURAL MUST cn MAY ( rbsXMLInfo $ rbsContentMembership $ rbsType $ rbsTaskRights $ rbsEntryPoint $ rbsParameters $ description ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'rbsModule2' X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.135.6.42.1 NAME 'rbsBook2' SUP rbsTask2 STRUCTURAL MAY ( rbsTargetObjectType $ rbsPageMembership ) X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.135.6.43.1 NAME 'rbsScope2' SUP groupOfNames STRUCTURAL MAY ( rbsContext $ rbsXMLInfo ) X-NDS_CONTAINMENT 'rbsRole2' X-NDS_NOT_CONTAINER '1' )",
@@ -914,15 +942,14 @@ edir_8_8_8_schema = """
             "( 2.16.840.1.113719.1.1.6.1.50 NAME 'encryptionPolicy' SUP Top STRUCTURAL MUST cn MAY ( attrEncryptionDefinition $ attrEncryptionRequiresSecure ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'domain' 'organizationalUnit' 'Organization' ) X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.48.6.1.5 NAME 'ndspkiContainer' SUP Top STRUCTURAL MUST cn X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'ndspkiContainer' 'sASSecurity' 'Organization' 'organizationalUnit' 'Country' 'Locality' 'nDSPKITrustedRoot' ) )",
             "( 2.16.840.1.113719.1.48.6.1.6 NAME 'ndspkiCertificate' SUP Top STRUCTURAL MUST ( cn $ userCertificate ) MAY ( nDSPKISubjectName $ nDSPKINotBefore $ nDSPKINotAfter $ externalName $ givenName $ sn ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'sASSecurity' 'Organization' 'organizationalUnit' 'Country' 'Locality' 'ndspkiContainer' 'nDSPKITrustedRoot' ) X-NDS_NOT_CONTAINER '1' )",
-            "( 2.16.840.1.113719.1.48.6.1.7 NAME 'ndspkiCRLConfiguration' SUP Top STRUCTURAL MUST cn MAY ( ndspkiCRLFileName $ ndspkiDirectory $ ndspkiStatus $ ndspkiIssueTime $ ndspkiNextIssueTime $ ndspkiAttemptTime $ ndspkiTimeInterval $ ndspkiCRLMaxProcessingInterval $ ndspkiCRLNumber $ ndspkiDistributionPoints $ ndspkiDistributionPointDN $ ndspkiCADN $ ndspkiCRLProcessData $ nDSPKIPublicKey $ nDSPKIPrivateKey $ nDSPKIPublicKeyCertificate $ nDSPKICertificateChain $ nDSPKIParentCA $ nDSPKIParentCADN $ nDSPKISubjectName $ cACertificate $ hostServer ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'ndspkiContainer' )",
+            "( 2.16.840.1.113719.1.48.6.1.7 NAME 'ndspkiCRLConfiguration' SUP Top STRUCTURAL MUST cn MAY ( ndspkiCRLFileName $ ndspkiDirectory $ ndspkiStatus $ ndspkiIssueTime $ ndspkiNextIssueTime $ ndspkiAttemptTime $ ndspkiTimeInterval $ ndspkiCRLMaxProcessingInterval $ ndspkiCRLNumber $ ndspkiDistributionPoints $ ndspkiDistributionPointDN $ ndspkiCADN $ ndspkiCRLProcessData $ nDSPKIPublicKey $ nDSPKIPrivateKey $ nDSPKIPublicKeyCertificate $ nDSPKICertificateChain $ nDSPKIParentCA $ nDSPKIParentCADN $ nDSPKISubjectName $ cACertificate $ hostServer $ ndspkiCRLType $ ndspkiCRLExtendValidity ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'ndspkiContainer' )",
             "( 2.5.6.19 NAME 'cRLDistributionPoint' SUP Top STRUCTURAL MUST cn MAY ( authorityRevocationList $ authorityRevocationList $ cACertificate $ certificateRevocationList $ certificateRevocationList $ crossCertificatePair $ deltaRevocationList $ deltaRevocationList $ ndspkiCRLConfigurationDN ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'Country' 'Locality' 'organizationalUnit' 'Organization' 'sASSecurity' 'domain' 'ndspkiCRLConfiguration' ) X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.7.6.1 NAME 'notfTemplateCollection' SUP Top STRUCTURAL MUST cn MAY ( notfSMTPEmailHost $ notfSMTPEmailFrom $ notfSMTPEmailUserName $ sASSecretStore ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'sASSecurity' )",
             "( 2.16.840.1.113719.1.7.6.2 NAME 'notfMergeTemplate' SUP Top STRUCTURAL MUST cn MAY ( notfMergeTemplateData $ notfMergeTemplateSubject ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'notfTemplateCollection' X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.39.44.6.1 NAME 'nsimChallengeSet' SUP Top STRUCTURAL MUST cn MAY ( description $ nsimRequiredQuestions $ nsimRandomQuestions $ nsimNumberRandomQuestions $ nsimMinResponseLength $ nsimMaxResponseLength ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'nspmPasswordPolicyContainer' 'Country' 'domain' 'Locality' 'Organization' 'organizationalUnit' ) X-NDS_NOT_CONTAINER '1' )",
             "( 2.16.840.1.113719.1.266.6.1 NAME 'sssServerPolicies' SUP Top STRUCTURAL MUST cn MAY ( sssCacheRefreshInterval $ sssEnableReadTimestamps $ sssDisableMasterPasswords $ sssEnableAdminAccess $ sssAdminList $ sssAdminGALabel $ sssReadSecretPolicies ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'sASSecurity' )",
             "( 2.16.840.1.113719.1.266.6.2 NAME 'sssServerPolicyOverride' SUP Top STRUCTURAL MUST cn MAY ( sssCacheRefreshInterval $ sssEnableReadTimestamps $ sssDisableMasterPasswords $ sssEnableAdminAccess $ sssAdminList $ sssAdminGALabel $ sssReadSecretPolicies ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT ( 'sssServerPolicies' 'Organization' 'organizationalUnit' 'Country' 'Locality' 'domain' ) X-NDS_NOT_CONTAINER '1' )",
-            "( 2.16.840.1.113719.1.1.6.1.91 NAME 'nestedGroupAux' AUXILIARY MAY ( groupMember $ excludedMember $ nestedConfig $ groupMembership ) X-NDS_NOT_CONTAINER '1' )",
-            "( 2.16.840.1.113719.1.135.6.46.1 NAME 'rbsCategory2' SUP Top STRUCTURAL MUST cn MAY ( rbsRoleMember $ rbsXMLInfo $ rbsParameters $ description ) X-NDS_NAMING 'cn' X-NDS_CONTAINMENT 'rbsCollection2' X-NDS_NOT_CONTAINER '1' )"
+            "( 2.16.840.1.113719.1.1.6.1.91 NAME 'nestedGroupAux' AUXILIARY MAY ( groupMember $ excludedMember $ nestedConfig $ groupMembership ) X-NDS_NOT_CONTAINER '1' )"
         ]
     },
     "schema_entry": "cn=schema",
@@ -930,69 +957,69 @@ edir_8_8_8_schema = """
 }
 """
 
-edir_8_8_8_dsa_info = """
+edir_9_1_4_dsa_info = """
 {
     "raw": {
         "abandonOps": [
             "0"
         ],
         "addEntryOps": [
-            "947"
+            "0"
         ],
         "altServer": [],
         "bindSecurityErrors": [
-            "3"
+            "0"
         ],
         "chainings": [
             "0"
         ],
         "compareOps": [
-            "61"
+            "0"
         ],
         "directoryTreeName": [
-            "EDIR-TEST"
+            "TEST_TREE"
         ],
         "dsaName": [
-            "cn=edir1,o=services"
+            "cn=MYSERVER,o=resources"
         ],
         "errors": [
-            "984"
+            "0"
         ],
         "extendedOps": [
-            "213"
+            "0"
         ],
         "inBytes": [
-            "1253717"
+            "293"
         ],
         "inOps": [
-            "14342"
+            "3"
         ],
         "listOps": [
             "0"
         ],
         "modifyEntryOps": [
-            "121"
+            "0"
         ],
         "modifyRDNOps": [
-            "63"
+            "0"
         ],
         "namingContexts": [
             ""
         ],
         "oneLevelSearchOps": [
-            "129"
+            "0"
         ],
         "outBytes": [
-            "547685251"
+            "14"
         ],
         "readOps": [
-            "7427"
+            "1"
         ],
         "referralsReturned": [
             "0"
         ],
         "removeEntryOps": [
-            "146"
+            "0"
         ],
         "repUpdatesIn": [
             "0"
@@ -1001,31 +1028,35 @@ edir_8_8_8_dsa_info = """
             "0"
         ],
         "searchOps": [
-            "8316"
+            "1"
         ],
         "securityErrors": [
-            "3"
+            "0"
         ],
         "simpleAuthBinds": [
-            "1654"
+            "1"
         ],
         "strongAuthBinds": [
-            "57"
+            "0"
         ],
         "subschemaSubentry": [
             "cn=schema"
         ],
+        "supportedCapabilities": [],
         "supportedControl": [
             "2.16.840.1.113719.1.27.101.6",
             "2.16.840.1.113719.1.27.101.5",
             "1.2.840.113556.1.4.319",
             "2.16.840.1.113730.3.4.3",
             "2.16.840.1.113730.3.4.2",
+            "2.16.840.1.113719.1.27.101.57",
             "2.16.840.1.113719.1.27.103.7",
             "2.16.840.1.113719.1.27.101.40",
             "2.16.840.1.113719.1.27.101.41",
             "1.2.840.113556.1.4.1413",
-            "1.2.840.113556.1.4.805"
+            "1.2.840.113556.1.4.805",
+            "2.16.840.1.113730.3.4.18",
+            "1.2.840.113556.1.4.529"
         ],
         "supportedExtension": [
             "2.16.840.1.113719.1.148.100.1",
@@ -1051,6 +1082,8 @@ edir_8_8_8_dsa_info = """
             "2.16.840.1.113719.1.39.42.100.23",
             "2.16.840.1.113719.1.39.42.100.25",
             "2.16.840.1.113719.1.39.42.100.27",
+            "2.16.840.1.113719.1.39.42.100.29",
+            "1.3.6.1.4.1.4203.1.11.1",
             "2.16.840.1.113719.1.27.100.1",
             "2.16.840.1.113719.1.27.100.3",
             "2.16.840.1.113719.1.27.100.5",
@@ -1104,22 +1137,19 @@ edir_8_8_8_dsa_info = """
             "3"
         ],
         "supportedSASLMechanisms": [
-            "NMAS_LOGIN",
-            "EXTERNAL",
-            "DIGEST-MD5",
-            "GSSAPI"
+            "NMAS_LOGIN"
         ],
         "unAuthBinds": [
-            "1897"
+            "0"
         ],
         "vendorName": [
             "NetIQ Corporation"
         ],
         "vendorVersion": [
-            "LDAP Agent for NetIQ eDirectory 8.8 SP8 (20804.04)"
+            "LDAP Agent for NetIQ eDirectory 9.1.4 (40105.09)"
         ],
         "wholeSubtreeSearchOps": [
-            "760"
+            "0"
         ]
     },
     "type": "DsaInfo"

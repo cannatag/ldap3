@@ -30,7 +30,7 @@ from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT,
     ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
     NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM,\
     AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES, MODIFY_ADD
-from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
+from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
@@ -436,8 +436,8 @@ def get_connection(bind=None,
                             mode=test_server_mode)
     else:
         if test_server_type == 'EDIR':
-            schema = SchemaInfo.from_json(edir_8_8_8_schema)
-            info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
+            schema = SchemaInfo.from_json(edir_9_1_4_schema)
+            info = DsaInfo.from_json(edir_9_1_4_dsa_info, schema)
             server = Server.from_definition('MockSyncServer', info, schema)
         elif test_server_type == 'AD':
             schema = SchemaInfo.from_json(ad_2012_r2_schema)

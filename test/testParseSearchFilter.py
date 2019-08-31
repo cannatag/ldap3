@@ -27,7 +27,7 @@ import unittest
 
 from ldap3.operation.search import parse_filter, MATCH_EQUAL, MATCH_EXTENSIBLE
 from ldap3.utils.conv import escape_filter_chars
-from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema
+from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
 from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
 from test.config import test_auto_escape, test_auto_encode, test_validator, test_check_names
@@ -101,19 +101,19 @@ class Test(unittest.TestCase):
         self.assertEqual(f.elements[0].assertion['value'], b'Doe \\28Missing Inc\\29')
 
     def test_parse_search_filter_bad_attribute_type_check_true(self):
-        self.assertRaises(LDAPAttributeError, parse_filter, '(bad=admin)', SchemaInfo.from_json(edir_8_8_8_schema), test_auto_escape, test_auto_encode, test_validator, check_names=True)
+        self.assertRaises(LDAPAttributeError, parse_filter, '(bad=admin)', SchemaInfo.from_json(edir_9_1_4_schema), test_auto_escape, test_auto_encode, test_validator, check_names=True)
 
     def test_parse_search_filter_bad_attribute_type_check_false(self):
-        f = parse_filter('(bad=admin)', SchemaInfo.from_json(edir_8_8_8_schema), test_auto_escape, test_auto_encode, test_validator, check_names=False)
+        f = parse_filter('(bad=admin)', SchemaInfo.from_json(edir_9_1_4_schema), test_auto_escape, test_auto_encode, test_validator, check_names=False)
         self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
         self.assertEqual(f.elements[0].assertion['attr'], 'bad')
         self.assertEqual(f.elements[0].assertion['value'], b'admin')
 
     def test_parse_search_filter_bad_object_class_type_check_true(self):
-        self.assertRaises(LDAPObjectClassError, parse_filter, '(objectClass=bad)', SchemaInfo.from_json(edir_8_8_8_schema), test_auto_escape, test_auto_encode, test_validator, check_names=True)
+        self.assertRaises(LDAPObjectClassError, parse_filter, '(objectClass=bad)', SchemaInfo.from_json(edir_9_1_4_schema), test_auto_escape, test_auto_encode, test_validator, check_names=True)
 
     def test_parse_search_filter_bad_object_class_type_check_false(self):
-        f = parse_filter('(objectClass=bad)', SchemaInfo.from_json(edir_8_8_8_schema), test_auto_escape, test_auto_encode, test_validator, check_names=False)
+        f = parse_filter('(objectClass=bad)', SchemaInfo.from_json(edir_9_1_4_schema), test_auto_escape, test_auto_encode, test_validator, check_names=False)
         self.assertEqual(f.elements[0].tag, MATCH_EQUAL)
         self.assertEqual(f.elements[0].assertion['attr'], 'objectClass')
         self.assertEqual(f.elements[0].assertion['value'], b'bad')

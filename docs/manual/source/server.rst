@@ -31,6 +31,8 @@ The Server object specifies the DSA (Directory Server Agent) LDAP server that wi
 
     * OFFLINE_EDIR_8_8_8: pre-built schema and info for NetIQ eDirectory 8.8.8
 
+    * OFFLINE_EDIR_9_1_4: pre-built schema and info for NetIQ eDirectory 9.1.4
+
     * OFFLINE_AD_2012_R2: pre-built schema and info for Microsoft Active Directory from Windows Server 2012 R2
 
     * OFFLINE_SLAPD_2_4: pre-built schema and info for Openldap 2.4

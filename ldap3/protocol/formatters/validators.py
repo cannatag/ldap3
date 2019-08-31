@@ -69,7 +69,7 @@ def validate_generic_single_value(input_value):
 
 
 def validate_zero_and_minus_one_and_positive_int(input_value):
-    """Accept -1 only (used by pwdLastSet in AD)
+    """Accept -1 and 0 only (used by pwdLastSet in AD)
     """
     if not isinstance(input_value, SEQUENCE_TYPES):
         if isinstance(input_value, NUMERIC_TYPES) or isinstance(input_value, STRING_TYPES):

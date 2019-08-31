@@ -19,6 +19,7 @@
     - Schema info now uses CaseInsensitiveWithAlias dict as default so object and attributes can also be referentiated with OID (thanks ahoffm11)
     - added block mode and timeout parameters to next() method of persistent_search
     - when using the pyasn1 decoder raw_dn is not returned as a pyasn1 object anymore but as bytes
+    - Return offset timezone aware datetime for max AD timestamp (thanks Jussi)
 
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package

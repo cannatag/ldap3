@@ -210,7 +210,7 @@ elif location == 'ELITE10GC-EDIR':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
-    test_valid_names = ['192.168.137.101', '192.168.137.102']
+    test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.109']
 elif location == 'ELITE10GC-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',

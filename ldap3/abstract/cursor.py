@@ -81,6 +81,8 @@ class Cursor(object):
             connection._fire_deferred()
 
         if isinstance(object_def, (STRING_TYPES, SEQUENCE_TYPES)):
+            if connection.closed:  # try to open connection if closed to read schema
+                connection.bind()
             object_def = ObjectDef(object_def, connection.server.schema, auxiliary_class=auxiliary_class)
         self.definition = object_def
         if attributes:  # checks if requested attributes are defined in ObjectDef

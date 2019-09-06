@@ -60,10 +60,10 @@ While defining the mock server you can specify a predefined schema with the ``ge
     from ldap3 import Server, Connection, OFFLINE_SLAPD_2_4
     server = Server('my_fake_server', get_info=OFFLINE_SLAPD_2_4)
 
-The available offline schemas are OFFLINE_SLAPD_2_4 (OpenLDAP), OFFLINE_EDIR_8_8_8 (eDirectory), OFFLINE_AD_2012_R2 (Active Directory) and
+The available offline schemas are OFFLINE_SLAPD_2_4 (OpenLDAP), OFFLINE_EDIR_8_8_8 (eDirectory8), OFFLINE_EDIR_9_1_4 (eDirectory9), OFFLINE_AD_2012_R2 (Active Directory) and
 OFFLINE_DS389_1_3_3 (389 Directory Server).
 
-You can also speficy a previously saved schema and info retrieved from a real server::
+You can also specify a previously saved schema and info retrieved from a real server::
 
     from ldap3 import Server, Connection, ALL
 

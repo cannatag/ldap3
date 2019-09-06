@@ -104,8 +104,9 @@ def format_ad_timestamp(raw_value):
     that have elapsed since the 0 hour on January 1, 1601 till the date/time that is being stored.
     The time is always stored in Greenwich Mean Time (GMT) in the Active Directory.
     """
+    utc_timezone = OffsetTzInfo(0, 'UTC')
     if raw_value == b'9223372036854775807':  # max value to be stored in a 64 bit signed int
-        return datetime.max  # returns datetime.datetime(9999, 12, 31, 23, 59, 59, 999999)
+        return datetime.max.replace(tzinfo=utc_timezone)  # returns datetime.datetime(9999, 12, 31, 23, 59, 59, 999999, tzinfo=OffsetTzInfo(offset=0, name='UTC'))
     try:
         timestamp = int(raw_value)
         if timestamp < 0:  # ad timestamp cannot be negative
@@ -115,10 +116,10 @@ def format_ad_timestamp(raw_value):
 
     try:
         return datetime.fromtimestamp(timestamp / 10000000.0 - 11644473600,
-                                      tz=OffsetTzInfo(0, 'UTC'))  # forces true division in python 2
+                                      tz=utc_timezone)  # forces true division in python 2
     except (OSError, OverflowError, ValueError):  # on Windows backwards timestamps are not allowed
         try:
-            unix_epoch = datetime.fromtimestamp(0, tz=OffsetTzInfo(0, 'UTC'))
+            unix_epoch = datetime.fromtimestamp(0, tz=utc_timezone)
             diff_seconds = timedelta(seconds=timestamp / 10000000.0 - 11644473600)
             return unix_epoch + diff_seconds
         except Exception:
@@ -338,10 +339,16 @@ def format_ad_timedelta(raw_value):
     """
     # Active Directory stores attributes like "minPwdAge" as a negative
     # "filetime" timestamp, which is the number of 100-nanosecond intervals that
-    # have elapsed since the 0 hour on January 1, 1601. By making the number
-    # positive, we can reuse format_ad_timestamp to get a datetime object.
-    # Afterwards, we can subtract a datetime representing 0 hour on January 1,
-    # 1601 from the returned datetime to get the timedelta.
+    # have elapsed since the 0 hour on January 1, 1601.
+    #
+    # Handle the minimum value that can be stored in a 64 bit signed integer.
+    # See https://docs.microsoft.com/en-us/dotnet/api/system.int64.minvalue
+    # In attributes like "maxPwdAge", this signifies never.
+    if raw_value == b'-9223372036854775808':
+        return timedelta.max
+    # We can reuse format_ad_timestamp to get a datetime object from the
+    # timestamp. Afterwards, we can subtract a datetime representing 0 hour on
+    # January 1, 1601 from the returned datetime to get the timedelta.
     return format_ad_timestamp(raw_value) - format_ad_timestamp(0)
 
 

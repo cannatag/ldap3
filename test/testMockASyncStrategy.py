@@ -26,11 +26,10 @@
 
 import unittest
 
-from ldap3 import Server, Connection, MOCK_ASYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_EDIR_8_8_8,\
-    BASE, LEVEL, SUBTREE, AUTO_BIND_NO_TLS, NONE
+from ldap3 import Server, Connection, MOCK_ASYNC, MODIFY_ADD, MODIFY_REPLACE, MODIFY_DELETE, OFFLINE_EDIR_9_1_4, BASE, LEVEL, SUBTREE, AUTO_BIND_NO_TLS, NONE
 from ldap3.core.exceptions import LDAPInvalidCredentialsResult, LDAPNoSuchObjectResult
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
-from ldap3.protocol.schemas.edir888 import edir_8_8_8_dsa_info, edir_8_8_8_schema
+from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from test.config import random_id
 
 testcase_id = ''
@@ -41,13 +40,13 @@ class Test(unittest.TestCase):
         global testcase_id
         testcase_id = random_id()
         # The mock server can be defined in two different ways, so tests are duplicated, connection_3 is without schema
-        schema = SchemaInfo.from_json(edir_8_8_8_schema)
-        info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
+        schema = SchemaInfo.from_json(edir_9_1_4_schema)
+        info = DsaInfo.from_json(edir_9_1_4_dsa_info, schema)
         server_1 = Server.from_definition('MockSyncServer', info, schema)
         self.connection_1 = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_ASYNC)
         self.connection_1b = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_ASYNC)
         self.connection_1c = Connection(server_1, user='cn=user1,ou=test,o=lab', password='test1111', client_strategy=MOCK_ASYNC, raise_exceptions=True)
-        server_2 = Server('dummy', get_info=OFFLINE_EDIR_8_8_8)
+        server_2 = Server('dummy', get_info=OFFLINE_EDIR_9_1_4)
         self.connection_2 = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_ASYNC)
         self.connection_2b = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_ASYNC)
         self.connection_2c = Connection(server_2, user='cn=user2,ou=test,o=lab', password='test2222', client_strategy=MOCK_ASYNC, raise_exceptions=True)

@@ -1,3 +1,27 @@
+# 2.6.1 - 2019.09.06
+    - tested against pyasn1 0.4.7
+    - added eDirectory 9.1.4 (EDIR_9_1_4) to offline schemas
+    - added json converter for timedelta (thanks dirkjanm)
+    - strip parameter defaults to False in utils.dn.parse_dn()
+    - escaped space is allowed as trailing character in attribute_value in utils.dn.parse_dn() (thanks phi1010)
+    - connection.extend.standard.paged_search doesn't raise exceptions when raise_exceptions is False
+    - the Search operation returns the entries fetched by the server when size or time limits are reached even if raise_exceptions is set to True
+    - Handle the minimum value that can be stored in an Int64 in format_ad_timedelta (thanks mprahl)
+    - EntryState: `entry_raw_attributes` is populated instead of `raw_attributes` (thanks Christian)
+    - Removed restriction to perform rename and move simultaneously in modify_dn (thanks Fabian)
+    - fixed checking for hexdigits in parse_dn (thanks Michael)
+    - fixed escaping when multiple backslashes are present in parse_dn (thanks Phillip)
+    - fixed multiple NoneType exceptions in entry_to_json() (thanks David and cfelder)
+    - allowing Microsoft specific syntax (<WKGUID=xxx>) for WellKnownObjects in DN (thanks David)
+    - connection.extend.standard.paged_search() now follows referrals when auto_referrals=True (thanks kprativa)
+    - fixed a bug in decoding replica list in connection.extend.novell.list_replicas()
+    - fixed a bug when adding duplicate alias in CaseInsensitiveWithAliasDict()
+    - added ignore_duplicates=False in set_aliases in CaseInsensitiveWithAliasDict() to ignore a duplicate alias (either in aliases or in keys)
+    - Schema info now uses CaseInsensitiveWithAlias dict as default so object and attributes can also be referentiated with OID (thanks ahoffm11)
+    - added block mode and timeout parameters to next() method of persistent_search
+    - when using the pyasn1 decoder raw_dn is not returned as a pyasn1 object anymore but as bytes
+    - Return offset timezone aware datetime for max AD timestamp (thanks Jussi)
+
 # 2.6 - 2019.03.24
     - fixed empty digestMd5.py file in 2.5.2 package
     - explicitly declare digest module md5 in util.ntlm (thanks adawalli)

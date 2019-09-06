@@ -1012,8 +1012,7 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.fail('wrong exception')
-        else:
-            self.fail('double alias')
+
         self.assertEqual(cid._store, {'oNe': 1})
         self.assertEqual(cid._aliases, {'one-a': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
@@ -1026,8 +1025,7 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.fail('wrong exception')
-        else:
-            self.fail('double alias')
+
         self.assertEqual(cid._store, {'oNe': 1})
         self.assertEqual(cid._aliases, {'one-a': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
@@ -1041,8 +1039,7 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.fail('wrong exception')
-        else:
-            self.fail('double alias')
+
         self.assertEqual(cid._store, {'oNe': 1})
         self.assertEqual(cid._aliases, {'one-a': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-a']})
@@ -1056,8 +1053,7 @@ class Test(unittest.TestCase):
             self.assertTrue(True)
         except Exception:
             self.fail('wrong exception')
-        else:
-            self.fail('double alias')
+
         self.assertEqual(cid._store, {'oNe': 1})
         self.assertEqual(cid._aliases, {'one-a': 'one'})
         self.assertEqual(cid._alias_keymap, {'one': ['one-a']})

@@ -45,6 +45,6 @@ class ListReplicas(ExtendedOperation):
 
     def populate_result(self):
         try:
-            self.result['replicas'] = str(self.decoded_response['replicaList']) if self.decoded_response['replicaList'] else None
+            self.result['replicas'] = [str(replica) for replica in self.decoded_response] if self.decoded_response else None
         except TypeError:
             self.result['replicas'] = None

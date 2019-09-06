@@ -25,14 +25,14 @@
 
 import unittest
 
-from ldap3 import Server, OFFLINE_EDIR_8_8_8, SchemaInfo, DsaInfo
+from ldap3 import Server, OFFLINE_EDIR_9_1_4, SchemaInfo, DsaInfo
 from ldap3.protocol.rfc4512 import ObjectClassInfo, AttributeTypeInfo
 from test.config import test_server, get_connection, drop_connection
 
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.connection = get_connection(get_info=OFFLINE_EDIR_8_8_8)
+        self.connection = get_connection(get_info=OFFLINE_EDIR_9_1_4)
 
     def tearDown(self):
         drop_connection(self.connection)

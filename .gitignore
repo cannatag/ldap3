@@ -34,7 +34,7 @@ var/
 *.manifest
 *.spec
 
-# Installer logs
+# Installer log
 pip-log.txt
 pip-delete-this-directory.txt
 
@@ -174,7 +174,7 @@ MANIFEST
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 
-# Installer logs
+# Installer log
 
 # Unit test / coverage reports
 *.cover

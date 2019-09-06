@@ -30,8 +30,9 @@ import json
 
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, \
-    STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL, DIGEST_MD5, GSSAPI, PLAIN
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND,\
+    AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
+    DIGEST_MD5, GSSAPI, PLAIN
 
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
@@ -337,7 +338,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'performing automatic bind for <%s>', self)
             if self.closed:
-               self.open(read_server_info=False)
+                self.open(read_server_info=False)
             if self.auto_bind == AUTO_BIND_NO_TLS:
                 self.bind(read_server_info=True)
             elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
@@ -1115,11 +1116,11 @@ class Connection(object):
                     log(ERROR, '%s for <%s>', self.last_error, self)
                 raise LDAPConnectionIsReadOnlyError(self.last_error)
 
-            if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
-                self.last_error = 'DN cannot change while performing moving'
-                if log_enabled(ERROR):
-                    log(ERROR, '%s for <%s>', self.last_error, self)
-                raise LDAPChangeError(self.last_error)
+            # if new_superior and not dn.startswith(relative_dn):  # as per RFC4511 (4.9)
+            #     self.last_error = 'DN cannot change while performing moving'
+            #     if log_enabled(ERROR):
+            #         log(ERROR, '%s for <%s>', self.last_error, self)
+            #     raise LDAPChangeError(self.last_error)
 
             request = modify_dn_operation(dn, relative_dn, delete_old_dn, new_superior)
             if log_enabled(PROTOCOL):

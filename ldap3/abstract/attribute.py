@@ -174,7 +174,7 @@ class WritableAttribute(Attribute):
             log(PROTOCOL, 'adding %r to <%s> attribute in <%s> entry', values, self.key, self.entry.entry_dn)
         # new value for attribute to commit with a MODIFY_ADD
         if self.entry._state._initial_status == STATUS_VIRTUAL:
-            error_message = 'cannot add an attribute value in a new entry'
+            error_message = 'cannot perform a modify operation in a new entry'
             if log_enabled(ERROR):
                 log(ERROR, '%s for <%s>', error_message, self)
             raise LDAPCursorError(error_message)

@@ -34,6 +34,18 @@ class Test(unittest.TestCase):
         self.assertEqual(len(parsed), 1)
         self.assertEqual(parsed[0], ('cn', 'admin', ''))
 
+    def test_parse_dn_single_multi_rdn(self):
+        parsed = p('cn=admin+email=admin@site.com')
+        self.assertEqual(len(parsed), 2)
+        self.assertEqual(parsed[0], ('cn', 'admin', '+'))
+        self.assertEqual(parsed[1], ('email', 'admin@site.com', ''))
+
+    def test_parse_dn_escaped_single_multi_rdn(self):
+        parsed = p('cn=\\\\\\+admin+email=admin@site.com')
+        self.assertEqual(len(parsed), 2)
+        self.assertEqual(parsed[0], ('cn', '\\\\\\+admin', '+'))
+        self.assertEqual(parsed[1], ('email', 'admin@site.com', ''))
+
     def test_parse_dn_double(self):
         parsed = p('cn=user1,o=users')
         self.assertEqual(len(parsed), 2)
@@ -66,6 +78,12 @@ class Test(unittest.TestCase):
         self.assertEqual(len(parsed), 2)
         self.assertEqual(parsed[0], ('cn', 'us\\=er1', ','))
         self.assertEqual(parsed[1], ('o', 'us\\,ers', ''))
+
+    def test_parse_dn_escaped_double_1(self):
+        parsed = p('cn=\\\\,o=\\\\')
+        self.assertEqual(len(parsed), 2)
+        self.assertEqual(parsed[0], ('cn', '\\\\', ','))
+        self.assertEqual(parsed[1], ('o', '\\\\', ''))
 
     def test_parse_dn_escaped_multi(self):
         parsed = p('cn=us\\,er1,ou=us\\08ers,dc=br\\,anch,dc=company,c=IT')
@@ -109,3 +127,79 @@ class Test(unittest.TestCase):
         self.assertEqual(parsed[0], ('cn', 'us\\+er1', '+'))
         self.assertEqual(parsed[1], ('sn', 'su\\,rname1', ','))
         self.assertEqual(parsed[2], ('o', 'users', ''))
+
+    def pair_generator(self):
+        # escaped = DQUOTE / PLUS / COMMA / SEMI / LANGLE / RANGLE
+        escaped = ['"', '+', ',', ';', '<', '>']
+        # special = escaped / SPACE / SHARP / EQUALS
+        special = escaped + [' ', '#', '=']
+        ESC = ['\\']
+        # hexpair = HEX HEX
+        hexpairs = ['00', '99', 'aa', 'AA', 'ff', 'FF', 'aF', 'Af']
+        # pair = ESC ( ESC / special / hexpair )
+        pair = self.combine_strings(ESC, ESC + special + hexpairs)
+        return pair
+
+    def test_parse_dn_pair(self):
+        if hasattr(self, 'subTest'):  # python3 only
+            for onepair in self.pair_generator():
+                for attributeValue, mode in [
+                    (onepair, "alone"),
+                    ("a" + onepair + "b", "between"),
+                    ("a" + onepair, "after"),
+                    (onepair + "b", "before")
+                ]:
+                    for separator in [None, '+', ',']:
+
+                        if not separator:
+                            dn = r'cn={0}'.format(attributeValue)
+                            expected = [('cn', attributeValue, '')]
+                        else:
+                            dn = r'cn={0}{1}ou={0}'.format(attributeValue, separator)
+                            expected = [('cn', attributeValue, separator), ('ou', attributeValue, '')]
+
+                        with self.subTest(pair=onepair, separator=separator, mode=mode, input=dn):
+                            self._test_parse_dn(
+                                dn,
+                                expected
+                            )
+
+
+    def combine_strings(self, *args):
+        if len(args) == 0: raise Exception("Invalid parameter")
+        if len(args) == 1:
+            for variant in args[0]:
+                yield variant
+        else:
+            for head in args[0]:
+                for tail in self.combine_strings(*args[1:]):
+                    variant = head + tail
+                    yield variant
+
+    def test_combine_strings(self):
+        variants = set(self.combine_strings(['a', 'b'], ['x', 'y']))
+        self.assertEqual(variants, {'ax', 'ay', 'bx', 'by'})
+
+    def test_combine_strings_empty1(self):
+        variants = set(self.combine_strings([], ['x', 'y']))
+        self.assertEqual(len(variants), 0)
+
+    def test_combine_strings_empty2(self):
+        variants = set(self.combine_strings(['a', 'b'], []))
+        self.assertEqual(len(variants), 0)
+
+    def _test_parse_dn(self, input, expected):
+        parsed = p(input, escape=False)
+        self.assertEqual(parsed, expected)
+
+    def test_unit_test_deep_equality(self):
+        self.assertEqual([], [])
+        self.assertNotEqual([], [()])
+        self.assertEqual([()], [()])
+        self.assertNotEqual([()], [(), ()])
+        self.assertNotEqual([()], [('b')])
+        self.assertEqual([('a')], [('a')])
+        self.assertNotEqual([('a')], [('b')])
+        self.assertEqual([('a', 'b', 'x'), ('a', 'b', 'x')], [('a', 'b', 'x'), ('a', 'b', 'x')])
+        self.assertNotEqual([('a', 'b', 'x'), ('a', 'b', 'x')], [('a', 'b', 'x'), ('a', 'b', 'y')])
+        self.assertNotEqual([('1')], [(1)])

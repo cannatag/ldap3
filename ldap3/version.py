@@ -1,9 +1,9 @@
 # THIS FILE IS AUTO-GENERATED. PLEASE DO NOT MODIFY# version file for ldap3
-# generated on 2019-03-24 09:25:59.057943
-# on system uname_result(system='Windows', node='ELITE10GC', release='10', version='10.0.17763', machine='AMD64', processor='Intel64 Family 6 Model 58 Stepping 9, GenuineIntel')
-# with Python 3.7.2 - ('tags/v3.7.2:9a3ffc0492', 'Dec 23 2018 23:09:28') - MSC v.1916 64 bit (AMD64)
+# generated on 2019-09-06 06:02:04.704650
+# on system uname_result(system='Windows', node='ELITE10GC', release='10', version='10.0.18362', machine='AMD64', processor='Intel64 Family 6 Model 58 Stepping 9, GenuineIntel')
+# with Python 3.7.4 - ('tags/v3.7.4:e09359112e', 'Jul  8 2019 20:34:20') - MSC v.1916 64 bit (AMD64)
 #
-__version__ = '2.6'
+__version__ = '2.6.1'
 __author__ = 'Giovanni Cannata'
 __email__ = 'cannatag@gmail.com'
 __url__ = 'https://github.com/cannatag/ldap3'

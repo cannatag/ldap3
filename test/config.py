@@ -29,8 +29,8 @@ from tempfile import gettempdir
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
     ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
     NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM,\
-    AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES
-from ldap3.protocol.schemas.edir888 import edir_8_8_8_schema, edir_8_8_8_dsa_info
+    AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES, MODIFY_ADD
+from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
 from ldap3.protocol.schemas.slapd24 import slapd_2_4_schema, slapd_2_4_dsa_info
 from ldap3.protocol.rfc4512 import SchemaInfo, DsaInfo
@@ -38,7 +38,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
@@ -48,7 +48,7 @@ test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
-test_internal_decoder = True  # True uses then internal decodervfaster than pyasn1 while receiving data
+test_internal_decoder = False  # True uses the internal ASN.1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -210,7 +210,7 @@ elif location == 'ELITE10GC-EDIR':
     test_ntlm_user = 'xxx\\yyy'
     test_ntlm_password = 'zzz'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
-    test_valid_names = ['192.168.137.101', '192.168.137.102']
+    test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.109']
 elif location == 'ELITE10GC-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
@@ -436,8 +436,8 @@ def get_connection(bind=None,
                             mode=test_server_mode)
     else:
         if test_server_type == 'EDIR':
-            schema = SchemaInfo.from_json(edir_8_8_8_schema)
-            info = DsaInfo.from_json(edir_8_8_8_dsa_info, schema)
+            schema = SchemaInfo.from_json(edir_9_1_4_schema)
+            info = DsaInfo.from_json(edir_9_1_4_dsa_info, schema)
             server = Server.from_definition('MockSyncServer', info, schema)
         elif test_server_type == 'AD':
             schema = SchemaInfo.from_json(ad_2012_r2_schema)
@@ -603,7 +603,8 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
 
     if test_server_type == 'EDIR':
         attributes.update({'objectClass': 'inetOrgPerson',
-                           'sn': username})
+                           'sn': username,
+                           'userPassword': password})
     elif test_server_type == 'AD':
         attributes.update({'objectClass': ['person', 'user', 'organizationalPerson', 'top', 'inetOrgPerson'],
                            'sn': username,
@@ -619,6 +620,7 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
     return attributes
 
 
+
 def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):
     if password is None:
         password = test_user_password
@@ -628,14 +630,31 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
         attributes = attributes_to_bytes(attributes)
 
     dn = generate_dn(test_base, batch_id, username)
-    operation_result = connection.add(dn, None, attributes)
+    if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
+        # operation_result = connection.add(dn, None, {attribute: attributes[attribute] for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']})
+        operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if attribute in ['userPassword', 'objectClass', 'sn', 'givenname']))
+        changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
+        if changes:
+            operation_result = connection.modify(dn, changes)
+    else:
+        operation_result = connection.add(dn, None, attributes)
     result = get_operation_result(connection, operation_result)
     if not result['description'] == 'success':
         # maybe the entry already exists, try to delete
         operation_result = connection.delete(dn)
         sleep(5)
-        result = get_operation_result(connection, operation_result)
-        operation_result = connection.add(dn, None, attributes)
+        if test_server_type == 'EDIR':  # in eDirectory first create the user with the password and then modify the other attributes
+            operation_result = connection.add(dn, None, dict((attribute, attributes[attribute]) for attribute in attributes if
+                                                         attribute in ['userPassword', 'objectClass', 'sn',
+                                                                       'givenname']))
+            if test_strategy == 'REUSABLE':
+                sleep(5)  # wait for the previous operation to complete
+            changes = dict((attribute, [(MODIFY_ADD, attributes[attribute])]) for attribute in attributes if
+                       attribute not in ['userPassword', 'objectClass', 'sn', 'givenname'])
+            if changes:
+                operation_result = connection.modify(dn, changes)
+        else:
+            operation_result = connection.add(dn, None, attributes)
         result = get_operation_result(connection, operation_result)
         if not result['description'] == 'success':
             print(attributes)
@@ -663,3 +682,4 @@ def add_group(connection, batch_id, groupname, members=None, test_bytes=False):
         raise Exception('unable to create group ' + groupname + ': ' + str(result))
 
     return dn, result
+

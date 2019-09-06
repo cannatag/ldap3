@@ -169,6 +169,36 @@ class StandardExtendedOperations(ExtendedOperationContainer):
                                 streaming,
                                 callback)
 
+    def funnel_search(self,
+                      search_base='',
+                      search_filter='',
+                      search_scope=SUBTREE,
+                      dereference_aliases=DEREF_NEVER,
+                      attributes=ALL_ATTRIBUTES,
+                      size_limit=0,
+                      time_limit=0,
+                      controls=None,
+                      streaming=True,
+                      callback=None,
+                      queue_size=8
+                      ):
+        if callback:
+            streaming = False
+        return PersistentSearch(self._connection,
+                                search_base,
+                                search_filter,
+                                search_scope,
+                                dereference_aliases,
+                                attributes,
+                                size_limit,
+                                time_limit,
+                                controls,
+                                None,
+                                None,
+                                None,
+                                streaming,
+                                callback)
+
 
 class NovellExtendedOperations(ExtendedOperationContainer):
     def get_bind_dn(self, controls=None):

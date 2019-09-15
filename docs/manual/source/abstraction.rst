@@ -458,7 +458,7 @@ as Entries form a Search response, as a single Entry from a Search response or a
     >>> e = w[0]  # A Cursor is indexed on the Entries collection
 
     # make a Writable Cursor from an LDAP search response, you must specify the objectDef
-    >>> c.search('o=test', '(objectClass=inetOrgPerson), attributes=['cn', 'sn', 'givenName']
+    >>> c.search('o=test', '(objectClass=inetOrgPerson)', attributes=['cn', 'sn', 'givenName'])
     >>> w = Writer.from_response(c, c.response, 'inetOrgPerson')
     >>> e = w[0]
 

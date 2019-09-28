@@ -318,4 +318,4 @@ def check_hostname(sock, server_name, additional_names):
 
     if log_enabled(ERROR):
         log(ERROR, "hostname doesn't match certificate")
-    raise LDAPCertificateError("certificate %s doesn't match any name in %s " % (server_certificate, str(host_names)))
+        raise LDAPCertificateError("certificate %s doesn't match any name in %s " % (server_certificate, str(host_names)))

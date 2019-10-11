@@ -86,6 +86,11 @@ class EntryState(object):
     def __str__(self):
         return self.__repr__()
 
+    def __getstate__(self):
+        cpy = dict(self.__dict__)
+        cpy['cursor'] = None
+        return cpy
+
     def set_status(self, status):
         conf_ignored_mandatory_attributes_in_object_def = [v.lower() for v in get_config_parameter('IGNORED_MANDATORY_ATTRIBUTES_IN_OBJECT_DEF')]
         if status not in STATUSES:

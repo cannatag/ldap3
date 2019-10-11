@@ -83,6 +83,11 @@ class Attribute(object):
     def __getitem__(self, item):
         return self.values[item]
 
+    def __getstate__(self):
+        cpy = dict(self.__dict__)
+        cpy['cursor'] = None
+        return cpy
+
     def __eq__(self, other):
         try:
             if self.value == other:

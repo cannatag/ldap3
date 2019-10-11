@@ -36,7 +36,7 @@ from .. import STRING_TYPES, SEQUENCE_TYPES, MODIFY_ADD, MODIFY_REPLACE
 from .attribute import WritableAttribute
 from .objectDef import ObjectDef
 from .attrDef import AttrDef
-from ..core.exceptions import LDAPKeyError, LDAPCursorError
+from ..core.exceptions import LDAPKeyError, LDAPCursorError, LDAPCursorAttributeError
 from ..utils.conv import check_json_dict, format_json, prepare_for_stream
 from ..protocol.rfc2849 import operation_to_ldif, add_ldif_header
 from ..utils.dn import safe_dn, safe_rdn, to_dn
@@ -193,12 +193,12 @@ class EntryBase(object):
                 error_message = 'attribute \'%s\' not found' % item
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', error_message, self)
-                raise LDAPCursorError(error_message)
+                raise LDAPCursorAttributeError(error_message)
             return self._state.attributes[attr]
         error_message = 'attribute name must be a string'
         if log_enabled(ERROR):
             log(ERROR, '%s for <%s>', error_message, self)
-        raise LDAPCursorError(error_message)
+        raise LDAPCursorAttributeError(error_message)
 
     def __setattr__(self, item, value):
         if item == '_state':
@@ -207,12 +207,12 @@ class EntryBase(object):
             error_message = 'attribute \'%s\' is read only' % item
             if log_enabled(ERROR):
                 log(ERROR, '%s for <%s>', error_message, self)
-            raise LDAPCursorError(error_message)
+            raise LDAPCursorAttributeError(error_message)
         else:
             error_message = 'entry is read only, cannot add \'%s\'' % item
             if log_enabled(ERROR):
                 log(ERROR, '%s for <%s>', error_message, self)
-            raise LDAPCursorError(error_message)
+            raise LDAPCursorAttributeError(error_message)
 
     def __getitem__(self, item):
         if isinstance(item, STRING_TYPES):
@@ -473,7 +473,7 @@ class WritableEntry(EntryBase):
                 error_message = 'attribute \'%s\' not defined' % item
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', error_message, self)
-                raise LDAPCursorError(error_message)
+                raise LDAPCursorAttributeError(error_message)
 
     def __getattr__(self, item):
         if isinstance(item, STRING_TYPES):
@@ -493,12 +493,12 @@ class WritableEntry(EntryBase):
             error_message = 'attribute \'%s\' not defined' % item
             if log_enabled(ERROR):
                 log(ERROR, '%s for <%s>', error_message, self)
-            raise LDAPCursorError(error_message)
+            raise LDAPCursorAttributeError(error_message)
         else:
             error_message = 'attribute name must be a string'
             if log_enabled(ERROR):
                 log(ERROR, '%s for <%s>', error_message, self)
-            raise LDAPCursorError(error_message)
+            raise LDAPCursorAttributeError(error_message)
 
     @property
     def entry_virtual_attributes(self):

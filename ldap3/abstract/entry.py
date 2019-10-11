@@ -125,7 +125,7 @@ class EntryBase(object):
     """
 
     def __init__(self, dn, cursor):
-        self.__dict__['_state'] = EntryState(dn, cursor)
+        self._state = EntryState(dn, cursor)
 
     def __repr__(self):
         if self.__dict__ and self.entry_dn is not None:
@@ -157,7 +157,7 @@ class EntryBase(object):
     def __getattr__(self, item):
         if isinstance(item, STRING_TYPES):
             if item == '_state':
-                return self.__dict__['_state']
+                return object.__getattr__(self, item)
             item = ''.join(item.split()).lower()
             attr_found = None
             for attr in self._state.attributes.keys():
@@ -201,7 +201,9 @@ class EntryBase(object):
         raise LDAPCursorError(error_message)
 
     def __setattr__(self, item, value):
-        if item in self._state.attributes:
+        if item == '_state':
+            object.__setattr__(self, item, value)
+        elif item in self._state.attributes:
             error_message = 'attribute \'%s\' is read only' % item
             if log_enabled(ERROR):
                 log(ERROR, '%s for <%s>', error_message, self)

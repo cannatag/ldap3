@@ -222,7 +222,7 @@ So the ldap3 library returns it as a DateTime object (with time zone info)::
     <class 'datetime.datetime'>
 
 .. warning::
-   The ldap3 library returns dates with time tone info. These dates can be compared only with dates including time zones. You can't compare them
+   The ldap3 library returns dates with time zone info. These dates can be compared only with dates including time zones. You can't compare them
    with a "naive" date object.
 
 .. note::

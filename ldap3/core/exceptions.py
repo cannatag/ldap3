@@ -377,6 +377,10 @@ class LDAPCursorError(LDAPExceptionError):
     pass
 
 
+class LDAPCursorAttributeError(LDAPCursorError, AttributeError):
+    pass
+
+
 class LDAPObjectDereferenceError(LDAPExceptionError):
     pass
 

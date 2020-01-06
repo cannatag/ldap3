@@ -135,8 +135,8 @@ class BaseStrategy(object):
                 if not self.connection.server.current_address and exception_history:
                     if len(exception_history) == 1:  # only one exception, reraise
                         if log_enabled(ERROR):
-                            log(ERROR, '<%s> for <%s>', exception_history[0][1](exception_history[0][2]), self.connection)
-                        raise exception_history[0][1](exception_history[0][2])
+                            log(ERROR, '<%s> for <%s>', str(exception_history[0][0]) + ' ' + str((exception_history[0][1])), self.connection)
+                        raise exception_history[0][0]
                     else:
                         if log_enabled(ERROR):
                             log(ERROR, 'unable to open socket for <%s>', self.connection)

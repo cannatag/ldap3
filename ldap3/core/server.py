@@ -239,13 +239,23 @@ class Server(object):
                 if self.ipc:
                     addresses = [(socket.AF_UNIX, socket.SOCK_STREAM, 0, None, self.host, None)]
                 else:
-                    addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
+                    if self.mode == IP_V4_ONLY:
+                        addresses = socket.getaddrinfo(self.host, self.port, socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
+                    elif self.mode == IP_V6_ONLY:
+                        addresses = socket.getaddrinfo(self.host, self.port, socket.AF_INET6, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
+                    else:
+                        addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP, socket.AI_ADDRCONFIG | socket.AI_V4MAPPED)
             except (socket.gaierror, AttributeError):
                 pass
 
             if not addresses:  # if addresses not found or raised an exception (for example for bad flags) tries again without flags
                 try:
-                    addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+                    if self.mode == IP_V4_ONLY:
+                        addresses = socket.getaddrinfo(self.host, self.port, socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+                    elif self.mode == IP_V6_ONLY:
+                        addresses = socket.getaddrinfo(self.host, self.port, socket.AF_INET6, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+                    else:
+                        addresses = socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, socket.IPPROTO_TCP)
                 except socket.gaierror:
                     pass
 

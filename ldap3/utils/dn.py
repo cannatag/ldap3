@@ -347,6 +347,8 @@ def safe_dn(dn, decompose=False, reverse=False):
         escaped_dn = dn
     elif dn.startswith('<WKGUID=') and dn.endswith('>'):  # Active Directory allows Binding to Well-Known Objects Using WKGUID in a specially-formatted DN (e.g. <WKGUID=a9d1ca15768811d1aded00c04fd8d5cd,dc=Fabrikam,dc=com>)
         escaped_dn = dn
+    elif dn.startswith('<SID=') and dn.endswith('>'):  # Active Directory allows looking up objects by putting its security identifier (SID) in a specially-formatted DN (e.g. '<SID=S-#-#-##-##########-##########-##########-######>')
+        escaped_dn = dn
     elif '@' not in dn:  # active directory UPN (User Principal Name) consist of an account, the at sign (@) and a domain, or the domain level logn name domain\username
         for component in parse_dn(dn, escape=True):
             if decompose:

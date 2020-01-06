@@ -73,6 +73,10 @@ In the ldap3 library the signature for the Search operation is::
 * paged_cookie: an *opaque* string received in a paged paged search that must be sent back while requesting
   subsequent entries of the search result.
 
+.. warning::
+    Make sure to call escape_filter_chars() from ldap3.utils.conv on any user input before placing it into a .search() call. This is to avoid possible injection of malicious code. Look at https://www.linkedin.com/pulse/ldap-injection-django-jerin-jose for more information.
+
+
 The LDAP filter
 ---------------
 

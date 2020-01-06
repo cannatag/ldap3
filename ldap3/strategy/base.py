@@ -133,14 +133,14 @@ class BaseStrategy(object):
                         # exception_history.append((datetime.now(), exc_type, exc_value, candidate_address[4]))
                         exception_history.append((type(e)(str(e)), candidate_address[4]))
                 if not self.connection.server.current_address and exception_history:
-                    # if len(exception_history) == 1:  # only one exception, reraise
-                    #     if log_enabled(ERROR):
-                    #         log(ERROR, '<%s> for <%s>', exception_history[0][1](exception_history[0][2]), self.connection)
-                    #     raise exception_history[0][1](exception_history[0][2])
-                    # else:
-                    #     if log_enabled(ERROR):
-                    #         log(ERROR, 'unable to open socket for <%s>', self.connection)
-                    #     raise LDAPSocketOpenError('unable to open socket', exception_history)
+                    if len(exception_history) == 1:  # only one exception, reraise
+                        if log_enabled(ERROR):
+                            log(ERROR, '<%s> for <%s>', exception_history[0][1](exception_history[0][2]), self.connection)
+                        raise exception_history[0][1](exception_history[0][2])
+                    else:
+                        if log_enabled(ERROR):
+                            log(ERROR, 'unable to open socket for <%s>', self.connection)
+                        raise LDAPSocketOpenError('unable to open socket', exception_history)
                     if log_enabled(ERROR):
                         log(ERROR, 'unable to open socket for <%s>', self.connection)
                     raise LDAPSocketOpenError('unable to open socket', exception_history)

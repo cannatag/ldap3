@@ -199,6 +199,37 @@ class BaseStrategy(object):
                 log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
             # raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
             raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
+
+        # Try to bind the socket locally before connecting to the remote address
+        # We go through our connection's source ports and try to bind our socket to our connection's source address
+        # with them.
+        # If no source address or ports were specified, this will have the same success/fail result as if we
+        # tried to connect to the remote server without binding locally first.
+        # This is actually a little bit better, as it lets us distinguish the case of "issue binding the socket
+        # locally" from "remote server is unavailable" with more clarity, though this will only really be an
+        # issue when no source address/port is specified if the system checking server availability is running
+        # as a very unprivileged user.
+        last_bind_exc = None
+        socket_bind_succeeded = False
+        for source_port in self.connection.source_port_list:
+            try:
+                self.connection.socket.bind((self.connection.source_address, source_port))
+                socket_bind_succeeded = True
+                break
+            except Exception as bind_ex:
+                last_bind_exc = bind_ex
+                # we'll always end up logging at error level if we cannot bind any ports to the address locally.
+                # but if some work and some don't you probably don't want the ones that don't at ERROR level
+                if log_enabled(NETWORK):
+                    log(NETWORK, 'Unable to bind to local address <%s> with source port <%s> due to <%s>',
+                        self.connection.source_address, source_port, bind_ex)
+        if not socket_bind_succeeded:
+            self.connection.last_error = 'socket connection error while locally binding: ' + str(last_bind_exc)
+            if log_enabled(ERROR):
+                log(ERROR, 'Unable to locally bind to local address <%s> with any of the source ports <%s> for connection <%s due to <%s>',
+                    self.connection.source_address, self.connection.source_port_list, self.connection, last_bind_exc)
+            raise communication_exception_factory(LDAPSocketOpenError, type(last_bind_exc)(str(last_bind_exc)))(last_bind_exc)
+
         try:  # set socket timeout for opening connection
             if self.connection.server.connect_timeout:
                 self.connection.socket.settimeout(self.connection.server.connect_timeout)

@@ -380,6 +380,7 @@ class Connection(object):
                 self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                 if log_enabled(ERROR):
                     log(ERROR, '%s for <%s>', self.last_error, self)
+                self.unbind()
                 raise LDAPBindError(self.last_error)
 
     def __str__(self):

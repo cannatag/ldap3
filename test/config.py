@@ -147,7 +147,6 @@ if 'TRAVIS' in location:
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
         test_server = 'ipa.demo1.freeipa.org'
-        test_server_edir_name = ''
         test_root_partition = ''
         test_base = 'ou=ldap3-fixtures,dc=demo1,dc=freeipa,dc=org'  # base context where test objects are created
         test_moved = 'ou=ldap3-moved,dc=demo1,dc=freeipa,dc=org'  # base context where objects are moved in ModifyDN operations

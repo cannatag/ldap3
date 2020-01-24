@@ -38,7 +38,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
@@ -179,8 +179,10 @@ if 'TRAVIS' in location:
 
 elif location == 'ELITE10GC-EDIR':
     # test notepbook - eDirectory (EDIR)
-    # test_server = ['edir1.hyperv',
-    #                'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
+    # test_server = ['edir4.hyperv:389',
+    #                'edir4.hyperv:1389',
+    #                'edir4.hyperv:2389',
+    #                'edir4.hyperv:3389']  # ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir4.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''

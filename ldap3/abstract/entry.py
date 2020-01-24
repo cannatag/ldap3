@@ -373,6 +373,7 @@ class Entry(EntryBase):
 
     """
     def entry_writable(self, object_def=None, writer_cursor=None, attributes=None, custom_validator=None, auxiliary_class=None):
+        conf_operational_attribute_prefix = get_config_parameter('ABSTRACTION_OPERATIONAL_ATTRIBUTE_PREFIX')
         if not self.entry_cursor.schema:
             error_message = 'schema must be available to make an entry writable'
             if log_enabled(ERROR):
@@ -425,7 +426,7 @@ class Entry(EntryBase):
         # checks original entry for custom definitions in AttrDefs
         for attr in writable_entry._state.origin.entry_definition._attributes:
             original_attr = writable_entry._state.origin.entry_definition._attributes[attr]
-            if attr != original_attr.name and attr not in writable_entry._state.attributes:
+            if attr != original_attr.name and (attr not in writable_entry._state.attributes or conf_operational_attribute_prefix + original_attr.name not in writable_entry._state.attributes):
                 old_attr_def = writable_entry.entry_definition._attributes[original_attr.name]
                 new_attr_def = AttrDef(original_attr.name,
                                        key=attr,
@@ -451,7 +452,6 @@ class Entry(EntryBase):
                 writable_entry._state.attributes[attr] = new_attr
                 # writable_entry._state.attributes.set_alias(attr, new_attr.other_names)
                 del writable_entry._state.attributes[original_attr.name]
-
         writable_entry._state.set_status(STATUS_WRITABLE)
         return writable_entry
 

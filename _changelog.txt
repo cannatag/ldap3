@@ -5,6 +5,7 @@
     - added support for allowing special AD security identifier (SID) in DN (thanks John)
     - fixed pickling of entry and attribute (thanks cfelder)
     - close connection when auto_bind fails (thank Hrishikesh)
+    - operational attributes can be used in Abstraction Layer (thanks Sohalt)
 
 
 # 2.6.1 - 2019.09.06

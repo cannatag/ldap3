@@ -142,12 +142,14 @@ or can have them saved on file::
     server.info.to_file('server-info.json')
     server.schema.to_file('server-schema.json')
 
-to build a new server object with the saved json files you can retrieve them with::
+you can then build a new Server object with the saved json files::
 
-    from ldap3 import DsaInfo, SchemaInfo
+    from ldap3 import Server, DsaInfo, SchemaInfo
     dsa_info = DsaInfo.from_file('server-info.json')
     schema_info = SchemaInfo.from_file('server-schema.json')
-    server = Server('hostname', dsa_info, schema_info)
+    server = Server('hostname')
+    server.attach_dsa_info(dsa_info)
+    server.attach_schema_info(schema_info)
 
 and then you can use the server as usual. Hostname must resolve to a real server.
 

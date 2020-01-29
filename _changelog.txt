@@ -1,3 +1,13 @@
+# 2.6.2 - not yet released
+    - re-enabled ssl exception raising on bad certificate when only 1 server is present in the server pool
+    - removed Python 2.6 from Travis configuration (thanks gliptak)
+    - added support for source specifications in LDAP connections (thanks Azaria)
+    - added support for allowing special AD security identifier (SID) in DN (thanks John)
+    - fixed pickling of entry and attribute (thanks cfelder)
+    - close connection when auto_bind fails (thank Hrishikesh)
+    - operational attributes can be used in Abstraction Layer (thanks Sohalt)
+
+
 # 2.6.1 - 2019.09.06
     - tested against pyasn1 0.4.7
     - added eDirectory 9.1.4 (EDIR_9_1_4) to offline schemas

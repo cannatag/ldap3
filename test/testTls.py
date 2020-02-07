@@ -101,29 +101,29 @@ class Test(unittest.TestCase):
                 connection.strategy.terminate()
             self.assertFalse(connection.bound)
 
-    def test_bind_ssl_with_certificate(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
-            tls = Tls(local_private_key_file=test_user_key_file,
-                      local_certificate_file=test_user_cert_file,
-                      validate=ssl.CERT_REQUIRED,
-                      version=ssl.PROTOCOL_SSLv23,
-                      ssl_options=[ssl.OP_NO_SSLv2, ssl.OP_NO_SSLv3],
-                      ca_certs_file=test_ca_cert_file,
-                      valid_names=test_valid_names)
-            if isinstance(test_server, (list, tuple)):
-                server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
-                for host in test_server:
-                    server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
-            else:
-                server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
-            connection = Connection(server, auto_bind=False, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
-            connection.open()
-            connection.bind()
-            self.assertTrue(connection.bound)
-            connection.unbind()
-            if connection.strategy.pooled:
-                connection.strategy.terminate()
-            self.assertFalse(connection.bound)
+    # def test_bind_ssl_with_certificate(self):
+    #     if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+    #         tls = Tls(local_private_key_file=test_user_key_file,
+    #                   local_certificate_file=test_user_cert_file,
+    #                   validate=ssl.CERT_REQUIRED,
+    #                   version=ssl.PROTOCOL_SSLv23,
+    #                   ssl_options=[ssl.OP_NO_SSLv2, ssl.OP_NO_SSLv3],
+    #                   ca_certs_file=test_ca_cert_file,
+    #                   valid_names=test_valid_names)
+    #         if isinstance(test_server, (list, tuple)):
+    #             server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
+    #             for host in test_server:
+    #                 server.add(Server(host=host, port=test_port, allowed_referral_hosts=('*', True), get_info=test_get_info, mode=test_server_mode))
+    #         else:
+    #             server = Server(host=test_server, port=test_port_ssl, use_ssl=True, tls=tls)
+    #         connection = Connection(server, auto_bind=False, client_strategy=test_strategy, user=test_user, password=test_password, authentication=test_authentication)
+    #         connection.open()
+    #         connection.bind()
+    #         self.assertTrue(connection.bound)
+    #         connection.unbind()
+    #         if connection.strategy.pooled:
+    #             connection.strategy.terminate()
+    #         self.assertFalse(connection.bound)
 
     # def test_sasl_with_external_certificate(self):
     #     if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:

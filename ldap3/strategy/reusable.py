@@ -68,7 +68,7 @@ class ReusableStrategy(BaseStrategy):
     def _start_listen(self):
         raise NotImplementedError
 
-    def _get_response(self, message_id):
+    def _get_response(self, message_id, timeout):
         raise NotImplementedError
 
     def get_stream(self):

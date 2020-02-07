@@ -344,61 +344,54 @@ class BaseStrategy(object):
         Responses without result is stored in connection.response
         A tuple (responses, result) is returned
         """
-        conf_sleep_interval = get_config_parameter('RESPONSE_SLEEPTIME')
         if timeout is None:
             timeout = get_config_parameter('RESPONSE_WAITING_TIMEOUT')
         response = None
         result = None
         request = None
         if self._outstanding and message_id in self._outstanding:
-            while timeout >= 0:  # waiting for completed message to appear in responses
-                responses = self._get_response(message_id)
-                if not responses:
-                    sleep(conf_sleep_interval)
-                    timeout -= conf_sleep_interval
-                    continue
+            responses = self._get_response(message_id, timeout)
 
-                if responses == SESSION_TERMINATED_BY_SERVER:
-                    try:  # try to close the session but don't raise any error if server has already closed the session
-                        self.close()
-                    except (socket.error, LDAPExceptionError):
-                        pass
-                    self.connection.last_error = 'session terminated by server'
-                    if log_enabled(ERROR):
-                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                    raise LDAPSessionTerminatedByServerError(self.connection.last_error)
-                elif responses == TRANSACTION_ERROR:  # Novell LDAP Transaction unsolicited notification
-                    self.connection.last_error = 'transaction error'
-                    if log_enabled(ERROR):
-                        log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                    raise LDAPTransactionError(self.connection.last_error)
-
-                # if referral in response opens a new connection to resolve referrals if requested
-
-                if responses[-2]['result'] == RESULT_REFERRAL:
-                    if self.connection.usage:
-                        self.connection._usage.referrals_received += 1
-                    if self.connection.auto_referrals:
-                        ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
-                        if ref_response is not None:
-                            responses = ref_response + [ref_result]
-                            responses.append(RESPONSE_COMPLETE)
-                        elif ref_result is not None:
-                            responses = [ref_result, RESPONSE_COMPLETE]
-
-                        self._referrals = []
-
-                if responses:
-                    result = responses[-2]
-                    response = responses[:-2]
-                    self.connection.result = None
-                    self.connection.response = None
-                    break
-
-            if timeout <= 0:
+            if not responses:
                 if log_enabled(ERROR):
                     log(ERROR, 'socket timeout, no response from server for <%s>', self.connection)
                 raise LDAPResponseTimeoutError('no response from server')
+
+            if responses == SESSION_TERMINATED_BY_SERVER:
+                try:  # try to close the session but don't raise any error if server has already closed the session
+                    self.close()
+                except (socket.error, LDAPExceptionError):
+                    pass
+                self.connection.last_error = 'session terminated by server'
+                if log_enabled(ERROR):
+                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                raise LDAPSessionTerminatedByServerError(self.connection.last_error)
+            elif responses == TRANSACTION_ERROR:  # Novell LDAP Transaction unsolicited notification
+                self.connection.last_error = 'transaction error'
+                if log_enabled(ERROR):
+                    log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
+                raise LDAPTransactionError(self.connection.last_error)
+
+            # if referral in response opens a new connection to resolve referrals if requested
+
+            if responses[-2]['result'] == RESULT_REFERRAL:
+                if self.connection.usage:
+                    self.connection._usage.referrals_received += 1
+                if self.connection.auto_referrals:
+                    ref_response, ref_result = self.do_operation_on_referral(self._outstanding[message_id], responses[-2]['referrals'])
+                    if ref_response is not None:
+                        responses = ref_response + [ref_result]
+                        responses.append(RESPONSE_COMPLETE)
+                    elif ref_result is not None:
+                        responses = [ref_result, RESPONSE_COMPLETE]
+
+                    self._referrals = []
+
+            if responses:
+                result = responses[-2]
+                response = responses[:-2]
+                self.connection.result = None
+                self.connection.response = None
 
             if self.connection.raise_exceptions and result and result['result'] not in DO_NOT_RAISE_EXCEPTIONS:
                 if log_enabled(PROTOCOL):
@@ -881,7 +874,7 @@ class BaseStrategy(object):
         # overridden on strategy class
         raise NotImplementedError
 
-    def _get_response(self, message_id):
+    def _get_response(self, message_id, timeout):
         # overridden in strategy class
         raise NotImplementedError
 

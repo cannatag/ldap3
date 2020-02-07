@@ -147,7 +147,7 @@ class SyncStrategy(BaseStrategy):
             log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
         raise LDAPSocketReceiveError(self.connection.last_error)
 
-    def _get_response(self, message_id):
+    def _get_response(self, message_id, timeout):
         """
         Performs the capture of LDAP response for SyncStrategy
         """

@@ -169,7 +169,12 @@ class CaseInsensitiveWithAliasDict(CaseInsensitiveDict):
                     elif not ignore_duplicates:
                         raise KeyError('\'' + str(alias_to_add) + '\' already used as key')
             else:
-                raise KeyError('\'' + str(ci_key) + '\' is not an existing key')
+                for keymap in self._alias_keymap:
+                    if ci_key in self._alias_keymap[keymap]:  # kye is already aliased
+                        self.set_alias(keymap, alias + [ci_key], ignore_duplicates=ignore_duplicates)
+                        break
+                else:
+                    raise KeyError('\'' + str(ci_key) + '\' is not an existing alias or key')
 
     def remove_alias(self, alias):
         if not isinstance(alias, SEQUENCE_TYPES):

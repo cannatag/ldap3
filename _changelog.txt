@@ -8,7 +8,8 @@
     - operational attributes can be used in Abstraction Layer (thanks Sohalt)
     - additional SSL options can be used in Tls object (thanks Nazarii)
     - threading.Event replaces loop checking in async strategy. ASYNC strategy should be much faster now (thanks Yang)
-    - adding a key that is already an alias in CaseInsensitiveWithAliasDict() now works properly (thanks Mark)
+    - adding a key that is already an alias that contains other aliases in CaseInsensitiveWithAliasDict() now works properly (thanks Mark)
+    - when searching for GUID, UUID and SID the backslash character (0x5C) is properly managed (thanks Nocturem)
 
 # 2.6.1 - 2019.09.06
     - tested against pyasn1 0.4.7

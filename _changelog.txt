@@ -11,6 +11,7 @@
     - adding a key that is already an alias that contains other aliases in CaseInsensitiveWithAliasDict() now works properly (thanks Mark)
     - when searching for GUID, UUID and SID the backslash character (0x5C) is properly managed (thanks Nocturem)
     - LDIF output properly formatted when controls are missing (thanks Tom)
+    - operational attributes are not returned in MOCK strategies when not requested (thanks kpinc)
 
 # 2.6.1 - 2019.09.06
     - tested against pyasn1 0.4.7

@@ -2,7 +2,7 @@
 
 # Created on 2013.05.23
 #
-# Copyright 2015 - 2018 Giovanni Cannata
+# Copyright 2015 - 2020 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -83,7 +83,7 @@ else:
 # test_internal_decoder = True
 
 # force testing with AD provided by Lucas Raab
-location = 'ELITE10GC-AD-RAAB'
+# location = 'ELITE10GC-AD-RAAB'
 
 if 'TRAVIS' in location:
     # test in the cloud

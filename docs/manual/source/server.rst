@@ -153,4 +153,14 @@ you can then build a new Server object with the saved json files::
 
 and then you can use the server as usual. Hostname must resolve to a real server.
 
+Mock Server
+-----------
 
+When using a mocking strategy (usually used in Test Driven Development) you can create a fake server
+with custom schema and info with the from_definition() static method of the Server object::
+
+    # Create a fake server from the info and schema json files
+    fake_server = Server.from_definition('my_fake_server', 'my_real_server_info.json', 'my_real_server_schema.json')
+
+
+Look at the [Mocking section](mocking) for more details.

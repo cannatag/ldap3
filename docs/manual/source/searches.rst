@@ -391,6 +391,13 @@ Each entry is a dictionary with the following field:
 
 * raw_attributes: same as 'attributes' but not encoded (bytearray)
 
+* type: the type of the response as specified by RFC4511. It can be any of the following:
+    - searchResEntry: the response contain an entry that satisfies the search filter
+    - searchResRef: the response is a continuation referral to another DIT where the search should continue (usually handled automatically by ldap3)
+    - searchResDone: search completed, no other entries found (handled automatically by ldap3)
+    - intermediateResponse: a response in a persistent search (usually a continued search that never ends)
+    - extendResp: a response to an extended request (some are automatically handled by ldap3)
+
 
 Entries
 -------

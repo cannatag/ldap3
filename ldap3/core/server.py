@@ -552,9 +552,9 @@ class Server(object):
         :param host: host name
         :param dsa_info: DsaInfo preloaded object or a json formatted string or a file name
         :param dsa_schema: SchemaInfo preloaded object or a json formatted string or a file name
-        :param port: dummy port
+        :param port: fake port
         :param use_ssl: use_ssl
-        :param formatter: custom formatter
+        :param formatter: custom formatters
         :return: Server object
         """
         if isinstance(host, SEQUENCE_TYPES):

@@ -5,7 +5,7 @@ Submodules
 ----------
 
 ldap3.strategy.asynchronous module
----------------------------
+----------------------------------
 
 .. automodule:: ldap3.strategy.asynchronous
     :members:

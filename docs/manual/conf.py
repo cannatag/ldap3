@@ -32,7 +32,8 @@ author = __author__
 release = __version__
 version = __version__
 
-master_doc = 'source/index'
+if on_rtd:
+    master_doc = 'source/index'
 
 # -- General configuration ---------------------------------------------------
 

@@ -12,6 +12,7 @@
     - when searching for GUID, UUID and SID the backslash character (0x5C) is properly managed (thanks Nocturem)
     - LDIF output properly formatted when controls are missing (thanks Tom)
     - operational attributes are not returned in MOCK strategies when not requested (thanks kpinc)
+    - undecodable values are returned as raw bytes when using the pyasn1 decoder
 
 # 2.6.1 - 2019.09.06
     - tested against pyasn1 0.4.7
@@ -229,7 +230,7 @@
     - RESPONSE_DN_ENCODING parameter renamed to ADDITIONAL_ENCODINGS
     - to_unicode(value, encoding=None, additional_encodings=False) now checks for additional encoodings in ADDITIONAL_ENCODINGS list if additional_encoding is set to True
     - Reusable strategy uses not lazy Restartable connections
-    . Reusable strategy doesn't keep requesting the schema
+    - Reusable strategy doesn't keep requesting the schema
     - connection pool size in Reusable strategy defaults to 5
     - optimized usage of configuration parameters
 

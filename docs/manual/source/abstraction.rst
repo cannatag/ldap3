@@ -523,6 +523,6 @@ and the raw value are checked.
 OperationalAttribute
 --------------------
 The OperationalAttribute class is used to store Operational Attributes read with the 'get_operational_attributes' of the Reader object set to True. It's the same
-of the Attribute class except for the 'definition' property that is not present. Operational attributes key are prefixed with 'OA_'.
+of the Attribute class except for the 'definition' property that is not present. Operational attributes key are prefixed with 'OA\_'.
 
 

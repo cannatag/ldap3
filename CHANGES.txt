@@ -1,3 +1,19 @@
+# 2.7 - not yet released
+    - re-enabled ssl exception raising on bad certificate when only 1 server is present in the server pool
+    - removed Python 2.6 from Travis configuration (thanks gliptak)
+    - added support for source specifications in LDAP connections (thanks Azaria)
+    - added support for allowing special AD security identifier (SID) in DN (thanks John)
+    - fixed pickling of entry and attribute (thanks cfelder)
+    - close connection when auto_bind fails (thank Hrishikesh)
+    - operational attributes can be used in Abstraction Layer (thanks Sohalt)
+    - additional SSL options can be used in Tls object (thanks Nazarii)
+    - threading.Event replaces loop checking in async strategy. ASYNC strategy should be much faster now (thanks Yang)
+    - adding a key that is already an alias that contains other aliases in CaseInsensitiveWithAliasDict() now works properly (thanks Mark)
+    - when searching for GUID, UUID and SID the backslash character (0x5C) is properly managed (thanks Nocturem)
+    - LDIF output properly formatted when controls are missing (thanks Tom)
+    - operational attributes are not returned in MOCK strategies when not requested (thanks kpinc)
+    - undecodable values are returned as raw bytes when using the pyasn1 decoder
+
 # 2.6.1 - 2019.09.06
     - tested against pyasn1 0.4.7
     - added eDirectory 9.1.4 (EDIR_9_1_4) to offline schemas
@@ -214,7 +230,7 @@
     - RESPONSE_DN_ENCODING parameter renamed to ADDITIONAL_ENCODINGS
     - to_unicode(value, encoding=None, additional_encodings=False) now checks for additional encoodings in ADDITIONAL_ENCODINGS list if additional_encoding is set to True
     - Reusable strategy uses not lazy Restartable connections
-    . Reusable strategy doesn't keep requesting the schema
+    - Reusable strategy doesn't keep requesting the schema
     - connection pool size in Reusable strategy defaults to 5
     - optimized usage of configuration parameters
 

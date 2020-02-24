@@ -123,8 +123,8 @@ class PersistentSearch(object):
         raise LDAPExtensionError('Persistent search is not accumulating events in queue')
 
     def funnel(self, block=False, timeout=None):
-        esci = False
-        while not esci:
+        done = False
+        while not done:
             try:
                 entry = self.connection.strategy.events.get(block, timeout)
             except Empty:
@@ -132,6 +132,6 @@ class PersistentSearch(object):
             if entry['type'] == 'searchResEntry':
                 yield entry
             else:
-                esci = True
+                done = True
 
         yield entry

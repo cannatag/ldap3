@@ -479,9 +479,9 @@ be used at any time on an already open unsecure connection to secure it issuing 
 
 .. note:: Default port numbers: the default port for cleartext (unsecure) communication is **389**, while the default port
    for LDAP over TLS (secure) communication is **636**. Note that because you can start a session on the 389 port and then
-    raise the security level with the StartTLS operation, you can have a secure communication even on the 389 port (usually
-    considered unsecure). Obviously the server can listen on different ports. When defining the Server object you can specify
-    which port to use with the ``port`` parameter. Keep this in mind if you need to connect to a server behind a firewall.
+   raise the security level with the StartTLS operation, you can have a secure communication even on the 389 port (usually
+   considered unsecure). Obviously the server can listen on different ports. When defining the Server object you can specify
+   which port to use with the ``port`` parameter. Keep this in mind if you need to connect to a server behind a firewall.
 
 Now try to use the StartTLS extended operation::
 
@@ -516,7 +516,8 @@ object. The Tls object configures the security context::
     ldap3.core.exceptions.LDAPSocketOpenError: (LDAPSocketOpenError('socket ssl wrapping error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)',),)
 
 In this case, using the FreeIPA demo server we get a LDAPSocketOpenError exception because the certificate cannot be verified.
-You can configure the Tls object with a number of options. Look at :ref:`SSL and TLS <ssltls>` for more information.
+You can configure the Tls object with a number of options. Look at :doc:SSL and TLS <ssltls> section for more information.
+
 
 The FreeIPA server doesn't return a valid certificate so to continue the tutorial let's revert the certificate validation to CERT_NONE::
 

@@ -1,1 +1,2 @@
-py -3 update_source.py
+CALL venv\Scripts\activate.bat
+python update_source.py

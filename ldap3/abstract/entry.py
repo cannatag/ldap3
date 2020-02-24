@@ -424,6 +424,10 @@ class Entry(EntryBase):
             writable_entry._state.read_time = self.entry_read_time
         writable_entry._state.origin = self  # reference to the original read-only entry
         # checks original entry for custom definitions in AttrDefs
+        attr_to_add = []
+        attr_to_remove = []
+        object_def_to_add = []
+        object_def_to_remove = []
         for attr in writable_entry._state.origin.entry_definition._attributes:
             original_attr = writable_entry._state.origin.entry_definition._attributes[attr]
             if attr != original_attr.name and (attr not in writable_entry._state.attributes or conf_operational_attribute_prefix + original_attr.name not in writable_entry._state.attributes):
@@ -439,9 +443,9 @@ class Entry(EntryBase):
                                        mandatory=old_attr_def.mandatory,  # keeps value read from schema
                                        single_value=old_attr_def.single_value,  # keeps value read from schema
                                        alias=original_attr.other_names)
-                object_def = writable_entry.entry_definition
-                object_def -= old_attr_def
-                object_def += new_attr_def
+                od = writable_entry.entry_definition
+                object_def_to_remove.append(old_attr_def)
+                object_def_to_add.append(new_attr_def)
                 # updates attribute name in entry attributes
                 new_attr = WritableAttribute(new_attr_def, writable_entry, writable_cursor)
                 if original_attr.name in writable_entry._state.attributes:
@@ -449,9 +453,22 @@ class Entry(EntryBase):
                     new_attr.raw_values = writable_entry._state.attributes[original_attr.name].raw_values
                     new_attr.values = writable_entry._state.attributes[original_attr.name].values
                     new_attr.response = writable_entry._state.attributes[original_attr.name].response
-                writable_entry._state.attributes[attr] = new_attr
-                # writable_entry._state.attributes.set_alias(attr, new_attr.other_names)
-                del writable_entry._state.attributes[original_attr.name]
+                attr_to_add.append((attr, new_attr))
+                attr_to_remove.append(original_attr.name)
+                # writable_entry._state.attributes[attr] = new_attr
+                ## writable_entry._state.attributes.set_alias(attr, new_attr.other_names)
+                # del writable_entry._state.attributes[original_attr.name]
+        for attr, new_attr in attr_to_add:
+            writable_entry._state.attributes[attr] = new_attr
+        for attr in attr_to_remove:
+            del writable_entry._state.attributes[attr]
+        for object_def in object_def_to_remove:
+            o = writable_entry.entry_definition
+            o -= object_def
+        for object_def in object_def_to_add:
+            o = writable_entry.entry_definition
+            o += object_def
+
         writable_entry._state.set_status(STATUS_WRITABLE)
         return writable_entry
 

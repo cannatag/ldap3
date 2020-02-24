@@ -32,7 +32,7 @@ author = __author__
 release = __version__
 version = __version__
 
-master_doc = 'manual/source/index'
+master_doc = 'source/index'
 
 # -- General configuration ---------------------------------------------------
 

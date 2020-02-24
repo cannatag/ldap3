@@ -224,7 +224,7 @@ class MockBaseStrategy(object):
                         return False
                     if attribute.lower() == 'objectclass' and self.connection.server.schema:  # builds the objectClass hierarchy only if schema is present
                         class_set = set()
-                        for object_class in attributes['objectClass']:
+                        for object_class in attributes[attribute]:
                             if self.connection.server.schema.object_classes and object_class not in self.connection.server.schema.object_classes:
                                 return False
                             # walkups the class hierarchy and buils a set of all classes in it

@@ -18,7 +18,7 @@ import sphinx_rtd_theme
 sys.path.insert(0, os.path.abspath('../../'))
 from ldap3 import __version__, __author__, __description__
 
-# on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # if on_rtd:
 #     os.system("sphinx-apidoc --force --separate --output-dir=. ../../../ldap3")
 
@@ -31,6 +31,8 @@ author = __author__
 # The full version, including alpha/beta/rc tags
 release = __version__
 version = __version__
+
+master_doc = 'manual/source/index'
 
 # -- General configuration ---------------------------------------------------
 

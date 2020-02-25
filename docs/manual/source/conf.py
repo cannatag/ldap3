@@ -15,7 +15,7 @@ import os
 import sys
 import sphinx_rtd_theme
 
-sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../../../'))
 from ldap3 import __version__, __author__, __description__
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -33,7 +33,7 @@ release = __version__
 version = __version__
 
 if on_rtd:
-    master_doc = 'source/index'
+    master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 
@@ -47,7 +47,7 @@ if on_rtd:
 extensions = ['sphinx_rtd_theme']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['../_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -82,4 +82,4 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['../_static']

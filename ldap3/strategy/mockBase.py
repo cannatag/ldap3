@@ -26,7 +26,6 @@
 import json
 import re
 
-from threading import Lock
 from random import SystemRandom
 
 from pyasn1.type.univ import OctetString

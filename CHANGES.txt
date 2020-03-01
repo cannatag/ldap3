@@ -1,4 +1,5 @@
-# 2.7 - not yet released
+# 2.7 - 2020.03.01
+    - tested against Python 3.8.1 and pyasn1 0.4.8
     - re-enabled ssl exception raising on bad certificate when only 1 server is present in the server pool
     - removed Python 2.6 from Travis configuration (thanks gliptak)
     - added support for source specifications in LDAP connections (thanks Azaria)

@@ -229,21 +229,21 @@ elif location == 'ELITE10GC-AD-RAAB':
     test_server_context = ''  # used in novell eDirectory extended operations
     test_server_edir_name = ''  # used in novell eDirectory extended operations
     test_user = 'CN=cannatag,CN=Users,' + test_root_partition  # the user that performs the tests
-    test_password = '3BPNVY6jRM2jPMF7'  # user password
+    test_password = 'xxxx'  # user password
     test_secondary_user = 'CN=cannatag,CN=Users,' + test_root_partition
-    test_secondary_password = '3BPNVY6jRM2jPMF7'  # user password
+    test_secondary_password = 'xxxx'  # user password
     test_sasl_user = 'CN=cannatag,CN=Users,' + test_root_partition
-    test_sasl_password = '3BPNVY6jRM2jPMF7'
+    test_sasl_password = 'xxxx'
     test_sasl_user_dn = 'CN=cannatag,CN=Users,' + test_root_partition
     test_sasl_secondary_user = 'CN=cannatag,CN=Users,' + test_root_partition
-    test_sasl_secondary_password = '3BPNVY6jRM2jPMF7'
+    test_sasl_secondary_password = 'xxxx'
     test_sasl_secondary_user_dn = 'CN=cannatag,CN=Users,' + test_root_partition
     test_sasl_realm = None
     test_ca_cert_file = 'local-forest-lab-ca.pem'
     test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
     test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
     test_ntlm_user = test_domain_name.split('.')[0] + '\\cannatag'
-    test_ntlm_password = '3BPNVY6jRM2jPMF7'
+    test_ntlm_password = 'xxxx'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['dc1.' + test_domain_name]
 elif location == 'ELITE10GC-AD':

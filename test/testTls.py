@@ -5,7 +5,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2013 - 2018 Giovanni Cannata
+# Copyright 2013 - 2020 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -106,7 +106,8 @@ class Test(unittest.TestCase):
     #         tls = Tls(local_private_key_file=test_user_key_file,
     #                   local_certificate_file=test_user_cert_file,
     #                   validate=ssl.CERT_REQUIRED,
-    #                   version=ssl.PROTOCOL_TLSv1,
+    #                   version=ssl.PROTOCOL_SSLv23,
+    #                   ssl_options=[ssl.OP_NO_SSLv2, ssl.OP_NO_SSLv3],
     #                   ca_certs_file=test_ca_cert_file,
     #                   valid_names=test_valid_names)
     #         if isinstance(test_server, (list, tuple)):

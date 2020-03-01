@@ -4,7 +4,7 @@
 #
 # Author: Giovanni Cannata
 #
-# Copyright 2014 - 2018 Giovanni Cannata
+# Copyright 2014 - 2020 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -46,19 +46,20 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_create_entry_with_attribute_from_auxiliary_class(self):
-        w = Writer(self.connection, 'inetorgperson', auxiliary_class='homeInfo')
-        n = w.new('cn=' + testcase_id + 'new-1,' + test_base)
-        n.sn = 'sn-test-1'
-        n.homeState = 'state-test-1'
-        self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
-        n.entry_commit_changes()
-        self.assertEqual(n.sn, 'sn-test-1')
-        self.assertEqual(n.homeState, 'state-test-1')
-        self.assertEqual(n.entry_status, STATUS_COMMITTED)
-        n.entry_delete()
-        self.assertEqual(n.entry_status, STATUS_READY_FOR_DELETION)
-        n.entry_commit_changes()
-        self.assertEqual(n.entry_status, STATUS_DELETED)
+        if test_server_type != 'AD':
+            w = Writer(self.connection, 'inetorgperson', auxiliary_class='homeInfo')
+            n = w.new('cn=' + testcase_id + 'new-1,' + test_base)
+            n.sn = 'sn-test-1'
+            n.homeState = 'state-test-1'
+            self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
+            n.entry_commit_changes()
+            self.assertEqual(n.sn, 'sn-test-1')
+            self.assertEqual(n.homeState, 'state-test-1')
+            self.assertEqual(n.entry_status, STATUS_COMMITTED)
+            n.entry_delete()
+            self.assertEqual(n.entry_status, STATUS_READY_FOR_DELETION)
+            n.entry_commit_changes()
+            self.assertEqual(n.entry_status, STATUS_DELETED)
 
     def test_create_invalid_entry_with_attribute_from_auxiliary_class_not_declared(self):
         w = Writer(self.connection, 'inetorgperson')
@@ -68,34 +69,36 @@ class Test(unittest.TestCase):
             n.homeState = 'state-test-2'
 
     def test_read_entry_with_attribute_from_auxiliary_class(self):
-        w = Writer(self.connection, 'inetorgperson', auxiliary_class='homeInfo')
-        n = w.new('cn=' + testcase_id + 'new-3,' + test_base)
-        n.sn = 'sn-test-3'
-        n.homeState = 'state-test-3'
-        self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
-        n.entry_commit_changes()
-        self.assertEqual(n.sn, 'sn-test-3')
-        self.assertEqual(n.homeState, 'state-test-3')
-        self.assertEqual(n.entry_status, STATUS_COMMITTED)
+        if test_server_type != 'AD':
+            w = Writer(self.connection, 'inetorgperson', auxiliary_class='homeInfo')
+            n = w.new('cn=' + testcase_id + 'new-3,' + test_base)
+            n.sn = 'sn-test-3'
+            n.homeState = 'state-test-3'
+            self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
+            n.entry_commit_changes()
+            self.assertEqual(n.sn, 'sn-test-3')
+            self.assertEqual(n.homeState, 'state-test-3')
+            self.assertEqual(n.entry_status, STATUS_COMMITTED)
 
-        r = Reader(self.connection, 'inetorgperson', test_base, '(cn=' + testcase_id + 'new-3', auxiliary_class='homeInfo')
-        r.search()
-        self.assertTrue(r[0].cn, testcase_id + 'new-3')
-        self.assertTrue(r[0].homeState, testcase_id + 'state-test-3')
+            r = Reader(self.connection, 'inetorgperson', test_base, '(cn=' + testcase_id + 'new-3', auxiliary_class='homeInfo')
+            r.search()
+            self.assertTrue(r[0].cn, testcase_id + 'new-3')
+            self.assertTrue(r[0].homeState, testcase_id + 'state-test-3')
 
     def test_read_entry_with_attribute_from_missing_auxiliary_class(self):
-        w = Writer(self.connection, 'inetorgperson', auxiliary_class='homeInfo')
-        n = w.new('cn=' + testcase_id + 'new-4,' + test_base)
-        n.sn = 'sn-test-4'
-        n.homeState = 'state-test-4'
-        self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
-        n.entry_commit_changes()
-        self.assertEqual(n.sn, 'sn-test-4')
-        self.assertEqual(n.homeState, 'state-test-4')
-        self.assertEqual(n.entry_status, STATUS_COMMITTED)
+        if test_server_type != 'AD':
+            w = Writer(self.connection, 'inetorgperson', auxiliary_class='homeInfo')
+            n = w.new('cn=' + testcase_id + 'new-4,' + test_base)
+            n.sn = 'sn-test-4'
+            n.homeState = 'state-test-4'
+            self.assertEqual(n.entry_status, STATUS_PENDING_CHANGES)
+            n.entry_commit_changes()
+            self.assertEqual(n.sn, 'sn-test-4')
+            self.assertEqual(n.homeState, 'state-test-4')
+            self.assertEqual(n.entry_status, STATUS_COMMITTED)
 
-        r = Reader(self.connection, 'inetorgperson', test_base, '(cn=' + testcase_id + 'new-4')
-        r.search()
-        self.assertTrue(r[0].cn, testcase_id + 'new-4')
-        with self.assertRaises(LDAPCursorError):
-            self.assertTrue(r[0].homeState, testcase_id + 'state-test-3')
+            r = Reader(self.connection, 'inetorgperson', test_base, '(cn=' + testcase_id + 'new-4')
+            r.search()
+            self.assertTrue(r[0].cn, testcase_id + 'new-4')
+            with self.assertRaises(LDAPCursorError):
+                self.assertTrue(r[0].homeState, testcase_id + 'state-test-3')

@@ -2,7 +2,7 @@
 
 # Created on 2013.05.23
 #
-# Copyright 2015 - 2018 Giovanni Cannata
+# Copyright 2015 - 2020 Giovanni Cannata
 #
 # This file is part of ldap3.
 #
@@ -38,7 +38,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = ASYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
@@ -48,7 +48,7 @@ test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
-test_internal_decoder = False  # True uses the internal ASN.1 decoder
+test_internal_decoder = True  # True uses the internal ASN.1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
@@ -81,6 +81,9 @@ else:
 # test_strategy = ASYNC
 # test_server_type = 'AD'
 # test_internal_decoder = True
+
+# force testing with AD provided by Lucas Raab
+# location = 'ELITE10GC-AD-RAAB'
 
 if 'TRAVIS' in location:
     # test in the cloud
@@ -147,7 +150,6 @@ if 'TRAVIS' in location:
         test_valid_names = ['192.168.137.108', '192.168.137.109', 'WIN1.' + test_domain_name, 'WIN2.' + test_domain_name]
     elif test_server_type == 'SLAPD':
         test_server = 'ipa.demo1.freeipa.org'
-        test_server_edir_name = ''
         test_root_partition = ''
         test_base = 'ou=ldap3-fixtures,dc=demo1,dc=freeipa,dc=org'  # base context where test objects are created
         test_moved = 'ou=ldap3-moved,dc=demo1,dc=freeipa,dc=org'  # base context where objects are moved in ModifyDN operations
@@ -179,9 +181,11 @@ if 'TRAVIS' in location:
         raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
 
 elif location == 'ELITE10GC-EDIR':
-    # test notepbook - eDirectory (EDIR)
-    # test_server = ['edir1.hyperv',
-    #                'edir2.hyperv']  # ldap server where tests are executed, if a list is given a pool will be created
+    # test notebook - eDirectory (EDIR)
+    # test_server = ['edir4.hyperv:389',
+    #                'edir4.hyperv:1389',
+    #                'edir4.hyperv:2389',
+    #                'edir4.hyperv:3389']  # ldap server where tests are executed, if a list is given a pool will be created
     test_server = 'edir4.hyperv'
     test_server_type = 'EDIR'
     test_root_partition = ''
@@ -211,6 +215,37 @@ elif location == 'ELITE10GC-EDIR':
     test_ntlm_password = 'zzz'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['192.168.137.101', '192.168.137.102', '192.168.137.109']
+elif location == 'ELITE10GC-AD-RAAB':
+    test_server = 'dc1.lucasraab.me'
+    test_server_type = 'AD'
+    test_domain_name = 'LUCASRAAB.ME'  # Active Directory Domain name
+    test_root_partition = 'DC=' + ',DC='.join(test_domain_name.split('.'))  # partition to use in DirSync
+    test_base = 'OU=test,' + test_root_partition  # base context where test objects are created
+    test_moved = 'ou=moved,OU=test,' + test_root_partition  # base context where objects are moved in ModifyDN operations
+    test_name_attr = 'cn'  # naming attribute for test objects
+    test_int_attr = 'logonCount'
+    test_multivalued_attribute = 'carLicense'
+    test_singlevalued_attribute = 'street'
+    test_server_context = ''  # used in novell eDirectory extended operations
+    test_server_edir_name = ''  # used in novell eDirectory extended operations
+    test_user = 'CN=cannatag,CN=Users,' + test_root_partition  # the user that performs the tests
+    test_password = 'xxxx'  # user password
+    test_secondary_user = 'CN=cannatag,CN=Users,' + test_root_partition
+    test_secondary_password = 'xxxx'  # user password
+    test_sasl_user = 'CN=cannatag,CN=Users,' + test_root_partition
+    test_sasl_password = 'xxxx'
+    test_sasl_user_dn = 'CN=cannatag,CN=Users,' + test_root_partition
+    test_sasl_secondary_user = 'CN=cannatag,CN=Users,' + test_root_partition
+    test_sasl_secondary_password = 'xxxx'
+    test_sasl_secondary_user_dn = 'CN=cannatag,CN=Users,' + test_root_partition
+    test_sasl_realm = None
+    test_ca_cert_file = 'local-forest-lab-ca.pem'
+    test_user_cert_file = ''  # 'local-forest-lab-administrator-cert.pem'
+    test_user_key_file = ''  # 'local-forest-lab-administrator-key.pem'
+    test_ntlm_user = test_domain_name.split('.')[0] + '\\cannatag'
+    test_ntlm_password = 'xxxx'
+    test_logging_filename = path.join(gettempdir(), 'ldap3.log')
+    test_valid_names = ['dc1.' + test_domain_name]
 elif location == 'ELITE10GC-AD':
     # test notebook - Active Directory (AD)
     # test_server = ['win1',
@@ -313,7 +348,7 @@ elif location == 'W10GC9227-EDIR':
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['sl10.intra.camera.it']
 elif location == 'W10GC9227-AD':
-    # test notebook - Active Directory (AD)
+    # test desktop - Active Directory (AD)
     test_server = '10.160.201.232'
     test_server_type = 'AD'
     test_domain_name = 'TESTAD.LAB'  # Active Directory Domain name

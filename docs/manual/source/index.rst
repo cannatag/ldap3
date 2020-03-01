@@ -46,7 +46,6 @@ Contents
    mocking
    testing
    changelog
-   modules
 
 Indices and tables
 ==================

@@ -97,7 +97,7 @@ structure and each value is, according to the schema, properly formatted (the da
 stored as ``b'20161009010118Z'``, but it's shown as a Python date object). Attributes can be queried
 either as a class or as a dict, with some additional features as case-insensitivity and blank-insensitivity. You can get
 the formatted value and the raw value (the value actually returned by the server) in the ``values`` and ``raw_values``
- attributes::
+attributes::
 
     >>> entry = conn.entries[0]
     >>> entry.krbLastPwdChange

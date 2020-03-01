@@ -1,1 +1,2 @@
-\Python\Python37\Scripts\twine upload dist/*
+CALL venv\Scripts\activate.bat
+twine upload dist/*

@@ -76,6 +76,19 @@ You can also specify a previously saved schema and info retrieved from a real se
     server.schema.to_file('my_real_server_schema.json')
 
 
+Full-featured fake server
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can create a full-featured fake server with Server.from_definition(), a static method of the Server object with the following parameters:
+
+* host: name of the fake server
+* dsa_info: DsaInfo preloaded object or a json formatted string or a file name
+* dsa_schema: SchemaInfo preloaded object or a json formatted string or a file name
+* port: fake port
+* use_ssl: fake ssl connection
+* formatter: custom formatters
+
+
 A complete example
 ^^^^^^^^^^^^^^^^^^
 

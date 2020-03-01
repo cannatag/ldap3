@@ -73,6 +73,10 @@ In the ldap3 library the signature for the Search operation is::
 * paged_cookie: an *opaque* string received in a paged paged search that must be sent back while requesting
   subsequent entries of the search result.
 
+.. warning::
+    Make sure to call escape_filter_chars() from ldap3.utils.conv on any user input before placing it into a .search() call. This is to avoid possible injection of malicious code. Look at https://www.linkedin.com/pulse/ldap-injection-django-jerin-jose for more information.
+
+
 The LDAP filter
 ---------------
 
@@ -386,6 +390,13 @@ Each entry is a dictionary with the following field:
 * attributes: a dictionary of returned attributes and their values. Values are list. Values are in UTF-8 format
 
 * raw_attributes: same as 'attributes' but not encoded (bytearray)
+
+* type: the type of the response as specified by RFC4511. It can be any of the following:
+    - searchResEntry: the response contain an entry that satisfies the search filter
+    - searchResRef: the response is a continuation referral to another DIT where the search should continue (usually handled automatically by ldap3)
+    - searchResDone: search completed, no other entries found (handled automatically by ldap3)
+    - intermediateResponse: a response in a persistent search (usually a continued search that never ends)
+    - extendResp: a response to an extended request (some are automatically handled by ldap3)
 
 
 Entries

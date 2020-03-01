@@ -2,9 +2,9 @@ The ADD operation
 #################
 
 The **Add** operation allows a client to request the addition of an entry into the LDAP directory. The Add operation is
-used only for new entries, that is the dn must reference a non existent object, but the parent objects must exist.
+used only for new entries, that is the dn must reference a non-existent object, but the parent objects must exist.
 For example if you try to add an entry with dn cn=user1,ou=users,o=company the company and users containers must already
-be present in the directory but the user1 object must non exist.
+be present in the directory but the user1 object must not exist.
 
 To perform an Add operation you must specify the dn of the new entry and a list of attributes to add.
 
@@ -32,6 +32,9 @@ the ``get_response(message_id)`` method of the connection object. If you use the
 
 The object_class parameter is a shortcut for specify a sequence of object classes. You can specify the object classes in the
 attributes parameter too.
+
+If you try to add an attribute with an empty value or a multi-valued attributes with all empty values, the attribte won't
+be created, because the LDAP protocol doens't support NULL values.
 
 You perform an Add operation as in the following example (using the default synchronous strategy)::
 

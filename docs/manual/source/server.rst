@@ -142,13 +142,25 @@ or can have them saved on file::
     server.info.to_file('server-info.json')
     server.schema.to_file('server-schema.json')
 
-to build a new server object with the saved json files you can retrieve them with::
+you can then build a new Server object with the saved json files::
 
-    from ldap3 import DsaInfo, SchemaInfo
+    from ldap3 import Server, DsaInfo, SchemaInfo
     dsa_info = DsaInfo.from_file('server-info.json')
     schema_info = SchemaInfo.from_file('server-schema.json')
-    server = Server('hostname', dsa_info, schema_info)
+    server = Server('hostname')
+    server.attach_dsa_info(dsa_info)
+    server.attach_schema_info(schema_info)
 
 and then you can use the server as usual. Hostname must resolve to a real server.
 
+Mock Server
+-----------
 
+When using a mocking strategy (usually used in Test Driven Development) you can create a fake server
+with custom schema and info with the from_definition() static method of the Server object::
+
+    # Create a fake server from the info and schema json files
+    fake_server = Server.from_definition('my_fake_server', 'my_real_server_info.json', 'my_real_server_schema.json')
+
+
+Look at the [Mocking section](mocking) for more details.

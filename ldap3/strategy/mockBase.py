@@ -689,6 +689,9 @@ class MockBaseStrategy(object):
                     })
                     if '+' not in attributes:  # remove operational attributes
                         for op_attr in self.operational_attributes:
+                            if op_attr.lower() in attributes:
+                                # if the op_attr was explicitly requested, then keep it
+                                continue
                             for i, attr in enumerate(responses[len(responses)-1]['attributes']):
                                 if attr['type'] == op_attr:
                                     del responses[len(responses)-1]['attributes'][i]

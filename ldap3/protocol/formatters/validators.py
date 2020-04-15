@@ -401,9 +401,7 @@ def validate_uuid_le(input_value):
                     error = True
             elif '\\' in element:
                 try:
-                    uuid = UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le
-                    uuid = escape_bytes(uuid)
-                    valid_values.append(uuid)  # byte representation, value in little endian
+                    valid_values.append(UUID(bytes_le=ldap_escape_to_bytes(element)).bytes_le)  # byte representation, value in little endian
                     changed = True
                 except ValueError:
                     error = True

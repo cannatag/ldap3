@@ -188,7 +188,7 @@ def format_json(obj):
         return obj._store
 
     if isinstance(obj, datetime.datetime):
-        return str(obj)
+        return obj.isoformat()
 
     if isinstance(obj, int):
         return obj

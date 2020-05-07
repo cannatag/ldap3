@@ -260,7 +260,7 @@ class MockBaseStrategy(object):
             return False
 
     def entries_from_json(self, json_entry_file):
-        target = open(json_entry_file, 'r')
+        target = open(json_entry_file, 'r', encoding='utf-8')
         definition = json.load(target, object_hook=json_hook)
         if 'entries' not in definition:
             self.connection.last_error = 'invalid JSON definition, missing "entries" section'

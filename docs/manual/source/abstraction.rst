@@ -506,7 +506,7 @@ As you can see the status of the entry is "Writable, Committed" and the read tim
 For specific types (boolean, integers and dates) you can set the value to the relevant Python type. The ldap3 library will perform the necessary
 conversion to the value expected from the LDAP server.
 
-You can discard the pending changes with ``e.entry_discard_changes()`` or delete the whole entry with ``e.delete()``. You can
+You can discard the pending changes with ``e.entry_discard_changes()`` or delete the whole entry with ``e.entry_delete()``. You can
 also move the Entry to another container in the DIT with ``e.entry_move()`` or renaming it with ``e.entry_rename)``.
 
 Matching entries in cursor results

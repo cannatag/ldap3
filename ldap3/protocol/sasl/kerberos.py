@@ -32,14 +32,40 @@ from ...core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationErr
 try:
     # noinspection PyPackageRequirements,PyUnresolvedReferences
     import gssapi
+    from gssapi.raw import ChannelBindings
 except ImportError:
     raise LDAPPackageUnavailableError('package gssapi missing')
 
 from .sasl import send_sasl_negotiation, abort_sasl_negotiation
 
+
 NO_SECURITY_LAYER = 1
 INTEGRITY_PROTECTION = 2
 CONFIDENTIALITY_PROTECTION = 4
+
+
+def get_channel_bindings(ssl_socket):
+    try:
+        server_certificate = ssl_socket.getpeercert(True)
+    except:
+        # it is not SSL socket
+        return None
+    try:
+        from cryptography import x509
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import hashes
+    except ImportError:
+        raise LDAPPackageUnavailableError('package cryptography missing')
+    cert = x509.load_der_x509_certificate(server_certificate, default_backend())
+    hash_algorithm = cert.signature_hash_algorithm
+    # According to https://tools.ietf.org/html/rfc5929#section-4.1, we have to convert the the hash function for md5 and sha1
+    if hash_algorithm.name in ('md5', 'sha1'):
+        digest = hashes.Hash(hashes.SHA256(), default_backend())
+    else:
+        digest = hashes.Hash(hash_algorithm, default_backend())
+    digest.update(server_certificate)
+    application_data = b'tls-server-end-point:' + digest.finalize()
+    return ChannelBindings(application_data=application_data)
 
 
 def sasl_gssapi(connection, controls):
@@ -84,7 +110,8 @@ def sasl_gssapi(connection, controls):
         creds = gssapi.Credentials(base=raw_creds, usage='initiate', store=connection.cred_store)
     else:
         creds = gssapi.Credentials(name=gssapi.Name(connection.user), usage='initiate', store=connection.cred_store) if connection.user else None
-    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos, creds=creds)
+
+    ctx = gssapi.SecurityContext(name=target_name, mech=gssapi.MechType.kerberos, creds=creds, channel_bindings=get_channel_bindings(connection.socket))
     in_token = None
     try:
         while True:

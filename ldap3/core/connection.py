@@ -377,11 +377,11 @@ class Connection(object):
                 self.bind(read_server_info=False)
                 self.start_tls(read_server_info=True)
             if not self.bound:
-                self.last_error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
+                error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                 if log_enabled(ERROR):
-                    log(ERROR, '%s for <%s>', self.last_error, self)
+                    log(ERROR, '%s for <%s>', error, self)
                 self.unbind()
-                raise LDAPBindError(self.last_error)
+                raise LDAPBindError(error)
 
     def __str__(self):
         s = [

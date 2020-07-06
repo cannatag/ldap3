@@ -1,3 +1,7 @@
+# 2.7.1 - not yet released
+    - fixed requirements for pyasn1
+    - fixed searching by objectGUID in hex format (thanks Matt)
+
 # 2.7 - 2020.03.01
     - tested against Python 3.8.1 and pyasn1 0.4.8
     - re-enabled ssl exception raising on bad certificate when only 1 server is present in the server pool

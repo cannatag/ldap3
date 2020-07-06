@@ -4,6 +4,7 @@
     - added iso_format parameter to utils.format_json to return dates in ISO format (thanks Hugh)
     - fixed issue with Referral attributes not returned by the referral server (thanks Nazarii)
     - fixed lost error message in auto_bind (thanks cfelder)
+    - fixed delete_old_dn in mock connections (thanks kpinc)
 
 # 2.7 - 2020.03.01
     - tested against Python 3.8.1 and pyasn1 0.4.8

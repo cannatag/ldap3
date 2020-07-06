@@ -123,6 +123,12 @@ def random_cookie():
     return to_raw(SystemRandom().random())[-6:]
 
 
+def _replace_rdn_values(request, new_dn, entry):
+    if bool(request['deleteOldRdn']):
+        for rdn in safe_rdn(new_dn, decompose=True):
+            entry[rdn[0]] = [to_raw(rdn[1])]
+
+
 class PagedSearchSet(object):
     def __init__(self, response, size, criticality):
         self.size = size
@@ -439,7 +445,7 @@ class MockBaseStrategy(object):
         request = modify_dn_request_to_dict(request_message)
         dn = safe_dn(request['entry'])
         new_rdn = request['newRdn']
-        delete_old_rdn = request['deleteOldRdn']
+        # delete_old_rdn = request['deleteOldRdn']
         new_superior = safe_dn(request['newSuperior']) if request['newSuperior'] else ''
         dn_components = to_dn(dn)
         if dn in self.connection.server.dit:
@@ -447,8 +453,10 @@ class MockBaseStrategy(object):
                 new_dn = safe_dn(dn_components[0] + ',' + new_superior)
                 self.connection.server.dit[new_dn] = self.connection.server.dit[dn].copy()
                 moved_entry = self.connection.server.dit[new_dn]
-                if delete_old_rdn:
-                    del self.connection.server.dit[dn]
+                # if delete_old_rdn:
+                #     del self.connection.server.dit[dn]
+                _replace_rdn_values(request, new_dn, moved_entry)
+                del self.connection.server.dit[dn]
                 result_code = RESULT_SUCCESS
                 message = 'entry moved'
                 moved_entry['entryDN'] = [to_raw(new_dn)]
@@ -459,9 +467,10 @@ class MockBaseStrategy(object):
                 del self.connection.server.dit[dn]
                 renamed_entry['entryDN'] = [to_raw(new_dn)]
 
-                for rdn in safe_rdn(new_dn, decompose=True):  # adds rdns to entry attributes
-                    renamed_entry[rdn[0]] = [to_raw(rdn[1])]
-
+                # for rdn in safe_rdn(new_dn, decompose=True):  # adds rdns to entry attributes
+                #     renamed_entry[rdn[0]] = [to_raw(rdn[1])]
+                _replace_rdn_values(request, new_dn, renamed_entry)
+                del self.connection.server.dit[dn]
                 result_code = RESULT_SUCCESS
                 message = 'entry rdn renamed'
             else:

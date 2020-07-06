@@ -23,7 +23,7 @@ In the ldap3 library the signature for the Delete operation is::
 
 * relative_dn: new relative dn of the entry
 
-* delete_old_dn: remove the previous dn (defaults to True)
+* delete_old_dn: delete_old_dn: alter the entry so that those attributes appearing in the new dn are given values to match the values of the new dn's components (defaults to True)
 
 * new_superior: the new container of the entry
 

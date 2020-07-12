@@ -58,7 +58,7 @@ test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
-test_lazy_connection = True
+test_lazy_connection = False
 test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
 test_validator = {}

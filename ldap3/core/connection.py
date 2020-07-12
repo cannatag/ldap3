@@ -32,7 +32,7 @@ from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLAC
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
     RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND,\
     AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
-    DIGEST_MD5, GSSAPI, PLAIN
+    DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL
 
 from .results import RESULT_SUCCESS, RESULT_COMPARE_TRUE, RESULT_COMPARE_FALSE
 from ..extend import ExtendedOperationsRoot
@@ -1474,7 +1474,8 @@ class Connection(object):
                 target.writelines(self.response_to_json(raw=raw, indent=indent, sort=sort))
                 target.close()
 
-    def _fire_deferred(self, read_info=True):
+    def _fire_deferred(self, read_info=None):
+        # if read_info is None reads the schema and server info if not present, if False doesn't read server info, if True reads always server info
         with self.connection_lock:
             if self.lazy and not self._executing_deferred:
                 self._executing_deferred = True
@@ -1488,7 +1489,7 @@ class Connection(object):
                         self.start_tls(read_server_info=False)
                     if self._deferred_bind:
                         self.bind(read_server_info=False, controls=self._bind_controls)
-                    if read_info:
+                    if (read_info is None and (not self.server.info and self.server.get_info in [DSA, ALL]) or (not self.server.schema and self.server.get_info in [SCHEMA, ALL])) or read_info:
                         self.refresh_server_info()
                 except LDAPExceptionError as e:
                     if log_enabled(ERROR):

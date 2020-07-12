@@ -1,5 +1,6 @@
 # 2.7.1 - not yet released
     - fixed requirements for pyasn1
+    - fixed issue with lazy connection requesting server info on every operation
     - fixed searching by objectGUID in hex format (thanks Matt)
     - added iso_format parameter to utils.format_json to return dates in ISO format (thanks Hugh)
     - fixed issue with Referral attributes not returned by the referral server (thanks Nazarii)

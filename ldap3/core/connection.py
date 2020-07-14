@@ -30,7 +30,7 @@ import json
 
 from .. import ANONYMOUS, SIMPLE, SASL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, get_config_parameter, DEREF_ALWAYS, \
     SUBTREE, ASYNC, SYNC, NO_ATTRIBUTES, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, MODIFY_INCREMENT, LDIF, ASYNC_STREAM, \
-    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND,\
+    RESTARTABLE, ROUND_ROBIN, REUSABLE, AUTO_BIND_DEFAULT, AUTO_BIND_NONE, AUTO_BIND_TLS_BEFORE_BIND, SAFE_SYNC, \
     AUTO_BIND_TLS_AFTER_BIND, AUTO_BIND_NO_TLS, STRING_TYPES, SEQUENCE_TYPES, MOCK_SYNC, MOCK_ASYNC, NTLM, EXTERNAL,\
     DIGEST_MD5, GSSAPI, PLAIN, DSA, SCHEMA, ALL
 
@@ -52,6 +52,7 @@ from ..protocol.sasl.digestMd5 import sasl_digest_md5
 from ..protocol.sasl.external import sasl_external
 from ..protocol.sasl.plain import sasl_plain
 from ..strategy.sync import SyncStrategy
+from ..strategy.safeSync import SafeSyncStrategy
 from ..strategy.mockAsync import MockAsyncStrategy
 from ..strategy.asynchronous import AsyncStrategy
 from ..strategy.reusable import ReusableStrategy
@@ -80,6 +81,7 @@ SASL_AVAILABLE_MECHANISMS = [EXTERNAL,
                              PLAIN]
 
 CLIENT_STRATEGIES = [SYNC,
+                     SAFE_SYNC,
                      ASYNC,
                      LDIF,
                      RESTARTABLE,
@@ -116,7 +118,6 @@ def _format_socket_endpoints(sock):
     return '<no socket>'
 
 
-# noinspection PyProtectedMember
 class Connection(object):
     """Main ldap connection class.
 
@@ -181,7 +182,6 @@ class Connection(object):
     :param source_port_list: a list of source ports to choose from when opening the connection to the server. Cannot be specified with source_port
     :type source_port_list: list
     """
-
     def __init__(self,
                  server,
                  user=None,
@@ -323,6 +323,8 @@ class Connection(object):
 
             if self.strategy_type == SYNC:
                 self.strategy = SyncStrategy(self)
+            elif self.strategy_type == SAFE_SYNC:
+                self.strategy = SafeSyncStrategy(self)
             elif self.strategy_type == ASYNC:
                 self.strategy = AsyncStrategy(self)
             elif self.strategy_type == LDIF:
@@ -352,7 +354,7 @@ class Connection(object):
             self.post_send_search = self.strategy.post_send_search
 
             if not self.strategy.no_real_dsa:
-                self.do_auto_bind()
+                self._do_auto_bind()
             # else:  # for strategies with a fake server set get_info to NONE if server hasn't a schema
             #     if self.server and not self.server.schema:
             #         self.server.get_info = NONE
@@ -362,7 +364,14 @@ class Connection(object):
                 else:
                     log(BASIC, 'instantiated Connection: <%r>', self)
 
-    def do_auto_bind(self):
+    def _prepare_return_value(self, status, response=False):
+        if self.strategy.thread_safe:
+            temp_response = self.response
+            self.response = None
+            return status, deepcopy(self.result), deepcopy(temp_response) if response else None
+        return status
+
+    def _do_auto_bind(self):
         if self.auto_bind and self.auto_bind not in [AUTO_BIND_NONE, AUTO_BIND_DEFAULT]:
             if log_enabled(BASIC):
                 log(BASIC, 'performing automatic bind for <%s>', self)
@@ -513,7 +522,6 @@ class Connection(object):
 
             return self
 
-    # noinspection PyUnusedLocal
     def __exit__(self, exc_type, exc_val, exc_tb):
         with self.connection_lock:
             context_bound, context_closed = self._context_state.pop()
@@ -646,7 +654,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done BIND operation, result <%s>', self.bound)
 
-            return self.bound
+            return self._prepare_return_value(self.bound, self.result)
 
     def rebind(self,
                user=None,
@@ -692,7 +700,7 @@ class Connection(object):
                     raise LDAPBindError('Unable to rebind as a different user, furthermore the server abruptly closed the connection')
             else:
                 self.strategy.pool.rebind_pool()
-                return True
+                return self._prepare_return_value(True, self.result)
 
     def unbind(self,
                controls=None):
@@ -724,7 +732,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done UNBIND operation, result <%s>', True)
 
-            return True
+            return self._prepare_return_value(True)
 
     def search(self,
                search_base,
@@ -838,7 +846,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done SEARCH operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value, response=True)
 
     def compare(self,
                 dn,
@@ -892,7 +900,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done COMPARE operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value)
 
     def add(self,
             dn,
@@ -981,7 +989,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done ADD operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value)
 
     def delete(self,
                dn,
@@ -1025,7 +1033,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done DELETE operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value)
 
     def modify(self,
                dn,
@@ -1115,7 +1123,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done MODIFY operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value)
 
     def modify_dn(self,
                   dn,
@@ -1172,7 +1180,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done MODIFY DN operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value)
 
     def abandon(self,
                 message_id,
@@ -1205,7 +1213,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done ABANDON operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value)
 
     def extended(self,
                  request_name,
@@ -1239,15 +1247,16 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done EXTENDED operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value, response=True)
 
     def start_tls(self, read_server_info=True):  # as per RFC4511. Removal of TLS is defined as MAY in RFC4511 so the client can't implement a generic stop_tls method0
-
         if log_enabled(BASIC):
             log(BASIC, 'start START TLS operation via <%s>', self)
 
         with self.connection_lock:
             return_value = False
+            self.result = None
+
             if not self.server.tls:
                 self.server.tls = Tls()
 
@@ -1271,7 +1280,7 @@ class Connection(object):
             if log_enabled(BASIC):
                 log(BASIC, 'done START TLS operation, result <%s>', return_value)
 
-            return return_value
+            return self._prepare_return_value(return_value)
 
     def do_sasl_bind(self,
                      controls):

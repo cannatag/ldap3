@@ -78,6 +78,7 @@ class BaseStrategy(object):
         self.pooled = None  # Indicates a connection with a connection pool
         self.can_stream = None  # indicates if a strategy keeps a stream of responses (i.e. LdifProducer can accumulate responses with a single header). Stream must be initialized and closed in _start_listen() and _stop_listen()
         self.referral_cache = {}
+        self.thread_safe = False  # Indicates that connection can be used in a multithread application
         if log_enabled(BASIC):
             log(BASIC, 'instantiated <%s>: <%s>', self.__class__.__name__, self)
 
@@ -141,9 +142,6 @@ class BaseStrategy(object):
                         if log_enabled(ERROR):
                             log(ERROR, 'unable to open socket for <%s>', self.connection)
                         raise LDAPSocketOpenError('unable to open socket', exception_history)
-                    if log_enabled(ERROR):
-                        log(ERROR, 'unable to open socket for <%s>', self.connection)
-                    raise LDAPSocketOpenError('unable to open socket', exception_history)
                 elif not self.connection.server.current_address:
                     if log_enabled(ERROR):
                         log(ERROR, 'invalid server address for <%s>', self.connection)
@@ -693,13 +691,20 @@ class BaseStrategy(object):
                                                 search_scope=BASE,
                                                 dereference_aliases=request['dereferenceAlias'],
                                                 attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
-                if isinstance(result, bool):
-                    if result:
-                        current_response = self.connection.response[0]
+                if self.connection.strategy.thread_safe:
+                    status, result, response = result
+                else:
+                    status = result
+                    result = self.connection.result
+                    response = self.connection.response
+
+                if self.connection.strategy.sync:
+                    if status:
+                        current_response = response[0]
                     else:
                         done = True
                 else:
-                    current_response, _ = self.get_response(result)
+                    current_response, _ = self.get_response(status)
                     current_response = current_response[0]
 
                 if not done:

@@ -25,7 +25,7 @@
 
 import unittest
 
-from test.config import random_id, get_connection, drop_connection
+from test.config import random_id, get_connection, drop_connection, get_response_values
 
 testcase_id = ''
 
@@ -43,15 +43,15 @@ class Test(unittest.TestCase):
 
     def test_abandon_0(self):
         # abandon(0) should work as a "ping" to the server
-        result = self.connection.abandon(0)
-        self.assertTrue(result)
+        status, result, response = get_response_values(self.connection.abandon(0), self.connection)
+        self.assertTrue(status)
 
     def test_abandon_1(self):
         # should abandon a specific operation, but messageID 1 has been used by the authentication
-        result = self.connection.abandon(1)
-        self.assertFalse(result)
+        status, result, response = get_response_values(self.connection.abandon(1), self.connection)
+        self.assertFalse(status)
 
     def test_abandon_99999999(self):
         # should abandon a not yet existing specific operation
-        result = self.connection.abandon(99999999)
-        self.assertFalse(result)
+        status, result, response = get_response_values(self.connection.abandon(99999999), self.connection)
+        self.assertFalse(status)

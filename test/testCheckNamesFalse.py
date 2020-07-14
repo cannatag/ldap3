@@ -27,7 +27,7 @@ import unittest
 
 from ldap3 import ALL
 from ldap3.core.exceptions import LDAPAttributeError, LDAPObjectClassError
-from test.config import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection
+from test.config import test_base, generate_dn, test_name_attr, random_id, get_connection, add_user, drop_connection, get_response_values
 
 testcase_id = ''
 
@@ -58,23 +58,13 @@ class Test(unittest.TestCase):
     def test_valid_assertion(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-1'))
 
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1)', attributes=[test_name_attr])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1)', attributes=[test_name_attr]), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
 
     def test_valid_attribute(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-2', attributes={'givenName': 'given-name-2'}))
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-2)', attributes=[test_name_attr, 'givenName'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-2)', attributes=[test_name_attr, 'givenName']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
 

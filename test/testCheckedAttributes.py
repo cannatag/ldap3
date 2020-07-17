@@ -26,7 +26,7 @@
 import unittest
 
 from ldap3 import ALL
-from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
+from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type, get_response_values
 
 testcase_id = ''
 
@@ -49,12 +49,7 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_search_checked_attributes(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1*)', attributes=[test_name_attr, 'sn', test_int_attr])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1*)', attributes=[test_name_attr, 'sn', test_int_attr]), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
@@ -83,12 +78,7 @@ class Test(unittest.TestCase):
                          '2.5.4.4': lambda v: unicode(v, encoding='UTF-8')[::-1],  # sn reversed
                          '1.3.6.1.4.1.1466.115.121.1.27': lambda v: int(v) + 1000}  # integer syntax incremented by 1000
         self.connection.server.custom_formatter = formatter
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1*)', attributes=[test_name_attr, 'sn', test_int_attr])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request  = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1*)', attributes=[test_name_attr, 'sn', test_int_attr]), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':

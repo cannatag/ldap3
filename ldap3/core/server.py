@@ -420,7 +420,7 @@ class Server(object):
                                        get_operational_attributes=True)
 
             if connection.strategy.thread_safe:
-                status, result, response = result
+                status, result, response, _ = result
             else:
                 status = result
                 result = connection.result
@@ -454,7 +454,7 @@ class Server(object):
         else:
             result = connection.search(entry, '(objectClass=*)', BASE, attributes=['subschemaSubentry'], get_operational_attributes=True)
             if connection.strategy.thread_safe:
-                status, result, response = result
+                status, result, response, _ = result
             else:
                 status = result
                 result = connection.result
@@ -489,7 +489,7 @@ class Server(object):
                                        get_operational_attributes=True
                                        )
             if connection.strategy.thread_safe:
-                status, result, response = result
+                status, result, response, _ = result
             else:
                 status = result
                 result = connection.result

@@ -26,7 +26,7 @@
 
 import unittest
 
-from test.config import test_base, add_user, add_group, get_connection, drop_connection, random_id, test_server_type
+from test.config import test_base, add_user, add_group, get_connection, drop_connection, random_id, test_server_type, get_response_values
 
 testcase_id = ''
 
@@ -53,11 +53,7 @@ class Test(unittest.TestCase):
                                                                 fix=True,
                                                                 transaction=False)
             # verifies user in group-1
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[1][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
@@ -65,11 +61,7 @@ class Test(unittest.TestCase):
             else:
                 self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
 
-            result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
@@ -78,11 +70,7 @@ class Test(unittest.TestCase):
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
             # verifies user in group-1b
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[2][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
@@ -90,11 +78,7 @@ class Test(unittest.TestCase):
             else:
                 self.assertFalse(True, self.delete_at_teardown[2][0] + ' not found')
 
-            result = self.connection.search(self.delete_at_teardown[2][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[2][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
@@ -108,11 +92,7 @@ class Test(unittest.TestCase):
                                                                      transaction=False)
 
             # verifies users not in group-1
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[1][0] not in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
@@ -120,11 +100,7 @@ class Test(unittest.TestCase):
             else:
                 self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
 
-            result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[0][0] not in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
@@ -133,11 +109,7 @@ class Test(unittest.TestCase):
                 self.assertFalse(True, self.delete_at_teardown[0][0] + ' not found')
 
             # verifies user still in group-1b
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[2][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
@@ -145,11 +117,7 @@ class Test(unittest.TestCase):
             else:
                 self.assertFalse(True, self.delete_at_teardown[2][0] + ' not found')
 
-            result = self.connection.search(self.delete_at_teardown[2][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[2][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
@@ -175,11 +143,7 @@ class Test(unittest.TestCase):
                                                                 transaction=False
                                                                 )
             for i in range(0, 2):
-                result = self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
                 if response:
                     for j in range(3, 5):
@@ -189,11 +153,7 @@ class Test(unittest.TestCase):
                     self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
 
             for j in range(3, 5):
-                result = self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
                 if response:
                     for i in range(0, 2):
@@ -213,11 +173,7 @@ class Test(unittest.TestCase):
                                                                      )
 
             for i in range(0, 2):
-                result = self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
                 if response:
                     for j in range(3, 5):
@@ -227,11 +183,7 @@ class Test(unittest.TestCase):
                     self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
 
             for j in range(3, 5):
-                result = self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
                 if response:
                     for i in range(0, 2):
@@ -248,11 +200,7 @@ class Test(unittest.TestCase):
                                                                 self.delete_at_teardown[1][0],
                                                                 fix=True,
                                                                 transaction=True)
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[1][0] in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
@@ -260,11 +208,7 @@ class Test(unittest.TestCase):
             else:
                 self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
 
-            result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[0][0] in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
@@ -277,11 +221,7 @@ class Test(unittest.TestCase):
                                                                      fix=False,
                                                                      transaction=False)
 
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[1][0] not in (response[0]['attributes']['securityEquals'] if 'securityEquals' in response[0]['attributes'] else []))
@@ -289,11 +229,7 @@ class Test(unittest.TestCase):
             else:
                 self.assertFalse(True, self.delete_at_teardown[1][0] + ' not found')
 
-            result = self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[1][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
             if response:
                 self.assertTrue(self.delete_at_teardown[0][0] not in (response[0]['attributes']['member'] if 'member' in response[0]['attributes'] else []))
@@ -319,11 +255,7 @@ class Test(unittest.TestCase):
                                                                 transaction=True
                                                                 )
             for i in range(0, 2):
-                result = self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
                 if response:
                     for j in range(3, 5):
@@ -333,11 +265,7 @@ class Test(unittest.TestCase):
                     self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
 
             for j in range(3, 5):
-                result = self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
                 if response:
                     for i in range(0, 2):
@@ -357,11 +285,7 @@ class Test(unittest.TestCase):
                                                                      )
 
             for i in range(0, 2):
-                result = self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[i][0], '(objectclass=*)', attributes=['securityEquals', 'groupMembership']), self.connection)
 
                 if response:
                     for j in range(3, 5):
@@ -371,11 +295,7 @@ class Test(unittest.TestCase):
                     self.assertFalse(True, self.delete_at_teardown[i][0] + ' not found')
 
             for j in range(3, 5):
-                result = self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe'])
-                if not self.connection.strategy.sync:
-                    response, result = self.connection.get_response(result)
-                else:
-                    response, result = self.connection.response, self.connection.result
+                status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[j][0], '(objectclass=*)', attributes=['member', 'equivalentToMe']), self.connection)
 
                 if response:
                     for i in range(0, 2):

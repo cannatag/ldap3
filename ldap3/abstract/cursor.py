@@ -350,7 +350,7 @@ class Cursor(object):
                 response, result, request = self.connection.get_response(result, get_request=True)
             else:
                 if self.connection.strategy.thread_safe:
-                    _, result, response = result
+                    _, result, response, _ = result
                 else:
                     response = self.connection.response
                     result = self.connection.result
@@ -824,7 +824,7 @@ class Writer(Cursor):
                     response, result, request = self.connection.get_response(result, get_request=True)
                 else:
                     if self.connection.strategy.thread_safe:
-                        _, result, response = result
+                        _, result, response, _ = result
                     else:
                         response = self.connection.response
                         result = self.connection.result

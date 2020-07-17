@@ -58,13 +58,13 @@ class Test(unittest.TestCase):
     def test_valid_assertion(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-1'))
 
-        status, result, response = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1)', attributes=[test_name_attr]), self.connection)
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-1)', attributes=[test_name_attr]), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
 
     def test_valid_attribute(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'chk-2', attributes={'givenName': 'given-name-2'}))
-        status, result, response = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-2)', attributes=[test_name_attr, 'givenName']), self.connection)
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'chk-2)', attributes=[test_name_attr, 'givenName']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
 

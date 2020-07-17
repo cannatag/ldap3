@@ -403,12 +403,12 @@ print()
 
 def get_response_values(result, connection):
     if isinstance(result, tuple):
-        return result  # result already contains a tuple with status, result, response (for thread safe connection)
+        return result  # result already contains a tuple with status, result, response, request, request (for thread safe connection)
     if not connection.strategy.sync:
         status = result
-        response, result = connection.get_response(result)
-        return None, status, result, response
-    return result, connection.result, connection.response
+        response, result, request = connection.get_response(result, get_request=True)
+        return status, result, response, request, request
+    return result, connection.result, connection.response, connection.request
 
 
 def random_id():

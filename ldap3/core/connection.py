@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with ldap3 in the COPYING and COPYING.LESSER files.
 # If not, see <http://www.gnu.org/licenses/>.
-from copy import deepcopy
+from copy import deepcopy, copy
 from os import linesep
 from threading import RLock, Lock
 from functools import reduce
@@ -368,7 +368,9 @@ class Connection(object):
         if self.strategy.thread_safe:
             temp_response = self.response
             self.response = None
-            return status, deepcopy(self.result), deepcopy(temp_response) if response else None
+            temp_request = self.request
+            self.request = None
+            return status, deepcopy(self.result), deepcopy(temp_response) if response else None, copy(temp_request)
         return status
 
     def _do_auto_bind(self):

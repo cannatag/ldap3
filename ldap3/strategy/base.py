@@ -692,7 +692,7 @@ class BaseStrategy(object):
                                                 dereference_aliases=request['dereferenceAlias'],
                                                 attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
                 if self.connection.strategy.thread_safe:
-                    status, result, response = result
+                    status, result, response, _ = result
                 else:
                     status = result
                     result = self.connection.result

@@ -29,7 +29,7 @@ import unittest
 from ldap3 import MODIFY_REPLACE
 from ldap3.protocol.controls import build_control
 from ldap3.protocol.novell import Integer
-from test.config import add_user, get_connection, drop_connection, random_id, test_server_type
+from test.config import add_user, get_connection, drop_connection, random_id, test_server_type, get_response_values
 
 testcase_id = ''
 
@@ -51,12 +51,8 @@ class Test(unittest.TestCase):
             transaction_control = self.connection.extend.novell.start_transaction()
             self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_REPLACE, ['user-1b'])}, controls=[transaction_control])
             self.connection.modify(self.delete_at_teardown[0][0], {'sn': (MODIFY_REPLACE, ['sn-user-1b'])}, controls=[transaction_control])
-            result = self.connection.extend.novell.end_transaction(commit=True, controls=[transaction_control])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['givenName', 'sn'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
+            self.connection.extend.novell.end_transaction(commit=True, controls=[transaction_control])
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['givenName', 'sn']), self.connection)
 
             if response:
                 self.assertEqual(response[0]['attributes']['givenName'][0], 'user-1b')
@@ -70,13 +66,8 @@ class Test(unittest.TestCase):
             transaction_control = self.connection.extend.novell.start_transaction()
             self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_REPLACE, ['user-1b'])}, controls=[transaction_control])
             self.connection.modify(self.delete_at_teardown[0][0], {'sn': (MODIFY_REPLACE, ['sn-user-1b'])}, controls=[transaction_control])
-            result = self.connection.extend.novell.end_transaction(commit=False, controls=[transaction_control])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['givenName', 'sn'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
-
+            self.connection.extend.novell.end_transaction(commit=False, controls=[transaction_control])
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['givenName', 'sn']), self.connection)
             if response:
                 # self.assertEqual(response[0]['attributes']['givenName'][0], 'user-1b')
                 self.assertEqual(response[0]['attributes']['sn'][0], 'user-1')
@@ -90,13 +81,8 @@ class Test(unittest.TestCase):
             invalid_transaction_control = build_control('2.16.840.1.113719.1.27.103.7', True, Integer(12345678), encode_control_value=True)
             self.connection.modify(self.delete_at_teardown[0][0], {'givenName': (MODIFY_REPLACE, ['user-1b'])}, controls=[transaction_control])
             self.connection.modify(self.delete_at_teardown[0][0], {'sn': (MODIFY_REPLACE, ['sn-user-1b'])}, controls=[invalid_transaction_control])
-            result = self.connection.extend.novell.end_transaction(commit=True, controls=[transaction_control])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['givenName', 'sn'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response, result = self.connection.response, self.connection.result
-
+            self.connection.extend.novell.end_transaction(commit=True, controls=[transaction_control])
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', attributes=['givenName', 'sn']), self.connection)
             if response:
                 self.assertEqual(response[0]['attributes']['givenName'][0], 'user-1b')
                 self.assertEqual(response[0]['attributes']['sn'][0], 'user-1')

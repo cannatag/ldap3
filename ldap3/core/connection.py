@@ -1513,10 +1513,10 @@ class Connection(object):
     def entries(self):
         if self.response:
             if not self._entries:
-                self._entries = self._get_entries(self.response)
+                self._entries = self._get_entries(self.response, self.request)
         return self._entries
 
-    def _get_entries(self, search_response):
+    def _get_entries(self, search_response, search_request):
         with self.connection_lock:
             from .. import ObjectDef, Reader
 
@@ -1541,7 +1541,7 @@ class Connection(object):
                 object_def += list(attr_set)  # converts the set in a list to be added to the object definition
                 object_defs.append((attr_set,
                                     object_def,
-                                    Reader(self, object_def, self.request['base'], self.request['filter'], attributes=attr_set) if self.strategy.sync else Reader(self, object_def, '', '', attributes=attr_set))
+                                    Reader(self, object_def, search_request['base'], search_request['filter'], attributes=attr_set) if self.strategy.sync else Reader(self, object_def, '', '', attributes=attr_set))
                                    )  # objects_defs contains a tuple with the set, the ObjectDef and a cursor
 
             entries = []

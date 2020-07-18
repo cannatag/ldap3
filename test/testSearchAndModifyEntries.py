@@ -31,7 +31,7 @@ from ldap3.core.exceptions import LDAPCursorError, LDAPOperationResult, LDAPCons
 from ldap3.abstract import STATUS_WRITABLE, STATUS_COMMITTED, STATUS_DELETED, STATUS_INIT, STATUS_MANDATORY_MISSING, STATUS_VIRTUAL, STATUS_PENDING_CHANGES, STATUS_READ, STATUS_READY_FOR_DELETION
 from ldap3.core.results import RESULT_CONSTRAINT_VIOLATION, RESULT_ATTRIBUTE_OR_VALUE_EXISTS
 from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_server_type, test_int_attr, test_strategy,\
-    test_multivalued_attribute, test_singlevalued_attribute
+    test_multivalued_attribute, test_singlevalued_attribute, get_response_values
 
 
 testcase_id = ''
@@ -58,13 +58,8 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def get_entry(self, entry_name):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + entry_name + ')', attributes=[test_name_attr, 'givenName', test_multivalued_attribute, test_singlevalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-            entries = self.connection._get_entries(response)
-        else:
-            result = self.connection.result
-            entries = self.connection.entries
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + entry_name + ')', attributes=[test_name_attr, 'givenName', test_multivalued_attribute, test_singlevalued_attribute]), self.connection)
+        entries = self.connection._get_entries(response, request)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(entries), 1)
         return entries[0]
@@ -120,13 +115,8 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
         counter = 20
         while counter > 0:  # waits for at maximum 20 times - delete operation can take some time to complete
-            result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'del1)', attributes=[test_name_attr, 'givenName'])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-                entries = self.connection._get_entries(response)
-            else:
-                result = self.connection.result
-                entries = self.connection.entries
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'del1)', attributes=[test_name_attr, 'givenName']), self.connection)
+            entries = self.connection._get_entries(response, request)
             if len(entries) == 0:
                 break
             sleep(3)

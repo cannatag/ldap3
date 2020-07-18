@@ -71,7 +71,7 @@ def paged_search_generator(connection,
             response, result = connection.get_response(result)
         else:
             if connection.strategy.thread_safe:
-                status, result, response, _ = result
+                _, result, response, _ = result
             else:
                 response = connection.response
                 result = connection.result

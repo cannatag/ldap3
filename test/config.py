@@ -405,9 +405,11 @@ def get_response_values(result, connection):
     if isinstance(result, tuple):
         return result  # result already contains a tuple with status, result, response, request, request (for thread safe connection)
     if not connection.strategy.sync:
+        if isinstance(result, bool):  # abandon returns a boolean even with async strategy
+            return result, None, None, None
         status = result
-        response, result, request = connection.get_response(result, get_request=True)
-        return status, result, response, request, request
+        response, result, request = connection.get_response(status, get_request=True)
+        return status, result, response, request
     return result, connection.result, connection.response, connection.request
 
 

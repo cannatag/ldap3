@@ -28,7 +28,7 @@ import json
 
 from ldap3 import SUBTREE
 from ldap3.utils.conv import escape_bytes
-from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type
+from test.config import test_base, test_name_attr, random_id, get_connection, add_user, drop_connection, test_int_attr, test_server_type, get_response_values
 
 testcase_id = ''
 
@@ -54,45 +54,27 @@ class Test(unittest.TestCase):
         self.assertFalse(self.connection.bound)
 
     def test_search_exact_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', attributes=[test_name_attr, 'givenName'])
-        if not self.connection.strategy.sync:
-            response, _ = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
-
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', attributes=[test_name_attr, 'givenName']), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
         self.assertEqual(len(json_entries), 1)
 
     def test_search_extensible_match(self):
         if test_server_type == 'EDIR' and not self.connection.strategy.no_real_dsa:
-            result = self.connection.search(search_base=test_base, search_filter='(&(ou:dn:=fixtures)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn'])
-            if not self.connection.strategy.sync:
-                response, _ = self.connection.get_response(result)
-                json_response = self.connection.response_to_json(search_result=response)
-            else:
-                json_response = self.connection.response_to_json()
-
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(&(ou:dn:=fixtures)(objectclass=inetOrgPerson))', attributes=[test_name_attr, 'givenName', 'sn']), self.connection)
+            json_response = self.connection.response_to_json(search_result=response)
             json_entries = json.loads(json_response)['entries']
             self.assertTrue(len(json_entries) >= 2)
 
     def test_search_present(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'])
-        if not self.connection.strategy.sync:
-            response, _ = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName']), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
         self.assertTrue(len(json_entries) >= 2)
 
     def test_search_substring_many(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', attributes=[test_name_attr, 'givenName'])
-        if not self.connection.strategy.sync:
-            response, _ = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', attributes=[test_name_attr, 'givenName']), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
         self.assertEqual(len(json_entries), 2)
 
@@ -103,12 +85,8 @@ class Test(unittest.TestCase):
             test_operation_attribute = 'entryDN'
         else:
             test_operation_attribute = 'xxx'
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True)
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + 'sea-1)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], get_operational_attributes=True), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
 
         if self.connection.check_names:
@@ -121,12 +99,8 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_with_parentheses_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, '(search)-3', attributes={'givenName': 'givenname-3'}))
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_name_attr + '=*' + escape_bytes(')') + '*))', attributes=[test_name_attr, 'sn'])
-        if not self.connection.strategy.sync:
-            response, _ = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_name_attr + '=*' + escape_bytes(')') + '*))', attributes=[test_name_attr, 'sn']), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
 
         self.assertEqual(len(json_entries), 1)
@@ -136,34 +110,19 @@ class Test(unittest.TestCase):
             self.assertEqual(json_entries[0]['attributes'][test_name_attr][0], testcase_id + '(search)-3')
 
     def test_search_integer_exact_match(self):
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '=0))', attributes=[test_name_attr, test_int_attr])
-        if not self.connection.strategy.sync:
-            response, _ = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '=0))', attributes=[test_name_attr, test_int_attr]), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
-
         self.assertEqual(len(json_entries), 2)
 
     def test_search_integer_less_than(self):
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' <=1))', attributes=[test_name_attr, test_int_attr])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' <=1))', attributes=[test_name_attr, test_int_attr]), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
-
         self.assertEqual(len(json_entries), 2)
 
     def test_search_integer_greater_than(self):
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '>=-1))', attributes=[test_name_attr, test_int_attr])
-        if not self.connection.strategy.sync:
-            response, _ = self.connection.get_response(result)
-            json_response = self.connection.response_to_json(search_result=response)
-        else:
-            json_response = self.connection.response_to_json()
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + '>=-1))', attributes=[test_name_attr, test_int_attr]), self.connection)
+        json_response = self.connection.response_to_json(search_result=response)
         json_entries = json.loads(json_response)['entries']
-
         self.assertEqual(len(json_entries), 2)

@@ -1,4 +1,5 @@
-# 2.7.1 - not yet released
+# 2.8 - not yet released
+    - new feature: SafeSync strategy (SAFE_SYNC) for using a synchronous Connection object in a multi-threading program
     - fixed requirements for pyasn1
     - fixed issue with lazy connection requesting server info on every operation
     - fixed searching by objectGUID in hex format (thanks Matt)

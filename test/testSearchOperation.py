@@ -116,7 +116,7 @@ class Test(unittest.TestCase):
 
             paged_size = 4
             total_entries = 0
-            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size), self.connectionc)
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + '*)', search_scope=SUBTREE, attributes=[test_name_attr, 'givenName'], paged_size=paged_size), self.connection)
             self.assertEqual(result['description'], 'success')
             self.assertEqual(len(response), paged_size)
             total_entries += len(response)
@@ -160,34 +160,17 @@ class Test(unittest.TestCase):
         self.assertEqual(len(response), 4)
 
     def test_search_integer_greater_than(self):
-        result = self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' >=-1))', attributes=[test_name_attr, test_int_attr])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(&(' + test_name_attr + '=' + testcase_id + '*)(' + test_int_attr + ' >=-1))', attributes=[test_name_attr, test_int_attr]), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 4)
 
     def test_search_not_match(self):
-        result = self.connection.search(search_base=test_base,
-                                        search_filter='(!(' + test_name_attr + '=' + testcase_id + 'sea-1))',
-                                        attributes=[test_name_attr, 'givenName'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = [entry for entry in self.connection.response if entry['dn'].lower().startswith(test_name_attr.lower() + '=' + testcase_id.lower())]
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(!(' + test_name_attr + '=' + testcase_id + 'sea-1))', attributes=[test_name_attr, 'givenName']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertTrue(len(response) >= 1)
 
     def test_search_exact_match_with_unicode_in_filter(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'sea-3-\u2122)', attributes=[test_name_attr, 'givenName'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'sea-3-\u2122)', attributes=[test_name_attr, 'givenName']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
@@ -196,12 +179,7 @@ class Test(unittest.TestCase):
             self.assertEqual(response[0]['attributes']['givenName'][0], 'givenname-3')
 
     def test_search_exact_match_with_unescaped_chars(self):
-        result = self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'sea-4-Öäçïó)', attributes=[test_name_attr, 'givenName'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(' + test_name_attr + '=' + testcase_id + u'sea-4-Öäçïó)', attributes=[test_name_attr, 'givenName']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
@@ -211,12 +189,7 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_with_unescaped_backslash_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-13', attributes={'givenName': testcase_id + 'givenname\\-13'}))
-        result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\*)', attributes=[test_name_attr, 'sn'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\*)', attributes=[test_name_attr, 'sn']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
@@ -226,12 +199,7 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_with_escaped_backslash_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-14', attributes={'givenName': testcase_id + 'givenname\\-14'}))
-        result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\5c*)', attributes=[test_name_attr, 'sn'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*\\5c*)', attributes=[test_name_attr, 'sn']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
@@ -241,12 +209,7 @@ class Test(unittest.TestCase):
 
     def test_search_exact_match_with_escape_chars_backslash_in_filter(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-15', attributes={'givenName': testcase_id + 'givenname\\-15'}))
-        result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*' + escape_filter_chars('\\') + '*)', attributes=[test_name_attr, 'sn'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+        status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + '*' + escape_filter_chars('\\') + '*)', attributes=[test_name_attr, 'sn']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'AD':
@@ -257,27 +220,17 @@ class Test(unittest.TestCase):
     def test_search_string_guid(self):
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-16', attributes={'givenName': testcase_id + 'givenname-16'}))
         if test_server_type == 'EDIR':
-            result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + 'givenname-16)', attributes=[test_name_attr, 'sn', 'guid'])
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + 'givenname-16)', attributes=[test_name_attr, 'sn', 'guid']), self.connection)
         elif test_server_type == 'AD':  # not tested on AD yet
-            result = self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + 'givenname-16)', attributes=[test_name_attr, 'sn', 'objectGuid'])
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(givenname=' + testcase_id + 'givenname-16)', attributes=[test_name_attr, 'sn', 'objectGuid']), self.connection)
         else:  # not tested on other kind of servers
             return
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'EDIR':
-            result = self.connection.search(search_base=test_base, search_filter='(guid=' + response[0]['attributes']['guid'] + ')', attributes=[test_name_attr, 'sn'])
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(guid=' + response[0]['attributes']['guid'] + ')', attributes=[test_name_attr, 'sn']), self.connection)
         elif test_server_type == 'AD':  # not tested on AD yet
-            result = self.connection.search(search_base=test_base, search_filter='(objectguid=' + response[0]['attributes']['objectguid'] + ')', attributes=[test_name_attr, 'sn'])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(objectguid=' + response[0]['attributes']['objectguid'] + ')', attributes=[test_name_attr, 'sn']), self.connection)
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'EDIR':
@@ -290,17 +243,11 @@ class Test(unittest.TestCase):
         ldap_bytes = ldap_escape_to_bytes(ldap_escaped)
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'sea-17', attributes={'givenName': testcase_id + 'givenname-17', 'audio': ldap_bytes}))
         if test_server_type == 'EDIR':
-            result = self.connection.search(search_base=test_base, search_filter='(audio=%s)' % ldap_escaped, attributes=[test_name_attr, 'sn', 'givenname', 'guid', 'audio'])
+            status, result, response, request = get_response_values(self.connection.search(search_base=test_base, search_filter='(audio=%s)' % ldap_escaped, attributes=[test_name_attr, 'sn', 'givenname', 'guid', 'audio']), self.connection)
         else:  # not tested on other kind of servers
             return
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
-            result = self.connection.result
         self.assertEqual(result['description'], 'success')
         self.assertEqual(len(response), 1)
         if test_server_type == 'EDIR':
             self.assertEqual(response[0]['attributes'][test_name_attr][0], testcase_id + 'sea-17')
             self.assertEqual(response[0]['attributes']['audio'][0], ldap_bytes)
-

@@ -824,11 +824,11 @@ class Writer(Cursor):
                     response, result, request = self.connection.get_response(result, get_request=True)
                 else:
                     if self.connection.strategy.thread_safe:
-                        _, result, response, _ = result
+                        _, result, response, request = result
                     else:
                         response = self.connection.response
                         result = self.connection.result
-                    request = self.connection.request
+                        request = self.connection.request
 
                 if result['result'] in [RESULT_SUCCESS]:
                     break

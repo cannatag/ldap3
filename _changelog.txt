@@ -1,6 +1,7 @@
 # 2.8 - not yet released
     - new feature: SafeSync strategy (SAFE_SYNC) for using a synchronous Connection object in a multi-threading program
     - fixed requirements for pyasn1
+    - fixed regression for ldapi connections
     - fixed issue with lazy connection requesting server info on every operation
     - fixed searching by objectGUID in hex format (thanks Matt)
     - added iso_format parameter to utils.format_json to return dates in ISO format (thanks Hugh)

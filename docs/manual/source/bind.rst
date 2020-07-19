@@ -259,9 +259,9 @@ same machine::
     >>> s = Server('ldapi:///var/run/slapd/ldapi')
     >>> c = Connection(s, authentication=SASL, sasl_mechanism=EXTERNAL, sasl_credentials='')
     >>> c.bind()
-    >>> True
+    True
     >>> c.extend.standard.who_am_i()
-    >>> dn:cn=config
+    dn:cn=config
 
 Using the SASL *EXTERNAL* mechanism allows you to provide to the server the credentials of the logged user.
 
@@ -292,7 +292,7 @@ that let you change the user and the authentication method while the connection 
     if not c.rebind(user='different_user_dn', password='different_user_password')
         print('error in rebind', c.result)
 
-In case the credentials are invalid or if the server doesn't allow you to rebind the server *could* abruptly close the connection.
+If credentials are invalid or the server doesn't allow you to rebind the server *could* abruptly close the connection.
 This condition is checked by the ``rebind()`` method and an LDAPBindError exception will be raised if caught.
 
 If you want an exception raised when credentials are invalid you must use the ``raise_exceptions=True`` parameter in the Connection() definition. Keep

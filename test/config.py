@@ -38,7 +38,7 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = SYNC  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = SAFE_SYNC  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
@@ -58,7 +58,7 @@ test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
-test_lazy_connection = True
+test_lazy_connection = False
 test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
 test_validator = {}

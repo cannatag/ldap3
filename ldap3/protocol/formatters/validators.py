@@ -368,7 +368,7 @@ def validate_uuid(input_value):
 
 
 def validate_uuid_le(input_value):
-    """
+    r"""
     Active Directory stores objectGUID in uuid_le format, follows RFC4122 and MS-DTYP:
     "{07039e68-4373-264d-a0a7-07039e684373}": string representation big endian, converted to little endian (with or without brace curles)
     "689e030773434d26a7a007039e684373": packet representation, already in little endian

@@ -25,6 +25,7 @@ from os import environ, remove
 from os import path
 from random import SystemRandom
 from tempfile import gettempdir
+from unittest import SkipTest
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
     ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
@@ -380,7 +381,7 @@ elif location == 'W10GC9227-AD':
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
 else:
-    raise Exception('testing location ' + location + ' is not valid')
+    raise SkipTest('testing location ' + location + ' is not valid')
 
 if test_logging:
     try:

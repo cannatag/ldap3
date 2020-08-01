@@ -53,7 +53,7 @@ function RunAllTestWithPythonVersion
                         foreach ($Decoder in $Decoders)
                         {
                             Write-Host "Running -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoder"
-                            RunTestSuite -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoderù
+                            RunTestSuite -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoder
                             Write-Host "Done. ***********"
                         }
                     }

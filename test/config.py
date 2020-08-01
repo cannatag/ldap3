@@ -21,10 +21,14 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 from sys import version, getdefaultencoding, getfilesystemencoding
-from os import environ, remove
+from os import environ, remove, getenv
 from os import path
 from random import SystemRandom
 from tempfile import gettempdir
+try:
+    from unittest import SkipTest
+except ImportError:
+    pass
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
     ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
@@ -38,27 +42,27 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = SAFE_SYNC  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
-test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
+test_strategy = getenv('STRATEGY', SAFE_SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
 test_pool_size = 5
-test_logging = False
+test_logging = True if getenv('LOGGING', 'FALSE').upper() == 'TRUE' else False
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
-test_internal_decoder = False  # True uses the internal ASN.1 decoder
+test_internal_decoder = True if getenv('DECODER', 'INTERNAL').upper() == 'INTERNAL' else False  # True uses the internal ASN.1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
-test_check_names = True  # check attribute names in operations
+test_check_names = True if getenv('CHECK_NAMES', 'TRUE').upper() == 'TRUE' else False  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
-test_lazy_connection = False
+test_lazy_connection = True if getenv('LAZY', 'FALSE').upper() == 'TRUE' else False
 test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
 test_validator = {}
@@ -380,7 +384,10 @@ elif location == 'W10GC9227-AD':
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
 else:
-    raise Exception('testing location ' + location + ' is not valid')
+    try:
+        raise SkipTest('testing location ' + location + ' is not valid')
+    except:
+        raise Exception('testing location ' + location + ' is not valid')
 
 if test_logging:
     try:
@@ -704,7 +711,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
             operation_result = connection.add(dn, None, attributes)
         result = get_operation_result(connection, operation_result)
         if not result['description'] == 'success':
-            print(attributes)
+            # print(attributes)
             raise Exception('unable to create user ' + dn + ': ' + str(result))
 
     return dn, result

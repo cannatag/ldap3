@@ -163,4 +163,4 @@ with custom schema and info with the from_definition() static method of the Serv
     fake_server = Server.from_definition('my_fake_server', 'my_real_server_info.json', 'my_real_server_schema.json')
 
 
-Look at the [Mocking section](mocking) for more details.
+Look at the :doc:`Mocking section </mocking>` for more details..

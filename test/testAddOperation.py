@@ -62,8 +62,16 @@ class Test(unittest.TestCase):
         self.assertDictEqual(copy_of_attributes, attributes)
 
     def test_add_binary(self):
-        bin1 = open('512b-rsa-example-cert.der','rb')
-        bin2 = open('1024b-rsa-example-cert.der','rb')
+        try:
+            bin1 = open('512b-rsa-example-cert.der', 'rb')
+        except Exception:
+            bin1 = open('test/512b-rsa-example-cert.der', 'rb')
+
+        try:
+            bin2 = open('1024b-rsa-example-cert.der', 'rb')
+        except Exception:
+            bin2 = open('test/1024b-rsa-example-cert.der', 'rb')
+
         der_certificates = [bin1.read(), bin2.read()]
         bin1.close()
         bin2.close()

@@ -37,7 +37,7 @@ from random import choice
 from .. import SYNC, ANONYMOUS, get_config_parameter, BASE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES, NO_ATTRIBUTES
 from ..core.results import DO_NOT_RAISE_EXCEPTIONS, RESULT_REFERRAL
 from ..core.exceptions import LDAPOperationResult, LDAPSASLBindInProgressError, LDAPSocketOpenError, LDAPSessionTerminatedByServerError,\
-    LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, \
+    LDAPUnknownResponseError, LDAPUnknownRequestError, LDAPReferralError, communication_exception_factory, LDAPStartTLSError, \
     LDAPSocketSendError, LDAPExceptionError, LDAPControlError, LDAPResponseTimeoutError, LDAPTransactionError
 from ..utils.uri import parse_uri
 from ..protocol.rfc4511 import LDAPMessage, ProtocolOp, MessageID, SearchResultEntry
@@ -788,7 +788,12 @@ class BaseStrategy(object):
                 referral_connection.open()
                 referral_connection.strategy._referrals = self._referrals
                 if self.connection.tls_started and not referral_server.ssl:  # if the original server was in start_tls mode and the referral server is not in ssl then start_tls on the referral connection
-                    referral_connection.start_tls()
+                    if not referral_connection.start_tls():
+                        error = 'start_tls in referral not successful' + (' - ' + referral_connection.last_error if referral_connection.last_error else '')
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', error, self)
+                        self.unbind()
+                        raise LDAPStartTLSError(error)
 
                 if self.connection.bound:
                     referral_connection.bind()

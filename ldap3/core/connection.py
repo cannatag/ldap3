@@ -66,8 +66,7 @@ from .usage import ConnectionUsage
 from .tls import Tls
 from .exceptions import LDAPUnknownStrategyError, LDAPBindError, LDAPUnknownAuthenticationMethodError, \
     LDAPSASLMechanismNotSupportedError, LDAPObjectClassError, LDAPConnectionIsReadOnlyError, LDAPChangeError, LDAPExceptionError, \
-    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError, LDAPConfigurationError, \
-    LDAPInvalidPortError
+    LDAPObjectError, LDAPSocketReceiveError, LDAPAttributeError, LDAPInvalidValueError, LDAPInvalidPortError, LDAPStartTLSError
 
 from ..utils.conv import escape_bytes, prepare_for_stream, check_json_dict, format_json, to_unicode
 from ..utils.log import log, log_enabled, ERROR, BASIC, PROTOCOL, EXTENDED, get_library_log_hide_sensitive_data
@@ -382,11 +381,22 @@ class Connection(object):
             if self.auto_bind == AUTO_BIND_NO_TLS:
                 self.bind(read_server_info=True)
             elif self.auto_bind == AUTO_BIND_TLS_BEFORE_BIND:
-                self.start_tls(read_server_info=False)
-                self.bind(read_server_info=True)
+                if self.start_tls(read_server_info=False):
+                    self.bind(read_server_info=True)
+                else:
+                    error = 'automatic start_tls befored bind not successful' + (' - ' + self.last_error if self.last_error else '')
+                    if log_enabled(ERROR):
+                        log(ERROR, '%s for <%s>', error, self)
+                    self.unbind()  # unbind anyway to close connection
+                    raise LDAPStartTLSError(error)
             elif self.auto_bind == AUTO_BIND_TLS_AFTER_BIND:
                 self.bind(read_server_info=False)
-                self.start_tls(read_server_info=True)
+                if not self.start_tls(read_server_info=True):
+                    error = 'automatic start_tls after bind not successful' + (' - ' + self.last_error if self.last_error else '')
+                    if log_enabled(ERROR):
+                        log(ERROR, '%s for <%s>', error, self)
+                    self.unbind()
+                    raise LDAPStartTLSError(error)
             if not self.bound:
                 error = 'automatic bind not successful' + (' - ' + self.last_error if self.last_error else '')
                 if log_enabled(ERROR):
@@ -1497,7 +1507,12 @@ class Connection(object):
                     if self._deferred_open:
                         self.open(read_server_info=False)
                     if self._deferred_start_tls:
-                        self.start_tls(read_server_info=False)
+                        if not self.start_tls(read_server_info=False):
+                            error = 'deferred start_tls not successful' + (' - ' + self.last_error if self.last_error else '')
+                            if log_enabled(ERROR):
+                                log(ERROR, '%s for <%s>', error, self)
+                            self.unbind()
+                            raise LDAPStartTLSError(error)
                     if self._deferred_bind:
                         self.bind(read_server_info=False, controls=self._bind_controls)
                     if (read_info is None and (not self.server.info and self.server.get_info in [DSA, ALL]) or (not self.server.schema and self.server.get_info in [SCHEMA, ALL])) or read_info:

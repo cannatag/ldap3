@@ -110,7 +110,6 @@ def sasl_digest_md5(connection, controls):
 
     a0 = md5_h(b':'.join([user, realm, password]))
     a1 = b':'.join([a0, nonce, cnonce, authz_id]) if authz_id else b':'.join([a0, nonce, cnonce])
-    print(connection.server.host.encode(charset))
     a2 = b'AUTHENTICATE:' + uri + (b':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
 
     digest_response += b'response="' + md5_hex(md5_kd(md5_hex(md5_h(a1)), b':'.join([nonce, b'00000001', cnonce, qop, md5_hex(md5_h(a2))]))) + b'"'

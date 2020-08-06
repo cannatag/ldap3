@@ -45,6 +45,7 @@ from pyasn1 import __version__ as pyasn1_version
 test_strategy = getenv('STRATEGY', SAFE_SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
+test_verbose = True if getenv('VERBOSE', 'FALSE').upper() == 'TRUE' else False
 test_pool_size = 5
 test_logging = True if getenv('LOGGING', 'FALSE').upper() == 'TRUE' else False
 test_log_detail = EXTENDED
@@ -190,7 +191,7 @@ elif location == 'ELITE10GC-EDIR':
     #                'edir4.hyperv:1389',
     #                'edir4.hyperv:2389',
     #                'edir4.hyperv:3389']  # ldap server where tests are executed, if a list is given a pool will be created
-    test_server = 'edir4.hyperv'
+    test_server = 'edir4'
     test_server_type = 'EDIR'
     test_root_partition = ''
     test_base = 'ou=fixtures,o=test'  # base context where test objects are created
@@ -400,12 +401,13 @@ if test_logging:
     set_library_log_activation_level(logging.DEBUG)
     set_library_log_detail_level(test_log_detail)
 
-print('Testing location:', location, ' - Test server:', test_server)
-print('Python version:', version, ' - ldap3 version:', ldap3_version, ' - pyasn1 version:', pyasn1_version,)
-print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
-print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
-print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
-print()
+if test_verbose:
+    print('Testing location:', location, ' - Test server:', test_server)
+    print('Python version:', version, ' - ldap3 version:', ldap3_version, ' - pyasn1 version:', pyasn1_version,)
+    print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
+    print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
+    print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
+    print()
 
 
 def get_response_values(result, connection):

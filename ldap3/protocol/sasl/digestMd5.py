@@ -94,7 +94,7 @@ def sasl_digest_md5(connection, controls):
     authz_id = connection.sasl_credentials[3].encode(charset) if connection.sasl_credentials[3] else b''
     nonce = server_directives['nonce'].encode(charset)
     cnonce = random_hex_string(16).encode(charset)
-    uri = b'ldap/'
+    uri = b'ldap/' + connection.server.host.encode(charset)
     qop = b'auth'
 
     digest_response = b'username="' + user + b'",'
@@ -110,7 +110,8 @@ def sasl_digest_md5(connection, controls):
 
     a0 = md5_h(b':'.join([user, realm, password]))
     a1 = b':'.join([a0, nonce, cnonce, authz_id]) if authz_id else b':'.join([a0, nonce, cnonce])
-    a2 = b'AUTHENTICATE:' + uri + (':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
+    print(connection.server.host.encode(charset))
+    a2 = b'AUTHENTICATE:' + uri + (b':00000000000000000000000000000000' if qop in [b'auth-int', b'auth-conf'] else b'')
 
     digest_response += b'response="' + md5_hex(md5_kd(md5_hex(md5_h(a1)), b':'.join([nonce, b'00000001', cnonce, qop, md5_hex(md5_h(a2))]))) + b'"'
 

@@ -1,7 +1,14 @@
-$Strategies = @('SYNC', 'ASYNC')
+$PythonVersions = @('3.8', '2.7')
+$Strategies = @('SYNC', 'ASYNC', 'SAFE_SYNC', 'RESTARTABLE')
 $Servers = @('EDIR')
 $Decoders = @('INTERNAL', 'EXTERNAL')
 $Booleans = @('TRUE', 'FALSE')
+$OnlyTrue = @('TRUE')
+$OnlyFalse = @('FALSE')
+
+$env:VERBOSE="FALSE"
+$env:PYTHONIOENCODING="utf-8"
+$env:PYTHONTRACEMALLOC=2
 
 function RunTestSuite
 {
@@ -21,40 +28,49 @@ function RunTestSuite
     $env:LOGGING=$Logging
     $env:CHECK_NAMES=$CheckNames
     $env:DECODER=$Decoder
-    $env:PYTHONIOENCODING="utf-8"
-
+    
     if ($Python -eq "2.7") {
-        py -2.7 -m unittest discover -s test -c
+        py -2.7 -m unittest discover -s test -c -q 
     }
     elseif ($Python -eq "3.8") {
-        .\venv\Scripts\python -m unittest discover -s test -c
+        .\venv\Scripts\python -m unittest discover -s test -c -q
     }
     else {
         Write-Host "Unknown Python version " + $Python
     }
 }
 
-function RunAllTestWithPythonVersion
+function RunAllSuites
 {
     param(
-        [string]$Python
+        [bool]$DryRun
     )
-
-    foreach ($Strategy in $Strategies)
+    $counter=0
+    foreach ($Python in $PythonVersions)
     {
-        foreach ($Server in $Servers)
+        foreach ($Strategy in $Strategies)
         {
-            foreach ($Lazy in $Booleans)
+            foreach ($Server in $Servers)
             {
-                foreach ($Logging in $Booleans)
+                foreach ($Lazy in $Booleans)
                 {
-                    foreach ($CheckName in $Booleans)
+                    foreach ($Logging in $Booleans)
                     {
-                        foreach ($Decoder in $Decoders)
+                        foreach ($CheckName in $Booleans)
                         {
-                            Write-Host "Running -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoder"
-                            RunTestSuite -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoder
-                            Write-Host "Done. ***********"
+                            foreach ($Decoder in $Decoders)
+                            {
+                                $counter++
+                                if (-not $DryRun)
+                                {
+                                    Write-Host "RUNNING $counter  -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoder"
+                                    RunTestSuite -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoder
+                                    Write-Host "Done."
+                                }
+                                else {
+                                    Write-Host "DRYRUN $counter  -Python $Python -Strategy $Strategy -Server $Server -Lazy $Lazy -Logging $Logging -CheckNames $CheckName -Decoder $Decoder"
+                                }
+                            }
                         }
                     }
                 }
@@ -62,10 +78,6 @@ function RunAllTestWithPythonVersion
         }
     }
 }
-#
-#RunTestSuite -Python 4.2 -Strategy SYNC -Server EDIR -Lazy FALSE -Logging FALSE -CheckNames TRUE -Decoder INTERNAL
-#RunTestSuite -Python 3.8 -Strategy SYNC -Server EDIR -Lazy FALSE -Logging FALSE -CheckNames TRUE -Decoder INTERNAL
-#RunTestSuite -Python 2.7 -Strategy SYNC -Server EDIR -Lazy FALSE -Logging FALSE -CheckNames TRUE -Decoder INTERNAL
-#RunTestSuite -Python 2.6 -Strategy SYNC -Server EDIR -Lazy FALSE -Logging FALSE -CheckNames TRUE -Decoder INTERNAL
-#
-RunAllTestWithPythonVersion('3.8')
+
+RunAllSuites -Dryrun $true
+RunAllSuites -Dryrun $false

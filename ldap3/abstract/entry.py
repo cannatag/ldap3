@@ -31,6 +31,7 @@ except ImportError:
     from ..utils.ordDict import OrderedDict  # for Python 2.6
 
 from os import linesep
+from copy import deepcopy
 
 from .. import STRING_TYPES, SEQUENCE_TYPES, MODIFY_ADD, MODIFY_REPLACE
 from .attribute import WritableAttribute
@@ -304,7 +305,7 @@ class EntryBase(object):
 
     @property
     def entry_attributes_as_dict(self):
-        return dict((attribute_key, attribute_value.values) for (attribute_key, attribute_value) in self._state.attributes.items())
+        return dict((attribute_key, deepcopy(attribute_value.values)) for (attribute_key, attribute_value) in self._state.attributes.items())
 
     @property
     def entry_read_time(self):

@@ -10,6 +10,7 @@
     - fixed lost error message in auto_bind (thanks cfelder)
     - fixed delete_old_dn in mock connections (thanks kpinc)
     - fixed a ResourceWarning with lazy connections
+    - fixed entry_to_json() that in python2 modified the original entry value (thanks Dirk-Jan)
     - tests desnt' raise Exception if real server is not present (thanks Matej)
 
 # 2.7 - 2020.03.01

@@ -443,10 +443,7 @@ elif location.endswith('-NONE'):
     test_logging_filename = 'ldap3-none.log'
     test_valid_names = None
 else:
-    try:
-        raise SkipTest('testing location ' + location + ' is not valid')
-    except:
-        raise Exception('testing location ' + location + ' is not valid')
+    raise Exception('testing location ' + location + ' is not valid')
 
 if test_logging:
     try:

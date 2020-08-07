@@ -42,8 +42,8 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = getenv('STRATEGY', SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
-test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
+test_strategy = getenv('STRATEGY', ASYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_server_type = getenv('SERVER', 'NONE')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
 
 test_verbose = True if getenv('VERBOSE', 'TRUE').upper() == 'TRUE' else False
 test_pool_size = 5
@@ -182,6 +182,35 @@ if 'TRAVIS' in location:
         test_ntlm_password = 'zzz'
         test_logging_filename = 'ldap3.log'
         test_valid_names = ['ipa.demo1.freeipa.org']
+    elif test_server_type == 'NONE':
+        test_server = None
+        test_root_partition = None
+        test_base = None
+        test_moved = None
+        test_name_attr = None
+        test_int_attr = None
+        test_multivalued_attribute = None
+        test_singlevalued_attribute = None
+        test_server_context = None
+        test_server_edir_name = None
+        test_user = None
+        test_password = None
+        test_secondary_user = None
+        test_secondary_password = None
+        test_sasl_user = None
+        test_sasl_password = None
+        test_sasl_user_dn = None
+        test_sasl_secondary_user = None
+        test_sasl_secondary_password = None
+        test_sasl_secondary_user_dn = None
+        test_sasl_realm = None
+        test_ca_cert_file = None
+        test_user_cert_file = None
+        test_user_key_file = None
+        test_ntlm_user = None
+        test_ntlm_password = None
+        test_logging_filename = 'ldap3-none.log'
+        test_valid_names = [None]
     else:
         raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
 
@@ -384,6 +413,35 @@ elif location == 'W10GC9227-AD':
     test_ntlm_password = 'Rc99pfop'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
+elif location.endswith('-NONE'):
+    test_server = None
+    test_root_partition = None
+    test_base = None
+    test_moved = None
+    test_name_attr = None
+    test_int_attr = None
+    test_multivalued_attribute = None
+    test_singlevalued_attribute = None
+    test_server_context = None
+    test_server_edir_name = None
+    test_user = None
+    test_password = None
+    test_secondary_user = None
+    test_secondary_password = None
+    test_sasl_user = None
+    test_sasl_password = None
+    test_sasl_user_dn = None
+    test_sasl_secondary_user = None
+    test_sasl_secondary_password = None
+    test_sasl_secondary_user_dn = None
+    test_sasl_realm = None
+    test_ca_cert_file = None
+    test_user_cert_file = None
+    test_user_key_file = None
+    test_ntlm_user = None
+    test_ntlm_password = None
+    test_logging_filename = 'ldap3-none.log'
+    test_valid_names = None
 else:
     try:
         raise SkipTest('testing location ' + location + ' is not valid')
@@ -466,6 +524,9 @@ def get_connection(bind=None,
         auto_escape = test_auto_escape
     if auto_encode is None:
         auto_encode = test_auto_encode
+
+    if test_server_type == 'NONE':
+        raise SkipTest()
 
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext

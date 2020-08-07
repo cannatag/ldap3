@@ -42,10 +42,10 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = getenv('STRATEGY', ASYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_strategy = getenv('STRATEGY', SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
 test_server_type = getenv('SERVER', 'EDIR')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
 
-test_verbose = True if getenv('VERBOSE', 'FALSE').upper() == 'TRUE' else False
+test_verbose = True if getenv('VERBOSE', 'TRUE').upper() == 'TRUE' else False
 test_pool_size = 5
 test_logging = True if getenv('LOGGING', 'FALSE').upper() == 'TRUE' else False
 test_log_detail = EXTENDED
@@ -674,7 +674,6 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
     else:
         attributes.update({'objectClass': 'inetOrgPerson', 'sn': username})
     return attributes
-
 
 
 def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):

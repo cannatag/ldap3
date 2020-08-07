@@ -8,7 +8,7 @@ $OnlyFalse = @('FALSE')
 
 $env:VERBOSE="FALSE"
 $env:PYTHONIOENCODING="utf-8"
-$env:PYTHONTRACEMALLOC=2
+#$env:PYTHONTRACEMALLOC=2
 
 function RunTestSuite
 {
@@ -30,10 +30,12 @@ function RunTestSuite
     $env:DECODER=$Decoder
     
     if ($Python -eq "2.7") {
-        py -2.7 -m unittest discover -s test -c -q 
+        # Start-Process py -2.7 -m unittest discover -s test -c -q
+        py -2.7 -m unittest discover -s test -c
     }
     elseif ($Python -eq "3.8") {
-        .\venv\Scripts\python -m unittest discover -s test -c -q
+        # Start-Process .\venv\Scripts\python -m unittest discover -s test -c -q
+        .\venv\Scripts\python -m unittest discover -s test -c
     }
     else {
         Write-Host "Unknown Python version " + $Python
@@ -54,9 +56,9 @@ function RunAllSuites
             {
                 foreach ($Lazy in $Booleans)
                 {
-                    foreach ($Logging in $Booleans)
+                    foreach ($Logging in $OnlyFalse)
                     {
-                        foreach ($CheckName in $Booleans)
+                        foreach ($CheckName in $OnlyTrue)
                         {
                             foreach ($Decoder in $Decoders)
                             {

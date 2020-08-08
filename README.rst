@@ -17,13 +17,28 @@ LDAP3
 ldap3 is a strictly RFC 4510 conforming **LDAP V3 pure Python client** library. The same codebase runs in Python 2, Python 3, PyPy and PyPy3.
 
 
-Version 2 warning
+Version 2.8 note
 -----------------
 
-In version 2 of ldap3 some default values have been changed and the ldap3 namespace has been decluttered, removing redundant
-constants (look at the changelog for details). Also, the result code constants were moved to ldap3.core.results and the ldap3 custom exceptions
-were stored in ldap3.core.exceptions. If you experience errors in your existing code you should rearrange the import statements or explicitly
-set the defaults to their former values.
+Version 2.8 of ldap3 introduced **SafeSync**, a new connection strategy that can be used in multithreaded programs. In previous version only the
+   ASYNC strategy was thread safe.
+   Each LDAP operation with the SafeSync strategy returns a tuple of four elements: status, result, response and request.
+
+   * status: states if the operation was successful
+
+   * result: the LDAP result of the operation
+
+   * response: the response of a LDAP Search Operation
+
+   * request: the original request of the operation
+
+   The SafeSync strategy can be used with the Abstract Layer, but the Abstract Layer currently is NOT thread safe.
+   The SafeSync import name is *SAFE_SYNC*::
+
+      from ldap3 import Server, Connection, SAFE_SYNC
+      server = Server('my_server')
+      conn = Connection(s, 'my_user', 'my_password', strategy=SAFE_SYNC, auto_bind=True)
+      status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the return tuple)
 
 
 A more pythonic LDAP
@@ -113,7 +128,7 @@ For information and suggestions you can contact me at cannatag@gmail.com. You ca
 Donate
 ------
 
-If you want to keep this project up and running you can send me an Amazon gift card. I will use it to improve my skills in the Information and Communication technology.
+If you want to keep this project up and running you can send me an Amazon gift card. I will use it to improve my skills in Information and Communication technologies.
 
 
 Changelog

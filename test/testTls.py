@@ -28,14 +28,14 @@ import ssl
 
 from ldap3 import Server, Connection, ServerPool, Tls, SASL, EXTERNAL, MOCK_ASYNC, MOCK_SYNC
 from test.config import test_server, test_port, test_port_ssl, test_user, test_password, test_authentication, \
-    test_strategy, test_lazy_connection, test_get_info, test_server_mode, test_valid_names, \
+    test_strategy, test_lazy_connection, test_get_info, test_server_mode, test_valid_names, test_server_type,\
     test_pooling_strategy, test_pooling_active, test_pooling_exhaust, test_ca_cert_file, \
     test_user_cert_file, test_user_key_file
 
 
 class Test(unittest.TestCase):
     def test_start_tls(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'NONE' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             if isinstance(test_server, (list, tuple)):
                 server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
                 for host in test_server:
@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
                 connection.strategy.terminate()
 
     def test_open_ssl_with_defaults(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'NONE' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             if isinstance(test_server, (list, tuple)):
                 server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
                 for host in test_server:
@@ -66,7 +66,7 @@ class Test(unittest.TestCase):
                 connection.strategy.terminate()
 
     def test_open_with_tls_before_bind(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'NONE' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             if isinstance(test_server, (list, tuple)):
                 server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
                 for host in test_server:
@@ -84,7 +84,7 @@ class Test(unittest.TestCase):
             self.assertFalse(connection.bound)
 
     def test_open_with_tls_after_bind(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'NONE' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             if isinstance(test_server, (list, tuple)):
                 server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
                 for host in test_server:
@@ -144,7 +144,7 @@ class Test(unittest.TestCase):
     #         self.assertFalse(connection.bound)
 
     def test_bind_ssl_cert_none(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'NONE' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             tls = Tls(validate=ssl.CERT_NONE)
             if isinstance(test_server, (list, tuple)):
                 server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
@@ -166,7 +166,7 @@ class Test(unittest.TestCase):
         # ciphers = '!aNULL:!eNULL:!LOW:!EXPORT:!SSLv2'
         ciphers = 'HIGH:!aNULL:!RC4:!DSS'
 
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'NONE' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             if isinstance(test_server, (list, tuple)):
                 server = ServerPool(pool_strategy=test_pooling_strategy, active=test_pooling_active, exhaust=test_pooling_exhaust)
                 for host in test_server:

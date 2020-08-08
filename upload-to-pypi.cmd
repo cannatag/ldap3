@@ -1,2 +1,2 @@
 CALL venv\Scripts\activate.bat
-twine upload dist/*
+twine upload --skip-existing dist/*

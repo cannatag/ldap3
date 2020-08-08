@@ -1,3 +1,18 @@
+# 2.8 - 2020.08.08
+    - new feature: SafeSync strategy (SAFE_SYNC) for using a synchronous Connection object in a multi-threading program
+    - new feature: LDIF_LINE_LENGTH for specifying line length wrapping in ldif-content output (default to 78 as per RFC 2849)
+    - fixed requirements for pyasn1
+    - fixed regression for ldapi connections
+    - fixed issue with lazy connection requesting server info on every operation
+    - fixed searching by objectGUID in hex format (thanks Matt)
+    - added iso_format parameter to utils.format_json to return dates in ISO format (thanks Hugh)
+    - fixed issue with Referral attributes not returned by the referral server (thanks Nazarii)
+    - fixed lost error message in auto_bind (thanks cfelder)
+    - fixed delete_old_dn in mock connections (thanks kpinc)
+    - fixed a ResourceWarning with lazy connections
+    - fixed entry_to_json() that in python2 modified the original entry value (thanks Dirk-Jan)
+    - tests desnt' raise Exception if real server is not present (thanks Matej)
+
 # 2.7 - 2020.03.01
     - tested against Python 3.8.1 and pyasn1 0.4.8
     - re-enabled ssl exception raising on bad certificate when only 1 server is present in the server pool

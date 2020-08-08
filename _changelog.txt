@@ -1,4 +1,4 @@
-# 2.8 - 2020.08.07
+# 2.8 - 2020.08.08
     - new feature: SafeSync strategy (SAFE_SYNC) for using a synchronous Connection object in a multi-threading program
     - new feature: LDIF_LINE_LENGTH for specifying line length wrapping in ldif-content output (default to 78 as per RFC 2849)
     - fixed requirements for pyasn1

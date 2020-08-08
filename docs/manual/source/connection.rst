@@ -7,19 +7,45 @@ The following strategies are available:
 
 * SYNC: the request is sent and the connection waits until the response is received. You get the result in the return value of the connection.
 
-* ASYNC: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response.
+* ASYNC: the request is sent and the connection immediately returns a *message_id* that can be used later to retrieve the response. Safe for multithreaded programs.
 
 * LDIF: the request is transformed in a *ldif-change* format and an LDIF output is returned.
 
 * RESTARTABLE: an automatically restartable synchronous connection. It retries operation for the specified number of times or forever.
 
+* SAFE_SYNC: each operation returns a tuple of 4 elements: status, result, response, request
+
+.. note::
+   **SafeSync** strategy can be used in multithreaded programs.
+   Each LDAP operation with the SafeSync strategy returns a tuple of four elements: status, result, response and request.
+
+   * status: states if the operation was successful
+
+   * result: the LDAP result of the operation
+
+   * response: the response of a LDAP Search Operation
+
+   * request: the original request of the operation::
+
+      from ldap3 import Server, Connection, SAFE_SYNC
+      server = Server('my_server')
+      conn = Connection(s, 'my_user', 'my_password', strategy=SAFE_SYNC, auto_bind=True)
+      status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the return tuple)
+
+   The SafeSync strategy can be used with the Abstract Layer, but the Abstract Layer currently is NOT thread safe.
+
+* REUSABLE: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
+
+
 .. note:: Lazy connections
 
    In a lazy connection when you open() and bind() nothing is executed. These operation are deferred until an effective LDAP operation (add, modify, delete, compare, modifyDn, search, extended) is performed. If unbind() is executed when still in deferred status all deferred operation are cancelled and nothing is sent over the network. This can be helpful when your application opens connections ahead of knowing if an effective operation is needed.
 
-* REUSABLE: an asynchronous strategy that internally opens multiple connections to the Server (or multiple Servers via the ServerPool) each in a different thread
+
 
 When using an asynchronous strategy each operation returns immediately a message_id. You can call the get_response method of the connection object to obtain the response received from the server.
+
+
 
 Connection parameters are:
 

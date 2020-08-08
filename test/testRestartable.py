@@ -31,7 +31,7 @@ from ldap3 import Server, Connection, ServerPool, RESTARTABLE, ROUND_ROBIN, BASE
 
 class Test(unittest.TestCase):
     def test_restartable_invalid_server(self):
-        if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
+        if test_server_type != 'NONE' and test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
             if isinstance(test_server, (list, tuple)):
                 hosts = ['a.b.c.d'] + list(test_server)
             else:
@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
             self.assertEqual(len(search_results), 1)
 
     def test_restartable_invalid_server2(self):
-        if test_server_type != 'AD':
+        if test_server_type not in  ['NONE', 'AD']:
             if test_strategy not in [MOCK_SYNC, MOCK_ASYNC]:
                 if isinstance(test_server, (list, tuple)):
                     hosts = ['a.b.c.d'] + list(test_server)

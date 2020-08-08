@@ -30,10 +30,11 @@ from .. import STRING_TYPES
 from ..core.exceptions import LDAPLDIFError, LDAPExtensionError
 from ..protocol.persistentSearch import EntryChangeNotificationControl
 from ..utils.asn1 import decoder
+from ..utils.config import get_config_parameter
 
 # LDIF converter RFC 2849 compliant
 
-LDIF_LINE_LENGTH = 78
+conf_ldif_line_length = get_config_parameter('LDIF_LINE_LENGTH')
 
 
 def safe_ldif_string(bytes_value):
@@ -233,8 +234,8 @@ def operation_to_ldif(operation_type, entries, all_base64=False, sort_order=None
     # check max line length and split as per note 2 of RFC 2849
     for line in lines:
         if line:
-            ldif_record.append(line[0:LDIF_LINE_LENGTH])
-            ldif_record.extend([' ' + line[i: i + LDIF_LINE_LENGTH - 1] for i in range(LDIF_LINE_LENGTH, len(line), LDIF_LINE_LENGTH - 1)] if len(line) > LDIF_LINE_LENGTH else [])
+            ldif_record.append(line[0:conf_ldif_line_length])
+            ldif_record.extend([' ' + line[i: i + conf_ldif_line_length - 1] for i in range(conf_ldif_line_length, len(line), conf_ldif_line_length - 1)] if len(line) > conf_ldif_line_length else [])
         else:
             ldif_record.append('')
 

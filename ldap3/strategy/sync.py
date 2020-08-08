@@ -54,7 +54,7 @@ class SyncStrategy(BaseStrategy):
 
     def open(self, reset_usage=True, read_server_info=True):
         BaseStrategy.open(self, reset_usage, read_server_info)
-        if read_server_info:
+        if read_server_info and not self.connection._deferred_open:
             try:
                 self.connection.refresh_server_info()
             except LDAPOperationResult:  # catch errors from server if raise_exception = True

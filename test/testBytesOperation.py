@@ -28,7 +28,7 @@ import unittest
 from time import sleep
 
 from ldap3 import MODIFY_REPLACE, MODIFY_ADD, LEVEL, BASE, SEQUENCE_TYPES
-from test.config import random_id, get_connection, add_user, drop_connection, test_singlevalued_attribute, test_multivalued_attribute, test_base, test_name_attr
+from test.config import random_id, get_connection, add_user, drop_connection, test_singlevalued_attribute, test_multivalued_attribute, test_base, test_name_attr, get_response_values
 
 testcase_id = ''
 
@@ -75,11 +75,7 @@ class Test(unittest.TestCase):
         multi = [b'abc', b'def']
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-1', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -89,11 +85,7 @@ class Test(unittest.TestCase):
         multi = [make_bytes('àèì', 'utf-8'), make_bytes('òù', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-2', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
 
@@ -103,11 +95,7 @@ class Test(unittest.TestCase):
             multi = [make_bytes([195, 160, 195, 168, 195, 172]), make_bytes([195, 178, 195, 185])]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-3', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -117,11 +105,7 @@ class Test(unittest.TestCase):
         multi = [make_bytes(u'\u00e0\u00e8\u00ec', 'utf-8'), make_bytes('\u00f2\u00f9', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-4', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -132,11 +116,7 @@ class Test(unittest.TestCase):
             multi = [make_bytes('\N{LATIN SMALL LETTER A WITH GRAVE}\N{LATIN SMALL LETTER E WITH GRAVE}\N{LATIN SMALL LETTER I WITH GRAVE}', 'utf-8'), make_bytes('\N{LATIN SMALL LETTER O WITH GRAVE}\N{LATIN SMALL LETTER U WITH GRAVE}', 'utf-8')]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-5', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -146,11 +126,7 @@ class Test(unittest.TestCase):
         multi = [make_bytearray('àèì', 'utf-8'), make_bytearray('òù', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-6', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -160,11 +136,7 @@ class Test(unittest.TestCase):
         multi = [make_bytearray([195, 160, 195, 168, 195, 172]), make_bytearray([195, 178, 195, 185])]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-7', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -174,11 +146,7 @@ class Test(unittest.TestCase):
         multi = [make_bytearray(u'\u00e0\u00e8\u00ec', 'utf-8'), make_bytearray(u'\u00f2\u00f9', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-8', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -189,11 +157,7 @@ class Test(unittest.TestCase):
             multi = [make_bytearray(u'\N{LATIN SMALL LETTER A WITH GRAVE}\N{LATIN SMALL LETTER E WITH GRAVE}\N{LATIN SMALL LETTER I WITH GRAVE}', 'utf-8'), make_bytearray('\N{LATIN SMALL LETTER O WITH GRAVE}\N{LATIN SMALL LETTER U WITH GRAVE}', 'utf-8')]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-9', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -229,22 +193,14 @@ class Test(unittest.TestCase):
         multi_mod = [b'cba', b'fed']
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-12', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         if not self.connection.strategy.sync:
             sleep(2)
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -255,22 +211,14 @@ class Test(unittest.TestCase):
         multi_mod = [make_bytes('ìèà', 'utf-8'), make_bytes('ùò', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-12', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         if not self.connection.strategy.sync:
             sleep(2)
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -282,22 +230,14 @@ class Test(unittest.TestCase):
             multi_mod = [make_bytes([195, 172, 195, 168, 195, 160]), make_bytes([195, 185, 195, 178])]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-13', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
             if not self.connection.strategy.sync:
                 sleep(2)
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -308,22 +248,14 @@ class Test(unittest.TestCase):
         multi_mod = [make_bytes(u'\u00ec\u00e8\u00e0', 'utf-8'), make_bytes('\u00f9\u00f2', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-14', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         if not self.connection.strategy.sync:
             sleep(2)
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -335,22 +267,14 @@ class Test(unittest.TestCase):
             multi_mod = [make_bytes('\N{LATIN SMALL LETTER I WITH GRAVE}\N{LATIN SMALL LETTER E WITH GRAVE}\N{LATIN SMALL LETTER A WITH GRAVE}', 'utf-8'), make_bytes('\N{LATIN SMALL LETTER U WITH GRAVE}\N{LATIN SMALL LETTER O WITH GRAVE}', 'utf-8')]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-15', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
             if not self.connection.strategy.sync:
                 sleep(2)
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -361,22 +285,14 @@ class Test(unittest.TestCase):
         multi_mod = [make_bytearray('ìèà', 'utf-8'), make_bytearray('ùò', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-16', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         if not self.connection.strategy.sync:
             sleep(2)
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -387,22 +303,14 @@ class Test(unittest.TestCase):
         multi_mod = [make_bytearray([195, 172, 195, 168, 195, 160]), make_bytearray([195, 185, 195, 178])]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-17', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         if not self.connection.strategy.sync:
             sleep(2)
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -413,22 +321,14 @@ class Test(unittest.TestCase):
         multi_mod = [make_bytearray(u'\u00ec\u00e8\u00e0', 'utf-8'), make_bytearray('\u00f9\u00f2', 'utf-8')]
         self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-18', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
         self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
         self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
         if not self.connection.strategy.sync:
             sleep(2)
-        result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -440,22 +340,14 @@ class Test(unittest.TestCase):
             multi_mod = [make_bytearray('\N{LATIN SMALL LETTER I WITH GRAVE}\N{LATIN SMALL LETTER E WITH GRAVE}\N{LATIN SMALL LETTER A WITH GRAVE}', 'utf-8'), make_bytearray('\N{LATIN SMALL LETTER U WITH GRAVE}\N{LATIN SMALL LETTER O WITH GRAVE}', 'utf-8')]
             self.delete_at_teardown.append(add_user(self.connection, testcase_id, 'byt-19', attributes={test_singlevalued_attribute: single, test_multivalued_attribute: multi}, test_bytes=True))
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
             self.connection.modify(self.delete_at_teardown[0][0], {test_singlevalued_attribute: (MODIFY_REPLACE, single_mod), test_multivalued_attribute: (MODIFY_ADD, multi_mod)})
             if not self.connection.strategy.sync:
                 sleep(2)
-            result = self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(self.delete_at_teardown[0][0], '(objectclass=*)', BASE, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single_mod])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi + multi_mod))
 
@@ -470,11 +362,7 @@ class Test(unittest.TestCase):
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
 
-        result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -489,11 +377,7 @@ class Test(unittest.TestCase):
         else:
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-        result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -506,11 +390,7 @@ class Test(unittest.TestCase):
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-            result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -525,11 +405,7 @@ class Test(unittest.TestCase):
         else:
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-        result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -545,11 +421,7 @@ class Test(unittest.TestCase):
             else:
                 # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
                 byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-            result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -564,11 +436,7 @@ class Test(unittest.TestCase):
         else:
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-        result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -583,11 +451,7 @@ class Test(unittest.TestCase):
         else:
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-        result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -602,11 +466,7 @@ class Test(unittest.TestCase):
         else:
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-        result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-        if not self.connection.strategy.sync:
-            response, result = self.connection.get_response(result)
-        else:
-            response = self.connection.response
+        status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
         self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))
@@ -619,11 +479,7 @@ class Test(unittest.TestCase):
             self.assertEqual('success', self.delete_at_teardown[0][1]['description'])
             # byte_filter = b'(&(%b=*%b*)(%b=%b))' % (make_bytes(test_name_attr, 'utf-8'), make_bytes(testcase_id, 'utf-8'), make_bytes(test_singlevalued_attribute, 'utf-8'), single)
             byte_filter = b'(&(' + make_bytes(test_name_attr, 'utf-8') + b'=*' + make_bytes(testcase_id, 'utf-8') + b'*)(' + make_bytes(test_singlevalued_attribute, 'utf-8') + b'=' + single + b'))'
-            result = self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute])
-            if not self.connection.strategy.sync:
-                response, result = self.connection.get_response(result)
-            else:
-                response = self.connection.response
+            status, result, response, request = get_response_values(self.connection.search(test_base, byte_filter, attributes=[test_singlevalued_attribute, test_multivalued_attribute]), self.connection)
             self.assertEqual(len(response), 1)
             self.assertEqual(response[0]['raw_attributes'][test_singlevalued_attribute], [single])
             self.assertEqual(sorted(response[0]['raw_attributes'][test_multivalued_attribute]), sorted(multi))

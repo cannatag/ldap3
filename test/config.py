@@ -21,14 +21,18 @@
 # If not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 from sys import version, getdefaultencoding, getfilesystemencoding
-from os import environ, remove
+from os import environ, remove, getenv
 from os import path
 from random import SystemRandom
 from tempfile import gettempdir
+try:
+    from unittest import SkipTest
+except ImportError:
+    pass
 
 from ldap3 import SIMPLE, SYNC, ROUND_ROBIN, IP_V6_PREFERRED, IP_SYSTEM_DEFAULT, Server, Connection,\
     ServerPool, SASL, STRING_TYPES, get_config_parameter, set_config_parameter, \
-    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM,\
+    NONE, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC, NTLM, SAFE_SYNC, \
     AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NO_TLS, ALL, ANONYMOUS, SEQUENCE_TYPES, MODIFY_ADD
 from ldap3.protocol.schemas.edir914 import edir_9_1_4_schema, edir_9_1_4_dsa_info
 from ldap3.protocol.schemas.ad2012R2 import ad_2012_r2_schema, ad_2012_r2_dsa_info
@@ -38,27 +42,28 @@ from ldap3.utils.log import OFF, ERROR, BASIC, PROTOCOL, NETWORK, EXTENDED, set_
 from ldap3 import __version__ as ldap3_version
 from pyasn1 import __version__ as pyasn1_version
 
-test_strategy = SYNC  # possible choices: SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
-test_server_type = 'EDIR'  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP)
+test_strategy = getenv('STRATEGY', SYNC)  # possible choices: SYNC, SAFE_SYNC, ASYNC, RESTARTABLE, REUSABLE, MOCK_SYNC, MOCK_ASYNC (not used on TRAVIS - look at .travis.yml)
+test_server_type = getenv('SERVER', 'NONE')  # possible choices: EDIR (Novell eDirectory), AD (Microsoft Active Directory), SLAPD (OpenLDAP, NONE (doesn't run test that require an external server)
 
+test_verbose = True if getenv('VERBOSE', 'TRUE').upper() == 'TRUE' else False
 test_pool_size = 5
-test_logging = False
+test_logging = True if getenv('LOGGING', 'FALSE').upper() == 'TRUE' else False
 test_log_detail = EXTENDED
 test_server_mode = IP_V6_PREFERRED
 test_pooling_strategy = ROUND_ROBIN
 test_pooling_active = 20
 test_pooling_exhaust = 15
-test_internal_decoder = True  # True uses the internal ASN.1 decoder
+test_internal_decoder = True if getenv('DECODER', 'INTERNAL').upper() == 'INTERNAL' else False  # True uses the internal ASN.1 decoder
 test_port = 389  # ldap port
 test_port_ssl = 636  # ldap secure port
 test_authentication = SIMPLE  # authentication type
-test_check_names = True  # check attribute names in operations
+test_check_names = True if getenv('CHECK_NAMES', 'TRUE').upper() == 'TRUE' else False  # check attribute names in operations
 test_get_info = ALL  # get info from DSA
 test_usage = True
 test_receive_timeout = None
 test_auto_escape = True
 test_auto_encode = True
-test_lazy_connection = True
+test_lazy_connection = True if getenv('LAZY', 'FALSE').upper() == 'TRUE' else False
 test_user_password = 'Rc2597pfop'  # default password for users created in tests
 
 test_validator = {}
@@ -177,6 +182,35 @@ if 'TRAVIS' in location:
         test_ntlm_password = 'zzz'
         test_logging_filename = 'ldap3.log'
         test_valid_names = ['ipa.demo1.freeipa.org']
+    elif test_server_type == 'NONE':
+        test_server = None
+        test_root_partition = None
+        test_base = None
+        test_moved = None
+        test_name_attr = None
+        test_int_attr = None
+        test_multivalued_attribute = None
+        test_singlevalued_attribute = None
+        test_server_context = None
+        test_server_edir_name = None
+        test_user = None
+        test_password = None
+        test_secondary_user = None
+        test_secondary_password = None
+        test_sasl_user = None
+        test_sasl_password = None
+        test_sasl_user_dn = None
+        test_sasl_secondary_user = None
+        test_sasl_secondary_password = None
+        test_sasl_secondary_user_dn = None
+        test_sasl_realm = None
+        test_ca_cert_file = None
+        test_user_cert_file = None
+        test_user_key_file = None
+        test_ntlm_user = None
+        test_ntlm_password = None
+        test_logging_filename = 'ldap3-none.log'
+        test_valid_names = [None]
     else:
         raise NotImplementedError('Cloud lab not implemented for ' + test_server_type)
 
@@ -186,7 +220,7 @@ elif location == 'ELITE10GC-EDIR':
     #                'edir4.hyperv:1389',
     #                'edir4.hyperv:2389',
     #                'edir4.hyperv:3389']  # ldap server where tests are executed, if a list is given a pool will be created
-    test_server = 'edir4.hyperv'
+    test_server = 'edir4'
     test_server_type = 'EDIR'
     test_root_partition = ''
     test_base = 'ou=fixtures,o=test'  # base context where test objects are created
@@ -379,6 +413,35 @@ elif location == 'W10GC9227-AD':
     test_ntlm_password = 'Rc99pfop'
     test_logging_filename = path.join(gettempdir(), 'ldap3.log')
     test_valid_names = ['10.160.201.232']
+elif location.endswith('-NONE'):
+    test_server = None
+    test_root_partition = None
+    test_base = None
+    test_moved = None
+    test_name_attr = None
+    test_int_attr = None
+    test_multivalued_attribute = None
+    test_singlevalued_attribute = None
+    test_server_context = None
+    test_server_edir_name = None
+    test_user = None
+    test_password = None
+    test_secondary_user = None
+    test_secondary_password = None
+    test_sasl_user = None
+    test_sasl_password = None
+    test_sasl_user_dn = None
+    test_sasl_secondary_user = None
+    test_sasl_secondary_password = None
+    test_sasl_secondary_user_dn = None
+    test_sasl_realm = None
+    test_ca_cert_file = None
+    test_user_cert_file = None
+    test_user_key_file = None
+    test_ntlm_user = None
+    test_ntlm_password = None
+    test_logging_filename = 'ldap3-none.log'
+    test_valid_names = None
 else:
     raise Exception('testing location ' + location + ' is not valid')
 
@@ -393,12 +456,25 @@ if test_logging:
     set_library_log_activation_level(logging.DEBUG)
     set_library_log_detail_level(test_log_detail)
 
-print('Testing location:', location, ' - Test server:', test_server)
-print('Python version:', version, ' - ldap3 version:', ldap3_version, ' - pyasn1 version:', pyasn1_version,)
-print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
-print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
-print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
-print()
+if test_verbose:
+    print('Testing location:', location, ' - Test server:', test_server)
+    print('Python version:', version, ' - ldap3 version:', ldap3_version, ' - pyasn1 version:', pyasn1_version,)
+    print('Strategy:', test_strategy, '- Lazy:', test_lazy_connection, '- Check names:', test_check_names, '- Collect usage:', test_usage, ' - pool size:', test_pool_size)
+    print('Default client encoding:', get_config_parameter('DEFAULT_CLIENT_ENCODING'), ' - Default server encoding:', get_config_parameter('DEFAULT_SERVER_ENCODING'),  '- Source encoding:', getdefaultencoding(), '- File encoding:', getfilesystemencoding(), ' - Additional server encodings:', ', '.join(get_config_parameter('ADDITIONAL_SERVER_ENCODINGS')))
+    print('Logging:', 'False' if not test_logging else test_logging_filename, '- Log detail:', (get_detail_level_name(test_log_detail) if test_logging else 'None') + ' - Internal decoder: ', test_internal_decoder, ' - Response waiting timeout:', get_config_parameter('RESPONSE_WAITING_TIMEOUT'))
+    print()
+
+
+def get_response_values(result, connection):
+    if isinstance(result, tuple):
+        return result  # result already contains a tuple with status, result, response, request, request (for thread safe connection)
+    if not connection.strategy.sync:
+        if isinstance(result, bool):  # abandon returns a boolean even with async strategy
+            return result, None, None, None
+        status = result
+        response, result, request = connection.get_response(status, get_request=True)
+        return status, result, response, request
+    return result, connection.result, connection.response, connection.request
 
 
 def random_id():
@@ -445,6 +521,9 @@ def get_connection(bind=None,
         auto_escape = test_auto_escape
     if auto_encode is None:
         auto_encode = test_auto_encode
+
+    if test_server_type == 'NONE':
+        raise SkipTest()
 
     if test_server_type == 'AD' and use_ssl is None:
         use_ssl = True  # Active directory forbids Add operations in cleartext
@@ -655,7 +734,6 @@ def get_add_user_attributes(batch_id, username, password=None, attributes=None):
     return attributes
 
 
-
 def add_user(connection, batch_id, username, password=None, attributes=None, test_bytes=False):
     if password is None:
         password = test_user_password
@@ -692,7 +770,7 @@ def add_user(connection, batch_id, username, password=None, attributes=None, tes
             operation_result = connection.add(dn, None, attributes)
         result = get_operation_result(connection, operation_result)
         if not result['description'] == 'success':
-            print(attributes)
+            # print(attributes)
             raise Exception('unable to create user ' + dn + ': ' + str(result))
 
     return dn, result

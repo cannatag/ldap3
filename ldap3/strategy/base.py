@@ -697,15 +697,15 @@ class BaseStrategy(object):
                                                 dereference_aliases=request['dereferenceAlias'],
                                                 attributes=[attr_type + ';range=' + str(int(high_range) + 1) + '-*'])
                 if self.connection.strategy.thread_safe:
-                    status, result, response, _ = result
+                    status, result, _response, _ = result
                 else:
                     status = result
                     result = self.connection.result
-                    response = self.connection.response
+                    _response = self.connection.response
 
                 if self.connection.strategy.sync:
                     if status:
-                        current_response = response[0]
+                        current_response = _response[0]
                     else:
                         done = True
                 else:

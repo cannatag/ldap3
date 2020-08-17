@@ -530,7 +530,8 @@ class Connection(object):
                 if self.closed:
                     self.open()
                 if not self.bound:
-                    self.bind()
+                    if not self.bind():
+                        raise LDAPBindError('unable to bind')
 
             return self
 
@@ -709,7 +710,10 @@ class Connection(object):
                 try:
                     return self.bind(read_server_info, controls)
                 except LDAPSocketReceiveError:
-                    raise LDAPBindError('Unable to rebind as a different user, furthermore the server abruptly closed the connection')
+                    self.last_error = 'Unable to rebind as a different user, furthermore the server abruptly closed the connection'
+                    if log_enabled(ERROR):
+                        log(ERROR, '%s for <%s>', self.last_error, self)
+                    raise LDAPBindError(self.last_error)
             else:
                 self.strategy.pool.rebind_pool()
                 return self._prepare_return_value(True, self.result)
@@ -819,7 +823,10 @@ class Connection(object):
                     else:
                         attribute_name_to_check = attribute_name
                     if self.server.schema and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                        self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPAttributeError(self.last_error)
 
             request = search_operation(search_base,
                                        search_filter,
@@ -885,10 +892,16 @@ class Connection(object):
                 attribute_name_to_check = attribute
 
             if self.server.schema.attribute_types and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                if log_enabled(ERROR):
+                    log(ERROR, '%s for <%s>', self.last_error, self)
+                raise LDAPAttributeError(self.last_error)
 
         if isinstance(value, SEQUENCE_TYPES):  # value can't be a sequence
-            raise LDAPInvalidValueError('value cannot be a sequence')
+            self.last_error = 'value cannot be a sequence'
+            if log_enabled(ERROR):
+                log(ERROR, '%s for <%s>', self.last_error, self)
+            raise LDAPInvalidValueError(self.last_error)
 
         with self.connection_lock:
             self._fire_deferred()
@@ -970,7 +983,10 @@ class Connection(object):
             if self.server and self.server.schema and self.check_names:
                 for object_class_name in _attributes[object_class_attr_name]:
                     if object_class_name.lower() not in conf_classes_excluded_from_check and object_class_name not in self.server.schema.object_classes:
-                        raise LDAPObjectClassError('invalid object class ' + str(object_class_name))
+                        self.last_error = 'invalid object class ' + str(object_class_name)
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPObjectClassError(self.last_error)
 
                 for attribute_name in _attributes:
                     if ';' in attribute_name:  # remove tags for checking
@@ -979,7 +995,10 @@ class Connection(object):
                         attribute_name_to_check = attribute_name
 
                     if attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                        self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPAttributeError(self.last_error)
 
             request = add_operation(dn, _attributes, self.auto_encode, self.server.schema if self.server else None, validator=self.server.custom_validator if self.server else None, check_names=self.check_names)
             if log_enabled(PROTOCOL):
@@ -1097,7 +1116,10 @@ class Connection(object):
                         attribute_name_to_check = attribute_name
 
                     if self.server.schema.attribute_types and attribute_name_to_check.lower() not in conf_attributes_excluded_from_check and attribute_name_to_check not in self.server.schema.attribute_types:
-                        raise LDAPAttributeError('invalid attribute type ' + attribute_name_to_check)
+                        self.last_error = 'invalid attribute type ' + attribute_name_to_check
+                        if log_enabled(ERROR):
+                            log(ERROR, '%s for <%s>', self.last_error, self)
+                        raise LDAPAttributeError(self.last_error)
                 change = changes[attribute_name]
                 if isinstance(change, SEQUENCE_TYPES) and change[0] in [MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, MODIFY_INCREMENT, 0, 1, 2, 3]:
                     if len(change) != 2:
@@ -1569,8 +1591,9 @@ class Connection(object):
                             entries.append(entry)
                             break
                     else:
+                        self.last_error = 'attribute set not found for ' + str(resp_attr_set)
                         if log_enabled(ERROR):
-                            log(ERROR, 'attribute set not found for %s in <%s>', resp_attr_set, self)
-                        raise LDAPObjectError('attribute set not found for ' + str(resp_attr_set))
+                            log(ERROR, self.last_error, self)
+                        raise LDAPObjectError(self.last_error)
 
         return entries

@@ -1,3 +1,6 @@
+# 2.8.1 - not yet released
+    - fixed members returned in AD auto-range search (thanks Felix)
+
 # 2.8 - 2020.08.08
     - new feature: SafeSync strategy (SAFE_SYNC) for using a synchronous Connection object in a multi-threading program
     - new feature: LDIF_LINE_LENGTH for specifying line length wrapping in ldif-content output (default to 78 as per RFC 2849)

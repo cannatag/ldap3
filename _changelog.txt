@@ -11,7 +11,7 @@
     - fixed delete_old_dn in mock connections (thanks kpinc)
     - fixed a ResourceWarning with lazy connections
     - fixed entry_to_json() that in python2 modified the original entry value (thanks Dirk-Jan)
-    - tests desnt' raise Exception if real server is not present (thanks Matej)
+    - tests doesnt' raise Exception if real server is not present (thanks Matej)
 
 # 2.7 - 2020.03.01
     - tested against Python 3.8.1 and pyasn1 0.4.8

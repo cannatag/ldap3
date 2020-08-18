@@ -153,7 +153,7 @@ class RestartableStrategy(SyncStrategy):
                             error = 'restart tls in restartable not successful' + (' - ' + self.connection.last_error if self.connection.last_error else '')
                             if log_enabled(ERROR):
                                 log(ERROR, '%s for <%s>', error, self)
-                            self.unbind()
+                            self.connection.unbind()
                             raise LDAPStartTLSError(error)
                     if message_type != 'bindRequest':
                         self.connection.bind(read_server_info=False, controls=self._last_bind_controls)  # binds with previously used controls unless the request is already a bindRequest

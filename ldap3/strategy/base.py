@@ -154,7 +154,6 @@ class BaseStrategy(object):
 
             self.connection._deferred_open = False
             self._start_listen()
-            # self.connection.do_auto_bind()
             if log_enabled(NETWORK):
                 log(NETWORK, 'connection open for <%s>', self.connection)
 
@@ -276,7 +275,6 @@ class BaseStrategy(object):
                 self.connection.last_error = 'socket ssl wrapping error: ' + str(e)
                 if log_enabled(ERROR):
                     log(ERROR, '<%s> for <%s>', self.connection.last_error, self.connection)
-                # raise communication_exception_factory(LDAPSocketOpenError, exc)(self.connection.last_error)
                 raise communication_exception_factory(LDAPSocketOpenError, type(e)(str(e)))(self.connection.last_error)
         if self.connection.usage:
             self.connection._usage.open_sockets += 1

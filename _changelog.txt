@@ -1,4 +1,4 @@
-# 2.8.1 - not yet released
+# 2.8.1 - 2020.09.07
     - fixed regression in 2.8 for members returned in AD auto-range search (thanks Felix)
     - fixed regression in 2.8 for attribute error in restartable class (thanks Christian)
     - try to use Crypto library if present for hashing NTLM password on python interpreter missing the MD4 OpenSSL algorithm (thanks Doron)

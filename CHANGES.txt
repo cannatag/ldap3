@@ -1,3 +1,8 @@
+# 2.8.1 - 2020.09.07
+    - fixed regression in 2.8 for members returned in AD auto-range search (thanks Felix)
+    - fixed regression in 2.8 for attribute error in restartable class (thanks Christian)
+    - try to use Crypto library if present for hashing NTLM password on python interpreter missing the MD4 OpenSSL algorithm (thanks Doron)
+
 # 2.8 - 2020.08.08
     - new feature: SafeSync strategy (SAFE_SYNC) for using a synchronous Connection object in a multi-threading program
     - new feature: LDIF_LINE_LENGTH for specifying line length wrapping in ldif-content output (default to 78 as per RFC 2849)
@@ -11,7 +16,7 @@
     - fixed delete_old_dn in mock connections (thanks kpinc)
     - fixed a ResourceWarning with lazy connections
     - fixed entry_to_json() that in python2 modified the original entry value (thanks Dirk-Jan)
-    - tests desnt' raise Exception if real server is not present (thanks Matej)
+    - tests doesnt' raise Exception if real server is not present (thanks Matej)
 
 # 2.7 - 2020.03.01
     - tested against Python 3.8.1 and pyasn1 0.4.8

@@ -28,6 +28,7 @@
 import socket
 
 from ...core.exceptions import LDAPPackageUnavailableError, LDAPCommunicationError
+from ...core.rdns import ReverseDnsSetting, get_hostname_by_addr, is_ip_addr
 
 try:
     # noinspection PyPackageRequirements,PyUnresolvedReferences
@@ -94,10 +95,40 @@ def sasl_gssapi(connection, controls):
     creds = None
     if connection.sasl_credentials:
         if len(connection.sasl_credentials) >= 1 and connection.sasl_credentials[0]:
+            # older code will still be using a boolean True for the equivalent of
+            # ReverseDnsSetting.REQUIRE_RESOLVE_ALL_ADDRESSES
             if connection.sasl_credentials[0] is True:
-                hostname = socket.gethostbyaddr(connection.socket.getpeername()[0])[0]
+                hostname = get_hostname_by_addr(connection.socket.getpeername()[0])
                 target_name = gssapi.Name('ldap@' + hostname, gssapi.NameType.hostbased_service)
-            else:
+            elif isinstance(connection.sasl_credentials[0], ReverseDnsSetting):
+                rdns_setting = connection.sasl_credentials[0]
+                # if the rdns_setting is OFF then we won't enter any branch here and will leave hostname as server host,
+                # so we'll just use the server host, whatever it is
+                peer_ip = connection.socket.getpeername()[0]
+                hostname = connection.server.host
+                if rdns_setting == ReverseDnsSetting.REQUIRE_RESOLVE_ALL_ADDRESSES:
+                    # resolve our peer ip and use it as our target name
+                    hostname = get_hostname_by_addr(peer_ip)
+                elif rdns_setting == ReverseDnsSetting.REQUIRE_RESOLVE_IP_ADDRESSES_ONLY:
+                    # resolve our peer ip (if the server host is an ip address) and use it as our target name
+                    if is_ip_addr(target_name):
+                        hostname = get_hostname_by_addr(peer_ip)
+                elif rdns_setting == ReverseDnsSetting.OPTIONAL_RESOLVE_ALL_ADDRESSES:
+                    # try to resolve our peer ip in dns and if we can, use it as our target name.
+                    # if not, just use the server host
+                    resolved_hostname = get_hostname_by_addr(peer_ip, success_required=False)
+                    if resolved_hostname is not None:
+                        hostname = resolved_hostname
+                elif rdns_setting == ReverseDnsSetting.OPTIONAL_RESOLVE_IP_ADDRESSES_ONLY:
+                    # try to resolve our peer ip in dns if our server host is an ip. if we can, use it as our target
+                    #  name. if not, just use the server host
+                    if is_ip_addr(target_name):
+                        resolved_hostname = get_hostname_by_addr(peer_ip, success_required=False)
+                        if resolved_hostname is not None:
+                            hostname = resolved_hostname
+                # construct our target name
+                target_name = gssapi.Name('ldap@' + hostname, gssapi.NameType.hostbased_service)
+            else:  # string hostname directly provided
                 target_name = gssapi.Name('ldap@' + connection.sasl_credentials[0], gssapi.NameType.hostbased_service)
         if len(connection.sasl_credentials) >= 2 and connection.sasl_credentials[1]:
             authz_id = connection.sasl_credentials[1].encode("utf-8")

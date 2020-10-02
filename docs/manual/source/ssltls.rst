@@ -79,6 +79,14 @@ server trust the credential provided when establishing the secure channel::
      connection = Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
                              sasl_mechanism = 'EXTERNAL', sasl_credentials = 'username')
 
+If the bind operation does not work with::
+
+     sasl_credentials = None
+
+you can try::
+
+     sasl_credentials = ''
+
 Digest-MD5
 ^^^^^^^^^^
 

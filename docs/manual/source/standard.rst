@@ -202,7 +202,7 @@ For example an output from my test suite is the following::
     ACL: 6#entry#cn=[71973491]modified-dn-1,o=test#printJobConfiguration
     ACL: 2#entry#[Root]#networkAddress
 
-If you call the persistent_search() method with straming=False you can get the modified entries with the p.next() method.
+If you call the persistent_search() method with streaming=False you can get the modified entries with the p.next() method.
 Each call to p.next(block=False, timeout=None) returns one event, with the extended control already decoded (as dict values) if available::
 
     from ldap3 import Server, Connection, ASYNC_STREAM
@@ -215,6 +215,6 @@ Each call to p.next(block=False, timeout=None) returns one event, with the exten
 
 When using next(block=False) or next(block=True, timeout=10) the method returns None if nothing is received from the server.
 
-If you call the persistent_search() method with **callback=myfynction** (where myfunction is a callable, including lambda,
+If you call the persistent_search() method with **callback=myfunction** (where myfunction is a callable, including lambda,
 accepting a dict as parameter) your function will be called for each event received in the persistent serach.
 The function will be called in the same thread of the persistent search, so it should not block.

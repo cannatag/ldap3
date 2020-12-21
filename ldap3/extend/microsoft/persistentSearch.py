@@ -30,7 +30,6 @@ except ImportError:  # Python 2
     from Queue import Empty
 
 from ...core.exceptions import LDAPExtensionError
-from ... import SEQUENCE_TYPES
 from ...utils.dn import safe_dn
 from ...protocol.microsoft import persistent_search_control
 
